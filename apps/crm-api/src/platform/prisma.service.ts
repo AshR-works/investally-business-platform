@@ -18,7 +18,10 @@ export class PrismaService implements OnModuleDestroy, UnitOfWork {
     if (!connectionString) {
       throw new Error('DATABASE_URL est obligatoire');
     }
-    this.client = new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
+    // Session forcée en UTC : sans cela, un fuseau serveur != UTC décale les timestamptz écrits par Prisma.
+    this.client = new PrismaClient({
+      adapter: new PrismaPg({ connectionString, options: '-c timezone=UTC' }),
+    });
   }
 
   get db(): Prisma.TransactionClient {

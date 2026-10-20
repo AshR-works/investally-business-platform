@@ -8,3 +8,4 @@ allowBuilds:
   workerd: false
   prisma: true
   '@prisma/engines': true
+  '@embedded-postgres/windows-x64': false

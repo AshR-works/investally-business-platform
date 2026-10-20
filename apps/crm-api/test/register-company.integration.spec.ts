@@ -59,6 +59,19 @@ describeDb('RegisterCompany (PostgreSQL)', () => {
       .toMatchObject({ total: 0 });
   });
 
+  it('enregistre les horodatages en UTC, quel que soit le fuseau du serveur', async () => {
+    const before = Date.now();
+    const view = await useCase.execute({ name: `Utc-${Date.now()}`, actor });
+    const [row] = await prisma.db.$queryRaw<{ company_ms: number; audit_ms: number }[]>`
+      SELECT (extract(epoch FROM c.created_at) * 1000)::float8 AS company_ms,
+             (extract(epoch FROM a.created_at) * 1000)::float8 AS audit_ms
+      FROM bd.companies c JOIN audit.audit_logs a ON a.entity_id = c.id::text
+      WHERE c.id = ${view.id}::uuid`;
+    // L'écart avec l'horloge réelle doit rester de l'ordre de la seconde, pas de l'heure.
+    expect(Math.abs(row.company_ms - before)).toBeLessThan(5_000);
+    expect(Math.abs(row.audit_ms - before)).toBeLessThan(5_000);
+  });
+
   it('le journal d\'audit est en ajout seul (UPDATE refusé par la base)', async () => {
     await expect(prisma.db.$executeRaw`UPDATE audit.audit_logs SET module = 'x'`).rejects.toThrow(/append-only/);
   });
