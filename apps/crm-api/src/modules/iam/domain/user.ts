@@ -59,6 +59,27 @@ export class User extends AggregateRoot {
     });
   }
 
+  /** Compte invité : sans mot de passe, en attente. L'utilisateur le choisit lui-même via le lien d'invitation. */
+  static invite(input: { id: string; email: Email; displayName: string; managerId?: string | null; now: Date }): User {
+    return new User({
+      id: input.id,
+      email: input.email,
+      displayName: input.displayName.trim(),
+      status: UserStatus.Pending,
+      passwordHash: null,
+      passwordChangedAt: null,
+      failedLoginCount: 0,
+      lockedUntil: null,
+      mfaEnabled: false,
+      mfaSecretEnc: null,
+      mfaLastUsedStep: null,
+      managerId: input.managerId ?? null,
+      lastLoginAt: null,
+      version: 1,
+      createdAt: input.now,
+    });
+  }
+
   static rehydrate(props: UserProps): User {
     return new User(props);
   }
@@ -130,6 +151,32 @@ export class User extends AggregateRoot {
     this.props.mfaEnabled = false;
     this.props.mfaSecretEnc = null;
     this.props.mfaLastUsedStep = null;
+  }
+
+  /** Fin d'invitation : l'utilisateur a choisi son mot de passe, le compte devient actif. */
+  activateWithPassword(passwordHash: string, now: Date): void {
+    if (this.props.status !== UserStatus.Pending) throw new DomainError('CONFLICT', "Ce compte n'est pas en attente d'activation");
+    this.props.status = UserStatus.Active;
+    this.props.passwordHash = passwordHash;
+    this.props.passwordChangedAt = now;
+  }
+
+  /** Réactive un compte désactivé (jamais un compte qui n'a pas encore choisi de mot de passe). */
+  enable(): void {
+    if (this.props.status !== UserStatus.Disabled) throw new DomainError('CONFLICT', "Ce compte n'est pas désactivé");
+    if (this.props.passwordHash === null) throw new DomainError('INVARIANT_VIOLATION', "Ce compte n'a pas encore choisi de mot de passe : renvoyez l'invitation");
+    this.props.status = UserStatus.Active;
+  }
+
+  rename(displayName: string): void {
+    const name = displayName.trim();
+    if (name.length === 0 || name.length > 200) throw new DomainError('VALIDATION', 'Le nom doit contenir entre 1 et 200 caractères');
+    this.props.displayName = name;
+  }
+
+  assignManager(managerId: string | null): void {
+    if (managerId === this.props.id) throw new DomainError('INVARIANT_VIOLATION', 'Un utilisateur ne peut pas être son propre responsable');
+    this.props.managerId = managerId;
   }
 
   disable(): void {

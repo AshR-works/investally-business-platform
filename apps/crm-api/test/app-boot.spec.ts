@@ -28,27 +28,24 @@ describe('Démarrage de l\'application', () => {
     expect(await res.json()).toEqual({ status: 'ok' });
   });
 
-  it('rejette un nom vide avec une réponse problem+json (400)', async () => {
-    const res = await fetch(`${baseUrl}/api/v1/companies`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ name: '' }),
-    });
-    expect(res.status).toBe(400);
-    expect(res.headers.get('content-type')).toContain('application/problem+json');
+  it('refuse sans identité : 401 problem+json, quelle que soit la route métier (la validation se teste avec un jeton)', async () => {
+    for (const request of [
+      () => fetch(`${baseUrl}/api/v1/companies`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ name: '' }) }),
+      () => fetch(`${baseUrl}/api/v1/companies`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ name: 'Acme', isAdmin: true }) }),
+      () => fetch(`${baseUrl}/api/v1/companies?pageSize=1000`),
+      () => fetch(`${baseUrl}/api/v1/companies/00000000-0000-7000-8000-000000000001`),
+      () => fetch(`${baseUrl}/api/v1/admin/users`),
+      () => fetch(`${baseUrl}/api/v1/admin/roles`),
+    ]) {
+      const res = await request();
+      expect(res.status).toBe(401);
+      expect(res.headers.get('content-type')).toContain('application/problem+json');
+    }
   });
 
-  it('rejette les champs inconnus (whitelist stricte)', async () => {
-    const res = await fetch(`${baseUrl}/api/v1/companies`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ name: 'Acme', isAdmin: true }),
-    });
-    expect(res.status).toBe(400);
-  });
-
-  it('plafonne la pagination (pageSize > 100 refusé)', async () => {
-    const res = await fetch(`${baseUrl}/api/v1/companies?pageSize=1000`);
-    expect(res.status).toBe(400);
+  it("n'expose aucun détail interne sur une route protégée sans identité", async () => {
+    const res = await fetch(`${baseUrl}/api/v1/companies`);
+    const body = JSON.stringify(await res.json());
+    expect(body).not.toMatch(/stack|prisma|sql|node_modules/i);
   });
 });

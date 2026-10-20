@@ -9,6 +9,8 @@ export interface AppConfig {
   allowedOrigins: readonly string[];
   /** Valeur de `trust proxy` d'Express (ex. `loopback`) quand l'API est derrière le proxy Next.js ; absent sinon. */
   trustProxy: string | null;
+  /** Adresse publique du front (liens des e-mails d'invitation). HTTPS obligatoire en production. */
+  publicUrl: string;
   mfa: {
     /** Clé AES-256 (32 octets en base64) qui chiffre les secrets TOTP au repos ; absente = clé éphémère (développement/test). */
     encryptionKeyBase64: string | null;

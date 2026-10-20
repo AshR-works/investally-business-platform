@@ -4,6 +4,7 @@ import { Throttle } from '@nestjs/throttler';
 import type { CookieOptions, Request, Response } from 'express';
 import { APP_CONFIG, AppConfig, DomainError, actorContextFrom } from '../../../shared-kernel';
 import { AuthenticatedActor } from '../application/authenticate-access-token.use-case';
+import { AcceptInvitationUseCase } from '../application/admin/invitations.use-cases';
 import { ChangePasswordUseCase } from '../application/change-password.use-case';
 import { ConfirmMfaEnrollmentUseCase, StartMfaEnrollmentUseCase } from '../application/mfa-enrollment.use-cases';
 import { RegenerateRecoveryCodesUseCase } from '../application/mfa-management.use-cases';
@@ -12,6 +13,7 @@ import { LoginUseCase } from '../application/login.use-case';
 import { LogoutUseCase } from '../application/logout.use-case';
 import { RefreshSessionUseCase } from '../application/refresh-session.use-case';
 import { AccessTokenGuard, CurrentActor } from './access-token.guard';
+import { AcceptInvitationDto } from './dto/admin.dto';
 import { ChangePasswordDto, LoginDto, MfaCodeDto } from './dto/auth.dto';
 import { RequireRecentMfaGuard } from './mfa.guards';
 
@@ -22,6 +24,8 @@ const AUTH_PATH = '/api/v1/auth';
 const LOGIN_LIMIT = { default: { limit: 5, ttl: 60_000 } };
 /** 5 vérifications MFA par minute et par session (le verrouillage du compte est la vraie protection contre la force brute). */
 const MFA_LIMIT = { default: { limit: 5, ttl: 60_000 } };
+/** 10 tentatives d'activation par minute et par IP (les jetons de 256 bits ne se devinent pas ; limite contre l'abus). */
+const INVITATION_LIMIT = { default: { limit: 10, ttl: 60_000 } };
 
 @ApiTags('auth')
 @Controller('auth')
@@ -35,6 +39,7 @@ export class AuthController {
     private readonly confirmMfaUseCase: ConfirmMfaEnrollmentUseCase,
     private readonly verifyMfaUseCase: VerifyMfaUseCase,
     private readonly regenerateCodesUseCase: RegenerateRecoveryCodesUseCase,
+    private readonly acceptInvitationUseCase: AcceptInvitationUseCase,
     @Inject(APP_CONFIG) private readonly config: AppConfig,
   ) {}
 
@@ -135,6 +140,19 @@ export class AuthController {
     this.assertAllowedOrigin(req);
     noStore(res);
     return this.regenerateCodesUseCase.execute({ userId: actor.userId, sessionId: actor.sessionId, actor: actorContextFrom(req, actor) });
+  }
+
+  /**
+   * Activation d'un compte invité : l'utilisateur choisit son mot de passe avec le jeton du lien (fragment d'URL).
+   * Public (il n'a pas encore de compte actif) ; tout lien non valide produit le même refus.
+   */
+  @Post('invitation/accept')
+  @HttpCode(204)
+  @Throttle(INVITATION_LIMIT)
+  async acceptInvitation(@Body() dto: AcceptInvitationDto, @Req() req: Request, @Res({ passthrough: true }) res: Response): Promise<void> {
+    this.assertAllowedOrigin(req);
+    noStore(res);
+    await this.acceptInvitationUseCase.execute({ token: dto.token, password: dto.password, actor: actorContextFrom(req) });
   }
 
   @Post('change-password')

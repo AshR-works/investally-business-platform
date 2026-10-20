@@ -10,6 +10,8 @@ import { CompanyView, toCompanyView } from './company-view';
 
 export interface RegisterCompanyCommand {
   name: string;
+  /** Propriétaire de l'entreprise (l'utilisateur qui la crée) : détermine la portée des droits. */
+  ownerUserId: string;
   sector?: string | null;
   country?: string | null;
   actor: ActorContext;
@@ -36,6 +38,7 @@ export class RegisterCompanyUseCase {
       const company = Company.register({
         id: this.ids.next(),
         name: name.value,
+        ownerUserId: command.ownerUserId,
         sector: command.sector,
         country: command.country,
         now: this.clock.now(),
