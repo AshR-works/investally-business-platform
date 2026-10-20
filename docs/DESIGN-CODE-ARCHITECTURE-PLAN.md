@@ -69,6 +69,7 @@
 | 2026-10-20 | — | Sprints d'une semaine maximum, menés par l'ingénieur et Claude | Décision de la direction produit |
 
 ## Next Actions
+- [ ] Consulter `QUESTIONS-ET-DECISIONS.md` : registre des questions sensibles, décisions et questions ouvertes (§D)
 - [ ] Valider S2 (voir `SPRINT-2-RECETTE.md`) puis fusionner dans `main` — Ingénieur logiciel
 - [ ] **S3.1** : planifier le périmètre et la recette de l'authentification — ensemble
 - [ ] Fournir l'accès Microsoft 365 pour l'envoi d'e-mails (voir `SECURITY.md` §2.6) — avant S3.2, administrateur M365
