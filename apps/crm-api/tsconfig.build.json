@@ -1,6 +1,6 @@
 {
   "extends": "./tsconfig.json",
-  "compilerOptions": { "rootDir": "src", "types": ["node"] },
+  "compilerOptions": { "rootDir": ".", "types": ["node"] },
   "include": ["src/**/*"],
   "exclude": ["**/*.spec.ts", "**/*.integration.spec.ts"]
 }
