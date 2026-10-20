@@ -1,0 +1,77 @@
+// Schéma CRM — tranche S1 (Company + AuditLog). Le schéma Core complet arrive en S2.
+// Un schéma PostgreSQL par contexte, sans clé étrangère entre contextes (ARCHITECTURE.md).
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  schemas  = ["bd", "audit"]
+}
+
+enum CompanyStatus {
+  TARGET
+  CONTACTED
+  QUALIFIED
+  CLIENT
+  ARCHIVED
+
+  @@schema("bd")
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  VIEW
+  DOWNLOAD
+  EXPORT
+  LOGIN
+  LOGOUT
+
+  @@schema("audit")
+}
+
+model Company {
+  id        String        @id @db.Uuid
+  name      String        @db.VarChar(200)
+  /// Nom normalisé (minuscules) : unicité parmi les entreprises non supprimées (index partiel en SQL).
+  nameKey   String        @map("name_key") @db.VarChar(200)
+  status    CompanyStatus @default(TARGET)
+  sector    String?       @db.VarChar(100)
+  country   String?       @db.VarChar(100)
+  /// Verrou optimiste.
+  version   Int           @default(1)
+  createdAt DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime      @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt DateTime?     @map("deleted_at") @db.Timestamptz(6)
+
+  @@index([status])
+  @@index([nameKey])
+  @@map("companies")
+  @@schema("bd")
+}
+
+/// Journal append-only : jamais de UPDATE ni DELETE (restreint par rôle SQL en S2).
+model AuditLog {
+  id         String      @id @db.Uuid
+  userId     String?     @map("user_id") @db.Uuid
+  sessionId  String?     @map("session_id") @db.Uuid
+  module     String      @db.VarChar(100)
+  entityType String      @map("entity_type") @db.VarChar(100)
+  entityId   String      @map("entity_id") @db.VarChar(100)
+  action     AuditAction
+  oldValue   Json?       @map("old_value")
+  newValue   Json?       @map("new_value")
+  ipAddress  String      @map("ip_address") @db.VarChar(64)
+  device     String      @db.VarChar(300)
+  createdAt  DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([entityType, entityId])
+  @@index([userId, createdAt])
+  @@index([createdAt])
+  @@map("audit_logs")
+  @@schema("audit")
+}
