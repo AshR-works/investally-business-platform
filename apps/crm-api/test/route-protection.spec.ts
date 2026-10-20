@@ -54,6 +54,7 @@ const PUBLIC_ROUTES = [
 const AUTHENTICATED_ONLY_ROUTES = [
   'POST /auth/logout',
   'GET /auth/me',
+  'GET /auth/me/profile',
   'POST /auth/change-password',
   'POST /auth/mfa/enroll/start',
   'POST /auth/mfa/enroll/confirm',

@@ -107,6 +107,35 @@ describeDb('Authentification HTTP (PostgreSQL)', () => {
     });
   });
 
+  describe('Profil pour l interface', () => {
+    it('renvoie nom, rôles et droits sans aucun secret ; 401 sans jeton', async () => {
+      const { body } = await loginAs(await newUser());
+      const res = await get('/api/v1/auth/me/profile', { authorization: `Bearer ${body.accessToken}` });
+      expect(res.status).toBe(200);
+      const profile = await json(res);
+      expect(Object.keys(profile).sort()).toEqual(['displayName', 'email', 'mfaEnrolled', 'permissions', 'roles', 'userId']);
+      expect(profile).toMatchObject({ userId: body.userId, mfaEnrolled: false });
+      expect(profile.roles.length).toBeGreaterThan(0);
+      expect(profile.permissions.length).toBeGreaterThan(0);
+      expect(profile.permissions[0]).toEqual({ code: expect.any(String), scope: expect.stringMatching(/^(OWN|TEAM|ALL)$/) });
+      expect(JSON.stringify(profile)).not.toMatch(/hash|secret|argon/i);
+      expect((await get('/api/v1/auth/me/profile', {})).status).toBe(401);
+    });
+  });
+
+  describe('401 : jeton refusé ou identifiants refusés', () => {
+    it('un jeton refusé porte WWW-Authenticate invalid_token ; un mot de passe refusé ne le porte pas', async () => {
+      const noToken = await get('/api/v1/auth/me', {});
+      expect(noToken.status).toBe(401);
+      expect(noToken.headers.get('www-authenticate')).toBe('Bearer error="invalid_token"');
+
+      const email = await newUser();
+      const badLogin = await post('/api/v1/auth/login', { email, password: 'mauvais mot de passe' });
+      expect(badLogin.status).toBe(401);
+      expect(badLogin.headers.get('www-authenticate')).toBeNull();
+    });
+  });
+
   describe('D3 — /auth/me', () => {
     it('200 avec un jeton valide ; 401 sans en-tête, mal formé, falsifié ou vide', async () => {
       const { body } = await loginAs(await newUser());

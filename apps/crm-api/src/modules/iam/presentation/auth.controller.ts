@@ -4,6 +4,7 @@ import { Throttle } from '@nestjs/throttler';
 import type { CookieOptions, Request, Response } from 'express';
 import { APP_CONFIG, AppConfig, DomainError, actorContextFrom } from '../../../shared-kernel';
 import { AuthenticatedActor } from '../application/authenticate-access-token.use-case';
+import { GetProfileHandler } from '../application/get-profile.handler';
 import { AcceptInvitationUseCase } from '../application/admin/invitations.use-cases';
 import { ChangePasswordUseCase } from '../application/change-password.use-case';
 import { ConfirmMfaEnrollmentUseCase, StartMfaEnrollmentUseCase } from '../application/mfa-enrollment.use-cases';
@@ -40,6 +41,7 @@ export class AuthController {
     private readonly verifyMfaUseCase: VerifyMfaUseCase,
     private readonly regenerateCodesUseCase: RegenerateRecoveryCodesUseCase,
     private readonly acceptInvitationUseCase: AcceptInvitationUseCase,
+    private readonly profileHandler: GetProfileHandler,
     @Inject(APP_CONFIG) private readonly config: AppConfig,
   ) {}
 
@@ -98,6 +100,14 @@ export class AuthController {
   me(@CurrentActor() actor: AuthenticatedActor, @Res({ passthrough: true }) res: Response) {
     noStore(res);
     return { userId: actor.userId, sessionId: actor.sessionId, mfaVerified: actor.mfaVerified, hasFreshMfa: actor.hasFreshMfa };
+  }
+
+  /** Profil et droits de l'utilisateur connecté, pour construire l'interface (le serveur re-contrôle chaque requête). */
+  @Get('me/profile')
+  @UseGuards(AccessTokenGuard)
+  profile(@CurrentActor() actor: AuthenticatedActor, @Res({ passthrough: true }) res: Response) {
+    noStore(res);
+    return this.profileHandler.execute(actor.userId);
   }
 
   /** Démarre l'enrôlement : renvoie le secret (affiché une seule fois) et l'URI à transformer en QR code. */

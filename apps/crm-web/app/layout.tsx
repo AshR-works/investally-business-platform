@@ -1,12 +1,19 @@
+import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
+import { AuthProvider } from '../lib/auth-context';
+import './globals.css';
 
-export const metadata = { title: 'Investally CRM' };
+export const metadata: Metadata = {
+  title: 'Investally CRM',
+  robots: { index: false, follow: false },
+};
+export const viewport: Viewport = { width: 'device-width', initialScale: 1 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="fr">
-      <body style={{ fontFamily: 'system-ui, sans-serif', margin: '2rem auto', maxWidth: 720, padding: '0 1rem' }}>
-        {children}
+      <body>
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );
