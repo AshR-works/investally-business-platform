@@ -14,6 +14,7 @@ function toDomain(row: CompanyRow): Company {
     id: row.id,
     name: CompanyName.of(row.name),
     status: row.status as CompanyStatus,
+    ownerUserId: row.ownerUserId,
     sector: row.sector,
     country: row.country,
     createdAt: row.createdAt,
@@ -30,6 +31,7 @@ export class PrismaCompanyRepository implements CompanyRepository {
       name: company.name.value,
       nameKey: company.name.normalized,
       status: company.status,
+      ownerUserId: company.ownerUserId,
       sector: company.sector,
       country: company.country,
     };
@@ -63,9 +65,10 @@ export class PrismaCompanyRepository implements CompanyRepository {
     return (await this.prisma.db.company.count({ where: { nameKey: name.normalized, deletedAt: null } })) > 0;
   }
 
-  async list(query: { page: number; pageSize: number; search?: string }): Promise<Page<Company>> {
+  async list(query: { page: number; pageSize: number; search?: string; ownerIds?: readonly string[] }): Promise<Page<Company>> {
     const where: Prisma.CompanyWhereInput = {
       deletedAt: null,
+      ...(query.ownerIds ? { ownerUserId: { in: [...query.ownerIds] } } : {}),
       ...(query.search ? { name: { contains: query.search, mode: 'insensitive' } } : {}),
     };
     const [rows, total] = await Promise.all([

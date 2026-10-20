@@ -1,4 +1,11 @@
 import { AuditRecord } from '../../src/modules/audit';
+import { AcceptInvitationUseCase, InviteUserUseCase, ResendInvitationUseCase } from '../../src/modules/iam/application/admin/invitations.use-cases';
+import { ListOwnSessionsHandler, RevokeSessionUseCase, RevokeUserSessionsUseCase } from '../../src/modules/iam/application/admin/session-management.use-cases';
+import { AssignRolesUseCase, SetUserStatusUseCase, UpdateUserUseCase } from '../../src/modules/iam/application/admin/user-management.use-cases';
+import { GetUserHandler, ListRolesHandler, ListUsersHandler } from '../../src/modules/iam/application/admin/user-queries';
+import { AuthorizationService } from '../../src/modules/iam/application/authorization.service';
+import { LogEmailSender } from '../../src/modules/notifications/infrastructure/log-email-sender';
+import { AppConfig } from '../../src/shared-kernel';
 import { ConfirmMfaEnrollmentUseCase, StartMfaEnrollmentUseCase } from '../../src/modules/iam/application/mfa-enrollment.use-cases';
 import { RegenerateRecoveryCodesUseCase, ResetMfaUseCase } from '../../src/modules/iam/application/mfa-management.use-cases';
 import { VerifyMfaUseCase } from '../../src/modules/iam/application/verify-mfa.use-case';
@@ -16,7 +23,8 @@ import { SessionTokenService } from '../../src/modules/iam/application/session-t
 import { RoleCode } from '../../src/modules/iam/domain/roles';
 import {
   FakeAccessTokens, FakeHasher, FakeRefreshFactory, InMemoryAttempts, InMemoryHistory, InMemoryRefreshTokens,
-  InMemoryRecoveryCodes, InMemorySessions, InMemoryUsers, MutableClock, SequentialIds, actor,
+  FakeGrantReader, FakeRoleCatalog, InMemoryInvitations, InMemoryRecoveryCodes, InMemorySessions, InMemoryUsers, MutableClock,
+  SequentialIds, actor,
 } from './iam-fakes';
 
 /** Assemble tous les cas d'usage d'authentification sur des faux en mémoire (aucune base, aucun réseau). */
@@ -56,6 +64,23 @@ export function buildIamWorld() {
   /** Code TOTP valide à l'instant courant de l'horloge de test, pour un secret en base32. */
   const codeNow = (secretBase32: string) => totp(base32Decode(secretBase32), clock.now().getTime());
 
+  const invitations = new InMemoryInvitations();
+  const email = new LogEmailSender();
+  const config = { publicUrl: 'https://crm.test' } as AppConfig;
+  const authorization = new AuthorizationService(new FakeGrantReader(users), auditRecorder);
+  const inviteUser = new InviteUserUseCase(users, invitations, refreshFactory, email, auditRecorder, unitOfWork, clock, ids, config);
+  const resendInvitation = new ResendInvitationUseCase(users, invitations, refreshFactory, email, auditRecorder, unitOfWork, clock, ids, config);
+  const acceptInvitation = new AcceptInvitationUseCase(users, invitations, history, refreshFactory, hasher, auditRecorder, unitOfWork, clock, ids);
+  const updateUser = new UpdateUserUseCase(users, auditRecorder, unitOfWork);
+  const setStatus = new SetUserStatusUseCase(users, sessions, refreshTokens, auditRecorder, unitOfWork, clock);
+  const assignRoles = new AssignRolesUseCase(users, auditRecorder, unitOfWork);
+  const listUsers = new ListUsersHandler(users);
+  const getUser = new GetUserHandler(users);
+  const listRoles = new ListRolesHandler(new FakeRoleCatalog());
+  const listOwnSessions = new ListOwnSessionsHandler(sessions, clock);
+  const revokeSession = new RevokeSessionUseCase(sessions, refreshTokens, auditRecorder, unitOfWork, clock);
+  const revokeUserSessions = new RevokeUserSessionsUseCase(users, sessions, refreshTokens, auditRecorder, unitOfWork, clock);
+
   const PASSWORD = 'phrase de passe tres longue 42';
   async function createDefaultUser(roles: RoleCode[] = [RoleCode.AccountManager], email = 'marie@investally.test', password = PASSWORD) {
     return createUser.execute({ email, displayName: 'Marie Kamga', password, roles, actor: actor() });
@@ -65,5 +90,7 @@ export function buildIamWorld() {
     users, history, sessions, refreshTokens, attempts, hasher, clock, ids, audit,
     createUser, login, refresh, logout, authenticate, changePassword, createDefaultUser, PASSWORD,
     recoveryCodes, cipher, startMfa, confirmMfa, verifyMfa, regenerateCodes, resetMfa, codeNow,
+    invitations, email, authorization, inviteUser, resendInvitation, acceptInvitation, updateUser, setStatus, assignRoles,
+    listUsers, getUser, listRoles, listOwnSessions, revokeSession, revokeUserSessions, refreshFactory,
   };
 }

@@ -6,6 +6,7 @@ import { BusinessDevelopmentModule } from './modules/business-development/busine
 import { IamModule } from './modules/iam/iam.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { AppThrottlerGuard } from './platform/app-throttler.guard';
+import { OriginGuard } from './platform/origin.guard';
 import { PlatformModule } from './platform/platform.module';
 
 @Module({
@@ -18,6 +19,9 @@ import { PlatformModule } from './platform/platform.module';
     NotificationsModule,
     BusinessDevelopmentModule,
   ],
-  providers: [{ provide: APP_GUARD, useClass: AppThrottlerGuard }],
+  providers: [
+    { provide: APP_GUARD, useClass: OriginGuard },
+    { provide: APP_GUARD, useClass: AppThrottlerGuard },
+  ],
 })
 export class AppModule {}

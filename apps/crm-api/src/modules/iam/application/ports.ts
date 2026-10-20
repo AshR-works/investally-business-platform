@@ -31,6 +31,10 @@ export interface RefreshTokenFactory {
   hashOf(token: string): string;
 }
 
+/** Jeton opaque aléatoire et son empreinte : même forme que le jeton de rafraîchissement, usage différent (invitations). */
+export type OpaqueTokenFactory = RefreshTokenFactory;
+
 export const PASSWORD_HASHER = Symbol('PasswordHasher');
+export const INVITATION_TOKEN_FACTORY = Symbol('InvitationTokenFactory');
 export const ACCESS_TOKEN_SERVICE = Symbol('AccessTokenService');
 export const REFRESH_TOKEN_FACTORY = Symbol('RefreshTokenFactory');
