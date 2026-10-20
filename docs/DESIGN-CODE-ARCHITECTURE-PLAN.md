@@ -35,8 +35,8 @@
 |---|---|---|---|
 | S0 Cadrage — **validé** | — | Vision, architecture, ADR | 1, 2, 4, 16 |
 | S1 Squelette CRM — **validé** (tag `s1-validated`) | CRM | Monorepo, CI, garde-fous, tranche `Company` + audit | 3, 14 (partiel) |
-| S2 Sécurité & données Core — **décisions intégrées, validation en attente** | CRM | RBAC, audit, schéma Core, migration, seed rôles/permissions | 5, 8, 9, 11 |
-| **S3.1** Authentification | CRM | Utilisateurs, mot de passe argon2id, connexion, JWT ES256, sessions, rotation du refresh token, verrouillage et limitation de débit, audit des connexions | 8, 10 |
+| S2 Sécurité & données Core — **validé** (tag `s2-validated`) | CRM | RBAC, audit, schéma Core, migration, seed rôles/permissions | 5, 8, 9, 11 |
+| **S3.1** Authentification — **recette exécutée, validation en attente** | CRM | Utilisateurs, mot de passe argon2id, connexion, JWT ES256, sessions, rotation du refresh token, verrouillage et limitation de débit, audit des connexions | 8, 10 |
 | **S3.2** MFA et amorçage | CRM | TOTP obligatoire (enrôlement, codes de secours, step-up), port e-mail Microsoft 365 (adaptateur journal en test), création du premier SuperAdmin | 8 |
 | **S3.3** Autorisation et administration | CRM | Guards RBAC (permission + portée), API utilisateurs/rôles, pages web de connexion et d'administration | 10, 11 |
 | **S3.4** Documents | CRM | Téléversement, versions, SHA-256, téléchargement, traçabilité complète | 9, 10 |
