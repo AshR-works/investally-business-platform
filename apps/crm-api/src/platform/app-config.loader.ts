@@ -41,11 +41,38 @@ export function loadAppConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     throw new Error('COOKIE_SECURE=false est interdit en production');
   }
 
+  const mfaKey = env.MFA_ENCRYPTION_KEY?.trim() || null;
+  if (mfaKey !== null && Buffer.from(mfaKey, 'base64').length !== 32) {
+    throw new Error('MFA_ENCRYPTION_KEY doit être une clé de 32 octets encodée en base64');
+  }
+  if (production && mfaKey === null) {
+    throw new Error('MFA_ENCRYPTION_KEY est obligatoire en production');
+  }
+
+  const provider = env.EMAIL_PROVIDER === 'microsoft365' ? 'microsoft365' : 'log';
+  if (env.EMAIL_PROVIDER && env.EMAIL_PROVIDER !== 'log' && env.EMAIL_PROVIDER !== 'microsoft365') {
+    throw new Error("EMAIL_PROVIDER doit valoir 'log' ou 'microsoft365'");
+  }
+  let microsoft365: AppConfig['email']['microsoft365'] = null;
+  if (provider === 'microsoft365') {
+    const { M365_TENANT_ID: tenantId, M365_CLIENT_ID: clientId, M365_CLIENT_SECRET: clientSecret, M365_SENDER: sender } = env;
+    if (!tenantId || !clientId || !clientSecret || !sender) {
+      throw new Error('M365_TENANT_ID, M365_CLIENT_ID, M365_CLIENT_SECRET et M365_SENDER sont obligatoires avec EMAIL_PROVIDER=microsoft365');
+    }
+    microsoft365 = { tenantId, clientId, clientSecret, sender };
+  }
+  if (production && provider === 'log') {
+    // Le mode journal n'envoie rien : en production, des e-mails perdus en silence seraient pire qu'un refus de démarrer.
+    throw new Error("EMAIL_PROVIDER=microsoft365 est obligatoire en production (le mode 'log' est réservé au développement et aux tests)");
+  }
+
   return {
     env: environment,
     cookieSecure,
     allowedOrigins,
     trustProxy: env.TRUST_PROXY?.trim() || null,
+    mfa: { encryptionKeyBase64: mfaKey },
+    email: { provider, microsoft365 },
     jwt: { privateKeyPem, publicKeyPem, issuer: 'investally-crm', audience: 'investally-crm-api' },
   };
 }

@@ -20,6 +20,8 @@ function toDomain(row: UserRow): User {
     failedLoginCount: row.failedLoginCount,
     lockedUntil: row.lockedUntil,
     mfaEnabled: row.mfaEnabled,
+    mfaSecretEnc: row.mfaSecretEnc,
+    mfaLastUsedStep: row.mfaLastUsedStep === null ? null : Number(row.mfaLastUsedStep),
     managerId: row.managerId,
     lastLoginAt: row.lastLoginAt,
     version: row.version,
@@ -45,6 +47,14 @@ export class PrismaUserRepository implements UserRepository {
     return row ? toDomain(row) : null;
   }
 
+  async lockById(id: string): Promise<User | null> {
+    const locked = await this.prisma.db.$queryRaw<{ id: string }[]>`
+      SELECT id::text AS id FROM iam.users WHERE id = ${id}::uuid AND deleted_at IS NULL FOR UPDATE`;
+    if (locked.length === 0) return null;
+    const row = await this.prisma.db.user.findUnique({ where: { id: locked[0].id } });
+    return row ? toDomain(row) : null;
+  }
+
   async emailExists(emailKey: string): Promise<boolean> {
     return (await this.prisma.db.user.count({ where: { emailKey, deletedAt: null } })) > 0;
   }
@@ -61,6 +71,8 @@ export class PrismaUserRepository implements UserRepository {
       failedLoginCount: user.failedLoginCount,
       lockedUntil: user.lockedUntil,
       mfaEnabled: user.mfaEnabled,
+      mfaSecretEnc: user.mfaSecretEnc,
+      mfaLastUsedStep: user.mfaLastUsedStep,
       managerId: user.managerId,
       lastLoginAt: user.lastLoginAt,
     };

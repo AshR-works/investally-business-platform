@@ -1,6 +1,9 @@
 import { RiskLevel } from './session-risk';
 import { SessionPolicy } from './session-policy';
 
+/** Fraîcheur maximale d'une vérification MFA pour une action sensible (step-up, SECURITY.md §2.3). */
+export const STEP_UP_MAX_AGE_MS = 10 * 60_000;
+
 export interface UserSessionProps {
   id: string;
   userId: string;
@@ -8,6 +11,8 @@ export interface UserSessionProps {
   device: string;
   riskLevel: RiskLevel;
   mfaVerified: boolean;
+  /** Dernière vérification MFA réussie (connexion ou step-up). */
+  mfaVerifiedAt: Date | null;
   loggedInAt: Date;
   lastSeenAt: Date;
   /** Expiration sur inactivité (glissante, bornée par l'expiration absolue). */
@@ -39,6 +44,7 @@ export class UserSession {
       device: input.device,
       riskLevel: input.riskLevel,
       mfaVerified: false,
+      mfaVerifiedAt: null,
       loggedInAt: input.now,
       lastSeenAt: input.now,
       expiresAt: idleExpiry < absoluteExpiresAt ? idleExpiry : absoluteExpiresAt,
@@ -83,6 +89,20 @@ export class UserSession {
     }
   }
 
+  /** Second facteur prouvé (connexion, ou step-up pour une action sensible). */
+  markMfaVerified(now: Date): void {
+    this.props.mfaVerified = true;
+    this.props.mfaVerifiedAt = now;
+  }
+
+  /** `true` si le MFA a été vérifié depuis moins de `maxAgeMs` (jamais si l'horodatage est dans le futur). */
+  hasFreshMfa(now: Date, maxAgeMs: number = STEP_UP_MAX_AGE_MS): boolean {
+    const at = this.props.mfaVerifiedAt;
+    if (!this.props.mfaVerified || at === null) return false;
+    const age = now.getTime() - at.getTime();
+    return age >= 0 && age <= maxAgeMs;
+  }
+
   markRisk(level: RiskLevel): void {
     this.props.riskLevel = level;
   }
@@ -93,6 +113,7 @@ export class UserSession {
   get device(): string { return this.props.device; }
   get riskLevel(): RiskLevel { return this.props.riskLevel; }
   get mfaVerified(): boolean { return this.props.mfaVerified; }
+  get mfaVerifiedAt(): Date | null { return this.props.mfaVerifiedAt; }
   get loggedInAt(): Date { return this.props.loggedInAt; }
   get lastSeenAt(): Date { return this.props.lastSeenAt; }
   get expiresAt(): Date { return this.props.expiresAt; }

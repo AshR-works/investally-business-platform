@@ -31,3 +31,12 @@ export class ChangePasswordDto {
   @MaxLength(MAX_PASSWORD_INPUT)
   newPassword!: string;
 }
+
+export class MfaCodeDto {
+  /** Code TOTP à 6 chiffres, ou code de secours (ex. `ABCDE-FGHJK`). Plafonné : jamais de chaîne démesurée. */
+  @ApiProperty({ maxLength: 32 })
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(32)
+  code!: string;
+}

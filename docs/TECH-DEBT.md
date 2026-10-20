@@ -12,6 +12,10 @@
 | D8 | Limitation de débit en mémoire (une seule instance) | S3.1 | Stockage partagé si plusieurs instances | Ouverte |
 | D9 | Verrouillage de compte exploitable pour empêcher volontairement un utilisateur de se connecter | S3.1 | Compromis assumé (jamais définitif, paliers) ; alerte et déverrouillage par un administrateur en S3.3 | Acceptée |
 | D10 | Pas de rotation automatique des clés de signature JWT | S3.1 | Procédure et plusieurs `kid` | S7 |
+| D11 | Envoi d'e-mails sans outbox, sans nouvel essai différé ni disjoncteur ; une seule tentative après un 401 | S3.2 | Outbox transactionnelle (ARCHITECTURE.md) quand un flux d'e-mail critique existe | S3.3 |
+| D12 | Une seule clé de chiffrement MFA, pas de rotation ; clé perdue = tous les secrets perdus | S3.2 | Identifiant de clé (`kid`) dans le chiffré, procédure de rotation, sauvegarde en coffre | S7 |
+| D13 | Première inscription au MFA protégée par le seul mot de passe (confiance à la première utilisation) | S3.2 | Enrôlement lié à un lien d'invitation par e-mail | S3.3 |
+| D14 | Pas de récupération en libre-service du MFA (réinitialisation par un SuperAdmin seulement) | S3.2 | API d'administration `iam.user.reset_mfa` + step-up | S3.3 |
 | D5 | Hypothèses de charge et de périmètre non confirmées | Phase 3 | Revue à la fin de S1 avec les chiffres réels | Ouverte |
 
 ## Adopted Conventions

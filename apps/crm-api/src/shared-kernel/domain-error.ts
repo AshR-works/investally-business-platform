@@ -1,6 +1,8 @@
 export type DomainErrorCode =
   | 'VALIDATION'
   | 'UNAUTHENTICATED'
+  | 'MFA_REQUIRED'
+  | 'MFA_STEP_UP_REQUIRED'
   | 'NOT_FOUND'
   | 'CONFLICT'
   | 'FORBIDDEN'

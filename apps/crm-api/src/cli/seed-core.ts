@@ -15,6 +15,6 @@ async function main() {
 }
 
 main().catch((error) => {
-  console.error(error);
+  console.error(`Échec : ${error instanceof Error ? error.message : "erreur inconnue"}`);
   process.exitCode = 1;
 });
