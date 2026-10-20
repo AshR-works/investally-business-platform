@@ -24,27 +24,28 @@ Le sprint n'est **validé** que lorsque toutes les lignes « Bloquant » sont �
 ## C. Tests avec PostgreSQL (base de test **dédiée**, jamais la base de travail)
 | # | Contrôle | Bloquant | Statut |
 |---|---|---|---|
-| C1 | `prisma migrate deploy` s'applique sur base vide | oui | ⏳ |
-| C2 | Le schéma Prisma correspond à la base (`migrate diff` vide) | oui | ⏳ |
-| C3 | Enregistrement + ligne d'audit dans la même transaction | oui | ⏳ |
-| C4 | Rollback de l'entreprise si l'audit échoue | oui | ⏳ |
-| C5 | Doublon refusé (applicatif **et** index unique partiel) | oui | ⏳ |
-| C6 | `UPDATE`/`DELETE` sur `audit.audit_logs` refusés par la base | oui | ⏳ |
-| C7 | `/health/ready` : OK base up, 503 base arrêtée | oui | ⏳ (503 base arrêtée ✅ ; « base up » à tester) |
+| C1 | `prisma migrate deploy` s'applique sur base vide | oui | ✅ |
+| C2 | Migrations à jour (`migrate status`). Le diff Prisma exact n'est pas applicable : l'index unique partiel, la contrainte CHECK et le déclencheur d'audit sont du SQL hors schéma Prisma | oui | ✅ |
+| C3 | Enregistrement + ligne d'audit dans la même transaction | oui | ✅ |
+| C4 | Rollback de l'entreprise si l'audit échoue | oui | ✅ |
+| C5 | Doublon refusé (applicatif **et** index unique partiel) | oui | ✅ applicatif (test + navigateur) ; l'index partiel seul n'est pas testé isolément (dette) |
+| C6 | `UPDATE`/`DELETE` sur `audit.audit_logs` refusés par la base | oui | ✅ UPDATE ; DELETE non testé isolément (même déclencheur) |
+| C8 | Horodatages enregistrés en UTC (défaut trouvé : décalage d'1 h si le fuseau serveur ≠ UTC) | oui | ✅ corrigé, test de non-régression vérifié rouge sans correctif |
+| C7 | `/health/ready` : OK base up, 503 base arrêtée | oui | ✅ (200 base up, 503 base arrêtée) |
 
 ## D. Bout en bout (API + Web)
 | # | Contrôle | Bloquant | Statut |
 |---|---|---|---|
-| D1 | Créer une entreprise depuis la page web, elle apparaît dans la liste | oui | ⏳ |
-| D2 | Un doublon affiche un message d'erreur lisible | non | ⏳ |
+| D1 | Créer une entreprise depuis la page web, elle apparaît dans la liste | oui | ✅ (navigateur réel, pile complète) |
+| D2 | Un doublon affiche un message d'erreur lisible | non | ✅ (insensible à la casse et aux accents) |
 | D3 | Swagger `/api/docs` décrit les endpoints | non | ✅ (HTTP 200 sur le build compilé) |
 
 ## E. Sécurité de base du sprint
 | # | Contrôle | Bloquant | Statut |
 |---|---|---|---|
 | E1 | API n'écoute que sur 127.0.0.1 (pas d'auth avant S3) | oui | ✅ (code) |
-| E2 | Champs inconnus refusés, tailles bornées, injection SQL non possible (requêtes paramétrées Prisma) | oui | ✅ B4 / ⏳ test SQLi en C |
-| E3 | Audit d'une écriture contient IP et appareil | oui | ⏳ C3 |
+| E2 | Champs inconnus refusés, tailles bornées, injection SQL non possible | oui | ✅ (B4 + injection `' OR 1=1; DROP TABLE` dans la recherche : 0 résultat, table intacte) |
+| E3 | Audit d'une écriture contient IP et appareil | oui | ✅ (C3) |
 | E4 | `pnpm audit --prod` sans vulnérabilité haute | non | ✅ (0 haute ; 1 moyenne js-yaml via swagger, acceptée : TECH-DEBT D6) |
 
 ## F. Infra (non vérifiable localement : Docker absent)
