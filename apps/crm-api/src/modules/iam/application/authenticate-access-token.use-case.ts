@@ -9,6 +9,8 @@ export interface AuthenticatedActor {
   sessionId: string;
   /** `true` seulement si le second facteur a été vérifié (S3.2). Les endpoints métier l'exigeront en S3.3. */
   mfaVerified: boolean;
+  /** MFA vérifié depuis moins de 10 minutes : condition du step-up pour les actions sensibles. */
+  hasFreshMfa: boolean;
 }
 
 /**
@@ -35,6 +37,12 @@ export class AuthenticateAccessTokenUseCase {
     const user = await this.users.findById(session.userId);
     if (!user || !user.canAuthenticate()) return null;
 
-    return { userId: user.id, sessionId: session.id, mfaVerified: session.mfaVerified && claims.amr.includes('otp') };
+    const otp = claims.amr.includes('otp');
+    return {
+      userId: user.id,
+      sessionId: session.id,
+      mfaVerified: session.mfaVerified && otp,
+      hasFreshMfa: otp && session.hasFreshMfa(now),
+    };
   }
 }

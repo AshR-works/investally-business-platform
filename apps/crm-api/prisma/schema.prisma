@@ -153,6 +153,8 @@ model User {
   mfaEnabled        Boolean    @default(false) @map("mfa_enabled")
   /// Secret TOTP chiffré (AES-256-GCM) ; la clé est hors base.
   mfaSecretEnc      String?    @map("mfa_secret_enc")
+  /// Dernier pas TOTP accepté : un code ne sert qu'une fois (anti-rejeu).
+  mfaLastUsedStep   BigInt?    @map("mfa_last_used_step")
   /// Responsable hiérarchique : définit la portée TEAM.
   managerId         String?    @map("manager_id") @db.Uuid
   lastLoginAt       DateTime?  @map("last_login_at") @db.Timestamptz(6)
@@ -248,6 +250,8 @@ model UserSession {
   os                String?   @db.VarChar(100)
   riskLevel         RiskLevel @default(LOW) @map("risk_level")
   mfaVerified       Boolean   @default(false) @map("mfa_verified")
+  /// Dernière vérification MFA de la session : sert au step-up.
+  mfaVerifiedAt     DateTime? @map("mfa_verified_at") @db.Timestamptz(6)
   loggedInAt        DateTime  @default(now()) @map("logged_in_at") @db.Timestamptz(6)
   lastSeenAt        DateTime  @default(now()) @map("last_seen_at") @db.Timestamptz(6)
   /// Expiration sur inactivité.

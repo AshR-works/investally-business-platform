@@ -1,4 +1,4 @@
-import { AggregateRoot } from '../../../shared-kernel';
+import { AggregateRoot, DomainError } from '../../../shared-kernel';
 import { Email } from './email';
 
 export enum UserStatus {
@@ -23,6 +23,10 @@ export interface UserProps {
   failedLoginCount: number;
   lockedUntil: Date | null;
   mfaEnabled: boolean;
+  /** Secret TOTP CHIFFRÉ (jamais en clair, jamais exposé par le domaine). */
+  mfaSecretEnc: string | null;
+  /** Dernier pas TOTP accepté (anti-rejeu). */
+  mfaLastUsedStep: number | null;
   managerId: string | null;
   lastLoginAt: Date | null;
   version: number;
@@ -46,6 +50,8 @@ export class User extends AggregateRoot {
       failedLoginCount: 0,
       lockedUntil: null,
       mfaEnabled: false,
+      mfaSecretEnc: null,
+      mfaLastUsedStep: null,
       managerId: input.managerId ?? null,
       lastLoginAt: null,
       version: 1,
@@ -82,11 +88,48 @@ export class User extends AggregateRoot {
     this.props.lastLoginAt = now;
   }
 
+  /** Après une vérification MFA réussie : les échecs consécutifs sont oubliés. */
+  clearLoginFailures(): void {
+    this.props.failedLoginCount = 0;
+    this.props.lockedUntil = null;
+  }
+
   changePassword(passwordHash: string, now: Date): void {
     this.props.passwordHash = passwordHash;
     this.props.passwordChangedAt = now;
     this.props.failedLoginCount = 0;
     this.props.lockedUntil = null;
+  }
+
+  /** Démarre (ou recommence) l'enrôlement : le secret chiffré est stocké mais le MFA n'est PAS encore actif. */
+  beginMfaEnrollment(secretEnc: string): void {
+    if (this.props.mfaEnabled) throw new DomainError('CONFLICT', 'Le MFA est déjà activé');
+    this.props.mfaSecretEnc = secretEnc;
+    this.props.mfaLastUsedStep = null;
+  }
+
+  /** Active le MFA une fois le premier code prouvé ; ce code est consommé (anti-rejeu). */
+  confirmMfaEnrollment(step: number): void {
+    if (this.props.mfaEnabled) throw new DomainError('CONFLICT', 'Le MFA est déjà activé');
+    if (this.props.mfaSecretEnc === null) throw new DomainError('INVARIANT_VIOLATION', 'Aucun enrôlement en cours');
+    this.props.mfaEnabled = true;
+    this.props.mfaLastUsedStep = step;
+  }
+
+  recordMfaStep(step: number): void {
+    this.props.mfaLastUsedStep = step;
+  }
+
+  /** Échec MFA : même compteur et même verrouillage progressif que les échecs de mot de passe. */
+  registerFailedMfa(now: Date): void {
+    this.registerFailedLogin(now);
+  }
+
+  /** Réinitialisation (perte du téléphone) : à l'initiative d'un administrateur uniquement. */
+  resetMfa(): void {
+    this.props.mfaEnabled = false;
+    this.props.mfaSecretEnc = null;
+    this.props.mfaLastUsedStep = null;
   }
 
   disable(): void {
@@ -102,6 +145,8 @@ export class User extends AggregateRoot {
   get failedLoginCount(): number { return this.props.failedLoginCount; }
   get lockedUntil(): Date | null { return this.props.lockedUntil; }
   get mfaEnabled(): boolean { return this.props.mfaEnabled; }
+  get mfaSecretEnc(): string | null { return this.props.mfaSecretEnc; }
+  get mfaLastUsedStep(): number | null { return this.props.mfaLastUsedStep; }
   get managerId(): string | null { return this.props.managerId; }
   get lastLoginAt(): Date | null { return this.props.lastLoginAt; }
   get version(): number { return this.props.version; }

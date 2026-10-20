@@ -112,7 +112,7 @@ describeDb('Authentification HTTP (PostgreSQL)', () => {
       const { body } = await loginAs(await newUser());
       const ok = await get('/api/v1/auth/me', { authorization: `Bearer ${body.accessToken}` });
       expect(ok.status).toBe(200);
-      expect(await json(ok)).toEqual({ userId: body.userId, sessionId: body.sessionId, mfaVerified: false });
+      expect(await json(ok)).toEqual({ userId: body.userId, sessionId: body.sessionId, mfaVerified: false, hasFreshMfa: false });
 
       const [h, p, s] = body.accessToken.split('.');
       const forgedPayload = Buffer.from(JSON.stringify({ ...JSON.parse(Buffer.from(p, 'base64url').toString()), sub: 'autre' })).toString('base64url');

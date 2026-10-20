@@ -9,6 +9,15 @@ export interface AppConfig {
   allowedOrigins: readonly string[];
   /** Valeur de `trust proxy` d'Express (ex. `loopback`) quand l'API est derrière le proxy Next.js ; absent sinon. */
   trustProxy: string | null;
+  mfa: {
+    /** Clé AES-256 (32 octets en base64) qui chiffre les secrets TOTP au repos ; absente = clé éphémère (développement/test). */
+    encryptionKeyBase64: string | null;
+  };
+  email: {
+    /** `log` : n'envoie rien (développement/test) ; `microsoft365` : API Microsoft Graph. */
+    provider: 'log' | 'microsoft365';
+    microsoft365: { tenantId: string; clientId: string; clientSecret: string; sender: string } | null;
+  };
   jwt: {
     /** Clé privée ES256 au format PEM PKCS#8 ; absente = paire éphémère (développement et test uniquement). */
     privateKeyPem: string | null;

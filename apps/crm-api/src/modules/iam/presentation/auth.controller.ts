@@ -5,17 +5,23 @@ import type { CookieOptions, Request, Response } from 'express';
 import { APP_CONFIG, AppConfig, DomainError, actorContextFrom } from '../../../shared-kernel';
 import { AuthenticatedActor } from '../application/authenticate-access-token.use-case';
 import { ChangePasswordUseCase } from '../application/change-password.use-case';
+import { ConfirmMfaEnrollmentUseCase, StartMfaEnrollmentUseCase } from '../application/mfa-enrollment.use-cases';
+import { RegenerateRecoveryCodesUseCase } from '../application/mfa-management.use-cases';
+import { VerifyMfaUseCase } from '../application/verify-mfa.use-case';
 import { LoginUseCase } from '../application/login.use-case';
 import { LogoutUseCase } from '../application/logout.use-case';
 import { RefreshSessionUseCase } from '../application/refresh-session.use-case';
 import { AccessTokenGuard, CurrentActor } from './access-token.guard';
-import { ChangePasswordDto, LoginDto } from './dto/auth.dto';
+import { ChangePasswordDto, LoginDto, MfaCodeDto } from './dto/auth.dto';
+import { RequireRecentMfaGuard } from './mfa.guards';
 
 export const REFRESH_COOKIE = 'crm_refresh';
 const AUTH_PATH = '/api/v1/auth';
 
 /** 5 tentatives de connexion par minute et par couple IP + e-mail (SECURITY.md §2.4). */
 const LOGIN_LIMIT = { default: { limit: 5, ttl: 60_000 } };
+/** 5 vérifications MFA par minute et par session (le verrouillage du compte est la vraie protection contre la force brute). */
+const MFA_LIMIT = { default: { limit: 5, ttl: 60_000 } };
 
 @ApiTags('auth')
 @Controller('auth')
@@ -25,6 +31,10 @@ export class AuthController {
     private readonly refreshUseCase: RefreshSessionUseCase,
     private readonly logoutUseCase: LogoutUseCase,
     private readonly changePasswordUseCase: ChangePasswordUseCase,
+    private readonly startMfaUseCase: StartMfaEnrollmentUseCase,
+    private readonly confirmMfaUseCase: ConfirmMfaEnrollmentUseCase,
+    private readonly verifyMfaUseCase: VerifyMfaUseCase,
+    private readonly regenerateCodesUseCase: RegenerateRecoveryCodesUseCase,
     @Inject(APP_CONFIG) private readonly config: AppConfig,
   ) {}
 
@@ -44,6 +54,7 @@ export class AuthController {
       sessionId: result.sessionId,
       riskLevel: result.riskLevel,
       mfaRequired: result.mfaRequired,
+      mfaEnrolled: result.mfaEnrolled,
       mfaVerified: result.mfaVerified,
     };
   }
@@ -81,7 +92,49 @@ export class AuthController {
   @UseGuards(AccessTokenGuard)
   me(@CurrentActor() actor: AuthenticatedActor, @Res({ passthrough: true }) res: Response) {
     noStore(res);
-    return { userId: actor.userId, sessionId: actor.sessionId, mfaVerified: actor.mfaVerified };
+    return { userId: actor.userId, sessionId: actor.sessionId, mfaVerified: actor.mfaVerified, hasFreshMfa: actor.hasFreshMfa };
+  }
+
+  /** Démarre l'enrôlement : renvoie le secret (affiché une seule fois) et l'URI à transformer en QR code. */
+  @Post('mfa/enroll/start')
+  @HttpCode(200)
+  @UseGuards(AccessTokenGuard)
+  async startMfa(@CurrentActor() actor: AuthenticatedActor, @Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    this.assertAllowedOrigin(req);
+    noStore(res);
+    return this.startMfaUseCase.execute({ userId: actor.userId, sessionId: actor.sessionId, actor: actorContextFrom(req, actor) });
+  }
+
+  /** Confirme l'enrôlement avec le premier code : renvoie les codes de secours (UNE seule fois) et un jeton vérifié par MFA. */
+  @Post('mfa/enroll/confirm')
+  @HttpCode(200)
+  @Throttle(MFA_LIMIT)
+  @UseGuards(AccessTokenGuard)
+  async confirmMfa(@Body() dto: MfaCodeDto, @CurrentActor() actor: AuthenticatedActor, @Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    this.assertAllowedOrigin(req);
+    noStore(res);
+    return this.confirmMfaUseCase.execute({ userId: actor.userId, sessionId: actor.sessionId, code: dto.code, actor: actorContextFrom(req, actor) });
+  }
+
+  /** Vérifie le second facteur (code TOTP ou code de secours) : à la connexion, et pour un step-up. */
+  @Post('mfa/verify')
+  @HttpCode(200)
+  @Throttle(MFA_LIMIT)
+  @UseGuards(AccessTokenGuard)
+  async verifyMfa(@Body() dto: MfaCodeDto, @CurrentActor() actor: AuthenticatedActor, @Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    this.assertAllowedOrigin(req);
+    noStore(res);
+    return this.verifyMfaUseCase.execute({ userId: actor.userId, sessionId: actor.sessionId, code: dto.code, actor: actorContextFrom(req, actor) });
+  }
+
+  /** Régénère les 10 codes de secours ; exige un MFA vérifié depuis moins de 10 minutes. */
+  @Post('mfa/recovery-codes/regenerate')
+  @HttpCode(200)
+  @UseGuards(AccessTokenGuard, RequireRecentMfaGuard)
+  async regenerateRecoveryCodes(@CurrentActor() actor: AuthenticatedActor, @Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    this.assertAllowedOrigin(req);
+    noStore(res);
+    return this.regenerateCodesUseCase.execute({ userId: actor.userId, sessionId: actor.sessionId, actor: actorContextFrom(req, actor) });
   }
 
   @Post('change-password')

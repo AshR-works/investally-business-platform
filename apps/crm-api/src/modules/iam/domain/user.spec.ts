@@ -88,7 +88,7 @@ describe('User — verrouillage progressif', () => {
     expect(user.canAuthenticate()).toBe(false);
     const pending = User.rehydrate({
       id: 'u2', email: Email.of('p@x.test'), displayName: 'P', status: UserStatus.Pending, passwordHash: null,
-      passwordChangedAt: null, failedLoginCount: 0, lockedUntil: null, mfaEnabled: false, managerId: null,
+      passwordChangedAt: null, failedLoginCount: 0, lockedUntil: null, mfaEnabled: false, mfaSecretEnc: null, mfaLastUsedStep: null, managerId: null,
       lastLoginAt: null, version: 1, createdAt: t0,
     });
     expect(pending.canAuthenticate()).toBe(false);
