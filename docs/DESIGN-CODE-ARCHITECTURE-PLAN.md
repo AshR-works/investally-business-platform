@@ -2,61 +2,83 @@
 
 ## Context
 - **Démarré le** : 2026-10-20 (Sprint 0 — Cadrage)
-- **Produit** : plateforme métier propriétaire Investally (fintech) + centre de formation Investudy. CRM/prospection → formation → finance → RH → fiscalité → reporting → sécurité/audit.
+- **Produit** : plateforme métier propriétaire Investally (fintech) + centre de formation Investudy. **Deux produits : CRM (prioritaire, Business Development + Investudy) puis ERP** (ADR-0005).
 - **Stack cible** : Next.js + TypeScript (front), NestJS + TypeScript (back), PostgreSQL, Prisma, Docker. Migration future possible vers ASP.NET Core + EF sans réécriture du métier.
-- **Avantage différenciant (HYPOTHÈSE, à confirmer)** : le pipeline commercial B2B jusqu'à l'inscription Investudy (cœur), le reste étant support/générique.
-- **Charge année 1 (HYPOTHÈSE, à confirmer)** : < 100 utilisateurs internes, < 10 000 contacts/apprenants, < 100 req/s en pointe. Une seule base PostgreSQL suffit.
-- **Dépendances sortantes (HYPOTHÈSE)** : e-mail, SMS/OTP, stockage de documents. Paiement/banque/télé-déclaration fiscale : hors périmètre v1.
-- **Propriétaire** : une équipe. Taille et durée de sprint à confirmer.
-- **Fiscalité (HYPOTHÈSE)** : Cameroun (OHADA, DGI, CNPS) — à confirmer avant le sprint Fiscalité.
+- **Avantage différenciant (HYPOTHÈSE)** : le pipeline commercial B2B jusqu'à l'inscription Investudy (cœur), le reste étant support/générique.
+- **Charge (CONFIRMÉE le 2026-10-20)** : ≈ **20 utilisateurs** au démarrage (10 employés aujourd'hui), croissance possible si recrutement. Une seule base PostgreSQL, largement suffisante.
+- **Équipe et cadence (CONFIRMÉES le 2026-10-20)** : les sprints sont menés par l'ingénieur logiciel d'Investally et Claude, **durée maximale : 1 semaine**.
+- **Dépendances sortantes** : e-mail via **Microsoft 365** (décidé), stockage de documents. Paiement/banque/télé-déclaration fiscale : hors périmètre.
+- **Fiscalité (HYPOTHÈSE)** : Cameroun (OHADA, DGI, CNPS), devise XAF — concerne surtout l'ERP.
 
 ## Phase Status
 | Phase | Skill | Status | Artifact | Date |
 |---|---|---|---|---|
-| 1 — Draw the boundaries | clean-architecture | done (brouillon, à valider) | ARCHITECTURE.md | 2026-10-20 |
-| 2 — Model the domain | domain-driven-design | done (brouillon; 4 questions métier ouvertes) | ARCHITECTURE.md | 2026-10-20 |
-| 3 — Size the system | system-design | done (hypothèses de charge) | ARCHITECTURE.md | 2026-10-20 |
+| 1 — Draw the boundaries | clean-architecture | done | ARCHITECTURE.md | 2026-10-20 |
+| 2 — Model the domain | domain-driven-design | done (décisions métier du 2026-10-20 intégrées ; détails de l'agrément à préciser avant S4.4) | ARCHITECTURE.md | 2026-10-20 |
+| 3 — Size the system | system-design | done (charge confirmée : ≈ 20 utilisateurs) | ARCHITECTURE.md | 2026-10-20 |
 | 4 — Make data decisions | ddia-systems | done | ARCHITECTURE.md | 2026-10-20 |
 | 5 — Keep modules deep | software-design-philosophy | done (cadrage léger) | TECH-DEBT.md | 2026-10-20 |
-| 6 — Design for failure | release-it | done (cadrage léger; valeurs à mesurer en S1) | RELIABILITY.md | 2026-10-20 |
-| 7 — Prove wiring, lock in habits | pragmatic-programmer | done (plan; preuve de câblage en S1) | TESTING.md + TECH-DEBT.md | 2026-10-20 |
+| 6 — Design for failure | release-it | done (cadrage léger; valeurs à mesurer) | RELIABILITY.md | 2026-10-20 |
+| 7 — Prove wiring, lock in habits | pragmatic-programmer | done | TESTING.md + TECH-DEBT.md | 2026-10-20 |
 | 8 — Cut scope to essential | 37signals-way | done (voir Périmètre v1) | VISION.md + ARCHITECTURE.md | 2026-10-20 |
-| Optional — Align teams | team-topologies | skipped: équipe unique | OPERATIONS.md | |
+| Optional — Align teams | team-topologies | skipped: équipe de deux (ingénieur + Claude) | OPERATIONS.md | |
 
-## Sprint Plan (révisé le 2026-10-20 : CRM prioritaire, ADR-0005)
+## Cadence de travail
+- **Sprint = 1 semaine maximum**, un objectif livrable et vérifiable. Un sprint trop gros est découpé, jamais prolongé.
+- **Début de sprint** : périmètre et plan de recette (`docs/SPRINT-n-RECETTE.md`) validés ensemble.
+- **Fin de sprint** : recette exécutée, résultats honnêtes (vérifié / non vérifié), validation explicite de l'ingénieur, puis fusion dans `main` et tag `sN-validated`.
+- **Branches** : `sprint/<id>-<nom>` depuis `main`, jamais de commit direct sur `main`.
+- Les identifiants d'origine (S3, S4…) désignent des **phases** ; chacune est découpée en sprints d'une semaine (S3.1, S3.2…).
+
+## Sprint Plan (révisé le 2026-10-20 : CRM prioritaire, sprints d'une semaine)
 | Sprint | Produit | Objectif | Livrables du prompt maître |
 |---|---|---|---|
-| S0 Cadrage — **terminé** | — | Vision, architecture, ADR | 1, 2, 4, 16 |
-| S1 Squelette CRM | CRM | Monorepo, CI, garde-fous de dépendances, tranche verticale `Company` + audit | 3, 14 (partiel) |
-| S2 Sécurité & données Core CRM — **recette prête, validation en attente** | CRM | RBAC, audit, sessions, schéma Prisma Core, migration, seed rôles/permissions | 5, 8, 9, 11 |
-| S3 Core CRM implémenté | CRM | Auth JWT/refresh/MFA, RBAC, audit, documents | 10 |
-| S4 Business Development | CRM | Entreprises, contacts, offres, décharges, relances, RDV, visites, opportunités, ambassadeurs | 5–7, 12 |
-| S5 Investudy | CRM | Programmes, sessions, salles, formateurs, apprenants, inscriptions, présences, évaluations, certifications | 5–7, 12 |
-| S6 Reporting & dashboards CRM | CRM | KPI commerciaux/formation, dashboards AccountManager, HeadOfSales, Investudy, Admin, Sécurité | 12–13 |
-| S7 Production CRM | CRM | MFA avancé, monitoring, sauvegardes, audit avancé | 15 |
+| S0 Cadrage — **validé** | — | Vision, architecture, ADR | 1, 2, 4, 16 |
+| S1 Squelette CRM — **validé** (tag `s1-validated`) | CRM | Monorepo, CI, garde-fous, tranche `Company` + audit | 3, 14 (partiel) |
+| S2 Sécurité & données Core — **décisions intégrées, validation en attente** | CRM | RBAC, audit, schéma Core, migration, seed rôles/permissions | 5, 8, 9, 11 |
+| **S3.1** Authentification | CRM | Utilisateurs, mot de passe argon2id, connexion, JWT ES256, sessions, rotation du refresh token, verrouillage et limitation de débit, audit des connexions | 8, 10 |
+| **S3.2** MFA et amorçage | CRM | TOTP obligatoire (enrôlement, codes de secours, step-up), port e-mail Microsoft 365 (adaptateur journal en test), création du premier SuperAdmin | 8 |
+| **S3.3** Autorisation et administration | CRM | Guards RBAC (permission + portée), API utilisateurs/rôles, pages web de connexion et d'administration | 10, 11 |
+| **S3.4** Documents | CRM | Téléversement, versions, SHA-256, téléchargement, traçabilité complète | 9, 10 |
+| **S4.1** Entreprises et contacts | CRM | Business Development : entreprises (complet), contacts | 10, 12 |
+| **S4.2** Offres, décharges, relances | CRM | Offre, décharge, relances planifiées | 10 |
+| **S4.3** Rendez-vous, visites, opportunités | CRM | Pipeline, règle du RDV décideur avec dérogation | 10 |
+| **S4.4** Agrément et ambassadeurs | CRM | Agrément (promesse de paiement), ambassadeurs, événements vers Investudy | 10 |
+| **S5.1** Catalogue Investudy | CRM | Programmes, formations, salles, formateurs | 10 |
+| **S5.2** Sessions et inscriptions | CRM | Sessions, apprenants, inscriptions liées à l'agrément | 10 |
+| **S5.3** Suivi pédagogique | CRM | Présences, évaluations, certifications, suggestion d'ambassadeur | 10 |
+| **S6.1** KPI et dashboards commerciaux | CRM | KPI, dashboards Chargé de compte et Responsable commercial | 12, 13 |
+| **S6.2** Dashboards Investudy, Admin, Sécurité | CRM | Dashboards Investudy, Administration, Sécurité, rapports | 12, 13 |
+| **S7.1** Durcissement | CRM | Rôle SQL applicatif, création planifiée des partitions, sauvegardes, supervision | 8, 15 |
+| **S7.2** Mise en production | CRM | Docker et CI exécutés pour de vrai, revue de sécurité, audit avancé | 15 |
 | ERP-1…n | ERP | Finance, RH, Fiscalité, reporting direction ; extraction IAM/SSO et paquets partagés | 5–7, 13 |
 | Final | — | Stratégie .NET, dette, recommandation | 17, 18, 19 |
 
 ## Key Decisions
 | Date | Phase | Decision | Rationale |
 |---|---|---|---|
-| 2026-10-20 | 1 | Monolithe modulaire (ADR-0001) | Un seul déploiement, frontières internes strictes ; microservices = monolithe distribué tant que les contextes ne sont pas prouvés |
+| 2026-10-20 | 1 | Monolithe modulaire (ADR-0001) | Un seul déploiement, frontières internes strictes |
 | 2026-10-20 | 1 | Prisma confiné à `infrastructure/` (ADR-0002) | Condition de la migration .NET |
 | 2026-10-20 | 1 | Entités Domain ≠ modèles Prisma (ADR-0003) | Idem ; coût de mapping assumé |
 | 2026-10-20 | 1 | Audit via événements de domaine + intercepteur applicatif (ADR-0004) | Traçabilité sans polluer le métier |
-
-| 2026-10-20 | S1 | CRM séparé de l'ERP, CRM prioritaire incluant Investudy ; une base par produit ; pas de paquets partagés avant l'ERP (ADR-0005) | Décision produit ; simplicité (37signals) |
+| 2026-10-20 | S1 | CRM séparé de l'ERP, CRM prioritaire incluant Investudy ; une base par produit (ADR-0005) | Décision produit ; simplicité |
 | 2026-10-20 | 2 | Core = BD (+ Training secondaire) ; pas de modèle Personne unifié ; intégration par événements | Voir Decision Log d'ARCHITECTURE.md |
+| 2026-10-20 | S2 | Accès et sécurité : TRAINING_MANAGER ajouté, **SuperAdmin accès complet**, **MFA obligatoire pour tous**, équipe = subordonnés directs, durées de session confirmées, e-mail Microsoft 365, audit 10 ans (ADR-0006) | Décisions de la direction produit |
+| 2026-10-20 | 2 | **Agrément formation = promesse de paiement**, propriété de Business Development ; plusieurs opportunités par entreprise ; apprenant sans accès au CRM ; ambassadeur manuel | Décisions métier |
+| 2026-10-20 | 3 | Charge confirmée ≈ 20 utilisateurs ; Support lecture seule ; Direction lit l'audit ; XAF par défaut ; pas de suivi de paiement dans le CRM | Décisions et recommandations appliquées |
+| 2026-10-20 | — | Sprints d'une semaine maximum, menés par l'ingénieur et Claude | Décision de la direction produit |
 
 ## Next Actions
-- [ ] Répondre aux 4 questions ouvertes de la Phase 2 (agrément, cardinalité, apprenant/contact, ambassadeur) — métier
-- [ ] Valider ARCHITECTURE.md (Phases 1–4) — Tech Lead
-- [ ] Confirmer les 6 hypothèses d'intake (charge, dépendances, équipe, fiscalité, Core, validation du besoin) — Ingénieur logiciel
-- [ ] **S1** : monorepo, Docker, CI, tests d'architecture, tranche verticale `Company` + audit
+- [ ] Valider S2 (voir `SPRINT-2-RECETTE.md`) puis fusionner dans `main` — Ingénieur logiciel
+- [ ] **S3.1** : planifier le périmètre et la recette de l'authentification — ensemble
+- [ ] Fournir l'accès Microsoft 365 pour l'envoi d'e-mails (voir `SECURITY.md` §2.6) — avant S3.2, administrateur M365
+- [ ] Préciser les points sur l'agrément (voir `ARCHITECTURE.md`) — avant S4.4, métier
+- [ ] Valider avec le juridique la conservation de l'audit (10 ans) — avant la mise en production
+- [ ] Désigner au moins deux futurs SuperAdmin nominatifs — avant S3.2
 
 ## Périmètre v1 (Phase 8 — ce qu'on coupe)
-- **Livré d'abord** : Core (Auth, RBAC, Audit, Documents) puis Business Development.
-- **Coupé de la v1** : CQRS avec bus, event sourcing, broker de messages, cache, réplicas, microservices, paiement en ligne, portail externe, application mobile, paie.
+- **Livré d'abord** : Core (Auth, RBAC, Audit, Documents) puis Business Development, puis Investudy.
+- **Coupé de la v1** : CQRS avec bus, event sourcing, broker de messages, cache, réplicas, microservices, paiement en ligne, portail externe (apprenants compris), application mobile, paie, suivi du paiement dans le CRM.
 - **Différé avec déclencheur** : voir la table de Phase 3 dans ARCHITECTURE.md.
 - **Workflow générique** : pas de moteur de workflow configurable en v1 ; les machines à états vivent dans les agrégats.
 
@@ -67,7 +89,7 @@
 | Architecture métier (contextes, glossaire, agrégats) | `ARCHITECTURE.md` |
 | Contrat Clean Architecture (ASCII + Mermaid, règles, garde-fous) | `ARCHITECTURE.md` |
 | Données, charge, cohérence | `ARCHITECTURE.md` |
-| ADR fondateurs | `adr/0001`–`0004` |
+| ADR | `adr/0001`–`0006` |
 | Risques | `RISKS.md` |
 | Fiabilité, tests, conventions | `RELIABILITY.md`, `TESTING.md`, `TECH-DEBT.md` |
-| Validation métier | **en attente** : 4 questions de Phase 2 + hypothèses d'intake |
+| Validation métier | ✅ décisions du 2026-10-20 (reste : détails de l'agrément) |
