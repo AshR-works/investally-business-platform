@@ -94,6 +94,16 @@ Voir `RBAC.md` : contrôle **à chaque requête** côté serveur (jamais seuleme
 - **Garde-fous d'administration** : pas d'auto-attribution de rôle, pas d'auto-désactivation, pas d'auto-réinitialisation du MFA, **au moins un SuperAdmin actif en permanence** (verrou de ligne : deux administrateurs agissant en même temps ne peuvent pas retirer les deux derniers), pas de cycle hiérarchique.
 - **Défense CSRF globale** : toute requête qui *modifie* avec une origine non autorisée est refusée, sur toutes les routes (garde globale), en plus de `SameSite=Strict`.
 
+### 4.2 Interface web (S3.4)
+- **Jeton d'accès uniquement en mémoire JavaScript** (jamais `localStorage`, `sessionStorage` ni URL) ; le jeton de rafraîchissement est dans le cookie `HttpOnly` que le script ne voit jamais. Un rechargement de page redonne un jeton par le cookie.
+- **Rafraîchissement automatique seulement si le jeton est en cause** : l'API répond `401` avec `WWW-Authenticate: Bearer error="invalid_token"` (RFC 6750). Un `401` d'un autre type (mauvais code MFA, mauvais mot de passe) n'est **jamais rejoué** : une tentative rejouée serait comptée deux fois contre le verrouillage (défaut trouvé en recette réelle, corrigé et testé).
+- **Menus et boutons conditionnés aux droits** (`/auth/me/profile`) : confort uniquement ; **le serveur re-contrôle chaque requête**. Les pages d'administration affichent « Accès refusé » sans droit.
+- **Lien d'invitation** : jeton lu dans le fragment `#`, **effacé de la barre d'adresse et de l'historique** dès la lecture, gardé en mémoire seulement ; `Referrer-Policy: no-referrer`.
+- **QR code généré dans le navigateur** (bibliothèque `qrcode` 1.5.4, épinglée) : le secret TOTP n'est transmis à aucun service tiers.
+- **Codes de secours** : affichés une seule fois, case « conservés » obligatoire, avertissement du navigateur avant de quitter la page.
+- **Actions sensibles** : si l'API répond `MFA_STEP_UP_REQUIRED`, une fenêtre demande un code frais puis l'action est rejouée une seule fois ; plusieurs actions simultanées ne posent qu'**une** question.
+- **En-têtes** : CSP, `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: no-referrer`, `Permissions-Policy` (caméra, micro, géolocalisation, paiement, USB interdits), `Cross-Origin-Opener-Policy: same-origin`. L'API n'est jamais appelée depuis un autre site : le navigateur parle à Next.js, qui relaie `/api` vers l'API locale (même origine, pas de CORS).
+
 ## 5. Audit et traçabilité (synthèse ADR-0004)
 - `AuditLog` : id, userId, sessionId, module, entityType, entityId, action, oldValue, newValue, ipAddress, device, createdAt. Append-only (déclencheur SQL ; rôle applicatif sans `UPDATE/DELETE` en production, voir §10), **partitionné par mois**.
 - **Champs masqués** dans `oldValue/newValue` : `passwordHash`, secrets MFA, jetons, codes OTP, numéros de pièce d'identité complets. Liste centralisée, testée.
@@ -116,7 +126,7 @@ Voir `RBAC.md` : contrôle **à chaque requête** côté serveur (jamais seuleme
 | A10 | SSRF | Aucune URL fournie par l'utilisateur n'est appelée côté serveur ; si besoin futur : liste blanche |
 
 ### XSS
-React échappe par défaut ; **interdit** : `dangerouslySetInnerHTML` sans assainissement ; CSP stricte sur le frontend (`default-src 'self'`, pas de `unsafe-inline` pour les scripts) ; en-têtes `X-Content-Type-Options: nosniff`. Les documents téléchargés sont servis avec `Content-Disposition: attachment` et un type MIME contrôlé (jamais exécutés dans l'origine de l'application).
+React échappe par défaut ; **interdit** : `dangerouslySetInnerHTML` sans assainissement (aucune occurrence dans le front, vérifié par recherche) ; CSP sur le frontend (`default-src 'self'`, `frame-ancestors 'none'`, `connect-src 'self'`, `object-src 'none'`). **Écart assumé (dette D20)** : `script-src` contient `'unsafe-inline'`, car Next.js sans nonce injecte des scripts en ligne ; le passage à une CSP à nonce est prévu en S7 ; en-têtes `X-Content-Type-Options: nosniff`. Les documents téléchargés sont servis avec `Content-Disposition: attachment` et un type MIME contrôlé (jamais exécutés dans l'origine de l'application).
 
 ### CSRF
 Refresh token en cookie `SameSite=Strict` + vérification des en-têtes `Origin`/`Referer` sur les routes d'authentification ; les appels de données utilisent l'en-tête `Authorization` (non envoyé automatiquement par le navigateur), donc non CSRF-able.
