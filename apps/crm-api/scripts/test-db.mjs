@@ -99,7 +99,8 @@ try {
       join(root, 'node_modules/jest/bin/jest.js'),
       '--runInBand',
       '--testPathPatterns',
-      'integration',
+      // Cibler un fichier : `node scripts/test-db.mjs --tests=rbac-http` (par défaut, toute la suite d'intégration).
+      process.argv.find((a) => a.startsWith('--tests='))?.slice('--tests='.length) ?? 'integration',
     ]);
     console.log('\n✔ Tests d\'intégration terminés');
   }

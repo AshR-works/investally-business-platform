@@ -18,6 +18,8 @@ export interface AppConfig {
   email: {
     /** `log` : n'envoie rien (développement/test) ; `microsoft365` : API Microsoft Graph. */
     provider: 'log' | 'microsoft365';
+    /** Développement local seulement : affiche le CONTENU des e-mails (liens d'invitation) dans la console. Interdit en production. */
+    logContent: boolean;
     microsoft365: { tenantId: string; clientId: string; clientSecret: string; sender: string } | null;
   };
   jwt: {

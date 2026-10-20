@@ -8,12 +8,14 @@ import {
   INVITATION_REPOSITORY, InvitationRepository, PASSWORD_HISTORY_REPOSITORY, PasswordHistoryRepository, USER_REPOSITORY,
   UserRepository,
 } from '../../domain/auth-repositories';
+import { widestScope } from '../../domain/access-policy';
 import { Email } from '../../domain/email';
 import { INVITATION_TTL_MS, evaluateInvitation } from '../../domain/invitation';
 import { checkPasswordPolicy } from '../../domain/password-policy';
 import { ROLES, RoleCode } from '../../domain/roles';
 import { User, UserStatus } from '../../domain/user';
 import { INVITATION_TOKEN_FACTORY, OpaqueTokenFactory, PASSWORD_HASHER, PasswordHasher } from '../ports';
+import type { AccessContext } from '../access-types';
 import { UserView, toUserView } from './user-view';
 
 const INVALID_LINK = 'Lien invalide ou expiré';
@@ -43,6 +45,8 @@ export interface InviteUserCommand {
   roles: readonly string[];
   managerId?: string | null;
   actor: ActorContext;
+  /** Droits de l'appelant : inviter avec des rôles revient à ATTRIBUER ces rôles. */
+  access: AccessContext;
 }
 
 export interface InvitationResult {
@@ -80,6 +84,11 @@ export class InviteUserUseCase {
   ) {}
 
   async execute(command: InviteUserCommand): Promise<InvitationResult> {
+    // Défense en profondeur : même si la route est ouverte à un autre rôle un jour, créer un compte avec des rôles
+    // exige le droit d'attribuer des rôles (sinon une session détournée pourrait inviter un SuperAdmin).
+    if (widestScope(command.access.grants, 'iam.user.assign_role') === null) {
+      throw new DomainError('FORBIDDEN', 'Inviter un utilisateur avec des rôles exige le droit d\'attribuer des rôles');
+    }
     const email = Email.of(command.email);
     const roles = parseRoles(command.roles);
     const displayName = command.displayName.trim();

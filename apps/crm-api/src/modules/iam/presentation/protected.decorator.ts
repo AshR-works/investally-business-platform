@@ -6,11 +6,12 @@ import { ApiBearerAuth } from '@nestjs/swagger';
 import { DomainError, actorContextFrom } from '../../../shared-kernel';
 import { AuthenticatedActor } from '../application/authenticate-access-token.use-case';
 import { AuthorizationService } from '../application/authorization.service';
-import type { AccessContext } from '../application/access-types';
+import type { AccessContext, ScopeName } from '../application/access-types';
 import { AccessTokenGuard } from './access-token.guard';
 import { RequireMfaGuard, RequireRecentMfaGuard } from './mfa.guards';
 
 export const PERMISSION_KEY = 'crm:permission';
+export const MIN_SCOPE_KEY = 'crm:min-scope';
 
 interface RequestWithIdentity {
   ip?: string;
@@ -39,7 +40,8 @@ export class PermissionGuard implements CanActivate {
     if (!request.actor) throw new DomainError('UNAUTHENTICATED', 'Authentification requise');
 
     const access = await this.authorization.contextFor(request.actor.userId);
-    await this.authorization.assertPermission(access, permission, actorContextFrom(request, request.actor));
+    const minScope = this.reflector.get<ScopeName | undefined>(MIN_SCOPE_KEY, context.getHandler());
+    await this.authorization.assertPermission(access, permission, actorContextFrom(request, request.actor), minScope);
     request.access = access;
     return true;
   }
@@ -53,9 +55,14 @@ export class PermissionGuard implements CanActivate {
  *   @Protected('bd.company.read')
  *   @Protected('iam.user.assign_role', { stepUp: true })
  */
-export function Protected(permission: string, options: { stepUp?: boolean } = {}) {
+export function Protected(permission: string, options: { stepUp?: boolean; minScope?: ScopeName } = {}) {
   const guards = [AccessTokenGuard, RequireMfaGuard, PermissionGuard, ...(options.stepUp ? [RequireRecentMfaGuard] : [])];
-  return applyDecorators(SetMetadata(PERMISSION_KEY, permission), UseGuards(...guards), ApiBearerAuth());
+  return applyDecorators(
+    SetMetadata(PERMISSION_KEY, permission),
+    SetMetadata(MIN_SCOPE_KEY, options.minScope),
+    UseGuards(...guards),
+    ApiBearerAuth(),
+  );
 }
 
 /** Contexte d'accès de l'appelant (droits, équipe) — à utiliser derrière `@Protected`. */
