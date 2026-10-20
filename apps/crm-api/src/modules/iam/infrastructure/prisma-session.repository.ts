@@ -19,6 +19,7 @@ function toDomain(row: SessionRow): UserSession {
     device: row.device,
     riskLevel: row.riskLevel as RiskLevel,
     mfaVerified: row.mfaVerified,
+    mfaVerifiedAt: row.mfaVerifiedAt,
     loggedInAt: row.loggedInAt,
     lastSeenAt: row.lastSeenAt,
     expiresAt: row.expiresAt,
@@ -37,6 +38,7 @@ export class PrismaSessionRepository implements SessionRepository {
     const mutable = {
       riskLevel: session.riskLevel,
       mfaVerified: session.mfaVerified,
+      mfaVerifiedAt: session.mfaVerifiedAt,
       lastSeenAt: session.lastSeenAt,
       expiresAt: session.expiresAt,
       loggedOutAt: session.loggedOutAt,

@@ -29,6 +29,8 @@ export interface LoginSuccess extends IssuedTokens {
   /** MFA obligatoire pour ce compte (décision produit) ; vérifié seulement à partir de S3.2. */
   mfaRequired: boolean;
   mfaVerified: boolean;
+  /** Le second facteur est déjà configuré : l'interface demande le code (sinon, elle propose l'enrôlement). */
+  mfaEnrolled: boolean;
 }
 
 type FailureReason = 'UNKNOWN_USER' | 'BAD_PASSWORD' | 'LOCKED' | 'NOT_ACTIVE';
@@ -137,6 +139,7 @@ export class LoginUseCase {
         riskLevel,
         mfaRequired: ROLES.filter((r) => roles.includes(r.code)).some((r) => r.mfaRequired),
         mfaVerified: false,
+        mfaEnrolled: user.mfaEnabled,
       },
     };
   }

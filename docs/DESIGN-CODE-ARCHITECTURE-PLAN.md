@@ -36,11 +36,12 @@
 | S0 Cadrage — **validé** | — | Vision, architecture, ADR | 1, 2, 4, 16 |
 | S1 Squelette CRM — **validé** (tag `s1-validated`) | CRM | Monorepo, CI, garde-fous, tranche `Company` + audit | 3, 14 (partiel) |
 | S2 Sécurité & données Core — **validé** (tag `s2-validated`) | CRM | RBAC, audit, schéma Core, migration, seed rôles/permissions | 5, 8, 9, 11 |
-| **S3.1** Authentification — **recette exécutée, validation en attente** | CRM | Utilisateurs, mot de passe argon2id, connexion, JWT ES256, sessions, rotation du refresh token, verrouillage et limitation de débit, audit des connexions | 8, 10 |
-| **S3.2** MFA et amorçage | CRM | TOTP obligatoire (enrôlement, codes de secours, step-up), port e-mail Microsoft 365 (adaptateur journal en test), création du premier SuperAdmin | 8 |
-| **S3.3** Autorisation et administration | CRM | Guards RBAC (permission + portée), API utilisateurs/rôles, pages web de connexion et d'administration | 10, 11 |
+| **S3.1** Authentification — **validé** (tag `s3-1-validated`) | CRM | Utilisateurs, mot de passe argon2id, connexion, JWT ES256, sessions, rotation du refresh token, verrouillage et limitation de débit, audit des connexions | 8, 10 |
+| **S3.2** MFA et amorçage — **recette exécutée, validation en attente** | CRM | TOTP obligatoire (enrôlement, codes de secours, step-up), port e-mail Microsoft 365 (adaptateur journal en test), création du premier SuperAdmin | 8 |
+| **S3.3** Autorisation et **front de base** | CRM | Guards RBAC (permission + portée), API utilisateurs/rôles, invitation par e-mail liée à l'enrôlement MFA, **pages web : connexion, scan du QR MFA, codes de secours, administration des utilisateurs**, accès aux écrans conditionné à l'authentification *(front proposé le 2026-10-20, à valider)* | 10, 11 |
 | **S3.4** Documents | CRM | Téléversement, versions, SHA-256, téléchargement, traçabilité complète | 9, 10 |
-| **S4.1** Entreprises et contacts | CRM | Business Development : entreprises (complet), contacts | 10, 12 |
+| **Cadrage UX** (avant S4.1) | CRM | Maquettes des écrans clés du parcours commercial, validées avec vous avant d'être codées *(proposé)* | — |
+| **S4.1** Entreprises et contacts | CRM | Business Development : entreprises, contacts — **API et écrans livrés ensemble** | 10, 12 |
 | **S4.2** Offres, décharges, relances | CRM | Offre, décharge, relances planifiées | 10 |
 | **S4.3** Rendez-vous, visites, opportunités | CRM | Pipeline, règle du RDV décideur avec dérogation | 10 |
 | **S4.4** Agrément et ambassadeurs | CRM | Agrément (promesse de paiement), ambassadeurs, événements vers Investudy | 10 |

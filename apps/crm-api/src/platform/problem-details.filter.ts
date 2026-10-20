@@ -5,6 +5,8 @@ import { DomainError, DomainErrorCode } from '../shared-kernel';
 const STATUS_BY_CODE: Record<DomainErrorCode, number> = {
   VALIDATION: 400,
   UNAUTHENTICATED: 401,
+  MFA_REQUIRED: 403,
+  MFA_STEP_UP_REQUIRED: 403,
   FORBIDDEN: 403,
   NOT_FOUND: 404,
   CONFLICT: 409,
