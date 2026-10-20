@@ -1,5 +1,15 @@
 # Architecture — Investally Business Platform
 
+> **Mise à jour Sprint 1 (ADR-0005)** : la plateforme est composée de **deux produits séparés**, le **CRM** (prioritaire, contient Business Development **et** Investudy) et l'**ERP** (Finance, RH, Fiscalité, reporting de direction). Chaque produit a sa base PostgreSQL et son déploiement. Les sections ci-dessous qui parlent de « la plateforme » s'appliquent à chaque produit ; les contextes sont répartis ainsi :
+>
+> | Produit | Contextes |
+> |---|---|
+> | **CRM** (Sprints 1→) | Identity & Access (local), Audit, Documents, Notifications, Business Development, Training / Investudy, Reporting CRM (dashboards AccountManager, HeadOfSales, Investudy, Sécurité, Administration) |
+> | **ERP** (après le CRM) | Finance, HR, Tax, Reporting direction (vue 360°), IAM/SSO à extraire |
+> | Intégration | Événements CRM → ERP (`EnrollmentConfirmed`, …) via outbox ; ERP → CRM éventuels |
+>
+> Dans le schéma de la carte des contextes plus bas, les relations BD → Training → Finance restent valables ; la flèche Training → Finance traverse désormais la frontière entre produits (événement uniquement, aucune base partagée).
+
 > Statut : **brouillon Phase 1 (Sprint 0)**, en attente de validation. Les sections vides seront remplies par les phases suivantes.
 
 ## System Context
@@ -248,4 +258,5 @@ Tout le reste tolère la cohérence éventuelle (reporting, notifications, évé
 | 2026-10-20 | Read Committed + verrous explicites + verrou optimiste ; contrainte d'exclusion pour les plannings | Chemins critiques protégés du write skew sans passer tout en Serializable | Serializable global (retries partout) |
 | 2026-10-20 | UUID v7 générés côté application ; Money = numeric + devise | Portabilité EF Core, pas de flottants | Entiers auto-incrémentés, float |
 | 2026-10-20 | Outbox transactionnelle pour événements, e-mail et SMS | Fiabilité sans broker | Publication directe après commit (perte possible) |
+| 2026-10-20 | CRM et ERP séparés : deux déploiements, une base chacun, événements entre eux ; CRM prioritaire et incluant Investudy (ADR-0005) | Décision produit ; livraison anticipée du CRM, isolement des données financières/RH | Monolithe unique, base partagée, deux produits totalement indépendants |
 | 2026-10-20 | Collapse volontaire : pas de CQRS bus ni event sourcing en v1 | Ceremony non justifiée à cette charge ; commands/queries restent des use cases distincts | CQRS complet, event sourcing |
