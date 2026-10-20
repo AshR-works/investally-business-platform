@@ -1,6 +1,6 @@
 # Sécurité — CRM Investally
 
-> Statut : conception Sprint 2 (implémentation : S3 pour l'authentification, S7 pour l'exploitation). Les valeurs marquées (H) sont des hypothèses à confirmer avec le RSSI.
+> Statut : conception Sprint 2 (implémentation : S3 pour l'authentification, S7 pour l'exploitation). **Décisions produit du 2026-10-20 intégrées** : MFA obligatoire pour tous, SuperAdmin à accès complet, durées de session confirmées, e-mail via Microsoft 365, audit conservé 10 ans. Les valeurs encore marquées (H) restent des hypothèses à confirmer avec le RSSI.
 > Périmètre : le produit CRM. L'ERP aura son propre document ; l'authentification est conçue pour être réutilisable (SSO) — ADR-0005.
 
 ## 1. Principes
@@ -27,7 +27,7 @@
 ### 2.2 Jetons
 - **Access token** : JWT **ES256** (asymétrique), durée **15 min**, `kid` pour la rotation des clés. Asymétrique pour que l'ERP puisse **valider** les jetons sans connaître le secret de signature (prépare le SSO). Claims : `sub` (UUID utilisateur), `sid` (UUID session), `amr` (méthodes d'authentification, ex. `pwd`, `otp`), `iat`, `exp`, `iss`, `aud`. **Aucune permission dans le jeton** : elles sont résolues côté serveur (cache court) pour que la révocation soit immédiate.
 - **Refresh token** : valeur opaque aléatoire de 256 bits, **stockée hachée** (SHA-256) ; **rotation à chaque usage** avec détection de réutilisation : un jeton déjà utilisé présenté de nouveau révoque toute la famille et la session (vol probable) et déclenche une alerte.
-  - Inactivité maximale **8 h**, durée absolue **7 jours** ; **12 h absolues** pour les rôles privilégiés (SuperAdmin, Direction, Finance) (H).
+  - Inactivité maximale **8 h**, durée absolue **7 jours** ; **12 h absolues** pour les rôles privilégiés (SuperAdmin, Direction, Finance). *Valeurs confirmées le 2026-10-20 ; configurables par environnement.*
 - **Stockage côté navigateur** : refresh token en cookie `HttpOnly; Secure; SameSite=Strict; Path=/api/v1/auth` ; access token **en mémoire uniquement** (jamais `localStorage`). Même origine grâce au proxy Next.js : pas de CORS ouvert.
 - **Clés de signature** : hors dépôt (variable d'environnement / coffre), rotation planifiée (tous les 90 jours) ; l'ancienne clé reste valide pour la vérification le temps de la durée de vie d'un access token.
 
@@ -35,7 +35,7 @@
 | Élément | Décision |
 |---|---|
 | Facteur principal | **TOTP** RFC 6238 (application d'authentification), 6 chiffres, fenêtre ±1 pas |
-| Obligatoire pour | SuperAdmin, Direction, Finance, RH, Fiscalité (accès à des données sensibles) ; **recommandé** pour les autres, obligatoire dès S7 (H) |
+| Obligatoire pour | **Tous les rôles** (décision produit du 2026-10-20). Première connexion : enrôlement TOTP obligatoire avant tout accès. L'indicateur `mfaRequired` de chaque rôle permet d'assouplir si besoin |
 | Secret TOTP | Chiffré au repos (AES-256-GCM, clé hors base) ; jamais loggé |
 | Codes de secours | 10 codes à usage unique, hachés, régénérables |
 | OTP e-mail | Réservé à la **récupération** et à la validation d'action sensible ; 6 chiffres, validité 10 min, 3 essais, haché |
@@ -47,6 +47,23 @@
 - **Par IP et par couple IP+e-mail** : limitation de débit — connexion **5 tentatives/min**, API générale **100 req/min/IP** (valeurs de départ, H), réponse 429 avec `Retry-After`.
 - Mêmes temps de réponse que le compte existe ou non (hachage factice si compte inconnu).
 - Toutes les tentatives échouées et réussies sont journalisées (table `login_attempts` + audit `LOGIN`).
+
+### 2.5 Compte SuperAdmin (accès complet)
+Décision produit : le SuperAdmin accède à tout le CRM (administration, métier, audit). Un compte qui voit tout est la cible n°1 ; les mesures compensatoires suivantes sont **obligatoires** :
+- MFA obligatoire et **step-up** (MFA < 10 min) pour attribuer un rôle, réinitialiser un MFA, exporter massivement ou supprimer.
+- **Interdiction de modifier ses propres rôles** (un second SuperAdmin doit le faire) ; au moins **deux** comptes SuperAdmin nominatifs pour la continuité, **aucun compte partagé**.
+- Session absolue **12 h**, niveau de risque ≥ `HIGH` ⇒ nouvelle authentification.
+- Toutes ses actions sont auditées ; les **actions sensibles du SuperAdmin** (attribution de rôle, export, accès au journal d'audit) déclenchent une notification à la Direction (S7).
+- Revue trimestrielle de la liste des SuperAdmin et de leurs actions.
+- Le « bris de glace » n'est plus nécessaire (accès permanent), mais l'accès direct à la base reste réservé à l'exploitation et séparé de l'application.
+
+### 2.6 Envoi d'e-mails (Microsoft 365)
+Invitations de compte, réinitialisation de mot de passe, codes de récupération. Décision : **Microsoft 365**.
+- Interface `EmailSender` (port de l'Application) ; adaptateur `Microsoft365EmailSender` dans l'Infrastructure. En développement et en test : adaptateur qui écrit dans un journal, **jamais d'envoi réel**.
+- Mode d'envoi retenu : **API Microsoft Graph** (`sendMail`) avec une **application enregistrée** dans votre Entra ID (identifiants applicatifs, boîte d'envoi dédiée, permission limitée à l'envoi). Raison : Microsoft retire progressivement l'authentification basique de SMTP ; à confirmer avec l'administrateur Microsoft 365 (disponibilité d'une boîte technique, politique d'accès conditionnel).
+- Liens à usage unique, durée courte (invitation 48 h, réinitialisation 30 min), jamais de mot de passe dans un e-mail.
+- Configuration SPF, DKIM et DMARC du domaine d'envoi (côté administrateur DNS).
+- **Informations à fournir plus tard** : identifiant du locataire, identifiant et secret de l'application, adresse d'expédition. Ces secrets ne sont jamais committés (variables d'environnement / coffre).
 
 ## 3. Sessions
 Une ligne `UserSession` par connexion : IP, appareil, navigateur, système, dates de connexion/déconnexion/dernière activité/expiration, **niveau de risque**, état MFA, motif de révocation.
@@ -101,7 +118,8 @@ Aucune requête SQL concaténée. Les migrations SQL brutes sont relues. Test au
 Taille maximale, liste blanche d'extensions **et** de types MIME détectés par signature, renommage côté serveur (clé de stockage aléatoire), stockage hors racine web, analyse antivirus (H, S7), empreinte SHA-256.
 
 ## 7. Données personnelles
-Cartographie à établir (apprenants, contacts, employés dans l'ERP) ; minimisation ; accès restreint par rôle ; droit d'accès/effacement via soft delete puis **anonymisation** programmée (les lignes d'audit conservent l'identifiant technique, pas les données). Durées de conservation à valider avec le juridique (H : audit 10 ans).
+Cartographie à établir (apprenants, contacts, employés dans l'ERP) ; minimisation ; accès restreint par rôle ; droit d'accès/effacement via soft delete puis **anonymisation** programmée (les lignes d'audit conservent l'identifiant technique, pas les données). **Conservation de l'audit : 10 ans** (décision du 2026-10-20), dont les **2 dernières années en ligne** (partitions mensuelles actives) et le reste **archivé à froid** (partitions détachées, chiffrées, restaurables) — découpage recommandé, à ajuster. À faire valider par le juridique au titre de la réglementation applicable. Volume estimé pour ~20 utilisateurs : ≈ 5 Mo/jour, soit moins de 2 Go par an. Autres durées (apprenants, contacts) : à valider avec le juridique.
+Les apprenants **n'ont pas de compte** et n'interagissent pas avec le CRM : ce sont des fiches gérées par le personnel, d'où une exposition limitée (aucun portail, aucune authentification apprenant).
 
 ## 8. Réponse aux incidents
 | Niveau | Exemple | Délai de prise en charge (H) |

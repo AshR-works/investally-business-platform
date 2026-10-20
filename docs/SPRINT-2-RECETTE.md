@@ -8,10 +8,10 @@ Conception de la sécurité, du RBAC, de l'audit et de la traçabilité ; schém
 ## A. Conception (livrables)
 | # | Contrôle | Bloquant | Statut |
 |---|---|---|---|
-| A1 | `SECURITY.md` : authentification, sessions, MFA, OWASP, incident, sauvegarde | oui | ✅ rédigé ; **validation RSSI en attente** |
+| A1 | `SECURITY.md` : authentification, sessions, MFA, OWASP, incident, sauvegarde ; décisions du 2026-10-20 intégrées (MFA pour tous, SuperAdmin complet, Microsoft 365, audit 10 ans) | oui | ✅ rédigé ; revue RSSI recommandée avant la mise en production |
 | A2 | `RBAC.md` généré depuis le code (rôles, matrice, gouvernance, diagrammes ASCII + Mermaid) | oui | ✅ |
 | A3 | `DATA-MODEL.md` : ERD, diagramme d'audit, diagramme de traçabilité (ASCII + Mermaid, explications, risques) | oui | ✅ |
-| A4 | Points à valider avec le métier listés (`RBAC.md` §6) | oui | ✅ listés ; ⏳ réponses |
+| A4 | Points à valider avec le métier : réponses reçues le 2026-10-20 et intégrées (ADR-0006, `ARCHITECTURE.md`) ; restent les détails de l'agrément (avant S4.4) | oui | ✅ |
 
 ## B. Code et tests sans base
 | # | Contrôle | Bloquant | Statut |
@@ -20,7 +20,7 @@ Conception de la sécurité, du RBAC, de l'audit et de la traçabilité ; schém
 | B2 | Règles d'architecture (Domain pur, frontières de module) | oui | ✅ |
 | B3 | Catalogue : codes uniques, format, aucune permission d'écriture sur l'audit | oui | ✅ |
 | B4 | Matrice : aucune faute de frappe, aucune permission orpheline | oui | ✅ (a détecté 2 orphelines, corrigées) |
-| B5 | Séparation des tâches SuperAdmin ; gestion des comptes réservée au SuperAdmin ; Direction en lecture ; pas d'export massif hors rôles prévus | oui | ✅ |
+| B5 | SuperAdmin = toutes les permissions (décision produit) ; gestion des comptes réservée au SuperAdmin ; Direction en lecture ; pas d'export massif hors rôles prévus ; MFA exigé pour tous les rôles | oui | ✅ |
 | B6 | Règle de décision d'accès : refus par défaut, portées Own/Team/All, anti-IDOR, portée la plus large | oui | ✅ |
 | B7 | Total tests unitaires | oui | ✅ 35/35 |
 
@@ -47,4 +47,4 @@ Conception de la sécurité, du RBAC, de l'audit et de la traçabilité ; schém
 - Docker, CI GitHub : toujours non exécutés (réserve F1–F3 de S1).
 
 ## Décision de validation
-Validé quand : A1–A3 ✅ (✅), B ✅, C1–C10 ✅, et le métier a répondu aux points de `RBAC.md` §6 **ou** les accepte comme hypothèses de travail.
+Critères : A1–A4 ✅, B ✅, C1–C11 ✅, points métier tranchés. **Tous réunis** ; il reste la validation explicite de l'ingénieur logiciel avant fusion dans `main`.

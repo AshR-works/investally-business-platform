@@ -31,9 +31,10 @@ describe('Matrice rôles → permissions', () => {
     expect(orphans).toEqual([]);
   });
 
-  it("applique la séparation des tâches : le SuperAdmin n'accède à aucune donnée métier", () => {
-    const business = codesOf(RoleCode.SuperAdmin).filter((c) => /^(bd|training|docs)\./.test(c));
-    expect(business).toEqual([]);
+  it('donne au SuperAdmin toutes les permissions du catalogue, en portée Tous (décision produit)', () => {
+    const granted = resolveGrants(RoleCode.SuperAdmin);
+    expect(granted.map((g) => g.permission).sort()).toEqual([...PERMISSION_CODES].sort());
+    expect(granted.every((g) => g.scope === Scope.All)).toBe(true);
   });
 
   it("réserve la gestion des comptes et des rôles au SuperAdmin", () => {
@@ -75,9 +76,8 @@ describe('Matrice rôles → permissions', () => {
     }
   });
 
-  it('exige le MFA pour les rôles aux données sensibles', () => {
-    const required = ROLES.filter((r) => r.mfaRequired).map((r) => r.code).sort();
-    expect(required).toEqual([RoleCode.Direction, RoleCode.Finance, RoleCode.Hr, RoleCode.SuperAdmin, RoleCode.Tax].sort());
+  it('exige le MFA pour tous les rôles (décision produit)', () => {
+    expect(ROLES.filter((r) => !r.mfaRequired).map((r) => r.code)).toEqual([]);
   });
 
   it('retient la portée la plus large quand un motif et un code exact se recoupent', () => {

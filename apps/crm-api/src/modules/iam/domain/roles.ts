@@ -15,7 +15,7 @@ export enum RoleCode {
   Direction = 'DIRECTION',
   HeadOfSales = 'HEAD_OF_SALES',
   AccountManager = 'ACCOUNT_MANAGER',
-  /** Responsable Investudy — AJOUT PROPOSÉ (absent du prompt maître) : sans lui, personne ne gère programmes/sessions/salles. */
+  /** Responsable Investudy — ajouté (absent du prompt maître), confirmé le 2026-10-20 : gère programmes, sessions, salles. */
   TrainingManager = 'TRAINING_MANAGER',
   Trainer = 'TRAINER',
   Support = 'SUPPORT',
@@ -28,18 +28,18 @@ export interface RoleDefinition {
   code: RoleCode;
   label: string;
   description: string;
-  /** MFA exigé (SECURITY.md §2.3). */
+  /** MFA exigé (SECURITY.md §2.3). Décision produit 2026-10-20 : obligatoire pour tous les rôles. */
   mfaRequired: boolean;
 }
 
 export const ROLES: readonly RoleDefinition[] = [
-  { code: RoleCode.SuperAdmin, label: 'Super administrateur', description: 'Administration technique : utilisateurs, rôles, sessions, audit. Aucun accès aux données métier (séparation des tâches).', mfaRequired: true },
+  { code: RoleCode.SuperAdmin, label: 'Super administrateur', description: 'Accès complet au CRM : administration, métier, audit et tableaux de bord. Compte à haut risque : MFA obligatoire, toutes les actions auditées, ne peut pas modifier ses propres rôles.', mfaRequired: true },
   { code: RoleCode.Direction, label: 'Direction', description: 'Supervision en lecture de tout le CRM, tableaux de bord stratégiques.', mfaRequired: true },
-  { code: RoleCode.HeadOfSales, label: 'Responsable commercial', description: "Pilote l'équipe commerciale et le pipeline global.", mfaRequired: false },
-  { code: RoleCode.AccountManager, label: 'Chargé de compte', description: 'Mène ses propres entreprises, offres, relances, rendez-vous et inscriptions.', mfaRequired: false },
-  { code: RoleCode.TrainingManager, label: 'Responsable Investudy', description: 'Gère programmes, sessions, salles, formateurs, apprenants, certifications.', mfaRequired: false },
-  { code: RoleCode.Trainer, label: 'Formateur', description: 'Anime ses sessions : présences, évaluations.', mfaRequired: false },
-  { code: RoleCode.Support, label: 'Support', description: 'Consultation pour assister les utilisateurs et les clients.', mfaRequired: false },
+  { code: RoleCode.HeadOfSales, label: 'Responsable commercial', description: "Pilote l'équipe commerciale et le pipeline global.", mfaRequired: true },
+  { code: RoleCode.AccountManager, label: 'Chargé de compte', description: 'Mène ses propres entreprises, offres, relances, rendez-vous et inscriptions.', mfaRequired: true },
+  { code: RoleCode.TrainingManager, label: 'Responsable Investudy', description: 'Gère programmes, sessions, salles, formateurs, apprenants, certifications.', mfaRequired: true },
+  { code: RoleCode.Trainer, label: 'Formateur', description: 'Anime ses sessions : présences, évaluations.', mfaRequired: true },
+  { code: RoleCode.Support, label: 'Support', description: 'Consultation pour assister les utilisateurs et les clients.', mfaRequired: true },
   { code: RoleCode.Finance, label: 'Finance', description: "Accès CRM limité à la préparation de facturation (l'ERP couvrira le reste).", mfaRequired: true },
   { code: RoleCode.Hr, label: 'RH', description: "Aucun accès métier CRM (l'ERP couvrira le périmètre RH).", mfaRequired: true },
   { code: RoleCode.Tax, label: 'Fiscalité', description: "Aucun accès métier CRM (l'ERP couvrira le périmètre fiscal).", mfaRequired: true },
@@ -57,11 +57,13 @@ const { Own, Team, All } = Scope;
 /** Matrice rôles → permissions. Les motifs sont résolus contre le catalogue. */
 export const ROLE_GRANTS: Record<RoleCode, readonly Grant[]> = {
   [RoleCode.SuperAdmin]: [
+    // Décision produit (2026-10-20) : accès complet. Garde-fous compensatoires : MFA, audit, pas d'auto-attribution de rôle.
     g('iam.*', All),
-    g('audit.log.read', All),
-    g('audit.log.export', All),
-    g('reporting.dashboard.admin', All),
-    g('reporting.dashboard.security', All),
+    g('audit.*', All),
+    g('docs.*', All),
+    g('bd.*', All),
+    g('training.*', All),
+    g('reporting.*', All),
   ],
   [RoleCode.Direction]: [
     g('bd.company.read', All), g('bd.company.export', All),

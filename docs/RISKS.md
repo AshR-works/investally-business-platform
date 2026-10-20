@@ -16,3 +16,6 @@
 | R10 | Migration .NET plus coûteuse que prévu | F | M | Domain pur testé indépendamment ; pas de types Prisma dans Domain/Application ; contrats d'API OpenAPI | Architecte |
 | R11 | Conformité protection des données personnelles (apprenants, employés) | M | É | Cartographie des données personnelles, minimisation, droit d'accès/effacement via soft delete + anonymisation | RSSI / Juridique |
 | R12 | Hypothèses de charge ou de périmètre fausses | M | M | Déclencheurs chiffrés pour revoir les décisions (voir Phase 3) | Architecte |
+| R13 | Compromission du compte SuperAdmin (accès complet, décision produit ADR-0006) | M | É | MFA obligatoire, step-up, au moins 2 comptes nominatifs, session 12 h, audit et alerte Direction, revue trimestrielle | RSSI |
+| R14 | Utilisateur bloqué (téléphone perdu) avec MFA obligatoire pour tous | M | M | Codes de secours, procédure de réinitialisation par un SuperAdmin avec step-up, au moins 2 SuperAdmin | Support |
+| R15 | Envoi d'e-mails Microsoft 365 indisponible (API retirée/changée, compte technique absent) | M | M | Port `EmailSender` remplaçable, adaptateur journal en test, valider tôt avec l'administrateur M365 | Tech Lead |
