@@ -1,5 +1,10 @@
-// Schéma CRM — tranche S1 (Company + AuditLog). Le schéma Core complet arrive en S2.
-// Un schéma PostgreSQL par contexte, sans clé étrangère entre contextes (ARCHITECTURE.md).
+// Schéma CRM — S2 : Core (iam, audit, docs) + tranche S1 (bd.Company).
+// Un schéma PostgreSQL par contexte. Aucune clé étrangère entre contextes : les références
+// inter-contextes sont de simples colonnes UUID (ARCHITECTURE.md). Les clés étrangères restent
+// possibles à l'intérieur d'un même contexte.
+//
+// Hors du champ de Prisma (SQL dans les migrations) : index uniques partiels (soft delete),
+// partitionnement mensuel et déclencheurs de l'audit, contraintes CHECK.
 
 generator client {
   provider = "prisma-client"
@@ -8,8 +13,10 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  schemas  = ["bd", "audit"]
+  schemas  = ["bd", "audit", "iam", "docs"]
 }
+
+// ───────────────────────────── bd (tranche S1) ─────────────────────────────
 
 enum CompanyStatus {
   TARGET
@@ -19,19 +26,6 @@ enum CompanyStatus {
   ARCHIVED
 
   @@schema("bd")
-}
-
-enum AuditAction {
-  CREATE
-  UPDATE
-  DELETE
-  VIEW
-  DOWNLOAD
-  EXPORT
-  LOGIN
-  LOGOUT
-
-  @@schema("audit")
 }
 
 model Company {
@@ -49,14 +43,35 @@ model Company {
   deletedAt DateTime?     @map("deleted_at") @db.Timestamptz(6)
 
   @@index([status])
-  @@index([nameKey])
   @@map("companies")
   @@schema("bd")
 }
 
-/// Journal append-only : jamais de UPDATE ni DELETE (restreint par rôle SQL en S2).
+// ───────────────────────────── audit ─────────────────────────────
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  VIEW
+  DOWNLOAD
+  EXPORT
+  LOGIN
+  LOGOUT
+  LOGIN_FAILED
+  ACCESS_DENIED
+  PASSWORD_CHANGE
+  MFA_CHANGE
+  ROLE_CHANGE
+  SESSION_REVOKE
+
+  @@schema("audit")
+}
+
+/// Journal append-only, partitionné par mois (SQL). Jamais de UPDATE ni DELETE (déclencheur SQL).
+/// La clé primaire inclut createdAt : exigence du partitionnement PostgreSQL.
 model AuditLog {
-  id         String      @id @db.Uuid
+  id         String      @db.Uuid
   userId     String?     @map("user_id") @db.Uuid
   sessionId  String?     @map("session_id") @db.Uuid
   module     String      @db.VarChar(100)
@@ -69,9 +84,325 @@ model AuditLog {
   device     String      @db.VarChar(300)
   createdAt  DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
 
+  @@id([id, createdAt])
   @@index([entityType, entityId])
   @@index([userId, createdAt])
   @@index([createdAt])
   @@map("audit_logs")
   @@schema("audit")
+}
+
+// ───────────────────────────── iam ─────────────────────────────
+
+enum UserStatus {
+  PENDING
+  ACTIVE
+  LOCKED
+  DISABLED
+
+  @@schema("iam")
+}
+
+enum RoleScope {
+  OWN
+  TEAM
+  ALL
+
+  @@schema("iam")
+}
+
+enum RiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+
+  @@schema("iam")
+}
+
+enum OtpPurpose {
+  RECOVERY
+  STEP_UP
+  EMAIL_VERIFICATION
+
+  @@schema("iam")
+}
+
+enum LoginOutcome {
+  SUCCESS
+  BAD_CREDENTIALS
+  LOCKED
+  MFA_FAILED
+  RATE_LIMITED
+
+  @@schema("iam")
+}
+
+model User {
+  id                String     @id @db.Uuid
+  email             String     @db.VarChar(254)
+  /// E-mail normalisé (minuscules) : unicité parmi les comptes non supprimés (index partiel en SQL).
+  emailKey          String     @map("email_key") @db.VarChar(254)
+  displayName       String     @map("display_name") @db.VarChar(200)
+  status            UserStatus @default(PENDING)
+  /// Hash argon2id. Jamais journalisé (masqué dans l'audit).
+  passwordHash      String?    @map("password_hash") @db.VarChar(255)
+  passwordChangedAt DateTime?  @map("password_changed_at") @db.Timestamptz(6)
+  failedLoginCount  Int        @default(0) @map("failed_login_count")
+  lockedUntil       DateTime?  @map("locked_until") @db.Timestamptz(6)
+  mfaEnabled        Boolean    @default(false) @map("mfa_enabled")
+  /// Secret TOTP chiffré (AES-256-GCM) ; la clé est hors base.
+  mfaSecretEnc      String?    @map("mfa_secret_enc")
+  /// Responsable hiérarchique : définit la portée TEAM.
+  managerId         String?    @map("manager_id") @db.Uuid
+  lastLoginAt       DateTime?  @map("last_login_at") @db.Timestamptz(6)
+  version           Int        @default(1)
+  createdAt         DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime   @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt         DateTime?  @map("deleted_at") @db.Timestamptz(6)
+
+  manager         User?              @relation("Hierarchy", fields: [managerId], references: [id], onDelete: SetNull)
+  reports         User[]             @relation("Hierarchy")
+  roles           UserRole[]
+  sessions        UserSession[]
+  passwordHistory PasswordHistory[]
+  recoveryCodes   MfaRecoveryCode[]
+  otps            OneTimePassword[]
+
+  @@index([managerId])
+  @@index([status])
+  @@map("users")
+  @@schema("iam")
+}
+
+model Role {
+  id          String   @id @db.Uuid
+  code        String   @unique @db.VarChar(50)
+  label       String   @db.VarChar(100)
+  description String   @db.VarChar(500)
+  mfaRequired Boolean  @default(false) @map("mfa_required")
+  /// Rôle livré par le système : non supprimable.
+  isSystem    Boolean  @default(true) @map("is_system")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  permissions RolePermission[]
+  users       UserRole[]
+
+  @@map("roles")
+  @@schema("iam")
+}
+
+model Permission {
+  id          String   @id @db.Uuid
+  /// `module.ressource.action`
+  code        String   @unique @db.VarChar(100)
+  module      String   @db.VarChar(50)
+  resource    String   @db.VarChar(50)
+  action      String   @db.VarChar(50)
+  description String   @db.VarChar(300)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  roles RolePermission[]
+
+  @@index([module])
+  @@map("permissions")
+  @@schema("iam")
+}
+
+model RolePermission {
+  roleId       String    @map("role_id") @db.Uuid
+  permissionId String    @map("permission_id") @db.Uuid
+  scope        RoleScope
+
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+  @@index([permissionId])
+  @@map("role_permissions")
+  @@schema("iam")
+}
+
+model UserRole {
+  userId     String   @map("user_id") @db.Uuid
+  roleId     String   @map("role_id") @db.Uuid
+  assignedBy String?  @map("assigned_by") @db.Uuid
+  assignedAt DateTime @default(now()) @map("assigned_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role Role @relation(fields: [roleId], references: [id], onDelete: Restrict)
+
+  @@id([userId, roleId])
+  @@index([roleId])
+  @@map("user_roles")
+  @@schema("iam")
+}
+
+model UserSession {
+  id                String    @id @db.Uuid
+  userId            String    @map("user_id") @db.Uuid
+  ipAddress         String    @map("ip_address") @db.VarChar(64)
+  device            String    @db.VarChar(300)
+  browser           String?   @db.VarChar(100)
+  os                String?   @db.VarChar(100)
+  riskLevel         RiskLevel @default(LOW) @map("risk_level")
+  mfaVerified       Boolean   @default(false) @map("mfa_verified")
+  loggedInAt        DateTime  @default(now()) @map("logged_in_at") @db.Timestamptz(6)
+  lastSeenAt        DateTime  @default(now()) @map("last_seen_at") @db.Timestamptz(6)
+  /// Expiration sur inactivité.
+  expiresAt         DateTime  @map("expires_at") @db.Timestamptz(6)
+  /// Expiration absolue, quelle que soit l'activité.
+  absoluteExpiresAt DateTime  @map("absolute_expires_at") @db.Timestamptz(6)
+  loggedOutAt       DateTime? @map("logged_out_at") @db.Timestamptz(6)
+  revokedAt         DateTime? @map("revoked_at") @db.Timestamptz(6)
+  revokedReason     String?   @map("revoked_reason") @db.VarChar(200)
+
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  refreshTokens RefreshToken[]
+
+  @@index([userId, loggedInAt])
+  @@index([expiresAt])
+  @@map("user_sessions")
+  @@schema("iam")
+}
+
+model RefreshToken {
+  id           String    @id @db.Uuid
+  sessionId    String    @map("session_id") @db.Uuid
+  /// Famille de rotation : la réutilisation d'un jeton déjà consommé révoque toute la famille.
+  familyId     String    @map("family_id") @db.Uuid
+  /// SHA-256 du jeton opaque ; le jeton lui-même n'est jamais stocké.
+  tokenHash    String    @unique @map("token_hash") @db.VarChar(64)
+  issuedAt     DateTime  @default(now()) @map("issued_at") @db.Timestamptz(6)
+  expiresAt    DateTime  @map("expires_at") @db.Timestamptz(6)
+  usedAt       DateTime? @map("used_at") @db.Timestamptz(6)
+  revokedAt    DateTime? @map("revoked_at") @db.Timestamptz(6)
+  replacedById String?   @map("replaced_by_id") @db.Uuid
+
+  session UserSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@index([familyId])
+  @@index([expiresAt])
+  @@map("refresh_tokens")
+  @@schema("iam")
+}
+
+model PasswordHistory {
+  id           String   @id @db.Uuid
+  userId       String   @map("user_id") @db.Uuid
+  passwordHash String   @map("password_hash") @db.VarChar(255)
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("password_history")
+  @@schema("iam")
+}
+
+model MfaRecoveryCode {
+  id        String    @id @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  codeHash  String    @map("code_hash") @db.VarChar(255)
+  usedAt    DateTime? @map("used_at") @db.Timestamptz(6)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("mfa_recovery_codes")
+  @@schema("iam")
+}
+
+model OneTimePassword {
+  id         String     @id @db.Uuid
+  userId     String     @map("user_id") @db.Uuid
+  purpose    OtpPurpose
+  codeHash   String     @map("code_hash") @db.VarChar(255)
+  attempts   Int        @default(0)
+  expiresAt  DateTime   @map("expires_at") @db.Timestamptz(6)
+  consumedAt DateTime?  @map("consumed_at") @db.Timestamptz(6)
+  createdAt  DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, purpose])
+  @@index([expiresAt])
+  @@map("one_time_passwords")
+  @@schema("iam")
+}
+
+/// Tentatives de connexion (y compris pour des e-mails inconnus : pas de clé étrangère).
+model LoginAttempt {
+  id        String       @id @db.Uuid
+  emailKey  String       @map("email_key") @db.VarChar(254)
+  userId    String?      @map("user_id") @db.Uuid
+  ipAddress String       @map("ip_address") @db.VarChar(64)
+  outcome   LoginOutcome
+  createdAt DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([emailKey, createdAt])
+  @@index([ipAddress, createdAt])
+  @@map("login_attempts")
+  @@schema("iam")
+}
+
+// ───────────────────────────── docs ─────────────────────────────
+
+enum DocumentStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+  DELETED
+
+  @@schema("docs")
+}
+
+/// Un document appartient à un objet d'un autre contexte, référencé par type + identifiant (sans FK).
+/// L'historique d'accès (consultation, téléchargement, export…) est lu dans audit.audit_logs.
+model Document {
+  id                   String         @id @db.Uuid
+  ownerType            String         @map("owner_type") @db.VarChar(50)
+  ownerId              String         @map("owner_id") @db.Uuid
+  title                String         @db.VarChar(300)
+  category             String?        @db.VarChar(100)
+  status               DocumentStatus @default(DRAFT)
+  currentVersionNumber Int            @default(0) @map("current_version_number")
+  createdBy            String         @map("created_by") @db.Uuid
+  /// Verrou optimiste.
+  version              Int            @default(1)
+  createdAt            DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt            DateTime       @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt            DateTime?      @map("deleted_at") @db.Timestamptz(6)
+  deletedBy            String?        @map("deleted_by") @db.Uuid
+
+  versions DocumentVersion[]
+
+  @@index([ownerType, ownerId])
+  @@index([status])
+  @@map("documents")
+  @@schema("docs")
+}
+
+model DocumentVersion {
+  id            String   @id @db.Uuid
+  documentId    String   @map("document_id") @db.Uuid
+  versionNumber Int      @map("version_number")
+  /// Clé d'objet aléatoire côté stockage (jamais le nom fourni par l'utilisateur).
+  storageKey    String   @unique @map("storage_key") @db.VarChar(300)
+  fileName      String   @map("file_name") @db.VarChar(255)
+  mimeType      String   @map("mime_type") @db.VarChar(150)
+  sizeBytes     BigInt   @map("size_bytes")
+  /// Empreinte SHA-256 hexadécimale du contenu.
+  sha256        String   @db.Char(64)
+  uploadedBy    String   @map("uploaded_by") @db.Uuid
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  document Document @relation(fields: [documentId], references: [id], onDelete: Restrict)
+
+  @@unique([documentId, versionNumber])
+  @@map("document_versions")
+  @@schema("docs")
 }

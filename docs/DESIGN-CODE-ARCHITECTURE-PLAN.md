@@ -28,7 +28,7 @@
 |---|---|---|---|
 | S0 Cadrage — **terminé** | — | Vision, architecture, ADR | 1, 2, 4, 16 |
 | S1 Squelette CRM | CRM | Monorepo, CI, garde-fous de dépendances, tranche verticale `Company` + audit | 3, 14 (partiel) |
-| S2 Sécurité & données Core CRM | CRM | RBAC, audit, sessions, schéma Prisma Core, migrations 001 + 008 | 5, 8, 9, 11 |
+| S2 Sécurité & données Core CRM — **recette prête, validation en attente** | CRM | RBAC, audit, sessions, schéma Prisma Core, migration, seed rôles/permissions | 5, 8, 9, 11 |
 | S3 Core CRM implémenté | CRM | Auth JWT/refresh/MFA, RBAC, audit, documents | 10 |
 | S4 Business Development | CRM | Entreprises, contacts, offres, décharges, relances, RDV, visites, opportunités, ambassadeurs | 5–7, 12 |
 | S5 Investudy | CRM | Programmes, sessions, salles, formateurs, apprenants, inscriptions, présences, évaluations, certifications | 5–7, 12 |

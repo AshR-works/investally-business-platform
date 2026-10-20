@@ -29,6 +29,10 @@ const server = new EmbeddedPostgres({
   password,
   port,
   persistent: false,
+  // UTF-8 explicite (le défaut Windows est WIN1252). Fuseau serveur VOLONTAIREMENT non UTC :
+  // il garde actif le test de non-régression des horodatages (l'application force sa session en UTC).
+  initdbFlags: ['--encoding=UTF8', '--locale=C'],
+  postgresFlags: ['-c', 'timezone=Africa/Douala'],
   onLog: () => {},
   onError: (e) => console.error('[postgres]', String(e).trim()),
 });
