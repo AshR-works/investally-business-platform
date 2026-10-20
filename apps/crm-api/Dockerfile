@@ -14,4 +14,4 @@ RUN addgroup -S app && adduser -S app -G app
 COPY --from=build --chown=app:app /repo /repo
 USER app
 EXPOSE 3001
-CMD ["node", "dist/main.js"]
+CMD ["node", "dist/src/main.js"]

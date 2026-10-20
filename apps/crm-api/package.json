@@ -5,7 +5,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "start:dev": "ts-node-dev --respawn --transpile-only src/main.ts",
-    "start": "node dist/main.js",
+    "start": "node dist/src/main.js",
     "typecheck": "tsc --noEmit",
     "test": "jest --runInBand --testPathIgnorePatterns integration",
     "test:integration": "RUN_DB_TESTS=1 jest --testPathPatterns integration --runInBand",
