@@ -7,6 +7,7 @@
 | D2 | Fuite d'information : une même règle (ex. transitions d'état d'`Opportunity`) répétée en validation DTO, use case et SQL | BD, Training | La règle vit **une seule fois dans l'agrégat** ; le DTO ne valide que le format ; la base ne garde que des contraintes d'intégrité | Adopté |
 | D3 | Mapping Domain ↔ Prisma répétitif | Infrastructure | Dette acceptée (ADR-0003) ; gabarit de module + tests de mappers en S1 | Acceptée |
 | D4 | Duplication volontaire de données entre contextes (événements avec données copiées) | BD→Training→Finance | Dette acceptée ; contrats d'événements versionnés | Acceptée |
+| D6 | js-yaml ≤5.4.0 (moyenne, CPU DoS) via @nestjs/swagger ; Swagger n'analyse que du contenu généré par l'application | S1 | Risque accepté ; remonter @nestjs/swagger à la prochaine mise à jour qui embarque js-yaml ≥5.4.1 | Ouverte |
 | D5 | Hypothèses de charge et de périmètre non confirmées | Phase 3 | Revue à la fin de S1 avec les chiffres réels | Ouverte |
 
 ## Adopted Conventions

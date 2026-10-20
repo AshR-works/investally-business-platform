@@ -11,7 +11,7 @@ Le sprint n'est **validé** que lorsque toutes les lignes « Bloquant » sont �
 | A4 | Les règles bloquent réellement (violations volontaires détectées) | manuel, voir historique S1 | oui | ✅ (4/4 types de violation) |
 | A5 | Build de production API | `pnpm crm-api build` | oui | ✅ (démarre en ≈10 s, sortie `dist/src/main.js`) |
 | A6 | Build de production Web | `pnpm crm-web build` | oui | ✅ |
-| A7 | Aucun secret versionné (`.env`, mots de passe) | `git grep -i -E "password\|secret"` + revue | oui | ⏳ |
+| A7 | Aucun secret versionné (`.env`, mots de passe) | `git grep -i -E "password\|secret"` + revue | oui | ✅ (seul secret en clair : mot de passe jetable de la base CI) |
 
 ## B. Tests automatisés sans base
 | # | Contrôle | Bloquant | Statut |
@@ -45,7 +45,7 @@ Le sprint n'est **validé** que lorsque toutes les lignes « Bloquant » sont �
 | E1 | API n'écoute que sur 127.0.0.1 (pas d'auth avant S3) | oui | ✅ (code) |
 | E2 | Champs inconnus refusés, tailles bornées, injection SQL non possible (requêtes paramétrées Prisma) | oui | ✅ B4 / ⏳ test SQLi en C |
 | E3 | Audit d'une écriture contient IP et appareil | oui | ⏳ C3 |
-| E4 | `pnpm audit --prod` sans vulnérabilité haute | non | ⏳ |
+| E4 | `pnpm audit --prod` sans vulnérabilité haute | non | ✅ (0 haute ; 1 moyenne js-yaml via swagger, acceptée : TECH-DEBT D6) |
 
 ## F. Infra (non vérifiable localement : Docker absent)
 | # | Contrôle | Statut |
