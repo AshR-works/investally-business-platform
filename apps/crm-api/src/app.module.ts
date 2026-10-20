@@ -4,6 +4,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { AuditModule } from './modules/audit/audit.module';
 import { BusinessDevelopmentModule } from './modules/business-development/business-development.module';
 import { IamModule } from './modules/iam/iam.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
 import { AppThrottlerGuard } from './platform/app-throttler.guard';
 import { PlatformModule } from './platform/platform.module';
 
@@ -14,6 +15,7 @@ import { PlatformModule } from './platform/platform.module';
     PlatformModule,
     AuditModule,
     IamModule,
+    NotificationsModule,
     BusinessDevelopmentModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: AppThrottlerGuard }],

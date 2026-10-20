@@ -8,6 +8,7 @@ import { RefreshTokenRecord } from '../../src/modules/iam/domain/refresh-token';
 import { RoleCode } from '../../src/modules/iam/domain/roles';
 import { User } from '../../src/modules/iam/domain/user';
 import { UserSession } from '../../src/modules/iam/domain/user-session';
+import { RecoveryCodeRepository } from '../../src/modules/iam/application/mfa-ports';
 import { AccessTokenClaims, AccessTokenService, PasswordHasher, RefreshTokenFactory } from '../../src/modules/iam/application/ports';
 import { ActorContext, Clock, IdGenerator } from '../../src/shared-kernel';
 
@@ -16,6 +17,7 @@ export class InMemoryUsers implements UserRepository {
   readonly roles = new Map<string, RoleCode[]>();
   async findById(id: string) { return this.items.get(id) ?? null; }
   async lockByEmailKey(key: string) { return [...this.items.values()].find((u) => u.email.key === key) ?? null; }
+  async lockById(id: string) { return this.items.get(id) ?? null; }
   async emailExists(key: string) { return (await this.lockByEmailKey(key)) !== null; }
   async save(user: User) { this.items.set(user.id, user); }
   async roleCodesOf(id: string) { return this.roles.get(id) ?? []; }
@@ -67,6 +69,23 @@ export class InMemoryAttempts implements LoginAttemptRepository {
   async countRecentFailures(emailKey: string, since: Date) {
     return this.items.filter((a) => a.emailKey === emailKey && a.outcome !== LoginOutcome.Success && a.createdAt >= since).length;
   }
+}
+
+export class InMemoryRecoveryCodes implements RecoveryCodeRepository {
+  readonly items: { id: string; userId: string; hash: string; usedAt: Date | null }[] = [];
+  async replaceAll(userId: string, hashes: { id: string; hash: string }[]) {
+    for (let i = this.items.length - 1; i >= 0; i--) if (this.items[i].userId === userId) this.items.splice(i, 1);
+    for (const h of hashes) this.items.push({ id: h.id, userId, hash: h.hash, usedAt: null });
+  }
+  async deleteAll(userId: string) { await this.replaceAll(userId, []); }
+  async listUnused(userId: string) { return this.items.filter((i) => i.userId === userId && !i.usedAt).map((i) => ({ id: i.id, hash: i.hash })); }
+  async consume(id: string, now: Date) {
+    const item = this.items.find((i) => i.id === id);
+    if (!item || item.usedAt) return false;
+    item.usedAt = now;
+    return true;
+  }
+  async countUnused(userId: string) { return (await this.listUnused(userId)).length; }
 }
 
 /** Hachage factice déterministe ; compte les appels à verifyDummy (anti-énumération). */

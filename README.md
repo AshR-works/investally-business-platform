@@ -24,6 +24,16 @@ pnpm test          # tests unitaires + démarrage de l'application (sans base)
 pnpm crm-api test:integration   # nécessite DATABASE_URL vers une base de TEST migrée
 ```
 
+## Administration
+```bash
+pnpm crm-api build
+pnpm crm-api seed:core                                   # rôles et permissions (idempotent)
+pnpm crm-api admin:create -- --email prenom.nom@exemple.test --name "Prénom Nom"
+#   mot de passe : saisie masquée, ou variable BOOTSTRAP_ADMIN_PASSWORD ; jamais en argument
+pnpm crm-api keys:jwt                                    # clés de signature des jetons (affichées, jamais écrites)
+```
+Créer **au moins deux** SuperAdmin nominatifs (aucun compte partagé). Le MFA est obligatoire dès la première connexion.
+
 ## Statut Sprint 1
 API CRM : tranche verticale `Company` (enregistrer, lister) avec audit transactionnel.
 **Pas d'authentification avant S3** : l'API n'écoute que sur 127.0.0.1 ; ne jamais l'exposer.

@@ -11,6 +11,8 @@ export interface UserRepository {
    * même compteur d'échecs et contournent le verrouillage. À appeler dans une unité de travail.
    */
   lockByEmailKey(emailKey: string): Promise<User | null>;
+  /** Comme `lockByEmailKey`, par identifiant (vérifications MFA : anti-rejeu et compteur d'échecs fiables). */
+  lockById(id: string): Promise<User | null>;
   emailExists(emailKey: string): Promise<boolean>;
   save(user: User): Promise<void>;
   roleCodesOf(userId: string): Promise<RoleCode[]>;

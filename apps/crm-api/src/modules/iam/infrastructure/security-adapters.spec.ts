@@ -6,6 +6,7 @@ import { Sha256RefreshTokenFactory } from './sha256-refresh-token-factory';
 
 const baseConfig = (over: Partial<AppConfig['jwt']> = {}, env: AppConfig['env'] = 'test'): AppConfig => ({
   env, cookieSecure: false, allowedOrigins: [], trustProxy: null,
+  mfa: { encryptionKeyBase64: null }, email: { provider: 'log', microsoft365: null },
   jwt: { privateKeyPem: null, publicKeyPem: null, issuer: 'investally-crm', audience: 'investally-crm-api', ...over },
 });
 

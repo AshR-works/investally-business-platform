@@ -13,6 +13,7 @@
     "docs:rbac": "node scripts/gen-rbac-doc.mjs",
     "check:upgrade": "node scripts/check-upgrade.mjs",
     "keys:jwt": "node scripts/generate-jwt-keys.mjs",
+    "admin:create": "node dist/src/cli/create-admin.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate:dev": "prisma migrate dev",
     "prisma:migrate:deploy": "prisma migrate deploy"
