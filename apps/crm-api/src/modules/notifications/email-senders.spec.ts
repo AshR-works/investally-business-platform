@@ -234,6 +234,15 @@ describe('LogEmailSender (D7)', () => {
     expect(everything).not.toContain('invite/abc');
   });
 
+  it('option de développement : affiche le contenu SEULEMENT si on le demande explicitement', async () => {
+    const verbose = new LogEmailSender(true);
+    await verbose.send(MESSAGE);
+    expect(logs.lines.join('\n')).toContain('invite/abc');
+    logs.lines.length = 0;
+    await new LogEmailSender(false).send(MESSAGE);
+    expect(logs.lines.join('\n')).not.toContain('invite/abc');
+  });
+
   it('refuse les mêmes messages invalides que l\'adaptateur réel', async () => {
     const sender = new LogEmailSender();
     expect(await sender.send({ ...MESSAGE, to: 'a@b.test\r\nBcc: x@y.test' })).toEqual({ ok: false, reason: 'INVALID' });

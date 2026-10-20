@@ -24,6 +24,11 @@ export type AccessDecision =
 
 const RANK = { [Scope.Own]: 1, [Scope.Team]: 2, [Scope.All]: 3 };
 
+/** `true` si la portée accordée couvre la portée exigée (Propre < Équipe < Tous). */
+export function scopeCovers(granted: Scope, required: Scope): boolean {
+  return RANK[granted] >= RANK[required];
+}
+
 /** Portée la plus large accordée pour une permission, `null` si elle n'est pas accordée. */
 export function widestScope(grants: readonly ResolvedGrant[], permission: string): Scope | null {
   let widest: Scope | null = null;

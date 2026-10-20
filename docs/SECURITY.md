@@ -1,6 +1,6 @@
 # Sécurité — CRM Investally
 
-> Statut : conception Sprint 2 ; **S3.1 a implémenté** §2.1 (mots de passe), §2.2 (jetons), §2.4 (force brute) et §3 (sessions, score de risque) ; **S3.2 a implémenté** §2.3 (MFA TOTP, codes de secours, step-up, anti-rejeu) et §2.6 (port e-mail, adaptateur Microsoft Graph testé contre un faux serveur uniquement) ; reste : OTP par e-mail (écarté pour l'instant), autorisation (S3.3), exploitation (S7). **Décisions produit du 2026-10-20 intégrées** : MFA obligatoire pour tous, SuperAdmin à accès complet, durées de session confirmées, e-mail via Microsoft 365, audit conservé 10 ans. Les valeurs encore marquées (H) restent des hypothèses à confirmer avec le RSSI.
+> Statut : conception Sprint 2 ; **S3.1 a implémenté** §2.1 (mots de passe), §2.2 (jetons), §2.4 (force brute) et §3 (sessions, score de risque) ; **S3.3 a implémenté** §4 (autorisation, voir §4.1) et l'invitation par lien (ferme la dette D13) ; **S3.2 a implémenté** §2.3 (MFA TOTP, codes de secours, step-up, anti-rejeu) et §2.6 (port e-mail, adaptateur Microsoft Graph testé contre un faux serveur uniquement) ; reste : OTP par e-mail (écarté pour l'instant), autorisation (S3.3), exploitation (S7). **Décisions produit du 2026-10-20 intégrées** : MFA obligatoire pour tous, SuperAdmin à accès complet, durées de session confirmées, e-mail via Microsoft 365, audit conservé 10 ans. Les valeurs encore marquées (H) restent des hypothèses à confirmer avec le RSSI.
 > Périmètre : le produit CRM. L'ERP aura son propre document ; l'authentification est conçue pour être réutilisable (SSO) — ADR-0005.
 
 ## 1. Principes
@@ -83,6 +83,16 @@ Contrôles : liste des sessions actives consultable et révocable par l'utilisat
 
 ## 4. Autorisation
 Voir `RBAC.md` : contrôle **à chaque requête** côté serveur (jamais seulement dans l'interface), vérification du **rôle**, de la **permission**, puis de la **portée** (propre / équipe / tout) sur l'objet concerné (prévention de l'IDOR). Refus par défaut. Les contrôles se font dans la couche Application (use case), les Guards de Presentation ne font que l'authentification et l'extraction de l'identité.
+
+### 4.1 Mise en œuvre (S3.3)
+- **Décorateur `@Protected('permission', { stepUp?, minScope? })`** sur toute route métier ou d'administration : identité (jeton valide, session active) → **MFA vérifié** → **permission** → (optionnel) **MFA récent**. La permission est vérifiée **avant** le step-up. Une garde sans permission déclarée refuse. Un test parcourt **toutes** les routes montées et échoue si l'une est ouverte par oubli ou cite une permission absente du catalogue.
+- **Droits lus en base à chaque requête**, jamais dans le jeton : un changement de rôle ou une désactivation agit immédiatement, y compris sur un jeton déjà émis.
+- **Portée appliquée objet par objet** : liste filtrée selon Propre / Équipe (subordonnés **directs**) / Tous ; un objet hors portée est **introuvable (404)**, indiscernable d'un identifiant inexistant (OWASP A01, IDOR) ; un objet sans propriétaire n'est visible que de la portée Tous.
+- **`minScope`** : une route qui agit sur *n'importe quel* utilisateur exige la portée **Tous** dès la garde (détenir la permission pour soi-même ne suffit pas).
+- **Refus audités** (`ACCESS_DENIED`) avec la permission demandée ; le propriétaire d'un objet vient de l'identité, jamais du corps de la requête.
+- **Invitation** : compte créé *sans mot de passe*, lien à usage unique de 48 h, jeton 256 bits haché, transmis dans le **fragment d'URL** ; l'utilisateur choisit son mot de passe, puis enrôle son MFA. **Aucun mot de passe connu d'un tiers n'existe avant l'activation.** Inviter avec des rôles exige le droit d'attribuer des rôles et un MFA récent.
+- **Garde-fous d'administration** : pas d'auto-attribution de rôle, pas d'auto-désactivation, pas d'auto-réinitialisation du MFA, **au moins un SuperAdmin actif en permanence** (verrou de ligne : deux administrateurs agissant en même temps ne peuvent pas retirer les deux derniers), pas de cycle hiérarchique.
+- **Défense CSRF globale** : toute requête qui *modifie* avec une origine non autorisée est refusée, sur toutes les routes (garde globale), en plus de `SameSite=Strict`.
 
 ## 5. Audit et traçabilité (synthèse ADR-0004)
 - `AuditLog` : id, userId, sessionId, module, entityType, entityId, action, oldValue, newValue, ipAddress, device, createdAt. Append-only (déclencheur SQL ; rôle applicatif sans `UPDATE/DELETE` en production, voir §10), **partitionné par mois**.

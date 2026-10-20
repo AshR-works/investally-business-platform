@@ -1,7 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ActorContext, DomainError } from '../../../shared-kernel';
 import { AUDIT_RECORDER, AuditAction, AuditRecorder } from '../../audit';
-import { AccessContext, decideFor } from '../domain/access-context';
+import { AccessContext } from '../domain/access-context';
+import { widestScope, scopeCovers } from '../domain/access-policy';
+import { Scope } from '../domain/roles';
+import type { ScopeName } from './access-types';
 import { GRANT_READER, GrantReader } from '../domain/auth-repositories';
 
 /**
@@ -21,15 +24,18 @@ export class AuthorizationService {
   }
 
   /** Vérifie la permission au niveau de la route (sans objet précis) ; la portée est contrôlée ensuite, objet par objet. */
-  async assertPermission(context: AccessContext, permission: string, actor: ActorContext): Promise<void> {
-    if (decideFor(context, permission, undefined).allowed) return;
+  async assertPermission(context: AccessContext, permission: string, actor: ActorContext, minScope?: ScopeName): Promise<void> {
+    const granted = widestScope(context.grants, permission);
+    // Une route qui agit sur N'IMPORTE QUEL utilisateur exige la portée « Tous » : détenir la permission en portée « Propre »
+    // (agir sur soi-même) ne suffit pas, et le refus est net dès la garde plutôt que flou plus loin.
+    if (granted !== null && (minScope === undefined || scopeCovers(granted, minScope as Scope))) return;
     await this.audit.record({
       actor,
       module: 'iam',
       entityType: 'Permission',
       entityId: permission,
       action: AuditAction.AccessDenied,
-      newValue: { permission },
+      newValue: minScope ? { permission, requiredScope: minScope, grantedScope: granted } : { permission },
     });
     throw new DomainError('FORBIDDEN', 'Accès refusé');
   }

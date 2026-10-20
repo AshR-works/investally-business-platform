@@ -22,6 +22,11 @@ describe('Company', () => {
     expect(() => Company.register({ id: 'c1', name: 'x'.repeat(201), ownerUserId: 'u1', now })).toThrow(DomainError);
   });
 
+  it('A4 — exige un propriétaire à la création et le conserve', () => {
+    expect(() => Company.register({ id: 'c1', name: 'Acme', ownerUserId: '', now })).toThrow(/propriétaire/);
+    expect(Company.register({ id: 'c1', name: 'Acme', ownerUserId: 'u42', now }).ownerUserId).toBe('u42');
+  });
+
   it('ne peut pas être archivée deux fois', () => {
     const company = Company.register({ id: 'c1', name: 'Acme', ownerUserId: 'u1', now });
     company.archive();

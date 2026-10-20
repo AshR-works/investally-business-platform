@@ -74,6 +74,11 @@ export function loadAppConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     throw new Error('APP_PUBLIC_URL doit être une URL http(s) valide');
   }
 
+  const logContent = env.EMAIL_LOG_CONTENT === 'true';
+  if (logContent && production) {
+    throw new Error('EMAIL_LOG_CONTENT=true est interdit en production : il écrirait des liens d\'activation dans les journaux');
+  }
+
   return {
     env: environment,
     cookieSecure,
@@ -81,7 +86,7 @@ export function loadAppConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     trustProxy: env.TRUST_PROXY?.trim() || null,
     publicUrl,
     mfa: { encryptionKeyBase64: mfaKey },
-    email: { provider, microsoft365 },
+    email: { provider, microsoft365, logContent },
     jwt: { privateKeyPem, publicKeyPem, issuer: 'investally-crm', audience: 'investally-crm-api' },
   };
 }

@@ -49,12 +49,12 @@ export class AdminUsersController {
     return this.getUser.execute(id);
   }
 
-  /** Crée un compte en attente et envoie le lien d'activation (48 h, usage unique). */
+  /** Crée un compte en attente et envoie le lien d'activation (48 h, usage unique). Attribue des rôles : MFA récent exigé. */
   @Post()
   @HttpCode(201)
-  @Protected('iam.user.create')
-  invite(@Body() dto: InviteUserDto, @CurrentActor() actor: AuthenticatedActor, @Req() req: Request) {
-    return this.inviteUser.execute({ ...dto, actor: actorContextFrom(req, actor) });
+  @Protected('iam.user.create', { stepUp: true })
+  invite(@Body() dto: InviteUserDto, @Access() access: AccessContext, @CurrentActor() actor: AuthenticatedActor, @Req() req: Request) {
+    return this.inviteUser.execute({ ...dto, access, actor: actorContextFrom(req, actor) });
   }
 
   @Post(':id/invitations')
@@ -99,9 +99,10 @@ export class AdminUsersController {
     await this.resetMfa.execute({ targetUserId: id, actor: actorContextFrom(req, actor) });
   }
 
+  /** Agit sur n'importe quel utilisateur : exige la portée « Tous » dès la garde (la portée « propre » ne suffit pas). */
   @Post(':id/sessions/revoke')
   @HttpCode(200)
-  @Protected('iam.session.revoke', { stepUp: true })
+  @Protected('iam.session.revoke', { stepUp: true, minScope: 'ALL' })
   revokeAll(@Param('id', ParseUUIDPipe) id: string, @Access() access: AccessContext, @CurrentActor() actor: AuthenticatedActor, @Req() req: Request) {
     return this.revokeSessions.execute({ targetUserId: id, access, actor: actorContextFrom(req, actor) });
   }

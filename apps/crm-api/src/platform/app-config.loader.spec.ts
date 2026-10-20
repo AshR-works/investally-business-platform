@@ -70,6 +70,13 @@ describe('loadAppConfig', () => {
     expect(loadAppConfig({ ...PROD, APP_PUBLIC_URL: 'https://crm.test///' }).publicUrl).toBe('https://crm.test');
   });
 
+  it("EMAIL_LOG_CONTENT : autorisé en développement, interdit en production, désactivé par défaut", () => {
+    expect(loadAppConfig({}).email.logContent).toBe(false);
+    expect(loadAppConfig({ EMAIL_LOG_CONTENT: 'true' }).email.logContent).toBe(true);
+    expect(loadAppConfig({ EMAIL_LOG_CONTENT: 'oui' }).email.logContent).toBe(false); // seule la valeur exacte « true » l'active
+    expect(() => loadAppConfig({ ...PROD, EMAIL_LOG_CONTENT: 'true' })).toThrow(/EMAIL_LOG_CONTENT/);
+  });
+
   it('en développement : fournisseur « log » et clé MFA éphémère par défaut', () => {
     const config = loadAppConfig({});
     expect(config.email.provider).toBe('log');
