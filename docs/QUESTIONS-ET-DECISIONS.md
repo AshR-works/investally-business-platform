@@ -1,0 +1,76 @@
+# Registre des questions sensibles et des décisions
+
+> **À quoi sert ce document** : garder la trace des questions de conception à fort enjeu (sécurité, droits, métier, juridique), de ce qui a été décidé, par qui, quand, et de ce qui reste ouvert. Si un doute revient (« pourquoi le SuperAdmin voit-il tout ? »), la réponse et sa justification sont ici.
+> **Règle** : une décision n'est jamais effacée ; si elle change, on ajoute une ligne « remplacée par » avec la date. Les décisions de portée architecture ont aussi un ADR (`docs/adr/`).
+> Dernière mise à jour : 2026-10-20 (fin du Sprint 2).
+
+Légende — **Réversibilité** : 🟢 facile (configuration ou seed) · 🟡 moyenne (code et tests à modifier) · 🔴 coûteuse (modèle de données ou frontière de modules).
+**Statut** : ✅ décidé · 🔶 décidé par défaut (recommandation appliquée faute de réponse) · ⏳ ouvert.
+
+---
+
+## A. Droits et sécurité
+
+| # | Question | Décision | Statut / date | Réversibilité | Où c'est appliqué |
+|---|---|---|---|---|---|
+| 1 | Ajouter le rôle Responsable Investudy (`TRAINING_MANAGER`) ? | **Oui**. Sans lui personne ne gère programmes, sessions et salles | ✅ 2026-10-20 | 🟢 | `roles.ts`, `RBAC.md` |
+| 2 | Le SuperAdmin voit-il les données métier ? | **Oui, accès complet.** Ma recommandation était l'inverse (séparation des tâches) ; la direction a tranché. Compensations obligatoires : MFA, step-up, pas d'auto-attribution de rôle, ≥ 2 SuperAdmin nominatifs, audit de toutes ses actions, revue trimestrielle | ✅ 2026-10-20 | 🟢 | ADR-0006, `SECURITY.md` §2.5 |
+| 3 | Portée « équipe » : subordonnés directs ou toute la hiérarchie ? | **Subordonnés directs** (un niveau, champ `managerId`) | ✅ 2026-10-20 | 🟡 (requête récursive si une couche s'ajoute) | `access-policy.ts` |
+| 4 | À qui impose-t-on le MFA ? | **Obligatoire.** *Interprétation retenue : pour tous les rôles* (la réponse ne distinguait pas). À reconfirmer si l'intention était plus étroite | ✅ 2026-10-20 (interprétation à confirmer) | 🟢 (indicateur `mfaRequired` par rôle) | `roles.ts`, `SECURITY.md` §2.3 |
+| 5 | Durées de session | **15 min** (jeton d'accès), **8 h** d'inactivité, **7 jours** absolus, **12 h** absolus pour SuperAdmin, Direction, Finance | ✅ 2026-10-20 | 🟢 | `SECURITY.md` §2.2 |
+| 6 | Canal d'e-mail | **Microsoft 365**. Recommandation technique : API Graph (retrait progressif de l'authentification basique SMTP) ; à confirmer avec l'administrateur M365 | ✅ 2026-10-20 ; ⏳ accès technique à fournir | 🟢 (port remplaçable) | `SECURITY.md` §2.6 |
+| 7 | Conservation de l'audit | **10 ans**, dont les 2 dernières années en ligne puis archivage à froid (découpage recommandé, non imposé) | ✅ 2026-10-20 ; ⏳ validation juridique | 🟡 | `SECURITY.md` §7 |
+| 13 | Support : lecture seule ? | **Lecture seule** | 🔶 2026-10-20 | 🟢 | `roles.ts` |
+| 14 | La Direction lit-elle le journal d'audit ? | **Oui**, et chacune de ces lectures est elle-même auditée. Peut concerner la surveillance des employés : à valider avec le juridique | 🔶 2026-10-20 ; ⏳ validation juridique | 🟢 | `roles.ts` |
+
+## B. Modèle métier
+
+| # | Question | Décision | Statut / date | Réversibilité | Où c'est appliqué |
+|---|---|---|---|---|---|
+| 8 | Que signifie « agrément formation » ? | **Promesse de paiement de la formation** donnée par le client. Appartient à Business Development ; Training le reçoit par l'événement `TrainingApprovalGranted` et refuse l'inscription sans agrément valide | ✅ 2026-10-20 ; ⏳ cinq détails (voir §D) | 🔴 | `ARCHITECTURE.md` (glossaire, agrégats) |
+| 9 | Plusieurs opportunités par entreprise ? | **Oui** | 🔶 2026-10-20 | 🔴 | `ARCHITECTURE.md` |
+| 10 | Un apprenant est-il un contact ? | **L'apprenant n'interagit pas avec le CRM** (ni compte ni portail) ; fiche saisie par le personnel. *Interprétation retenue :* entité distincte du contact, lien facultatif | ✅ 2026-10-20 (interprétation à confirmer) | 🔴 | `ARCHITECTURE.md` |
+| 11 | Qui crée l'ambassadeur ? | **Décision manuelle** du chargé de compte ; la certification ne fait que suggérer | ✅ 2026-10-20 | 🟢 | `ARCHITECTURE.md` |
+| 12 | Règle « pas d'accord de principe sans RDV décideur tenu » | **Active**, avec **dérogation du Responsable commercial**, justification obligatoire et auditée | 🔶 2026-10-20 | 🟡 | `ARCHITECTURE.md` (agrégat `Opportunity`) |
+
+## C. Périmètre, charge et organisation
+
+| # | Question | Décision | Statut / date | Réversibilité | Où c'est appliqué |
+|---|---|---|---|---|---|
+| 15 | Contexte fiscal | **Cameroun, devise XAF** par défaut. Le taux de TVA (19,25 % d'après mes connaissances, **non vérifié**) et les règles CNPS relèvent de l'ERP | 🔶 2026-10-20 ; ⏳ confirmation du responsable fiscal | 🟢 | `ARCHITECTURE.md` |
+| 16 | Suivi du paiement d'une inscription avant l'ERP | **Aucun suivi dans le CRM** : l'événement `EnrollmentConfirmed` s'accumule en file ; le CRM suit seulement l'état de l'agrément | 🔶 2026-10-20 | 🟢 | `ARCHITECTURE.md` |
+| 17 | Charge réelle | **≈ 20 utilisateurs** au démarrage (10 employés), croissance possible. Architecture inchangée | ✅ 2026-10-20 | 🟢 | `ARCHITECTURE.md` Phase 3 |
+| 18 | Équipe et durée des sprints | **Ingénieur logiciel d'Investally + Claude ; sprints d'une semaine maximum** | ✅ 2026-10-20 | 🟢 | `DESIGN-CODE-ARCHITECTURE-PLAN.md` |
+
+---
+
+## D. Questions encore ouvertes (à traiter avant le sprint indiqué)
+
+| Réf. | Question | À répondre avant | Qui | Défaut si pas de réponse |
+|---|---|---|---|---|
+| D1 | **Agrément** : le montant couvre-t-il un nombre de places, une somme globale, ou les deux ? | S4.4 | Direction commerciale / Investudy | Les deux possibles, au moins un des deux obligatoire |
+| D2 | **Agrément** : émis par le client payeur ou aussi par un tiers (employeur, organisme, bailleur) ? | S4.4 | Direction commerciale | Client payeur seulement |
+| D3 | **Agrément** : y a-t-il une date de validité et une règle d'expiration ? | S4.4 | Direction commerciale | Date de validité facultative, expiration manuelle |
+| D4 | **Agrément** : que devient une inscription déjà faite si l'agrément est annulé ? | S4.4 | Direction / Finance | L'inscription est signalée, jamais supprimée automatiquement |
+| D5 | **Agrément** : le paiement effectif est-il suivi par le CRM ou seulement par la finance (ERP) ? | S4.4 | Direction / Finance | Seulement par l'ERP |
+| D6 | **Interprétation du MFA** : obligatoire pour tous les rôles, ou seulement certains ? | S3.2 | Direction produit | Tous les rôles |
+| D7 | **Interprétation de l'apprenant** : entité distincte du contact, lien facultatif ? | S5.2 | Direction produit | Entité distincte |
+| D8 | **Droits fins du rôle Finance** dans le CRM (aujourd'hui : lecture des entreprises, inscriptions, sessions, indicateurs) | S5.2 | Finance | Inchangé |
+| D9 | **Microsoft 365** : identifiant du locataire, application enregistrée (permission d'envoi seulement), boîte d'expédition dédiée, enregistrements SPF / DKIM / DMARC du domaine | S3.2 | Administrateur M365 | Adaptateur « journal » seulement (aucun envoi réel) |
+| D10 | **Au moins deux futurs SuperAdmin nominatifs** (noms, e-mails) | S3.2 | Direction produit | Un seul compte au départ (risque de blocage, voir R13) |
+| D11 | **Validation juridique** : durée de conservation de l'audit (10 ans), lecture de l'audit par la Direction, durées de conservation des données des apprenants et contacts, loi applicable sur la protection des données personnelles | Avant la mise en production (S7.2) | Juridique / RSSI | Valeurs actuelles, signalées « à valider » |
+| D12 | **Revue de SECURITY.md** (valeurs marquées « H » : verrouillage, débits, seuils de risque) | Avant la mise en production | RSSI | Valeurs de départ |
+| D13 | **Taux de TVA et règles CNPS** | Phase ERP | Responsable fiscal | Non applicable au CRM |
+
+---
+
+## E. Pourquoi ces questions sont sensibles
+
+- **Droits (A)** : une erreur ouvre des données à la mauvaise personne. Les droits sont une matrice **versionnée en code**, testée automatiquement : un changement laisse une trace et passe par la recette.
+- **Modèle métier (B)** : une erreur déforme les données et les indicateurs, et coûte cher à corriger une fois des données réelles saisies. C'est pourquoi les 🔴 ont été tranchées avant d'écrire le code concerné.
+- **Juridique et fiscalité (D11, D13)** : je n'ai pas la compétence ni les textes de votre pays pour trancher. Mes valeurs sont des hypothèses de travail, jamais des avis juridiques.
+
+## F. Comment mettre à jour ce registre
+1. Une décision change → ajouter une ligne `remplacée par ... (date, raison)` sous l'ancienne ; ne pas la supprimer.
+2. Une question ouverte est tranchée → la déplacer du §D vers le tableau A, B ou C avec la date.
+3. Toute décision qui change l'architecture ou la sécurité reçoit aussi un ADR dans `docs/adr/`.

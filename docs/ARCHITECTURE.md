@@ -19,16 +19,18 @@ Acteurs : SuperAdmin, Direction, HeadOfSales, AccountManager, Finance, RH, Fisca
 
 Intégrations externes (hypothèse v1) : e-mail, SMS/OTP, stockage de fichiers. Toutes derrière des *ports* du Domain/Application.
 
-### Charge réelle (Phase 3, hypothèses à confirmer)
+### Charge réelle (Phase 3 — **confirmée le 2026-10-20** : ≈ 20 utilisateurs au démarrage, 10 employés aujourd'hui)
 | Grandeur | Hypothèse | Résultat |
 |---|---|---|
-| Utilisateurs internes actifs | 80, 8 h/jour | |
-| Actions par utilisateur et par jour | 300 (consultations incluses) | 24 000 requêtes/jour |
-| QPS moyen | 24 000 ÷ 86 400 | ≈ 0,3 req/s |
-| QPS de pointe (×5, dashboards, exports) | | ≈ 1,5 req/s ; marge de sécurité à 20 req/s |
-| Lignes d'audit (lectures de documents et écritures tracées) | ≈ 20 000/jour × 1 Ko | ≈ 20 Mo/jour, **≈ 7 Go/an** |
-| Données métier (CRM, formation, finance, RH) | < 1 Go/an | négligeable |
-| Documents (PDF, décharges, contrats) | ≈ 5 000/an × 1 Mo | ≈ 5 Go/an, **hors base** (stockage objet) |
+| Utilisateurs internes actifs | 20 (croissance possible si recrutement), 8 h/jour | |
+| Actions par utilisateur et par jour | 300 (consultations incluses) | 6 000 requêtes/jour |
+| QPS moyen | 6 000 ÷ 86 400 | ≈ 0,07 req/s |
+| QPS de pointe (×5, dashboards, exports) | | ≈ 0,35 req/s ; marge de sécurité à 20 req/s |
+| Lignes d'audit (lectures de documents et écritures tracées) | ≈ 5 000/jour × 1 Ko | ≈ 5 Mo/jour, **≈ 1,8 Go/an** (≈ 18 Go sur 10 ans) |
+| Données métier (CRM, formation) | < 0,5 Go/an | négligeable |
+| Documents (PDF, décharges, contrats) | ≈ 2 000/an × 1 Mo | ≈ 2 Go/an, **hors base** (stockage objet) |
+
+L'architecture retenue (une base PostgreSQL, ni cache ni file de messages) reste **largement surdimensionnée** pour cette charge : c'est voulu, la marge absorbe une croissance d'un facteur 50 sans changement.
 
 **Premier goulot** : la table `AuditLog` (croissance) et les requêtes d'agrégation des dashboards sur les tables transactionnelles. Pas le débit.
 
@@ -119,7 +121,7 @@ Tests d'architecture (`dependency-cruiser` ou `eslint-plugin-boundaries`) bloqua
 | (aucune — dépôt vide) | | | |
 
 ## Bounded Contexts & Context Map
-> Statut : **brouillon Phase 2** — à valider avec les utilisateurs métier (voir « Questions ouvertes »).
+> Statut : **Phase 2 — décisions métier du 2026-10-20 intégrées** (agrément, apprenant, ambassadeur, opportunités multiples). Restent des hypothèses sur le contenu exact de l'agrément (voir « Agrégats et invariants »).
 
 ### Classification des sous-domaines
 | Contexte | Type | Investissement de modélisation |
@@ -144,7 +146,7 @@ flowchart LR
     TAX[Tax]:::s
     HR[HR]:::s
     RPT[Reporting]:::s
-    BD -- "OpportunityAgreed (événement)" --> TRN
+    BD -- "TrainingApprovalGranted (événement)" --> TRN
     TRN -- "EnrollmentConfirmed (événement)" --> FIN
     TRN -- "CertificationIssued (événement)" --> BD
     FIN -- "PaymentRecorded / InvoiceIssued" --> TAX
@@ -161,8 +163,8 @@ flowchart LR
 | Relation | Pattern | Détail |
 |---|---|---|
 | IAM → autres | Open Host Service | API publique : identité, rôles, permissions de l'acteur courant |
-| BD → Training | Customer/Supplier, via événements | Training ne lit jamais les tables de BD ; il reçoit `OpportunityAgreed` avec les données utiles copiées (société, contacts, programme demandé) |
-| Training → BD | Événements | `CertificationIssued` alimente le suivi post-formation et la création d'ambassadeur |
+| BD → Training | Customer/Supplier, via événements | Training ne lit jamais les tables de BD ; il reçoit `TrainingApprovalGranted` (l'agrément = promesse de paiement) avec les données utiles copiées : société payeuse, programme, places couvertes, montant, validité |
+| Training → BD | Événements | `CertificationIssued` alimente le suivi post-formation et **suggère** un ambassadeur (tâche pour le chargé de compte ; la création reste manuelle) |
 | Training → Finance | Événements | Finance crée la facture à partir de `EnrollmentConfirmed`, sans importer le modèle d'inscription (ACL côté Finance) |
 | * → Audit | Published Language | Format d'événement d'audit unique et stable |
 | * → Reporting | Conformist (lecture seule) | Reporting se conforme aux événements/vues publiés, ne dicte rien |
@@ -179,7 +181,7 @@ Le même mot recouvre des concepts différents selon le contexte : **on ne les u
 | Client (Finance) | Partie facturée ; référence l'`companyId` BD mais possède son propre modèle | `finance.Customer` |
 | Organisation cliente (Training) | Société qui finance l'inscription de ses apprenants | `training.SponsorOrganization` |
 | Contact | Interlocuteur d'une entreprise dans BD (DAF, décideur…) | `bd.Contact` |
-| Apprenant | Personne suivant une formation (peut être ou non un `Contact`) | `training.Learner` |
+| Apprenant | Personne suivant une formation. **N'a pas de compte et n'interagit pas avec le CRM** : simple fiche saisie par le personnel. Entité distincte du `Contact` (lien facultatif) | `training.Learner` |
 | Employé | Salarié d'Investally (RH) ≠ Utilisateur | `hr.Employee` |
 | Utilisateur | Compte d'accès à la plateforme (IAM) | `iam.User` |
 | Offre | Proposition commerciale déposée chez une entreprise | `bd.Offer` |
@@ -189,32 +191,43 @@ Le même mot recouvre des concepts différents selon le contexte : **on ne les u
 | Visite Investally | Visite du client chez Investally | `bd.Visit` |
 | Opportunité | Parcours de qualification d'une entreprise jusqu'à l'accord | `bd.Opportunity` |
 | Accord de principe | Engagement de principe du client, étape de l'opportunité | `OpportunityStage.AgreementInPrinciple` |
-| Agrément formation | Validation permettant d'inscrire (**à préciser**, voir questions) | `training.TrainingApproval` |
+| Agrément formation | **Promesse de paiement de la formation** donnée par le client (décision du 2026-10-20). Étape qui suit l'accord de principe et précède l'inscription ; sans agrément valide, pas d'inscription | `bd.TrainingApproval` |
 | Programme | Catalogue de formation (offre pédagogique) | `training.TrainingProgram` |
 | Formation | Programme décliné et planifié | `training.Training` |
 | Session | Occurrence datée avec salle, formateur, capacité | `training.TrainingSession` |
 | Inscription | Rattachement d'un apprenant à une session | `training.Enrollment` |
 | Présence | Participation d'un apprenant à une séance | `training.Attendance` |
 | Certification / Attestation | Certificat (réussite) / attestation (suivi) | `training.Certification` / `training.Attestation` |
-| Ambassadeur | Client ou apprenant converti en relais commercial | `bd.Ambassador` |
+| Ambassadeur | Client ou apprenant converti en relais commercial. **Création par décision manuelle** du chargé de compte, suggérée après une certification | `bd.Ambassador` |
 | Caisse / Banque | Comptes de trésorerie | `finance.CashAccount` / `BankAccount` |
 | Échéance fiscale | Date limite de déclaration (TVA, CNPS…) | `tax.FilingDeadline` |
 
 ## Agrégats et invariants (Core)
 | Agrégat (racine) | Invariants | Références par ID |
 |---|---|---|
-| `Opportunity` | Étapes franchies dans l'ordre défini ; pas d'« Accord de principe » sans au moins un RDV décideur tenu (règle configurable) ; une opportunité clôturée est immuable | `companyId`, `ownerUserId` |
+| `Opportunity` | Étapes franchies dans l'ordre défini ; pas d'« Accord de principe » sans au moins un RDV décideur tenu (règle active, **dérogation possible par le Responsable commercial avec justification obligatoire et auditée**) ; une opportunité clôturée est immuable. Une entreprise peut avoir **plusieurs opportunités simultanées** | `companyId`, `ownerUserId` |
+| `TrainingApproval` (agrément = promesse de paiement) *(hypothèses à confirmer)* | Rattaché à une opportunité ayant l'accord de principe ; montant > 0 et devise (XAF par défaut) ; payeur identifié ; document signé joint ; période de validité ; **états** : demandé → reçu → honoré / expiré / annulé ; annulé ou expiré = les inscriptions non encore réglées sont signalées ; le cumul des inscriptions ne dépasse pas les places ou le montant couverts | `opportunityId`, `companyId`, `programId`, `documentId` |
 | `Offer` | Une seule décharge valide par offre ; relances impossibles après décharge refusée/offre retirée ; statut limité aux transitions permises | `companyId`, `opportunityId` |
 | `TrainingSession` | Inscrits confirmés ≤ capacité ; pas de double réservation salle/formateur sur un créneau (service de domaine) ; session clôturée = présences figées | `programId`, `roomId`, `trainerId` |
 | `Enrollment` | Un apprenant une seule fois par session ; inscription impossible sans agrément valide | `learnerId`, `sessionId`, `approvalId` |
 | `Invoice` | Immuable une fois émise (correction = avoir) ; total = somme des lignes ; paiements cumulés ≤ total | `customerId`, `enrollmentId` |
 | `LeaveRequest` | Solde suffisant ; pas de chevauchement | `employeeId` |
 
-### Questions ouvertes (bloquantes pour valider cette phase)
-1. **« Agrément formation »** : agrément délivré par une autorité/OPCO, ou validation interne du dossier du client ? Détermine s'il appartient à BD ou à Training.
-2. **Le même client peut-il avoir plusieurs opportunités simultanées ?** (cardinalité Company ↔ Opportunity).
-3. **Un apprenant est-il toujours un Contact BD ?** Si non, `Learner` reste indépendant, ce que je recommande.
-4. **Qui crée l'ambassadeur** : automatique à la certification, ou décision manuelle de l'AccountManager ?
+### Décisions métier du 2026-10-20
+| Question | Décision |
+|---|---|
+| Agrément formation | **Promesse de paiement de la formation** par le client. Il appartient à **Business Development** (résultat du processus commercial) ; Training le reçoit par événement et refuse l'inscription sans agrément valide |
+| Plusieurs opportunités par entreprise | **Oui** |
+| Apprenant et CRM | L'apprenant **n'interagit pas avec le CRM** (ni compte, ni portail) ; entité distincte du contact |
+| Création de l'ambassadeur | **Manuelle** (suggestion après certification) |
+| Règle « RDV décideur avant accord de principe » | Active, avec dérogation du Responsable commercial justifiée et auditée |
+
+### Points encore à préciser sur l'agrément (avant le sprint Business Development)
+1. Le montant couvre-t-il un **nombre de places**, une **somme globale**, ou les deux ?
+2. L'agrément est-il émis **par le client payeur** ou peut-il l'être par un **tiers** (employeur, bailleur, organisme) ?
+3. Une **date de validité** et une règle d'**expiration** existent-elles ?
+4. Que devient une inscription déjà effectuée si l'agrément est annulé ?
+5. Le paiement effectif est-il suivi par le CRM ou seulement par la finance (ERP) ? (Défaut retenu : l'ERP ; le CRM suit seulement l'état de l'agrément.)
 
 ## Data & Storage Decisions
 ### Modèle et moteur
@@ -259,4 +272,8 @@ Tout le reste tolère la cohérence éventuelle (reporting, notifications, évé
 | 2026-10-20 | UUID v7 générés côté application ; Money = numeric + devise | Portabilité EF Core, pas de flottants | Entiers auto-incrémentés, float |
 | 2026-10-20 | Outbox transactionnelle pour événements, e-mail et SMS | Fiabilité sans broker | Publication directe après commit (perte possible) |
 | 2026-10-20 | CRM et ERP séparés : deux déploiements, une base chacun, événements entre eux ; CRM prioritaire et incluant Investudy (ADR-0005) | Décision produit ; livraison anticipée du CRM, isolement des données financières/RH | Monolithe unique, base partagée, deux produits totalement indépendants |
+| 2026-10-20 | L'agrément formation est une **promesse de paiement** détenue par Business Development ; événement `TrainingApprovalGranted` vers Training | Décision métier ; c'est un engagement commercial, pas une validation pédagogique | Agrément dans Training (couple l'inscription au commercial), simple case à cocher |
+| 2026-10-20 | Apprenant sans compte ni interaction avec le CRM, entité distincte du contact ; plusieurs opportunités par entreprise ; ambassadeur manuel | Décisions métier ; limite l'exposition des données et la surface d'attaque | Portail apprenant (hors périmètre), création automatique d'ambassadeur |
+| 2026-10-20 | SuperAdmin à accès complet, MFA obligatoire pour tous, portée Équipe = subordonnés directs, e-mail via Microsoft 365, audit conservé 10 ans (ADR-0006) | Décisions produit | Séparation des tâches stricte (écartée par la direction) |
+| 2026-10-20 | Charge confirmée à ≈ 20 utilisateurs (10 employés) ; architecture inchangée | Aucun seuil de la Phase 3 n'est approché | Réduire (impossible : déjà minimal) |
 | 2026-10-20 | Collapse volontaire : pas de CQRS bus ni event sourcing en v1 | Ceremony non justifiée à cette charge ; commands/queries restent des use cases distincts | CQRS complet, event sourcing |

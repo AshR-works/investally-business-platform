@@ -9,6 +9,9 @@
     "typecheck": "tsc --noEmit",
     "test": "jest --runInBand --testPathIgnorePatterns integration",
     "test:integration": "RUN_DB_TESTS=1 jest --testPathPatterns integration --runInBand",
+    "seed:core": "node dist/src/cli/seed-core.js",
+    "docs:rbac": "node scripts/gen-rbac-doc.mjs",
+    "check:upgrade": "node scripts/check-upgrade.mjs",
     "prisma:generate": "prisma generate",
     "prisma:migrate:dev": "prisma migrate dev",
     "prisma:migrate:deploy": "prisma migrate deploy"
