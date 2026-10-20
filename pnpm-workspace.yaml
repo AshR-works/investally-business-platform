@@ -1,0 +1,10 @@
+packages:
+  - "apps/*"
+allowBuilds:
+  '@parcel/watcher': false
+  '@scarf/scarf': false
+  esbuild: false
+  unrs-resolver: false
+  workerd: false
+  prisma: true
+  '@prisma/engines': true
