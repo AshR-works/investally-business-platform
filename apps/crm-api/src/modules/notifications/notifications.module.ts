@@ -13,7 +13,7 @@ import { MicrosoftGraphEmailSender } from './infrastructure/microsoft-graph-emai
       useFactory: (config: AppConfig): EmailSender =>
         config.email.provider === 'microsoft365' && config.email.microsoft365
           ? new MicrosoftGraphEmailSender(config.email.microsoft365)
-          : new LogEmailSender(),
+          : new LogEmailSender(config.email.logContent),
     },
   ],
   exports: [EMAIL_SENDER],

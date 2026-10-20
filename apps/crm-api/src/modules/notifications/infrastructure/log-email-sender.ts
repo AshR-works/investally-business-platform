@@ -9,6 +9,8 @@ const KEPT = 50;
  * conservés en mémoire pour les tests et pour le développement local.
  */
 export class LogEmailSender implements EmailSender {
+  constructor(private readonly logContent = false) {}
+
   private readonly logger = new Logger(LogEmailSender.name);
   private readonly kept: EmailMessage[] = [];
 
@@ -22,6 +24,10 @@ export class LogEmailSender implements EmailSender {
     if (this.kept.length > KEPT) this.kept.shift();
     const domain = message.to.slice(message.to.lastIndexOf('@') + 1);
     this.logger.log(`E-mail NON envoyé (mode journal) : destinataire @${domain}, sujet ${message.subject.length} caractères`);
+    if (this.logContent) {
+      // Développement local uniquement (la configuration refuse cette option en production).
+      this.logger.warn(`[DEV] Contenu de l'e-mail à ${message.to}\nSujet : ${message.subject}\n${message.text}`);
+    }
     return { ok: true };
   }
 

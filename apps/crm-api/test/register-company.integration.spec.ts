@@ -27,11 +27,12 @@ describeDb('RegisterCompany (PostgreSQL)', () => {
   );
   const actor = { userId: null, sessionId: null, ipAddress: '127.0.0.1', device: 'integration-test' };
   const unique = `Acme-${Date.now()}`;
+  const OWNER = '00000000-0000-7000-8000-000000000001'; // référence inter-contextes : aucune clé étrangère
 
   afterAll(() => prisma.onModuleDestroy());
 
   it('persiste l\'entreprise et écrit l\'audit dans la même transaction', async () => {
-    const view = await useCase.execute({ name: unique, sector: 'Banque', actor });
+    const view = await useCase.execute({ ownerUserId: OWNER, name: unique, sector: 'Banque', actor });
 
     const trail = await auditRepo.listByEntity('Company', view.id);
     expect(trail).toHaveLength(1);
@@ -40,7 +41,7 @@ describeDb('RegisterCompany (PostgreSQL)', () => {
   });
 
   it('refuse un doublon', async () => {
-    await expect(useCase.execute({ name: unique.toUpperCase(), actor })).rejects.toMatchObject({
+    await expect(useCase.execute({ ownerUserId: OWNER, name: unique.toUpperCase(), actor })).rejects.toMatchObject({
       code: 'CONFLICT',
     });
   });
@@ -54,14 +55,14 @@ describeDb('RegisterCompany (PostgreSQL)', () => {
       ids,
     );
     const name = `Rollback-${Date.now()}`;
-    await expect(failing.execute({ name, actor })).rejects.toThrow('audit indisponible');
+    await expect(failing.execute({ ownerUserId: OWNER, name, actor })).rejects.toThrow('audit indisponible');
     expect(await new PrismaCompanyRepository(prisma).list({ page: 1, pageSize: 5, search: name }))
       .toMatchObject({ total: 0 });
   });
 
   it('enregistre les horodatages en UTC, quel que soit le fuseau du serveur', async () => {
     const before = Date.now();
-    const view = await useCase.execute({ name: `Utc-${Date.now()}`, actor });
+    const view = await useCase.execute({ ownerUserId: OWNER, name: `Utc-${Date.now()}`, actor });
     const [row] = await prisma.db.$queryRaw<{ company_ms: number; audit_ms: number }[]>`
       SELECT (extract(epoch FROM c.created_at) * 1000)::float8 AS company_ms,
              (extract(epoch FROM a.created_at) * 1000)::float8 AS audit_ms

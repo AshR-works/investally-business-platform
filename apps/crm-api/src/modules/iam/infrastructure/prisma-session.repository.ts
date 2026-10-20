@@ -98,4 +98,13 @@ export class PrismaSessionRepository implements SessionRepository {
     });
     return ids;
   }
+
+  async listActiveOf(userId: string, now: Date): Promise<UserSession[]> {
+    const rows = await this.prisma.db.userSession.findMany({
+      where: { userId, loggedOutAt: null, revokedAt: null, expiresAt: { gt: now }, absoluteExpiresAt: { gt: now } },
+      orderBy: { loggedInAt: 'desc' },
+      take: 100,
+    });
+    return rows.map(toDomain);
+  }
 }

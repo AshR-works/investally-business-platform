@@ -45,7 +45,7 @@ describe('RegisterCompanyUseCase', () => {
   it("enregistre l'entreprise et trace qui/quoi/d'où dans l'audit", async () => {
     const { useCase, companies, audit } = build();
 
-    const view = await useCase.execute({ name: 'Acme SA', sector: 'Banque', actor });
+    const view = await useCase.execute({ name: 'Acme SA', ownerUserId: 'u1', sector: 'Banque', actor });
 
     expect(view).toMatchObject({ id: 'id-1', name: 'Acme SA', status: 'TARGET', sector: 'Banque' });
     expect(companies.items).toHaveLength(1);
@@ -62,10 +62,10 @@ describe('RegisterCompanyUseCase', () => {
 
   it("refuse un doublon (insensible à la casse) sans écrire d'audit", async () => {
     const { useCase, audit } = build();
-    await useCase.execute({ name: 'Acme SA', actor });
+    await useCase.execute({ name: 'Acme SA', ownerUserId: 'u1', actor });
     audit.length = 0;
 
-    await expect(useCase.execute({ name: 'ACME sa', actor })).rejects.toMatchObject({
+    await expect(useCase.execute({ name: 'ACME sa', ownerUserId: 'u1', actor })).rejects.toMatchObject({
       code: 'CONFLICT',
     });
     expect(audit).toHaveLength(0);
@@ -73,6 +73,6 @@ describe('RegisterCompanyUseCase', () => {
 
   it('propage une erreur de validation du domaine', async () => {
     const { useCase } = build();
-    await expect(useCase.execute({ name: '', actor })).rejects.toBeInstanceOf(DomainError);
+    await expect(useCase.execute({ name: '', ownerUserId: 'u1', actor })).rejects.toBeInstanceOf(DomainError);
   });
 });
