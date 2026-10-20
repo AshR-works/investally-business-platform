@@ -66,13 +66,27 @@ export function loadAppConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     throw new Error("EMAIL_PROVIDER=microsoft365 est obligatoire en production (le mode 'log' est réservé au développement et aux tests)");
   }
 
+  const publicUrl = (env.APP_PUBLIC_URL?.trim() || (production ? '' : 'http://127.0.0.1:3000')).replace(/\/+$/, '');
+  if (production && !/^https:\/\/[^\s/]+/.test(publicUrl)) {
+    throw new Error('APP_PUBLIC_URL (https://...) est obligatoire en production : les liens des e-mails en dépendent');
+  }
+  if (!production && publicUrl && !/^https?:\/\/[^\s/]+/.test(publicUrl)) {
+    throw new Error('APP_PUBLIC_URL doit être une URL http(s) valide');
+  }
+
+  const logContent = env.EMAIL_LOG_CONTENT === 'true';
+  if (logContent && production) {
+    throw new Error('EMAIL_LOG_CONTENT=true est interdit en production : il écrirait des liens d\'activation dans les journaux');
+  }
+
   return {
     env: environment,
     cookieSecure,
     allowedOrigins,
     trustProxy: env.TRUST_PROXY?.trim() || null,
+    publicUrl,
     mfa: { encryptionKeyBase64: mfaKey },
-    email: { provider, microsoft365 },
+    email: { provider, microsoft365, logContent },
     jwt: { privateKeyPem, publicKeyPem, issuer: 'investally-crm', audience: 'investally-crm-api' },
   };
 }

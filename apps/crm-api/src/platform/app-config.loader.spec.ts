@@ -3,7 +3,7 @@ import { loadAppConfig } from './app-config.loader';
 const KEYS = { JWT_PRIVATE_KEY_PEM: 'priv', JWT_PUBLIC_KEY_PEM: 'pub' };
 const MFA_KEY = Buffer.alloc(32, 7).toString('base64');
 const M365 = { EMAIL_PROVIDER: 'microsoft365', M365_TENANT_ID: 't', M365_CLIENT_ID: 'c', M365_CLIENT_SECRET: 's', M365_SENDER: 'crm@investally.test' };
-const PROD = { NODE_ENV: 'production', ...KEYS, ALLOWED_ORIGINS: 'https://crm.test', MFA_ENCRYPTION_KEY: MFA_KEY, ...M365 };
+const PROD = { NODE_ENV: 'production', ...KEYS, ALLOWED_ORIGINS: 'https://crm.test', MFA_ENCRYPTION_KEY: MFA_KEY, APP_PUBLIC_URL: 'https://crm.test', ...M365 };
 
 describe('loadAppConfig', () => {
   it('autorise le développement sans clé ni configuration (paire éphémère, cookie non sécurisé)', () => {
@@ -58,6 +58,23 @@ describe('loadAppConfig', () => {
 
   it('refuse un fournisseur d\'e-mail inconnu', () => {
     expect(() => loadAppConfig({ EMAIL_PROVIDER: 'sendgrid' })).toThrow(/EMAIL_PROVIDER/);
+  });
+
+  it("exige une adresse publique https en production (liens des e-mails) et accepte http en développement", () => {
+    const { APP_PUBLIC_URL, ...withoutUrl } = PROD;
+    expect(APP_PUBLIC_URL).toBeTruthy();
+    expect(() => loadAppConfig(withoutUrl)).toThrow(/APP_PUBLIC_URL/);
+    expect(() => loadAppConfig({ ...PROD, APP_PUBLIC_URL: 'http://crm.test' })).toThrow(/APP_PUBLIC_URL/);
+    expect(() => loadAppConfig({ APP_PUBLIC_URL: 'pas une url' })).toThrow(/APP_PUBLIC_URL/);
+    expect(loadAppConfig({}).publicUrl).toBe('http://127.0.0.1:3000');
+    expect(loadAppConfig({ ...PROD, APP_PUBLIC_URL: 'https://crm.test///' }).publicUrl).toBe('https://crm.test');
+  });
+
+  it("EMAIL_LOG_CONTENT : autorisé en développement, interdit en production, désactivé par défaut", () => {
+    expect(loadAppConfig({}).email.logContent).toBe(false);
+    expect(loadAppConfig({ EMAIL_LOG_CONTENT: 'true' }).email.logContent).toBe(true);
+    expect(loadAppConfig({ EMAIL_LOG_CONTENT: 'oui' }).email.logContent).toBe(false); // seule la valeur exacte « true » l'active
+    expect(() => loadAppConfig({ ...PROD, EMAIL_LOG_CONTENT: 'true' })).toThrow(/EMAIL_LOG_CONTENT/);
   });
 
   it('en développement : fournisseur « log » et clé MFA éphémère par défaut', () => {

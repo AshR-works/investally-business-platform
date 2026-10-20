@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '../../../../generated/prisma/client';
 import { PrismaService } from '../../../platform/prisma.service';
-import { DomainError } from '../../../shared-kernel';
+import { DomainError, Page } from '../../../shared-kernel';
 import { UserRepository } from '../domain/auth-repositories';
 import { Email } from '../domain/email';
 import { RoleCode } from '../domain/roles';
@@ -109,5 +109,64 @@ export class PrismaUserRepository implements UserRepository {
       data: found.map((role) => ({ userId, roleId: role.id, assignedBy })),
       skipDuplicates: true,
     });
+  }
+
+  async list(query: { page: number; pageSize: number; search?: string; status?: UserStatus }): Promise<Page<User>> {
+    const search = query.search?.toLowerCase();
+    const where: Prisma.UserWhereInput = {
+      deletedAt: null,
+      ...(query.status ? { status: query.status } : {}),
+      ...(search ? { OR: [{ emailKey: { contains: search } }, { displayName: { contains: query.search, mode: 'insensitive' } }] } : {}),
+    };
+    const [rows, total] = await Promise.all([
+      this.prisma.db.user.findMany({
+        where,
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+        skip: (query.page - 1) * query.pageSize,
+        take: query.pageSize,
+      }),
+      this.prisma.db.user.count({ where }),
+    ]);
+    return { items: rows.map(toDomain), total, page: query.page, pageSize: query.pageSize };
+  }
+
+  async rolesOfMany(userIds: readonly string[]): Promise<Map<string, RoleCode[]>> {
+    const result = new Map<string, RoleCode[]>();
+    if (userIds.length === 0) return result;
+    const rows = await this.prisma.db.userRole.findMany({
+      where: { userId: { in: [...userIds] } },
+      include: { role: { select: { code: true } } },
+    });
+    for (const row of rows) result.set(row.userId, [...(result.get(row.userId) ?? []), row.role.code as RoleCode]);
+    return result;
+  }
+
+  async replaceRoles(userId: string, roles: readonly RoleCode[], assignedBy: string | null): Promise<void> {
+    await this.prisma.db.userRole.deleteMany({ where: { userId } });
+    await this.assignRoles(userId, roles, assignedBy);
+  }
+
+  async lockSuperAdminInvariant(): Promise<void> {
+    // Toute opération qui peut retirer un SuperAdmin prend d'abord ce verrou : elles s'exécutent à la suite.
+    await this.prisma.db.$queryRaw`SELECT id FROM iam.roles WHERE code = 'SUPER_ADMIN' FOR UPDATE`;
+  }
+
+  async countActiveSuperAdmins(): Promise<number> {
+    return this.prisma.db.user.count({
+      where: { deletedAt: null, status: 'ACTIVE', roles: { some: { role: { code: 'SUPER_ADMIN' } } } },
+    });
+  }
+
+  async managerChainOf(userId: string, maxDepth: number): Promise<string[]> {
+    const chain: string[] = [];
+    let current: string | null = userId;
+    while (chain.length < maxDepth) {
+      const row: { managerId: string | null } | null = await this.prisma.db.user.findUnique({ where: { id: current }, select: { managerId: true } });
+      const next: string | null = row?.managerId ?? null;
+      if (next === null || chain.includes(next)) break; // fin de chaîne, ou cycle déjà présent en base
+      chain.push(next);
+      current = next;
+    }
+    return chain;
   }
 }

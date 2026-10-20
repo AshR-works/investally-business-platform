@@ -54,8 +54,8 @@ describe('AesGcmSecretCipher (C2)', () => {
 
   describe('fromConfig', () => {
     const config = (env: AppConfig['env'], encryptionKeyBase64: string | null): AppConfig => ({
-      env, cookieSecure: false, allowedOrigins: [], trustProxy: null,
-      mfa: { encryptionKeyBase64 }, email: { provider: 'log', microsoft365: null },
+      env, cookieSecure: false, allowedOrigins: [], trustProxy: null, publicUrl: 'http://127.0.0.1:3000',
+      mfa: { encryptionKeyBase64 }, email: { provider: 'log', microsoft365: null, logContent: false },
       jwt: { privateKeyPem: null, publicKeyPem: null, issuer: 'i', audience: 'a' },
     });
 

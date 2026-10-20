@@ -1,7 +1,7 @@
 import { decideAccess } from './access-policy';
 import { Scope } from './roles';
 
-const base = { actorId: 'me', teamMemberIds: ['report-1'], resourceOwnerId: null as string | null };
+const base = { actorId: 'me', teamMemberIds: ['report-1'], resourceOwnerId: undefined as string | null | undefined };
 
 describe('decideAccess', () => {
   it('refuse par défaut quand la permission est absente', () => {
@@ -32,9 +32,21 @@ describe('decideAccess', () => {
     expect(decideAccess({ ...base, grants, permission: 'bd.company.update', resourceOwnerId: 'stranger' }).allowed).toBe(false);
   });
 
-  it('autorise création et liste (pas de propriétaire) avec la portée de la permission, pour filtrage ultérieur', () => {
+  it('autorise création et liste (aucun objet précis : undefined) avec la portée de la permission, pour filtrage ultérieur', () => {
     const grants = [{ permission: 'bd.company.create', scope: Scope.Own }];
     expect(decideAccess({ ...base, grants, permission: 'bd.company.create' })).toEqual({ allowed: true, scope: Scope.Own });
+  });
+
+  it('REFUSE un objet existant SANS propriétaire (null) en portée Propre et Équipe : ne pas le traiter comme une liste', () => {
+    for (const scope of [Scope.Own, Scope.Team]) {
+      const grants = [{ permission: 'bd.company.read', scope }];
+      expect(decideAccess({ ...base, grants, permission: 'bd.company.read', resourceOwnerId: null })).toEqual({ allowed: false, reason: 'OUT_OF_SCOPE' });
+    }
+  });
+
+  it('autorise un objet sans propriétaire seulement en portée Tous', () => {
+    const grants = [{ permission: 'bd.company.read', scope: Scope.All }];
+    expect(decideAccess({ ...base, grants, permission: 'bd.company.read', resourceOwnerId: null })).toEqual({ allowed: true, scope: Scope.All });
   });
 
   it('retient la portée la plus large quand deux rôles accordent la même permission', () => {

@@ -7,6 +7,8 @@ export interface CompanyProps {
   id: string;
   name: CompanyName;
   status: CompanyStatus;
+  /** Propriétaire : détermine la portée des droits (Propre, Équipe, Tous). Absent pour les entreprises antérieures à S3.3. */
+  ownerUserId: string | null;
   sector: string | null;
   country: string | null;
   createdAt: Date;
@@ -22,14 +24,17 @@ export class Company extends AggregateRoot {
   static register(input: {
     id: string;
     name: string;
+    ownerUserId: string;
     sector?: string | null;
     country?: string | null;
     now: Date;
   }): Company {
+    if (!input.ownerUserId) throw new DomainError('VALIDATION', "Une entreprise doit avoir un propriétaire");
     const company = new Company({
       id: input.id,
       name: CompanyName.of(input.name),
       status: CompanyStatus.Target,
+      ownerUserId: input.ownerUserId,
       sector: input.sector?.trim() || null,
       country: input.country?.trim() || null,
       createdAt: input.now,
@@ -54,6 +59,7 @@ export class Company extends AggregateRoot {
   get id(): string { return this.props.id; }
   get name(): CompanyName { return this.props.name; }
   get status(): CompanyStatus { return this.props.status; }
+  get ownerUserId(): string | null { return this.props.ownerUserId; }
   get sector(): string | null { return this.props.sector; }
   get country(): string | null { return this.props.country; }
   get createdAt(): Date { return this.props.createdAt; }

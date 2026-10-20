@@ -1,6 +1,10 @@
 import { AuditRecord } from '../../src/modules/audit';
+import { RoleCatalogReader, RoleView } from '../../src/modules/iam/application/admin/user-view';
+import { UserInvitationRecord } from '../../src/modules/iam/domain/invitation';
+import { ROLES, ResolvedGrant, resolveGrants } from '../../src/modules/iam/domain/roles';
+import { UserStatus } from '../../src/modules/iam/domain/user';
 import {
-  KnownFingerprints, LoginAttemptRepository, LoginOutcome, PasswordHistoryRepository, RefreshTokenRepository,
+  GrantReader, InvitationRepository, KnownFingerprints, LoginAttemptRepository, LoginOutcome, PasswordHistoryRepository, RefreshTokenRepository,
   SessionRepository, UserRepository,
 } from '../../src/modules/iam/domain/auth-repositories';
 import { deviceFingerprint, networkRangeOf } from '../../src/modules/iam/domain/network';
@@ -22,6 +26,57 @@ export class InMemoryUsers implements UserRepository {
   async save(user: User) { this.items.set(user.id, user); }
   async roleCodesOf(id: string) { return this.roles.get(id) ?? []; }
   async assignRoles(id: string, roles: readonly RoleCode[]) { this.roles.set(id, [...roles]); }
+  async list(q: { page: number; pageSize: number; search?: string; status?: UserStatus }) {
+    const search = q.search?.toLowerCase();
+    const all = [...this.items.values()]
+      .filter((u) => !q.status || u.status === q.status)
+      .filter((u) => !search || u.email.key.includes(search) || u.displayName.toLowerCase().includes(search))
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    return { items: all.slice((q.page - 1) * q.pageSize, q.page * q.pageSize), total: all.length, page: q.page, pageSize: q.pageSize };
+  }
+  async rolesOfMany(ids: readonly string[]) { return new Map(ids.map((id) => [id, this.roles.get(id) ?? []] as [string, RoleCode[]])); }
+  async replaceRoles(id: string, roles: readonly RoleCode[]) { this.roles.set(id, [...roles]); }
+  async lockSuperAdminInvariant() {}
+  async countActiveSuperAdmins() {
+    return [...this.items.values()].filter((u) => u.status === UserStatus.Active && (this.roles.get(u.id) ?? []).includes(RoleCode.SuperAdmin)).length;
+  }
+  async managerChainOf(id: string, maxDepth: number) {
+    const chain: string[] = [];
+    let current = this.items.get(id)?.managerId ?? null;
+    while (current !== null && chain.length < maxDepth && !chain.includes(current)) {
+      chain.push(current);
+      current = this.items.get(current)?.managerId ?? null;
+    }
+    return chain;
+  }
+}
+
+export class InMemoryInvitations implements InvitationRepository {
+  readonly items = new Map<string, UserInvitationRecord>();
+  async save(record: UserInvitationRecord) { this.items.set(record.tokenHash, { ...record }); }
+  async findByHash(hash: string) { const r = this.items.get(hash); return r ? { ...r } : null; }
+  async consume(hash: string, now: Date) {
+    const r = this.items.get(hash);
+    if (!r || r.usedAt || r.revokedAt || r.expiresAt.getTime() <= now.getTime()) return false;
+    r.usedAt = now;
+    return true;
+  }
+  async revokeAllOfUser(userId: string, now: Date) { for (const r of this.items.values()) if (r.userId === userId && !r.usedAt && !r.revokedAt) r.revokedAt = now; }
+}
+
+/** Droits dérivés de la VRAIE matrice de rôles, comme le seed les écrit en base. */
+export class FakeGrantReader implements GrantReader {
+  constructor(private readonly users: InMemoryUsers) {}
+  async grantsOf(userId: string): Promise<ResolvedGrant[]> {
+    return (this.users.roles.get(userId) ?? []).flatMap((role) => resolveGrants(role));
+  }
+  async teamMemberIds(userId: string) { return [...this.users.items.values()].filter((u) => u.managerId === userId).map((u) => u.id); }
+}
+
+export class FakeRoleCatalog implements RoleCatalogReader {
+  async list(): Promise<RoleView[]> {
+    return ROLES.map((r) => ({ code: r.code, label: r.label, description: r.description, mfaRequired: r.mfaRequired, permissions: resolveGrants(r.code).map((g) => ({ code: g.permission, scope: g.scope })) }));
+  }
 }
 
 export class InMemoryHistory implements PasswordHistoryRepository {
@@ -39,6 +94,9 @@ export class InMemorySessions implements SessionRepository {
   async knownFingerprints(userId: string): Promise<KnownFingerprints> {
     const mine = [...this.items.values()].filter((s) => s.userId === userId);
     return { networks: new Set(mine.map((s) => networkRangeOf(s.ipAddress))), devices: new Set(mine.map((s) => deviceFingerprint(s.device))) };
+  }
+  async listActiveOf(userId: string, now: Date) {
+    return [...this.items.values()].filter((s) => s.userId === userId && s.isActive(now)).sort((a, b) => b.loggedInAt.getTime() - a.loggedInAt.getTime());
   }
   async revokeAllOfUserExcept(userId: string, keep: string | null, now: Date, reason: string) {
     const revoked: string[] = [];

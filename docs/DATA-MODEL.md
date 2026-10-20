@@ -10,6 +10,11 @@
 - Contraintes d'intégrité **dans la base** (CHECK) en plus des règles du domaine : défense en profondeur.
 - Secrets : seuls des **hachages** (mot de passe, jeton de rafraîchissement, codes de secours, OTP) ou des **valeurs chiffrées** (secret TOTP) sont stockés.
 
+### Évolutions de S3.3
+- `bd.companies.owner_user_id` (UUID, **sans clé étrangère**, indexé) : propriétaire d'une entreprise, base de la portée Propre / Équipe / Tous. Les entreprises antérieures n'en ont pas (visibles de la portée Tous seulement).
+- `iam.user_invitations` : `id`, `user_id` (FK avec cascade), `token_hash` (SHA-256 hexadécimal, unique), `created_by`, `created_at`, `expires_at` (> création), `used_at`, `revoked_at`.
+- Évolutions de S3.2 : `iam.users.mfa_last_used_step`, `iam.user_sessions.mfa_verified_at`.
+
 ## 2. ERD
 
 ```

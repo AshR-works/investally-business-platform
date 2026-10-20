@@ -16,6 +16,11 @@
 | D12 | Une seule clé de chiffrement MFA, pas de rotation ; clé perdue = tous les secrets perdus | S3.2 | Identifiant de clé (`kid`) dans le chiffré, procédure de rotation, sauvegarde en coffre | S7 |
 | D13 | Première inscription au MFA protégée par le seul mot de passe (confiance à la première utilisation) | S3.2 | Enrôlement lié à un lien d'invitation par e-mail | S3.3 |
 | D14 | Pas de récupération en libre-service du MFA (réinitialisation par un SuperAdmin seulement) | S3.2 | API d'administration `iam.user.reset_mfa` + step-up | S3.3 |
+| D15 | Droits relus en base à chaque requête (2 requêtes), sans cache | S3.3 | Volontaire (révocation immédiate) ; cache court avec invalidation seulement si la charge l'exige | Acceptée |
+| D16 | Modifier le responsable d'un utilisateur change la visibilité (portée Équipe) sans step-up | S3.3 | Décider : exiger un MFA récent pour ce champ | S3.4 |
+| D17 | Entreprises sans propriétaire (avant S3.3) et pas de réattribution de propriétaire | S3.3 | Écran et cas d'usage de réattribution | S4.1 |
+| D18 | Pas de révocation explicite d'une invitation (seulement renvoi ou désactivation) | S3.3 | Ajouter si le besoin se confirme | Ouverte |
+| D19 | La portée Équipe inclut les subordonnés directs désactivés ou en attente | S3.3 | À confirmer avec le métier (départ d'un salarié) | S4.1 |
 | D5 | Hypothèses de charge et de périmètre non confirmées | Phase 3 | Revue à la fin de S1 avec les chiffres réels | Ouverte |
 
 ## Adopted Conventions
