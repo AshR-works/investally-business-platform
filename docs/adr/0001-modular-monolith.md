@@ -1,6 +1,6 @@
 # ADR-0001 — Monolithe modulaire
 
-- **Statut** : Proposé (2026-10-20, Sprint 0)
+- **Statut** : Proposé (2026-10-20, Sprint 0) — amendé par ADR-0005 : s'applique à l'intérieur de chaque produit (CRM, ERP), plus à l'ensemble de la plateforme
 - **Décideurs** : Tech Lead, Architecte
 
 ## Contexte

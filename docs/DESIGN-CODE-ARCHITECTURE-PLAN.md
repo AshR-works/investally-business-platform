@@ -23,15 +23,19 @@
 | 8 — Cut scope to essential | 37signals-way | done (voir Périmètre v1) | VISION.md + ARCHITECTURE.md | 2026-10-20 |
 | Optional — Align teams | team-topologies | skipped: équipe unique | OPERATIONS.md | |
 
-## Sprint Plan
-| Sprint | Objectif | Livrables du prompt maître |
-|---|---|---|
-| S0 Cadrage — **terminé 2026-10-20** | Phases 1→8 (cadrage), ADR | 1, 2, 4, 16 |
-| S1 Squelette | Monorepo, Docker, CI, tranche verticale, garde-fous de dépendances | 3, 14 (partiel) |
-| S2 Sécurité & données Core | RBAC, audit, sessions, schéma Prisma Core, migrations 001 + 008 | 5, 8, 9, 11 |
-| S3 Core implémenté | Auth JWT/refresh/MFA, RBAC, audit, documents | 10 |
-| S4+ | Un sprint par contexte : Business Dev, Training, Finance, RH, Fiscalité, Reporting | 5–7, 12–13 |
-| Final | Production, monitoring, sauvegardes, stratégie .NET, recommandation finale | 15, 17, 18, 19 |
+## Sprint Plan (révisé le 2026-10-20 : CRM prioritaire, ADR-0005)
+| Sprint | Produit | Objectif | Livrables du prompt maître |
+|---|---|---|---|
+| S0 Cadrage — **terminé** | — | Vision, architecture, ADR | 1, 2, 4, 16 |
+| S1 Squelette CRM | CRM | Monorepo, CI, garde-fous de dépendances, tranche verticale `Company` + audit | 3, 14 (partiel) |
+| S2 Sécurité & données Core CRM | CRM | RBAC, audit, sessions, schéma Prisma Core, migrations 001 + 008 | 5, 8, 9, 11 |
+| S3 Core CRM implémenté | CRM | Auth JWT/refresh/MFA, RBAC, audit, documents | 10 |
+| S4 Business Development | CRM | Entreprises, contacts, offres, décharges, relances, RDV, visites, opportunités, ambassadeurs | 5–7, 12 |
+| S5 Investudy | CRM | Programmes, sessions, salles, formateurs, apprenants, inscriptions, présences, évaluations, certifications | 5–7, 12 |
+| S6 Reporting & dashboards CRM | CRM | KPI commerciaux/formation, dashboards AccountManager, HeadOfSales, Investudy, Admin, Sécurité | 12–13 |
+| S7 Production CRM | CRM | MFA avancé, monitoring, sauvegardes, audit avancé | 15 |
+| ERP-1…n | ERP | Finance, RH, Fiscalité, reporting direction ; extraction IAM/SSO et paquets partagés | 5–7, 13 |
+| Final | — | Stratégie .NET, dette, recommandation | 17, 18, 19 |
 
 ## Key Decisions
 | Date | Phase | Decision | Rationale |
@@ -41,6 +45,7 @@
 | 2026-10-20 | 1 | Entités Domain ≠ modèles Prisma (ADR-0003) | Idem ; coût de mapping assumé |
 | 2026-10-20 | 1 | Audit via événements de domaine + intercepteur applicatif (ADR-0004) | Traçabilité sans polluer le métier |
 
+| 2026-10-20 | S1 | CRM séparé de l'ERP, CRM prioritaire incluant Investudy ; une base par produit ; pas de paquets partagés avant l'ERP (ADR-0005) | Décision produit ; simplicité (37signals) |
 | 2026-10-20 | 2 | Core = BD (+ Training secondaire) ; pas de modèle Personne unifié ; intégration par événements | Voir Decision Log d'ARCHITECTURE.md |
 
 ## Next Actions

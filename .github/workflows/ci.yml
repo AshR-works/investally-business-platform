@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: investally
+          POSTGRES_PASSWORD: ci_only_password
+          POSTGRES_DB: investally_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U investally" --health-interval 5s
+          --health-timeout 3s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://investally:ci_only_password@localhost:5432/investally_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @investally/crm-api prisma:generate
+      - name: Types
+        run: pnpm typecheck
+      - name: Règles d'architecture (bloquant)
+        run: pnpm arch
+      - name: Tests unitaires
+        run: pnpm test
+      - name: Migrations + tests d'intégration
+        run: |
+          pnpm --filter @investally/crm-api prisma:migrate:deploy
+          pnpm --filter @investally/crm-api test:integration
+      - name: Audit des dépendances
+        run: pnpm audit --prod --audit-level high
