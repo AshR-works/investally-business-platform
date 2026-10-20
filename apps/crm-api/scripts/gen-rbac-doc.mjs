@@ -1,0 +1,140 @@
+// Génère docs/RBAC.md depuis le code compilé (catalogue, rôles, matrice). Lancer après `pnpm crm-api build`.
+//   pnpm crm-api docs:rbac
+import { writeFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const root = join(dirname(fileURLToPath(import.meta.url)), '..');
+const require = createRequire(import.meta.url);
+const { PERMISSIONS, RESOURCES } = require(join(root, 'dist/src/modules/iam/domain/permission-catalog.js'));
+const { ROLES, resolveGrants } = require(join(root, 'dist/src/modules/iam/domain/roles.js'));
+
+const SCOPE = { OWN: 'O', TEAM: 'E', ALL: 'T' };
+const READ_ACTIONS = new Set(['read', 'download', 'export', 'account_manager', 'head_of_sales', 'training', 'direction', 'security', 'admin']);
+const grants = Object.fromEntries(ROLES.map((r) => [r.code, new Map(resolveGrants(r.code).map((g) => [g.permission, g.scope]))]));
+const modules = [...new Set(PERMISSIONS.map((p) => p.module))];
+const MODULE_LABEL = { iam: 'Identité et accès', audit: 'Audit', docs: 'Documents', bd: 'Business Development', training: 'Investudy', reporting: 'Reporting' };
+const rank = { OWN: 1, TEAM: 2, ALL: 3 };
+
+const row = (cells) => `| ${cells.join(' | ')} |`;
+const header = (cells) => `${row(cells)}\n${row(cells.map(() => '---'))}`;
+
+function moduleSummary(role, module) {
+  const mine = PERMISSIONS.filter((p) => p.module === module && grants[role].has(p.code));
+  if (mine.length === 0) return '—';
+  const widest = (list) => list.reduce((acc, p) => (rank[grants[role].get(p.code)] > rank[acc] ? grants[role].get(p.code) : acc), 'OWN');
+  const reads = mine.filter((p) => READ_ACTIONS.has(p.action));
+  const writes = mine.filter((p) => !READ_ACTIONS.has(p.action));
+  const parts = [];
+  if (reads.length > 0) parts.push(`L:${SCOPE[widest(reads)]}`);
+  if (writes.length > 0) parts.push(`E:${SCOPE[widest(writes)]}`);
+  return parts.join(' ');
+}
+
+const lines = [];
+lines.push('# RBAC — CRM Investally');
+lines.push('');
+lines.push('> **Document généré** par `pnpm crm-api docs:rbac` à partir du code (`apps/crm-api/src/modules/iam/domain`). Ne pas modifier à la main : modifier le code puis régénérer. Les tests `roles.spec.ts` et `core-schema.integration.spec.ts` garantissent que la base contient exactement cette matrice.');
+lines.push('');
+lines.push('## 1. Modèle');
+lines.push('');
+lines.push('Un **utilisateur** a un ou plusieurs **rôles** ; un rôle accorde des **permissions** (`module.ressource.action`), chacune avec une **portée** : **O**wn (ses propres objets), **É**quipe (lui et ses subordonnés directs), **T**ous. Si deux rôles accordent la même permission, la portée la plus large l\'emporte. **Refus par défaut** : ce qui n\'est pas accordé est interdit.');
+lines.push('');
+lines.push('```');
+lines.push('  ┌────────┐ 1..n ┌──────────┐ n..1 ┌────────┐ 1..n ┌────────────────┐ n..1 ┌────────────┐');
+lines.push('  │  User  ├──────┤ UserRole ├──────┤  Role  ├──────┤ RolePermission ├──────┤ Permission │');
+lines.push('  └───┬────┘      └──────────┘      └────────┘      │  scope: O/E/T  │      └────────────┘');
+lines.push('      │ managerId (définit la portée Équipe)         └────────────────┘');
+lines.push('      └──► User');
+lines.push('```');
+lines.push('');
+lines.push('```mermaid');
+lines.push('erDiagram');
+lines.push('  USER ||--o{ USER_ROLE : "a"');
+lines.push('  ROLE ||--o{ USER_ROLE : "attribué par"');
+lines.push('  ROLE ||--o{ ROLE_PERMISSION : "accorde"');
+lines.push('  PERMISSION ||--o{ ROLE_PERMISSION : "est accordée"');
+lines.push('  USER }o--o| USER : "responsable de"');
+lines.push('  ROLE_PERMISSION { enum scope "OWN | TEAM | ALL" }');
+lines.push('```');
+lines.push('');
+lines.push('### Décision d\'accès (pour chaque requête, côté serveur)');
+lines.push('');
+lines.push('```');
+lines.push('  Requête authentifiée (jeton valide, session non révoquée)');
+lines.push('        │');
+lines.push('        ▼   permission accordée par un des rôles ?  ── non ──► REFUS (403, audit ACCESS_DENIED)');
+lines.push('        │ oui');
+lines.push('        ▼   portée = Tous ? ── oui ──► AUTORISÉ');
+lines.push('        │ non');
+lines.push('        ▼   l\'objet appartient à l\'acteur (ou à un subordonné si portée Équipe) ? ── non ──► REFUS');
+lines.push('        │ oui');
+lines.push('        ▼   AUTORISÉ  (+ audit si action sensible)');
+lines.push('```');
+lines.push('');
+lines.push('```mermaid');
+lines.push('flowchart TD');
+lines.push('  A[Requête authentifiée] --> B{Permission accordée\\npar un rôle ?}');
+lines.push('  B -- non --> X[REFUS 403 + audit ACCESS_DENIED]');
+lines.push('  B -- oui --> C{Portée = Tous ?}');
+lines.push('  C -- oui --> OK[AUTORISÉ]');
+lines.push('  C -- non --> D{Objet de l\'acteur\\nou de son équipe ?}');
+lines.push('  D -- non --> X');
+lines.push('  D -- oui --> OK');
+lines.push('```');
+lines.push('');
+lines.push('## 2. Rôles');
+lines.push('');
+lines.push(header(['Code', 'Libellé', 'MFA obligatoire', 'Description']));
+for (const r of ROLES) lines.push(row([`\`${r.code}\``, r.label, r.mfaRequired ? 'oui' : 'non', r.description]));
+lines.push('');
+lines.push('## 3. Matrice d\'accès par module et par rôle');
+lines.push('');
+lines.push('Légende : **L:x** lecture (consulter, télécharger, exporter, tableaux de bord) · **E:x** écriture et actions (créer, modifier, valider, révoquer…) · **x** = portée la plus large du rôle sur le module : **O** ses objets, **E** son équipe, **T** tous · **—** aucun accès. Exemple : `L:T E:O` = lit tout, écrit seulement sur ses propres objets.');
+lines.push('');
+lines.push(header(['Module', ...ROLES.map((r) => r.code)]));
+for (const m of modules) lines.push(row([MODULE_LABEL[m] ?? m, ...ROLES.map((r) => moduleSummary(r.code, m))]));
+lines.push('');
+lines.push('## 4. Matrice détaillée rôles × permissions');
+lines.push('');
+lines.push('Cellule : **O**, **É**, **T** = portée accordée ; vide = non accordée.');
+for (const m of modules) {
+  lines.push('');
+  lines.push(`### ${MODULE_LABEL[m] ?? m} (\`${m}\`)`);
+  lines.push('');
+  lines.push(header(['Permission', ...ROLES.map((r) => r.code)]));
+  for (const p of PERMISSIONS.filter((x) => x.module === m)) {
+    lines.push(row([`\`${p.code}\``, ...ROLES.map((r) => (grants[r.code].has(p.code) ? SCOPE[grants[r.code].get(p.code)] : ''))]));
+  }
+}
+lines.push('');
+lines.push('## 5. Règles de gouvernance');
+lines.push('');
+lines.push("1. **Le `SUPER_ADMIN` a un accès complet** (décision produit du 2026-10-20) : toutes les permissions, en portée Tous. C'est un compte à très haut risque ; garde-fous compensatoires : MFA obligatoire, toutes ses actions auditées, interdiction de modifier ses propres rôles, au moins **deux** comptes SuperAdmin pour la continuité, revue périodique de la liste. Test automatisé.");
+lines.push('2. **Seul le `SUPER_ADMIN`** crée/modifie/désactive des utilisateurs, attribue des rôles, réinitialise le MFA et gère les rôles. Test automatisé.');
+lines.push('3. **Nul ne modifie ni ne supprime le journal d\'audit** : le catalogue ne contient que `audit.log.read` et `audit.log.export`. Test automatisé + déclencheur SQL.');
+lines.push('4. La **Direction** est en lecture seule (consulter, télécharger, exporter) sur le métier. Test automatisé.');
+lines.push("5. Un utilisateur **ne peut pas modifier ses propres rôles**, SuperAdmin compris (règle à implémenter dans l'attribution de rôle en S3, avec test).");
+lines.push('6. Tout changement de rôle est audité (`ROLE_CHANGE`) et exige un MFA récent (step-up).');
+lines.push('7. Aucun export massif pour les rôles chargé de compte, support et formateur. Test automatisé.');
+lines.push('8. Droits de base **implicites** pour tout utilisateur authentifié, hors catalogue : consulter son profil, changer son mot de passe, gérer son MFA et voir/révoquer ses propres sessions.');
+lines.push('');
+lines.push('## 6. Décisions prises et points restants');
+lines.push('');
+lines.push('**Décidé le 2026-10-20 :**');
+lines.push('');
+lines.push('- Rôle `TRAINING_MANAGER` (Responsable Investudy) : **ajouté**.');
+lines.push('- `SUPER_ADMIN` : **accès complet** (voir la règle 1 pour les garde-fous).');
+lines.push('- Portée Équipe : **subordonnés directs** uniquement (`managerId`, un seul niveau).');
+lines.push("- **MFA obligatoire pour tous les rôles.** Interprétation : « MFA obligatoire » sans distinction vaut pour tout le monde ; un rôle peut être assoupli via `mfaRequired` si besoin.");
+lines.push("- Support : lecture seule. Direction : lecture du journal d'audit (ces lectures sont elles-mêmes auditées).");
+lines.push("- `FINANCE`, `HR`, `TAX` : conservés mais quasi vides dans le CRM (leur périmètre est l'ERP).");
+lines.push('');
+lines.push('**Restant à valider :**');
+lines.push('');
+lines.push("- Droits fins du rôle `FINANCE` dans le CRM (aujourd'hui : lecture des entreprises, inscriptions, sessions et indicateurs).");
+lines.push("- Droits sur l'**agrément** (promesse de paiement) : qui le saisit et le valide ? À préciser avant le sprint Business Development.");
+lines.push('');
+writeFileSync(join(root, '..', '..', 'docs', 'RBAC.md'), lines.join('\n'), 'utf8');
+console.log(`docs/RBAC.md généré (${PERMISSIONS.length} permissions, ${ROLES.length} rôles)`);

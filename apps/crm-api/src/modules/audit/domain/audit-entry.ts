@@ -9,6 +9,12 @@ export enum AuditAction {
   Export = 'EXPORT',
   Login = 'LOGIN',
   Logout = 'LOGOUT',
+  LoginFailed = 'LOGIN_FAILED',
+  AccessDenied = 'ACCESS_DENIED',
+  PasswordChange = 'PASSWORD_CHANGE',
+  MfaChange = 'MFA_CHANGE',
+  RoleChange = 'ROLE_CHANGE',
+  SessionRevoke = 'SESSION_REVOKE',
 }
 
 /** Entrée immuable du journal : qui, quoi, quand, d'où, avant, après. */
