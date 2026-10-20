@@ -1,6 +1,6 @@
 # Sécurité — CRM Investally
 
-> Statut : conception Sprint 2 (implémentation : S3 pour l'authentification, S7 pour l'exploitation). **Décisions produit du 2026-10-20 intégrées** : MFA obligatoire pour tous, SuperAdmin à accès complet, durées de session confirmées, e-mail via Microsoft 365, audit conservé 10 ans. Les valeurs encore marquées (H) restent des hypothèses à confirmer avec le RSSI.
+> Statut : conception Sprint 2 ; **S3.1 a implémenté** §2.1 (mots de passe), §2.2 (jetons), §2.4 (force brute) et §3 (sessions, score de risque) ; reste : §2.3 MFA et §2.6 e-mail (S3.2), autorisation (S3.3), exploitation (S7). **Décisions produit du 2026-10-20 intégrées** : MFA obligatoire pour tous, SuperAdmin à accès complet, durées de session confirmées, e-mail via Microsoft 365, audit conservé 10 ans. Les valeurs encore marquées (H) restent des hypothèses à confirmer avec le RSSI.
 > Périmètre : le produit CRM. L'ERP aura son propre document ; l'authentification est conçue pour être réutilisable (SSO) — ADR-0005.
 
 ## 1. Principes

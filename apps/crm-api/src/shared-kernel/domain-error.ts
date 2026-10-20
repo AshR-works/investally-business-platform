@@ -1,5 +1,6 @@
 export type DomainErrorCode =
   | 'VALIDATION'
+  | 'UNAUTHENTICATED'
   | 'NOT_FOUND'
   | 'CONFLICT'
   | 'FORBIDDEN'

@@ -1,8 +1,9 @@
 import 'reflect-metadata';
-import { ValidationPipe, INestApplication } from '@nestjs/common';
+import { INestApplication } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from '../src/app.module';
-import { ProblemDetailsFilter } from '../src/platform/problem-details.filter';
+import { configureApp } from '../src/app.setup';
+import { loadAppConfig } from '../src/platform/app-config.loader';
 
 /** Vérifie le câblage (DI, validation, format d'erreur) sans base de données. */
 describe('Démarrage de l\'application', () => {
@@ -12,9 +13,7 @@ describe('Démarrage de l\'application', () => {
   beforeAll(async () => {
     process.env.DATABASE_URL ??= 'postgresql://unused:unused@127.0.0.1:1/unused';
     app = await NestFactory.create(AppModule, { logger: false });
-    app.setGlobalPrefix('api/v1', { exclude: ['health/live', 'health/ready'] });
-    app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }));
-    app.useGlobalFilters(new ProblemDetailsFilter());
+    configureApp(app, loadAppConfig());
     await app.listen(0, '127.0.0.1');
     baseUrl = await app.getUrl();
   });

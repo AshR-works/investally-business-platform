@@ -4,6 +4,7 @@ import { DomainError, DomainErrorCode } from '../shared-kernel';
 
 const STATUS_BY_CODE: Record<DomainErrorCode, number> = {
   VALIDATION: 400,
+  UNAUTHENTICATED: 401,
   FORBIDDEN: 403,
   NOT_FOUND: 404,
   CONFLICT: 409,
@@ -31,7 +32,7 @@ export class ProblemDetailsFilter implements ExceptionFilter {
       title = exception.name;
       detail = exception.getResponse();
     } else {
-      this.logger.error(exception instanceof Error ? exception.stack : String(exception));
+      this.logger.error(describeForLog(exception));
     }
 
     response
@@ -39,4 +40,19 @@ export class ProblemDetailsFilter implements ExceptionFilter {
       .type('application/problem+json')
       .json({ type: 'about:blank', title, status, detail });
   }
+}
+
+/**
+ * Ce qu'on écrit dans les journaux pour une erreur inattendue. Les erreurs Prisma embarquent la requête et ses
+ * VALEURS (par exemple un hachage de mot de passe) dans leur message : on n'en garde que le nom et le code.
+ */
+export function describeForLog(exception: unknown): string {
+  if (exception instanceof Error) {
+    if (exception.name.startsWith('PrismaClient')) {
+      const code = (exception as { code?: unknown }).code;
+      return `${exception.name}${typeof code === 'string' ? ` (${code})` : ''} — détails omis volontairement`;
+    }
+    return exception.stack ?? `${exception.name}: ${exception.message}`;
+  }
+  return 'Erreur non standard';
 }
