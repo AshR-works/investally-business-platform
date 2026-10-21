@@ -1,6 +1,6 @@
 # Cadrage de la session S3.6 — Documents
 
-**Date** : 2026-10-21 · **Statut** : à décider · **Dépend de** : H2 (ordre DEC-005).
+**Date** : 2026-10-21 · **Statut** : **décidé le 2026-10-21** (recommandations retenues) · **Dépend de** : H2 (ordre DEC-005).
 
 > Méthode : [METHODE-D-ARBITRAGE.md](../METHODE-D-ARBITRAGE.md). **Aucune décision n'est prise dans ce document** : les recommandations sont des avis, la décision est celle de la direction produit.
 
@@ -102,7 +102,7 @@
 
 **Recommandation.** Option **B** : elle respecte le port prévu par l'architecture, rend S3.6 testable sans service externe et reporte l'adaptateur S3 au durcissement. Ferait changer d'avis : un besoin de production multi-serveurs avant S7 (alors A).
 
-**Décision (direction produit).** ☐ À renseigner : option retenue · date · motif · réserves.
+**Décision (direction produit).** ✅ **Option B — port de stockage + adaptateur disque local maintenant, adaptateur S3 en S7.1 (dette à inscrire)** — décidé le 2026-10-21 par la direction produit (recommandation suivie).
 
 **Trace.** À enregistrer dans `docs/QUESTIONS-ET-DECISIONS.md` (et, pour le design, dans `docs/design/decisions/`).
 
@@ -177,7 +177,7 @@
 
 **Recommandation.** Option **A**, avec l'antivirus inscrit comme condition **bloquante** de la mise en production (S7.2). Ferait changer d'avis : un envoi de fichiers par des tiers non authentifiés (alors B, dès maintenant). **À préciser** : formats autorisés (proposition : PDF, JPG, PNG, DOCX, XLSX) et taille maximale (proposition : 10 Mo).
 
-**Décision (direction produit).** ☐ À renseigner : option retenue · date · motif · réserves.
+**Décision (direction produit).** ✅ **Option A — contrôles de base maintenant, antivirus en S7 (condition bloquante de la mise en production)** — décidé le 2026-10-21 par la direction produit (recommandation suivie).
 
 **Trace.** À enregistrer dans `docs/QUESTIONS-ET-DECISIONS.md` (et, pour le design, dans `docs/design/decisions/`).
 
@@ -252,7 +252,7 @@
 
 **Recommandation.** Option **A** : elle garantit qu'un document n'est jamais plus visible que son dossier. Ferait changer d'avis : un besoin de partage de documents transversaux (modèles, procédures) sans objet propriétaire — à traiter alors comme un propriétaire « organisation ».
 
-**Décision (direction produit).** ☐ À renseigner : option retenue · date · motif · réserves.
+**Décision (direction produit).** ✅ **Option A — permissions docs.* + portée héritée de l'objet propriétaire** — décidé le 2026-10-21 par la direction produit (recommandation suivie).
 
 **Trace.** À enregistrer dans `docs/QUESTIONS-ET-DECISIONS.md` (et, pour le design, dans `docs/design/decisions/`).
 

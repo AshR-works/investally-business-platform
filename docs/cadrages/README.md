@@ -1,8 +1,8 @@
 # Cadrages des prochaines sessions
 
-**Date** : 2026-10-21 · **Statut des documents** : *à décider* · **Méthode** : [METHODE-D-ARBITRAGE.md](../METHODE-D-ARBITRAGE.md) (options comparées, recommandation, décision laissée à la direction produit).
+**Date** : 2026-10-21 · **Statut des documents** : **décidés le 2026-10-21** (les 11 recommandations ont été retenues par la direction produit) · **Méthode** : [METHODE-D-ARBITRAGE.md](../METHODE-D-ARBITRAGE.md) (options comparées, recommandation, décision laissée à la direction produit).
 
-Chaque cadrage dit **ce que la session fait et ne fait pas**, **l'état de départ vérifié**, **les décisions à prendre** (avec options, grille calculée, risques, dette, recommandation) et **les critères de réussite**. Rien n'est codé tant que les décisions ne sont pas prises.
+Chaque cadrage dit **ce que la session fait et ne fait pas**, **l'état de départ vérifié**, **les décisions à prendre** (avec options, grille calculée, risques, dette, recommandation) et **les critères de réussite**. Les décisions sont prises ; la réalisation démarre par H1.
 
 ## Ordre de réalisation (DEC-005, « Alternatif 1 »)
 | Ordre | Session | Cadrage | Décisions à prendre |
@@ -28,7 +28,7 @@ Chaque cadrage dit **ce que la session fait et ne fait pas**, **l'état de dépa
 | CAD-S36-3 Droits | A portée de l'objet propriétaire | |
 | CAD-UX-1 Format | A atelier de 90 minutes | |
 
-Ce sont des **avis**. Les notes de chaque grille sont mon jugement avec les poids standard de la méthode (5, 5, 4, 4, 3) ; vous pouvez les modifier et je recalcule.
+Ces recommandations ont été **retenues** le 2026-10-21. Les notes de chaque grille sont mon jugement avec les poids standard de la méthode (5, 5, 4, 4, 3) ; vous pouvez les modifier et je recalcule.
 
 ## Points hors cadrage qui restent ouverts (Étape 0 et suivants)
 | Sujet | Bloque | Statut |
@@ -41,5 +41,5 @@ Ce sont des **avis**. Les notes de chaque grille sont mon jugement avec les poid
 | D16 (MFA récent pour changement de responsable), périmètre de l'agenda, rôle Logistique, catégories d'incidents, durée d'historique | S4 à S6 | Ouverts |
 | Logos SVG officiels, variante sombre | Mise en ligne | À fournir |
 
-## Comment décider
-Répondez par exemple : « **CAD-H1-1 : A ; CAD-H1-2 : A ; CAD-H1-3 : A ; CAD-H1-4 : B** ». Je consigne les choix dans le registre (`docs/QUESTIONS-ET-DECISIONS.md`), je mets à jour le plan, puis j'ouvre la branche de la session.
+## Décision
+Le 2026-10-21, la direction produit a retenu **toutes les recommandations** (réponse au lot de 11 décisions). Elles sont enregistrées dans `docs/QUESTIONS-ET-DECISIONS.md` (D19) et dans le plan.

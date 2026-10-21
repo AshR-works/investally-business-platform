@@ -1,6 +1,6 @@
 # Cadrage de la session H1 — Habillage minimal et hub
 
-**Date** : 2026-10-21 · **Statut** : à décider · **Prochaine étape** après validation de ce cadrage : ouverture de la branche `sprint/h1-habillage-hub`.
+**Date** : 2026-10-21 · **Statut** : **décidé le 2026-10-21** (recommandations retenues) · **Prochaine étape** : ouverture de la branche `sprint/h1-habillage-hub`.
 
 > Méthode : [METHODE-D-ARBITRAGE.md](../METHODE-D-ARBITRAGE.md). **Aucune décision n'est prise dans ce document** : les recommandations sont des avis, la décision est celle de la direction produit.
 
@@ -106,7 +106,7 @@ Les fiches complètes suivent (gabarit de la méthode d'arbitrage).
 
 **Recommandation.** **A et B sont à égalité dans la grille (3,62 contre 3,67) : l'écart n'est pas significatif.** Je recommande tout de même **A**, pour deux raisons que la grille ne capte pas : la spécification de design validée la prévoit, et le volume d'écrans à venir (une trentaine) rend les classes utilitaires plus économiques que des feuilles par composant. **Condition** : essai isolé réussi, sinon bascule sur B sans perdre les jetons. Ferait changer d'avis : un blocage de compatibilité Tailwind v4 / Next.js 16, ou votre préférence pour zéro dépendance de plus.
 
-**Décision (direction produit).** ☐ À renseigner : option retenue · date · motif · réserves.
+**Décision (direction produit).** ✅ **Option A — Tailwind CSS v4 piloté par les jetons (essai isolé d'abord ; repli sur B si blocage)** — décidé le 2026-10-21 par la direction produit (recommandation suivie).
 
 **Trace.** À enregistrer dans `docs/QUESTIONS-ET-DECISIONS.md` (et, pour le design, dans `docs/design/decisions/`).
 
@@ -181,7 +181,7 @@ Les fiches complètes suivent (gabarit de la méthode d'arbitrage).
 
 **Recommandation.** Option **A**, conforme à votre décision DEC-005 et au principe « ne pas dépenser sur des écrans qui seront refaits ». Ferait changer d'avis : si la démonstration à des tiers avant H2 exige des écrans connectés cohérents (alors B).
 
-**Décision (direction produit).** ☐ À renseigner : option retenue · date · motif · réserves.
+**Décision (direction produit).** ✅ **Option A — coque et hub seulement** — décidé le 2026-10-21 par la direction produit (recommandation suivie).
 
 **Trace.** À enregistrer dans `docs/QUESTIONS-ET-DECISIONS.md` (et, pour le design, dans `docs/design/decisions/`).
 
@@ -256,7 +256,7 @@ Les fiches complètes suivent (gabarit de la méthode d'arbitrage).
 
 **Recommandation.** Option **A**. Elle respecte vos exigences (hub = navigation complète) sans donnée fictive. **Sous-décision à votre main** : les indicateurs du prototype (chiffres, rendez-vous du jour) ne sont **pas** affichés tant que leur source n'existe pas.
 
-**Décision (direction produit).** ☐ À renseigner : option retenue · date · motif · réserves.
+**Décision (direction produit).** ✅ **Option A — modules disponibles actifs, modules à venir visibles mais inactifs, aucune donnée fictive** — décidé le 2026-10-21 par la direction produit (recommandation suivie).
 
 **Trace.** À enregistrer dans `docs/QUESTIONS-ET-DECISIONS.md` (et, pour le design, dans `docs/design/decisions/`).
 
@@ -331,7 +331,7 @@ Les fiches complètes suivent (gabarit de la méthode d'arbitrage).
 
 **Recommandation.** Option **A** : elle livre la fonction demandée pour les types existants sans ajouter de surface d'attaque, (la note de C est abaissée en valeur et en cohérence car C ne satisfait pas EXD-05, exigence obligatoire ; sans cette réserve, C passerait devant) et prépare B quand 4 types ou plus existeront (S4.1 à S5). Ferait changer d'avis : un besoin de recherche transversale au texte intégral.
 
-**Décision (direction produit).** ☐ À renseigner : option retenue · date · motif · réserves.
+**Décision (direction produit).** ✅ **Option A — recherche côté interface sur les listes existantes (entreprises, utilisateurs)** — décidé le 2026-10-21 par la direction produit (recommandation suivie).
 
 **Trace.** À enregistrer dans `docs/QUESTIONS-ET-DECISIONS.md` (et, pour le design, dans `docs/design/decisions/`).
 
