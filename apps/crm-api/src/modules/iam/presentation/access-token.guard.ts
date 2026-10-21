@@ -16,7 +16,12 @@ export class AccessTokenGuard implements CanActivate {
     const request = context.switchToHttp().getRequest<{ headers: Record<string, string | undefined>; actor?: AuthenticatedActor }>();
     const match = BEARER.exec(request.headers.authorization ?? '');
     const actor = match ? await this.authenticate.execute(match[1]) : null;
-    if (!actor) throw new DomainError('UNAUTHENTICATED', 'Authentification requise');
+    if (!actor) {
+      // RFC 6750 : c'est le JETON qui est refusé (absent, expiré, révoqué). Un 401 sans cet en-tête (ex. mauvais code MFA)
+      // ne doit PAS déclencher de rafraîchissement automatique côté client, sinon la tentative serait rejouée et comptée deux fois.
+      context.switchToHttp().getResponse<{ setHeader(name: string, value: string): void }>().setHeader('WWW-Authenticate', 'Bearer error="invalid_token"');
+      throw new DomainError('UNAUTHENTICATED', 'Authentification requise');
+    }
     request.actor = actor;
     return true;
   }
