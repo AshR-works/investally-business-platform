@@ -280,7 +280,7 @@ Détails techniques (Tailwind, structure des fichiers, polices, sécurité CSP, 
 | # | Sujet | Ma proposition | Pourquoi |
 |---|---|---|---|
 | 1 | **Polices** | Montserrat + Inter | Montserrat = police du logo ; Inter = lisibilité en tableau. Dites-moi si la capture utilise une autre police à respecter (ex. Poppins) |
-| 2 | **Fichiers du logo** | Investudy : **PNG haute résolution reçu** (10 072 × 3 196 px, fond transparent), utilisé dans le prototype (version réduite à 900 px). Investally : toujours à fournir en **SVG** ou PNG à fond transparent | Le symbole Investally du prototype reste une **reconstitution** ; à remplacer par vos fichiers officiels. Le SVG est préférable (net à toute taille, adaptable au thème) |
+| 2 | **Fichiers du logo** | **Les trois fichiers fournis sont utilisés tels quels** (`Investally rectangle.png` : barre latérale ; `Investally square.png` : connexion ; `Investudy rectangle.png` : écrans de formation et carte d'accès Investudy), recadrés et réduits à 700–1 000 px, fond transparent conservé. En **thème sombre**, version monochrome blanche (le noir y serait illisible) | Il manque une **variante claire officielle** pour le thème sombre (le taupe est perdu en monochrome) et idéalement des **SVG** (nets à toute taille). Les sources restent dans `C:\dev\external ressources\Investally` |
 | 3 | **Bouton principal** | Taupe avec **texte noir** | Le blanc sur taupe est illisible (2,2 : 1) ; alternative : taupe foncé `#7A6355` + texte blanc (5,6 : 1) |
 | 4 | **Thème sombre** | Oui, en plus du clair | Confort ; demandé en usage prolongé |
 | 5 | **Libellés « Investally Group › Douala »** | Sélecteur d'organisation et de site | À confirmer : plusieurs sites/pays prévus ? (la capture montre « Abidjan ») |
@@ -291,4 +291,4 @@ Détails techniques (Tailwind, structure des fichiers, polices, sécurité CSP, 
 
 ## 12. Ce qui est vérifié, ce qui ne l'est pas
 **Vérifié** : le prototype s'affiche (7 écrans, clair et sombre, mobile) dans un navigateur réel ; tous les contrastes de texte du §4.1 ont été **calculés** ; les polices sont celles du fichier (licence OFL) ; aucune ressource externe n'est chargée.
-**Non vérifié** : rendu sur Safari et Firefox ; lecteur d'écran ; comportement avec de vraies données volumineuses ; fidélité au logo officiel (symbole recomposé).
+**Non vérifié** : rendu sur Safari et Firefox ; lecteur d'écran ; comportement avec de vraies données volumineuses ; lisibilité de la baseline du logo (« SIMPLIFIER, CONNECTER, INVESTIR. ») dans la barre latérale à petite taille.
