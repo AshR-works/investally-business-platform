@@ -1,11 +1,22 @@
 'use client';
 
-import { PageHeading } from '../../../../components/page-heading';
 import { FormEvent, useCallback, useEffect, useState } from 'react';
+import { Badge } from '../../../../components/data/badge';
+import { Card } from '../../../../components/data/card';
+import { DataTable, type Column } from '../../../../components/data/data-table';
+import { EntityCell } from '../../../../components/data/entity-cell';
+import { PageHeader } from '../../../../components/data/page-header';
+import { Pagination } from '../../../../components/data/pagination';
+import { RowAction, RowActions } from '../../../../components/data/row-actions';
+import { SelectionBar } from '../../../../components/data/selection-bar';
+import { QuickFilters, SearchField, Toolbar } from '../../../../components/data/toolbar';
+import { Icon } from '../../../../components/icon';
 import { Modal } from '../../../../components/modal';
+import { PageHeading } from '../../../../components/page-heading';
 import { api, ApiError } from '../../../../lib/api';
 import { useAuth } from '../../../../lib/auth-context';
-import { can, roleLabel, STATUS_LABELS } from '../../../../lib/permissions';
+import { can, roleLabel } from '../../../../lib/permissions';
+import { statusStyle, USER_STATUS } from '../../../../lib/status';
 import type { Page, RoleView, UserView } from '../../../../lib/types';
 
 const PAGE_SIZE = 20;
@@ -34,7 +45,7 @@ export default function UsersPage() {
   const [users, setUsers] = useState<Page<UserView>>({ items: [], total: 0 });
   const [roles, setRoles] = useState<RoleView[]>([]);
   const [page, setPage] = useState(1);
-  const [search, setSearch] = useState('');
+  const [selected, setSelected] = useState<Set<string>>(new Set());
   const [query, setQuery] = useState('');
   const [status, setStatus] = useState('');
   const [dialog, setDialog] = useState<Dialog | null>(null);
@@ -70,8 +81,6 @@ export default function UsersPage() {
     if (!can(profile, 'iam.role.read')) return;
     api<RoleView[]>('/admin/roles').then(setRoles).catch(() => setRoles([]));
   }, [profile]);
-
-  const pages = Math.max(1, Math.ceil(users.total / PAGE_SIZE));
 
   /**
    * Exécute une action d'administration, affiche son résultat (succès ou message du serveur), ferme la fenêtre et
@@ -120,74 +129,74 @@ export default function UsersPage() {
     );
   }
 
+  /** Actions possibles sur un compte, selon les droits de l'utilisateur connecté (le serveur re-contrôle tout). */
+  function rowActions(user: UserView) {
+    const other = user.id !== profile?.userId;
+    const items: { key: string; label: string; danger?: boolean; run: () => void }[] = [];
+    if (canAssign) items.push({ key: 'roles', label: 'Modifier les rôles', run: () => setDialog({ kind: 'roles', user }) });
+    if (canInvite && user.status === 'PENDING') items.push({ key: 'resend', label: 'Renvoyer le lien', run: () => setDialog({ kind: 'confirm', user, action: 'resend' }) });
+    if (canResetPassword && other && (user.status === 'ACTIVE' || user.status === 'LOCKED')) items.push({ key: 'resetPassword', label: 'Réinitialiser le mot de passe', run: () => setDialog({ kind: 'confirm', user, action: 'resetPassword' }) });
+    if (canResetMfa && other && user.mfaEnabled) items.push({ key: 'resetMfa', label: 'Réinitialiser le MFA', run: () => setDialog({ kind: 'confirm', user, action: 'resetMfa' }) });
+    if (canRevokeAll && other) items.push({ key: 'revokeSessions', label: 'Couper les sessions', danger: true, run: () => setDialog({ kind: 'confirm', user, action: 'revokeSessions' }) });
+    if (canDisable && other && user.status !== 'DISABLED') items.push({ key: 'disable', label: 'Désactiver', danger: true, run: () => setDialog({ kind: 'confirm', user, action: 'disable' }) });
+    if (canDisable && user.status === 'DISABLED') items.push({ key: 'enable', label: 'Réactiver', run: () => setDialog({ kind: 'confirm', user, action: 'enable' }) });
+    if (items.length === 0) return null;
+    return (
+      <RowActions label={`Actions pour ${user.displayName}`}>
+        {items.map((item) => <RowAction key={item.key} danger={item.danger} onClick={item.run}>{item.label}</RowAction>)}
+      </RowActions>
+    );
+  }
+
+  const columns: Column<UserView>[] = [
+    { id: 'user', header: 'Utilisateur', cell: (u) => <EntityCell name={u.displayName} subtitle={u.email} round /> },
+    { id: 'roles', header: 'Rôles', cell: (u) => (u.roles.length ? <div className="flex flex-wrap gap-1">{u.roles.map((r) => <Badge key={r}>{roleLabel(r)}</Badge>)}</div> : <span className="text-ink-2">—</span>) },
+    { id: 'status', header: 'Statut', cell: (u) => { const st = statusStyle(USER_STATUS, u.status); return <Badge tone={st.tone}>{st.label}</Badge>; } },
+    { id: 'mfa', header: 'MFA', cell: (u) => <Badge tone={u.mfaEnabled ? 'ok' : 'warn'}>{u.mfaEnabled ? 'Activé' : 'Non configuré'}</Badge> },
+    { id: 'last', header: 'Dernière connexion', cell: (u) => (u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleString('fr-FR') : 'Jamais') },
+    { id: 'actions', header: 'Actions', srOnlyHeader: true, align: 'right', cell: rowActions },
+  ];
+
   return (
     <>
-      <div className="row between">
-        <PageHeading>Utilisateurs</PageHeading>
-        {canInvite && <button type="button" onClick={() => setDialog({ kind: 'invite' })}>Inviter un utilisateur</button>}
-      </div>
-
-      <form
-        className="panel row"
-        onSubmit={(e) => {
-          e.preventDefault();
-          setPage(1);
-          setQuery(search.trim());
-        }}
-      >
-        <label style={{ margin: 0, flex: 1, minWidth: 200 }}>
-          Recherche (nom ou e-mail)
-          <input value={search} onChange={(e) => setSearch(e.target.value)} maxLength={100} />
-        </label>
-        <label style={{ margin: 0 }}>
-          Statut
-          <select value={status} onChange={(e) => { setPage(1); setStatus(e.target.value); }}>
-            <option value="">Tous</option>
-            {Object.entries(STATUS_LABELS).map(([code, label]) => <option key={code} value={code}>{label}</option>)}
-          </select>
-        </label>
-        <button type="submit" className="secondary" style={{ alignSelf: 'flex-end' }}>Rechercher</button>
-      </form>
+      <PageHeader
+        eyebrow="Gouvernance"
+        title="Utilisateurs"
+        description="Comptes, rôles et sessions : invitez, attribuez des rôles, désactivez ou réinitialisez un accès."
+        actions={
+          canInvite && (
+            <button type="button" onClick={() => setDialog({ kind: 'invite' })} className="inline-flex items-center gap-2">
+              <Icon name="plus" className="size-4" />Inviter un utilisateur
+            </button>
+          )
+        }
+      />
 
       {error && <p role="alert" className="error">{error}</p>}
       {notice && <p role="status" className="notice">{notice}</p>}
+      <SelectionBar count={selected.size} onClear={() => setSelected(new Set())} />
 
-      <div className="table-wrap">
-        <table>
-          <thead><tr><th>Nom</th><th>Rôles</th><th>Statut</th><th>MFA</th><th>Dernière connexion</th><th>Actions</th></tr></thead>
-          <tbody>
-            {users.items.map((user) => (
-              <tr key={user.id}>
-                <td>{user.displayName}<br /><span className="hint">{user.email}</span></td>
-                <td>{user.roles.length ? user.roles.map((r) => <span key={r} className="badge">{roleLabel(r)}</span>) : '—'}</td>
-                <td><span className={`badge ${user.status === 'ACTIVE' ? 'ok' : user.status === 'PENDING' ? 'warn' : 'bad'}`}>{STATUS_LABELS[user.status]}</span></td>
-                <td>{user.mfaEnabled ? 'Activé' : 'Non configuré'}</td>
-                <td>{user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString('fr-FR') : 'Jamais'}</td>
-                <td>
-                  <div className="row">
-                    {canAssign && <button type="button" className="secondary small" onClick={() => setDialog({ kind: 'roles', user })}>Rôles</button>}
-                    {canInvite && user.status === 'PENDING' && <button type="button" className="secondary small" onClick={() => setDialog({ kind: 'confirm', user, action: 'resend' })}>Renvoyer le lien</button>}
-                    {canDisable && user.status !== 'DISABLED' && user.id !== profile?.userId && <button type="button" className="secondary small" onClick={() => setDialog({ kind: 'confirm', user, action: 'disable' })}>Désactiver</button>}
-                    {canDisable && user.status === 'DISABLED' && <button type="button" className="secondary small" onClick={() => setDialog({ kind: 'confirm', user, action: 'enable' })}>Réactiver</button>}
-                    {canResetPassword && (user.status === 'ACTIVE' || user.status === 'LOCKED') && user.id !== profile?.userId && <button type="button" className="secondary small" onClick={() => setDialog({ kind: 'confirm', user, action: 'resetPassword' })}>Réinitialiser le mot de passe</button>}
-                    {canResetMfa && user.mfaEnabled && user.id !== profile?.userId && <button type="button" className="secondary small" onClick={() => setDialog({ kind: 'confirm', user, action: 'resetMfa' })}>Réinitialiser le MFA</button>}
-                    {canRevokeAll && user.id !== profile?.userId && <button type="button" className="secondary small" onClick={() => setDialog({ kind: 'confirm', user, action: 'revokeSessions' })}>Couper les sessions</button>}
-                  </div>
-                </td>
-              </tr>
-            ))}
-            {users.items.length === 0 && <tr><td colSpan={6}>Aucun utilisateur</td></tr>}
-          </tbody>
-        </table>
-      </div>
-
-      <div className="row between" style={{ marginTop: '1rem' }}>
-        <span className="hint">{users.total} utilisateur(s) — page {page} sur {pages}</span>
-        <div className="row">
-          <button type="button" className="secondary small" disabled={page <= 1} onClick={() => setPage(page - 1)}>Précédent</button>
-          <button type="button" className="secondary small" disabled={page >= pages} onClick={() => setPage(page + 1)}>Suivant</button>
-        </div>
-      </div>
+      <Card>
+        <Toolbar>
+          <QuickFilters
+            label="Filtrer par statut"
+            value={status}
+            onChange={(value) => { setPage(1); setStatus(value); }}
+            options={[{ value: '', label: 'Tous' }, ...Object.entries(USER_STATUS).map(([value, st]) => ({ value, label: st.label }))]}
+          />
+          <SearchField label="Rechercher un utilisateur (nom ou e-mail)" onSearch={(value) => { setPage(1); setQuery(value); }} />
+        </Toolbar>
+        <DataTable
+          caption="Utilisateurs"
+          columns={columns}
+          rows={users.items}
+          rowId={(u) => u.id}
+          rowLabel={(u) => u.displayName}
+          selection={{ selected, onChange: setSelected }}
+          empty="Aucun utilisateur ne correspond."
+        />
+        <Pagination page={page} pageSize={PAGE_SIZE} total={users.total} onPage={setPage} />
+      </Card>
 
       {dialog?.kind === 'invite' && (
         <InviteDialog

@@ -2,7 +2,7 @@
 
 > Document **généré** par `node scripts/gen-function-index.mjs` à partir des commentaires du code. Ne pas le modifier à la main : corriger le commentaire dans le fichier source, puis relancer le script.
 
-**557 déclarations commentées au total.**
+**586 déclarations commentées au total.**
 
 
 ## API (NestJS) — 459 déclarations commentées
@@ -991,7 +991,7 @@
 | `export interface RequestLike` | Forme minimale d'une requête HTTP (sans dépendre d'Express) pour construire le contexte d'audit. |
 | `export function actorContextFrom(req: RequestLike, identity: { userId: string \| null; sessionId: string \| null } = { userId: null, sessionId: null }` | Qui agit, depuis où : IP et appareil de la requête (l'identité est ajoutée une fois l'utilisateur authentifié). |
 
-## Interface web — pages (Next.js) — 37 déclarations commentées
+## Interface web — pages (Next.js) — 39 déclarations commentées
 
 ### `(app)/account/page.tsx`
 
@@ -1012,6 +1012,7 @@
 | `export default function UsersPage()` | Page d'administration des utilisateurs : liste, recherche, filtre, pagination et actions (inviter, rôles, désactiver, réinitialiser mot de passe ou MFA, couper les sessions). |
 | `async function run(action: () => Promise<unknown>, success: string)` | Exécute une action d'administration, affiche son résultat (succès ou message du serveur), ferme la fenêtre et recharge la liste. |
 | `function confirmAction(user: UserView, action: 'disable' \| 'enable' \| 'resetMfa' \| 'revokeSessions' \| 'resend' \| 'resetPassword')` | Associe chaque action de confirmation à son appel d'API et à son message de succès. |
+| `function rowActions(user: UserView)` | Actions possibles sur un compte, selon les droits de l'utilisateur connecté (le serveur re-contrôle tout). |
 | `function RoleChoices({ roles, selected, onToggle }: { roles: RoleView[]; selected: string[]; onToggle: (code: string) => void })` | Cases à cocher des rôles, avec leur description. |
 | `function toggle(list: string[], code: string): string[]` | Ajoute le code à la liste s'il n'y est pas, le retire sinon (sans modifier la liste d'origine). |
 | `function InviteDialog({ roles, managers, onClose, onSubmit }:` | Fenêtre d'invitation : adresse, nom, rôles et responsable facultatif. |
@@ -1022,8 +1023,9 @@
 
 | Déclaration | Rôle |
 |---|---|
-| `export default function CompaniesPage()` | Entreprises visibles selon la portée de l'utilisateur et création d'une entreprise (si le droit existe). |
-| `async function submit(event: FormEvent)` | Enregistre l'entreprise saisie puis recharge la liste. |
+| `export default function CompaniesPage()` | Entreprises visibles selon la portée de l'utilisateur : tableau du design (recherche, pagination, sélection persistante) et création d'une entreprise dans une fenêtre (si le droit existe). |
+| `function CreateCompanyDialog({ onClose, onCreated }: { onClose: () => void; onCreated: () => Promise<void> })` | Fenêtre de création : le nom est la seule donnée obligatoire (le propriétaire est l'utilisateur connecté, décidé côté serveur). |
+| `async function submit(event: FormEvent)` | Enregistre l'entreprise saisie ; en cas d'échec le message de l'API s'affiche dans la fenêtre. |
 
 ### `(app)/layout.tsx`
 
@@ -1085,7 +1087,7 @@
 | `export default function ResetPasswordPage()` | Page ouverte depuis le lien reçu par e-mail. |
 | `async function submit(event: FormEvent)` | Envoie le jeton et le nouveau mot de passe ; le serveur coupe toutes les sessions, l'utilisateur doit se reconnecter avec son second facteur. |
 
-## Interface web — composants — 15 déclarations commentées
+## Interface web — composants — 35 déclarations commentées
 
 ### `app-shell.tsx`
 
@@ -1096,6 +1098,71 @@
 | `const openSearch = useCallback(()` | Va à la recherche globale du hub (ou y met le focus si l'on y est déjà). |
 | `function ShellLink({ href, icon, label, current, railOnly, centered, rail }: { href: string; icon: IconName; label: string; current: boolean; railOnly` | Lien de navigation : pictogramme + libellé (le libellé reste lu par les lecteurs d'écran quand le rail est replié). |
 | `function ThemeToggle()` | Bascule clair / sombre (le choix est mémorisé ; sans choix, l'application suit le réglage de l'appareil). |
+
+### `data/badge.tsx`
+
+| Déclaration | Rôle |
+|---|---|
+| `export type Tone = 'ok' \| 'warn' \| 'bad' \| 'info' \| 'neutral';` | Teinte d'un badge : le sens est porté par le TEXTE et le point, jamais par la couleur seule (WCAG 1.4.1). |
+| `export function Badge({ tone = 'neutral', children }: { tone?: Tone; children: ReactNode })` | Badge d'état (statut, rôle, indicateur) : pastille arrondie, point de couleur et libellé. |
+
+### `data/card.tsx`
+
+| Déclaration | Rôle |
+|---|---|
+| `export function Card({ children, className = '' }: { children: ReactNode; className?: string })` | Surface de contenu (tableau, formulaire, bloc) : fond blanc, bord fin, coins arrondis (jetons du design). |
+
+### `data/data-table.tsx`
+
+| Déclaration | Rôle |
+|---|---|
+| `export interface Column<T>` | Colonne d'un tableau : en-tête, rendu de la cellule, alignement. |
+| `export interface TableSelection` | Sélection persistante d'un tableau : l'ensemble des identifiants et son gestionnaire. |
+| `const INTERACTIVE = 'button, a, input, label, select, textarea, summary, [role="button"], [role="menuitem"]';` | Éléments sur lesquels un clic ne doit PAS basculer la sélection de la ligne. |
+| `export function DataTable<T>(` | Tableau de données du design. |
+
+### `data/entity-cell.tsx`
+
+| Déclaration | Rôle |
+|---|---|
+| `export function initialsOf(name: string): string` | Initiales (deux lettres au plus) d'un nom, pour l'étiquette graphique d'une ligne. |
+| `export function EntityCell({ name, subtitle, round = false }: { name: string; subtitle?: string \| null; round?: boolean })` | Cellule « entité » des tableaux : étiquette à initiales (carrée pour une organisation, ronde pour une personne), nom en gras et ligne secondaire. |
+
+### `data/page-header.tsx`
+
+| Déclaration | Rôle |
+|---|---|
+| `export function PageHeader({ eyebrow, title, description, actions }: { eyebrow?: string; title: string; description?: string; actions?: ReactNode })` | En-tête de page du design : fil d'Ariane (retour à la Vue d'ensemble), domaine, titre (qui renseigne aussi le titre du document), description et actions principales à droite. |
+
+### `data/pagination.tsx`
+
+| Déclaration | Rôle |
+|---|---|
+| `export function pageRange(page: number, pageSize: number, total: number): { from: number; to: number }` | Bornes affichées « de – à » pour une page (1-indexée) ; `0–0` quand il n'y a aucun résultat. |
+| `export function Pagination({ page, pageSize, total, onPage }: { page: number; pageSize: number; total: number; onPage: (page: number) => void })` | Pied de tableau : « 1–20 sur 48 » et boutons Précédent / Suivant. |
+
+### `data/row-actions.tsx`
+
+| Déclaration | Rôle |
+|---|---|
+| `const MENU_WIDTH = 224;` | Largeur du menu (px) : sert à le placer à gauche du bouton sans recouvrir les boutons des lignes voisines. |
+| `export function RowActions({ label, children }: { label: string; children: ReactNode })` | Menu d'actions d'une ligne (bouton « ⋯ ») : motif de divulgation `details`/`summary`, qui se manipule au clavier (Entrée ou Espace ouvre, Échap ferme et rend le focus au bouton). |
+| `export function RowAction({ children, onClick, danger = false }: { children: ReactNode; onClick: () => void; danger?: boolean })` | Action d'un menu de ligne : bouton plein largeur, aligné à gauche, discret. |
+
+### `data/selection-bar.tsx`
+
+| Déclaration | Rôle |
+|---|---|
+| `export function SelectionBar({ count, onClear, children }: { count: number; onClear: () => void; children?: ReactNode })` | Barre de sélection (EXD-02) : apparaît tant que des lignes ou des cartes sont sélectionnées, annonce le nombre aux lecteurs d'écran et propose « Tout désélectionner ». |
+
+### `data/toolbar.tsx`
+
+| Déclaration | Rôle |
+|---|---|
+| `export function Toolbar({ children }: { children: ReactNode })` | Barre d'outils d'un tableau : filtres rapides à gauche, recherche et réglages à droite. |
+| `export interface FilterOption` | Option d'un filtre rapide (`count` facultatif : seulement s'il est connu de l'API). |
+| `export function QuickFilters({ label, value, options, onChange }: { label: string; value: string; options: FilterOption[]; onChange: (value: string) =` | Filtres rapides sous forme de boutons à bascule (un seul actif). |
+| `export function SearchField({ label, placeholder = 'Rechercher', delay = 300, onSearch }: { label: string; placeholder?: string; delay?: number; onSea` | Champ de recherche à saisie différée : n'appelle `onSearch` qu'après une courte pause (pas à chaque touche) ni au premier rendu. |
 
 ### `gate.tsx`
 
@@ -1128,7 +1195,7 @@
 
 | Déclaration | Rôle |
 |---|---|
-| `export function PageHeading({ children, title }: { children: string; title?: string })` | Titre de page (`h1`) qui renseigne aussi le titre du document : le lecteur d'écran l'annonce à chaque changement de page (WCAG 2.4.2) et l'onglet du navigateur dit où l'on se trouve. |
+| `export function PageHeading({ children, title, className }: { children: string; title?: string; className?: string })` | Titre de page (`h1`) qui renseigne aussi le titre du document : le lecteur d'écran l'annonce à chaque changement de page (WCAG 2.4.2) et l'onglet du navigateur dit où l'on se trouve. |
 
 ### `step-up-dialog.tsx`
 
@@ -1137,7 +1204,7 @@
 | `export function StepUpDialog({ onDone }: { onDone: (ok: boolean) => void })` | Demande un code frais du second facteur avant une action sensible (modification de rôles, désactivation, etc.). |
 | `async function submit(event: FormEvent)` | Vérifie le code ; en cas de succès le nouveau jeton remplace l'ancien et l'action sensible est rejouée. |
 
-## Interface web — bibliothèque — 46 déclarations commentées
+## Interface web — bibliothèque — 53 déclarations commentées
 
 ### `api.ts`
 
@@ -1214,6 +1281,23 @@
 | `export const MIN_QUERY_LENGTH = 2;` | Nombre minimal de caractères avant d'interroger le serveur. |
 | `export const HITS_PER_TYPE = 5;` | Résultats demandés par type. |
 | `export async function searchAll(query: string, profile: Profile \| null, signal?: AbortSignal): Promise<SearchHit[]>` | Recherche globale (CAD-H1-4) : interroge en parallèle les listes que le profil a le droit de lire (entreprises, utilisateurs). |
+
+### `selection.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export type Selection = ReadonlySet<string>;` | Sélection persistante (EXD-02) : ensemble d'identifiants, conservé d'une page à l'autre jusqu'à désélection. |
+| `export function toggleId(selection: Selection, id: string): Set<string>` | Ajoute l'identifiant s'il n'y est pas, le retire sinon (renvoie un nouvel ensemble). |
+| `export function allSelected(selection: Selection, ids: readonly string[]): boolean` | Vrai si tous les identifiants donnés sont sélectionnés (et qu'il y en a au moins un). |
+| `export function someSelected(selection: Selection, ids: readonly string[]): boolean` | Vrai si une partie seulement des identifiants est sélectionnée (case d'en-tête « indéterminée »). |
+| `export function setMany(selection: Selection, ids: readonly string[], selected: boolean): Set<string>` | Sélectionne ou désélectionne tous les identifiants donnés, sans toucher à la sélection des autres pages. |
+
+### `status.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export interface StatusStyle` | Libellé et teinte d'un statut (le sens reste porté par le texte). |
+| `export function statusStyle(table: Record<string, StatusStyle>, code: string): StatusStyle` | Style d'un statut ; un statut inconnu garde son code brut en teinte neutre (jamais d'erreur d'affichage). |
 
 ### `theme.ts`
 

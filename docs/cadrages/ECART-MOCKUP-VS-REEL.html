@@ -1,0 +1,54 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Écart entre le mockup et l&#x27;application réelle</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — cadrages · <a href="README.html">Index</a> · <a href="../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../design/05-AIDE-A-LA-DECISION.html">Aide à la décision</a></nav><h1>Écart entre le mockup et l'application réelle</h1>
+<p><strong>Date</strong> : 2026-10-21 · <strong>Pourquoi ce document</strong> : l'application ne ressemblait pas au mockup ; ce tableau dit, écran par écran, <strong>ce qui est reproduit, ce qui manque et pourquoi</strong>. Mis à jour après la session H1b (composants de données).</p>
+<p><strong>Principe</strong> : un élément du mockup n'apparaît dans l'application que s'il a une <strong>donnée réelle</strong> derrière lui. Aucune donnée fictive ne sort du prototype.</p>
+<h2>Les structures de données prévues par le design (et leur état)</h2>
+<div class="table-wrap"><table><thead><tr><th>Structure du mockup</th><th>État</th><th>Où</th></tr></thead><tbody>
+<tr><td>En-tête de page : fil d'Ariane, domaine, titre, description, actions</td><td>✅ réalisée</td><td>Entreprises, Utilisateurs</td></tr>
+<tr><td>Tableau : en-têtes, cellule « entité » à initiales, badges de statut</td><td>✅ réalisée</td><td>Entreprises, Utilisateurs, sessions de Mon compte</td></tr>
+<tr><td>Sélection persistante (case, clic sur la ligne, fond teinté + barre de 4 px, case d'en-tête indéterminée) — EXD-02</td><td>✅ réalisée</td><td>Entreprises, Utilisateurs</td></tr>
+<tr><td>Barre « n sélectionnées · Tout désélectionner »</td><td>✅ réalisée (sans actions groupées, voir ci-dessous)</td><td>Entreprises, Utilisateurs</td></tr>
+<tr><td>Barre d'outils : filtres rapides, recherche à saisie différée</td><td>✅ réalisée</td><td>Utilisateurs (filtres par statut) ; recherche partout</td></tr>
+<tr><td>Pagination « 1–20 sur 48 »</td><td>✅ réalisée</td><td>Entreprises, Utilisateurs</td></tr>
+<tr><td>Menu d'actions d'une ligne « ⋯ » (clavier, fermeture à Échap)</td><td>✅ réalisée</td><td>Utilisateurs</td></tr>
+<tr><td>Fenêtre de création</td><td>✅ réalisée</td><td>Nouvelle entreprise, Inviter</td></tr>
+<tr><td>Cartes d'opportunités (6 par ligne), bandeau d'étapes, vue « Par étape »</td><td>⏳ non réalisée</td><td>S4.3 (la logique de sélection est prête : <code>lib/selection.ts</code>)</td></tr>
+<tr><td>Indicateurs (KPI), carte « héros », graphiques</td><td>⏳ non réalisée</td><td>S6 (aucune source de données)</td></tr>
+</tbody></table></div>
+<h2>Écran par écran</h2>
+<div class="table-wrap"><table><thead><tr><th>Écran du mockup</th><th>Ce qui est reproduit</th><th>Ce qui manque</th><th>Pourquoi</th><th>Session</th></tr></thead><tbody>
+<tr><td><strong>Vue d'ensemble (hub)</strong></td><td>Recherche globale, tuiles des modules disponibles, modules « À venir »</td><td>Indicateurs, rendez-vous du jour, tâches</td><td>Aucune source de données</td><td>S4 à S6</td></tr>
+<tr><td><strong>Entreprises</strong></td><td>En-tête, tableau (entreprise, secteur, statut), recherche, sélection persistante, pagination, création en fenêtre</td><td>Colonnes <strong>Responsable, Valeur estimée, Dernière activité</strong> ; ville dans la cellule ; onglets « Les miennes / À relancer » avec compteurs ; boutons <strong>Filtres, Colonnes, Exporter, Réassigner</strong></td><td>L'API ne fournit que nom, secteur et statut ; pas de route d'export ni de réassignation ; pas de filtre serveur autre que la recherche</td><td>S4.1, S4.3</td></tr>
+<tr><td><strong>Utilisateurs</strong> (pas de maquette dédiée, même gabarit)</td><td>Tableau complet : utilisateur, rôles, statut, MFA, dernière connexion, menu d'actions, filtres par statut, recherche, pagination</td><td>Compteurs par statut dans les filtres ; actions groupées</td><td>Compteurs : requêtes supplémentaires non prévues ; actions groupées : pas de routes</td><td>à décider</td></tr>
+<tr><td><strong>Mon compte</strong></td><td>Sessions dans le tableau du design</td><td>Mise en page des autres blocs (profil, mot de passe, codes de secours) au nouveau style ; historique des connexions</td><td>Écrans d'accès et de compte prévus en H2</td><td>H2</td></tr>
+<tr><td><strong>Écrans d'accès</strong> (connexion, MFA, invitation, mot de passe)</td><td>Couleurs, polices, formes du design (couche « legacy »)</td><td>Gabarit pas à pas du mockup, 18 écrans</td><td>Prévu en H2</td><td>H2</td></tr>
+<tr><td><strong>Opportunités</strong></td><td>—</td><td>Tout l'écran</td><td>Le module n'existe pas</td><td>S4.3</td></tr>
+<tr><td><strong>Agenda</strong></td><td>—</td><td>Tout l'écran</td><td>Le module n'existe pas</td><td>S4.2b</td></tr>
+<tr><td><strong>Formation</strong></td><td>—</td><td>Tout l'écran</td><td>Le module n'existe pas</td><td>S5</td></tr>
+<tr><td><strong>Centre de confiance (Sécurité)</strong></td><td>—</td><td>Score, graphique, tableau des événements</td><td>Lecture du journal d'audit non exposée</td><td>S6.2</td></tr>
+<tr><td><strong>Page « Composants »</strong></td><td>—</td><td>Page de référence des composants</td><td>Non demandée en H1 ; les composants sont en place et testés</td><td>à décider</td></tr>
+</tbody></table></div>
+<h2>Ce que vous pouvez faire</h2>
+<ul><li>Constater le résultat : captures dans <code>docs/accessibilite/h1-captures/</code> (fichiers <code>entreprises-selection</code>, <code>utilisateurs</code>, <code>utilisateurs-menu</code>, <code>hub-clair</code>).</li><li>Choisir ce qui comble l'écart restant le plus vite : <strong>ajouter à l'API</strong> les champs et filtres manquants (responsable, dernière activité, compteurs) sans attendre S4 — c'est une décision qui touche le périmètre de S4.1, à arbitrer avec la méthode.</li></ul></main></body></html>
