@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Investally Business Platform — prototype du design</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="prototype.css">
+</head>
+<body data-view="login">
+<a class="skip" href="#contenu">Aller au contenu</a>
+
+<!-- Icônes (traits 1,6 px, grille 24) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></symbol>
+  <symbol id="i-building" viewBox="0 0 24 24"><path d="M5 21V4.5A1.5 1.5 0 0 1 6.5 3h7A1.5 1.5 0 0 1 15 4.5V21M15 9h3.5A1.5 1.5 0 0 1 20 10.5V21M3 21h18M8.5 7.5h3M8.5 11h3M8.5 14.5h3"/></symbol>
+  <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2"/></symbol>
+  <symbol id="i-cap" viewBox="0 0 24 24"><path d="M2 9.5 12 5l10 4.5-10 4.5L2 9.5ZM6 11.5V16c0 1.2 2.7 3 6 3s6-1.8 6-3v-4.5M22 9.5V15"/></symbol>
+  <symbol id="i-card" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3 10h18M7 15h3"/></symbol>
+  <symbol id="i-brief" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2.5"/><path d="M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7M3 13h18"/></symbol>
+  <symbol id="i-doc" viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6V3ZM14 3v4h4M9 12h6M9 16h6"/></symbol>
+  <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2.5v2.2M12 19.3v2.2M4.9 4.9l1.6 1.6M17.5 17.5l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.9 19.1l1.6-1.6M17.5 6.5l1.6-1.6"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3 4.5 6v5.5c0 4.6 3.1 8.2 7.5 9.5 4.4-1.3 7.5-4.9 7.5-9.5V6L12 3Z"/><path d="m8.8 12 2.2 2.2 4.2-4.4"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.8-3.8"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 16.5V11a6 6 0 1 1 12 0v5.5l1.5 2h-15l1.5-2ZM10 21h4"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5Z"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 4v11m0 0-4-4m4 4 4-4M5 20h14"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-filter" viewBox="0 0 24 24"><path d="M3.5 5h17l-6.5 7.5V19l-4 1.5v-8L3.5 5Z"/></symbol>
+  <symbol id="i-cols" viewBox="0 0 24 24"><path d="m12 3 9 4.5-9 4.5-9-4.5L12 3ZM3 12l9 4.5 9-4.5M3 16.5 12 21l9-4.5"/></symbol>
+  <symbol id="i-more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="19" cy="12" r="1.3"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m0 0-5-5m5 5-5 5"/></symbol>
+  <symbol id="i-trend" viewBox="0 0 24 24"><path d="m3 17 6-6 4 4 8-8M15 7h6v6"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></symbol>
+  <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></symbol>
+  <!-- Symbole de marque : reconstruction du logo (à remplacer par le SVG officiel) -->
+  <symbol id="mark" viewBox="700 250 530 495">
+    <rect x="712" y="262" width="506" height="472" rx="46" fill="none" stroke="currentColor" stroke-width="9"/>
+    <rect x="868" y="468" width="26" height="204" fill="currentColor"/><rect x="948" y="413" width="26" height="261" fill="currentColor"/><rect x="1028" y="352" width="27" height="232" fill="currentColor"/>
+    <circle cx="881" cy="411" r="13" style="fill:var(--brand)"/><circle cx="961" cy="352" r="13" style="fill:var(--brand)"/><circle cx="1041" cy="657" r="13" style="fill:var(--brand)"/>
+  </symbol>
+</svg>
+
+<!-- ============ ÉCRAN : CONNEXION ============ -->
+<main class="auth" id="auth">
+  <section class="auth-art" aria-hidden="true">
+    <div class="brand" style="padding:0"><svg class="mark" style="color:var(--hero-ink)"><use href="#mark"/></svg><span class="wordmark">Invest<b>ally</b></span></div>
+    <div><h2>Simplifier, connecter, investir.</h2><p>Une seule plateforme pour piloter le développement commercial, la formation et les opérations de l’entreprise.</p></div>
+    <div class="bars"><span style="height:35%"></span><span style="height:52%"></span><span style="height:44%"></span><span style="height:68%"></span><span style="height:60%"></span><span style="height:82%"></span><span style="height:100%"></span></div>
+  </section>
+  <section class="auth-form">
+    <div class="auth-box">
+      <div class="steps" aria-label="Étape 1 sur 2"><i class="on"></i><i></i></div>
+      <h1>Connexion</h1>
+      <p>Accédez à votre espace de travail Investally.</p>
+      <form onsubmit="event.preventDefault();go('dashboard')">
+        <div class="field"><label for="email">Adresse e-mail</label><input class="input" id="email" type="email" autocomplete="username" placeholder="prenom.nom@investally.com" required></div>
+        <div class="field"><label for="pwd">Mot de passe</label><input class="input" id="pwd" type="password" autocomplete="current-password" required></div>
+        <p style="text-align:right;margin:-4px 0 var(--s-5)"><a href="#" onclick="return false">Mot de passe oublié ?</a></p>
+        <button class="btn btn-strong block" type="submit">Se connecter</button>
+        <p class="help" style="display:flex;gap:8px;align-items:center;margin-top:var(--s-5)"><svg class="icon sm"><use href="#i-lock"/></svg>Un code de votre application d’authentification vous sera demandé ensuite.</p>
+      </form>
+      <hr style="border:0;border-top:1px solid var(--line);margin:var(--s-6) 0">
+      <p class="help">Étape suivante (aperçu) : <a href="#" onclick="return false">saisie du code à 6 chiffres</a></p>
+      <div class="otp" aria-label="Aperçu du champ de code"><input class="input" maxlength="1" aria-label="Chiffre 1" value="4"><input class="input" maxlength="1" aria-label="Chiffre 2" value="8"><input class="input" maxlength="1" aria-label="Chiffre 3"><input class="input" maxlength="1" aria-label="Chiffre 4"><input class="input" maxlength="1" aria-label="Chiffre 5"><input class="input" maxlength="1" aria-label="Chiffre 6"></div>
+    </div>
+  </section>
+</main>
+
+<!-- ============ COQUE ============ -->
+<div class="app">
+  <aside class="sidebar" id="sidebar" aria-label="Navigation principale">
+    <a class="brand" href="#dashboard"><svg class="mark" aria-hidden="true"><use href="#mark"/></svg><div><span class="wordmark">Invest<b>ally</b></span><small>BUSINESS PLATFORM</small></div></a>
+    <nav class="nav">
+      <div class="nav-label">Espace de travail</div>
+      <a href="#dashboard" data-nav="dashboard"><svg class="icon"><use href="#i-grid"/></svg>Vue d’ensemble</a>
+      <a href="#companies" data-nav="companies"><svg class="icon"><use href="#i-building"/></svg>Entreprises</a>
+      <a href="#pipeline" data-nav="pipeline"><svg class="icon"><use href="#i-target"/></svg>Développement<span class="count">8</span></a>
+      <a href="#formation" data-nav="formation"><svg class="icon"><use href="#i-cap"/></svg>Formation</a>
+      <div class="nav-label">Opérations</div>
+      <a href="#soon"><svg class="icon"><use href="#i-card"/></svg>Finance</a>
+      <a href="#soon"><svg class="icon"><use href="#i-brief"/></svg>Ressources humaines</a>
+      <a href="#soon"><svg class="icon"><use href="#i-doc"/></svg>Fiscalité</a>
+      <div class="nav-label">Gouvernance</div>
+      <a href="#soon"><svg class="icon"><use href="#i-gear"/></svg>Administration</a>
+      <a href="#security" data-nav="security"><svg class="icon"><use href="#i-shield"/></svg>Sécurité</a>
+      <a href="#components" data-nav="components"><svg class="icon"><use href="#i-cols"/></svg>Composants</a>
+    </nav>
+    <a class="academy" href="#formation"><span class="ico"><img src="assets/logo-investudy.png" alt="" width="28" style="display:none"><svg class="icon"><use href="#i-cap"/></svg></span><span><strong>Investudy</strong><span>Centre de formation</span></span><svg class="icon sm" style="margin-left:auto"><use href="#i-arrow"/></svg></a>
+    <div class="me"><span class="avatar">EK</span><div><strong>Emma Koffi</strong><span>Administratrice</span></div></div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <button class="icon-btn menu-btn" id="menuBtn" aria-label="Ouvrir le menu" aria-expanded="false"><svg class="icon"><use href="#i-menu"/></svg></button>
+      <div class="org"><span>Investally Group</span><svg class="icon sm"><use href="#i-chev"/></svg><strong>Douala</strong></div>
+      <label class="search"><svg class="icon"><use href="#i-search"/></svg><span class="sr-only">Rechercher</span><input type="search" placeholder="Rechercher partout"><kbd>⌘ K</kbd></label>
+      <button class="icon-btn" id="themeBtn" aria-label="Basculer le thème clair ou sombre"><svg class="icon"><use href="#i-moon"/></svg></button>
+      <button class="icon-btn" aria-label="Notifications (2 non lues)"><svg class="icon"><use href="#i-bell"/></svg><span class="dot"></span></button>
+      <div class="user-chip"><span class="avatar">EK</span><div><strong>Emma Koffi</strong><span>Direction générale</span></div></div>
+    </header>
+
+    <div class="page" id="contenu" tabindex="-1">
+
+      <!-- ===== VUE D'ENSEMBLE ===== -->
+      <section class="screen" data-screen="dashboard">
+        <div class="crumbs">Investally <svg class="icon sm"><use href="#i-chev"/></svg> Vue d’ensemble</div>
+        <div class="eyebrow">Direction générale</div>
+        <div class="page-head"><div><h1>Bonjour Emma</h1><p>Voici l’activité commerciale et la formation de ce mois.</p></div>
+          <div class="actions"><button class="btn btn-secondary"><svg class="icon sm"><use href="#i-down"/></svg>Exporter</button><button class="btn btn-primary"><svg class="icon sm"><use href="#i-plus"/></svg>Créer</button></div></div>
+        <div class="hero">
+          <div><small>Pipeline pondéré</small><div class="big">184 M</div><span class="trend"><svg class="icon sm"><use href="#i-trend"/></svg>+8,4 % sur 30 jours · XAF</span></div>
+          <div class="bars" role="img" aria-label="Pipeline mensuel sur 12 mois, en hausse"><span style="height:28%"></span><span style="height:40%"></span><span style="height:34%"></span><span style="height:52%"></span><span style="height:46%"></span><span style="height:60%"></span><span style="height:54%"></span><span style="height:72%"></span><span style="height:66%"></span><span style="height:84%"></span><span style="height:76%"></span><span style="height:100%"></span></div>
+          <div class="side"><small>Nouvelles opportunités</small><div class="stat">+24</div><small>ce mois-ci</small></div>
+        </div>
+        <div class="kpis">
+          <div class="card kpi"><div class="label">Opportunités actives<svg class="icon sm"><use href="#i-target"/></svg></div><div class="value">38</div><span class="delta up">▲ 12 % vs mois dernier</span></div>
+          <div class="card kpi"><div class="label">Taux de conversion<svg class="icon sm"><use href="#i-trend"/></svg></div><div class="value">27<small>%</small></div><span class="delta up">▲ 3 pts</span></div>
+          <div class="card kpi"><div class="label">Inscrits Investudy<svg class="icon sm"><use href="#i-cap"/></svg></div><div class="value">146</div><span class="delta up">▲ 18 ce mois</span></div>
+          <div class="card kpi"><div class="label">Relances en retard<svg class="icon sm"><use href="#i-cal"/></svg></div><div class="value">5</div><span class="delta down">▼ à traiter aujourd’hui</span></div>
+        </div>
+        <div class="grid-2">
+          <div class="card card-pad"><div class="card-head"><div><h2>Entonnoir commercial</h2><p>Du premier contact à l’inscription Investudy</p></div><span class="chip">Mois en cours</span></div>
+            <div class="funnel">
+              <div class="row"><span>Prospection</span><div class="track"><div class="fill" style="width:100%"></div></div><span class="num">64</span></div>
+              <div class="row"><span>RDV décideur</span><div class="track"><div class="fill" style="width:72%"></div></div><span class="num">46</span></div>
+              <div class="row"><span>Offre envoyée</span><div class="track"><div class="fill" style="width:52%"></div></div><span class="num">33</span></div>
+              <div class="row"><span>Accord de principe</span><div class="track"><div class="fill" style="width:34%"></div></div><span class="num">22</span></div>
+              <div class="row"><span>Agrément reçu</span><div class="track"><div class="fill" style="width:22%"></div></div><span class="num">14</span></div>
+              <div class="row"><span>Inscrit Investudy</span><div class="track"><div class="fill" style="width:16%"></div></div><span class="num">10</span></div>
+            </div></div>
+          <div class="card card-pad"><div class="card-head"><h2>À faire aujourd’hui</h2><a href="#pipeline">Tout voir</a></div>
+            <div class="todo">
+              <label><input type="checkbox"> Relancer Groupe Kora — offre 3 jours</label>
+              <label><input type="checkbox"> RDV décideur — Société Horizon, 14 h</label>
+              <label><input type="checkbox" checked> Envoyer la décharge à Atlas Négoce</label>
+              <label><input type="checkbox"> Valider l’agrément — Banque du Wouri</label>
+            </div></div>
+        </div>
+        <div class="card card-pad"><div class="card-head"><h2>Activité récente</h2></div>
+          <ul class="feed">
+            <li><span class="avatar sm">YM</span><span class="t"><b>Yann Morel</b> a envoyé une offre à <b>Groupe Kora</b></span><span class="when">il y a 12 min</span></li>
+            <li><span class="avatar sm">LM</span><span class="t"><b>Lina Mensah</b> a obtenu l’agrément de <b>Atlas Négoce</b></span><span class="when">il y a 1 h</span></li>
+            <li><span class="avatar sm">EK</span><span class="t"><b>Emma Koffi</b> a invité un nouveau collaborateur</span><span class="when">il y a 3 h</span></li>
+          </ul></div>
+      </section>
+
+      <!-- ===== ENTREPRISES ===== -->
+      <section class="screen" data-screen="companies">
+        <div class="crumbs">Investally <svg class="icon sm"><use href="#i-chev"/></svg> Entreprises</div>
+        <div class="eyebrow">Développement commercial</div>
+        <div class="page-head"><div><h1>Entreprises</h1><p>Les entreprises cibles visibles selon votre périmètre : les vôtres, celles de votre équipe, ou toutes.</p></div>
+          <div class="actions"><button class="btn btn-secondary"><svg class="icon sm"><use href="#i-down"/></svg>Exporter</button><button class="btn btn-primary"><svg class="icon sm"><use href="#i-plus"/></svg>Nouvelle entreprise</button></div></div>
+        <div class="card table-card">
+          <div class="toolbar">
+            <div class="tabs" role="tablist" aria-label="Filtre rapide">
+              <button class="tab" role="tab" aria-selected="true" data-filter="all">Toutes <span class="n">48</span></button>
+              <button class="tab" role="tab" aria-selected="false" data-filter="mine">Les miennes <span class="n">12</span></button>
+              <button class="tab" role="tab" aria-selected="false" data-filter="late">À relancer <span class="n">5</span></button>
+            </div>
+            <div class="tools"><label class="tool"><svg class="icon sm"><use href="#i-search"/></svg><span class="sr-only">Rechercher une entreprise</span><input style="border:0;background:transparent;outline:none;width:110px" placeholder="Rechercher"></label><button class="tool"><svg class="icon sm"><use href="#i-filter"/></svg>Filtres <span class="chip">2</span></button><button class="tool"><svg class="icon sm"><use href="#i-cols"/></svg>Colonnes</button></div>
+          </div>
+          <div class="table-scroll"><table>
+            <thead><tr><th><input type="checkbox" aria-label="Tout sélectionner"></th><th>Entreprise</th><th>Secteur</th><th>Responsable</th><th>Statut</th><th class="num">Valeur estimée</th><th>Dernière activité</th><th><span class="sr-only">Actions</span></th></tr></thead>
+            <tbody>
+              <tr data-mine="1"><td><input type="checkbox" aria-label="Sélectionner Société Horizon"></td><td><div class="cell-main"><span class="logo-sq">SH</span><div><strong>Société Horizon SA</strong><span>Douala, CM</span></div></div></td><td>Banque</td><td><div class="cell-main"><span class="avatar sm">MK</span>Marie K.</div></td><td><span class="badge info">RDV décideur</span></td><td class="num">42 000 000</td><td class="muted">il y a 2 h</td><td><button class="icon-btn" aria-label="Actions pour Société Horizon"><svg class="icon"><use href="#i-more"/></svg></button></td></tr>
+              <tr data-late="1"><td><input type="checkbox" aria-label="Sélectionner Groupe Kora"></td><td><div class="cell-main"><span class="logo-sq">GK</span><div><strong>Groupe Kora Assurances</strong><span>Yaoundé, CM</span></div></div></td><td>Assurance</td><td><div class="cell-main"><span class="avatar sm">YM</span>Yann M.</div></td><td><span class="badge warn">Offre envoyée</span></td><td class="num">68 500 000</td><td class="muted">il y a 3 jours</td><td><button class="icon-btn" aria-label="Actions pour Groupe Kora"><svg class="icon"><use href="#i-more"/></svg></button></td></tr>
+              <tr data-mine="1"><td><input type="checkbox" aria-label="Sélectionner Atlas Négoce"></td><td><div class="cell-main"><span class="logo-sq">AN</span><div><strong>Atlas Négoce</strong><span>Douala, CM</span></div></div></td><td>Distribution</td><td><div class="cell-main"><span class="avatar sm">LM</span>Lina M.</div></td><td><span class="badge ok">Agrément reçu</span></td><td class="num">19 200 000</td><td class="muted">il y a 1 h</td><td><button class="icon-btn" aria-label="Actions pour Atlas Négoce"><svg class="icon"><use href="#i-more"/></svg></button></td></tr>
+              <tr data-late="1"><td><input type="checkbox" aria-label="Sélectionner Banque du Wouri"></td><td><div class="cell-main"><span class="logo-sq">BW</span><div><strong>Banque du Wouri</strong><span>Douala, CM</span></div></div></td><td>Banque</td><td><div class="cell-main"><span class="avatar sm">MK</span>Marie K.</div></td><td><span class="badge warn">Accord de principe</span></td><td class="num">120 000 000</td><td class="muted">il y a 5 jours</td><td><button class="icon-btn" aria-label="Actions pour Banque du Wouri"><svg class="icon"><use href="#i-more"/></svg></button></td></tr>
+              <tr><td><input type="checkbox" aria-label="Sélectionner Énergie Littoral"></td><td><div class="cell-main"><span class="logo-sq">EL</span><div><strong>Énergie Littoral</strong><span>Kribi, CM</span></div></div></td><td>Énergie</td><td><div class="cell-main"><span class="avatar sm">YM</span>Yann M.</div></td><td><span class="badge">Cible</span></td><td class="num">—</td><td class="muted">il y a 8 jours</td><td><button class="icon-btn" aria-label="Actions pour Énergie Littoral"><svg class="icon"><use href="#i-more"/></svg></button></td></tr>
+              <tr><td><input type="checkbox" aria-label="Sélectionner Sahel Logistique"></td><td><div class="cell-main"><span class="logo-sq">SL</span><div><strong>Sahel Logistique</strong><span>Garoua, CM</span></div></div></td><td>Transport</td><td><div class="cell-main"><span class="avatar sm">LM</span>Lina M.</div></td><td><span class="badge bad">Perdue</span></td><td class="num">8 400 000</td><td class="muted">il y a 3 semaines</td><td><button class="icon-btn" aria-label="Actions pour Sahel Logistique"><svg class="icon"><use href="#i-more"/></svg></button></td></tr>
+            </tbody></table></div>
+          <div class="pager"><span>1–6 sur 48</span><div class="row-flex"><button class="btn btn-secondary" disabled>Précédent</button><button class="btn btn-secondary">Suivant</button></div></div>
+        </div>
+      </section>
+
+      <!-- ===== PIPELINE ===== -->
+      <section class="screen" data-screen="pipeline">
+        <div class="crumbs">Investally <svg class="icon sm"><use href="#i-chev"/></svg> Développement</div>
+        <div class="eyebrow">Développement commercial</div>
+        <div class="page-head"><div><h1>Pipeline des opportunités</h1><p>Un rendez-vous avec le décideur est requis avant l’accord de principe (dérogation tracée possible).</p></div>
+          <div class="actions"><button class="btn btn-secondary"><svg class="icon sm"><use href="#i-filter"/></svg>Filtres</button><button class="btn btn-primary"><svg class="icon sm"><use href="#i-plus"/></svg>Opportunité</button></div></div>
+        <div class="kanban">
+          <div class="col"><h3>Prospection <span>4</span></h3>
+            <div class="deal"><strong>Énergie Littoral</strong><div class="amt">35 M <small class="muted">XAF</small></div><div class="foot"><span>Appel le 24 oct.</span><span class="avatar sm">YM</span></div></div>
+            <div class="deal"><strong>Sahel Logistique</strong><div class="amt">12 M <small class="muted">XAF</small></div><div class="foot"><span>Sans action prévue</span><span class="avatar sm">LM</span></div></div></div>
+          <div class="col"><h3>RDV décideur <span>3</span></h3>
+            <div class="deal"><strong>Société Horizon SA</strong><div class="amt">42 M <small class="muted">XAF</small></div><div class="foot"><span class="badge info">Aujourd’hui 14 h</span><span class="avatar sm">MK</span></div></div></div>
+          <div class="col"><h3>Offre envoyée <span>3</span></h3>
+            <div class="deal"><strong>Groupe Kora Assurances</strong><div class="amt">68,5 M <small class="muted">XAF</small></div><div class="foot"><span class="badge bad">Relance en retard</span><span class="avatar sm">YM</span></div></div></div>
+          <div class="col"><h3>Accord de principe <span>2</span></h3>
+            <div class="deal"><strong>Banque du Wouri</strong><div class="amt">120 M <small class="muted">XAF</small></div><div class="foot"><span>Agrément attendu</span><span class="avatar sm">MK</span></div></div></div>
+          <div class="col"><h3>Agrément reçu <span>2</span></h3>
+            <div class="deal"><strong>Atlas Négoce</strong><div class="amt">19,2 M <small class="muted">XAF</small></div><div class="foot"><span class="badge ok">12 places</span><span class="avatar sm">LM</span></div></div></div>
+          <div class="col"><h3>Inscrit Investudy <span>2</span></h3>
+            <div class="deal"><strong>Atlas Négoce — Session de novembre</strong><div class="amt">12 inscrits</div><div class="foot"><span class="badge ok">Confirmé</span><span class="avatar sm">LM</span></div></div></div>
+        </div>
+      </section>
+
+      <!-- ===== FORMATION (Investudy) ===== -->
+      <section class="screen" data-screen="formation">
+        <div class="crumbs">Investally <svg class="icon sm"><use href="#i-chev"/></svg> Formation</div>
+        <div class="page-head" style="align-items:center;margin-top:var(--s-4)">
+          <div class="cell-main" style="gap:var(--s-4)">
+            <img class="logo-investudy" src="assets/logo-investudy.png" alt="Investudy" width="180" height="57">
+            <div><h1 style="font-size:var(--text-xl)">Centre de formation</h1><p>Sessions, inscriptions et suivi pédagogique.</p></div>
+          </div>
+          <div class="actions"><button class="btn btn-secondary">Catalogue</button><button class="btn btn-primary"><svg class="icon sm"><use href="#i-plus"/></svg>Nouvelle session</button></div>
+        </div>
+        <div class="kpis">
+          <div class="card kpi"><div class="label">Sessions à venir</div><div class="value">7</div><span class="delta up">▲ 2 ce mois</span></div>
+          <div class="card kpi"><div class="label">Places confirmées</div><div class="value">146<small>/ 180</small></div><span class="delta up">81 % remplies</span></div>
+          <div class="card kpi"><div class="label">Présence moyenne</div><div class="value">92<small>%</small></div><span class="delta up">▲ 2 pts</span></div>
+          <div class="card kpi"><div class="label">Certifiés</div><div class="value">58</div><span class="delta up">▲ 9 ce trimestre</span></div>
+        </div>
+        <div class="card table-card"><div class="table-scroll"><table class="no-check">
+          <thead><tr><th>Session</th><th>Entreprise cliente</th><th>Formateur</th><th>Dates</th><th>Inscrits</th><th>Statut</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Analyse financière — niveau 1</strong></td><td>Atlas Négoce</td><td><div class="cell-main"><span class="avatar sm">DN</span>D. Nkoulou</div></td><td>12–14 nov.</td><td>12 / 15</td><td><span class="badge ok">Confirmée</span></td></tr>
+            <tr><td><strong>Gestion de portefeuille</strong></td><td>Banque du Wouri</td><td><div class="cell-main"><span class="avatar sm">SA</span>S. Abega</div></td><td>3–5 déc.</td><td>8 / 20</td><td><span class="badge warn">Agrément attendu</span></td></tr>
+            <tr><td><strong>Conformité et lutte anti-blanchiment</strong></td><td>Groupe Kora</td><td><div class="cell-main"><span class="avatar sm">DN</span>D. Nkoulou</div></td><td>18–19 déc.</td><td>0 / 18</td><td><span class="badge">Planifiée</span></td></tr>
+          </tbody></table></div></div>
+      </section>
+
+      <!-- ===== SÉCURITÉ ===== -->
+      <section class="screen" data-screen="security">
+        <div class="crumbs">Investally <svg class="icon sm"><use href="#i-chev"/></svg> Sécurité</div>
+        <div class="eyebrow">Sécurité</div>
+        <div class="page-head"><div><h1>Centre de confiance</h1><p>Surveillez sessions, connexions, exports et incidents.</p></div>
+          <div class="actions"><button class="btn btn-secondary"><svg class="icon sm"><use href="#i-down"/></svg>Exporter</button><button class="btn btn-primary"><svg class="icon sm"><use href="#i-plus"/></svg>Créer</button></div></div>
+        <div class="hero">
+          <div><small>Score de sécurité</small><div class="big">A</div><span class="trend"><svg class="icon sm"><use href="#i-trend"/></svg>8,4 % sur les 30 derniers jours</span></div>
+          <div class="bars" role="img" aria-label="Activité de sécurité sur 12 périodes"><span style="height:28%"></span><span style="height:44%"></span><span style="height:32%"></span><span style="height:62%"></span><span style="height:50%"></span><span style="height:70%"></span><span style="height:54%"></span><span style="height:82%"></span><span style="height:64%"></span><span style="height:92%"></span><span style="height:74%"></span><span style="height:100%"></span></div>
+          <div class="side"><small>Événements ce mois</small><div class="stat">+24</div><small>nouveaux éléments</small></div>
+        </div>
+        <div class="card table-card">
+          <div class="toolbar">
+            <div class="tabs" role="tablist" aria-label="Filtre des événements"><button class="tab" role="tab" aria-selected="true">Tous <span class="n">48</span></button><button class="tab" role="tab" aria-selected="false">Récents</button><button class="tab" role="tab" aria-selected="false">À traiter <span class="n">8</span></button></div>
+            <div class="tools"><button class="tool"><svg class="icon sm"><use href="#i-filter"/></svg>Filtres <span class="chip">2</span></button><button class="tool"><svg class="icon sm"><use href="#i-cols"/></svg>Colonnes</button></div>
+          </div>
+          <div class="table-scroll"><table>
+            <thead><tr><th><input type="checkbox" aria-label="Tout sélectionner"></th><th>Événement</th><th>Utilisateur</th><th>Origine</th><th>Type</th><th>Date</th><th><span class="sr-only">Actions</span></th></tr></thead>
+            <tbody>
+              <tr><td><input type="checkbox" aria-label="Sélectionner"></td><td><div class="cell-main"><span class="logo-sq">CO</span>Connexion réussie</div></td><td>Emma Koffi</td><td>Douala, CM</td><td><span class="badge ok">Web</span></td><td class="muted">Il y a 8 min</td><td><button class="icon-btn" aria-label="Actions"><svg class="icon"><use href="#i-more"/></svg></button></td></tr>
+              <tr><td><input type="checkbox" aria-label="Sélectionner"></td><td><div class="cell-main"><span class="logo-sq">MP</span>Mot de passe réinitialisé</div></td><td>Yann Morel</td><td>Yaoundé, CM</td><td><span class="badge info">Libre-service</span></td><td class="muted">Il y a 32 min</td><td><button class="icon-btn" aria-label="Actions"><svg class="icon"><use href="#i-more"/></svg></button></td></tr>
+              <tr><td><input type="checkbox" aria-label="Sélectionner"></td><td><div class="cell-main"><span class="logo-sq">RO</span>Rôle modifié</div></td><td>Lina Mensah</td><td>Douala, CM</td><td><span class="badge warn">Administration</span></td><td class="muted">Il y a 1 h</td><td><button class="icon-btn" aria-label="Actions"><svg class="icon"><use href="#i-more"/></svg></button></td></tr>
+              <tr><td><input type="checkbox" aria-label="Sélectionner"></td><td><div class="cell-main"><span class="logo-sq">TE</span>Tentative bloquée</div></td><td>Compte inconnu</td><td>Localisation masquée</td><td><span class="badge bad">Sécurité</span></td><td class="muted">Il y a 3 h</td><td><button class="icon-btn" aria-label="Actions"><svg class="icon"><use href="#i-more"/></svg></button></td></tr>
+            </tbody></table></div>
+        </div>
+      </section>
+
+      <!-- ===== COMPOSANTS ===== -->
+      <section class="screen" data-screen="components">
+        <div class="eyebrow">Design system</div>
+        <div class="page-head"><div><h1>Composants</h1><p>Fiche de référence : chaque élément existe en thème clair et sombre.</p></div></div>
+        <div class="specimen">
+          <div class="card card-pad"><h2 style="margin-bottom:var(--s-4)">Couleurs</h2>
+            <div class="swatches">
+              <div class="sw"><i style="background:var(--brand)"></i><div><b>Marque</b>#BEAB9F · logo</div></div>
+              <div class="sw"><i style="background:var(--brand-strong)"></i><div><b>Marque forte</b>#7A6355 · texte, focus</div></div>
+              <div class="sw"><i style="background:var(--ink)"></i><div><b>Encre</b>#1D1D1B</div></div>
+              <div class="sw"><i style="background:var(--hero)"></i><div><b>Carte héros</b>#303030</div></div>
+              <div class="sw"><i style="background:var(--sidebar)"></i><div><b>Barre latérale</b>#F4EFEC</div></div>
+              <div class="sw"><i style="background:var(--ok-bg);border-bottom:4px solid var(--ok)"></i><div><b>Succès</b>#1F6B58</div></div>
+              <div class="sw"><i style="background:var(--warn-bg);border-bottom:4px solid var(--warn)"></i><div><b>Attention</b>#8A5A1F</div></div>
+              <div class="sw"><i style="background:var(--bad-bg);border-bottom:4px solid var(--bad)"></i><div><b>Danger</b>#A63D3B</div></div>
+              <div class="sw"><i style="background:var(--info-bg);border-bottom:4px solid var(--info)"></i><div><b>Information</b>#2B6F86</div></div>
+            </div></div>
+          <div class="card card-pad"><h2 style="margin-bottom:var(--s-4)">Typographie</h2>
+            <div class="type-sample"><h1 style="font-size:var(--text-2xl)">Montserrat 700 — Titre de page</h1><h2 style="font-size:var(--text-xl)">Montserrat 700 — Titre de section</h2><p>Inter 400, 14 px — Texte de l’application, tableaux et formulaires : lisible en densité forte.</p><p class="muted" style="font-size:var(--text-xs)">Inter 500, 12 px — Métadonnées, aides, horodatages.</p><p style="font:700 var(--text-kpi)/1 var(--font-display)">1 284 500<small style="font-size:var(--text-md);color:var(--ink-2)"> XAF</small></p></div></div>
+          <div class="card card-pad"><h2 style="margin-bottom:var(--s-4)">Boutons et badges</h2>
+            <div class="row-flex"><button class="btn btn-primary">Créer</button><button class="btn btn-strong">Se connecter</button><button class="btn btn-secondary">Exporter</button><button class="btn btn-ghost">Annuler</button><button class="btn btn-danger">Désactiver</button><button class="btn btn-primary" disabled>Indisponible</button></div>
+            <div class="row-flex" style="margin-top:var(--s-4)"><span class="badge">Cible</span><span class="badge info">RDV décideur</span><span class="badge warn">Offre envoyée</span><span class="badge ok">Agrément reçu</span><span class="badge bad">Perdue</span></div></div>
+          <div class="card card-pad"><h2 style="margin-bottom:var(--s-4)">Champs</h2>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:var(--s-4)">
+              <div class="field"><label for="c1">Raison sociale</label><input class="input" id="c1" value="Société Horizon SA"><span class="help">200 caractères au plus.</span></div>
+              <div class="field"><label for="c2">Adresse e-mail</label><input class="input" id="c2" value="pas-une-adresse" aria-invalid="true" aria-describedby="e2"><span class="err" id="e2">Saisissez une adresse e-mail valide.</span></div>
+              <div class="field"><label for="c3">Statut</label><select class="input" id="c3"><option>Cible</option><option>En discussion</option></select></div>
+            </div></div>
+        </div>
+      </section>
+
+      <section class="screen" data-screen="soon">
+        <div class="eyebrow">À venir</div><div class="page-head"><div><h1>Module à construire</h1><p>Cet écran reprendra le même gabarit : en-tête, indicateurs, tableau.</p></div></div>
+      </section>
+    </div>
+  </div>
+</div>
+<script src="prototype.js"></script>
+</body>
+</html>
