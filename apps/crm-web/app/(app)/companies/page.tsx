@@ -14,16 +14,18 @@ import { Modal } from '../../../components/modal';
 import { PageHeading } from '../../../components/page-heading';
 import { api, ApiError } from '../../../lib/api';
 import { useAuth } from '../../../lib/auth-context';
+import { formatDate } from '../../../lib/format';
 import { can } from '../../../lib/permissions';
 import { COMPANY_STATUS, statusStyle } from '../../../lib/status';
 import type { Company, Page } from '../../../lib/types';
 
 const PAGE_SIZE = 20;
 
-/** Colonnes du tableau : seules les données que l'API fournit aujourd'hui (nom, secteur, statut). */
+/** Colonnes du tableau : seules les données que l'API fournit aujourd'hui (nom, secteur, pays, statut, date de création). */
 const COLUMNS: Column<Company>[] = [
   { id: 'name', header: 'Entreprise', cell: (c) => <EntityCell name={c.name} /> },
   { id: 'sector', header: 'Secteur', cell: (c) => c.sector ?? <span className="text-ink-2">—</span> },
+  { id: 'country', header: 'Pays', cell: (c) => c.country ?? <span className="text-ink-2">—</span> },
   {
     id: 'status',
     header: 'Statut',
@@ -32,6 +34,7 @@ const COLUMNS: Column<Company>[] = [
       return <Badge tone={style.tone}>{style.label}</Badge>;
     },
   },
+  { id: 'created', header: 'Créée le', cell: (c) => formatDate(c.createdAt) },
 ];
 
 /**
