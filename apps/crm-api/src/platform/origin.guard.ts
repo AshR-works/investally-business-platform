@@ -12,6 +12,10 @@ const SAFE_METHODS: ReadonlySet<string> = new Set(['GET', 'HEAD', 'OPTIONS']);
 export class OriginGuard implements CanActivate {
   constructor(@Inject(APP_CONFIG) private readonly config: AppConfig) {}
 
+  /**
+   * Défense CSRF globale : une requête qui modifie des données avec une origine non autorisée est refusée ; les
+   * méthodes de lecture et les clients sans en-tête `Origin` passent.
+   */
   canActivate(context: ExecutionContext): boolean {
     const request = context.switchToHttp().getRequest<{ method: string; headers: Record<string, string | undefined> }>();
     if (SAFE_METHODS.has(request.method.toUpperCase())) return true;

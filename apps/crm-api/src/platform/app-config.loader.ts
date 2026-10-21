@@ -1,5 +1,6 @@
 import { AppConfig, AppEnvironment } from '../shared-kernel';
 
+/** Lit l'environnement d'exécution (`production`, `test`, sinon développement). */
 function parseEnvironment(raw: string | undefined): AppEnvironment {
   if (raw === 'production' || raw === 'test') return raw;
   return 'development';

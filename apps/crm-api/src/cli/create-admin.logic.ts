@@ -1,3 +1,7 @@
+/**
+ * Arguments de la commande `admin:create` : adresse e-mail et nom affiché du SuperAdmin à créer (jamais le mot de
+ * passe).
+ */
 export interface AdminArgs {
   email: string;
   name: string;

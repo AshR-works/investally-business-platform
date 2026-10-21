@@ -4,6 +4,9 @@ const MINUTE = 60_000;
 const HOUR = 60 * MINUTE;
 const DAY = 24 * HOUR;
 
+/**
+ * Durées d'une session : jeton d'accès, inactivité maximale, durée absolue (plus courtes pour les rôles privilégiés).
+ */
 export interface SessionPolicy {
   /** Durée de vie du jeton d'accès. */
   accessTokenMs: number;
@@ -24,6 +27,7 @@ export function sessionPolicyFor(roles: readonly RoleCode[]): SessionPolicy {
   return roles.some((role) => PRIVILEGED_ROLES.has(role)) ? PRIVILEGED_POLICY : STANDARD_POLICY;
 }
 
+/** Vrai si l'un des rôles est privilégié (SuperAdmin, Direction, Finance) : sa session absolue est plus courte. */
 export function hasPrivilegedRole(roles: readonly RoleCode[]): boolean {
   return roles.some((role) => PRIVILEGED_ROLES.has(role));
 }

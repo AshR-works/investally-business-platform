@@ -3,6 +3,7 @@ import { IdGenerator } from '../shared-kernel';
 
 /** UUID v7 (RFC 9562) : 48 bits d'horodatage ms + aléa. Triable par date de création. */
 export class UuidV7Generator implements IdGenerator {
+  /** Génère un UUID v7 : triable par date de création (bon pour les index) avec 74 bits d'aléa. */
   next(): string {
     const bytes = randomBytes(16);
     const timestamp = BigInt(Date.now());

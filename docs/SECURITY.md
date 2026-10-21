@@ -65,6 +65,22 @@ Invitations de compte, réinitialisation de mot de passe, codes de récupératio
 - Configuration SPF, DKIM et DMARC du domaine d'envoi (côté administrateur DNS).
 - **Informations à fournir plus tard** : identifiant du locataire, identifiant et secret de l'application, adresse d'expédition. Ces secrets ne sont jamais committés (variables d'environnement / coffre).
 
+### 2.7 Mot de passe oublié (S3.5)
+Deux déclencheurs, **un seul mécanisme** de lien (même table que l'invitation, champ `purpose = PASSWORD_RESET` : un lien d'invitation ne réinitialise jamais un mot de passe, et inversement).
+
+| Point | Mesure |
+|---|---|
+| Demande libre-service (`POST /auth/password-reset/request`, publique) | Réponse **identique** (202 et même texte) que l'adresse existe, soit inconnue, mal formée, désactivée ou en attente ; le traitement se poursuit **après** la réponse (ni le contenu ni le temps de réponse ne trahissent l'existence d'un compte) |
+| Limitation | 3 demandes / minute par couple IP + adresse (429 ensuite) ; **3 liens / heure / compte** quelle que soit l'IP (les suivants sont refusés en silence et audités `THROTTLED`) ; verrou de ligne : deux demandes simultanées ne dépassent pas le plafond |
+| Lien | Jeton 256 bits, **empreinte SHA-256 seule** en base, **fragment d'URL** (`#token=`), **60 minutes** en libre-service, **48 h** si déclenché par un administrateur, **usage unique** (consommation atomique), un nouveau lien **révoque** les précédents |
+| Compte éligible | Actif (ou verrouillé) **avec** mot de passe ; jamais un compte en attente (→ renvoyer l'invitation) ni désactivé |
+| Nouveau mot de passe | Même politique que partout (12 caractères, pas d'identité, liste de mots de passe courants) **et** refus des 5 derniers ; un mot de passe refusé **ne consomme pas** le lien |
+| Effet | Mot de passe changé, **toutes les sessions et tous les jetons coupés**, autres liens révoqués, verrouillage levé ; **le MFA est conservé** : le lien ne donne **aucun accès** (la connexion exige toujours le second facteur) |
+| Prévention de l'usurpation | Un **e-mail de confirmation** (date, adresse IP) prévient le titulaire après chaque changement |
+| Déclenchement par un administrateur | Permission `iam.user.reset_password` (SuperAdmin), **MFA récent exigé**, **jamais pour soi-même** |
+| Traçabilité | Action d'audit dédiée `PASSWORD_RESET` : demande (issue `ISSUED`, `UNKNOWN`, `INELIGIBLE`, `THROTTLED`, `EMAIL_FAILED`), émission par un administrateur, usage (`password_reset_completed`), refus de lien (`ACCESS_DENIED`, motif interne) ; adresse IP et appareil de chaque appel ; **jamais** le jeton, le mot de passe ni une adresse saisie qui ne correspond à aucun compte |
+| Risques résiduels | (1) Quelqu'un qui **contrôle la boîte e-mail** de la victime peut changer son mot de passe et couper ses sessions, mais **ne peut pas se connecter sans le second facteur** ; la victime est prévenue par l'e-mail de confirmation. (2) Quelqu'un qui redemande des liens pour une adresse connue peut **invalider le lien légitime** de la victime (3 fois par heure au plus) : nuisance acceptée et tracée (D25). (3) Si le **téléphone est aussi perdu**, un administrateur doit en plus réinitialiser le MFA (D14) |
+
 ## 3. Sessions
 Une ligne `UserSession` par connexion : IP, appareil, navigateur, système, dates de connexion/déconnexion/dernière activité/expiration, **niveau de risque**, état MFA, motif de révocation.
 

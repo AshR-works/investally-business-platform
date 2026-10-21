@@ -5,6 +5,10 @@ import { api, ApiError } from '../../lib/api';
 import { parseInvitationFragment } from '../../lib/invitation';
 import { passwordHints } from '../../lib/password';
 
+/**
+ * Page d'activation d'un compte invité : lit le jeton dans le fragment de l'URL, l'efface de l'adresse, puis laisse
+ * choisir le mot de passe.
+ */
 export default function InvitationPage() {
   // Le jeton n'est gardé qu'en mémoire : le fragment est effacé de l'adresse et de l'historique dès la lecture.
   const token = useRef<string | null>(null);
@@ -24,6 +28,10 @@ export default function InvitationPage() {
   const hints = passwordHints(password);
   const mismatch = confirmation.length > 0 && confirmation !== password;
 
+  /**
+   * Envoie le jeton et le mot de passe ; un refus (lien invalide, mot de passe refusé) est affiché et le lien reste
+   * utilisable si c'est le mot de passe qui est en cause.
+   */
   async function submit(event: FormEvent) {
     event.preventDefault();
     if (!token.current) return;

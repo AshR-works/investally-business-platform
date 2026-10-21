@@ -36,10 +36,12 @@ export class PrismaService implements OnModuleDestroy, UnitOfWork {
     return this.client.$transaction((tx) => this.transaction.run(tx, work), { timeout: 10_000 });
   }
 
+  /** Requête minimale pour vérifier que la base répond. */
   async ping(): Promise<void> {
     await this.client.$queryRaw`SELECT 1`;
   }
 
+  /** Ferme proprement la connexion à l'arrêt de l'application. */
   async onModuleDestroy(): Promise<void> {
     await this.client.$disconnect();
   }

@@ -13,6 +13,7 @@ export interface ProfileView {
   mfaEnrolled: boolean;
 }
 
+/** Requête de lecture : profil et droits de l'utilisateur connecté, pour construire les menus de l'interface. */
 @Injectable()
 export class GetProfileHandler {
   constructor(
@@ -20,6 +21,7 @@ export class GetProfileHandler {
     private readonly authorization: AuthorizationService,
   ) {}
 
+  /** Renvoie nom, rôles, droits et état du MFA ; informatif seulement, le serveur re-contrôle chaque requête. */
   async execute(userId: string): Promise<ProfileView> {
     const user = await this.users.findById(userId);
     if (!user) throw new DomainError('UNAUTHENTICATED', 'Session invalide ou expirée');

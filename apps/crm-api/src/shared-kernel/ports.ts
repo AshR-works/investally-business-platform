@@ -3,6 +3,7 @@ export interface Clock {
   now(): Date;
 }
 
+/** Port : génération d'identifiants uniques. */
 export interface IdGenerator {
   next(): string;
 }
@@ -12,6 +13,7 @@ export interface UnitOfWork {
   run<T>(work: () => Promise<T>): Promise<T>;
 }
 
+/** Page de résultats : éléments, total, numéro et taille de page. */
 export interface Page<T> {
   items: T[];
   total: number;

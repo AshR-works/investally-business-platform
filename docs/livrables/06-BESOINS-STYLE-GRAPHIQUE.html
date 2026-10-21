@@ -1,0 +1,129 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Livrable 6 — Ce dont j&#x27;ai besoin pour adopter votre style graphique</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — livrables · <a href="01-RECAPITULATIF-REALISATIONS.html">Récapitulatif</a> · <a href="02-GUIDE-DU-CODE.html">Guide du code</a> · <a href="03-INDEX-DES-FONCTIONS.html">Index des fonctions</a> · <a href="04-SUIVI-DES-SESSIONS.html">Suivi des sessions</a> · <a href="05-ETAT-D-AVANCEMENT.html">État d&#8217;avancement</a> · <a href="06-BESOINS-STYLE-GRAPHIQUE.html">Style graphique</a></nav><h1>Livrable 6 — Ce dont j'ai besoin pour adopter votre style graphique</h1>
+<p><strong>Objet</strong> : vous me transmettez des captures d'écran du style visuel souhaité pour l'application ; ce document dit <strong>quoi envoyer, quoi préciser et quoi décider</strong>, pour que je puisse reproduire le style fidèlement et sans aller-retour inutile. <strong>Temps de préparation côté vous</strong> : 20 à 30 minutes. <strong>Ce que je rends en retour</strong> : voir §7.</p>
+<blockquote><p>Vous n'avez pas à tout remplir. Les rubriques marquées <strong>★ indispensable</strong> suffisent pour démarrer ; le reste affine le résultat.</p></blockquote>
+<hr>
+<h2>1. Les captures à fournir</h2>
+<h3>1.1 Captures indispensables ★</h3>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Ce que montre la capture</th><th>Pourquoi j'en ai besoin</th></tr></thead><tbody>
+<tr><td>1</td><td><strong>Une page de connexion</strong> qui vous plaît</td><td>Première impression de l'application ; mise en page, champs, boutons</td></tr>
+<tr><td>2</td><td><strong>Un tableau de bord</strong> (indicateurs, cartes, graphiques)</td><td>Hiérarchie visuelle, couleurs des indicateurs, densité d'information</td></tr>
+<tr><td>3</td><td><strong>Une page de liste</strong> avec tableau (clients, contacts, utilisateurs…)</td><td>Tableaux, recherche, filtres, pagination, badges d'état</td></tr>
+<tr><td>4</td><td><strong>Un formulaire</strong> (création ou modification)</td><td>Champs, libellés, messages d'erreur, boutons d'action</td></tr>
+<tr><td>5</td><td><strong>Le menu de navigation</strong> (latéral ou supérieur) avec une page ouverte</td><td>Structure générale, icônes, état « page active »</td></tr>
+</tbody></table></div>
+<h3>1.2 Captures utiles</h3>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Ce que montre la capture</th><th>Pourquoi</th></tr></thead><tbody>
+<tr><td>6</td><td>Une <strong>fenêtre de confirmation</strong> ou une boîte de dialogue</td><td>Actions sensibles (désactiver un compte, saisir un code)</td></tr>
+<tr><td>7</td><td>Un <strong>état vide</strong> (« aucun résultat ») et un <strong>message d'erreur</strong></td><td>Ton et présentation des cas non idéaux</td></tr>
+<tr><td>8</td><td>Une <strong>page de détail</strong> (fiche entreprise, fiche contact)</td><td>Futur cœur de l'outil commercial</td></tr>
+<tr><td>9</td><td>Un <strong>pipeline / tableau Kanban</strong> (colonnes d'étapes)</td><td>Opportunités commerciales (S4.3)</td></tr>
+<tr><td>10</td><td>Un <strong>calendrier ou une liste de tâches</strong></td><td>Rendez-vous et relances (S4.2-S4.3)</td></tr>
+<tr><td>11</td><td>Le <strong>mode sombre</strong>, s'il existe</td><td>Je dois savoir si vous le voulez</td></tr>
+<tr><td>12</td><td>L'écran <strong>sur téléphone</strong></td><td>Priorité mobile ou non</td></tr>
+</tbody></table></div>
+<h3>1.3 Pour chaque capture, une ligne de commentaire</h3>
+<p>Écrivez simplement <strong>ce que vous aimez</strong> et, si possible, <strong>ce que vous n'aimez pas</strong>. Exemple : « J'aime les cartes blanches sur fond gris clair et les boutons arrondis ; je n'aime pas les ombres trop marquées. » Cela m'aide plus que dix captures sans commentaire.</p>
+<h3>1.4 Conseils pour de bonnes captures</h3>
+<ul><li><strong>Pleine page</strong>, en haute résolution (pas de recadrage sur un détail, sauf pour montrer un composant précis).</li><li><strong>Une capture par écran</strong>, avec le <strong>nom du produit d'origine</strong> si vous le connaissez (pour que je retrouve ses règles de style).</li><li><strong>Aucune donnée réelle</strong> : pas de noms de clients, d'adresses e-mail, de montants, de mots de passe ni de codes. Floutez ou utilisez un compte de démonstration.</li><li><strong>Format</strong> : PNG ou JPEG ; un dossier ou un document PDF regroupant les captures convient.</li></ul>
+<hr>
+<h2>2. Votre identité visuelle (si elle existe) ★</h2>
+<div class="table-wrap"><table><thead><tr><th>Élément</th><th>À me fournir</th><th>Statut</th></tr></thead><tbody>
+<tr><td><strong>Logo</strong> (Investally et Investudy)</td><td>Fichier <strong>SVG</strong> de préférence (sinon PNG haute résolution, fond transparent), version claire et version foncée</td><td>☐</td></tr>
+<tr><td><strong>Couleurs de marque</strong></td><td>Codes (hexadécimal, ex. <code>#1F4FD8</code>) : couleur principale, couleur secondaire, couleurs d'alerte</td><td>☐</td></tr>
+<tr><td><strong>Polices</strong></td><td>Noms et <strong>licences</strong> (voir §4)</td><td>☐</td></tr>
+<tr><td><strong>Charte graphique</strong></td><td>Le document de charte, s'il existe (PDF)</td><td>☐</td></tr>
+<tr><td><strong>Ton des textes</strong></td><td>Vouvoiement / tutoiement ; sobre ou chaleureux</td><td>☐</td></tr>
+</tbody></table></div>
+<p>Si rien n'existe encore, dites-le : je proposerai une base cohérente à partir de vos captures, que vous validerez.</p>
+<hr>
+<h2>3. Décisions de style à trancher</h2>
+<p>Cochez ou écrivez votre choix ; en cas de doute, j'applique ma recommandation (colonne de droite).</p>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Question</th><th>Options</th><th>Ma recommandation</th></tr></thead><tbody>
+<tr><td>1</td><td><strong>Thème</strong></td><td>Clair seulement · Sombre seulement · Les deux (suit le réglage de l'appareil)</td><td><strong>Les deux</strong> (déjà prévu dans l'interface actuelle)</td></tr>
+<tr><td>2</td><td><strong>Densité</strong></td><td>Aérée · Standard · Compacte (beaucoup d'informations par écran)</td><td><strong>Standard</strong>, compacte pour les tableaux</td></tr>
+<tr><td>3</td><td><strong>Formes</strong></td><td>Angles droits · Légèrement arrondis · Très arrondis</td><td>Selon vos captures</td></tr>
+<tr><td>4</td><td><strong>Navigation</strong></td><td>Barre latérale · Barre supérieure · Mixte</td><td><strong>Barre latérale</strong> (usage de bureau, ~10 menus à terme)</td></tr>
+<tr><td>5</td><td><strong>Icônes</strong></td><td>Avec icônes · Texte seul</td><td>Avec icônes, jeu libre de droits unique</td></tr>
+<tr><td>6</td><td><strong>Appareils prioritaires</strong></td><td>Ordinateur · Tablette · Téléphone</td><td><strong>Ordinateur d'abord</strong>, lisible sur téléphone</td></tr>
+<tr><td>7</td><td><strong>Couleur dominante</strong></td><td>Une couleur de marque + neutres · Plusieurs couleurs</td><td>Une couleur de marque + neutres ; une couleur par <strong>statut</strong></td></tr>
+<tr><td>8</td><td><strong>Graphiques</strong></td><td>Sobres (une teinte) · Colorés</td><td>Sobres, couleurs réservées aux comparaisons</td></tr>
+<tr><td>9</td><td><strong>Langue</strong></td><td>Français seul · Français + anglais</td><td>Français seul pour l'instant</td></tr>
+<tr><td>10</td><td><strong>Fidélité aux captures</strong></td><td>Copie <strong>fidèle</strong> de la mise en page · <strong>Inspiration</strong> (couleurs, formes, ton)</td><td>À préciser par capture (voir §5)</td></tr>
+</tbody></table></div>
+<hr>
+<h2>4. Polices, images et droits</h2>
+<div class="table-wrap"><table><thead><tr><th>Sujet</th><th>Ce que je dois savoir</th><th>Pourquoi</th></tr></thead><tbody>
+<tr><td><strong>Polices payantes</strong></td><td>Si vos captures utilisent une police sous licence, avez-vous la <strong>licence d'usage web</strong> ?</td><td>Sinon je propose l'équivalent libre le plus proche (ex. Inter, Source Sans)</td></tr>
+<tr><td><strong>Hébergement des polices</strong></td><td>Aucune demande à un service externe : les fichiers sont <strong>inclus dans l'application</strong></td><td>Notre politique de sécurité (CSP) interdit les connexions sortantes</td></tr>
+<tr><td><strong>Illustrations et photos</strong></td><td>Uniquement celles dont vous détenez les droits</td><td>Je ne reprends <strong>jamais</strong> un logo ni une illustration d'un autre produit : seulement son <em>style</em></td></tr>
+<tr><td><strong>Icônes</strong></td><td>Jeu libre de droits (licence MIT ou équivalente), un seul jeu</td><td>Cohérence et conformité</td></tr>
+</tbody></table></div>
+<hr>
+<h2>5. Fiche à remplir par capture</h2>
+<p><em>(Copiez ce bloc autant de fois que de captures.)</em></p>
+<pre><code>Capture n° : ____        Écran montré : ______________________
+Produit d&#x27;origine (si connu) : ______________________
+À reproduire : ☐ fidèlement la mise en page   ☐ seulement les couleurs
+               ☐ seulement les formes/boutons ☐ seulement le ton général
+J&#x27;aime : __________________________________________________
+Je n&#x27;aime pas : ___________________________________________
+Pour quel(s) écran(s) de notre application : ______________</code></pre>
+<hr>
+<h2>6. Les écrans de l'application concernés</h2>
+<p><strong>Déjà construits</strong> (je les restylerai) :</p>
+<div class="table-wrap"><table><thead><tr><th>Écran</th><th>Chemin</th></tr></thead><tbody>
+<tr><td>Connexion</td><td><code>/login</code></td></tr>
+<tr><td>Second facteur (saisie du code) et première configuration (QR code, codes de secours)</td><td><code>/mfa</code></td></tr>
+<tr><td>Mot de passe oublié</td><td><code>/forgot-password</code></td></tr>
+<tr><td>Nouveau mot de passe (lien reçu par e-mail)</td><td><code>/reset-password</code></td></tr>
+<tr><td>Activation d'invitation</td><td><code>/invitation</code></td></tr>
+<tr><td>Entreprises (liste et création)</td><td><code>/</code></td></tr>
+<tr><td>Administration des utilisateurs (liste, invitation, rôles, actions)</td><td><code>/admin/users</code></td></tr>
+<tr><td>Mon compte (mot de passe, codes de secours, sessions)</td><td><code>/account</code></td></tr>
+<tr><td>Fenêtres : confirmation, saisie de code MFA</td><td>partout</td></tr>
+</tbody></table></div>
+<p><strong>À venir</strong> (le style devra les anticiper) : fiches entreprise et contact, pipeline des opportunités, rendez-vous et relances, agrément, catalogue de formations, sessions et inscriptions, tableaux de bord, documents.</p>
+<hr>
+<h2>7. Ce que vous recevrez en retour</h2>
+<div class="table-wrap"><table><thead><tr><th>Livrable</th><th>Contenu</th></tr></thead><tbody>
+<tr><td><strong>Guide de style</strong></td><td>Palette (avec rôle de chaque couleur), typographie, espacements, rayons, ombres, états des boutons et champs, exemples</td></tr>
+<tr><td><strong>Prototype statique</strong></td><td>Une page HTML montrant les composants (boutons, champs, tableaux, badges, cartes, dialogues) en clair et en sombre, <strong>à valider avant de toucher à l'application</strong></td></tr>
+<tr><td><strong>Application restylée</strong></td><td>Les 8 écrans existants au nouveau style ; <strong>aucune règle de sécurité ni logique métier modifiée</strong></td></tr>
+<tr><td><strong>Contrôles d'accessibilité</strong></td><td>Contraste des couleurs (cible WCAG AA), focus visible, navigation au clavier, lisibilité sur téléphone et en mode sombre</td></tr>
+<tr><td><strong>Recette</strong></td><td>Parcours rejoués dans un navigateur réel, comparaison avec vos captures, résultats consignés comme pour les sprints précédents</td></tr>
+</tbody></table></div>
+<hr>
+<h2>8. Déroulé proposé</h2>
+<div class="table-wrap"><table><thead><tr><th>Étape</th><th>Contenu</th><th>Qui</th><th>Validation</th></tr></thead><tbody>
+<tr><td>1</td><td>Vous envoyez captures, éléments de marque et réponses du §3</td><td>Vous</td><td>—</td></tr>
+<tr><td>2</td><td>Je rends le <strong>guide de style</strong> et le <strong>prototype statique</strong></td><td>Claude</td><td><strong>Vous validez le prototype</strong></td></tr>
+<tr><td>3</td><td>J'applique le style aux écrans existants et je rejoue la recette</td><td>Claude</td><td>« Je valide »</td></tr>
+<tr><td>4</td><td>Le style devient la base des écrans du pipeline (S4+)</td><td>Claude + vous</td><td>Au fil des sprints</td></tr>
+</tbody></table></div>
+<p><strong>Où cela se place dans le plan</strong> : idéalement <strong>avant S4.1</strong>, avec le <em>cadrage UX</em> déjà prévu : on évite de coder deux fois les écrans du pipeline. La séance de cadrage (5 écrans clés) peut alors partir directement de vos captures.</p>
+<hr>
+<h2>9. Récapitulatif : votre liste de contrôle</h2>
+<p>☐ Captures ★ (connexion, tableau de bord, liste, formulaire, navigation) — 5 minimum ☐ Un commentaire « j'aime / je n'aime pas » par capture ☐ Logo en SVG et codes de couleurs de marque (ou « rien n'existe ») ☐ Polices et leurs licences (ou « aucune préférence ») ☐ Réponses au §3 (ou « appliquez vos recommandations ») ☐ Confirmation : aucune donnée réelle dans les captures</p></main></body></html>

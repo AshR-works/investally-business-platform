@@ -10,7 +10,7 @@ import {
 } from '../../domain/auth-repositories';
 import { widestScope } from '../../domain/access-policy';
 import { Email } from '../../domain/email';
-import { INVITATION_TTL_MS, evaluateInvitation } from '../../domain/invitation';
+import { INVITATION_TTL_MS, InvitationPurpose, evaluateInvitation } from '../../domain/invitation';
 import { checkPasswordPolicy } from '../../domain/password-policy';
 import { ROLES, RoleCode } from '../../domain/roles';
 import { User, UserStatus } from '../../domain/user';
@@ -26,6 +26,7 @@ export function invitationLink(publicUrl: string, token: string): string {
   return `${publicUrl}/invitation#token=${token}`;
 }
 
+/** Compose l'e-mail d'invitation (lien de 48 h, usage unique, rappel que le second facteur est obligatoire). */
 function invitationEmail(displayName: string, link: string) {
   const name = displayName.replace(/[\u0000-\u001f\u007f]/g, ' ').trim();
   return {
@@ -39,6 +40,10 @@ function invitationEmail(displayName: string, link: string) {
   };
 }
 
+/**
+ * Données d'une invitation : adresse, nom, rôles, responsable, acteur et droits de l'appelant (inviter avec des rôles
+ * revient à les attribuer).
+ */
 export interface InviteUserCommand {
   email: string;
   displayName: string;
@@ -49,6 +54,9 @@ export interface InviteUserCommand {
   access: AccessContext;
 }
 
+/**
+ * Résultat d'une invitation : le compte créé et `emailSent` (faux si l'e-mail n'a pas pu partir : renvoyer le lien).
+ */
 export interface InvitationResult {
   user: UserView;
   /** `false` : le compte est créé mais l'e-mail n'a pas pu partir ; renvoyer l'invitation. */
@@ -83,6 +91,10 @@ export class InviteUserUseCase {
     @Inject(APP_CONFIG) private readonly config: AppConfig,
   ) {}
 
+  /**
+   * Vérifie le droit d'attribuer des rôles, crée le compte en attente et son lien dans une transaction, puis envoie
+   * l'e-mail hors transaction.
+   */
   async execute(command: InviteUserCommand): Promise<InvitationResult> {
     // Défense en profondeur : même si la route est ouverte à un autre rôle un jour, créer un compte avec des rôles
     // exige le droit d'attribuer des rôles (sinon une session détournée pourrait inviter un SuperAdmin).
@@ -106,7 +118,7 @@ export class InviteUserUseCase {
 
       const expiresAt = new Date(now.getTime() + INVITATION_TTL_MS);
       await this.invitations.save({
-        id: this.ids.next(), userId: user.id, tokenHash: issued.hash, createdBy: command.actor.userId,
+        id: this.ids.next(), userId: user.id, tokenHash: issued.hash, purpose: InvitationPurpose.Invitation, createdBy: command.actor.userId,
         createdAt: now, expiresAt, usedAt: null, revokedAt: null,
       });
       await this.audit.record({
@@ -122,6 +134,7 @@ export class InviteUserUseCase {
     return { user: toUserView(created.user, roles), emailSent };
   }
 
+  /** Envoie l'e-mail d'invitation ; un échec est audité (sans le lien) et signalé par `false`. */
   private async send(user: User, token: string, actor: ActorContext): Promise<boolean> {
     const message = invitationEmail(user.displayName, invitationLink(this.config.publicUrl, token));
     const result = await this.email.send({ to: user.email.value, ...message });
@@ -150,6 +163,7 @@ export class ResendInvitationUseCase {
     @Inject(APP_CONFIG) private readonly config: AppConfig,
   ) {}
 
+  /** Révoque les liens précédents et en envoie un nouveau (compte encore en attente seulement). */
   async execute(command: { userId: string; actor: ActorContext }): Promise<{ emailSent: boolean }> {
     const issued = this.tokens.generate();
     const user = await this.unitOfWork.run(async () => {
@@ -160,7 +174,7 @@ export class ResendInvitationUseCase {
       const now = this.clock.now();
       await this.invitations.revokeAllOfUser(found.id, now);
       await this.invitations.save({
-        id: this.ids.next(), userId: found.id, tokenHash: issued.hash, createdBy: command.actor.userId,
+        id: this.ids.next(), userId: found.id, tokenHash: issued.hash, purpose: InvitationPurpose.Invitation, createdBy: command.actor.userId,
         createdAt: now, expiresAt: new Date(now.getTime() + INVITATION_TTL_MS), usedAt: null, revokedAt: null,
       });
       await this.audit.record({
@@ -197,13 +211,14 @@ export class AcceptInvitationUseCase {
     @Inject(ID_GENERATOR) private readonly ids: IdGenerator,
   ) {}
 
+  /** Valide le lien et le mot de passe (politique, avant de consommer le lien), puis active le compte. */
   async execute(command: { token: string; password: string; actor: ActorContext }): Promise<void> {
     const tokenHash = this.tokens.hashOf(command.token ?? '');
     const record = await this.invitations.findByHash(tokenHash);
     const now = this.clock.now();
 
-    if (!record || evaluateInvitation(record, now) !== 'VALID') {
-      await this.deny(command.actor, record?.id ?? 'unknown', record ? evaluateInvitation(record, now) : 'UNKNOWN');
+    if (!record || record.purpose !== InvitationPurpose.Invitation || evaluateInvitation(record, now) !== 'VALID') {
+      await this.deny(command.actor, record?.id ?? 'unknown', !record ? 'UNKNOWN' : record.purpose !== InvitationPurpose.Invitation ? 'WRONG_PURPOSE' : evaluateInvitation(record, now));
       throw new DomainError('VALIDATION', INVALID_LINK);
     }
 
@@ -225,6 +240,10 @@ export class AcceptInvitationUseCase {
     }
   }
 
+  /**
+   * Consomme le lien de façon atomique puis active le compte avec son mot de passe ; deux activations simultanées :
+   * une seule aboutit.
+   */
   private async activate(recordId: string, tokenHash: string, userId: string, passwordHash: string, actor: ActorContext): Promise<AcceptResult> {
     const now = this.clock.now();
     // Consommation atomique : deux acceptations simultanées du même lien, une seule passe.
@@ -242,6 +261,7 @@ export class AcceptInvitationUseCase {
     return { ok: true };
   }
 
+  /** Trace un lien refusé (motif interne : inconnu, expiré, utilisé, révoqué) sans jamais écrire le jeton. */
   private async deny(actor: ActorContext, entityId: string, reason: string): Promise<void> {
     await this.audit.record({
       actor, module: 'iam', entityType: 'UserInvitation', entityId, action: AuditAction.AccessDenied,

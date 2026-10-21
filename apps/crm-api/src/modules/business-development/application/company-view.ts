@@ -11,6 +11,7 @@ export interface CompanyView {
   createdAt: string;
 }
 
+/** Transforme une entreprise du domaine en représentation publique (aucun objet interne n'est exposé). */
 export function toCompanyView(company: Company): CompanyView {
   return {
     id: company.id,

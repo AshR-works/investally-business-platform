@@ -4,6 +4,7 @@ import { SessionPolicy } from './session-policy';
 /** Fraîcheur maximale d'une vérification MFA pour une action sensible (step-up, SECURITY.md §2.3). */
 export const STEP_UP_MAX_AGE_MS = 10 * 60_000;
 
+/** État d'une session : utilisateur, réseau, appareil, risque, MFA vérifié (et quand), activité et échéances. */
 export interface UserSessionProps {
   id: string;
   userId: string;
@@ -23,6 +24,10 @@ export interface UserSessionProps {
   revokedReason: string | null;
 }
 
+/**
+ * Session de connexion : ouverture, activité, vérification du MFA, révocation et expiration (inactivité ou durée
+ * absolue).
+ */
 export class UserSession {
   private constructor(private props: UserSessionProps) {}
 
@@ -103,6 +108,7 @@ export class UserSession {
     return age >= 0 && age <= maxAgeMs;
   }
 
+  /** Enregistre le niveau de risque calculé à l'ouverture de la session. */
   markRisk(level: RiskLevel): void {
     this.props.riskLevel = level;
   }

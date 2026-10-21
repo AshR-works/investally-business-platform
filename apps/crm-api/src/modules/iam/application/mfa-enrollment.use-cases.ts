@@ -23,12 +23,14 @@ export const MFA_ISSUER = 'Investally CRM';
 
 const MFA_FAILURE = 'Code invalide';
 
+/** Contexte commun des opérations MFA : utilisateur, session et acteur. */
 export interface MfaCommand {
   userId: string;
   sessionId: string;
   actor: ActorContext;
 }
 
+/** Début d'enrôlement : secret (affiché une seule fois) et URI à transformer en QR code. */
 export interface MfaEnrollmentStart {
   /** Secret en base32, affiché UNE fois pour saisie manuelle ; il n'est jamais renvoyé ensuite. */
   secret: string;
@@ -48,6 +50,10 @@ export class StartMfaEnrollmentUseCase {
     @Inject(CLOCK) private readonly clock: Clock,
   ) {}
 
+  /**
+   * Génère un secret TOTP, le stocke chiffré (sans activer le MFA) et renvoie le secret et l'URI ; refuse si le MFA
+   * est déjà actif.
+   */
   async execute(command: MfaCommand): Promise<MfaEnrollmentStart> {
     return this.unitOfWork.run(async () => {
       const user = await this.users.lockById(command.userId);
@@ -67,6 +73,7 @@ export class StartMfaEnrollmentUseCase {
   }
 }
 
+/** Enrôlement confirmé : 10 codes de secours en clair (affichés une seule fois) et nouveau jeton vérifié par MFA. */
 export interface MfaEnrollmentConfirmed {
   /** Codes de secours en clair, affichés UNE seule fois (seuls leurs hachages sont conservés). */
   recoveryCodes: string[];
@@ -102,6 +109,10 @@ export class ConfirmMfaEnrollmentUseCase {
     return result.value;
   }
 
+  /**
+   * Vérifie le premier code (compte non verrouillé, secret déchiffré, anti-rejeu), active le MFA, marque la session
+   * vérifiée et génère les codes de secours.
+   */
   private async confirm(command: MfaCommand & { code: string }): Promise<ConfirmResult> {
     const now = this.clock.now();
     const user = await this.users.lockById(command.userId);
@@ -143,6 +154,10 @@ export class ConfirmMfaEnrollmentUseCase {
     };
   }
 
+  /**
+   * Enregistre un échec de confirmation (compteur, verrouillage progressif, audit) sans lever d'erreur dans la
+   * transaction.
+   */
   private async fail(command: MfaCommand, user: User, now: Date, reason: string, count: boolean): Promise<ConfirmResult> {
     if (count) {
       user.registerFailedMfa(now);

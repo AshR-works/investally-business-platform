@@ -3,6 +3,7 @@ import { IdGenerator } from '../../../shared-kernel';
 import { PERMISSIONS } from '../domain/permission-catalog';
 import { ROLES, resolveGrants } from '../domain/roles';
 
+/** Bilan du seed : permissions et rôles créés, droits ajoutés ou retirés. */
 export interface SeedReport {
   permissions: number;
   permissionsRemoved: number;

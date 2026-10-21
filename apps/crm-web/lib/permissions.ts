@@ -18,6 +18,7 @@ export const ROLE_LABELS: Record<string, string> = {
   HR: 'Ressources humaines',
   TAX: 'Fiscalité',
 };
+/** Libellé français d'un rôle (le code brut si le rôle est inconnu). */
 export const roleLabel = (code: string): string => ROLE_LABELS[code] ?? code;
 
 export const STATUS_LABELS: Record<string, string> = {

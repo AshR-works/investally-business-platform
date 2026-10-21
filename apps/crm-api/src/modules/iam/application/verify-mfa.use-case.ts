@@ -17,6 +17,7 @@ import { ACCESS_TOKEN_SERVICE, AccessTokenService, PASSWORD_HASHER, PasswordHash
 
 const MFA_FAILURE = 'Code invalide';
 
+/** Vérification du second facteur : code TOTP ou code de secours, utilisateur, session et acteur. */
 export interface VerifyMfaCommand {
   userId: string;
   sessionId: string;
@@ -25,6 +26,10 @@ export interface VerifyMfaCommand {
   actor: ActorContext;
 }
 
+/**
+ * Second facteur vérifié : nouveau jeton `pwd+otp`, heure de vérification et nombre de codes de secours restants si
+ * l'un vient d'être consommé.
+ */
 export interface MfaVerified {
   /** Nouveau jeton d'accès portant `amr = [pwd, otp]`. */
   accessToken: string;
@@ -66,6 +71,10 @@ export class VerifyMfaUseCase {
     return result.value;
   }
 
+  /**
+   * Vérifie le code sous verrou de ligne (TOTP avec anti-rejeu, ou code de secours à usage unique) ; un échec compte
+   * comme un échec de connexion.
+   */
   private async verify(command: VerifyMfaCommand): Promise<VerifyResult> {
     const now = this.clock.now();
     const user = await this.users.lockById(command.userId);
@@ -137,6 +146,10 @@ export class VerifyMfaUseCase {
     return { ok: false };
   }
 
+  /**
+   * Enregistre un échec de vérification (compteur, verrouillage progressif, audit), sans lever d'erreur dans la
+   * transaction.
+   */
   private async fail(command: VerifyMfaCommand, user: User, now: Date, reason: string, count: boolean): Promise<VerifyResult> {
     if (count) {
       user.registerFailedMfa(now);

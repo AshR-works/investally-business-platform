@@ -1,0 +1,168 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Livrable 4 — Suivi des sessions de travail</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — livrables · <a href="01-RECAPITULATIF-REALISATIONS.html">Récapitulatif</a> · <a href="02-GUIDE-DU-CODE.html">Guide du code</a> · <a href="03-INDEX-DES-FONCTIONS.html">Index des fonctions</a> · <a href="04-SUIVI-DES-SESSIONS.html">Suivi des sessions</a> · <a href="05-ETAT-D-AVANCEMENT.html">État d&#8217;avancement</a> · <a href="06-BESOINS-STYLE-GRAPHIQUE.html">Style graphique</a></nav><h1>Livrable 4 — Suivi des sessions de travail</h1>
+<p><strong>Projet</strong> : Investally Business Platform · <strong>Période</strong> : du 2026-10-20 (16 h 30) au 2026-10-21 · <strong>Mis à jour</strong> : 2026-10-21 <strong>Source</strong> : historique Git (dates réelles des commits, des fusions et des étiquettes), plans de recette, registre des décisions et échanges avec la direction produit.</p>
+<blockquote><p><strong>Comment lire ce document</strong> — une <em>session</em> est un sprint mené par l'ingénieur logiciel d'Investally et Claude. Chaque fiche dit <strong>ce qui était demandé, ce qui a été livré, ce qui a été validé (et par qui), ce qui a mal tourné et ce qui est reporté</strong>. Rien n'y est arrondi : un suivi flatteur ne permet pas de décider.</p></blockquote>
+<hr>
+<h2>1. Vue d'ensemble</h2>
+<div class="table-wrap"><table><thead><tr><th>Session</th><th>Branche</th><th>Premier → dernier commit (UTC+1)</th><th>Fusion dans <code>main</code></th><th>Étiquette</th><th>Validation</th></tr></thead><tbody>
+<tr><td><strong>S0</strong> Cadrage</td><td><code>master</code>/<code>main</code></td><td>10-20 16 h 30</td><td>— (directement, avant la règle des branches)</td><td>—</td><td>✅ « Commit et passons au S1 »</td></tr>
+<tr><td><strong>S1</strong> Squelette CRM</td><td><code>sprint/s1-skeleton</code></td><td>10-20 17 h 37 → 19 h 03</td><td>10-20 19 h 05 (<code>9f53643</code>)</td><td><code>s1-validated</code></td><td>✅ « Je valide S1, passe à S2 » — <strong>avec réserves</strong> (Docker et CI non exécutés)</td></tr>
+<tr><td><strong>S2</strong> Sécurité et données Core</td><td><code>sprint/s2-security-core</code></td><td>10-20 19 h 15 → 20 h 26</td><td>10-20 20 h 28 (<code>b49a152</code>)</td><td><code>s2-validated</code></td><td>✅ « Je valide S2, passe à S3.1 »</td></tr>
+<tr><td><strong>S3.1</strong> Authentification</td><td><code>sprint/s3-1-authentication</code></td><td>10-20 20 h 50</td><td>10-20 20 h 54 (<code>dd21841</code>)</td><td><code>s3-1-validated</code></td><td>✅ « Je valide S3.1, passe à S3.2 »</td></tr>
+<tr><td><strong>S3.2</strong> Second facteur</td><td><code>sprint/s3-2-mfa</code></td><td>10-20 21 h 24</td><td>10-20 21 h 31 (<code>43f35ea</code>)</td><td><code>s3-2-validated</code></td><td>✅ « Je valide S3.2, passe à S3.3 »</td></tr>
+<tr><td><strong>S3.3</strong> Autorisation et administration</td><td><code>sprint/s3-3-authorization</code></td><td>10-20 21 h 43 → 22 h 05</td><td>10-20 22 h 15 (<code>420456b</code>)</td><td><code>s3-3-validated</code></td><td>✅ « Je valide S3.3, passe à S3.4 »</td></tr>
+<tr><td><strong>S3.4</strong> Interface de base</td><td><code>sprint/s3-4-front</code></td><td>10-20 22 h 40 → 22 h 58</td><td><strong>en attente</strong></td><td>—</td><td>⏳ <strong>validation attendue</strong></td></tr>
+<tr><td><strong>S3.5</strong> Mot de passe oublié, commentaires, livrables</td><td><code>sprint/s3-5-password-reset</code></td><td>10-21 05 h 39</td><td><strong>en attente</strong> (après S3.4)</td><td>—</td><td>⏳ <strong>validation attendue</strong></td></tr>
+</tbody></table></div>
+<blockquote><p><strong>Commentaire</strong> — Les dates de commits ne mesurent pas l'effort : chaque session regroupe de longs échanges, des recettes et des corrections avant le commit final. Elles prouvent en revanche l'<strong>ordre</strong> et la <strong>traçabilité</strong> : aucune fusion sans validation écrite, aucune branche sautée. Le plan annonçait « 1 semaine maximum par sprint » ; l'ensemble tient ici en <strong>moins de deux jours calendaires</strong> parce que le rythme réel a été celui des validations successives de l'ingénieur.</p></blockquote>
+<p><strong>Règles de conduite tenues depuis S0</strong></p>
+<ol><li>Jamais de commit direct sur <code>main</code> (décidé après la question « Est-ce judicieux de commit sur master ? »).</li><li>Recette exécutée <strong>avant</strong> toute demande de validation.</li><li>Validation <strong>explicite</strong> (« Je valide Sx ») avant fusion <code>--no-ff</code> et étiquette <code>sN-validated</code>.</li><li>Registre des décisions tenu à jour à chaque sprint.</li><li>Dépôt hors OneDrive (<code>C:\dev\investally-platform</code>), ancienne copie <strong>non supprimée</strong> sans votre accord.</li></ol>
+<hr>
+<h2>2. Fiches de session</h2>
+<h3>S0 — Cadrage (2026-10-20, ≈ 16 h 30)</h3>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td><strong>Déclencheur</strong></td><td>« PROMPT MAÎTRE » : plateforme CRM + ERP, centre de formation Investudy, architecture propre, migrable vers .NET ; travail par sprints</td></tr>
+<tr><td><strong>Livré</strong></td><td>Vision, architecture (contextes, glossaire, charge, décisions de données), plan de sprints, sécurité, risques (R1–R15), fiabilité, stratégie de test, ADR 0001-0004</td></tr>
+<tr><td><strong>Décisions</strong></td><td>Monolithe modulaire ; Prisma confiné à l'infrastructure ; entités du domaine distinctes des modèles de persistance ; audit par événements</td></tr>
+<tr><td><strong>Échanges clés</strong></td><td>« Allons y » · « Continuons » · « Continue et termine le sprint 0 » · <strong>« Est-ce judicieux de commit sur master ? »</strong> → adoption des branches <code>sprint/*</code></td></tr>
+<tr><td><strong>Validation</strong></td><td>« Commit et passons au S1 »</td></tr>
+<tr><td><strong>Commentaire</strong></td><td>Session purement documentaire. Sa valeur est de n'avoir pas codé avant d'avoir fixé les frontières.</td></tr>
+</tbody></table></div>
+<h3>S1 — Squelette CRM (2026-10-20, 17 h 37 → 19 h 05)</h3>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td><strong>Déclencheur</strong></td><td>« Passons au S1 », puis <strong>« le CRM doit être séparé de l'ERP et il est notre priorité »</strong></td></tr>
+<tr><td><strong>Livré</strong></td><td>Monorepo pnpm ; API NestJS et interface Next.js minimale ; première tranche verticale « Entreprise » avec audit ; règles d'architecture exécutées par la CI (dependency-cruiser) ; <strong>base PostgreSQL de test jetable</strong> (demandée : « Produis une BD test générique »)</td></tr>
+<tr><td><strong>Décisions</strong></td><td>ADR-0005 : CRM séparé de l'ERP, une base par produit ; périmètre CRM = pipeline commercial <strong>+ Investudy complet</strong> (réponse à la question posée)</td></tr>
+<tr><td><strong>Exigence de la direction</strong></td><td>« Une fois l'architecture paramétrée on procédera aux tests avant de valider la session » → plan de recette systématique</td></tr>
+<tr><td><strong>Défauts trouvés</strong></td><td><strong>Horodatages décalés d'une heure</strong> selon le fuseau du serveur (corrigé : session forcée en UTC + test qui échoue sans le correctif) ; encodage WIN1252 de la base de test (UTF-8 imposé) ; dépendances ESM-only incompatibles (versions épinglées)</td></tr>
+<tr><td><strong>Validation</strong></td><td>« Je valide S1, passe à S2 » — <strong>avec réserves</strong> : Docker et pipeline CI écrits mais jamais exécutés (dette consignée)</td></tr>
+<tr><td><strong>Reporté</strong></td><td>Exécution réelle de Docker et de la CI → S7</td></tr>
+</tbody></table></div>
+<h3>S2 — Sécurité et données Core (2026-10-20, 19 h 15 → 20 h 28)</h3>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td><strong>Déclencheur</strong></td><td>« Je valide S1, passe à S2 »</td></tr>
+<tr><td><strong>Livré</strong></td><td>Catalogue de permissions et matrice des rôles (document <strong>généré</strong> du code) ; journal d'audit <strong>en ajout seul, partitionné par mois</strong>, avec déclencheurs de base ; schémas <code>iam</code>, <code>docs</code> ; seed idempotent ; identifiants UUID v7</td></tr>
+<tr><td><strong>Échanges clés</strong></td><td>« Quelles questions ? » → <strong>registre des questions sensibles</strong> ; « Déplace le dépôt vers <code>C:\dev</code> » ; « Explique-moi pas à pas ces questions » ; <strong>réponses de la direction</strong> (ci-dessous) ; « Rajoute un document avec ces questions sensibles » ; « La copie dans <code>c:/dev</code> est-elle réussie ? »</td></tr>
+<tr><td><strong>Décisions de la direction</strong></td><td>Ajout du rôle <strong>TRAINING_MANAGER</strong> ; <strong>SuperAdmin = accès complet</strong> ; équipe = <strong>subordonnés directs</strong> ; <strong>MFA obligatoire</strong> ; durées de session ; e-mail <strong>Microsoft 365</strong> ; audit <strong>10 ans</strong> ; <strong>agrément = promesse de paiement</strong> ; apprenant sans accès au CRM ; ambassadeur manuel ; charge ≈ <strong>20 utilisateurs</strong> ; sprints d'<strong>une semaine maximum</strong> ; recommandations appliquées jusqu'à la question 17 → <strong>ADR-0006</strong></td></tr>
+<tr><td><strong>Preuves</strong></td><td>35/35 tests unitaires · 25/25 tests d'intégration</td></tr>
+<tr><td><strong>Validation</strong></td><td>« Je valide S2, passe à S3.1 »</td></tr>
+<tr><td><strong>Commentaire</strong></td><td>C'est la session où les <strong>règles du jeu</strong> ont été fixées. Deux interprétations de ma part restent à confirmer (MFA pour <em>tous</em> les rôles ; apprenant = entité distincte du contact).</td></tr>
+</tbody></table></div>
+<h3>S3.1 — Authentification (2026-10-20, ≈ 20 h 50)</h3>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td><strong>Livré</strong></td><td>Mots de passe <strong>argon2id</strong> ; jetons <strong>ES256</strong> (clé asymétrique, aucune permission dedans) ; sessions (15 min / 8 h d'inactivité / 7 jours, 12 h pour les rôles privilégiés) ; <strong>rotation des jetons avec détection de rejeu</strong> ; verrouillage progressif ; limitation de débit ; message d'échec unique ; audit des connexions</td></tr>
+<tr><td><strong>Échanges clés</strong></td><td>« À quel niveau allons-nous nous pencher sur le front-end ? » → proposition : <strong>écrans livrés avec chaque sprint</strong>, cadrage UX avant S4.1 ; « Où en est l'ensemble des processus ? » (point d'étape)</td></tr>
+<tr><td><strong>Preuves</strong></td><td>Architecture : 92 modules, 287 dépendances, <strong>0 violation</strong> ; tests ciblés sur les <strong>courses</strong> (tentatives simultanées sur un même compte, verrous de ligne)</td></tr>
+<tr><td><strong>Validation</strong></td><td>« Je valide S3.1, passe à S3.2 »</td></tr>
+<tr><td><strong>Commentaire</strong></td><td>Premier sprint où une faute de conception aurait été grave ; chaque échec est <strong>persisté après validation de la transaction</strong> (sinon le compteur de verrouillage serait annulé avec elle).</td></tr>
+</tbody></table></div>
+<h3>S3.2 — Second facteur et amorçage (2026-10-20, ≈ 21 h 24)</h3>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td><strong>Livré</strong></td><td><strong>TOTP</strong> réimplémenté et validé sur les <strong>vecteurs officiels RFC 4226 / 6238 / 4648</strong> ; secret chiffré <strong>AES-256-GCM</strong> lié à l'utilisateur ; 10 codes de secours hachés ; anti-rejeu ; <strong>step-up</strong> (10 min) ; port d'e-mail avec adaptateur <strong>Microsoft 365</strong> (jamais testé en réel) ; création du premier SuperAdmin par ligne de commande, <strong>sans mot de passe par défaut</strong></td></tr>
+<tr><td><strong>Défauts trouvés</strong></td><td>Tests TOTP instables à la frontière de 30 s (rendus déterministes) ; mot de passe d'exemple faible refusé par la politique (le test a été corrigé, pas la règle)</td></tr>
+<tr><td><strong>Preuves</strong></td><td><strong>277 unitaires + 91 intégration</strong> · 110 modules, 367 dépendances, 0 violation</td></tr>
+<tr><td><strong>Validation</strong></td><td>« Je valide S3.2, passe à S3.3 »</td></tr>
+<tr><td><strong>Dette ouverte</strong></td><td>D13 « première inscription au MFA protégée par le seul mot de passe » → soldée en S3.3 par l'invitation</td></tr>
+</tbody></table></div>
+<h3>S3.3 — Autorisation et administration (2026-10-20, 21 h 43 → 22 h 15)</h3>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td><strong>Livré</strong></td><td><code>@Protected</code> (permission + portée + step-up) ; API utilisateurs, rôles, sessions ; <strong>invitation par lien à usage unique de 48 h</strong> ; propriétaire des entreprises ; garde-fou du <strong>dernier SuperAdmin</strong> y compris sous concurrence</td></tr>
+<tr><td><strong>Ajustement du plan</strong></td><td>S3.3 devient « backend » ; le front passe en S3.4 (une semaine ne suffit pas à tout faire avec rigueur)</td></tr>
+<tr><td><strong>Défauts trouvés</strong></td><td>Objet sans propriétaire traité comme une liste (<code>undefined</code> ≠ <code>null</code>) ; route d'administration ouverte à un rôle à portée « propre » (ajout de <code>minScope</code>) ; invitation sans droit d'attribution ni MFA récent (revue de sécurité) ; incident de mon outil de mutation (code muté laissé en place, réparé et corrigé)</td></tr>
+<tr><td><strong>Preuves</strong></td><td><strong>353 unitaires + 130 intégration</strong> · test qui parcourt <strong>toutes</strong> les routes · matrice 10 rôles × 16 routes · 8 mutations détectées · parcours réel sur le serveur compilé</td></tr>
+<tr><td><strong>Validation</strong></td><td>« Je valide S3.3, passe à S3.4 »</td></tr>
+</tbody></table></div>
+<h3>S3.4 — Interface de base (2026-10-20, 22 h 40 → 22 h 58) — <strong>en attente de validation</strong></h3>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td><strong>Livré</strong></td><td>Connexion, second facteur (QR généré dans le navigateur), codes de secours, activation d'invitation, administration des utilisateurs, mon compte (mot de passe, codes, sessions), en-têtes de sécurité</td></tr>
+<tr><td><strong>Défaut grave trouvé</strong></td><td><strong>Un mauvais code MFA était compté deux fois</strong> contre le verrouillage (le client rejouait la requête). Invisible aux tests automatiques ; trouvé en lisant le journal réseau d'un vrai navigateur ; corrigé des deux côtés</td></tr>
+<tr><td><strong>Autres défauts</strong></td><td>Page d'administration affichée sans droit ; codes de secours perdus au rechargement (avertissement ajouté) ; libellé d'appareil illisible ; tableau trop haut sur téléphone ; clé de chiffrement de test régénérée par mon fait</td></tr>
+<tr><td><strong>Preuves</strong></td><td>353 + 132 (API) · <strong>24</strong> (interface) · 4 mutations détectées · parcours réels dans un navigateur (dont le <strong>step-up réel</strong> après 10 min)</td></tr>
+<tr><td><strong>Reste</strong></td><td>Validation de l'ingénieur ; D16 (MFA récent pour changer un responsable) à trancher</td></tr>
+</tbody></table></div>
+<h3>S3.5 — Mot de passe oublié, commentaires et livrables (2026-10-21) — <strong>en attente de validation</strong></h3>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td><strong>Déclencheur</strong></td><td>« Rajouter le parcours mot de passe est-il pertinent ? » → « Quelle est la méthode actuelle ? » (<strong>aucune</strong>) → « Allons-y » → <strong>« Rajoute un bouton mot de passe oublié qui devra s'exécuter de manière sécurisée et traçable »</strong></td></tr>
+<tr><td><strong>Autres demandes</strong></td><td>« Fais des livrables pour récapituler les réalisations avec commentaires, rajoute des commentaires sur les différentes fonctions » · <strong>« Produis des livrables présentant l'état des réalisations et le suivi des sessions »</strong> (le présent document)</td></tr>
+<tr><td><strong>Livré</strong></td><td>Bouton « Mot de passe oublié » ; réinitialisation <strong>libre-service</strong> (lien 60 min, réponse identique pour toute adresse, plafonds, audit dédié) <strong>et</strong> par un <strong>administrateur</strong> (lien 48 h, MFA récent, jamais pour soi) ; MFA conservé, sessions coupées, e-mail de confirmation ; <strong>535 fonctions commentées</strong> ; livrables <code>docs/livrables/</code></td></tr>
+<tr><td><strong>Preuves</strong></td><td><strong>380 unitaires + 141 intégration</strong> · 24 (interface) · 12 mutations (11 détectées d'emblée, <strong>1 survivante corrigée</strong>) · parcours réel dans le navigateur</td></tr>
+<tr><td><strong>Défauts / incidents</strong></td><td>Tests d'intégration trop impatients (traitement volontairement asynchrone) ; mutant survivant (usage croisé d'un lien d'invitation) ; <strong>4 échecs de délai</strong> lors d'un passage sous charge, <strong>non reproduits</strong> (141/141 au calme) ; le navigateur intégré suspend le réseau quand son panneau est masqué</td></tr>
+<tr><td><strong>Reste</strong></td><td>Validation après S3.4 ; Microsoft 365 non testé ; D25-D27</td></tr>
+</tbody></table></div>
+<hr>
+<h2>3. Chronologie des décisions et demandes de la direction produit</h2>
+<div class="table-wrap"><table><thead><tr><th>Moment</th><th>Demande ou décision</th><th>Traitement</th></tr></thead><tbody>
+<tr><td>S0</td><td>Prompt maître, « Allons y », « Continuons », « Continue et termine le sprint 0 »</td><td>Cadrage complet</td></tr>
+<tr><td>S0</td><td>« Est-ce judicieux de commit sur master ? »</td><td><strong>Branches <code>sprint/*</code></strong>, fusion <code>--no-ff</code>, étiquettes</td></tr>
+<tr><td>S1</td><td>« CRM séparé de l'ERP, notre priorité » + périmètre « Pipeline + Investudy complet »</td><td>ADR-0005</td></tr>
+<tr><td>S1</td><td>« Les tests/recette avant de valider la session »</td><td>Plan de recette à chaque sprint</td></tr>
+<tr><td>S1</td><td>« Produis une BD test générique »</td><td>Base jetable + 25 entreprises génériques</td></tr>
+<tr><td>S2</td><td>« Quelles questions ? » / « Explique pas à pas »</td><td>Registre des questions et recommandations</td></tr>
+<tr><td>S2</td><td>« Déplace le dépôt vers <code>C:\dev\investally-platform</code> »</td><td>Fait ; copie OneDrive conservée (suppression soumise à votre accord)</td></tr>
+<tr><td>S2</td><td>Réponses Q1–Q11 + « applique tes recommandations jusqu'à Q17 » + charge ≈ 20 utilisateurs + sprints ≤ 1 semaine</td><td>ADR-0006, registre mis à jour</td></tr>
+<tr><td>S2</td><td>« Rajoute un document avec ces questions sensibles »</td><td><code>QUESTIONS-ET-DECISIONS.md</code></td></tr>
+<tr><td>S3.1</td><td>« À quel niveau le front-end ? »</td><td>Front livré par sprint (S3.4), cadrage UX avant S4.1</td></tr>
+<tr><td>S3.1</td><td>« Où en est l'ensemble des processus ? »</td><td>Point d'étape complet</td></tr>
+<tr><td>S3.4 → S3.5</td><td>« Rajouter le parcours mot de passe est-il pertinent ? »</td><td>Analyse (3 options) et recommandation</td></tr>
+<tr><td>S3.5</td><td>« Un bouton mot de passe oublié sécurisé et traçable »</td><td>Libre-service <strong>et</strong> administrateur (SECURITY.md §2.7)</td></tr>
+<tr><td>S3.5</td><td>« Livrables + commentaires dans le code »</td><td>535 fonctions commentées, livrables 1 à 3</td></tr>
+<tr><td>S3.5</td><td>« Livrables : état des réalisations et suivi des sessions »</td><td>Livrables 4 et 5</td></tr>
+</tbody></table></div>
+<hr>
+<h2>4. Suivi cumulé de la qualité</h2>
+<div class="table-wrap"><table><thead><tr><th>Étape</th><th>Tests unitaires (API)</th><th>Tests d'intégration (API)</th><th>Tests interface</th><th>Architecture (modules / violations)</th></tr></thead><tbody>
+<tr><td>S1</td><td>non consigné</td><td>non consigné</td><td>—</td><td>contrôle en place</td></tr>
+<tr><td>S2</td><td>35</td><td>25</td><td>—</td><td>0 violation</td></tr>
+<tr><td>S3.1</td><td>non consigné</td><td>non consigné</td><td>—</td><td>92 modules · 0</td></tr>
+<tr><td>S3.2</td><td>277</td><td>91</td><td>—</td><td>110 modules · 0</td></tr>
+<tr><td>S3.3</td><td>353</td><td>130</td><td>—</td><td>127 modules · 0</td></tr>
+<tr><td>S3.4</td><td>353</td><td>132</td><td>24</td><td>128 modules · 0</td></tr>
+<tr><td><strong>S3.5 (état actuel)</strong></td><td><strong>380</strong></td><td><strong>141</strong></td><td><strong>24</strong></td><td><strong>129 modules · 0</strong></td></tr>
+</tbody></table></div>
+<blockquote><p><strong>Commentaire</strong> — Deux cases « non consigné » : les premières recettes ne totalisaient pas les tests. Corrigé à partir de S2 (chaque recette donne désormais ses totaux). La progression 35 → 380 tests unitaires en six sessions suit celle du périmètre ; ce qui compte davantage est que <strong>chaque défaut trouvé a laissé un test derrière lui</strong>.</p></blockquote>
+<h2>5. Défauts : bilan des sessions</h2>
+<div class="table-wrap"><table><thead><tr><th>Session</th><th>Défauts trouvés</th><th>Trouvés par</th><th>Gravité potentielle</th></tr></thead><tbody>
+<tr><td>S1</td><td>3</td><td>recette réelle, tests</td><td>moyenne (horodatages)</td></tr>
+<tr><td>S2</td><td>—</td><td>—</td><td>—</td></tr>
+<tr><td>S3.1</td><td>aucun consigné</td><td>—</td><td>— (le risque principal, des échecs annulés avec la transaction, avait été écarté dès la conception)</td></tr>
+<tr><td>S3.2</td><td>2</td><td>tests</td><td>faible</td></tr>
+<tr><td>S3.3</td><td>4</td><td>revue de conception, matrice, revue de sécurité</td><td><strong>élevée</strong> (IDOR potentiel, invitation d'un SuperAdmin)</td></tr>
+<tr><td>S3.4</td><td>6</td><td><strong>navigateur réel</strong></td><td><strong>élevée</strong> (verrouillage doublé)</td></tr>
+<tr><td>S3.5</td><td>6 (dont 1 incident d'outil et 1 fragilité d'environnement)</td><td>mutations, exécution</td><td>moyenne</td></tr>
+</tbody></table></div>
+<p><strong>Enseignement transversal</strong> : les défauts graves ont été trouvés par <strong>trois méthodes complémentaires</strong> — revue de conception avant le code, mutations volontaires, et recette réelle dans un navigateur. Aucune ne suffit seule.</p>
+<h2>6. Actions en attente (suivi)</h2>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Action</th><th>Responsable</th><th>Depuis</th><th>À faire avant</th><th>État</th></tr></thead><tbody>
+<tr><td>1</td><td>Valider S3.4 puis S3.5</td><td>Ingénieur logiciel</td><td>10-20 / 10-21</td><td>fusion dans <code>main</code></td><td>⏳</td></tr>
+<tr><td>2</td><td><strong>Accès Microsoft 365</strong> (locataire, application, boîte d'expédition, SPF/DKIM/DMARC)</td><td>Administrateur M365</td><td>S3.2</td><td>toute utilisation réelle</td><td>⏳ <strong>bloquant</strong></td></tr>
+<tr><td>3</td><td><strong>Deux futurs SuperAdmin nominatifs</strong></td><td>Direction produit</td><td>S3.2</td><td>mise à disposition des collègues</td><td>⏳ <strong>bloquant</strong></td></tr>
+<tr><td>4</td><td>Trancher D16 (MFA récent pour changer un responsable)</td><td>Direction produit</td><td>S3.3</td><td>S3.6</td><td>⏳</td></tr>
+<tr><td>5</td><td>Confirmer deux interprétations (MFA pour tous ; apprenant distinct)</td><td>Direction produit</td><td>S2</td><td>S5.2</td><td>⏳</td></tr>
+<tr><td>6</td><td>Détails de l'agrément (5 questions)</td><td>Direction commerciale</td><td>S2</td><td>S4.4</td><td>⏳</td></tr>
+<tr><td>7</td><td>Validation juridique : audit 10 ans, données personnelles</td><td>Juridique</td><td>S2</td><td>mise en production</td><td>⏳</td></tr>
+<tr><td>8</td><td>Revue de <code>SECURITY.md</code> (valeurs de départ)</td><td>RSSI</td><td>S2</td><td>mise en production</td><td>⏳</td></tr>
+<tr><td>9</td><td>Suppression de l'ancienne copie OneDrive</td><td>Ingénieur logiciel</td><td>S2</td><td>à votre convenance</td><td>⏳</td></tr>
+<tr><td>10</td><td>Exécuter Docker et la CI pour de vrai</td><td>Ingénieur + Claude</td><td>S1</td><td>S7.2</td><td>⏳</td></tr>
+</tbody></table></div></main></body></html>

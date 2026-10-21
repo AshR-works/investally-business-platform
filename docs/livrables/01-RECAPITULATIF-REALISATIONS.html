@@ -1,0 +1,146 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Livrable 1 — Récapitulatif des réalisations</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — livrables · <a href="01-RECAPITULATIF-REALISATIONS.html">Récapitulatif</a> · <a href="02-GUIDE-DU-CODE.html">Guide du code</a> · <a href="03-INDEX-DES-FONCTIONS.html">Index des fonctions</a> · <a href="04-SUIVI-DES-SESSIONS.html">Suivi des sessions</a> · <a href="05-ETAT-D-AVANCEMENT.html">État d&#8217;avancement</a> · <a href="06-BESOINS-STYLE-GRAPHIQUE.html">Style graphique</a></nav><h1>Livrable 1 — Récapitulatif des réalisations</h1>
+<p><strong>Projet</strong> : Investally Business Platform — CRM (Business Development + Investudy), puis ERP <strong>Période couverte</strong> : du cadrage (S0) à S3.5 · <strong>Date</strong> : 2026-10-21 <strong>Rédigé par</strong> : Claude, avec l'ingénieur logiciel d'Investally · <strong>Statut</strong> : S0 à S3.3 validés et fusionnés ; S3.4 et S3.5 exécutés, <strong>en attente de votre validation</strong></p>
+<blockquote><p>Ce document dit <strong>ce qui est fait, ce que ça prouve, et ce qui ne l'est pas</strong>. Les commentaires de l'ingénieur (colonne ou encadré « Commentaire ») sont volontairement francs : un récapitulatif flatteur ne sert à personne.</p></blockquote>
+<hr>
+<h2>1. En une page</h2>
+<p><strong>Ce qui existe aujourd'hui</strong></p>
+<ul><li>Une <strong>plateforme sécurisée de comptes et d'accès</strong> : on peut inviter un collègue, il choisit son mot de passe, configure son second facteur (application d'authentification), se connecte, et ne voit que ce que son rôle et son périmètre autorisent.</li><li>Un <strong>premier module métier</strong> (entreprises cibles du pipeline commercial) déjà protégé par ces règles.</li><li>Un <strong>bouton « Mot de passe oublié »</strong> sécurisé et traçable, et la même réinitialisation déclenchable par un administrateur.</li><li>Un <strong>journal d'audit</strong> inaltérable de toutes les actions sensibles.</li><li>Une <strong>interface web</strong> : connexion, second facteur, activation d'invitation, administration des utilisateurs, mon compte.</li></ul>
+<p><strong>Ce que ça représente</strong></p>
+<div class="table-wrap"><table><thead><tr><th>Mesure</th><th>Valeur</th></tr></thead><tbody>
+<tr><td>Code de l'API (hors tests)</td><td>≈ 8 800 lignes, <strong>535 fonctions, classes et composants commentés</strong> (API + interface)</td></tr>
+<tr><td>Code de l'interface web</td><td>≈ 1 800 lignes</td></tr>
+<tr><td>Code de test</td><td>≈ 4 500 lignes (API) + 220 (interface)</td></tr>
+<tr><td>Tests automatiques</td><td><strong>380 unitaires + 141 d'intégration (API), 24 (interface)</strong> — tous verts</td></tr>
+<tr><td>Routes HTTP</td><td>32 (dont 2 sondes de santé), <strong>toutes</strong> protégées ou explicitement publiques (vérifié par un test qui les parcourt)</td></tr>
+<tr><td>Permissions / rôles</td><td>95 permissions · 10 rôles · 3 portées (Propre, Équipe, Tous)</td></tr>
+<tr><td>Base de données</td><td>6 migrations, 24 modèles et énumérations, 3 schémas (<code>iam</code>, <code>audit</code>, <code>bd</code>) + <code>docs</code></td></tr>
+<tr><td>Documents</td><td>plus de 25 documents d'architecture, de sécurité et de recette, dont 6 décisions d'architecture (ADR)</td></tr>
+</tbody></table></div>
+<p><strong>Ce qui n'est pas fait (et vous devez le savoir)</strong></p>
+<ul><li>Le <strong>cœur métier</strong> (pipeline commercial complet, Investudy, tableaux de bord) reste à construire : S4 à S6.</li><li>L'envoi réel par <strong>Microsoft 365</strong> n'a jamais été testé (en attente de l'accès).</li><li>Les écrans sont <strong>vérifiés à la main</strong> dans un navigateur, pas encore par des tests automatiques.</li><li>Docker et l'intégration continue sont <strong>écrits mais jamais exécutés</strong> (S7).</li><li>Aucun test de charge, aucune sauvegarde, aucune supervision : ce sont des sujets de mise en production (S7).</li></ul>
+<hr>
+<h2>2. Sprint par sprint</h2>
+<div class="table-wrap"><table><thead><tr><th>Sprint</th><th>Objectif</th><th>Ce qui a été livré</th><th>Preuve</th><th>Commentaire de l'ingénieur</th></tr></thead><tbody>
+<tr><td><strong>S0</strong> Cadrage — <em>validé</em></td><td>Décider avant de coder</td><td>Vision, architecture (contextes, glossaire, charge ≈ 20 utilisateurs), 4 premiers ADR, plan de sprints, risques, fiabilité</td><td><code>docs/ARCHITECTURE.md</code>, <code>adr/0001-0004</code></td><td>Le choix structurant : <strong>monolithe modulaire</strong> à frontières strictes. Pour 20 utilisateurs, des microservices seraient une dépense sans bénéfice.</td></tr>
+<tr><td><strong>S1</strong> Squelette — <em>validé</em></td><td>Une tranche verticale qui marche</td><td>Monorepo, API + interface minimale, entreprise + audit, règles d'architecture automatiques</td><td><code>SPRINT-1-RECETTE.md</code>, tag <code>s1-validated</code></td><td>Le gain durable : <strong>les règles d'architecture sont vérifiées par la CI</strong>, pas par la bonne volonté.</td></tr>
+<tr><td><strong>S2</strong> Sécurité et données — <em>validé</em></td><td>Le socle d'accès et d'audit</td><td>Catalogue de permissions, matrice des rôles, journal d'audit <strong>en ajout seul et partitionné</strong>, schéma de base, seed idempotent, identifiants UUID v7</td><td><code>SPRINT-2-RECETTE.md</code>, <code>RBAC.md</code> (généré du code)</td><td>Un <strong>défaut d'horodatage</strong> (décalage d'une heure selon le fuseau du serveur) a été trouvé et corrigé avec un test qui échoue sans le correctif.</td></tr>
+<tr><td><strong>S3.1</strong> Authentification — <em>validé</em></td><td>Se connecter de façon sûre</td><td>Mot de passe <strong>argon2id</strong>, jetons <strong>ES256</strong>, sessions, rotation des jetons avec détection de rejeu, verrouillage progressif, limitation de débit, message d'échec unique</td><td><code>SPRINT-3.1-RECETTE.md</code></td><td>Toute la chaîne est testée contre les <strong>courses</strong> (tentatives simultanées sur un même compte) grâce à des verrous de ligne.</td></tr>
+<tr><td><strong>S3.2</strong> Second facteur — <em>validé</em></td><td>MFA obligatoire pour tous</td><td>TOTP (algorithme <strong>réimplémenté et validé sur les vecteurs officiels RFC 4226/6238</strong>), secret chiffré AES-256-GCM, 10 codes de secours hachés, anti-rejeu, step-up, création du premier SuperAdmin sans mot de passe par défaut</td><td><code>SPRINT-3.2-RECETTE.md</code></td><td>Le choix de ne <strong>jamais</strong> livrer de mot de passe par défaut a un coût (un outil en ligne de commande) mais supprime le pire risque d'une première installation.</td></tr>
+<tr><td><strong>S3.3</strong> Autorisation et administration — <em>validé</em></td><td>Qui peut quoi</td><td><code>@Protected</code> (permission + portée + step-up), API utilisateurs/rôles/sessions, <strong>invitation par lien à usage unique</strong>, propriétaire des entreprises, garde-fou du <strong>dernier SuperAdmin</strong></td><td><code>SPRINT-3.3-RECETTE.md</code>, tag <code>s3-3-validated</code></td><td>Trois défauts de conception trouvés <strong>par les tests</strong> avant de livrer (objet sans propriétaire, route trop permissive, invitation sans step-up). 8 « mutations » volontaires ont toutes été détectées.</td></tr>
+<tr><td><strong>S3.4</strong> Interface de base — <em>en attente</em></td><td>Rendre l'ensemble utilisable</td><td>Connexion, MFA (QR généré dans le navigateur), codes de secours, activation d'invitation, administration, mon compte, en-têtes de sécurité</td><td><code>SPRINT-3.4-RECETTE.md</code></td><td>Un défaut grave n'est apparu <strong>que dans un vrai navigateur</strong> : un mauvais code MFA était compté deux fois contre le verrouillage. Corrigé des deux côtés.</td></tr>
+<tr><td><strong>S3.5</strong> Mot de passe oublié et livrables — <em>en attente</em></td><td>Récupérer son accès sans compromettre la sécurité</td><td>Bouton « Mot de passe oublié », réinitialisation libre-service <strong>et</strong> par un administrateur, audit dédié, commentaires sur toutes les fonctions, présents livrables</td><td><code>SPRINT-3.5-RECETTE.md</code></td><td>Voir §4 : c'est la fonctionnalité la plus attaquée d'une application, donc la plus entourée de garde-fous.</td></tr>
+</tbody></table></div>
+<hr>
+<h2>3. Ce que le système sait faire aujourd'hui (parcours)</h2>
+<div class="table-wrap"><table><thead><tr><th>Parcours</th><th>Comment ça se passe</th><th>Où c'est testé</th></tr></thead><tbody>
+<tr><td><strong>Inviter un collègue</strong></td><td>L'administrateur saisit nom, adresse et rôles (MFA récent demandé). Un lien à usage unique de 48 h est envoyé ; aucun mot de passe n'existe avant que la personne ne le choisisse.</td><td><code>admin-flows.integration.spec.ts</code>, recette réelle S3.4</td></tr>
+<tr><td><strong>Première connexion</strong></td><td>Mot de passe choisi via le lien → connexion → configuration obligatoire du second facteur (QR code) → 10 codes de secours affichés <strong>une seule fois</strong>.</td><td><code>mfa-http</code>, recette réelle</td></tr>
+<tr><td><strong>Connexion courante</strong></td><td>Mot de passe puis code à 6 chiffres. 5 échecs consécutifs : verrouillage progressif (1, 5, 15, 60 min). Message d'échec <strong>identique</strong> quel que soit le motif.</td><td><code>auth-http</code>, <code>login.use-case</code></td></tr>
+<tr><td><strong>Voir ses entreprises</strong></td><td>Selon le rôle : <em>les siennes</em>, <em>celles de son équipe directe</em>, ou <em>toutes</em>. Hors périmètre : « introuvable » (on ne révèle pas l'existence).</td><td><code>company-scope.spec.ts</code>, matrice de droits</td></tr>
+<tr><td><strong>Administrer</strong></td><td>Liste, recherche, rôles, désactivation (coupe aussitôt les sessions), réinitialisation du MFA ou du mot de passe, coupure des sessions. Il reste <strong>toujours</strong> au moins un SuperAdmin.</td><td><code>admin-use-cases.spec.ts</code>, courses sur la base</td></tr>
+<tr><td><strong>Mot de passe oublié</strong></td><td>Lien sur la page de connexion → e-mail avec lien de 60 min → nouveau mot de passe → <strong>toutes les sessions coupées</strong>, e-mail de confirmation, <strong>second facteur conservé</strong>.</td><td><code>password-reset.spec.ts</code> (27 tests), <code>password-reset.integration.spec.ts</code> (9), recette réelle</td></tr>
+<tr><td><strong>Perte du téléphone</strong></td><td>Un code de secours à la connexion, ou un SuperAdmin réinitialise le MFA.</td><td><code>mfa-management</code>, matrice</td></tr>
+</tbody></table></div>
+<hr>
+<h2>4. Le « Mot de passe oublié » en détail (demande du 2026-10-21)</h2>
+<p><em>Exigence : « exécuté de manière sécurisée et traçable ».</em></p>
+<p><strong>Sécurisé</strong></p>
+<div class="table-wrap"><table><thead><tr><th>Menace</th><th>Réponse</th></tr></thead><tbody>
+<tr><td>Deviner quelles adresses ont un compte</td><td>Réponse <strong>strictement identique</strong> (statut, texte, en-têtes) pour toute saisie ; le traitement a lieu <strong>après</strong> la réponse : le temps de réponse ne trahit rien</td></tr>
+<tr><td>Inonder une boîte e-mail / force brute</td><td>3 demandes par minute par couple IP + adresse ; <strong>3 liens par heure par compte</strong></td></tr>
+<tr><td>Vol ou rejeu du lien</td><td>256 bits aléatoires, <strong>seule l'empreinte</strong> est stockée, <strong>fragment d'URL</strong> (jamais envoyé au serveur ni dans les en-têtes), <strong>60 minutes</strong>, <strong>usage unique atomique</strong>, un nouveau lien révoque les anciens</td></tr>
+<tr><td>Détournement d'un lien d'invitation</td><td>Champ <code>purpose</code> : un lien d'invitation ne réinitialise pas un mot de passe, et inversement</td></tr>
+<tr><td>Prise de contrôle du compte via la boîte e-mail</td><td>Le lien ne donne <strong>aucun accès</strong> : le <strong>second facteur reste exigé</strong> ; toutes les sessions sont coupées ; le titulaire reçoit un <strong>e-mail de confirmation</strong> avec l'adresse IP</td></tr>
+<tr><td>Mot de passe faible ou réutilisé</td><td>Même politique que partout + refus des 5 derniers ; un refus <strong>ne consomme pas</strong> le lien</td></tr>
+<tr><td>Abus d'un administrateur</td><td>Permission dédiée, <strong>MFA récent exigé</strong>, <strong>interdit pour soi-même</strong></td></tr>
+</tbody></table></div>
+<p><strong>Traçable</strong> — une action d'audit dédiée <code>PASSWORD_RESET</code> enregistre, avec l'adresse IP et l'appareil : chaque demande et son issue (<code>ISSUED</code>, <code>UNKNOWN</code>, <code>INELIGIBLE</code>, <code>THROTTLED</code>, <code>EMAIL_FAILED</code>), chaque émission par un administrateur (qui, pour qui), chaque usage, et chaque lien refusé (motif interne). <strong>Jamais</strong> le jeton, le mot de passe ni une adresse saisie qui ne correspond à aucun compte.</p>
+<p><strong>Vérifié</strong> : 27 tests unitaires, 9 tests HTTP sur base réelle (dont la course de deux usages simultanés du même lien, la comparaison des réponses « compte connu / inconnu », le plafond horaire), et un parcours réel dans le navigateur (demande → lien → refus du mot de passe réutilisé → succès → ancien mot de passe refusé, nouveau accepté, 3 lignes d'audit).</p>
+<blockquote><p><strong>Commentaire</strong> — <em>Le point faible assumé</em> : quelqu'un qui connaît une adresse peut redemander des liens et invalider celui de la victime (3 fois par heure au plus). C'est une nuisance, pas une intrusion ; elle est tracée (dette D25). Je préfère cette limite à l'alternative (ne rien plafonner), qui permettrait d'inonder une boîte.</p></blockquote>
+<hr>
+<h2>5. Sécurité : mesures en place</h2>
+<div class="table-wrap"><table><thead><tr><th>Domaine</th><th>Mesure</th><th>Preuve</th></tr></thead><tbody>
+<tr><td>Mots de passe</td><td>argon2id (19 Mio, 2 passes), politique 12 caractères + liste de mots courants + pas d'identité, historique des 5 derniers</td><td>tests unitaires</td></tr>
+<tr><td>Jetons</td><td>JWT <strong>ES256</strong> à clé asymétrique (l'ERP pourra vérifier sans secret partagé), 15 min, <strong>aucune permission dedans</strong> (relue en base à chaque requête)</td><td><code>es256-access-token.service</code></td></tr>
+<tr><td>Sessions</td><td>15 min d'accès / 8 h d'inactivité / 7 jours (12 h pour SuperAdmin, Direction, Finance) ; rotation avec détection de rejeu</td><td>tests de rotation et de rejeu</td></tr>
+<tr><td>MFA</td><td>Obligatoire pour <strong>tous</strong> ; secret chiffré AES-256-GCM lié à l'utilisateur ; anti-rejeu ; step-up de 10 min pour les actions sensibles</td><td>vecteurs RFC, tests HTTP</td></tr>
+<tr><td>Autorisation</td><td>Refus par défaut ; matrice rôles × routes testée exhaustivement ; <strong>IDOR</strong> neutralisé (404 hors périmètre)</td><td><code>rbac-http.integration.spec.ts</code></td></tr>
+<tr><td>Intégrité de l'administration</td><td>Pas d'auto-attribution de rôle ; <strong>dernier SuperAdmin protégé</strong> y compris sous concurrence ; pas de cycle hiérarchique</td><td>courses testées + mutations</td></tr>
+<tr><td>Audit</td><td>Journal en ajout seul (la base refuse modification et suppression), partitionné par mois, conservation prévue 10 ans</td><td>triggers + tests</td></tr>
+<tr><td>Injection / XSS / CSRF</td><td>Requêtes paramétrées ; React échappe ; aucune entrée HTML brute ; CSP, <code>frame-ancestors 'none'</code>, contrôle d'origine global</td><td>greps + tests</td></tr>
+<tr><td>Fuites</td><td>Aucun hachage, secret ni jeton dans les réponses, les journaux ou l'audit ; erreurs de base journalisées <strong>sans valeurs</strong></td><td>greps de sécurité, tests</td></tr>
+<tr><td>Secrets</td><td><code>.env</code> jamais versionné ; refus de démarrer en production avec une configuration dangereuse</td><td>tests de configuration</td></tr>
+<tr><td>Chaîne logicielle</td><td>Dépendances épinglées ; <code>pnpm audit</code> : 0 vulnérabilité haute</td><td>audit à chaque sprint</td></tr>
+</tbody></table></div>
+<hr>
+<h2>6. Qualité : comment on sait que ça marche</h2>
+<ol><li><strong>Recette avant validation</strong> : chaque sprint a un plan de recette signé ; aucun sprint n'est fusionné sans votre « Je valide ».</li><li><strong>Tests en trois étages</strong> : unitaires (règles), intégration sur <strong>base PostgreSQL jetable</strong> (courses, droits, audit), <strong>parcours réels dans un navigateur</strong>.</li><li><strong>Mutations volontaires</strong> : on casse exprès un contrôle de sécurité et on vérifie qu'un test échoue (24 mutations à ce jour ; <strong>une seule a survécu</strong> — un test trop faible sur le mot de passe oublié — et a été corrigée, voir la recette S3.5). C'est la seule façon de savoir qu'un test « garde » vraiment quelque chose.</li><li><strong>Règles d'architecture exécutées</strong> par la CI (0 violation sur 129 modules).</li><li><strong>Documents générés du code</strong> (matrice des droits, index des fonctions) : ils ne peuvent pas mentir.</li></ol>
+<h2>7. Défauts rencontrés (et ce qu'ils enseignent)</h2>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Défaut</th><th>Trouvé par</th><th>Enseignement</th></tr></thead><tbody>
+<tr><td>1</td><td>Horodatages décalés d'une heure selon le fuseau du serveur</td><td>test d'intégration</td><td>Forcer l'UTC ; garder un serveur de test en fuseau « difficile »</td></tr>
+<tr><td>2</td><td>Objet sans propriétaire traité comme une simple liste (accessible à tort)</td><td>revue de conception avant le code métier</td><td><code>undefined</code> ≠ <code>null</code> : le modèle de droits doit distinguer « collection » et « objet orphelin »</td></tr>
+<tr><td>3</td><td>Route d'administration ouverte à un rôle à portée « propre »</td><td>matrice rôle × route</td><td>Ajout de <code>minScope</code> : une route qui agit sur <em>n'importe qui</em> exige la portée Tous</td></tr>
+<tr><td>4</td><td>Invitation avec rôles sans droit d'attribution ni MFA récent</td><td>revue de sécurité</td><td>Une session détournée aurait pu inviter un SuperAdmin</td></tr>
+<tr><td>5</td><td><strong>Mauvais code MFA compté deux fois</strong> (le client rejouait la requête)</td><td>journal réseau d'un vrai navigateur</td><td>Aucun test automatique ne pouvait le voir : <strong>la recette réelle est irremplaçable</strong></td></tr>
+<tr><td>6</td><td>Codes de secours perdus par un simple rechargement de page</td><td>recette réelle</td><td>Avertissement avant de quitter + régénération possible</td></tr>
+<tr><td>7</td><td>Outil de mutation qui laissait du code muté</td><td>contrôle immédiat</td><td>Un outil de test est du code : il se teste aussi</td></tr>
+<tr><td>8</td><td>Test de plafond horaire fragile (frontière d'une heure exacte)</td><td>exécution</td><td>Les bornes de temps se testent <strong>à la milliseconde</strong></td></tr>
+</tbody></table></div>
+<h2>8. Dette et limites connues</h2>
+<p>Registre complet : <code>docs/TECH-DEBT.md</code> (27 entrées). Les plus importantes :</p>
+<div class="table-wrap"><table><thead><tr><th>Réf.</th><th>Sujet</th><th>Quand</th></tr></thead><tbody>
+<tr><td>D20</td><td>CSP avec <code>'unsafe-inline'</code> pour les scripts (limite de Next.js sans nonce)</td><td>S7</td></tr>
+<tr><td>D22</td><td>Parcours d'écrans non automatisés (vérifiés à la main)</td><td>S7</td></tr>
+<tr><td>D16</td><td>Changer le responsable d'un utilisateur change qui voit quoi, sans MFA récent</td><td>décision attendue</td></tr>
+<tr><td>D17</td><td>Entreprises antérieures à S3.3 sans propriétaire ; pas de réattribution</td><td>S4.1</td></tr>
+<tr><td>D25</td><td>« Mot de passe oublié » : nuisance possible par redemandes répétées</td><td>S6.2</td></tr>
+<tr><td>D26</td><td>Traitement « mot de passe oublié » en mémoire (une panne entre réponse et envoi perd la demande)</td><td>selon besoin</td></tr>
+<tr><td>—</td><td>Microsoft 365 non testé en réel ; Docker/CI jamais exécutés ; aucune sauvegarde</td><td>S7 / dès l'accès M365</td></tr>
+</tbody></table></div>
+<h2>9. Décisions prises et à prendre</h2>
+<p><strong>Prises</strong> (registre <code>QUESTIONS-ET-DECISIONS.md</code>) : CRM séparé de l'ERP et prioritaire ; MFA pour tous ; SuperAdmin accès complet ; équipe = subordonnés directs ; e-mail Microsoft 365 ; audit conservé 10 ans ; agrément = promesse de paiement ; apprenant sans accès au CRM ; sprints d'une semaine ; bouton « Mot de passe oublié » (2026-10-21).</p>
+<p><strong>À prendre</strong></p>
+<div class="table-wrap"><table><thead><tr><th>Décision</th><th>Pourquoi maintenant</th><th>Ma recommandation</th></tr></thead><tbody>
+<tr><td>Valider S3.4 et S3.5</td><td>Pour les fusionner dans <code>main</code></td><td>Valider ensemble après lecture de leurs recettes</td></tr>
+<tr><td>Accès Microsoft 365 (locataire, application, boîte d'expédition)</td><td>Sans lui, aucun e-mail réel (invitations, mot de passe oublié)</td><td>À fournir avant toute mise à disposition des collègues</td></tr>
+<tr><td>Deux futurs SuperAdmin nominatifs</td><td>Un seul compte = risque de blocage total</td><td>Désigner dès maintenant</td></tr>
+<tr><td>MFA récent pour changer un responsable (D16)</td><td>Cela modifie les périmètres de visibilité</td><td>Oui</td></tr>
+<tr><td>Validation juridique de la conservation de l'audit</td><td>Obligation avant production</td><td>À lancer en parallèle</td></tr>
+<tr><td>Anciennes copies du dossier dans OneDrive</td><td>Risque de confusion de versions</td><td>Supprimer après votre accord</td></tr>
+</tbody></table></div>
+<h2>10. Suite proposée</h2>
+<ol><li><strong>S3.6 Documents</strong> (téléversement, versions, empreinte SHA-256, traçabilité).</li><li><strong>Cadrage UX</strong> : maquettes validées avec vous <strong>avant</strong> de coder les écrans du pipeline commercial.</li><li><strong>S4.1 → S4.4</strong> : entreprises, contacts, offres, relances, rendez-vous, opportunités, agrément, ambassadeurs.</li><li><strong>S5</strong> : Investudy. <strong>S6</strong> : tableaux de bord. <strong>S7</strong> : durcissement et mise en production.</li></ol>
+<h2>11. Pour aller plus loin</h2>
+<div class="table-wrap"><table><thead><tr><th>Document</th><th>Contenu</th></tr></thead><tbody>
+<tr><td><a href="02-GUIDE-DU-CODE.html">02-GUIDE-DU-CODE.md</a></td><td>Où vit chaque chose, chemin d'une requête, recettes du développeur</td></tr>
+<tr><td><a href="03-INDEX-DES-FONCTIONS.html">03-INDEX-DES-FONCTIONS.md</a></td><td>Les 535 fonctions, classes et composants commentés, avec leur rôle</td></tr>
+<tr><td><a href="04-SUIVI-DES-SESSIONS.html">04-SUIVI-DES-SESSIONS.md</a></td><td>Historique session par session : demandes, décisions, validations, défauts, actions en attente</td></tr>
+<tr><td><a href="05-ETAT-D-AVANCEMENT.html">05-ETAT-D-AVANCEMENT.md</a></td><td>Tableau de bord : avancement du plan, santé, risques, décisions attendues</td></tr>
+<tr><td><code>docs/SECURITY.md</code></td><td>Politique de sécurité détaillée (§2.7 : mot de passe oublié)</td></tr>
+<tr><td><code>docs/RBAC.md</code></td><td>Matrice complète rôles × permissions (générée)</td></tr>
+<tr><td><code>docs/SPRINT-*-RECETTE.md</code></td><td>Plans de recette et résultats, sprint par sprint</td></tr>
+<tr><td><code>docs/QUESTIONS-ET-DECISIONS.md</code></td><td>Registre des décisions et questions ouvertes</td></tr>
+</tbody></table></div></main></body></html>

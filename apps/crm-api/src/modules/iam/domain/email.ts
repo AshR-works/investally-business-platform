@@ -4,6 +4,7 @@ const MAX_LENGTH = 254;
 // Volontairement simple : la vraie validation est l'envoi d'un e-mail de confirmation.
 const SHAPE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
+/** Objet-valeur : adresse e-mail validée et normalisée ; la clé en minuscules sert à l'unicité et à la recherche. */
 export class Email {
   private constructor(
     readonly value: string,
