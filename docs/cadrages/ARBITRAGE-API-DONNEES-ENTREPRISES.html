@@ -1,0 +1,287 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Arbitrage — Données manquantes dans l&#x27;API des entreprises</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — cadrages · <a href="README.html">Index</a> · <a href="../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../design/05-AIDE-A-LA-DECISION.html">Aide à la décision</a></nav><h1>Arbitrage — Données manquantes dans l'API des entreprises</h1>
+<p><strong>Date</strong> : 2026-10-21 · <strong>Statut</strong> : à décider · <strong>Origine</strong> : constat de l'écart entre le mockup et l'application (D38, <code>ECART-MOCKUP-VS-REEL.md</code>).</p>
+<blockquote><p>Méthode : <a href="../METHODE-D-ARBITRAGE.html">METHODE-D-ARBITRAGE.md</a>. <strong>Aucune décision n'est prise dans ce document</strong> : les recommandations sont des avis, la décision est celle de la direction produit.</p></blockquote>
+<h2>1. La question en une phrase</h2>
+<p>Le tableau <strong>Entreprises</strong> de l'application est loin du mockup. <strong>Quoi ajouter à l'API, quand, et avec quelles précautions ?</strong> Quatre décisions à prendre, de la plus structurante (ARB-API-1) à la plus ciblée (ARB-API-4).</p>
+<h2>2. Ce que l'API fournit déjà</h2>
+<div class="table-wrap"><table><thead><tr><th>Information du mockup</th><th>Disponible dans l'API aujourd'hui ?</th><th>Affichée aujourd'hui ?</th></tr></thead><tbody>
+<tr><td>Nom, secteur, statut</td><td>Oui</td><td>Oui</td></tr>
+<tr><td><strong>Pays</strong></td><td><strong>Oui</strong> (<code>country</code>)</td><td>Non — peut l'être <strong>sans toucher à l'API</strong></td></tr>
+<tr><td><strong>Date de création</strong></td><td><strong>Oui</strong> (<code>createdAt</code>)</td><td>Non — peut l'être <strong>sans toucher à l'API</strong></td></tr>
+<tr><td>Responsable</td><td>Identifiant seulement (<code>ownerUserId</code>)</td><td>Non — le nom exige ARB-API-2</td></tr>
+<tr><td>Dernière modification</td><td>En base, non exposée</td><td>Non</td></tr>
+<tr><td>Dernière activité</td><td>Non (dépend de S4.2 et S4.3)</td><td>Non</td></tr>
+<tr><td>Valeur estimée</td><td>Non (dépend des opportunités, S4.3)</td><td>Non</td></tr>
+<tr><td>Filtres : statut, « les miennes », tri</td><td>Non (la liste accepte seulement page, taille, recherche)</td><td>Non</td></tr>
+<tr><td>Compteurs par statut</td><td>Non</td><td>Non</td></tr>
+<tr><td>Export, réassignation</td><td>Non (actions sensibles)</td><td>Non</td></tr>
+</tbody></table></div>
+<h2>3. Les décisions</h2>
+<div class="table-wrap"><table><thead><tr><th>N°</th><th>Question</th><th>Options</th><th>Ma recommandation</th></tr></thead><tbody>
+<tr><td>ARB-API-1</td><td>Quand et jusqu'où enrichir l'API</td><td>A statu quo · B mini-lot maintenant · C intégrer à S4.1 après le cadrage UX · D lot complet</td><td><strong>C</strong></td></tr>
+<tr><td>ARB-API-2</td><td>Nom du responsable</td><td>A port d'annuaire côté serveur · B endpoint dédié · C ne pas l'afficher</td><td><strong>A</strong></td></tr>
+<tr><td>ARB-API-3</td><td>Export et réassignation</td><td>A cadrage de sécurité dédié · B avec S4.1 · C jamais</td><td><strong>A</strong></td></tr>
+<tr><td>ARB-API-4</td><td>« Dernière activité »</td><td>A attendre la vraie donnée · B « Dernière modification » · C estimation via l'audit</td><td><strong>A</strong></td></tr>
+</tbody></table></div>
+<hr>
+<h3>ARB-API-1 — Quand et jusqu'où enrichir l'API des entreprises</h3>
+<p><strong>Contexte.</strong> Le tableau Entreprises réel n'a que 3 colonnes de données alors que le mockup en montre 7. Une partie de l'écart vient de champs que l'API ne fournit pas, une autre de modules qui n'existent pas encore. La question : faut-il enrichir l'API des entreprises maintenant, au démarrage de S4.1, ou laisser les champs arriver avec leurs modules ?</p>
+<p><strong>Déjà décidé, ne bouge pas.</strong> Un élément du mockup n'apparaît que s'il a une donnée réelle derrière lui ; la visibilité des entreprises suit la portée de l'utilisateur (Propre / Équipe / Tous) et se calcule côté serveur ; S4.1 livre API et écrans ensemble (DEC-005) ; le cadrage UX précède S4.1 et décide quelles colonnes et quels filtres comptent vraiment.</p>
+<p><strong>Options.</strong></p>
+<p><strong>A. Statu quo : ne rien prévoir de plus</strong> — Les colonnes manquantes arriveront avec leurs modules (contacts S4.1, offres S4.2, opportunités S4.3), sans plan d'ensemble pour les tableaux.</p>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td>Avantages</td><td>Aucun travail ni risque ajouté ; pas de champ construit pour rien.</td></tr>
+<tr><td>Inconvénients</td><td>L'écart avec le mockup persiste jusqu'à S4.3 ; chaque module décide seul de ses colonnes, risque d'incohérence ; D38 reste ouverte.</td></tr>
+<tr><td>Impact UX</td><td>Tableau Entreprises simple pendant plusieurs sessions.</td></tr>
+<tr><td>Impact métier</td><td>Aucune amélioration du pilotage commercial à court terme.</td></tr>
+<tr><td>Impact technique</td><td>Aucun.</td></tr>
+<tr><td>Impact maintenance</td><td>Dette D38 qui vieillit.</td></tr>
+<tr><td>Coût et délai</td><td>0</td></tr>
+<tr><td>Réversibilité</td><td>Excellente.</td></tr>
+</tbody></table></div>
+<p><strong>B. Mini-lot maintenant (avant le cadrage UX)</strong> — Session courte (≈ 0,6) : filtre par statut et « les miennes », tri, compteurs par statut, pays et date de création affichés, nom du responsable.</p>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td>Avantages</td><td>Résultat visible tout de suite ; écart avec le mockup réduit.</td></tr>
+<tr><td>Inconvénients</td><td>Écarte l'ordre DEC-005 ; construit avant que le cadrage UX ait dit quelles colonnes comptent (risque de refaire) ; une session de plus avant S4.1.</td></tr>
+<tr><td>Impact UX</td><td>Tableau plus riche immédiatement.</td></tr>
+<tr><td>Impact métier</td><td>Meilleur suivi des entreprises dès maintenant.</td></tr>
+<tr><td>Impact technique</td><td>Nouveaux filtres, endpoint de compteurs, nom du responsable (voir ARB-API-2).</td></tr>
+<tr><td>Impact maintenance</td><td>Contrat d'API figé trop tôt.</td></tr>
+<tr><td>Coût et délai</td><td>≈ 0,6 session</td></tr>
+<tr><td>Réversibilité</td><td>Bonne.</td></tr>
+</tbody></table></div>
+<p><strong>C. Intégrer à S4.1, après le cadrage UX</strong> — Le périmètre de S4.1 inclut un lot « tableaux » : filtres, tri, compteurs, colonnes décidées en séance de cadrage UX, nom du responsable.</p>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td>Avantages</td><td>Colonnes et filtres choisis par vous en séance, donc pas de refonte ; cohérent avec « API et écrans ensemble » ; une seule recette.</td></tr>
+<tr><td>Inconvénients</td><td>Le résultat n'est visible qu'en S4.1 ; S4.1 s'allonge d'environ 0,5 session.</td></tr>
+<tr><td>Impact UX</td><td>Tableau conçu avec vous, avec les contacts dans le même mouvement.</td></tr>
+<tr><td>Impact métier</td><td>Les besoins réels pilotent le contenu.</td></tr>
+<tr><td>Impact technique</td><td>Même travail qu'en B, mieux ciblé.</td></tr>
+<tr><td>Impact maintenance</td><td>Contrat d'API figé au bon moment.</td></tr>
+<tr><td>Coût et délai</td><td>≈ 0,5 session dans S4.1</td></tr>
+<tr><td>Réversibilité</td><td>Bonne.</td></tr>
+</tbody></table></div>
+<p><strong>D. Lot complet : B + export + réassignation</strong> — En plus du mini-lot, export des listes et réassignation groupée (barre de sélection).</p>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td>Avantages</td><td>La barre de sélection devient utile ; mockup quasi complet.</td></tr>
+<tr><td>Inconvénients</td><td>Export = risque de fuite de la liste de prospects ; réassignation modifie les portées de visibilité ; décisions de sécurité non cadrées.</td></tr>
+<tr><td>Impact UX</td><td>Barre d'actions complète.</td></tr>
+<tr><td>Impact métier</td><td>Gain de productivité, mais risque métier.</td></tr>
+<tr><td>Impact technique</td><td>Nouvelles permissions, step-up MFA, audit, limites de volume.</td></tr>
+<tr><td>Impact maintenance</td><td>Surface d'attaque et tests de droits en plus.</td></tr>
+<tr><td>Coût et délai</td><td>≈ 1,5 session</td></tr>
+<tr><td>Réversibilité</td><td>Moyenne (permissions publiées).</td></tr>
+</tbody></table></div>
+<p><strong>Grille</strong> (notes de 1 à 5, 5 = favorable ; poids fixés avant notation ; totaux calculés).</p>
+<div class="table-wrap"><table><thead><tr><th>Critère (poids)</th><th>A</th><th>B</th><th>C</th><th>D</th></tr></thead><tbody>
+<tr><td>Valeur métier (5)</td><td>2</td><td>4</td><td>4</td><td>4</td></tr>
+<tr><td>Risque (favorable = faible) (5)</td><td>5</td><td>3</td><td>4</td><td>2</td></tr>
+<tr><td>Cohérence architecture / décisions (4)</td><td>4</td><td>3</td><td>5</td><td>2</td></tr>
+<tr><td>Réversibilité (4)</td><td>5</td><td>4</td><td>4</td><td>3</td></tr>
+<tr><td>Coût et délai (favorable = faible) (3)</td><td>5</td><td>3</td><td>3</td><td>1</td></tr>
+<tr><td><strong>Total sur 5</strong></td><td><strong>4,10</strong></td><td><strong>3,43</strong></td><td><strong>4,05</strong></td><td><strong>2,52</strong></td></tr>
+</tbody></table></div>
+<p><strong>Risques.</strong></p>
+<div class="table-wrap"><table><thead><tr><th>Risque</th><th>Probabilité</th><th>Impact</th><th>Parade</th></tr></thead><tbody>
+<tr><td>Colonnes construites puis jugées inutiles (B)</td><td>Moyenne</td><td>Moyen</td><td>Attendre le cadrage UX (C)</td></tr>
+<tr><td>Fuite d'informations via l'export ou le nom du responsable</td><td>Faible</td><td>Élevé</td><td>Voir ARB-API-2 et ARB-API-3 : permissions, audit, step-up, volumes bornés</td></tr>
+<tr><td>Tableau Entreprises trop pauvre en démonstration (A)</td><td>Élevée</td><td>Faible</td><td>Ajouter dès maintenant les champs déjà fournis par l'API (pays, date de création)</td></tr>
+</tbody></table></div>
+<p><strong>Dette induite.</strong> A : D38 vieillit. B : contrat figé trop tôt. C : S4.1 plus longue. D : sécurité à cadrer.</p>
+<p><strong>Recommandation.</strong> Option <strong>C</strong>. A et C sont quasi à égalité dans la grille (4,10 contre 4,05, écart non significatif) parce qu'A ne coûte rien, mais A laisse D38 sans échéance ; C obtient le même résultat avec un périmètre décidé en séance de cadrage UX. <strong>Complément sans décision à prendre</strong> : le pays et la date de création sont déjà fournis par l'API ; je peux les afficher dès maintenant sans toucher à l'API. Ferait changer d'avis : une démonstration à un tiers avant S4.1 qui exigerait un tableau plus riche (alors B).</p>
+<p><strong>Décision (direction produit).</strong> ☐ À renseigner : option retenue · date · motif · réserves.</p>
+<p><strong>Trace.</strong> À enregistrer dans <code>docs/QUESTIONS-ET-DECISIONS.md</code> (et, pour le design, dans <code>docs/design/decisions/</code>).</p>
+<hr>
+<h3>ARB-API-2 — Comment afficher le nom du responsable d'une entreprise</h3>
+<p><strong>Contexte.</strong> L'API fournit le responsable sous forme d'identifiant (<code>ownerUserId</code>), pas de nom. L'afficher exige un nom. Or le module Business Development n'a pas le droit de dépendre du module Identité, et un chargé de compte n'a pas le droit de lister les utilisateurs (permission d'administration).</p>
+<p><strong>Déjà décidé, ne bouge pas.</strong> Architecture en contextes séparés (règles <code>pnpm arch</code>) ; chaque information visible suit les droits de l'appelant ; données personnelles minimisées.</p>
+<p><strong>Options.</strong></p>
+<p><strong>A. Nom calculé côté serveur par un port d'annuaire</strong> — Un port « annuaire des utilisateurs » (interface neutre), implémenté par le module Identité, fournit seulement le nom d'affichage des propriétaires présents dans la page de résultats.</p>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td>Avantages</td><td>Aucun nouvel endpoint exposé ; seuls les noms des propriétaires des lignes affichées sortent ; architecture respectée.</td></tr>
+<tr><td>Inconvénients</td><td>Un port et son adaptateur à écrire ; une lecture groupée de plus par page.</td></tr>
+<tr><td>Impact UX</td><td>Nom du responsable dans la liste.</td></tr>
+<tr><td>Impact métier</td><td>Qui suit quel dossier est visible.</td></tr>
+<tr><td>Impact technique</td><td>Port dans le noyau partagé, adaptateur Identité, requête groupée.</td></tr>
+<tr><td>Impact maintenance</td><td>Un contrat de plus, mais interne.</td></tr>
+<tr><td>Coût et délai</td><td>≈ 0,15 session</td></tr>
+<tr><td>Réversibilité</td><td>Excellente.</td></tr>
+</tbody></table></div>
+<p><strong>B. Endpoint d'annuaire dédié (identifiant → nom)</strong> — Nouvelle route accessible à tout utilisateur connecté, appelée par l'interface pour résoudre les noms.</p>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td>Avantages</td><td>Réutilisable par toute l'interface.</td></tr>
+<tr><td>Inconvénients</td><td>Nouvelle surface d'exposition : permet d'énumérer des noms d'employés par identifiant ; permission et limites à concevoir.</td></tr>
+<tr><td>Impact UX</td><td>Identique.</td></tr>
+<tr><td>Impact métier</td><td>Aucun gain par rapport à A.</td></tr>
+<tr><td>Impact technique</td><td>Route, permission, limitation du débit, tests de droits.</td></tr>
+<tr><td>Impact maintenance</td><td>Contrat public à maintenir.</td></tr>
+<tr><td>Coût et délai</td><td>≈ 0,3 session</td></tr>
+<tr><td>Réversibilité</td><td>Moyenne.</td></tr>
+</tbody></table></div>
+<p><strong>C. Ne pas afficher le responsable</strong> — La colonne Responsable est abandonnée ; le filtre « Les miennes » reste.</p>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td>Avantages</td><td>Aucun développement ni exposition.</td></tr>
+<tr><td>Inconvénients</td><td>Manque pour un responsable commercial qui supervise une équipe.</td></tr>
+<tr><td>Impact UX</td><td>Moins d'information.</td></tr>
+<tr><td>Impact métier</td><td>Supervision d'équipe plus difficile.</td></tr>
+<tr><td>Impact technique</td><td>Aucun.</td></tr>
+<tr><td>Impact maintenance</td><td>Aucun.</td></tr>
+<tr><td>Coût et délai</td><td>0</td></tr>
+<tr><td>Réversibilité</td><td>Excellente.</td></tr>
+</tbody></table></div>
+<p><strong>Grille</strong> (notes de 1 à 5, 5 = favorable ; poids fixés avant notation ; totaux calculés).</p>
+<div class="table-wrap"><table><thead><tr><th>Critère (poids)</th><th>A</th><th>B</th><th>C</th></tr></thead><tbody>
+<tr><td>Valeur métier (5)</td><td>4</td><td>4</td><td>2</td></tr>
+<tr><td>Risque (favorable = faible) (5)</td><td>5</td><td>2</td><td>5</td></tr>
+<tr><td>Cohérence architecture / décisions (4)</td><td>5</td><td>3</td><td>3</td></tr>
+<tr><td>Réversibilité (4)</td><td>5</td><td>3</td><td>5</td></tr>
+<tr><td>Coût et délai (favorable = faible) (3)</td><td>4</td><td>3</td><td>5</td></tr>
+<tr><td><strong>Total sur 5</strong></td><td><strong>4,62</strong></td><td><strong>3,00</strong></td><td><strong>3,90</strong></td></tr>
+</tbody></table></div>
+<p><strong>Risques.</strong></p>
+<div class="table-wrap"><table><thead><tr><th>Risque</th><th>Probabilité</th><th>Impact</th><th>Parade</th></tr></thead><tbody>
+<tr><td>Exposer des noms hors portée</td><td>Faible</td><td>Moyen</td><td>Résolution limitée aux propriétaires des lignes déjà autorisées par la portée ; test dédié</td></tr>
+</tbody></table></div>
+<p><strong>Dette induite.</strong> A : un port à maintenir.</p>
+<p><strong>Recommandation.</strong> Option <strong>A</strong> : elle donne le nom sans créer de route d'annuaire ni exposer de personnes qui ne figurent pas déjà dans les résultats autorisés.</p>
+<p><strong>Décision (direction produit).</strong> ☐ À renseigner : option retenue · date · motif · réserves.</p>
+<p><strong>Trace.</strong> À enregistrer dans <code>docs/QUESTIONS-ET-DECISIONS.md</code> (et, pour le design, dans <code>docs/design/decisions/</code>).</p>
+<hr>
+<h3>ARB-API-3 — Export et réassignation des entreprises</h3>
+<p><strong>Contexte.</strong> Le mockup prévoit « Exporter » et « Réassigner » dans la barre de sélection. Ces actions sont sensibles : un export copie la liste de prospects hors de l'application ; une réassignation change la portée de visibilité (Propre / Équipe / Tous) de ceux qui voient l'entreprise.</p>
+<p><strong>Déjà décidé, ne bouge pas.</strong> Actions sensibles : permission dédiée, nouvelle preuve MFA (step-up), audit de chaque exécution ; suppression logique uniquement.</p>
+<p><strong>Options.</strong></p>
+<p><strong>A. Un cadrage de sécurité dédié avant de livrer</strong> — Ni export ni réassignation tant qu'un cadrage court n'a pas fixé : qui, quel volume, quel format, quelles preuves, quelle conservation de la trace.</p>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td>Avantages</td><td>Décisions de sécurité prises à froid ; barre de sélection utile dès qu'elles sont livrées.</td></tr>
+<tr><td>Inconvénients</td><td>Une étape de plus ; boutons absents d'ici là.</td></tr>
+<tr><td>Impact UX</td><td>Boutons absents (honnête).</td></tr>
+<tr><td>Impact métier</td><td>Cas d'usage précisés avant de coder.</td></tr>
+<tr><td>Impact technique</td><td>Aucun avant le cadrage.</td></tr>
+<tr><td>Impact maintenance</td><td>Aucun.</td></tr>
+<tr><td>Coût et délai</td><td>≈ 0,2 session de cadrage</td></tr>
+<tr><td>Réversibilité</td><td>Excellente.</td></tr>
+</tbody></table></div>
+<p><strong>B. Livrer avec S4.1 sans cadrage séparé</strong> — Export CSV et réassignation conçus au fil de S4.1.</p>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td>Avantages</td><td>Barre de sélection utile plus tôt.</td></tr>
+<tr><td>Inconvénients</td><td>Décisions de sécurité prises dans le feu du développement ; risque de fuite ou de visibilité inattendue.</td></tr>
+<tr><td>Impact UX</td><td>Barre d'actions complète.</td></tr>
+<tr><td>Impact métier</td><td>Gain rapide, risque non évalué.</td></tr>
+<tr><td>Impact technique</td><td>Permissions, step-up, audit, volumes.</td></tr>
+<tr><td>Impact maintenance</td><td>Tests de droits en plus.</td></tr>
+<tr><td>Coût et délai</td><td>≈ 0,8 session</td></tr>
+<tr><td>Réversibilité</td><td>Moyenne.</td></tr>
+</tbody></table></div>
+<p><strong>C. Ne jamais exporter ni réassigner en masse</strong> — La barre de sélection reste informative ; les changements se font un à un.</p>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td>Avantages</td><td>Risque minimal.</td></tr>
+<tr><td>Inconvénients</td><td>Réassigner une équipe dossier par dossier est pénible ; la barre de sélection reste sans actions.</td></tr>
+<tr><td>Impact UX</td><td>Sélection peu utile.</td></tr>
+<tr><td>Impact métier</td><td>Productivité limitée.</td></tr>
+<tr><td>Impact technique</td><td>Aucun.</td></tr>
+<tr><td>Impact maintenance</td><td>Aucun.</td></tr>
+<tr><td>Coût et délai</td><td>0</td></tr>
+<tr><td>Réversibilité</td><td>Excellente.</td></tr>
+</tbody></table></div>
+<p><strong>Grille</strong> (notes de 1 à 5, 5 = favorable ; poids fixés avant notation ; totaux calculés).</p>
+<div class="table-wrap"><table><thead><tr><th>Critère (poids)</th><th>A</th><th>B</th><th>C</th></tr></thead><tbody>
+<tr><td>Valeur métier (5)</td><td>3</td><td>4</td><td>2</td></tr>
+<tr><td>Risque (favorable = faible) (5)</td><td>5</td><td>2</td><td>5</td></tr>
+<tr><td>Cohérence architecture / décisions (4)</td><td>5</td><td>3</td><td>4</td></tr>
+<tr><td>Réversibilité (4)</td><td>5</td><td>3</td><td>5</td></tr>
+<tr><td>Coût et délai (favorable = faible) (3)</td><td>4</td><td>2</td><td>5</td></tr>
+<tr><td><strong>Total sur 5</strong></td><td><strong>4,38</strong></td><td><strong>2,86</strong></td><td><strong>4,10</strong></td></tr>
+</tbody></table></div>
+<p><strong>Risques.</strong></p>
+<div class="table-wrap"><table><thead><tr><th>Risque</th><th>Probabilité</th><th>Impact</th><th>Parade</th></tr></thead><tbody>
+<tr><td>Fuite de la liste de prospects par export</td><td>Moyenne</td><td>Élevé</td><td>Cadrage : permission dédiée, step-up, volume borné, audit, filtres obligatoires</td></tr>
+<tr><td>Réassignation qui rend un dossier visible à de mauvaises personnes</td><td>Moyenne</td><td>Élevé</td><td>Réassigner uniquement dans la portée de l'appelant ; audit avant/après ; test de matrice de droits</td></tr>
+</tbody></table></div>
+<p><strong>Dette induite.</strong> A : un cadrage de plus. B : décisions non cadrées. C : barre de sélection sans actions (D37).</p>
+<p><strong>Recommandation.</strong> Option <strong>A</strong>. Les deux actions touchent la sécurité des données commerciales ; un cadrage court, mené après le cadrage UX, vaut mieux qu'une décision improvisée en cours de S4.1. Ferait changer d'avis : une demande métier urgente d'export (alors B, avec step-up obligatoire).</p>
+<p><strong>Décision (direction produit).</strong> ☐ À renseigner : option retenue · date · motif · réserves.</p>
+<p><strong>Trace.</strong> À enregistrer dans <code>docs/QUESTIONS-ET-DECISIONS.md</code> (et, pour le design, dans <code>docs/design/decisions/</code>).</p>
+<hr>
+<h3>ARB-API-4 — La colonne « Dernière activité »</h3>
+<p><strong>Contexte.</strong> Le mockup affiche « il y a 2 h », « il y a 3 jours »… Une vraie dernière activité vient des rendez-vous, offres et relances, qui n'existent pas avant S4.2 et S4.3. L'API connaît seulement la date de création ; la date de dernière modification existe en base mais n'est pas exposée.</p>
+<p><strong>Déjà décidé, ne bouge pas.</strong> Aucune donnée fictive ; un libellé doit dire ce qu'il mesure.</p>
+<p><strong>Options.</strong></p>
+<p><strong>A. Attendre la vraie dernière activité (S4.2 / S4.3)</strong> — La colonne apparaît quand les rendez-vous et offres existent.</p>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td>Avantages</td><td>Libellé exact, donnée utile (suivi commercial réel).</td></tr>
+<tr><td>Inconvénients</td><td>Colonne absente pendant plusieurs sessions.</td></tr>
+<tr><td>Impact UX</td><td>Colonne manquante jusque-là.</td></tr>
+<tr><td>Impact métier</td><td>Bonne information le moment venu.</td></tr>
+<tr><td>Impact technique</td><td>Aucun maintenant.</td></tr>
+<tr><td>Impact maintenance</td><td>Aucun.</td></tr>
+<tr><td>Coût et délai</td><td>0</td></tr>
+<tr><td>Réversibilité</td><td>Excellente.</td></tr>
+</tbody></table></div>
+<p><strong>B. Afficher « Dernière modification » maintenant</strong> — Exposer la date de dernière mise à jour de la fiche et l'afficher sous ce libellé exact.</p>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td>Avantages</td><td>Colonne présente tout de suite, sans confusion si le libellé est exact.</td></tr>
+<tr><td>Inconvénients</td><td>Mesure l'édition de la fiche, pas le suivi commercial ; peut être prise pour de l'activité ; à remplacer plus tard.</td></tr>
+<tr><td>Impact UX</td><td>Colonne présente.</td></tr>
+<tr><td>Impact métier</td><td>Information limitée.</td></tr>
+<tr><td>Impact technique</td><td>Exposer un champ existant.</td></tr>
+<tr><td>Impact maintenance</td><td>Colonne à retirer ou remplacer en S4.3.</td></tr>
+<tr><td>Coût et délai</td><td>≈ 0,05 session</td></tr>
+<tr><td>Réversibilité</td><td>Bonne.</td></tr>
+</tbody></table></div>
+<p><strong>C. Afficher une activité estimée à partir de l'audit</strong> — Déduire l'activité des lignes d'audit (consultations, modifications).</p>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td>Avantages</td><td>Colonne présente, ressemble à l'activité.</td></tr>
+<tr><td>Inconvénients</td><td>Mesure l'usage de l'application, pas le suivi du client ; calcul lourd sur une table partitionnée ; risque de faux sens.</td></tr>
+<tr><td>Impact UX</td><td>Trompeuse.</td></tr>
+<tr><td>Impact métier</td><td>Peut fausser les décisions.</td></tr>
+<tr><td>Impact technique</td><td>Requêtes coûteuses.</td></tr>
+<tr><td>Impact maintenance</td><td>Dette.</td></tr>
+<tr><td>Coût et délai</td><td>≈ 0,4 session</td></tr>
+<tr><td>Réversibilité</td><td>Faible.</td></tr>
+</tbody></table></div>
+<p><strong>Grille</strong> (notes de 1 à 5, 5 = favorable ; poids fixés avant notation ; totaux calculés).</p>
+<div class="table-wrap"><table><thead><tr><th>Critère (poids)</th><th>A</th><th>B</th><th>C</th></tr></thead><tbody>
+<tr><td>Valeur métier (5)</td><td>3</td><td>2</td><td>2</td></tr>
+<tr><td>Risque (favorable = faible) (5)</td><td>5</td><td>4</td><td>2</td></tr>
+<tr><td>Cohérence architecture / décisions (4)</td><td>5</td><td>3</td><td>1</td></tr>
+<tr><td>Réversibilité (4)</td><td>5</td><td>4</td><td>2</td></tr>
+<tr><td>Coût et délai (favorable = faible) (3)</td><td>5</td><td>4</td><td>2</td></tr>
+<tr><td><strong>Total sur 5</strong></td><td><strong>4,52</strong></td><td><strong>3,33</strong></td><td><strong>1,81</strong></td></tr>
+</tbody></table></div>
+<p><strong>Risques.</strong></p>
+<div class="table-wrap"><table><thead><tr><th>Risque</th><th>Probabilité</th><th>Impact</th><th>Parade</th></tr></thead><tbody>
+<tr><td>Une « activité » qui n'en est pas une influence des décisions commerciales</td><td>Moyenne</td><td>Moyen</td><td>Libellé exact ou colonne absente ; jamais d'estimation déguisée</td></tr>
+</tbody></table></div>
+<p><strong>Dette induite.</strong> B : colonne à remplacer. C : calcul à retirer.</p>
+<p><strong>Recommandation.</strong> Option <strong>A</strong> : on attend la donnée réelle. La date de création est déjà disponible et peut s'afficher dès maintenant sous le libellé « Créée le » (sans décision supplémentaire).</p>
+<p><strong>Décision (direction produit).</strong> ☐ À renseigner : option retenue · date · motif · réserves.</p>
+<p><strong>Trace.</strong> À enregistrer dans <code>docs/QUESTIONS-ET-DECISIONS.md</code> (et, pour le design, dans <code>docs/design/decisions/</code>).</p>
+<hr>
+<h2>4. Effet cumulé si les recommandations sont retenues</h2>
+<ul><li><strong>Maintenant, sans décision supplémentaire</strong> : afficher <strong>Pays</strong> et <strong>Créée le</strong> dans le tableau Entreprises (champs déjà fournis). Petite retouche d'interface, sans toucher à l'API.</li><li><strong>Dans S4.1</strong> (après le cadrage UX) : filtres, tri, compteurs, nom du responsable (par port d'annuaire), avec les colonnes que vous aurez choisies.</li><li><strong>Cadrage dédié</strong> pour l'export et la réassignation, après le cadrage UX.</li><li><strong>Plus tard</strong> : dernière activité et valeur estimée avec les modules qui les produisent (S4.2, S4.3).</li><li><strong>Dettes</strong> : D38 reçoit une échéance (S4.1) ; D37 (actions groupées) est liée au cadrage export/réassignation.</li></ul>
+<h2>5. Comment décider</h2>
+<p>Répondez par exemple : « <strong>ARB-API-1 : C ; ARB-API-2 : A ; ARB-API-3 : A ; ARB-API-4 : A</strong> », ou indiquez vos écarts. Je consigne les choix dans le registre (<code>QUESTIONS-ET-DECISIONS.md</code>, D21), j'ajuste le plan de S4.1 et je peux afficher Pays et Créée le tout de suite.</p></main></body></html>
