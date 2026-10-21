@@ -2,7 +2,7 @@
 
 > Document **généré** par `node scripts/gen-function-index.mjs` à partir des commentaires du code. Ne pas le modifier à la main : corriger le commentaire dans le fichier source, puis relancer le script.
 
-**586 déclarations commentées au total.**
+**587 déclarations commentées au total.**
 
 
 ## API (NestJS) — 459 déclarations commentées
@@ -1204,7 +1204,7 @@
 | `export function StepUpDialog({ onDone }: { onDone: (ok: boolean) => void })` | Demande un code frais du second facteur avant une action sensible (modification de rôles, désactivation, etc.). |
 | `async function submit(event: FormEvent)` | Vérifie le code ; en cas de succès le nouveau jeton remplace l'ancien et l'action sensible est rejouée. |
 
-## Interface web — bibliothèque — 53 déclarations commentées
+## Interface web — bibliothèque — 54 déclarations commentées
 
 ### `api.ts`
 
@@ -1244,6 +1244,12 @@
 | Déclaration | Rôle |
 |---|---|
 | `export function deviceLabel(userAgent: string): string` | Libellé court et lisible d'un User-Agent (« Chrome sur Windows »). |
+
+### `format.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export function formatDate(iso: string \| null \| undefined): string` | Date seule au format français (ex. |
 
 ### `invitation.ts`
 

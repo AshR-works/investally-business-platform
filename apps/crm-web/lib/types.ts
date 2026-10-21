@@ -57,4 +57,7 @@ export interface Company {
   name: string;
   status: string;
   sector: string | null;
+  country: string | null;
+  /** Date de création (ISO 8601). */
+  createdAt: string;
 }

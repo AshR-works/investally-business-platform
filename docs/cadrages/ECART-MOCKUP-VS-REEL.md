@@ -1,6 +1,6 @@
 # Écart entre le mockup et l'application réelle
 
-**Date** : 2026-10-21 · **Pourquoi ce document** : l'application ne ressemblait pas au mockup ; ce tableau dit, écran par écran, **ce qui est reproduit, ce qui manque et pourquoi**. Mis à jour après la session H1b (composants de données).
+**Date** : 2026-10-21 · **Pourquoi ce document** : l'application ne ressemblait pas au mockup ; ce tableau dit, écran par écran, **ce qui est reproduit, ce qui manque et pourquoi**. Mis à jour après la session H1b (composants de données) et l'arbitrage D21 (Pays et « Créée le » ajoutés).
 
 **Principe** : un élément du mockup n'apparaît dans l'application que s'il a une **donnée réelle** derrière lui. Aucune donnée fictive ne sort du prototype.
 
@@ -22,7 +22,7 @@
 | Écran du mockup | Ce qui est reproduit | Ce qui manque | Pourquoi | Session |
 |---|---|---|---|---|
 | **Vue d'ensemble (hub)** | Recherche globale, tuiles des modules disponibles, modules « À venir » | Indicateurs, rendez-vous du jour, tâches | Aucune source de données | S4 à S6 |
-| **Entreprises** | En-tête, tableau (entreprise, secteur, statut), recherche, sélection persistante, pagination, création en fenêtre | Colonnes **Responsable, Valeur estimée, Dernière activité** ; ville dans la cellule ; onglets « Les miennes / À relancer » avec compteurs ; boutons **Filtres, Colonnes, Exporter, Réassigner** | L'API ne fournit que nom, secteur et statut ; pas de route d'export ni de réassignation ; pas de filtre serveur autre que la recherche | S4.1, S4.3 |
+| **Entreprises** | En-tête, tableau (entreprise, secteur, **pays**, statut, **créée le**), recherche, sélection persistante, pagination, création en fenêtre | Colonnes **Responsable, Valeur estimée, Dernière activité** ; ville dans la cellule ; onglets « Les miennes / À relancer » avec compteurs ; boutons **Filtres, Colonnes, Exporter, Réassigner** | L'API ne fournit pas ces données (nom, secteur, pays, statut et date de création sont affichés) ; pas de route d'export ni de réassignation ; pas de filtre serveur autre que la recherche | S4.1 (arbitrage D21 : lot « tableaux »), S4.2, S4.3 |
 | **Utilisateurs** (pas de maquette dédiée, même gabarit) | Tableau complet : utilisateur, rôles, statut, MFA, dernière connexion, menu d'actions, filtres par statut, recherche, pagination | Compteurs par statut dans les filtres ; actions groupées | Compteurs : requêtes supplémentaires non prévues ; actions groupées : pas de routes | à décider |
 | **Mon compte** | Sessions dans le tableau du design | Mise en page des autres blocs (profil, mot de passe, codes de secours) au nouveau style ; historique des connexions | Écrans d'accès et de compte prévus en H2 | H2 |
 | **Écrans d'accès** (connexion, MFA, invitation, mot de passe) | Couleurs, polices, formes du design (couche « legacy ») | Gabarit pas à pas du mockup, 18 écrans | Prévu en H2 | H2 |

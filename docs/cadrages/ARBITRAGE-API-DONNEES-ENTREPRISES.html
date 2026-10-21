@@ -22,7 +22,7 @@ hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
 nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 @media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
 </style></head><body><main><nav class="top">Investally Business Platform — cadrages · <a href="README.html">Index</a> · <a href="../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../design/05-AIDE-A-LA-DECISION.html">Aide à la décision</a></nav><h1>Arbitrage — Données manquantes dans l'API des entreprises</h1>
-<p><strong>Date</strong> : 2026-10-21 · <strong>Statut</strong> : à décider · <strong>Origine</strong> : constat de l'écart entre le mockup et l'application (D38, <code>ECART-MOCKUP-VS-REEL.md</code>).</p>
+<p><strong>Date</strong> : 2026-10-21 · <strong>Statut</strong> : <strong>décidé le 2026-10-21</strong> (recommandations retenues : C, A, A, A) · <strong>Origine</strong> : constat de l'écart entre le mockup et l'application (D38, <code>ECART-MOCKUP-VS-REEL.md</code>).</p>
 <blockquote><p>Méthode : <a href="../METHODE-D-ARBITRAGE.html">METHODE-D-ARBITRAGE.md</a>. <strong>Aucune décision n'est prise dans ce document</strong> : les recommandations sont des avis, la décision est celle de la direction produit.</p></blockquote>
 <h2>1. La question en une phrase</h2>
 <p>Le tableau <strong>Entreprises</strong> de l'application est loin du mockup. <strong>Quoi ajouter à l'API, quand, et avec quelles précautions ?</strong> Quatre décisions à prendre, de la plus structurante (ARB-API-1) à la plus ciblée (ARB-API-4).</p>
@@ -112,7 +112,7 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 </tbody></table></div>
 <p><strong>Dette induite.</strong> A : D38 vieillit. B : contrat figé trop tôt. C : S4.1 plus longue. D : sécurité à cadrer.</p>
 <p><strong>Recommandation.</strong> Option <strong>C</strong>. A et C sont quasi à égalité dans la grille (4,10 contre 4,05, écart non significatif) parce qu'A ne coûte rien, mais A laisse D38 sans échéance ; C obtient le même résultat avec un périmètre décidé en séance de cadrage UX. <strong>Complément sans décision à prendre</strong> : le pays et la date de création sont déjà fournis par l'API ; je peux les afficher dès maintenant sans toucher à l'API. Ferait changer d'avis : une démonstration à un tiers avant S4.1 qui exigerait un tableau plus riche (alors B).</p>
-<p><strong>Décision (direction produit).</strong> ☐ À renseigner : option retenue · date · motif · réserves.</p>
+<p><strong>Décision (direction produit).</strong> ✅ <strong>Option C — intégrer à S4.1, après le cadrage UX</strong> — décidé le 2026-10-21 par la direction produit (recommandation suivie).</p>
 <p><strong>Trace.</strong> À enregistrer dans <code>docs/QUESTIONS-ET-DECISIONS.md</code> (et, pour le design, dans <code>docs/design/decisions/</code>).</p>
 <hr>
 <h3>ARB-API-2 — Comment afficher le nom du responsable d'une entreprise</h3>
@@ -167,7 +167,7 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 </tbody></table></div>
 <p><strong>Dette induite.</strong> A : un port à maintenir.</p>
 <p><strong>Recommandation.</strong> Option <strong>A</strong> : elle donne le nom sans créer de route d'annuaire ni exposer de personnes qui ne figurent pas déjà dans les résultats autorisés.</p>
-<p><strong>Décision (direction produit).</strong> ☐ À renseigner : option retenue · date · motif · réserves.</p>
+<p><strong>Décision (direction produit).</strong> ✅ <strong>Option A — port d'annuaire côté serveur</strong> — décidé le 2026-10-21 par la direction produit (recommandation suivie).</p>
 <p><strong>Trace.</strong> À enregistrer dans <code>docs/QUESTIONS-ET-DECISIONS.md</code> (et, pour le design, dans <code>docs/design/decisions/</code>).</p>
 <hr>
 <h3>ARB-API-3 — Export et réassignation des entreprises</h3>
@@ -223,7 +223,7 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 </tbody></table></div>
 <p><strong>Dette induite.</strong> A : un cadrage de plus. B : décisions non cadrées. C : barre de sélection sans actions (D37).</p>
 <p><strong>Recommandation.</strong> Option <strong>A</strong>. Les deux actions touchent la sécurité des données commerciales ; un cadrage court, mené après le cadrage UX, vaut mieux qu'une décision improvisée en cours de S4.1. Ferait changer d'avis : une demande métier urgente d'export (alors B, avec step-up obligatoire).</p>
-<p><strong>Décision (direction produit).</strong> ☐ À renseigner : option retenue · date · motif · réserves.</p>
+<p><strong>Décision (direction produit).</strong> ✅ <strong>Option A — cadrage de sécurité dédié avant de livrer l'export et la réassignation</strong> — décidé le 2026-10-21 par la direction produit (recommandation suivie).</p>
 <p><strong>Trace.</strong> À enregistrer dans <code>docs/QUESTIONS-ET-DECISIONS.md</code> (et, pour le design, dans <code>docs/design/decisions/</code>).</p>
 <hr>
 <h3>ARB-API-4 — La colonne « Dernière activité »</h3>
@@ -278,10 +278,10 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 </tbody></table></div>
 <p><strong>Dette induite.</strong> B : colonne à remplacer. C : calcul à retirer.</p>
 <p><strong>Recommandation.</strong> Option <strong>A</strong> : on attend la donnée réelle. La date de création est déjà disponible et peut s'afficher dès maintenant sous le libellé « Créée le » (sans décision supplémentaire).</p>
-<p><strong>Décision (direction produit).</strong> ☐ À renseigner : option retenue · date · motif · réserves.</p>
+<p><strong>Décision (direction produit).</strong> ✅ <strong>Option A — attendre la vraie dernière activité</strong> — décidé le 2026-10-21 par la direction produit (recommandation suivie).</p>
 <p><strong>Trace.</strong> À enregistrer dans <code>docs/QUESTIONS-ET-DECISIONS.md</code> (et, pour le design, dans <code>docs/design/decisions/</code>).</p>
 <hr>
 <h2>4. Effet cumulé si les recommandations sont retenues</h2>
 <ul><li><strong>Maintenant, sans décision supplémentaire</strong> : afficher <strong>Pays</strong> et <strong>Créée le</strong> dans le tableau Entreprises (champs déjà fournis). Petite retouche d'interface, sans toucher à l'API.</li><li><strong>Dans S4.1</strong> (après le cadrage UX) : filtres, tri, compteurs, nom du responsable (par port d'annuaire), avec les colonnes que vous aurez choisies.</li><li><strong>Cadrage dédié</strong> pour l'export et la réassignation, après le cadrage UX.</li><li><strong>Plus tard</strong> : dernière activité et valeur estimée avec les modules qui les produisent (S4.2, S4.3).</li><li><strong>Dettes</strong> : D38 reçoit une échéance (S4.1) ; D37 (actions groupées) est liée au cadrage export/réassignation.</li></ul>
-<h2>5. Comment décider</h2>
-<p>Répondez par exemple : « <strong>ARB-API-1 : C ; ARB-API-2 : A ; ARB-API-3 : A ; ARB-API-4 : A</strong> », ou indiquez vos écarts. Je consigne les choix dans le registre (<code>QUESTIONS-ET-DECISIONS.md</code>, D21), j'ajuste le plan de S4.1 et je peux afficher Pays et Créée le tout de suite.</p></main></body></html>
+<h2>5. Décision</h2>
+<p>Le 2026-10-21, la direction produit a retenu les quatre recommandations. Pays et « Créée le » sont affichés dans le tableau Entreprises dès maintenant ; le reste est planifié comme indiqué au §4. Enregistrée au registre (D21). Répondez par exemple : « <strong>ARB-API-1 : C ; ARB-API-2 : A ; ARB-API-3 : A ; ARB-API-4 : A</strong> », ou indiquez vos écarts. Je consigne les choix dans le registre (<code>QUESTIONS-ET-DECISIONS.md</code>, D21), j'ajuste le plan de S4.1 et je peux afficher Pays et Créée le tout de suite.</p></main></body></html>
