@@ -28,7 +28,7 @@ Composants partagés : `AuthLayout`, `AuthNotice`, `NewPasswordFields`, `useCool
 ## Preuves
 | Contrôle | Résultat |
 |---|---|
-| Tests de l'interface | **50 / 50** (43 + 7 : règles du mot de passe, erreurs d'authentification, limitation de débit, compte à rebours) |
+| Tests de l'interface | **51 / 51** (43 + 8 : règles du mot de passe, erreurs d'authentification, limitation de débit, compte à rebours) |
 | Audit axe-core, navigateur réel | **29 états, 0 violation, 0 point à vérifier**, dont A15 en conditions réelles (6 échecs rapides → 429), connexion en **thème sombre**, saisie du code (A02) et code de secours (A03) après une vraie reconnexion |
 | Politique de contenu (CSP) | **0 violation** |
 | Sécurité | **Aucune règle modifiée** : mêmes routes, mêmes messages du serveur (jamais enrichis côté interface), jeton de lien toujours lu dans le fragment puis effacé, secret MFA affiché une seule fois et effacé de la mémoire après confirmation |
