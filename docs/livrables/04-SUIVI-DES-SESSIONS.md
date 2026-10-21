@@ -19,6 +19,9 @@
 | **S3.3** Autorisation et administration | `sprint/s3-3-authorization` | 10-20 21 h 43 → 22 h 05 | 10-20 22 h 15 (`420456b`) | `s3-3-validated` | ✅ « Je valide S3.3, passe à S3.4 » |
 | **S3.4** Interface de base | `sprint/s3-4-front` | 10-20 22 h 40 → 22 h 58 | **fusionnée** (`s3-4-validated`) | — | ✅ **validée 2026-10-21** |
 | **S3.5** Mot de passe oublié, commentaires, livrables | `sprint/s3-5-password-reset` | 10-21 05 h 39 | **fusionnée** (`s3-5-validated`) | — | ✅ **validée 2026-10-21** |
+| **A11Y-1** Accessibilité (lecteurs d'écran) | `sprint/a11y-1-lecteurs-d-ecran` | 10-21 | **fusionnée** (`a11y-1-validated`) | — | ✅ **validée 2026-10-21** |
+| **Cadrages** H1, H2, S3.6, UX | `sprint/h1-cadrage` | 10-21 | **fusionnée** (`cadrages-validated`) | — | ✅ **validée 2026-10-21** (11 décisions, D19) |
+| **H1** Habillage minimal et hub | `sprint/h1-habillage-hub` | 10-21 | **livrée** | tests web 35/35, axe 21 états à 0 violation, CSP 0 violation | ⏳ **validation attendue** (`docs/SPRINT-H1-RECETTE.md`) |
 
 > **Commentaire** — Les dates de commits ne mesurent pas l'effort : chaque session regroupe de longs échanges, des recettes et des corrections avant le commit final. Elles prouvent en revanche l'**ordre** et la **traçabilité** : aucune fusion sans validation écrite, aucune branche sautée. Le plan annonçait « 1 semaine maximum par sprint » ; l'ensemble tient ici en **moins de deux jours calendaires** parce que le rythme réel a été celui des validations successives de l'ingénieur.
 

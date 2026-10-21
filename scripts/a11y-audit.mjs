@@ -66,6 +66,13 @@ const send = (method, params = {}) => new Promise((resolveCall, reject) => {
 await send('Page.enable');
 await send('Runtime.enable');
 await send('Accessibility.enable');
+await send('Log.enable');
+/** Violations de la politique de contenu (CSP) vues par le navigateur pendant tout le parcours : il ne doit y en avoir aucune. */
+const cspViolations = [];
+socket.addEventListener('message', (m) => {
+  const d = JSON.parse(m.data);
+  if (d.method === 'Log.entryAdded' && /Content Security Policy|Refused to/i.test(d.params.entry.text)) cspViolations.push(d.params.entry.text.slice(0, 200));
+});
 await send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 900, deviceScaleFactor: 1, mobile: false });
 
 const js = async (expression) => {
@@ -99,6 +106,17 @@ const lastLink = (kind) => {
   const m = [...readFileSync(API_LOG, 'utf8').matchAll(new RegExp(`/${kind}#token=([A-Za-z0-9_-]+)`, 'g'))].at(-1);
   return m ? m[1] : null;
 };
+
+
+const SHOTS = arg('shots', '');
+async function shot(name) {
+  if (!SHOTS) return;
+  mkdirSync(SHOTS, { recursive: true });
+  const r = await send('Page.captureScreenshot', { format: 'png' });
+  writeFileSync(join(SHOTS, `${name}.png`), Buffer.from(r.data, 'base64'));
+}
+/** Géométrie de la coque : mode de navigation, marges autour du panneau principal, chevauchement. */
+const shellState = () => js(`(() => { const shell = document.querySelector('[data-nav]'); const p = shell.children[shell.children.length - 1].getBoundingClientRect(); const a = document.querySelector('aside').getBoundingClientRect(); return { nav: shell.dataset.nav, margeG: Math.round(p.left), margeD: Math.round(document.documentElement.clientWidth - p.right), largeur: Math.round(p.width), chevauche: a.right > p.left + 1, defilementX: document.documentElement.scrollWidth > innerWidth }; })()`);
 
 // ---------------------------------------------------------------- audit d'un état d'écran
 const TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice'];
@@ -189,7 +207,53 @@ try {
   await clickText('Continuer');
   await waitFor("location.pathname === '/' && document.querySelector('main')", 'application connectée', 20000);
   await sleep(1500);
-  await audit('Entreprises');
+  await audit('Vue d’ensemble (hub)', 'navigation complète, recherche globale, modules');
+  await shot('hub-clair');
+  results.at(-1).note += ` · polices chargées : ${await js(`Array.from(document.fonts).filter((f) => f.status === 'loaded').map((f) => f.family).join(', ') || 'aucune'`)}`;
+
+  await go('/companies');
+  await waitFor("document.querySelector('main h1')", 'page Entreprises', 20000);
+  await sleep(800);
+  await audit('Entreprises (rail compact)', 'rail par défaut hors hub');
+  await shot('entreprises-rail');
+  const shell1 = await shellState();
+  results.at(-1).note += ` · 1280 px : ${JSON.stringify(shell1)}`;
+  await send('Emulation.setDeviceMetricsOverride', { width: 2200, height: 900, deviceScaleFactor: 1, mobile: false });
+  await sleep(400);
+  results.at(-1).note += ` · 2200 px : ${JSON.stringify(await shellState())}`;
+  await shot('entreprises-rail-2200');
+  await send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 900, deviceScaleFactor: 1, mobile: false });
+  await setValue('main form input', 'Société Horizon SA');
+  await clickText('Enregistrer');
+  await sleep(1500);
+  await js("document.querySelector('button[aria-controls=navigation][title]').focus(); document.querySelector('button[aria-controls=navigation][title]').click()");
+  await sleep(500);
+  await audit('Entreprises (navigation dépliée)', 'bouton-pictogramme de dépliage');
+  const shell2 = await shellState();
+  results.at(-1).note += ` · ${JSON.stringify(shell2)}`;
+  await shot('entreprises-deplie');
+
+  await go('/');
+  await waitFor("document.querySelector('input[type=search]')", 'champ de recherche du hub', 20000);
+  await setValue('input[type=search]', 'Hori');
+  await waitFor("document.querySelector('[role=search] li')", 'résultats de recherche', 15000);
+  await audit('Hub — résultats de recherche', 'résultats groupés par type, annonce du nombre');
+  await shot('hub-recherche');
+  await js(`document.querySelector('button[aria-label*="thème"]').click()`);
+  await sleep(600);
+  await audit('Hub — thème sombre');
+  await shot('hub-sombre');
+  await js("localStorage.removeItem('investally-theme')");
+  await send('Emulation.setDeviceMetricsOverride', { width: 390, height: 800, deviceScaleFactor: 1, mobile: true });
+  await go('/');
+  await waitFor("document.querySelector('main h1')", 'hub mobile', 20000);
+  await shot('hub-mobile');
+  await audit('Hub — mobile, tiroir fermé', 'la navigation est masquée aux lecteurs d’écran tant que le tiroir est fermé');
+  await js(`document.querySelector('button[aria-label="Ouvrir le menu"]').click()`);
+  await sleep(600);
+  await shot('hub-mobile-menu');
+  await audit('Hub — mobile, tiroir ouvert');
+  await send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 900, deviceScaleFactor: 1, mobile: false });
 
   await go('/admin/users');
   await waitFor("document.querySelector('table')", 'tableau des utilisateurs', 20000);
@@ -230,9 +294,12 @@ try {
 mkdirSync(OUT, { recursive: true });
 const stamp = new Date().toISOString().slice(0, 10);
 writeFileSync(join(OUT, `axe-${stamp}.json`), JSON.stringify(results, null, 2));
+if (cspViolations.length) results.push({ label: 'POLITIQUE DE CONTENU (CSP)', note: `${cspViolations.length} violation(s) : ${cspViolations.join(' | ')}` });
 const violations = results.flatMap((r) => (r.axe?.violations ?? []).map((v) => ({ etat: r.label, ...v })));
 const summary = [
   `# Audit d'accessibilité de l'interface — ${stamp}`,
+  '',
+  `**Violations de la politique de contenu (CSP)** : ${cspViolations.length}`,
   '',
   `**États audités** : ${results.filter((r) => r.axe).length} · **violations** : ${violations.length} · **à vérifier à la main** : ${results.reduce((n, r) => n + (r.axe?.incomplete.length ?? 0), 0)}`,
   '',
