@@ -2,7 +2,7 @@
 
 > Document **généré** par `node scripts/gen-function-index.mjs` à partir des commentaires du code. Ne pas le modifier à la main : corriger le commentaire dans le fichier source, puis relancer le script.
 
-**587 déclarations commentées au total.**
+**600 déclarations commentées au total.**
 
 
 ## API (NestJS) — 459 déclarations commentées
@@ -991,7 +991,7 @@
 | `export interface RequestLike` | Forme minimale d'une requête HTTP (sans dépendre d'Express) pour construire le contexte d'audit. |
 | `export function actorContextFrom(req: RequestLike, identity: { userId: string \| null; sessionId: string \| null } = { userId: null, sessionId: null }` | Qui agit, depuis où : IP et appareil de la requête (l'identité est ajoutée une fois l'utilisateur authentifié). |
 
-## Interface web — pages (Next.js) — 39 déclarations commentées
+## Interface web — pages (Next.js) — 41 déclarations commentées
 
 ### `(app)/account/page.tsx`
 
@@ -1044,14 +1044,14 @@
 | Déclaration | Rôle |
 |---|---|
 | `export default function ForgotPasswordPage()` | Page « Mot de passe oublié » : accessible sans connexion, réservée aux visiteurs non connectés. |
-| `function ForgotPasswordForm()` | Demande un lien de réinitialisation. |
+| `function ForgotPasswordForm()` | Demande un lien de réinitialisation (A08) puis confirme l'envoi (A09). |
 | `async function submit(event: FormEvent)` | Demande le lien ; affiche toujours la même confirmation, seule une erreur de limitation ou de panne est signalée. |
 
 ### `invitation/page.tsx`
 
 | Déclaration | Rôle |
 |---|---|
-| `export default function InvitationPage()` | Page d'activation d'un compte invité : lit le jeton dans le fragment de l'URL, l'efface de l'adresse, puis laisse choisir le mot de passe. |
+| `export default function InvitationPage()` | Page d'activation d'un compte invité (A13) : lit le jeton dans le fragment de l'URL, l'efface de l'adresse, puis laisse choisir le mot de passe. |
 | `async function submit(event: FormEvent)` | Envoie le jeton et le mot de passe ; un refus (lien invalide, mot de passe refusé) est affiché et le lien reste utilisable si c'est le mot de passe qui est en cause. |
 
 ### `layout.tsx`
@@ -1065,29 +1065,31 @@
 | Déclaration | Rôle |
 |---|---|
 | `export default function LoginPage()` | Page de connexion, réservée aux visiteurs non connectés. |
-| `function LoginForm()` | Formulaire de connexion (adresse, mot de passe) avec lien « Mot de passe oublié ». |
-| `async function submit(event: FormEvent)` | Tente la connexion ; en cas d'échec affiche le message unique du serveur et vide le mot de passe. |
+| `function LoginForm()` | Formulaire de connexion (A01) : adresse et mot de passe, lien « Mot de passe oublié ». |
+| `async function submit(event: FormEvent)` | Tente la connexion ; en cas d'échec affiche le message du serveur et vide le mot de passe. |
 
 ### `mfa/page.tsx`
 
 | Déclaration | Rôle |
 |---|---|
 | `export default function MfaPage()` | Page du second facteur : vérification d'un code, ou première configuration si le MFA n'est pas encore en place. |
-| `function MfaScreen()` | Choisit l'écran (configuration ou vérification) selon l'état de la session et permet de changer de compte. |
-| `function Verification()` | Saisie du code TOTP ou d'un code de secours à usage unique. |
+| `function MfaScreen()` | Choisit l'écran (configuration ou vérification) selon l'état de la session. |
+| `function AccountFooter()` | Pied des écrans MFA : compte connecté et possibilité d'en changer. |
+| `function Verification()` | Saisie du code du second facteur (A02) ou d'un code de secours à usage unique (A03). |
 | `async function submit(event: FormEvent)` | Envoie le code ; un échec est affiché et le champ vidé (une seule requête par tentative). |
 | `function groupSecret(secret: string): string` | Présente la clé manuelle par groupes de 4 caractères pour la saisir plus facilement. |
-| `function Enrollment()` | Première configuration du MFA : QR code généré dans le navigateur, clé manuelle, confirmation par un premier code, puis affichage unique des codes de secours. |
+| `function Enrollment()` | Première configuration du MFA en trois écrans : introduction (A04), QR code et confirmation du premier code (A05, A06), codes de secours à affichage unique (A07). |
+| `async function begin()` | Démarre la configuration (un seul appel : chaque appel génère un nouveau secret et invaliderait le QR affiché). |
 | `async function confirm(event: FormEvent)` | Confirme l'enrôlement avec le code saisi ; en cas de succès les codes de secours sont affichés et le secret effacé de la mémoire. |
 
 ### `reset-password/page.tsx`
 
 | Déclaration | Rôle |
 |---|---|
-| `export default function ResetPasswordPage()` | Page ouverte depuis le lien reçu par e-mail. |
+| `export default function ResetPasswordPage()` | Page ouverte depuis le lien reçu par e-mail (A10 à A12). |
 | `async function submit(event: FormEvent)` | Envoie le jeton et le nouveau mot de passe ; le serveur coupe toutes les sessions, l'utilisateur doit se reconnecter avec son second facteur. |
 
-## Interface web — composants — 35 déclarations commentées
+## Interface web — composants — 39 déclarations commentées
 
 ### `app-shell.tsx`
 
@@ -1098,6 +1100,25 @@
 | `const openSearch = useCallback(()` | Va à la recherche globale du hub (ou y met le focus si l'on y est déjà). |
 | `function ShellLink({ href, icon, label, current, railOnly, centered, rail }: { href: string; icon: IconName; label: string; current: boolean; railOnly` | Lien de navigation : pictogramme + libellé (le libellé reste lu par les lecteurs d'écran quand le rail est replié). |
 | `function ThemeToggle()` | Bascule clair / sombre (le choix est mémorisé ; sans choix, l'application suit le réglage de l'appareil). |
+
+### `auth/auth-layout.tsx`
+
+| Déclaration | Rôle |
+|---|---|
+| `const BARS = [35, 52, 44, 68, 60, 82, 100];` | Barres décoratives de la carte d'accueil (hauteurs en %), reprises du prototype de design. |
+| `export function AuthLayout({ title, documentTitle, description, step, children, footer }:` | Gabarit des écrans d'accès (EXD-06) : carte sombre d'accueil à gauche (masquée sur mobile), formulaire à droite avec logo, indicateur d'étape, titre et description. |
+
+### `auth/auth-notice.tsx`
+
+| Déclaration | Rôle |
+|---|---|
+| `export function AuthNotice({ tone, role, title, children }: { tone: Exclude<Tone, 'neutral'>; role: 'alert' \| 'status'; title?: string; children?: Re` | Encadré de message des écrans d'accès (confirmation, avertissement, erreur). |
+
+### `auth/new-password-fields.tsx`
+
+| Déclaration | Rôle |
+|---|---|
+| `export function NewPasswordFields({ password, confirmation, onPassword, onConfirmation }:` | Champs « nouveau mot de passe » + confirmation, avec les règles visibles en direct (chacune annoncée « respectée » ou « à respecter » aux lecteurs d'écran) et l'alerte de non-concordance. |
 
 ### `data/badge.tsx`
 
@@ -1204,7 +1225,7 @@
 | `export function StepUpDialog({ onDone }: { onDone: (ok: boolean) => void })` | Demande un code frais du second facteur avant une action sensible (modification de rôles, désactivation, etc.). |
 | `async function submit(event: FormEvent)` | Vérifie le code ; en cas de succès le nouveau jeton remplace l'ancien et l'action sensible est rejouée. |
 
-## Interface web — bibliothèque — 54 déclarations commentées
+## Interface web — bibliothèque — 61 déclarations commentées
 
 ### `api.ts`
 
@@ -1239,6 +1260,15 @@
 | `interface TokenResponse` | Réponse de l'API contenant un nouveau jeton d'accès. |
 | `export function AuthProvider({ children }: { children: ReactNode })` | Fournisseur d'authentification : retrouve la session au chargement (cookie de rafraîchissement), pilote les états `anonymous`, `mfa-enroll`, `mfa-verify` et `ready`, et affiche la fenêtre de confirmation MFA quand il le faut. |
 
+### `auth-errors.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export const RATE_LIMIT_WAIT_SECONDS = 60;` | Durée (secondes) d'attente affichée après un refus pour trop de tentatives (la limite du serveur est d'une minute). |
+| `export function isRateLimited(error: unknown): boolean` | Vrai si le serveur refuse pour trop de tentatives (limitation de débit, HTTP 429). |
+| `export function authErrorMessage(error: unknown, fallback: string): string` | Message à afficher pour un échec d'authentification : le message du serveur (identique pour un compte connu ou inconnu, jamais enrichi ici), un texte propre à la limitation de débit, ou un texte de repli pour une panne réseau. |
+| `export function secondsLeft(until: number, now: number): number` | Secondes restantes avant `until` (en millisecondes depuis l'époque), jamais négatives. |
+
 ### `device.ts`
 
 | Déclaration | Rôle |
@@ -1271,6 +1301,8 @@
 |---|---|
 | `export const PASSWORD_MIN_LENGTH = 12;` | Longueur minimale d'un mot de passe (la même règle que côté serveur, qui reste seul juge). |
 | `export function passwordHints(password: string, email = ''): string[]` | Indications affichées pendant la saisie (longueur, identifiant e-mail contenu) ; la règle qui fait foi est celle du serveur. |
+| `export interface PasswordRule` | Une règle de mot de passe affichée en direct, avec son état. |
+| `export function passwordRules(password: string, email = ''): PasswordRule[]` | Règles du mot de passe avec leur état (respectée ou non), pour la liste affichée pendant la saisie. |
 
 ### `permissions.ts`
 
@@ -1324,3 +1356,9 @@
 | `export interface RoleView` | Rôle et ses permissions, tels que l'API les expose. |
 | `export interface SessionView` | Session de connexion telle que l'API l'expose (la courante est marquée). |
 | `export interface Company` | Entreprise cible telle que l'API l'expose. |
+
+### `use-cooldown.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export function useCooldown(): { remaining: number; start: (seconds: number) => void }` | Compte à rebours d'attente (après un refus pour trop de tentatives) : `start(seconds)` le lance, `remaining` donne les secondes restantes (0 = on peut réessayer). |

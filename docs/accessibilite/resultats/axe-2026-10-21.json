@@ -9,17 +9,17 @@
     "axe": {
       "violations": [],
       "incomplete": [],
-      "passes": 34
+      "passes": 37
     },
     "announced": [
       "alert (SANS NOM)",
       "main (SANS NOM)",
+      "heading niveau 1 « Connexion »",
       "form (SANS NOM)",
-      "heading niveau 1 « Investally CRM »",
       "textbox « Adresse e-mail » obligatoire",
       "textbox « Mot de passe » obligatoire",
-      "button « Se connecter »",
-      "link « Mot de passe oublié ? »"
+      "link « Mot de passe oublié ? »",
+      "button « Se connecter »"
     ]
   },
   {
@@ -32,18 +32,65 @@
     "axe": {
       "violations": [],
       "incomplete": [],
-      "passes": 34
+      "passes": 37
     },
     "announced": [
       "alert (SANS NOM)",
       "main (SANS NOM)",
+      "heading niveau 1 « Connexion »",
       "form (SANS NOM)",
-      "heading niveau 1 « Investally CRM »",
+      "alert (SANS NOM)",
       "textbox « Adresse e-mail » obligatoire",
       "textbox « Mot de passe » obligatoire",
+      "link « Mot de passe oublié ? »",
+      "button « Se connecter »"
+    ]
+  },
+  {
+    "label": "Connexion — thème sombre",
+    "note": "",
+    "url": "/login",
+    "title": "Connexion — Investally CRM",
+    "lang": "fr",
+    "focus": "input",
+    "axe": {
+      "violations": [],
+      "incomplete": [],
+      "passes": 37
+    },
+    "announced": [
       "alert (SANS NOM)",
-      "button « Se connecter »",
-      "link « Mot de passe oublié ? »"
+      "main (SANS NOM)",
+      "heading niveau 1 « Connexion »",
+      "form (SANS NOM)",
+      "textbox « Adresse e-mail » obligatoire",
+      "textbox « Mot de passe » obligatoire",
+      "link « Mot de passe oublié ? »",
+      "button « Se connecter »"
+    ]
+  },
+  {
+    "label": "Connexion — trop de tentatives (A15)",
+    "note": "compte à rebours, bouton désactivé",
+    "url": "/login",
+    "title": "Connexion — Investally CRM",
+    "lang": "fr",
+    "focus": "aucun élément ciblé",
+    "axe": {
+      "violations": [],
+      "incomplete": [],
+      "passes": 37
+    },
+    "announced": [
+      "alert (SANS NOM)",
+      "main (SANS NOM)",
+      "heading niveau 1 « Connexion »",
+      "form (SANS NOM)",
+      "alert (SANS NOM)",
+      "textbox « Adresse e-mail » obligatoire",
+      "textbox « Mot de passe » obligatoire",
+      "link « Mot de passe oublié ? »",
+      "button « Patientez 59 s » désactivé"
     ]
   },
   {
@@ -56,7 +103,7 @@
     "axe": {
       "violations": [],
       "incomplete": [],
-      "passes": 34
+      "passes": 37
     },
     "announced": [
       "alert (SANS NOM)",
@@ -65,27 +112,31 @@
       "form (SANS NOM)",
       "textbox « Adresse e-mail » obligatoire",
       "button « Envoyer le lien » désactivé",
-      "link « Retour à la connexion »"
+      "link « ← Retour à la connexion »"
     ]
   },
   {
     "label": "Mot de passe oublié — e-mail envoyé",
     "note": "message identique pour toute adresse",
     "url": "/forgot-password",
-    "title": "Mot de passe oublié — Investally CRM",
+    "title": "Mot de passe oublié : e-mail envoyé — Investally CRM",
     "lang": "fr",
     "focus": "aucun élément ciblé",
     "axe": {
       "violations": [],
       "incomplete": [],
-      "passes": 28
+      "passes": 34
     },
     "announced": [
       "alert (SANS NOM)",
       "main (SANS NOM)",
-      "heading niveau 1 « Mot de passe oublié »",
+      "heading niveau 1 « Vérifiez votre boîte de réception »",
       "status (SANS NOM)",
-      "link « Retour à la connexion »"
+      "list (SANS NOM)",
+      "listitem niveau 1 (SANS NOM)",
+      "listitem niveau 1 (SANS NOM)",
+      "listitem niveau 1 (SANS NOM)",
+      "link « ← Retour à la connexion »"
     ]
   },
   {
@@ -98,11 +149,12 @@
     "axe": {
       "violations": [],
       "incomplete": [],
-      "passes": 25
+      "passes": 29
     },
     "announced": [
       "main (SANS NOM)",
-      "heading niveau 1 « Lien invalide »",
+      "heading niveau 1 « Lien invalide ou expiré »",
+      "status (SANS NOM)",
       "alert (SANS NOM)"
     ]
   },
@@ -116,36 +168,57 @@
     "axe": {
       "violations": [],
       "incomplete": [],
-      "passes": 28
+      "passes": 32
     },
     "announced": [
       "main (SANS NOM)",
-      "heading niveau 1 « Lien invalide »",
+      "heading niveau 1 « Lien invalide ou expiré »",
+      "status (SANS NOM)",
       "link « Demander un nouveau lien »",
       "alert (SANS NOM)"
+    ]
+  },
+  {
+    "label": "MFA — introduction (3 étapes)",
+    "note": "",
+    "url": "/mfa",
+    "title": "Activez la vérification en deux étapes — Investally CRM",
+    "lang": "fr",
+    "focus": "aucun élément ciblé",
+    "axe": {
+      "violations": [],
+      "incomplete": [],
+      "passes": 33
+    },
+    "announced": [
+      "alert (SANS NOM)",
+      "main (SANS NOM)",
+      "heading niveau 1 « Activez la vérification en deux étapes »",
+      "list (SANS NOM)",
+      "listitem niveau 1 (SANS NOM)",
+      "listitem niveau 1 (SANS NOM)",
+      "listitem niveau 1 (SANS NOM)",
+      "button « Commencer »",
+      "button « Changer de compte »"
     ]
   },
   {
     "label": "MFA — configuration (QR code et clé)",
     "note": "",
     "url": "/mfa",
-    "title": "Configurer le second facteur — Investally CRM",
+    "title": "Scannez le QR code — Investally CRM",
     "lang": "fr",
     "focus": "aucun élément ciblé",
     "axe": {
       "violations": [],
       "incomplete": [],
-      "passes": 36
+      "passes": 35
     },
     "announced": [
       "alert (SANS NOM)",
       "main (SANS NOM)",
+      "heading niveau 1 « Scannez le QR code »",
       "form (SANS NOM)",
-      "heading niveau 1 « Configurer le second facteur »",
-      "list (SANS NOM)",
-      "listitem niveau 1 (SANS NOM)",
-      "listitem niveau 1 (SANS NOM)",
-      "listitem niveau 1 (SANS NOM)",
       "textbox « Code de vérification » obligatoire",
       "button « Confirmer » désactivé",
       "button « Changer de compte »"
@@ -155,25 +228,21 @@
     "label": "MFA — code refusé",
     "note": "",
     "url": "/mfa",
-    "title": "Configurer le second facteur — Investally CRM",
+    "title": "Scannez le QR code — Investally CRM",
     "lang": "fr",
     "focus": "aucun élément ciblé",
     "axe": {
       "violations": [],
       "incomplete": [],
-      "passes": 36
+      "passes": 35
     },
     "announced": [
       "alert (SANS NOM)",
       "main (SANS NOM)",
+      "heading niveau 1 « Scannez le QR code »",
       "form (SANS NOM)",
-      "heading niveau 1 « Configurer le second facteur »",
-      "list (SANS NOM)",
-      "listitem niveau 1 (SANS NOM)",
-      "listitem niveau 1 (SANS NOM)",
-      "listitem niveau 1 (SANS NOM)",
-      "textbox « Code de vérification » obligatoire",
       "alert (SANS NOM)",
+      "textbox « Code de vérification » obligatoire",
       "button « Confirmer » désactivé",
       "button « Changer de compte »"
     ]
@@ -188,7 +257,7 @@
     "axe": {
       "violations": [],
       "incomplete": [],
-      "passes": 31
+      "passes": 34
     },
     "announced": [
       "alert (SANS NOM)",
@@ -196,7 +265,8 @@
       "heading niveau 1 « Conservez vos codes de secours »",
       "button « Copier »",
       "button « Télécharger »",
-      "checkbox « J'ai conservé ces codes en lieu sûr » coché=false",
+      "status (SANS NOM)",
+      "checkbox « J’ai conservé ces codes en lieu sûr » coché=false",
       "button « Continuer » désactivé",
       "button « Changer de compte »"
     ]
@@ -228,7 +298,7 @@
       "button « Rechercher partout Ctrl K »",
       "button « Passer au thème sombre »",
       "main (SANS NOM)",
-      "heading niveau 1 « Bonjour Recette Arbitrage »",
+      "heading niveau 1 « Bonjour Recette Hache Deux B »",
       "search « Recherche globale »",
       "status (SANS NOM)",
       "region « Vos modules »",
@@ -297,6 +367,14 @@
       "columnheader « Pays »",
       "columnheader « Statut »",
       "columnheader « Créée le »",
+      "row (SANS NOM)",
+      "cell « Sélectionner Société Horizon 86011 »",
+      "checkbox « Sélectionner Société Horizon 86011 » coché=false",
+      "cell « Société Horizon 86011 »",
+      "cell « — »",
+      "cell « — »",
+      "cell « Cible »",
+      "cell « 21/10/2026 »",
       "row (SANS NOM)",
       "cell « Sélectionner Entreprise Test 25 »",
       "checkbox « Sélectionner Entreprise Test 25 » coché=false",
@@ -446,14 +524,6 @@
       "checkbox « Sélectionner Entreprise Test 07 » coché=false",
       "cell « Entreprise Test 07 »",
       "cell « Industrie »",
-      "cell « Cameroun »",
-      "cell « Cible »",
-      "cell « 21/10/2026 »",
-      "row (SANS NOM)",
-      "cell « Sélectionner Entreprise Test 06 »",
-      "checkbox « Sélectionner Entreprise Test 06 » coché=false",
-      "cell « Entreprise Test 06 »",
-      "cell « Assurance »",
       "cell « Cameroun »",
       "cell « Cible »",
       "cell « 21/10/2026 »",
@@ -531,16 +601,24 @@
       "columnheader « Statut »",
       "columnheader « Créée le »",
       "row (SANS NOM)",
-      "cell « Sélectionner Société Horizon 95584 »",
-      "checkbox « Sélectionner Société Horizon 95584 » coché=true",
-      "cell « Société Horizon 95584 »",
+      "cell « Sélectionner Société Horizon 28177 »",
+      "checkbox « Sélectionner Société Horizon 28177 » coché=true",
+      "cell « Société Horizon 28177 »",
+      "cell « — »",
+      "cell « — »",
+      "cell « Cible »",
+      "cell « 21/10/2026 »",
+      "row (SANS NOM)",
+      "cell « Sélectionner Société Horizon 86011 »",
+      "checkbox « Sélectionner Société Horizon 86011 » coché=false",
+      "cell « Société Horizon 86011 »",
       "cell « — »",
       "cell « — »",
       "cell « Cible »",
       "cell « 21/10/2026 »",
       "row (SANS NOM)",
       "cell « Sélectionner Entreprise Test 25 »",
-      "checkbox « Sélectionner Entreprise Test 25 » coché=false",
+      "checkbox « Sélectionner Entreprise Test 25 » coché=true",
       "cell « Entreprise Test 25 »",
       "cell « Banque »",
       "cell « Cameroun »",
@@ -548,7 +626,7 @@
       "cell « 21/10/2026 »",
       "row (SANS NOM)",
       "cell « Sélectionner Entreprise Test 24 »",
-      "checkbox « Sélectionner Entreprise Test 24 » coché=true",
+      "checkbox « Sélectionner Entreprise Test 24 » coché=false",
       "cell « Entreprise Test 24 »",
       "cell « Énergie »",
       "cell « Cameroun »",
@@ -682,14 +760,6 @@
       "cell « Cameroun »",
       "cell « Cible »",
       "cell « 21/10/2026 »",
-      "row (SANS NOM)",
-      "cell « Sélectionner Entreprise Test 07 »",
-      "checkbox « Sélectionner Entreprise Test 07 » coché=false",
-      "cell « Entreprise Test 07 »",
-      "cell « Industrie »",
-      "cell « Cameroun »",
-      "cell « Cible »",
-      "cell « 21/10/2026 »",
       "navigation « Pagination »",
       "button « Précédent » désactivé",
       "button « Suivant »"
@@ -741,9 +811,17 @@
       "columnheader « Statut »",
       "columnheader « Créée le »",
       "row (SANS NOM)",
-      "cell « Sélectionner Société Horizon 95584 »",
-      "checkbox « Sélectionner Société Horizon 95584 » coché=false",
-      "cell « Société Horizon 95584 »",
+      "cell « Sélectionner Société Horizon 28177 »",
+      "checkbox « Sélectionner Société Horizon 28177 » coché=false",
+      "cell « Société Horizon 28177 »",
+      "cell « — »",
+      "cell « — »",
+      "cell « Cible »",
+      "cell « 21/10/2026 »",
+      "row (SANS NOM)",
+      "cell « Sélectionner Société Horizon 86011 »",
+      "checkbox « Sélectionner Société Horizon 86011 » coché=false",
+      "cell « Société Horizon 86011 »",
       "cell « — »",
       "cell « — »",
       "cell « Cible »",
@@ -892,14 +970,6 @@
       "cell « Cameroun »",
       "cell « Cible »",
       "cell « 21/10/2026 »",
-      "row (SANS NOM)",
-      "cell « Sélectionner Entreprise Test 07 »",
-      "checkbox « Sélectionner Entreprise Test 07 » coché=false",
-      "cell « Entreprise Test 07 »",
-      "cell « Industrie »",
-      "cell « Cameroun »",
-      "cell « Cible »",
-      "cell « 21/10/2026 »",
       "navigation « Pagination »",
       "button « Précédent » désactivé",
       "button « Suivant »"
@@ -932,13 +1002,15 @@
       "button « Rechercher partout Ctrl K »",
       "button « Passer au thème sombre »",
       "main (SANS NOM)",
-      "heading niveau 1 « Bonjour Recette Arbitrage »",
+      "heading niveau 1 « Bonjour Recette Hache Deux B »",
       "search « Recherche globale »",
       "status (SANS NOM)",
       "heading niveau 2 « ENTREPRISES »",
       "list (SANS NOM)",
       "listitem niveau 1 (SANS NOM)",
-      "link « Société Horizon 95584 TARGET »",
+      "link « Société Horizon 28177 TARGET »",
+      "listitem niveau 1 (SANS NOM)",
+      "link « Société Horizon 86011 TARGET »",
       "region « Vos modules »",
       "heading niveau 2 « Vos modules »",
       "list (SANS NOM)",
@@ -987,13 +1059,15 @@
       "button « Rechercher partout Ctrl K »",
       "button « Passer au thème clair »",
       "main (SANS NOM)",
-      "heading niveau 1 « Bonjour Recette Arbitrage »",
+      "heading niveau 1 « Bonjour Recette Hache Deux B »",
       "search « Recherche globale »",
       "status (SANS NOM)",
       "heading niveau 2 « ENTREPRISES »",
       "list (SANS NOM)",
       "listitem niveau 1 (SANS NOM)",
-      "link « Société Horizon 95584 TARGET »",
+      "link « Société Horizon 28177 TARGET »",
+      "listitem niveau 1 (SANS NOM)",
+      "link « Société Horizon 86011 TARGET »",
       "region « Vos modules »",
       "heading niveau 2 « Vos modules »",
       "list (SANS NOM)",
@@ -1035,7 +1109,7 @@
       "button « Rechercher partout »",
       "button « Passer au thème sombre »",
       "main (SANS NOM)",
-      "heading niveau 1 « Bonjour Recette Arbitrage »",
+      "heading niveau 1 « Bonjour Recette Hache Deux B »",
       "search « Recherche globale »",
       "status (SANS NOM)",
       "region « Vos modules »",
@@ -1087,7 +1161,7 @@
       "button « Rechercher partout »",
       "button « Passer au thème sombre »",
       "main (SANS NOM)",
-      "heading niveau 1 « Bonjour Recette Arbitrage »",
+      "heading niveau 1 « Bonjour Recette Hache Deux B »",
       "search « Recherche globale »",
       "status (SANS NOM)",
       "region « Vos modules »",
@@ -1163,14 +1237,23 @@
       "columnheader « Dernière connexion »",
       "columnheader « Actions »",
       "row (SANS NOM)",
-      "cell « Sélectionner Recette Arbitrage »",
-      "checkbox « Sélectionner Recette Arbitrage » coché=false",
-      "cell « Recette Arbitrage d21@e2e.test »",
+      "cell « Sélectionner Recette Hache Deux B »",
+      "checkbox « Sélectionner Recette Hache Deux B » coché=false",
+      "cell « Recette Hache Deux B h2b@e2e.test »",
       "cell « Super administrateur »",
       "cell « Actif »",
       "cell « Activé »",
-      "cell « 21/10/2026 23:53:04 »",
-      "cell « Actions pour Recette Arbitrage »",
+      "cell « 22/10/2026 00:16:55 »",
+      "cell « Actions pour Recette Hache Deux B »",
+      "row (SANS NOM)",
+      "cell « Sélectionner Recette Hache Deux A »",
+      "checkbox « Sélectionner Recette Hache Deux A » coché=false",
+      "cell « Recette Hache Deux A h2a@e2e.test »",
+      "cell « Super administrateur »",
+      "cell « Actif »",
+      "cell « Activé »",
+      "cell « 22/10/2026 00:15:10 »",
+      "cell « Actions pour Recette Hache Deux A »",
       "row (SANS NOM)",
       "cell « Sélectionner Recette Hache Un »",
       "checkbox « Sélectionner Recette Hache Un » coché=false",
@@ -1237,15 +1320,24 @@
       "columnheader « Dernière connexion »",
       "columnheader « Actions »",
       "row (SANS NOM)",
-      "cell « Sélectionner Recette Arbitrage »",
-      "checkbox « Sélectionner Recette Arbitrage » coché=false",
-      "cell « Recette Arbitrage d21@e2e.test »",
+      "cell « Sélectionner Recette Hache Deux B »",
+      "checkbox « Sélectionner Recette Hache Deux B » coché=false",
+      "cell « Recette Hache Deux B h2b@e2e.test »",
       "cell « Super administrateur »",
       "cell « Actif »",
       "cell « Activé »",
-      "cell « 21/10/2026 23:53:04 »",
-      "cell « Actions pour Recette Arbitrage Modifier les rôles »",
+      "cell « 22/10/2026 00:16:55 »",
+      "cell « Actions pour Recette Hache Deux B Modifier les rôles »",
       "button « Modifier les rôles »",
+      "row (SANS NOM)",
+      "cell « Sélectionner Recette Hache Deux A »",
+      "checkbox « Sélectionner Recette Hache Deux A » coché=false",
+      "cell « Recette Hache Deux A h2a@e2e.test »",
+      "cell « Super administrateur »",
+      "cell « Actif »",
+      "cell « Activé »",
+      "cell « 22/10/2026 00:15:10 »",
+      "cell « Actions pour Recette Hache Deux A »",
       "row (SANS NOM)",
       "cell « Sélectionner Recette Hache Un »",
       "checkbox « Sélectionner Recette Hache Un » coché=false",
@@ -1343,9 +1435,55 @@
       "row (SANS NOM)",
       "cell « Edge sur Windows Cette session »",
       "cell « 127.0.0.1 »",
-      "cell « 21/10/2026 23:53:04 »",
-      "cell « 21/10/2026 23:53:35 »",
+      "cell « 22/10/2026 00:16:55 »",
+      "cell « 22/10/2026 00:17:28 »",
       "cell (SANS NOM)"
+    ]
+  },
+  {
+    "label": "MFA — saisie du code (A02)",
+    "note": "",
+    "url": "/mfa",
+    "title": "Vérification en deux étapes — Investally CRM",
+    "lang": "fr",
+    "focus": "input",
+    "axe": {
+      "violations": [],
+      "incomplete": [],
+      "passes": 35
+    },
+    "announced": [
+      "alert (SANS NOM)",
+      "main (SANS NOM)",
+      "heading niveau 1 « Vérification en deux étapes »",
+      "form (SANS NOM)",
+      "textbox « Code de vérification » obligatoire",
+      "button « Vérifier » désactivé",
+      "button « Téléphone perdu ? Utiliser un code de secours »",
+      "button « Changer de compte »"
+    ]
+  },
+  {
+    "label": "MFA — code de secours (A03)",
+    "note": "",
+    "url": "/mfa",
+    "title": "Utiliser un code de secours — Investally CRM",
+    "lang": "fr",
+    "focus": "input",
+    "axe": {
+      "violations": [],
+      "incomplete": [],
+      "passes": 35
+    },
+    "announced": [
+      "alert (SANS NOM)",
+      "main (SANS NOM)",
+      "heading niveau 1 « Utiliser un code de secours »",
+      "form (SANS NOM)",
+      "textbox « Code de secours » obligatoire",
+      "button « Vérifier » désactivé",
+      "button « Utiliser mon application d’authentification »",
+      "button « Changer de compte »"
     ]
   },
   {
@@ -1358,13 +1496,15 @@
     "axe": {
       "violations": [],
       "incomplete": [],
-      "passes": 32
+      "passes": 37
     },
     "announced": [
       "main (SANS NOM)",
-      "form (SANS NOM)",
       "heading niveau 1 « Nouveau mot de passe »",
+      "form (SANS NOM)",
       "textbox « Nouveau mot de passe » obligatoire",
+      "list « Règles du mot de passe »",
+      "listitem niveau 1 (SANS NOM)",
       "textbox « Confirmez le mot de passe » obligatoire",
       "button « Enregistrer » désactivé",
       "alert (SANS NOM)"
@@ -1380,13 +1520,15 @@
     "axe": {
       "violations": [],
       "incomplete": [],
-      "passes": 32
+      "passes": 37
     },
     "announced": [
       "main (SANS NOM)",
-      "form (SANS NOM)",
       "heading niveau 1 « Nouveau mot de passe »",
+      "form (SANS NOM)",
       "textbox « Nouveau mot de passe » obligatoire",
+      "list « Règles du mot de passe »",
+      "listitem niveau 1 (SANS NOM)",
       "textbox « Confirmez le mot de passe » obligatoire",
       "button « Enregistrer » désactivé",
       "alert (SANS NOM)"
