@@ -323,7 +323,15 @@ try {
   await clickText('Se connecter');
   await waitFor("location.pathname === '/mfa' && document.querySelector('input')", 'saisie du code MFA', 20000);
   await audit('MFA — saisie du code (A02)');
+  // Saisie réelle au clavier : chaque chiffre avance d'une case, Retour arrière recule.
+  await js("document.querySelector('input[inputmode=numeric]').focus()");
+  for (const digit of '481') { await send('Input.insertText', { text: digit }); await sleep(120); }
+  const typed = await js("({ cases: [...document.querySelectorAll('input[inputmode=numeric]')].map((i) => i.value).join(''), focus: [...document.querySelectorAll('input[inputmode=numeric]')].indexOf(document.activeElement) })");
   await shot('mfa-code');
+  for (let i = 0; i < 2; i++) { await send('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Backspace', code: 'Backspace', windowsVirtualKeyCode: 8 }); await send('Input.dispatchKeyEvent', { type: 'keyUp', key: 'Backspace', code: 'Backspace', windowsVirtualKeyCode: 8 }); await sleep(120); }
+  const erased = await js("[...document.querySelectorAll('input[inputmode=numeric]')].map((i) => i.value).join('')");
+  results.at(-1).note += ` · saisie « 481 » → cases « ${typed.cases} », focus case ${typed.focus + 1} ; après 2 Retour arrière → « ${erased} »`;
+  if (typed.cases !== '481' || typed.focus !== 3 || erased !== '4') throw new Error(`Saisie en six cases incorrecte : ${JSON.stringify({ typed, erased })}`);
   await clickText('Téléphone perdu');
   await sleep(400);
   await audit('MFA — code de secours (A03)');

@@ -23,7 +23,7 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 @media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
 </style></head><body><main><nav class="top">Investally Business Platform — livrables · <a href="01-RECAPITULATIF-REALISATIONS.html">Récapitulatif</a> · <a href="02-GUIDE-DU-CODE.html">Guide du code</a> · <a href="03-INDEX-DES-FONCTIONS.html">Index des fonctions</a> · <a href="04-SUIVI-DES-SESSIONS.html">Suivi des sessions</a> · <a href="05-ETAT-D-AVANCEMENT.html">État d&#8217;avancement</a> · <a href="06-BESOINS-STYLE-GRAPHIQUE.html">Style graphique</a></nav><h1>Index des fonctions et composants (généré)</h1>
 <blockquote><p>Document <strong>généré</strong> par <code>node scripts/gen-function-index.mjs</code> à partir des commentaires du code. Ne pas le modifier à la main : corriger le commentaire dans le fichier source, puis relancer le script.</p></blockquote>
-<p><strong>600 déclarations commentées au total.</strong></p>
+<p><strong>606 déclarations commentées au total.</strong></p>
 <h2>API (NestJS) — 459 déclarations commentées</h2>
 <h3><code>app.module.ts</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
@@ -874,7 +874,7 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td><code>export default function ResetPasswordPage()</code></td><td>Page ouverte depuis le lien reçu par e-mail (A10 à A12).</td></tr>
 <tr><td><code>async function submit(event: FormEvent)</code></td><td>Envoie le jeton et le nouveau mot de passe ; le serveur coupe toutes les sessions, l'utilisateur doit se reconnecter avec son second facteur.</td></tr>
 </tbody></table></div>
-<h2>Interface web — composants — 39 déclarations commentées</h2>
+<h2>Interface web — composants — 40 déclarations commentées</h2>
 <h3><code>app-shell.tsx</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
 <tr><td><code>export const FOCUS_SEARCH_EVENT = 'investally:focus-search';</code></td><td>Événement envoyé au hub pour mettre le focus dans la recherche globale (raccourci Ctrl/⌘ K, bouton de la barre).</td></tr>
@@ -895,6 +895,10 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <h3><code>auth/new-password-fields.tsx</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
 <tr><td><code>export function NewPasswordFields({ password, confirmation, onPassword, onConfirmation }:</code></td><td>Champs « nouveau mot de passe » + confirmation, avec les règles visibles en direct (chacune annoncée « respectée » ou « à respecter » aux lecteurs d'écran) et l'alerte de non-concordance.</td></tr>
+</tbody></table></div>
+<h3><code>auth/otp-input.tsx</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export function OtpInput({ label, value, onChange, disabled = false, autoFocus = false }:</code></td><td>Saisie du code à 6 chiffres en six cases (EXD-06, DDR-0009).</td></tr>
 </tbody></table></div>
 <h3><code>data/badge.tsx</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
@@ -971,7 +975,7 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td><code>export function StepUpDialog({ onDone }: { onDone: (ok: boolean) =&gt; void })</code></td><td>Demande un code frais du second facteur avant une action sensible (modification de rôles, désactivation, etc.).</td></tr>
 <tr><td><code>async function submit(event: FormEvent)</code></td><td>Vérifie le code ; en cas de succès le nouveau jeton remplace l'ancien et l'action sensible est rejouée.</td></tr>
 </tbody></table></div>
-<h2>Interface web — bibliothèque — 61 déclarations commentées</h2>
+<h2>Interface web — bibliothèque — 66 déclarations commentées</h2>
 <h3><code>api.ts</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
 <tr><td><code>export class ApiError extends Error</code></td><td>Erreur renvoyée par l'API : statut HTTP, code stable (<code>FORBIDDEN</code>, <code>MFA_REQUIRED</code>…) et message lisible.</td></tr>
@@ -1025,6 +1029,14 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td><code>export interface AppModule</code></td><td>Un module de l'application tel que le hub et la navigation le présentent.</td></tr>
 <tr><td><code>export function availableModules(profile: Profile | null): AppModule[]</code></td><td>Modules livrés et que le profil a le droit d'ouvrir.</td></tr>
 <tr><td><code>export function upcomingModules(): AppModule[]</code></td><td>Modules pas encore livrés (présentés « À venir » sur le hub).</td></tr>
+</tbody></table></div>
+<h3><code>otp.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export const OTP_LENGTH = 6;</code></td><td>Longueur du code du second facteur (TOTP) : six chiffres.</td></tr>
+<tr><td><code>export function digitsOnly(raw: string): string</code></td><td>Ne garde que les chiffres (le collage « 123 456 » ou « 123-456 » devient « 123456 »).</td></tr>
+<tr><td><code>export function applyInput(value: string, index: number, raw: string, length = OTP_LENGTH): string</code></td><td>Valeur après saisie de <code>raw</code> dans la case <code>index</code>.</td></tr>
+<tr><td><code>export function backspaceOnEmpty(value: string, index: number): string</code></td><td>Valeur après « Retour arrière » sur une case vide : le chiffre précédent est effacé.</td></tr>
+<tr><td><code>export function nextFocus(value: string, length = OTP_LENGTH): number</code></td><td>Index de la case qui doit recevoir le focus après une saisie aboutissant à <code>value</code>.</td></tr>
 </tbody></table></div>
 <h3><code>password.ts</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>

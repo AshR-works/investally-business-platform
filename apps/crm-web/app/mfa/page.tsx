@@ -4,10 +4,12 @@ import QRCode from 'qrcode';
 import { FormEvent, ReactNode, useEffect, useRef, useState } from 'react';
 import { AuthLayout } from '../../components/auth/auth-layout';
 import { AuthNotice } from '../../components/auth/auth-notice';
+import { OtpInput } from '../../components/auth/otp-input';
 import { Gate } from '../../components/gate';
 import { Icon } from '../../components/icon';
 import { useAuth } from '../../lib/auth-context';
 import { authErrorMessage, isRateLimited, RATE_LIMIT_WAIT_SECONDS } from '../../lib/auth-errors';
+import { OTP_LENGTH } from '../../lib/otp';
 import { useCooldown } from '../../lib/use-cooldown';
 
 /** Page du second facteur : vérification d'un code, ou première configuration si le MFA n'est pas encore en place. */
@@ -73,7 +75,7 @@ function Verification() {
   return (
     <AuthLayout
       title={recovery ? 'Utiliser un code de secours' : 'Vérification en deux étapes'}
-      description={recovery ? 'Saisissez l’un de vos codes de secours (format XXXXX-XXXXX). Chaque code ne sert qu’une fois.' : 'Saisissez le code à 6 chiffres de votre application d’authentification.'}
+      description={recovery ? 'Saisissez l’un de vos codes de secours (format XXXXX-XXXXX). Chaque code ne sert qu’une fois.' : 'Saisissez les 6 chiffres affichés par votre application d’authentification.'}
       step={{ current: 2, total: 2 }}
       footer={<AccountFooter />}
     >
@@ -83,22 +85,15 @@ function Verification() {
             {limited ? (waiting ? `Patientez avant de réessayer : encore ${cooldown.remaining} s.` : 'Vous pouvez réessayer.') : error}
           </AuthNotice>
         )}
-        <label>
-          {recovery ? 'Code de secours' : 'Code de vérification'}
-          <input
-            key={recovery ? 'recovery' : 'totp'}
-            value={code}
-            onChange={(e) => setCode(e.target.value)}
-            inputMode={recovery ? 'text' : 'numeric'}
-            autoComplete="one-time-code"
-            maxLength={recovery ? 32 : 8}
-            placeholder={recovery ? 'XXXXX-XXXXX' : '000 000'}
-            required
-            autoFocus
-            className={recovery ? '' : 'text-center font-semibold tracking-[0.35em] text-[length:var(--text-xl)]'}
-          />
-        </label>
-        <button type="submit" disabled={busy || waiting || code.trim().length === 0} className="w-full">{waiting ? `Patientez ${cooldown.remaining} s` : 'Vérifier'}</button>
+        {recovery ? (
+          <label>
+            Code de secours
+            <input value={code} onChange={(e) => setCode(e.target.value)} autoComplete="one-time-code" maxLength={32} placeholder="XXXXX-XXXXX" required autoFocus />
+          </label>
+        ) : (
+          <OtpInput label="Code de vérification" value={code} onChange={setCode} autoFocus />
+        )}
+        <button type="submit" disabled={busy || waiting || (recovery ? code.trim().length === 0 : code.length < OTP_LENGTH)} className="w-full">{waiting ? `Patientez ${cooldown.remaining} s` : 'Vérifier'}</button>
         <p className="mb-0 mt-4 text-[length:var(--text-sm)]">
           <button type="button" className="secondary small" onClick={() => { setRecovery(!recovery); setCode(''); setError(null); }}>
             {recovery ? 'Utiliser mon application d’authentification' : 'Téléphone perdu ? Utiliser un code de secours'}
@@ -264,11 +259,8 @@ function Enrollment() {
         {qr ? <img className="qr" src={qr} alt="QR code à scanner avec votre application d'authentification" /> : !error && <p role="status">Préparation…</p>}
         {secret && <p className="mb-5 text-center text-[length:var(--text-sm)]">Clé manuelle : <span className="secret">{groupSecret(secret)}</span></p>}
         {error && <AuthNotice tone="bad" role="alert">{error}</AuthNotice>}
-        <label>
-          Code de vérification
-          <input value={code} onChange={(e) => setCode(e.target.value)} inputMode="numeric" autoComplete="one-time-code" maxLength={8} placeholder="000 000" required disabled={!secret} className="text-center font-semibold tracking-[0.35em] text-[length:var(--text-xl)]" />
-        </label>
-        <button type="submit" disabled={busy || !secret || code.trim().length === 0} className="w-full">Confirmer</button>
+        <OtpInput label="Code de vérification" value={code} onChange={setCode} disabled={!secret} />
+        <button type="submit" disabled={busy || !secret || code.length < OTP_LENGTH} className="w-full">Confirmer</button>
       </form>
     </AuthLayout>
   );

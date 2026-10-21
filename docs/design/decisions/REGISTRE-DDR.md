@@ -12,4 +12,5 @@ Les arbitrages structurants suivent la [méthode d'arbitrage](../../METHODE-D-AR
 | [DDR-0005](DDR-0005-opportunites-hybrides.md) | Opportunités hybrides | Acceptée | 0.4.0 | EXD-04, DEC-003 |
 | [DDR-0006](DDR-0006-versionnement-des-livrables.md) | Versionnement des livrables design | Acceptée | 0.4.0 | DEC-001 |
 | [DDR-0007](DDR-0007-panneau-centre-et-bouton-de-depliage.md) | Panneau principal centré (option B) et bouton de dépliage en pictogramme | Acceptée (pictogramme à confirmer) | 0.4.1 | EXD-10, EXD-11, DEC-007 |
-| [DDR-0008](DDR-0008-champ-de-code-unique.md) | Champ de code unique pour le second facteur | Acceptée (à confirmer) | 0.4.1 | EXD-06 |
+| [DDR-0008](DDR-0008-champ-de-code-unique.md) | Champ de code unique pour le second facteur | **Remplacée** par DDR-0009 | 0.4.1 | EXD-06 |
+| [DDR-0009](DDR-0009-code-en-six-cases.md) | Code du second facteur en six cases | Acceptée | 0.4.1 | EXD-06 |
