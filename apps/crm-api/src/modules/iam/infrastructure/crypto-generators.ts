@@ -7,6 +7,7 @@ import { RECOVERY_ALPHABET, RECOVERY_CODE_LENGTH } from '../domain/recovery-code
 /** Secret TOTP de 160 bits (recommandation RFC 4226), aléa cryptographique. */
 @Injectable()
 export class CryptoTotpGenerator implements TotpGenerator {
+  /** Génère un secret TOTP de 160 bits (aléa cryptographique), encodé en base32. */
   generateSecret(): string {
     return base32Encode(randomBytes(20));
   }
@@ -15,6 +16,7 @@ export class CryptoTotpGenerator implements TotpGenerator {
 /** Codes de secours : `randomInt` est uniforme (pas de biais de modulo) ; unicité garantie dans un lot. */
 @Injectable()
 export class CryptoRecoveryCodeGenerator implements RecoveryCodeGenerator {
+  /** Génère `count` codes de secours distincts, sans biais statistique. */
   generate(count: number): string[] {
     const codes = new Set<string>();
     while (codes.size < count) {

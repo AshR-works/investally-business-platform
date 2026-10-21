@@ -14,6 +14,10 @@ export class LogEmailSender implements EmailSender {
   private readonly logger = new Logger(LogEmailSender.name);
   private readonly kept: EmailMessage[] = [];
 
+  /**
+   * N'envoie rien : valide le message, le garde en mémoire (tests) et ne journalise que le domaine du destinataire
+   * (le contenu seulement en développement, sur demande explicite).
+   */
   async send(message: EmailMessage): Promise<EmailResult> {
     const reason = invalidReason(message);
     if (reason) {

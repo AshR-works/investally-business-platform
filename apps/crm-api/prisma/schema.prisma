@@ -67,6 +67,7 @@ enum AuditAction {
   MFA_CHANGE
   ROLE_CHANGE
   SESSION_REVOKE
+  PASSWORD_RESET
 
   @@schema("audit")
 }
@@ -348,6 +349,8 @@ model UserInvitation {
   userId    String    @map("user_id") @db.Uuid
   /// SHA-256 du jeton ; le jeton lui-même n'est jamais stocké.
   tokenHash String    @unique @map("token_hash") @db.VarChar(64)
+  /// INVITATION (activation d'un compte en attente) ou PASSWORD_RESET (réinitialisation par un administrateur).
+  purpose   String    @default("INVITATION") @db.VarChar(20)
   createdBy String?   @map("created_by") @db.Uuid
   createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   expiresAt DateTime  @map("expires_at") @db.Timestamptz(6)

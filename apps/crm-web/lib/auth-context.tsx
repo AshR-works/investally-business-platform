@@ -14,14 +14,17 @@ import { StepUpDialog } from '../components/step-up-dialog';
  */
 export type AuthStatus = 'loading' | 'anonymous' | 'mfa-enroll' | 'mfa-verify' | 'ready';
 
+/** Début de configuration du MFA : secret et URI du QR code. */
 export interface EnrollmentStart {
   secret: string;
   otpauthUri: string;
 }
+/** Configuration confirmée : codes de secours à afficher une seule fois. */
 export interface EnrollmentConfirmed {
   recoveryCodes: string[];
 }
 
+/** Ce que l'interface peut faire avec la session : état, profil, connexion, MFA, déconnexion. */
 interface AuthContextValue {
   status: AuthStatus;
   profile: Profile | null;
@@ -36,16 +39,22 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
+/** Accès à l'état d'authentification depuis n'importe quel composant. */
 export function useAuth(): AuthContextValue {
   const value = useContext(AuthContext);
   if (!value) throw new Error('useAuth doit être utilisé dans <AuthProvider>');
   return value;
 }
 
+/** Réponse de l'API contenant un nouveau jeton d'accès. */
 interface TokenResponse {
   accessToken: string;
 }
 
+/**
+ * Fournisseur d'authentification : retrouve la session au chargement (cookie de rafraîchissement), pilote les états
+ * `anonymous`, `mfa-enroll`, `mfa-verify` et `ready`, et affiche la fenêtre de confirmation MFA quand il le faut.
+ */
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [status, setStatus] = useState<AuthStatus>('loading');
   const [profile, setProfile] = useState<Profile | null>(null);

@@ -24,4 +24,8 @@ import { PlatformModule } from './platform/platform.module';
     { provide: APP_GUARD, useClass: AppThrottlerGuard },
   ],
 })
+/**
+ * Module racine : assemble la plateforme (base, configuration, limitation de débit, garde CSRF globale) et les
+ * modules métier (audit, notifications, IAM, développement commercial).
+ */
 export class AppModule {}

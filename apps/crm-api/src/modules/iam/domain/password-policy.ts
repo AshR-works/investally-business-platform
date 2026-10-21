@@ -3,6 +3,7 @@ import { COMMON_PASSWORDS } from './common-passwords';
 export const PASSWORD_MIN_LENGTH = 12;
 export const PASSWORD_MAX_LENGTH = 128;
 
+/** Identité de l'utilisateur, pour refuser un mot de passe qui la contient. */
 export interface PasswordContext {
   email: string;
   displayName: string;

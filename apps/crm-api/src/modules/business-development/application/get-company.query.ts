@@ -14,6 +14,10 @@ import { CompanyView, toCompanyView } from './company-view';
 export class GetCompanyHandler {
   constructor(@Inject(COMPANY_REPOSITORY) private readonly companies: CompanyRepository) {}
 
+  /**
+   * Lit une entreprise. Hors de la portée de l'appelant, elle est « introuvable » (404) : on ne révèle pas son
+   * existence.
+   */
   async execute(query: { id: string; access: AccessContext }): Promise<CompanyView> {
     const company = await this.companies.findById(query.id);
     if (!company || !decideFor(query.access, 'bd.company.read', company.ownerUserId).allowed) {

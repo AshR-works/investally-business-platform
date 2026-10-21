@@ -18,6 +18,7 @@ async function assertNotLastSuperAdmin(users: UserRepository): Promise<void> {
   }
 }
 
+/** Modification d'un utilisateur : nom et/ou responsable (`null` retire le responsable, absent laisse inchangé). */
 export interface UpdateUserCommand {
   userId: string;
   displayName?: string;
@@ -26,6 +27,7 @@ export interface UpdateUserCommand {
   actor: ActorContext;
 }
 
+/** Modifie le nom ou le responsable d'un utilisateur (refuse les cycles hiérarchiques) et trace avant/après. */
 @Injectable()
 export class UpdateUserUseCase {
   constructor(
@@ -34,6 +36,7 @@ export class UpdateUserUseCase {
     @Inject(UNIT_OF_WORK) private readonly unitOfWork: UnitOfWork,
   ) {}
 
+  /** Applique la modification, vérifie l'absence de cycle dans la hiérarchie et audite l'ancien et le nouvel état. */
   async execute(command: UpdateUserCommand): Promise<UserView> {
     if (command.displayName === undefined && command.managerId === undefined) {
       throw new DomainError('VALIDATION', 'Rien à modifier : indiquez un nom ou un responsable');
@@ -77,6 +80,10 @@ export class SetUserStatusUseCase {
     @Inject(CLOCK) private readonly clock: Clock,
   ) {}
 
+  /**
+   * Désactive (sessions et jetons coupés aussitôt) ou réactive un compte ; jamais soi-même, jamais le dernier
+   * SuperAdmin actif.
+   */
   async execute(command: { userId: string; enabled: boolean; actor: ActorContext }): Promise<UserView> {
     if (!command.enabled && command.actor.userId !== null && command.actor.userId === command.userId) {
       throw new DomainError('FORBIDDEN', 'Vous ne pouvez pas désactiver votre propre compte');
@@ -120,6 +127,10 @@ export class AssignRolesUseCase {
     @Inject(UNIT_OF_WORK) private readonly unitOfWork: UnitOfWork,
   ) {}
 
+  /**
+   * Remplace les rôles d'un utilisateur : jamais les siens, jamais au point de supprimer le dernier SuperAdmin ;
+   * audite avant/après.
+   */
   async execute(command: { userId: string; roles: readonly string[]; actor: ActorContext }): Promise<UserView> {
     if (command.actor.userId !== null && command.actor.userId === command.userId) {
       throw new DomainError('FORBIDDEN', 'Vous ne pouvez pas modifier vos propres rôles : un autre SuperAdmin doit le faire');

@@ -48,6 +48,8 @@ const PUBLIC_ROUTES = [
   'POST /auth/login',
   'POST /auth/refresh',
   'POST /auth/invitation/accept',
+  'POST /auth/password-reset/request',
+  'POST /auth/password-reset/accept',
 ];
 
 /** Identité exigée (jeton valide, session active) mais pas de permission : actions sur SON propre compte. */
@@ -76,7 +78,7 @@ describe('Protection de toutes les routes (E2)', () => {
   afterAll(() => app.close());
 
   it('découvre bien les routes de l\'application (le test ne passe pas à vide)', () => {
-    expect(routes.length).toBeGreaterThanOrEqual(28);
+    expect(routes.length).toBeGreaterThanOrEqual(31);
     expect(routes.map((r) => r.key)).toEqual(expect.arrayContaining(['POST /auth/login', 'GET /companies', 'GET /admin/users', 'GET /admin/roles']));
   });
 
@@ -97,7 +99,7 @@ describe('Protection de toutes les routes (E2)', () => {
   it('TOUTE autre route est protégée : identité, MFA vérifié, permission du catalogue', () => {
     const exempt = new Set([...PUBLIC_ROUTES, ...AUTHENTICATED_ONLY_ROUTES]);
     const protectedRoutes = routes.filter((r) => !exempt.has(r.key));
-    expect(protectedRoutes.length).toBeGreaterThanOrEqual(16);
+    expect(protectedRoutes.length).toBeGreaterThanOrEqual(17);
 
     const unprotected = protectedRoutes.filter(
       (r) => !r.permission || !['AccessTokenGuard', 'RequireMfaGuard', 'PermissionGuard'].every((g) => r.guards.includes(g)),
@@ -112,7 +114,7 @@ describe('Protection de toutes les routes (E2)', () => {
   });
 
   it('les actions sensibles exigent en plus un MFA récent (step-up), et la permission est vérifiée AVANT le step-up', () => {
-    const sensitive = ['POST /admin/users', 'POST /admin/users/:id/disable', 'POST /admin/users/:id/enable', 'PUT /admin/users/:id/roles', 'POST /admin/users/:id/mfa/reset', 'POST /admin/users/:id/sessions/revoke'];
+    const sensitive = ['POST /admin/users', 'POST /admin/users/:id/disable', 'POST /admin/users/:id/enable', 'PUT /admin/users/:id/roles', 'POST /admin/users/:id/mfa/reset', 'POST /admin/users/:id/password-reset', 'POST /admin/users/:id/sessions/revoke'];
     for (const key of sensitive) {
       const route = routes.find((r) => r.key === key);
       expect(route).toBeDefined();

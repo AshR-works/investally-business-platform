@@ -11,6 +11,7 @@ type SessionRow = Prisma.UserSessionGetPayload<object>;
 /** Nombre de sessions passées examinées pour reconnaître un appareil ou un réseau déjà vu. */
 const FINGERPRINT_HISTORY = 100;
 
+/** Reconstruit une session du domaine à partir d'une ligne de base de données. */
 function toDomain(row: SessionRow): UserSession {
   return UserSession.rehydrate({
     id: row.id,
@@ -30,10 +31,12 @@ function toDomain(row: SessionRow): UserSession {
   });
 }
 
+/** Persistance des sessions de connexion (PostgreSQL). */
 @Injectable()
 export class PrismaSessionRepository implements SessionRepository {
   constructor(private readonly prisma: PrismaService) {}
 
+  /** Crée la session, ou met à jour ses champs variables (risque, MFA, activité, échéance, révocation). */
   async save(session: UserSession): Promise<void> {
     const mutable = {
       riskLevel: session.riskLevel,
@@ -60,11 +63,13 @@ export class PrismaSessionRepository implements SessionRepository {
     });
   }
 
+  /** Retrouve une session par identifiant, ou `null`. */
   async findById(id: string): Promise<UserSession | null> {
     const row = await this.prisma.db.userSession.findUnique({ where: { id } });
     return row ? toDomain(row) : null;
   }
 
+  /** Plages réseau et appareils des dernières sessions du compte (calcul du risque d'une nouvelle connexion). */
   async knownFingerprints(userId: string): Promise<KnownFingerprints> {
     const rows = await this.prisma.db.userSession.findMany({
       where: { userId },
@@ -78,6 +83,10 @@ export class PrismaSessionRepository implements SessionRepository {
     };
   }
 
+  /**
+   * Révoque les sessions actives du compte, sauf celle à conserver ; renvoie les identifiants révoqués (pour couper
+   * aussi leurs jetons).
+   */
   async revokeAllOfUserExcept(userId: string, keepSessionId: string | null, now: Date, reason: string): Promise<string[]> {
     const active = await this.prisma.db.userSession.findMany({
       where: {
@@ -99,6 +108,7 @@ export class PrismaSessionRepository implements SessionRepository {
     return ids;
   }
 
+  /** Sessions encore valides du compte (ni déconnectées, ni révoquées, ni expirées), la plus récente d'abord. */
   async listActiveOf(userId: string, now: Date): Promise<UserSession[]> {
     const rows = await this.prisma.db.userSession.findMany({
       where: { userId, loggedOutAt: null, revokedAt: null, expiresAt: { gt: now }, absoluteExpiresAt: { gt: now } },

@@ -12,6 +12,8 @@ export enum AuditAction {
   LoginFailed = 'LOGIN_FAILED',
   AccessDenied = 'ACCESS_DENIED',
   PasswordChange = 'PASSWORD_CHANGE',
+  /** Demande, émission ou usage d'un lien de réinitialisation de mot de passe. */
+  PasswordReset = 'PASSWORD_RESET',
   MfaChange = 'MFA_CHANGE',
   RoleChange = 'ROLE_CHANGE',
   SessionRevoke = 'SESSION_REVOKE',

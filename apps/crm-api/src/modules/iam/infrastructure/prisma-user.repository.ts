@@ -9,6 +9,7 @@ import { User, UserStatus } from '../domain/user';
 
 type UserRow = Prisma.UserGetPayload<object>;
 
+/** Reconstruit un utilisateur du domaine à partir d'une ligne de base de données. */
 function toDomain(row: UserRow): User {
   return User.rehydrate({
     id: row.id,
@@ -29,15 +30,23 @@ function toDomain(row: UserRow): User {
   });
 }
 
+/**
+ * Persistance PostgreSQL des utilisateurs et de leurs rôles (suppression logique, verrou optimiste sur la version).
+ */
 @Injectable()
 export class PrismaUserRepository implements UserRepository {
   constructor(private readonly prisma: PrismaService) {}
 
+  /** Retrouve un utilisateur non supprimé, ou `null`. */
   async findById(id: string): Promise<User | null> {
     const row = await this.prisma.db.user.findFirst({ where: { id, deletedAt: null } });
     return row ? toDomain(row) : null;
   }
 
+  /**
+   * Charge l'utilisateur par adresse ET verrouille sa ligne jusqu'à la fin de la transaction : les opérations
+   * parallèles sur un même compte passent à la suite.
+   */
   async lockByEmailKey(emailKey: string): Promise<User | null> {
     // Verrou de ligne tenu jusqu'à la fin de la transaction : les connexions parallèles d'un même compte s'exécutent à la suite.
     const locked = await this.prisma.db.$queryRaw<{ id: string }[]>`
@@ -47,6 +56,7 @@ export class PrismaUserRepository implements UserRepository {
     return row ? toDomain(row) : null;
   }
 
+  /** Comme `lockByEmailKey`, par identifiant. */
   async lockById(id: string): Promise<User | null> {
     const locked = await this.prisma.db.$queryRaw<{ id: string }[]>`
       SELECT id::text AS id FROM iam.users WHERE id = ${id}::uuid AND deleted_at IS NULL FOR UPDATE`;
@@ -55,6 +65,7 @@ export class PrismaUserRepository implements UserRepository {
     return row ? toDomain(row) : null;
   }
 
+  /** Vrai si un compte non supprimé utilise déjà cette adresse. */
   async emailExists(emailKey: string): Promise<boolean> {
     return (await this.prisma.db.user.count({ where: { emailKey, deletedAt: null } })) > 0;
   }
@@ -94,11 +105,13 @@ export class PrismaUserRepository implements UserRepository {
     }
   }
 
+  /** Codes des rôles de l'utilisateur. */
   async roleCodesOf(userId: string): Promise<RoleCode[]> {
     const rows = await this.prisma.db.userRole.findMany({ where: { userId }, include: { role: { select: { code: true } } } });
     return rows.map((row) => row.role.code as RoleCode);
   }
 
+  /** Ajoute les rôles à l'utilisateur ; un rôle absent de la base (seed non exécuté) est une erreur. */
   async assignRoles(userId: string, roles: readonly RoleCode[], assignedBy: string | null): Promise<void> {
     const found = await this.prisma.db.role.findMany({ where: { code: { in: [...roles] } }, select: { id: true, code: true } });
     const missing = roles.filter((code) => !found.some((row) => row.code === code));
@@ -111,6 +124,7 @@ export class PrismaUserRepository implements UserRepository {
     });
   }
 
+  /** Liste paginée pour l'administration, avec recherche (nom ou adresse) et filtre de statut. */
   async list(query: { page: number; pageSize: number; search?: string; status?: UserStatus }): Promise<Page<User>> {
     const search = query.search?.toLowerCase();
     const where: Prisma.UserWhereInput = {
@@ -130,6 +144,7 @@ export class PrismaUserRepository implements UserRepository {
     return { items: rows.map(toDomain), total, page: query.page, pageSize: query.pageSize };
   }
 
+  /** Rôles de plusieurs utilisateurs en une seule requête (évite une requête par ligne de liste). */
   async rolesOfMany(userIds: readonly string[]): Promise<Map<string, RoleCode[]>> {
     const result = new Map<string, RoleCode[]>();
     if (userIds.length === 0) return result;
@@ -141,22 +156,29 @@ export class PrismaUserRepository implements UserRepository {
     return result;
   }
 
+  /** Remplace l'ensemble des rôles de l'utilisateur. */
   async replaceRoles(userId: string, roles: readonly RoleCode[], assignedBy: string | null): Promise<void> {
     await this.prisma.db.userRole.deleteMany({ where: { userId } });
     await this.assignRoles(userId, roles, assignedBy);
   }
 
+  /**
+   * Prend le verrou qui sérialise toute opération pouvant retirer un SuperAdmin : deux administrateurs ne peuvent pas
+   * retirer en même temps les deux derniers.
+   */
   async lockSuperAdminInvariant(): Promise<void> {
     // Toute opération qui peut retirer un SuperAdmin prend d'abord ce verrou : elles s'exécutent à la suite.
     await this.prisma.db.$queryRaw`SELECT id FROM iam.roles WHERE code = 'SUPER_ADMIN' FOR UPDATE`;
   }
 
+  /** Nombre de SuperAdmin actifs (il doit toujours en rester au moins un). */
   async countActiveSuperAdmins(): Promise<number> {
     return this.prisma.db.user.count({
       where: { deletedAt: null, status: 'ACTIVE', roles: { some: { role: { code: 'SUPER_ADMIN' } } } },
     });
   }
 
+  /** Chaîne des responsables au-dessus de l'utilisateur, bornée en profondeur (détection de cycle hiérarchique). */
   async managerChainOf(userId: string, maxDepth: number): Promise<string[]> {
     const chain: string[] = [];
     let current: string | null = userId;

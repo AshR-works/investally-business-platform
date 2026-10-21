@@ -14,7 +14,7 @@ const CRUD = ['read', 'create', 'update'] as const;
 
 export const RESOURCES: readonly ResourceDefinition[] = [
   // Identity & Access
-  { module: 'iam', resource: 'user', label: 'Utilisateurs', actions: ['read', 'create', 'update', 'disable', 'assign_role', 'reset_mfa'] },
+  { module: 'iam', resource: 'user', label: 'Utilisateurs', actions: ['read', 'create', 'update', 'disable', 'assign_role', 'reset_mfa', 'reset_password'] },
   { module: 'iam', resource: 'role', label: 'Rôles et permissions', actions: ['read', 'manage'] },
   { module: 'iam', resource: 'session', label: 'Sessions', actions: ['read', 'revoke'] },
   // Audit
@@ -48,6 +48,7 @@ export const RESOURCES: readonly ResourceDefinition[] = [
   { module: 'reporting', resource: 'report', label: 'Rapports', actions: ['read', 'export'] },
 ];
 
+/** Une permission du catalogue : code `module.ressource.action`, module, ressource, action et description. */
 export interface PermissionDefinition {
   code: string;
   module: string;

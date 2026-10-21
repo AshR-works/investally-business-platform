@@ -43,6 +43,10 @@ export class Es256AccessTokenService implements AccessTokenService {
     return new Es256AccessTokenService(privateKey, publicKey, keyId, config.jwt.issuer, config.jwt.audience);
   }
 
+  /**
+   * Signe un jeton d'accès (ES256) : identité, session, méthodes d'authentification, émetteur, audience, échéance.
+   * Aucune permission dedans.
+   */
   async issue(claims: AccessTokenClaims, ttlMs: number, now: Date): Promise<{ token: string; expiresAt: Date }> {
     const issuedAt = Math.floor(now.getTime() / 1000);
     const expiresAt = new Date(now.getTime() + ttlMs);
@@ -58,6 +62,10 @@ export class Es256AccessTokenService implements AccessTokenService {
     return { token, expiresAt };
   }
 
+  /**
+   * Vérifie signature, algorithme, émetteur, audience et échéance ; renvoie les revendications, ou `null` pour tout
+   * jeton invalide (jamais d'exception).
+   */
   async verify(token: string, now: Date): Promise<AccessTokenClaims | null> {
     try {
       const { payload } = await jwtVerify(token, this.publicKey, {

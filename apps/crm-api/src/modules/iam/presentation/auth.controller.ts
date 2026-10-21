@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, Inject, Post, Req, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Inject, Logger, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import type { CookieOptions, Request, Response } from 'express';
@@ -6,6 +6,7 @@ import { APP_CONFIG, AppConfig, DomainError, actorContextFrom } from '../../../s
 import { AuthenticatedActor } from '../application/authenticate-access-token.use-case';
 import { GetProfileHandler } from '../application/get-profile.handler';
 import { AcceptInvitationUseCase } from '../application/admin/invitations.use-cases';
+import { RequestPasswordResetUseCase, ResetPasswordUseCase } from '../application/admin/password-reset.use-cases';
 import { ChangePasswordUseCase } from '../application/change-password.use-case';
 import { ConfirmMfaEnrollmentUseCase, StartMfaEnrollmentUseCase } from '../application/mfa-enrollment.use-cases';
 import { RegenerateRecoveryCodesUseCase } from '../application/mfa-management.use-cases';
@@ -14,7 +15,7 @@ import { LoginUseCase } from '../application/login.use-case';
 import { LogoutUseCase } from '../application/logout.use-case';
 import { RefreshSessionUseCase } from '../application/refresh-session.use-case';
 import { AccessTokenGuard, CurrentActor } from './access-token.guard';
-import { AcceptInvitationDto } from './dto/admin.dto';
+import { AcceptInvitationDto, RequestPasswordResetDto, ResetPasswordDto } from './dto/admin.dto';
 import { ChangePasswordDto, LoginDto, MfaCodeDto } from './dto/auth.dto';
 import { RequireRecentMfaGuard } from './mfa.guards';
 
@@ -27,10 +28,20 @@ const LOGIN_LIMIT = { default: { limit: 5, ttl: 60_000 } };
 const MFA_LIMIT = { default: { limit: 5, ttl: 60_000 } };
 /** 10 tentatives d'activation par minute et par IP (les jetons de 256 bits ne se devinent pas ; limite contre l'abus). */
 const INVITATION_LIMIT = { default: { limit: 10, ttl: 60_000 } };
+/** 3 demandes de « mot de passe oublié » par minute et par couple IP + adresse ; le plafond par compte (3/heure) est dans le cas d'usage. */
+const RESET_REQUEST_LIMIT = { default: { limit: 3, ttl: 60_000 } };
+/** Réponse unique, identique que le compte existe ou non. */
+const RESET_REQUEST_ANSWER = { message: "Si un compte correspond à cette adresse, un e-mail contenant un lien de réinitialisation vient d'être envoyé." };
 
+/**
+ * Routes d'authentification : connexion, rafraîchissement, déconnexion, MFA, mot de passe oublié, activation
+ * d'invitation, profil. Le jeton de rafraîchissement n'existe que dans un cookie HttpOnly.
+ */
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
+  private readonly logger = new Logger(AuthController.name);
+
   constructor(
     private readonly loginUseCase: LoginUseCase,
     private readonly refreshUseCase: RefreshSessionUseCase,
@@ -42,6 +53,8 @@ export class AuthController {
     private readonly regenerateCodesUseCase: RegenerateRecoveryCodesUseCase,
     private readonly acceptInvitationUseCase: AcceptInvitationUseCase,
     private readonly profileHandler: GetProfileHandler,
+    private readonly requestResetUseCase: RequestPasswordResetUseCase,
+    private readonly resetPasswordUseCase: ResetPasswordUseCase,
     @Inject(APP_CONFIG) private readonly config: AppConfig,
   ) {}
 
@@ -165,6 +178,33 @@ export class AuthController {
     await this.acceptInvitationUseCase.execute({ token: dto.token, password: dto.password, actor: actorContextFrom(req) });
   }
 
+  /**
+   * « Mot de passe oublié » (public). Répond TOUJOURS la même chose, tout de suite : le traitement (recherche du compte,
+   * envoi de l'e-mail) se poursuit après la réponse, donc ni le contenu ni le temps de réponse ne révèlent si l'adresse
+   * existe. Chaque demande est auditée par le cas d'usage.
+   */
+  @Post('password-reset/request')
+  @HttpCode(202)
+  @Throttle(RESET_REQUEST_LIMIT)
+  requestPasswordReset(@Body() dto: RequestPasswordResetDto, @Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    this.assertAllowedOrigin(req);
+    noStore(res);
+    this.requestResetUseCase
+      .execute({ email: dto.email, actor: actorContextFrom(req) })
+      .catch((error: unknown) => this.logger.error(`Demande de réinitialisation en échec : ${error instanceof Error ? error.name : 'erreur inconnue'}`));
+    return RESET_REQUEST_ANSWER;
+  }
+
+  /** Choix du nouveau mot de passe avec le lien reçu (public) ; tout lien non valide produit le même refus. */
+  @Post('password-reset/accept')
+  @HttpCode(204)
+  @Throttle(INVITATION_LIMIT)
+  async acceptPasswordReset(@Body() dto: ResetPasswordDto, @Req() req: Request, @Res({ passthrough: true }) res: Response): Promise<void> {
+    this.assertAllowedOrigin(req);
+    noStore(res);
+    await this.resetPasswordUseCase.execute({ token: dto.token, password: dto.password, actor: actorContextFrom(req) });
+  }
+
   @Post('change-password')
   @HttpCode(204)
   @UseGuards(AccessTokenGuard)
@@ -191,14 +231,20 @@ export class AuthController {
     }
   }
 
+  /**
+   * Options du cookie de rafraîchissement : HttpOnly, SameSite=Strict, Secure en production, limité au chemin
+   * d'authentification.
+   */
   private cookieOptions(): CookieOptions {
     return { httpOnly: true, secure: this.config.cookieSecure, sameSite: 'strict', path: AUTH_PATH };
   }
 
+  /** Pose le cookie de rafraîchissement avec son échéance. */
   private setRefreshCookie(res: Response, token: string, expiresAt: Date): void {
     res.cookie(REFRESH_COOKIE, token, { ...this.cookieOptions(), expires: expiresAt });
   }
 
+  /** Efface le cookie de rafraîchissement (déconnexion ou jeton refusé). */
   private clearRefreshCookie(res: Response): void {
     res.clearCookie(REFRESH_COOKIE, this.cookieOptions());
   }

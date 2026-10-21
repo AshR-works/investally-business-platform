@@ -12,6 +12,10 @@ export interface AccessContext {
 /** Les objets qu'un acteur peut voir pour une permission : tous, ou ceux de ces propriétaires (liste vide = aucun). */
 export type Visibility = { unrestricted: true } | { unrestricted: false; ownerIds: readonly string[] };
 
+/**
+ * Traduit les droits de l'acteur en périmètre de lecture pour une permission : tout voir, voir les objets de certains
+ * propriétaires (lui, ou lui + ses subordonnés directs), ou rien.
+ */
 export function visibilityFor(context: AccessContext, permission: string): Visibility {
   const scope = widestScope(context.grants, permission);
   if (scope === Scope.All) return { unrestricted: true };

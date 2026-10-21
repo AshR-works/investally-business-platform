@@ -74,7 +74,7 @@ describe('User invité (A1)', () => {
 
 describe('Invitation (A2)', () => {
   const record = (over: Partial<UserInvitationRecord> = {}): UserInvitationRecord => ({
-    id: 'i1', userId: 'u1', tokenHash: 'h', createdBy: 'admin', createdAt: t0, expiresAt: plus(INVITATION_TTL_MS), usedAt: null, revokedAt: null, ...over,
+    id: 'i1', userId: 'u1', tokenHash: 'h', purpose: 'INVITATION', createdBy: 'admin', createdAt: t0, expiresAt: plus(INVITATION_TTL_MS), usedAt: null, revokedAt: null, ...over,
   });
 
   it('dure 48 heures', () => {
