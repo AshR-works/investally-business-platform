@@ -1,5 +1,6 @@
 'use client';
 
+import { PageHeading } from '../../components/page-heading';
 import { FormEvent, useCallback, useEffect, useState } from 'react';
 import { api, ApiError } from '../../lib/api';
 import { useAuth } from '../../lib/auth-context';
@@ -49,7 +50,7 @@ export default function CompaniesPage() {
   if (!canRead) {
     return (
       <>
-        <h1>Bienvenue</h1>
+        <PageHeading>Bienvenue</PageHeading>
         <p>Votre profil n&apos;a pas accès au module commercial pour le moment.</p>
       </>
     );
@@ -57,7 +58,7 @@ export default function CompaniesPage() {
 
   return (
     <>
-      <h1>Entreprises cibles</h1>
+      <PageHeading>Entreprises cibles</PageHeading>
       {canCreate && (
         <form onSubmit={submit} className="panel row">
           <label style={{ flex: 1, margin: 0, minWidth: 220 }}>
