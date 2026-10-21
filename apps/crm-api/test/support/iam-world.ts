@@ -1,7 +1,7 @@
 import { AuditRecord } from '../../src/modules/audit';
 import { AcceptInvitationUseCase, InviteUserUseCase, ResendInvitationUseCase } from '../../src/modules/iam/application/admin/invitations.use-cases';
 import { IssuePasswordResetUseCase, RequestPasswordResetUseCase, ResetPasswordUseCase } from '../../src/modules/iam/application/admin/password-reset.use-cases';
-import { ListOwnSessionsHandler, RevokeSessionUseCase, RevokeUserSessionsUseCase } from '../../src/modules/iam/application/admin/session-management.use-cases';
+import { ListOwnSessionsHandler, RevokeOtherSessionsUseCase, RevokeSessionUseCase, RevokeUserSessionsUseCase } from '../../src/modules/iam/application/admin/session-management.use-cases';
 import { AssignRolesUseCase, SetUserStatusUseCase, UpdateUserUseCase } from '../../src/modules/iam/application/admin/user-management.use-cases';
 import { GetUserHandler, ListRolesHandler, ListUsersHandler } from '../../src/modules/iam/application/admin/user-queries';
 import { AuthorizationService } from '../../src/modules/iam/application/authorization.service';
@@ -84,6 +84,7 @@ export function buildIamWorld() {
   const listOwnSessions = new ListOwnSessionsHandler(sessions, clock);
   const revokeSession = new RevokeSessionUseCase(sessions, refreshTokens, auditRecorder, unitOfWork, clock);
   const revokeUserSessions = new RevokeUserSessionsUseCase(users, sessions, refreshTokens, auditRecorder, unitOfWork, clock);
+  const revokeOtherSessions = new RevokeOtherSessionsUseCase(sessions, refreshTokens, auditRecorder, unitOfWork, clock);
 
   const PASSWORD = 'phrase de passe tres longue 42';
   async function createDefaultUser(roles: RoleCode[] = [RoleCode.AccountManager], email = 'marie@investally.test', password = PASSWORD) {
@@ -96,6 +97,6 @@ export function buildIamWorld() {
     recoveryCodes, cipher, startMfa, confirmMfa, verifyMfa, regenerateCodes, resetMfa, codeNow,
     requestPasswordReset, issuePasswordReset, resetPassword,
     invitations, email, authorization, inviteUser, resendInvitation, acceptInvitation, updateUser, setStatus, assignRoles,
-    listUsers, getUser, listRoles, listOwnSessions, revokeSession, revokeUserSessions, refreshFactory,
+    listUsers, getUser, listRoles, listOwnSessions, revokeSession, revokeUserSessions, revokeOtherSessions, refreshFactory,
   };
 }
