@@ -116,6 +116,8 @@ export interface RequestOptions {
   body?: unknown;
   /** `false` : route publique (connexion, activation), jamais de jeton ni de rafraîchissement automatique. */
   auth?: boolean;
+  /** Permet d'abandonner une requête devenue inutile (ex. recherche dont la saisie a changé). */
+  signal?: AbortSignal;
 }
 
 /** Envoie une requête vers `/api/v1` avec le jeton en en-tête (jamais dans l'URL) et sans mise en cache. */
@@ -129,6 +131,7 @@ async function send(path: string, options: RequestOptions): Promise<Response> {
     body: options.body === undefined ? undefined : JSON.stringify(options.body),
     credentials: 'same-origin',
     cache: 'no-store',
+    signal: options.signal,
   });
 }
 

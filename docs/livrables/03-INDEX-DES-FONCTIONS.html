@@ -23,7 +23,7 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 @media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
 </style></head><body><main><nav class="top">Investally Business Platform — livrables · <a href="01-RECAPITULATIF-REALISATIONS.html">Récapitulatif</a> · <a href="02-GUIDE-DU-CODE.html">Guide du code</a> · <a href="03-INDEX-DES-FONCTIONS.html">Index des fonctions</a> · <a href="04-SUIVI-DES-SESSIONS.html">Suivi des sessions</a> · <a href="05-ETAT-D-AVANCEMENT.html">État d&#8217;avancement</a> · <a href="06-BESOINS-STYLE-GRAPHIQUE.html">Style graphique</a></nav><h1>Index des fonctions et composants (généré)</h1>
 <blockquote><p>Document <strong>généré</strong> par <code>node scripts/gen-function-index.mjs</code> à partir des commentaires du code. Ne pas le modifier à la main : corriger le commentaire dans le fichier source, puis relancer le script.</p></blockquote>
-<p><strong>536 déclarations commentées au total.</strong></p>
+<p><strong>557 déclarations commentées au total.</strong></p>
 <h2>API (NestJS) — 459 déclarations commentées</h2>
 <h3><code>app.module.ts</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
@@ -821,15 +821,18 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td><code>async function submit(event: FormEvent)</code></td><td>Envoie l'invitation avec les rôles cochés (au moins un).</td></tr>
 <tr><td><code>function RolesDialog({ user, roles, onClose, onSubmit }:</code></td><td>Fenêtre de modification des rôles d'un utilisateur ; le changement s'applique immédiatement, y compris aux sessions ouvertes.</td></tr>
 </tbody></table></div>
+<h3><code>(app)/companies/page.tsx</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export default function CompaniesPage()</code></td><td>Entreprises visibles selon la portée de l'utilisateur et création d'une entreprise (si le droit existe).</td></tr>
+<tr><td><code>async function submit(event: FormEvent)</code></td><td>Enregistre l'entreprise saisie puis recharge la liste.</td></tr>
+</tbody></table></div>
 <h3><code>(app)/layout.tsx</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
-<tr><td><code>export default function AppLayout({ children }: { children: ReactNode })</code></td><td>Cadre de toutes les pages connectées : n'affiche rien tant que l'utilisateur n'est pas authentifié avec son second facteur.</td></tr>
-<tr><td><code>function Shell({ children }: { children: ReactNode })</code></td><td>Barre latérale (menus selon les droits, identité, déconnexion) et zone de contenu.</td></tr>
+<tr><td><code>export default function AppLayout({ children }: { children: ReactNode })</code></td><td>Cadre de toutes les pages connectées : n'affiche rien tant que l'utilisateur n'est pas authentifié avec son second facteur, puis place la page dans la coque (navigation, barre supérieure, panneau principal centré).</td></tr>
 </tbody></table></div>
 <h3><code>(app)/page.tsx</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
-<tr><td><code>export default function CompaniesPage()</code></td><td>Page d'accueil : entreprises visibles selon la portée de l'utilisateur et création d'une entreprise (si le droit existe).</td></tr>
-<tr><td><code>async function submit(event: FormEvent)</code></td><td>Enregistre l'entreprise saisie puis recharge la liste.</td></tr>
+<tr><td><code>export default function HubPage()</code></td><td>Vue d'ensemble : point d'entrée de l'application (EXD-05).</td></tr>
 </tbody></table></div>
 <h3><code>forgot-password/page.tsx</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
@@ -867,10 +870,29 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td><code>export default function ResetPasswordPage()</code></td><td>Page ouverte depuis le lien reçu par e-mail.</td></tr>
 <tr><td><code>async function submit(event: FormEvent)</code></td><td>Envoie le jeton et le nouveau mot de passe ; le serveur coupe toutes les sessions, l'utilisateur doit se reconnecter avec son second facteur.</td></tr>
 </tbody></table></div>
-<h2>Interface web — composants — 5 déclarations commentées</h2>
+<h2>Interface web — composants — 15 déclarations commentées</h2>
+<h3><code>app-shell.tsx</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export const FOCUS_SEARCH_EVENT = 'investally:focus-search';</code></td><td>Événement envoyé au hub pour mettre le focus dans la recherche globale (raccourci Ctrl/⌘ K, bouton de la barre).</td></tr>
+<tr><td><code>export function AppShell({ children }: { children: ReactNode })</code></td><td>Coque de toutes les pages connectées (EXD-01, EXD-05, EXD-10, EXD-11) : - navigation complète sur la Vue d'ensemble, rail compact ailleurs avec un bouton-pictogramme pour la déplier ; - panneau principal centré sur la fenêtre (marge gauche ≥ navigation, repli automatique quand la fenêtre est étroite) ; - sur mobile, la navigation devient un tiroir ouvert par le bouton de menu.</td></tr>
+<tr><td><code>const openSearch = useCallback(()</code></td><td>Va à la recherche globale du hub (ou y met le focus si l'on y est déjà).</td></tr>
+<tr><td><code>function ShellLink({ href, icon, label, current, railOnly, centered, rail }: { href: string; icon: IconName; label: string; current: boolean; railOnly</code></td><td>Lien de navigation : pictogramme + libellé (le libellé reste lu par les lecteurs d'écran quand le rail est replié).</td></tr>
+<tr><td><code>function ThemeToggle()</code></td><td>Bascule clair / sombre (le choix est mémorisé ; sans choix, l'application suit le réglage de l'appareil).</td></tr>
+</tbody></table></div>
 <h3><code>gate.tsx</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
 <tr><td><code>export function Gate({ allow, children }: { allow: readonly Exclude&lt;AuthStatus, 'loading'&gt;[]; children: ReactNode })</code></td><td>Laisse passer uniquement les états attendus ; sinon redirige vers l'écran qui correspond à l'état réel.</td></tr>
+</tbody></table></div>
+<h3><code>global-search.tsx</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>const TYPING_DELAY = 250;</code></td><td>Délai (ms) entre la dernière frappe et l'appel au serveur.</td></tr>
+<tr><td><code>export function GlobalSearch()</code></td><td>Recherche globale du hub (EXD-05, CAD-H1-4) : un champ, des résultats groupés par type.</td></tr>
+</tbody></table></div>
+<h3><code>icon.tsx</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>const PATHS</code></td><td>Tracés des pictogrammes (jeu unique, libre de droits, repris du prototype de design v0.4.1).</td></tr>
+<tr><td><code>export type IconName = keyof typeof PATHS;</code></td><td>Nom d'un pictogramme du jeu.</td></tr>
+<tr><td><code>export function Icon({ name, className = 'size-5', ...rest }: { name: IconName; className?: string } &amp; Omit&lt;SVGProps&lt;SVGSVGElement&gt;, 'name'&gt;)</code></td><td>Pictogramme décoratif (<code>aria-hidden</code>) : le libellé accessible est toujours porté par le bouton ou le lien qui l'entoure.</td></tr>
 </tbody></table></div>
 <h3><code>modal.tsx</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
@@ -885,7 +907,7 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td><code>export function StepUpDialog({ onDone }: { onDone: (ok: boolean) =&gt; void })</code></td><td>Demande un code frais du second facteur avant une action sensible (modification de rôles, désactivation, etc.).</td></tr>
 <tr><td><code>async function submit(event: FormEvent)</code></td><td>Vérifie le code ; en cas de succès le nouveau jeton remplace l'ancien et l'action sensible est rejouée.</td></tr>
 </tbody></table></div>
-<h2>Interface web — bibliothèque — 35 déclarations commentées</h2>
+<h2>Interface web — bibliothèque — 46 déclarations commentées</h2>
 <h3><code>api.ts</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
 <tr><td><code>export class ApiError extends Error</code></td><td>Erreur renvoyée par l'API : statut HTTP, code stable (<code>FORBIDDEN</code>, <code>MFA_REQUIRED</code>…) et message lisible.</td></tr>
@@ -923,6 +945,12 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
 <tr><td><code>export function parseInvitationFragment(hash: string): string | null</code></td><td>Le jeton d'invitation est dans le FRAGMENT de l'URL (<code>#token=…</code>) : le navigateur ne l'envoie ni au serveur ni dans l'en-tête Referer.</td></tr>
 </tbody></table></div>
+<h3><code>modules.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export interface AppModule</code></td><td>Un module de l'application tel que le hub et la navigation le présentent.</td></tr>
+<tr><td><code>export function availableModules(profile: Profile | null): AppModule[]</code></td><td>Modules livrés et que le profil a le droit d'ouvrir.</td></tr>
+<tr><td><code>export function upcomingModules(): AppModule[]</code></td><td>Modules pas encore livrés (présentés « À venir » sur le hub).</td></tr>
+</tbody></table></div>
 <h3><code>password.ts</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
 <tr><td><code>export const PASSWORD_MIN_LENGTH = 12;</code></td><td>Longueur minimale d'un mot de passe (la même règle que côté serveur, qui reste seul juge).</td></tr>
@@ -932,6 +960,20 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
 <tr><td><code>export function can(profile: Profile | null, permission: string): boolean</code></td><td>Informatif seulement (menus, boutons) : le serveur re-contrôle chaque requête.</td></tr>
 <tr><td><code>export const roleLabel = (code: string): string =&gt; ROLE_LABELS[code] ?? code;</code></td><td>Libellé français d'un rôle (le code brut si le rôle est inconnu).</td></tr>
+</tbody></table></div>
+<h3><code>search.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export interface SearchHit</code></td><td>Un résultat de la recherche globale.</td></tr>
+<tr><td><code>export const MIN_QUERY_LENGTH = 2;</code></td><td>Nombre minimal de caractères avant d'interroger le serveur.</td></tr>
+<tr><td><code>export const HITS_PER_TYPE = 5;</code></td><td>Résultats demandés par type.</td></tr>
+<tr><td><code>export async function searchAll(query: string, profile: Profile | null, signal?: AbortSignal): Promise&lt;SearchHit[]&gt;</code></td><td>Recherche globale (CAD-H1-4) : interroge en parallèle les listes que le profil a le droit de lire (entreprises, utilisateurs).</td></tr>
+</tbody></table></div>
+<h3><code>theme.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export type ThemeChoice = 'light' | 'dark' | 'system';</code></td><td>Choix de thème de l'utilisateur : <code>system</code> suit le réglage de l'appareil.</td></tr>
+<tr><td><code>export function readTheme(): ThemeChoice</code></td><td>Choix mémorisé (jamais bloquant : <code>system</code> si le stockage est indisponible ou illisible).</td></tr>
+<tr><td><code>export function applyTheme(choice: ThemeChoice): void</code></td><td>Applique le choix à la page (attribut <code>data-theme</code>, absent = réglage de l'appareil) et le mémorise.</td></tr>
+<tr><td><code>export function effectiveTheme(choice: ThemeChoice): 'light' | 'dark'</code></td><td>Thème réellement affiché (le choix, ou le réglage de l'appareil pour <code>system</code>).</td></tr>
 </tbody></table></div>
 <h3><code>types.ts</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
