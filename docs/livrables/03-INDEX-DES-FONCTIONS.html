@@ -23,7 +23,7 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 @media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
 </style></head><body><main><nav class="top">Investally Business Platform — livrables · <a href="01-RECAPITULATIF-REALISATIONS.html">Récapitulatif</a> · <a href="02-GUIDE-DU-CODE.html">Guide du code</a> · <a href="03-INDEX-DES-FONCTIONS.html">Index des fonctions</a> · <a href="04-SUIVI-DES-SESSIONS.html">Suivi des sessions</a> · <a href="05-ETAT-D-AVANCEMENT.html">État d&#8217;avancement</a> · <a href="06-BESOINS-STYLE-GRAPHIQUE.html">Style graphique</a></nav><h1>Index des fonctions et composants (généré)</h1>
 <blockquote><p>Document <strong>généré</strong> par <code>node scripts/gen-function-index.mjs</code> à partir des commentaires du code. Ne pas le modifier à la main : corriger le commentaire dans le fichier source, puis relancer le script.</p></blockquote>
-<p><strong>557 déclarations commentées au total.</strong></p>
+<p><strong>586 déclarations commentées au total.</strong></p>
 <h2>API (NestJS) — 459 déclarations commentées</h2>
 <h3><code>app.module.ts</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
@@ -799,7 +799,7 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td><code>export interface RequestLike</code></td><td>Forme minimale d'une requête HTTP (sans dépendre d'Express) pour construire le contexte d'audit.</td></tr>
 <tr><td><code>export function actorContextFrom(req: RequestLike, identity: { userId: string | null; sessionId: string | null } = { userId: null, sessionId: null }</code></td><td>Qui agit, depuis où : IP et appareil de la requête (l'identité est ajoutée une fois l'utilisateur authentifié).</td></tr>
 </tbody></table></div>
-<h2>Interface web — pages (Next.js) — 37 déclarations commentées</h2>
+<h2>Interface web — pages (Next.js) — 39 déclarations commentées</h2>
 <h3><code>(app)/account/page.tsx</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
 <tr><td><code>export default function AccountPage()</code></td><td>Page « Mon compte » : profil, changement de mot de passe, nouveaux codes de secours et liste des sessions de l'utilisateur connecté.</td></tr>
@@ -815,6 +815,7 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td><code>export default function UsersPage()</code></td><td>Page d'administration des utilisateurs : liste, recherche, filtre, pagination et actions (inviter, rôles, désactiver, réinitialiser mot de passe ou MFA, couper les sessions).</td></tr>
 <tr><td><code>async function run(action: () =&gt; Promise&lt;unknown&gt;, success: string)</code></td><td>Exécute une action d'administration, affiche son résultat (succès ou message du serveur), ferme la fenêtre et recharge la liste.</td></tr>
 <tr><td><code>function confirmAction(user: UserView, action: 'disable' | 'enable' | 'resetMfa' | 'revokeSessions' | 'resend' | 'resetPassword')</code></td><td>Associe chaque action de confirmation à son appel d'API et à son message de succès.</td></tr>
+<tr><td><code>function rowActions(user: UserView)</code></td><td>Actions possibles sur un compte, selon les droits de l'utilisateur connecté (le serveur re-contrôle tout).</td></tr>
 <tr><td><code>function RoleChoices({ roles, selected, onToggle }: { roles: RoleView[]; selected: string[]; onToggle: (code: string) =&gt; void })</code></td><td>Cases à cocher des rôles, avec leur description.</td></tr>
 <tr><td><code>function toggle(list: string[], code: string): string[]</code></td><td>Ajoute le code à la liste s'il n'y est pas, le retire sinon (sans modifier la liste d'origine).</td></tr>
 <tr><td><code>function InviteDialog({ roles, managers, onClose, onSubmit }:</code></td><td>Fenêtre d'invitation : adresse, nom, rôles et responsable facultatif.</td></tr>
@@ -823,8 +824,9 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 </tbody></table></div>
 <h3><code>(app)/companies/page.tsx</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
-<tr><td><code>export default function CompaniesPage()</code></td><td>Entreprises visibles selon la portée de l'utilisateur et création d'une entreprise (si le droit existe).</td></tr>
-<tr><td><code>async function submit(event: FormEvent)</code></td><td>Enregistre l'entreprise saisie puis recharge la liste.</td></tr>
+<tr><td><code>export default function CompaniesPage()</code></td><td>Entreprises visibles selon la portée de l'utilisateur : tableau du design (recherche, pagination, sélection persistante) et création d'une entreprise dans une fenêtre (si le droit existe).</td></tr>
+<tr><td><code>function CreateCompanyDialog({ onClose, onCreated }: { onClose: () =&gt; void; onCreated: () =&gt; Promise&lt;void&gt; })</code></td><td>Fenêtre de création : le nom est la seule donnée obligatoire (le propriétaire est l'utilisateur connecté, décidé côté serveur).</td></tr>
+<tr><td><code>async function submit(event: FormEvent)</code></td><td>Enregistre l'entreprise saisie ; en cas d'échec le message de l'API s'affiche dans la fenêtre.</td></tr>
 </tbody></table></div>
 <h3><code>(app)/layout.tsx</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
@@ -870,7 +872,7 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td><code>export default function ResetPasswordPage()</code></td><td>Page ouverte depuis le lien reçu par e-mail.</td></tr>
 <tr><td><code>async function submit(event: FormEvent)</code></td><td>Envoie le jeton et le nouveau mot de passe ; le serveur coupe toutes les sessions, l'utilisateur doit se reconnecter avec son second facteur.</td></tr>
 </tbody></table></div>
-<h2>Interface web — composants — 15 déclarations commentées</h2>
+<h2>Interface web — composants — 35 déclarations commentées</h2>
 <h3><code>app-shell.tsx</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
 <tr><td><code>export const FOCUS_SEARCH_EVENT = 'investally:focus-search';</code></td><td>Événement envoyé au hub pour mettre le focus dans la recherche globale (raccourci Ctrl/⌘ K, bouton de la barre).</td></tr>
@@ -878,6 +880,53 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td><code>const openSearch = useCallback(()</code></td><td>Va à la recherche globale du hub (ou y met le focus si l'on y est déjà).</td></tr>
 <tr><td><code>function ShellLink({ href, icon, label, current, railOnly, centered, rail }: { href: string; icon: IconName; label: string; current: boolean; railOnly</code></td><td>Lien de navigation : pictogramme + libellé (le libellé reste lu par les lecteurs d'écran quand le rail est replié).</td></tr>
 <tr><td><code>function ThemeToggle()</code></td><td>Bascule clair / sombre (le choix est mémorisé ; sans choix, l'application suit le réglage de l'appareil).</td></tr>
+</tbody></table></div>
+<h3><code>data/badge.tsx</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export type Tone = 'ok' | 'warn' | 'bad' | 'info' | 'neutral';</code></td><td>Teinte d'un badge : le sens est porté par le TEXTE et le point, jamais par la couleur seule (WCAG 1.4.1).</td></tr>
+<tr><td><code>export function Badge({ tone = 'neutral', children }: { tone?: Tone; children: ReactNode })</code></td><td>Badge d'état (statut, rôle, indicateur) : pastille arrondie, point de couleur et libellé.</td></tr>
+</tbody></table></div>
+<h3><code>data/card.tsx</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export function Card({ children, className = '' }: { children: ReactNode; className?: string })</code></td><td>Surface de contenu (tableau, formulaire, bloc) : fond blanc, bord fin, coins arrondis (jetons du design).</td></tr>
+</tbody></table></div>
+<h3><code>data/data-table.tsx</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export interface Column&lt;T&gt;</code></td><td>Colonne d'un tableau : en-tête, rendu de la cellule, alignement.</td></tr>
+<tr><td><code>export interface TableSelection</code></td><td>Sélection persistante d'un tableau : l'ensemble des identifiants et son gestionnaire.</td></tr>
+<tr><td><code>const INTERACTIVE = 'button, a, input, label, select, textarea, summary, [role="button"], [role="menuitem"]';</code></td><td>Éléments sur lesquels un clic ne doit PAS basculer la sélection de la ligne.</td></tr>
+<tr><td><code>export function DataTable&lt;T&gt;(</code></td><td>Tableau de données du design.</td></tr>
+</tbody></table></div>
+<h3><code>data/entity-cell.tsx</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export function initialsOf(name: string): string</code></td><td>Initiales (deux lettres au plus) d'un nom, pour l'étiquette graphique d'une ligne.</td></tr>
+<tr><td><code>export function EntityCell({ name, subtitle, round = false }: { name: string; subtitle?: string | null; round?: boolean })</code></td><td>Cellule « entité » des tableaux : étiquette à initiales (carrée pour une organisation, ronde pour une personne), nom en gras et ligne secondaire.</td></tr>
+</tbody></table></div>
+<h3><code>data/page-header.tsx</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export function PageHeader({ eyebrow, title, description, actions }: { eyebrow?: string; title: string; description?: string; actions?: ReactNode })</code></td><td>En-tête de page du design : fil d'Ariane (retour à la Vue d'ensemble), domaine, titre (qui renseigne aussi le titre du document), description et actions principales à droite.</td></tr>
+</tbody></table></div>
+<h3><code>data/pagination.tsx</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export function pageRange(page: number, pageSize: number, total: number): { from: number; to: number }</code></td><td>Bornes affichées « de – à » pour une page (1-indexée) ; <code>0–0</code> quand il n'y a aucun résultat.</td></tr>
+<tr><td><code>export function Pagination({ page, pageSize, total, onPage }: { page: number; pageSize: number; total: number; onPage: (page: number) =&gt; void })</code></td><td>Pied de tableau : « 1–20 sur 48 » et boutons Précédent / Suivant.</td></tr>
+</tbody></table></div>
+<h3><code>data/row-actions.tsx</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>const MENU_WIDTH = 224;</code></td><td>Largeur du menu (px) : sert à le placer à gauche du bouton sans recouvrir les boutons des lignes voisines.</td></tr>
+<tr><td><code>export function RowActions({ label, children }: { label: string; children: ReactNode })</code></td><td>Menu d'actions d'une ligne (bouton « ⋯ ») : motif de divulgation <code>details</code>/<code>summary</code>, qui se manipule au clavier (Entrée ou Espace ouvre, Échap ferme et rend le focus au bouton).</td></tr>
+<tr><td><code>export function RowAction({ children, onClick, danger = false }: { children: ReactNode; onClick: () =&gt; void; danger?: boolean })</code></td><td>Action d'un menu de ligne : bouton plein largeur, aligné à gauche, discret.</td></tr>
+</tbody></table></div>
+<h3><code>data/selection-bar.tsx</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export function SelectionBar({ count, onClear, children }: { count: number; onClear: () =&gt; void; children?: ReactNode })</code></td><td>Barre de sélection (EXD-02) : apparaît tant que des lignes ou des cartes sont sélectionnées, annonce le nombre aux lecteurs d'écran et propose « Tout désélectionner ».</td></tr>
+</tbody></table></div>
+<h3><code>data/toolbar.tsx</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export function Toolbar({ children }: { children: ReactNode })</code></td><td>Barre d'outils d'un tableau : filtres rapides à gauche, recherche et réglages à droite.</td></tr>
+<tr><td><code>export interface FilterOption</code></td><td>Option d'un filtre rapide (<code>count</code> facultatif : seulement s'il est connu de l'API).</td></tr>
+<tr><td><code>export function QuickFilters({ label, value, options, onChange }: { label: string; value: string; options: FilterOption[]; onChange: (value: string) =</code></td><td>Filtres rapides sous forme de boutons à bascule (un seul actif).</td></tr>
+<tr><td><code>export function SearchField({ label, placeholder = 'Rechercher', delay = 300, onSearch }: { label: string; placeholder?: string; delay?: number; onSea</code></td><td>Champ de recherche à saisie différée : n'appelle <code>onSearch</code> qu'après une courte pause (pas à chaque touche) ni au premier rendu.</td></tr>
 </tbody></table></div>
 <h3><code>gate.tsx</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
@@ -900,14 +949,14 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 </tbody></table></div>
 <h3><code>page-heading.tsx</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
-<tr><td><code>export function PageHeading({ children, title }: { children: string; title?: string })</code></td><td>Titre de page (<code>h1</code>) qui renseigne aussi le titre du document : le lecteur d'écran l'annonce à chaque changement de page (WCAG 2.4.2) et l'onglet du navigateur dit où l'on se trouve.</td></tr>
+<tr><td><code>export function PageHeading({ children, title, className }: { children: string; title?: string; className?: string })</code></td><td>Titre de page (<code>h1</code>) qui renseigne aussi le titre du document : le lecteur d'écran l'annonce à chaque changement de page (WCAG 2.4.2) et l'onglet du navigateur dit où l'on se trouve.</td></tr>
 </tbody></table></div>
 <h3><code>step-up-dialog.tsx</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
 <tr><td><code>export function StepUpDialog({ onDone }: { onDone: (ok: boolean) =&gt; void })</code></td><td>Demande un code frais du second facteur avant une action sensible (modification de rôles, désactivation, etc.).</td></tr>
 <tr><td><code>async function submit(event: FormEvent)</code></td><td>Vérifie le code ; en cas de succès le nouveau jeton remplace l'ancien et l'action sensible est rejouée.</td></tr>
 </tbody></table></div>
-<h2>Interface web — bibliothèque — 46 déclarations commentées</h2>
+<h2>Interface web — bibliothèque — 53 déclarations commentées</h2>
 <h3><code>api.ts</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
 <tr><td><code>export class ApiError extends Error</code></td><td>Erreur renvoyée par l'API : statut HTTP, code stable (<code>FORBIDDEN</code>, <code>MFA_REQUIRED</code>…) et message lisible.</td></tr>
@@ -967,6 +1016,19 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td><code>export const MIN_QUERY_LENGTH = 2;</code></td><td>Nombre minimal de caractères avant d'interroger le serveur.</td></tr>
 <tr><td><code>export const HITS_PER_TYPE = 5;</code></td><td>Résultats demandés par type.</td></tr>
 <tr><td><code>export async function searchAll(query: string, profile: Profile | null, signal?: AbortSignal): Promise&lt;SearchHit[]&gt;</code></td><td>Recherche globale (CAD-H1-4) : interroge en parallèle les listes que le profil a le droit de lire (entreprises, utilisateurs).</td></tr>
+</tbody></table></div>
+<h3><code>selection.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export type Selection = ReadonlySet&lt;string&gt;;</code></td><td>Sélection persistante (EXD-02) : ensemble d'identifiants, conservé d'une page à l'autre jusqu'à désélection.</td></tr>
+<tr><td><code>export function toggleId(selection: Selection, id: string): Set&lt;string&gt;</code></td><td>Ajoute l'identifiant s'il n'y est pas, le retire sinon (renvoie un nouvel ensemble).</td></tr>
+<tr><td><code>export function allSelected(selection: Selection, ids: readonly string[]): boolean</code></td><td>Vrai si tous les identifiants donnés sont sélectionnés (et qu'il y en a au moins un).</td></tr>
+<tr><td><code>export function someSelected(selection: Selection, ids: readonly string[]): boolean</code></td><td>Vrai si une partie seulement des identifiants est sélectionnée (case d'en-tête « indéterminée »).</td></tr>
+<tr><td><code>export function setMany(selection: Selection, ids: readonly string[], selected: boolean): Set&lt;string&gt;</code></td><td>Sélectionne ou désélectionne tous les identifiants donnés, sans toucher à la sélection des autres pages.</td></tr>
+</tbody></table></div>
+<h3><code>status.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export interface StatusStyle</code></td><td>Libellé et teinte d'un statut (le sens reste porté par le texte).</td></tr>
+<tr><td><code>export function statusStyle(table: Record&lt;string, StatusStyle&gt;, code: string): StatusStyle</code></td><td>Style d'un statut ; un statut inconnu garde son code brut en teinte neutre (jamais d'erreur d'affichage).</td></tr>
 </tbody></table></div>
 <h3><code>theme.ts</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>

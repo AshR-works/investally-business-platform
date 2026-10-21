@@ -7,7 +7,7 @@ import { useEffect } from 'react';
  * de page (WCAG 2.4.2) et l'onglet du navigateur dit où l'on se trouve. `title` remplace le texte du `h1` dans le
  * titre du document quand celui-ci ne suffit pas (ex. « Investally CRM » sur la page de connexion).
  */
-export function PageHeading({ children, title }: { children: string; title?: string }) {
+export function PageHeading({ children, title, className }: { children: string; title?: string; className?: string }) {
   const documentTitle = `${title ?? children} — Investally CRM`;
   useEffect(() => {
     document.title = documentTitle;
@@ -18,5 +18,5 @@ export function PageHeading({ children, title }: { children: string; title?: str
     observer.observe(document.head, { childList: true, subtree: true, characterData: true });
     return () => observer.disconnect();
   }, [documentTitle]);
-  return <h1>{children}</h1>;
+  return <h1 className={className}>{children}</h1>;
 }
