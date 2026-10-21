@@ -76,7 +76,7 @@
       <a href="#dashboard" data-nav="dashboard"><svg class="icon"><use href="#i-grid"/></svg>Vue d’ensemble</a>
       <a href="#agenda" data-nav="agenda"><svg class="icon"><use href="#i-cal"/></svg>Agenda<span class="count">3</span></a>
       <a href="#companies" data-nav="companies"><svg class="icon"><use href="#i-building"/></svg>Entreprises</a>
-      <a href="#pipeline" data-nav="pipeline"><svg class="icon"><use href="#i-target"/></svg>Développement<span class="count">8</span></a>
+      <a href="#pipeline" data-nav="pipeline"><svg class="icon"><use href="#i-target"/></svg>Opportunités<span class="count">8</span></a>
       <a href="#formation" data-nav="formation"><svg class="icon"><use href="#i-cap"/></svg>Formation</a>
       <div class="nav-label">Opérations</div>
       <a href="#soon"><svg class="icon"><use href="#i-card"/></svg>Finance</a>
@@ -87,7 +87,6 @@
       <a href="#security" data-nav="security"><svg class="icon"><use href="#i-shield"/></svg>Sécurité</a>
       <a href="#components" data-nav="components"><svg class="icon"><use href="#i-cols"/></svg>Composants</a>
     </nav>
-    <a class="academy" href="#formation"><img class="logo-img" src="assets/logo-investudy.png" alt="Investudy — centre de formation" width="150" height="42"><svg class="icon sm" style="margin-left:auto" aria-hidden="true"><use href="#i-arrow"/></svg></a>
     <div class="me"><span class="avatar">EK</span><div><strong>Emma Koffi</strong><span>Administratrice</span></div></div>
   </aside>
 
@@ -217,9 +216,10 @@
       <!-- ===== ENTREPRISES ===== -->
       <section class="screen" data-screen="companies">
         <div class="crumbs">Investally <svg class="icon sm"><use href="#i-chev"/></svg> Entreprises</div>
-        <div class="eyebrow">Développement commercial</div>
+        <div class="eyebrow">Business Development</div>
         <div class="page-head"><div><h1>Entreprises</h1><p>Les entreprises cibles visibles selon votre périmètre : les vôtres, celles de votre équipe, ou toutes.</p></div>
           <div class="actions"><button class="btn btn-secondary"><svg class="icon sm"><use href="#i-down"/></svg>Exporter</button><button class="btn btn-primary"><svg class="icon sm"><use href="#i-plus"/></svg>Nouvelle entreprise</button></div></div>
+        <div class="bulkbar" id="rowBulk"><span id="rowBulkCount">2 sélectionnées</span><span class="muted">·</span><button class="btn btn-ghost">Exporter</button><button class="btn btn-ghost">Réassigner</button><button class="btn btn-ghost" id="rowClear">Tout désélectionner</button></div>
         <div class="card table-card">
           <div class="toolbar">
             <div class="tabs" role="tablist" aria-label="Filtre rapide">
@@ -233,9 +233,9 @@
             <thead><tr><th><input type="checkbox" aria-label="Tout sélectionner"></th><th>Entreprise</th><th>Secteur</th><th>Responsable</th><th>Statut</th><th class="num">Valeur estimée</th><th>Dernière activité</th><th><span class="sr-only">Actions</span></th></tr></thead>
             <tbody>
               <tr data-mine="1"><td><input type="checkbox" aria-label="Sélectionner Société Horizon"></td><td><div class="cell-main"><span class="logo-sq">SH</span><div><strong>Société Horizon SA</strong><span>Douala, CM</span></div></div></td><td>Banque</td><td><div class="cell-main"><span class="avatar sm">MK</span>Marie K.</div></td><td><span class="badge info">RDV décideur</span></td><td class="num">42 000 000</td><td class="muted">il y a 2 h</td><td><button class="icon-btn" aria-label="Actions pour Société Horizon"><svg class="icon"><use href="#i-more"/></svg></button></td></tr>
-              <tr data-late="1"><td><input type="checkbox" aria-label="Sélectionner Groupe Kora"></td><td><div class="cell-main"><span class="logo-sq">GK</span><div><strong>Groupe Kora Assurances</strong><span>Yaoundé, CM</span></div></div></td><td>Assurance</td><td><div class="cell-main"><span class="avatar sm">YM</span>Yann M.</div></td><td><span class="badge warn">Offre envoyée</span></td><td class="num">68 500 000</td><td class="muted">il y a 3 jours</td><td><button class="icon-btn" aria-label="Actions pour Groupe Kora"><svg class="icon"><use href="#i-more"/></svg></button></td></tr>
+              <tr data-late="1" class="is-selected"><td><input type="checkbox" checked aria-label="Sélectionner Groupe Kora"></td><td><div class="cell-main"><span class="logo-sq">GK</span><div><strong>Groupe Kora Assurances</strong><span>Yaoundé, CM</span></div></div></td><td>Assurance</td><td><div class="cell-main"><span class="avatar sm">YM</span>Yann M.</div></td><td><span class="badge warn">Offre envoyée</span></td><td class="num">68 500 000</td><td class="muted">il y a 3 jours</td><td><button class="icon-btn" aria-label="Actions pour Groupe Kora"><svg class="icon"><use href="#i-more"/></svg></button></td></tr>
               <tr data-mine="1"><td><input type="checkbox" aria-label="Sélectionner Atlas Négoce"></td><td><div class="cell-main"><span class="logo-sq">AN</span><div><strong>Atlas Négoce</strong><span>Douala, CM</span></div></div></td><td>Distribution</td><td><div class="cell-main"><span class="avatar sm">LM</span>Lina M.</div></td><td><span class="badge ok">Agrément reçu</span></td><td class="num">19 200 000</td><td class="muted">il y a 1 h</td><td><button class="icon-btn" aria-label="Actions pour Atlas Négoce"><svg class="icon"><use href="#i-more"/></svg></button></td></tr>
-              <tr data-late="1"><td><input type="checkbox" aria-label="Sélectionner Banque du Wouri"></td><td><div class="cell-main"><span class="logo-sq">BW</span><div><strong>Banque du Wouri</strong><span>Douala, CM</span></div></div></td><td>Banque</td><td><div class="cell-main"><span class="avatar sm">MK</span>Marie K.</div></td><td><span class="badge warn">Accord de principe</span></td><td class="num">120 000 000</td><td class="muted">il y a 5 jours</td><td><button class="icon-btn" aria-label="Actions pour Banque du Wouri"><svg class="icon"><use href="#i-more"/></svg></button></td></tr>
+              <tr data-late="1" class="is-selected"><td><input type="checkbox" checked aria-label="Sélectionner Banque du Wouri"></td><td><div class="cell-main"><span class="logo-sq">BW</span><div><strong>Banque du Wouri</strong><span>Douala, CM</span></div></div></td><td>Banque</td><td><div class="cell-main"><span class="avatar sm">MK</span>Marie K.</div></td><td><span class="badge warn">Accord de principe</span></td><td class="num">120 000 000</td><td class="muted">il y a 5 jours</td><td><button class="icon-btn" aria-label="Actions pour Banque du Wouri"><svg class="icon"><use href="#i-more"/></svg></button></td></tr>
               <tr><td><input type="checkbox" aria-label="Sélectionner Énergie Littoral"></td><td><div class="cell-main"><span class="logo-sq">EL</span><div><strong>Énergie Littoral</strong><span>Kribi, CM</span></div></div></td><td>Énergie</td><td><div class="cell-main"><span class="avatar sm">YM</span>Yann M.</div></td><td><span class="badge">Cible</span></td><td class="num">—</td><td class="muted">il y a 8 jours</td><td><button class="icon-btn" aria-label="Actions pour Énergie Littoral"><svg class="icon"><use href="#i-more"/></svg></button></td></tr>
               <tr><td><input type="checkbox" aria-label="Sélectionner Sahel Logistique"></td><td><div class="cell-main"><span class="logo-sq">SL</span><div><strong>Sahel Logistique</strong><span>Garoua, CM</span></div></div></td><td>Transport</td><td><div class="cell-main"><span class="avatar sm">LM</span>Lina M.</div></td><td><span class="badge bad">Perdue</span></td><td class="num">8 400 000</td><td class="muted">il y a 3 semaines</td><td><button class="icon-btn" aria-label="Actions pour Sahel Logistique"><svg class="icon"><use href="#i-more"/></svg></button></td></tr>
             </tbody></table></div>
@@ -243,13 +243,16 @@
         </div>
       </section>
 
-      <!-- ===== PIPELINE ===== -->
+      <!-- ===== OPPORTUNITÉS ===== -->
       <section class="screen" data-screen="pipeline">
-        <div class="crumbs">Investally <svg class="icon sm"><use href="#i-chev"/></svg> Développement</div>
-        <div class="eyebrow">Développement commercial</div>
-        <div class="page-head"><div><h1>Pipeline des opportunités</h1><p>Un rendez-vous avec le décideur est requis avant l’accord de principe (dérogation tracée possible).</p></div>
-          <div class="actions"><button class="btn btn-secondary"><svg class="icon sm"><use href="#i-filter"/></svg>Filtres</button><button class="btn btn-primary"><svg class="icon sm"><use href="#i-plus"/></svg>Opportunité</button></div></div>
-        <div class="kanban">
+        <div class="crumbs">Investally <svg class="icon sm"><use href="#i-chev"/></svg> Opportunités</div>
+        <div class="eyebrow">Business Development</div>
+        <div class="page-head"><div><h1>Opportunités</h1><p>18 opportunités en cours, en lignes de 6. Un rendez-vous avec le décideur est requis avant l’accord de principe (dérogation tracée possible).</p></div>
+          <div class="actions"><div class="seg" role="tablist" aria-label="Mode d’affichage"><button class="tool" role="tab" aria-selected="true" data-opp="cartes">Cartes</button><button class="tool" role="tab" aria-selected="false" data-opp="etapes">Par étape</button></div><button class="btn btn-secondary"><svg class="icon sm"><use href="#i-filter"/></svg>Filtres</button><button class="btn btn-primary"><svg class="icon sm"><use href="#i-plus"/></svg>Opportunité</button></div></div>
+        <div class="bulkbar" id="oppBulk" hidden><span id="oppBulkCount">2 sélectionnées</span><span class="muted">·</span><button class="btn btn-ghost">Réassigner</button><button class="btn btn-ghost">Exporter</button><button class="btn btn-ghost" id="oppClear">Tout désélectionner</button></div>
+        <div id="oppCards"><div class="opp-grid" id="oppGrid" aria-label="Opportunités, 6 par ligne"></div></div>
+        <div id="oppStages" hidden>
+          <div class="kanban">
           <div class="col"><h3>Prospection <span>4</span></h3>
             <div class="deal"><strong>Énergie Littoral</strong><div class="amt">35 M <small class="muted">XAF</small></div><div class="foot"><span>Appel le 23 oct.</span><span class="avatar sm">YM</span></div></div>
             <div class="deal"><strong>Sahel Logistique</strong><div class="amt">12 M <small class="muted">XAF</small></div><div class="foot"><span>Sans action prévue</span><span class="avatar sm">LM</span></div></div></div>
@@ -263,6 +266,7 @@
             <div class="deal"><strong>Atlas Négoce</strong><div class="amt">19,2 M <small class="muted">XAF</small></div><div class="foot"><span class="badge ok">12 places</span><span class="avatar sm">LM</span></div></div></div>
           <div class="col"><h3>Inscrit Investudy <span>2</span></h3>
             <div class="deal"><strong>Atlas Négoce — Session de novembre</strong><div class="amt">12 inscrits</div><div class="foot"><span class="badge ok">Confirmé</span><span class="avatar sm">LM</span></div></div></div>
+        </div>
         </div>
       </section>
 

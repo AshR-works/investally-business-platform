@@ -130,7 +130,7 @@ def main():
     )
     nav_design = (
         'Investally Business Platform — design · <a href="01-DESIGN-SYSTEM.html">Design system</a> · '
-        '<a href="02-SPECIFICATIONS-FRONTEND.html">Spécifications frontend</a> · <a href="prototype/index.html">Prototype</a>'
+        '<a href="02-SPECIFICATIONS-FRONTEND.html">Spécifications frontend</a> · <a href="03-EXIGENCES-DE-CONCEPTION.html">Exigences</a> · <a href="04-ANALYSE-D-IMPACT.html">Analyse d&#8217;impact</a> · <a href="prototype/index.html">Prototype</a>'
     )
     for folder, nav in ((ROOT, nav_livrables), (design, nav_design)):
         for name in sorted(n for n in os.listdir(folder) if n.endswith('.md')):
