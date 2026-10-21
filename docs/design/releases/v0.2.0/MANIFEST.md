@@ -5,7 +5,7 @@
 | Version | **0.2.0** |
 | Statut | Proposée (reconstituée) |
 | Commit de référence | `1687304` (reconstituée après coup) |
-| Étiquette Git | `design-v0.2.0` (à poser à la validation) |
+| Étiquette Git | `design-v0.2.0` (posée) |
 | Date de l'instantané | 2026-10-21 |
 | Captures | 18 |
 

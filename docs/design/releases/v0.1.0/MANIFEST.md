@@ -5,7 +5,7 @@
 | Version | **0.1.0** |
 | Statut | Proposée (reconstituée) |
 | Commit de référence | `35d4abf` (reconstituée après coup) |
-| Étiquette Git | `design-v0.1.0` (à poser à la validation) |
+| Étiquette Git | `design-v0.1.0` (posée) |
 | Date de l'instantané | 2026-10-21 |
 | Captures | 9 |
 
