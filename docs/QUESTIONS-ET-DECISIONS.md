@@ -2,7 +2,7 @@
 
 > **À quoi sert ce document** : garder la trace des questions de conception à fort enjeu (sécurité, droits, métier, juridique), de ce qui a été décidé, par qui, quand, et de ce qui reste ouvert. Si un doute revient (« pourquoi le SuperAdmin voit-il tout ? »), la réponse et sa justification sont ici.
 > **Règle** : une décision n'est jamais effacée ; si elle change, on ajoute une ligne « remplacée par » avec la date. Les décisions de portée architecture ont aussi un ADR (`docs/adr/`).
-> Dernière mise à jour : 2026-10-20 (fin du Sprint 2).
+> Dernière mise à jour : 2026-10-21. **Méthode** : toute décision structurante suit [METHODE-D-ARBITRAGE.md](METHODE-D-ARBITRAGE.md) (options comparées, recommandation, décision laissée à la direction produit). Premier dossier d'arbitrage : [design/05-AIDE-A-LA-DECISION.md](design/05-AIDE-A-LA-DECISION.md) (DEC-001 à DEC-006).
 
 Légende — **Réversibilité** : 🟢 facile (configuration ou seed) · 🟡 moyenne (code et tests à modifier) · 🔴 coûteuse (modèle de données ou frontière de modules).
 **Statut** : ✅ décidé · 🔶 décidé par défaut (recommandation appliquée faute de réponse) · ⏳ ouvert.
