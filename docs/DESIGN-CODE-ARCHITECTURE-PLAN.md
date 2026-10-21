@@ -110,3 +110,6 @@ Ordre de réalisation retenu : **Étape 0** (validations, Microsoft 365, SuperAd
 
 ## Cadrages décidés le 2026-10-21
 Les 11 décisions de cadrage de H1, H2, S3.6 et du cadrage UX sont retenues (recommandations suivies) : voir [cadrages/README.md](cadrages/README.md) et le registre (D19). **Prochaine session : H1** (branche `sprint/h1-habillage-hub`), avec essai isolé de Tailwind en premier.
+
+## Arbitrage API des entreprises, décidé le 2026-10-21 (D21)
+**S4.1 s'élargit d'environ 0,5 session** d'un lot « tableaux » défini en séance de **cadrage UX** : filtres (statut, « les miennes »), tri, compteurs par statut, nom du responsable via un port d'annuaire (noyau partagé, adaptateur Identité, sans route d'annuaire). **Nouveau cadrage à prévoir** après le cadrage UX : sécurité de l'**export** et de la **réassignation** (permission dédiée, step-up MFA, audit, volumes). Dernière activité et valeur estimée arrivent avec S4.2 et S4.3.

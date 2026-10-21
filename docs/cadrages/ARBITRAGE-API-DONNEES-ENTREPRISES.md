@@ -1,6 +1,6 @@
 # Arbitrage — Données manquantes dans l'API des entreprises
 
-**Date** : 2026-10-21 · **Statut** : à décider · **Origine** : constat de l'écart entre le mockup et l'application (D38, `ECART-MOCKUP-VS-REEL.md`).
+**Date** : 2026-10-21 · **Statut** : **décidé le 2026-10-21** (recommandations retenues : C, A, A, A) · **Origine** : constat de l'écart entre le mockup et l'application (D38, `ECART-MOCKUP-VS-REEL.md`).
 
 > Méthode : [METHODE-D-ARBITRAGE.md](../METHODE-D-ARBITRAGE.md). **Aucune décision n'est prise dans ce document** : les recommandations sont des avis, la décision est celle de la direction produit.
 
@@ -114,7 +114,7 @@ Le tableau **Entreprises** de l'application est loin du mockup. **Quoi ajouter �
 
 **Recommandation.** Option **C**. A et C sont quasi à égalité dans la grille (4,10 contre 4,05, écart non significatif) parce qu'A ne coûte rien, mais A laisse D38 sans échéance ; C obtient le même résultat avec un périmètre décidé en séance de cadrage UX. **Complément sans décision à prendre** : le pays et la date de création sont déjà fournis par l'API ; je peux les afficher dès maintenant sans toucher à l'API. Ferait changer d'avis : une démonstration à un tiers avant S4.1 qui exigerait un tableau plus riche (alors B).
 
-**Décision (direction produit).** ☐ À renseigner : option retenue · date · motif · réserves.
+**Décision (direction produit).** ✅ **Option C — intégrer à S4.1, après le cadrage UX** — décidé le 2026-10-21 par la direction produit (recommandation suivie).
 
 **Trace.** À enregistrer dans `docs/QUESTIONS-ET-DECISIONS.md` (et, pour le design, dans `docs/design/decisions/`).
 
@@ -188,7 +188,7 @@ Le tableau **Entreprises** de l'application est loin du mockup. **Quoi ajouter �
 
 **Recommandation.** Option **A** : elle donne le nom sans créer de route d'annuaire ni exposer de personnes qui ne figurent pas déjà dans les résultats autorisés.
 
-**Décision (direction produit).** ☐ À renseigner : option retenue · date · motif · réserves.
+**Décision (direction produit).** ✅ **Option A — port d'annuaire côté serveur** — décidé le 2026-10-21 par la direction produit (recommandation suivie).
 
 **Trace.** À enregistrer dans `docs/QUESTIONS-ET-DECISIONS.md` (et, pour le design, dans `docs/design/decisions/`).
 
@@ -263,7 +263,7 @@ Le tableau **Entreprises** de l'application est loin du mockup. **Quoi ajouter �
 
 **Recommandation.** Option **A**. Les deux actions touchent la sécurité des données commerciales ; un cadrage court, mené après le cadrage UX, vaut mieux qu'une décision improvisée en cours de S4.1. Ferait changer d'avis : une demande métier urgente d'export (alors B, avec step-up obligatoire).
 
-**Décision (direction produit).** ☐ À renseigner : option retenue · date · motif · réserves.
+**Décision (direction produit).** ✅ **Option A — cadrage de sécurité dédié avant de livrer l'export et la réassignation** — décidé le 2026-10-21 par la direction produit (recommandation suivie).
 
 **Trace.** À enregistrer dans `docs/QUESTIONS-ET-DECISIONS.md` (et, pour le design, dans `docs/design/decisions/`).
 
@@ -337,7 +337,7 @@ Le tableau **Entreprises** de l'application est loin du mockup. **Quoi ajouter �
 
 **Recommandation.** Option **A** : on attend la donnée réelle. La date de création est déjà disponible et peut s'afficher dès maintenant sous le libellé « Créée le » (sans décision supplémentaire).
 
-**Décision (direction produit).** ☐ À renseigner : option retenue · date · motif · réserves.
+**Décision (direction produit).** ✅ **Option A — attendre la vraie dernière activité** — décidé le 2026-10-21 par la direction produit (recommandation suivie).
 
 **Trace.** À enregistrer dans `docs/QUESTIONS-ET-DECISIONS.md` (et, pour le design, dans `docs/design/decisions/`).
 
@@ -350,5 +350,6 @@ Le tableau **Entreprises** de l'application est loin du mockup. **Quoi ajouter �
 - **Plus tard** : dernière activité et valeur estimée avec les modules qui les produisent (S4.2, S4.3).
 - **Dettes** : D38 reçoit une échéance (S4.1) ; D37 (actions groupées) est liée au cadrage export/réassignation.
 
-## 5. Comment décider
+## 5. Décision
+Le 2026-10-21, la direction produit a retenu les quatre recommandations. Pays et « Créée le » sont affichés dans le tableau Entreprises dès maintenant ; le reste est planifié comme indiqué au §4. Enregistrée au registre (D21).
 Répondez par exemple : « **ARB-API-1 : C ; ARB-API-2 : A ; ARB-API-3 : A ; ARB-API-4 : A** », ou indiquez vos écarts. Je consigne les choix dans le registre (`QUESTIONS-ET-DECISIONS.md`, D21), j'ajuste le plan de S4.1 et je peux afficher Pays et Créée le tout de suite.
