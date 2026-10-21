@@ -170,6 +170,8 @@ Registre complet : `docs/TECH-DEBT.md` (27 entrées). Les plus importantes :
 |---|---|
 | [02-GUIDE-DU-CODE.md](02-GUIDE-DU-CODE.md) | Où vit chaque chose, chemin d'une requête, recettes du développeur |
 | [03-INDEX-DES-FONCTIONS.md](03-INDEX-DES-FONCTIONS.md) | Les 535 fonctions, classes et composants commentés, avec leur rôle |
+| [04-SUIVI-DES-SESSIONS.md](04-SUIVI-DES-SESSIONS.md) | Historique session par session : demandes, décisions, validations, défauts, actions en attente |
+| [05-ETAT-D-AVANCEMENT.md](05-ETAT-D-AVANCEMENT.md) | Tableau de bord : avancement du plan, santé, risques, décisions attendues |
 | `docs/SECURITY.md` | Politique de sécurité détaillée (§2.7 : mot de passe oublié) |
 | `docs/RBAC.md` | Matrice complète rôles × permissions (générée) |
 | `docs/SPRINT-*-RECETTE.md` | Plans de recette et résultats, sprint par sprint |

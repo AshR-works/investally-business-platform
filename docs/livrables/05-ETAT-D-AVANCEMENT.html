@@ -1,0 +1,146 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Livrable 5 — État d&#x27;avancement et tableau de bord</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — livrables · <a href="01-RECAPITULATIF-REALISATIONS.html">Récapitulatif</a> · <a href="02-GUIDE-DU-CODE.html">Guide du code</a> · <a href="03-INDEX-DES-FONCTIONS.html">Index des fonctions</a> · <a href="04-SUIVI-DES-SESSIONS.html">Suivi des sessions</a> · <a href="05-ETAT-D-AVANCEMENT.html">État d&#8217;avancement</a></nav><h1>Livrable 5 — État d'avancement et tableau de bord</h1>
+<p><strong>Projet</strong> : Investally Business Platform · <strong>Date</strong> : 2026-10-21 · <strong>Statut global</strong> : 🟢 socle solide · 🟠 cœur métier à commencer · 🔴 dépendances externes à débloquer</p>
+<blockquote><p>Ce tableau répond à trois questions : <strong>où en est-on, qu'est-ce qui nous freine, et qu'est-ce que la direction doit décider.</strong> Les chiffres sont recomptés à partir du plan (<code>DESIGN-CODE-ARCHITECTURE-PLAN.md</code>), des recettes et du code.</p></blockquote>
+<hr>
+<h2>1. Synthèse en dix lignes</h2>
+<ol><li><strong>8 sessions menées</strong> (S0 à S3.5) ; <strong>6 validées</strong> et fusionnées, <strong>2 livrées en attente de validation</strong> (S3.4, S3.5).</li><li>Le <strong>socle de sécurité et d'accès est complet</strong> : comptes, connexion, second facteur, rôles, périmètres, invitations, mot de passe oublié, audit.</li><li><strong>Aucune fonctionnalité métier commerciale n'est encore livrée</strong> hormis les entreprises cibles (début du pipeline) : c'est <strong>voulu</strong> — on ne bâtit pas un CRM sur un accès fragile.</li><li><strong>380 + 141 tests</strong> côté API, <strong>24</strong> côté interface, tous verts ; <strong>0 violation</strong> d'architecture ; <strong>0 vulnérabilité haute</strong>.</li><li><strong>Plus de 20 défauts ou incidents</strong> consignés et corrigés <em>avant</em> livraison (voir le suivi des sessions, §5), la plupart avec un test qui les garde.</li><li>Les <strong>deux blocages réels</strong> ne sont pas techniques : accès <strong>Microsoft 365</strong> et <strong>désignation de deux SuperAdmin</strong>.</li><li>L'interface est <strong>vérifiée à la main</strong> (navigateur réel) mais pas encore automatisée.</li><li><strong>Docker, intégration continue, sauvegardes, supervision</strong> : écrits ou prévus, <strong>jamais exécutés</strong> (S7).</li><li><strong>Prochaine étape recommandée</strong> : valider S3.4 et S3.5, puis S3.6 (documents), puis un <strong>cadrage UX</strong> avant S4.1.</li><li>Reste à construire : <strong>15 lignes du plan sur 23</strong>, dont tout le métier (S4 à S6), la mise en production (S7) et l'ERP.</li></ol>
+<hr>
+<h2>2. Avancement par ligne du plan</h2>
+<p>Légende : ✅ validé · 🟦 livré, validation attendue · ⏳ à faire</p>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Ligne du plan</th><th>Produit</th><th>Statut</th><th>Avancement</th></tr></thead><tbody>
+<tr><td>1</td><td>S0 Cadrage</td><td>—</td><td>✅</td><td>▓▓▓▓▓▓▓▓▓▓ 100 %</td></tr>
+<tr><td>2</td><td>S1 Squelette CRM</td><td>CRM</td><td>✅ (réserves : Docker/CI)</td><td>▓▓▓▓▓▓▓▓▓▓ 100 %</td></tr>
+<tr><td>3</td><td>S2 Sécurité et données Core</td><td>CRM</td><td>✅</td><td>▓▓▓▓▓▓▓▓▓▓ 100 %</td></tr>
+<tr><td>4</td><td>S3.1 Authentification</td><td>CRM</td><td>✅</td><td>▓▓▓▓▓▓▓▓▓▓ 100 %</td></tr>
+<tr><td>5</td><td>S3.2 Second facteur et amorçage</td><td>CRM</td><td>✅</td><td>▓▓▓▓▓▓▓▓▓▓ 100 %</td></tr>
+<tr><td>6</td><td>S3.3 Autorisation et administration</td><td>CRM</td><td>✅</td><td>▓▓▓▓▓▓▓▓▓▓ 100 %</td></tr>
+<tr><td>7</td><td>S3.4 Interface de base</td><td>CRM</td><td>🟦</td><td>▓▓▓▓▓▓▓▓▓▓ 100 % (à valider)</td></tr>
+<tr><td>8</td><td>S3.5 Mot de passe oublié, commentaires, livrables</td><td>CRM</td><td>🟦</td><td>▓▓▓▓▓▓▓▓▓▓ 100 % (à valider)</td></tr>
+<tr><td>9</td><td>S3.6 Documents</td><td>CRM</td><td>⏳</td><td>░░░░░░░░░░ 0 %</td></tr>
+<tr><td>10</td><td>Cadrage UX (maquettes)</td><td>CRM</td><td>⏳</td><td>░░░░░░░░░░ 0 %</td></tr>
+<tr><td>11</td><td>S4.1 Entreprises et contacts</td><td>CRM</td><td>⏳ <em>(tranche « entreprise » déjà livrée)</em></td><td>▓░░░░░░░░░ 10 %</td></tr>
+<tr><td>12</td><td>S4.2 Offres, décharges, relances</td><td>CRM</td><td>⏳</td><td>░░░░░░░░░░ 0 %</td></tr>
+<tr><td>13</td><td>S4.3 Rendez-vous, visites, opportunités</td><td>CRM</td><td>⏳</td><td>░░░░░░░░░░ 0 %</td></tr>
+<tr><td>14</td><td>S4.4 Agrément et ambassadeurs</td><td>CRM</td><td>⏳</td><td>░░░░░░░░░░ 0 %</td></tr>
+<tr><td>15</td><td>S5.1 Catalogue Investudy</td><td>CRM</td><td>⏳</td><td>░░░░░░░░░░ 0 %</td></tr>
+<tr><td>16</td><td>S5.2 Sessions et inscriptions</td><td>CRM</td><td>⏳</td><td>░░░░░░░░░░ 0 %</td></tr>
+<tr><td>17</td><td>S5.3 Suivi pédagogique</td><td>CRM</td><td>⏳</td><td>░░░░░░░░░░ 0 %</td></tr>
+<tr><td>18</td><td>S6.1 KPI et tableaux de bord commerciaux</td><td>CRM</td><td>⏳</td><td>░░░░░░░░░░ 0 %</td></tr>
+<tr><td>19</td><td>S6.2 Tableaux de bord Investudy, Administration, Sécurité</td><td>CRM</td><td>⏳</td><td>░░░░░░░░░░ 0 %</td></tr>
+<tr><td>20</td><td>S7.1 Durcissement</td><td>CRM</td><td>⏳</td><td>░░░░░░░░░░ 0 %</td></tr>
+<tr><td>21</td><td>S7.2 Mise en production</td><td>CRM</td><td>⏳</td><td>░░░░░░░░░░ 0 %</td></tr>
+<tr><td>22</td><td>ERP-1…n (Finance, RH, Fiscalité, direction)</td><td>ERP</td><td>⏳</td><td>░░░░░░░░░░ 0 %</td></tr>
+<tr><td>23</td><td>Final (stratégie .NET, dette, recommandation)</td><td>—</td><td>⏳</td><td>░░░░░░░░░░ 0 %</td></tr>
+</tbody></table></div>
+<p><strong>Compte</strong> : 6 lignes validées · 2 livrées en attente · 15 à faire → <strong>26 % validé</strong>, <strong>35 % livré</strong> (par nombre de lignes).</p>
+<blockquote><p><strong>Commentaire — pourquoi ce pourcentage est trompeur, dans les deux sens.</strong> Par nombre de lignes, l'avancement paraît faible ; or le socle est la partie où une erreur coûte le plus cher et où l'on ne peut pas « rattraper plus tard ». À l'inverse, les lignes restantes <strong>ne sont pas de poids égal</strong> : S4 à S6 contiennent l'essentiel de la valeur métier et de l'incertitude (agrément, règle du rendez-vous décideur). Je ne donne <strong>pas</strong> de date de fin : tant que le cadrage UX et les détails de l'agrément ne sont pas là, une date serait une invention.</p></blockquote>
+<h2>3. Avancement par bloc</h2>
+<div class="table-wrap"><table><thead><tr><th>Bloc</th><th>Contenu</th><th>Lignes faites / total</th><th>État</th></tr></thead><tbody>
+<tr><td><strong>A. Fondations</strong></td><td>Cadrage, squelette, données, audit</td><td>3 / 3</td><td>🟢 terminé</td></tr>
+<tr><td><strong>B. Identité et accès</strong></td><td>Authentification, MFA, droits, administration, interface d'accès, mot de passe oublié</td><td>5 / 5 <em>(2 en attente de validation)</em></td><td>🟢 terminé</td></tr>
+<tr><td><strong>C. Services transverses</strong></td><td>Documents</td><td>0 / 1</td><td>🟠 à faire (S3.6)</td></tr>
+<tr><td><strong>D. CRM commercial</strong></td><td>Cadrage UX, entreprises/contacts, offres, rendez-vous, agrément</td><td>0 / 5</td><td>🟠 à faire</td></tr>
+<tr><td><strong>E. Investudy</strong></td><td>Catalogue, sessions, suivi pédagogique</td><td>0 / 3</td><td>⏳</td></tr>
+<tr><td><strong>F. Pilotage</strong></td><td>Tableaux de bord et indicateurs</td><td>0 / 2</td><td>⏳</td></tr>
+<tr><td><strong>G. Mise en production</strong></td><td>Durcissement, déploiement</td><td>0 / 2</td><td>⏳</td></tr>
+<tr><td><strong>H. ERP et clôture</strong></td><td>Finance, RH, fiscalité, stratégie .NET</td><td>0 / 2</td><td>⏳</td></tr>
+</tbody></table></div>
+<h2>4. Ce que le système fait aujourd'hui (capacités)</h2>
+<div class="table-wrap"><table><thead><tr><th>Capacité</th><th>Statut</th><th>Preuve</th></tr></thead><tbody>
+<tr><td>Inviter un collègue par lien à usage unique</td><td>✅</td><td>recette S3.3, S3.4</td></tr>
+<tr><td>Activation du compte et choix du mot de passe</td><td>✅</td><td>recette S3.4 (navigateur)</td></tr>
+<tr><td>Second facteur obligatoire (QR, codes de secours)</td><td>✅</td><td>recette S3.2, S3.4</td></tr>
+<tr><td>Connexion sécurisée (verrouillage progressif, message unique)</td><td>✅</td><td>recette S3.1</td></tr>
+<tr><td>Droits par rôle et par périmètre (propre / équipe / tous)</td><td>✅</td><td>matrice 10 rôles × routes</td></tr>
+<tr><td>Administration : rôles, désactivation, sessions, MFA</td><td>✅</td><td>recette S3.3, S3.4</td></tr>
+<tr><td>Mot de passe oublié (libre-service et administrateur)</td><td>✅</td><td>recette S3.5</td></tr>
+<tr><td>Journal d'audit inaltérable</td><td>✅</td><td>triggers + tests</td></tr>
+<tr><td>Gérer les entreprises cibles (créer, lister selon le périmètre)</td><td>✅ <em>(socle)</em></td><td>recette S1, S3.3</td></tr>
+<tr><td>Envoyer de vrais e-mails (Microsoft 365)</td><td>❌ <strong>non testé</strong></td><td>en attente d'accès</td></tr>
+<tr><td>Contacts, offres, rendez-vous, opportunités</td><td>⏳</td><td>S4</td></tr>
+<tr><td>Agrément, ambassadeurs</td><td>⏳</td><td>S4.4</td></tr>
+<tr><td>Formations, sessions, inscriptions, suivi pédagogique</td><td>⏳</td><td>S5</td></tr>
+<tr><td>Tableaux de bord et indicateurs</td><td>⏳</td><td>S6</td></tr>
+<tr><td>Documents (téléversement, versions)</td><td>⏳</td><td>S3.6</td></tr>
+</tbody></table></div>
+<h2>5. Indicateurs de santé</h2>
+<div class="table-wrap"><table><thead><tr><th>Indicateur</th><th>Valeur</th><th>Seuil visé</th><th>État</th></tr></thead><tbody>
+<tr><td>Tests unitaires API</td><td>380</td><td>tous verts</td><td>🟢</td></tr>
+<tr><td>Tests d'intégration API (base réelle)</td><td>141</td><td>tous verts</td><td>🟢 <em>(un passage sous charge a eu 4 échecs de délai, non reproduits)</em></td></tr>
+<tr><td>Tests interface</td><td>24</td><td>tous verts</td><td>🟢</td></tr>
+<tr><td>Violations d'architecture</td><td>0 (129 modules)</td><td>0</td><td>🟢</td></tr>
+<tr><td>Routes non protégées par oubli</td><td>0 (32 routes, test structurel)</td><td>0</td><td>🟢</td></tr>
+<tr><td>Vulnérabilités hautes (dépendances)</td><td>0</td><td>0</td><td>🟢 (1 moyenne connue, D6)</td></tr>
+<tr><td>Mutations de sécurité détectées</td><td>23 sur 24 d'emblée, 24 sur 24 après correction</td><td>100 %</td><td>🟢</td></tr>
+<tr><td>Fonctions commentées</td><td>535 déclarations, 0 oubli</td><td>100 %</td><td>🟢</td></tr>
+<tr><td>Dette technique ouverte</td><td>27 entrées (voir <code>TECH-DEBT.md</code>)</td><td>suivie, avec propriétaire</td><td>🟠</td></tr>
+<tr><td>Parcours d'écrans automatisés</td><td>0</td><td>à terme</td><td>🟠 (D22)</td></tr>
+<tr><td>Docker / CI exécutés</td><td>non</td><td>oui avant production</td><td>🔴 (S7)</td></tr>
+<tr><td>Sauvegardes, supervision</td><td>non</td><td>oui avant production</td><td>🔴 (S7)</td></tr>
+</tbody></table></div>
+<h2>6. Risques et points d'attention</h2>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Risque</th><th>Probabilité</th><th>Impact</th><th>Réponse</th></tr></thead><tbody>
+<tr><td>1</td><td><strong>Microsoft 365 non testé</strong> : aucune invitation ni aucun mot de passe oublié réels ne partira tant que l'accès n'est pas fourni</td><td>Certaine</td><td><strong>Élevé</strong></td><td>Fournir tenant, application et boîte d'expédition ; test réel dès réception</td></tr>
+<tr><td>2</td><td><strong>Un seul SuperAdmin</strong> : compte perdu = administration bloquée</td><td>Moyenne</td><td><strong>Élevé</strong></td><td>Désigner deux SuperAdmin nominatifs ; garde-fou « dernier SuperAdmin » déjà en place</td></tr>
+<tr><td>3</td><td>Détails de l'<strong>agrément</strong> flous (montant, validité, annulation)</td><td>Certaine</td><td>Moyen</td><td>5 questions à trancher avant S4.4 ; défauts proposés dans le registre</td></tr>
+<tr><td>4</td><td>Écrans du pipeline codés <strong>sans maquettes validées</strong></td><td>Moyenne</td><td>Moyen</td><td><strong>Cadrage UX</strong> avant S4.1</td></tr>
+<tr><td>5</td><td><strong>Mise en production</strong> sans Docker/CI/sauvegarde éprouvés</td><td>Certaine si on saute S7</td><td><strong>Élevé</strong></td><td>S7 non négociable avant ouverture aux 20 utilisateurs</td></tr>
+<tr><td>6</td><td>Validation juridique de l'audit sur <strong>10 ans</strong> et des données personnelles</td><td>Moyenne</td><td>Élevé (conformité)</td><td>Lancer en parallèle dès maintenant</td></tr>
+<tr><td>7</td><td>Tests d'écran non automatisés : régression silencieuse possible</td><td>Moyenne</td><td>Moyen</td><td>Tests de bout en bout (Playwright) en S7</td></tr>
+<tr><td>8</td><td>Environnement de test lent : tests sensibles aux délais</td><td>Moyenne</td><td>Faible</td><td>Délais relevés ; à surveiller</td></tr>
+<tr><td>9</td><td>Dépendances logicielles (Next.js 16, Prisma 7…) très récentes</td><td>Faible</td><td>Moyen</td><td>Versions épinglées ; audit à chaque sprint</td></tr>
+</tbody></table></div>
+<h2>7. Décisions attendues de la direction</h2>
+<div class="table-wrap"><table><thead><tr><th>Décision</th><th>À prendre avant</th><th>Recommandation</th></tr></thead><tbody>
+<tr><td><strong>Valider S3.4 puis S3.5</strong></td><td>maintenant</td><td>Oui, après lecture des deux recettes</td></tr>
+<tr><td><strong>Fournir l'accès Microsoft 365</strong></td><td>tout usage réel</td><td>À débloquer en priorité</td></tr>
+<tr><td><strong>Désigner deux SuperAdmin</strong></td><td>tout usage réel</td><td>Oui</td></tr>
+<tr><td>Exiger un MFA récent pour changer un responsable (D16)</td><td>S3.6</td><td>Oui</td></tr>
+<tr><td>Confirmer : MFA pour <em>tous</em> les rôles ; apprenant distinct du contact</td><td>S5.2</td><td>Confirmer les deux</td></tr>
+<tr><td>Réponses sur l'<strong>agrément</strong> (5 questions)</td><td>S4.4</td><td>Voir <code>QUESTIONS-ET-DECISIONS.md</code> §D</td></tr>
+<tr><td><strong>Cadrage UX</strong> : valider le principe de maquettes avant le code</td><td>S4.1</td><td>Oui, séance courte sur 5 écrans clés</td></tr>
+<tr><td>Lancer la validation juridique (audit 10 ans)</td><td>production</td><td>En parallèle</td></tr>
+<tr><td>Supprimer l'ancienne copie OneDrive</td><td>à convenance</td><td>Oui, après votre accord explicite</td></tr>
+</tbody></table></div>
+<h2>8. Prochains pas proposés</h2>
+<div class="table-wrap"><table><thead><tr><th>Ordre</th><th>Étape</th><th>Objet</th><th>Pré-requis</th></tr></thead><tbody>
+<tr><td>1</td><td>Validation S3.4 puis S3.5</td><td>Fusion dans <code>main</code>, étiquettes</td><td>Votre « Je valide »</td></tr>
+<tr><td>2</td><td><strong>S3.6 Documents</strong></td><td>Téléversement, versions, empreinte SHA-256, traçabilité</td><td>—</td></tr>
+<tr><td>3</td><td><strong>Cadrage UX</strong></td><td>Maquettes des écrans du parcours commercial</td><td>Séance avec vous</td></tr>
+<tr><td>4</td><td><strong>S4.1</strong> Entreprises et contacts</td><td>API et écrans livrés ensemble</td><td>Cadrage UX</td></tr>
+<tr><td>5</td><td><strong>S4.2 → S4.4</strong></td><td>Offres, relances, rendez-vous, opportunités, agrément, ambassadeurs</td><td>Réponses sur l'agrément</td></tr>
+<tr><td>6</td><td><strong>S5, S6</strong></td><td>Investudy, tableaux de bord</td><td>—</td></tr>
+<tr><td>7</td><td><strong>S7</strong></td><td>Durcissement, Docker/CI réels, sauvegardes, supervision, mise en production</td><td>Accès M365, validation juridique</td></tr>
+</tbody></table></div>
+<hr>
+<h2>9. Où trouver quoi</h2>
+<div class="table-wrap"><table><thead><tr><th>Besoin</th><th>Document</th></tr></thead><tbody>
+<tr><td>Récapitulatif détaillé des réalisations</td><td><a href="01-RECAPITULATIF-REALISATIONS.html">01-RECAPITULATIF-REALISATIONS.md</a></td></tr>
+<tr><td>Comprendre l'organisation du code</td><td><a href="02-GUIDE-DU-CODE.html">02-GUIDE-DU-CODE.md</a></td></tr>
+<tr><td>Rôle de chaque fonction</td><td><a href="03-INDEX-DES-FONCTIONS.html">03-INDEX-DES-FONCTIONS.md</a></td></tr>
+<tr><td>Historique session par session</td><td><a href="04-SUIVI-DES-SESSIONS.html">04-SUIVI-DES-SESSIONS.md</a></td></tr>
+<tr><td>Plan de sprints, décisions, risques, dette</td><td><code>docs/DESIGN-CODE-ARCHITECTURE-PLAN.md</code>, <code>QUESTIONS-ET-DECISIONS.md</code>, <code>RISKS.md</code>, <code>TECH-DEBT.md</code></td></tr>
+</tbody></table></div></main></body></html>
