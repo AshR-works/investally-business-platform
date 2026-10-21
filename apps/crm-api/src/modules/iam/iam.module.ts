@@ -8,6 +8,7 @@ import { AssignRolesUseCase, SetUserStatusUseCase, UpdateUserUseCase } from './a
 import { GetUserHandler, ListRolesHandler, ListUsersHandler } from './application/admin/user-queries';
 import { ROLE_CATALOG_READER } from './application/admin/user-view';
 import { AuthenticateAccessTokenUseCase } from './application/authenticate-access-token.use-case';
+import { GetProfileHandler } from './application/get-profile.handler';
 import { AuthorizationService } from './application/authorization.service';
 import { ChangePasswordUseCase } from './application/change-password.use-case';
 import { ConfirmMfaEnrollmentUseCase, StartMfaEnrollmentUseCase } from './application/mfa-enrollment.use-cases';
@@ -50,7 +51,7 @@ import { RequireMfaGuard, RequireRecentMfaGuard } from './presentation/mfa.guard
   providers: [
     CreateUserUseCase, LoginUseCase, RefreshSessionUseCase, LogoutUseCase, ChangePasswordUseCase,
     AuthenticateAccessTokenUseCase, SessionTokenService, AccessTokenGuard, RequireMfaGuard, RequireRecentMfaGuard,
-    AuthorizationService, PermissionGuard,
+    AuthorizationService, GetProfileHandler, PermissionGuard,
     InviteUserUseCase, ResendInvitationUseCase, AcceptInvitationUseCase, UpdateUserUseCase, SetUserStatusUseCase, AssignRolesUseCase,
     ListUsersHandler, GetUserHandler, ListRolesHandler, ListOwnSessionsHandler, RevokeSessionUseCase, RevokeUserSessionsUseCase,
     { provide: GRANT_READER, useClass: PrismaGrantReader },
