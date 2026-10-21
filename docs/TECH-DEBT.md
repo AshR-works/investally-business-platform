@@ -38,6 +38,8 @@
 | D34 | **Recherche globale côté interface** (une requête par type : 2 aujourd'hui) | H1, CAD-H1-4 | Claude | À remplacer par une route dédiée quand 4 types existent (S4.1 à S5) |
 | D35 | **Logos en PNG** (SVG officiels attendus) ; thème sombre obtenu par filtre CSS monochrome (DDR-0002), le symbole sombre n'est pas une variante dessinée | H1 | Direction produit | Fournir SVG et variante sombre avant mise en ligne |
 | D36 | **Bouton de dépliage** : pictogramme provisoire et bouton masqué sur la Vue d'ensemble (DDR-0007, points ouverts 1 et 2) | H1 | Direction produit | À confirmer (version 0.4.2 du design si changement) |
+| D37 | **Barre de sélection sans actions groupées** : la sélection fonctionne (EXD-02) mais aucune route ne permet d'agir sur plusieurs lignes (exporter, réassigner, couper les sessions) | H1b | Claude | Ajouter les actions avec leurs routes (S4.1) |
+| D38 | **Colonnes et filtres métier absents des tableaux** (responsable, valeur, dernière activité, compteurs par statut, Filtres, Colonnes, Export) : l'API ne les fournit pas | H1b | Direction produit | Voir `cadrages/ECART-MOCKUP-VS-REEL.md` ; à arbitrer avant S4.1 |
 | D5 | Hypothèses de charge et de périmètre non confirmées | Phase 3 | Revue à la fin de S1 avec les chiffres réels | Ouverte |
 
 ## Adopted Conventions

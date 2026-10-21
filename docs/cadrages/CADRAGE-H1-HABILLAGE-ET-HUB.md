@@ -183,6 +183,8 @@ Les fiches complètes suivent (gabarit de la méthode d'arbitrage).
 
 **Décision (direction produit).** ✅ **Option A — coque et hub seulement** — décidé le 2026-10-21 par la direction produit (recommandation suivie).
 
+**Amendement du 2026-10-21 (après la livraison de H1)** : au vu du résultat, la direction produit retient l'**option B pour les composants de données** : tableau, sélection persistante, badges, barre d'outils, pagination, menu de ligne, appliqués à Entreprises, Utilisateurs et aux sessions de Mon compte, **avec les seules données réelles** (session H1b). Voir [ECART-MOCKUP-VS-REEL.md](ECART-MOCKUP-VS-REEL.md).
+
 **Trace.** À enregistrer dans `docs/QUESTIONS-ET-DECISIONS.md` (et, pour le design, dans `docs/design/decisions/`).
 
 ---
