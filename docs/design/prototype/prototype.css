@@ -16,7 +16,13 @@ button, input, select { font: inherit; color: inherit; }
 .icon.sm { width: 16px; height: 16px; }
 
 /* ---------- Coque applicative ---------- */
-.app { display: grid; grid-template-columns: 272px minmax(0, 1fr); min-height: 100vh; padding: 12px 12px 12px 0; background: var(--canvas); }
+.app { --nav-w: 272px; --panel-max: 1440px; display: grid; min-height: 100vh; padding: 12px; background: var(--canvas);
+  /* DEC-007 (option B) : le panneau principal est centré sur la fenêtre ; la navigation vit dans la marge de gauche.
+     Marge gauche >= largeur de la navigation, marge droite libre : si la fenêtre est trop étroite, la marge droite
+     tombe à 0 et le panneau se centre dans l'espace restant (repli automatique, sans requête média). */
+  grid-template-columns: minmax(var(--nav-w), 1fr) minmax(0, var(--panel-max)) minmax(0, 1fr); }
+.app > .sidebar { grid-column: 1; justify-self: start; width: var(--nav-w); }
+.app > .main { grid-column: 2; }
 .sidebar {
   background: transparent; padding: var(--s-4) var(--s-4) var(--s-4) var(--s-5); display: flex; flex-direction: column; gap: var(--s-2);
   position: sticky; top: 12px; height: calc(100vh - 24px); overflow-y: auto;
@@ -74,7 +80,7 @@ kbd { font: 600 0.6875rem var(--font-ui); border: 1px solid var(--line-strong); 
 .user-chip span { font-size: var(--text-xs); color: var(--muted); }
 .menu-btn { display: none; }
 
-.page { padding: var(--s-8); max-width: 1320px; }
+.page { padding: var(--s-8); }
 .crumbs { display: flex; gap: var(--s-2); color: var(--muted); font-size: var(--text-xs); align-items: center; }
 .eyebrow { font: 600 0.6875rem/1 var(--font-ui); letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-2); margin: var(--s-4) 0 var(--s-2); }
 .page-head { display: flex; align-items: flex-end; gap: var(--s-6); flex-wrap: wrap; margin-bottom: var(--s-6); }
@@ -251,6 +257,7 @@ body:not([data-view='login']) .auth { display: none; }
 }
 @media (max-width: 900px) {
   .app { grid-template-columns: minmax(0, 1fr); }
+  .app > .main { grid-column: 1; }
   .sidebar { position: fixed; inset: 0 auto 0 0; width: 280px; z-index: 20; transform: translateX(-100%); transition: transform var(--base) var(--ease); box-shadow: var(--shadow-3); }
   .sidebar.open { transform: none; }
   .menu-btn { display: grid; }
@@ -304,16 +311,16 @@ tbody tr { cursor: pointer; }
 /* ---------- DEC-002 : navigation B+ (hub complet, rail compact ailleurs, bouton Déplier) ---------- */
 .logo-mini { display: none; }
 .rail-toggle { display: none; }
-.rail-toggle { align-items: center; gap: var(--s-3); background: transparent; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); color: var(--ink-2); padding: 8px var(--s-3); cursor: pointer; font-weight: 500; margin-top: var(--s-2); }
+.rail-toggle { align-items: center; justify-content: center; width: 44px; height: 44px; background: transparent; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); color: var(--ink-2); padding: 0; cursor: pointer; margin-top: var(--s-2); }
+.rail-toggle .lbl { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .rail-toggle:hover { background: var(--surface); color: var(--ink); }
 .rail-toggle[hidden] { display: none !important; }
 body[data-nav='full'] .rail-toggle:not([hidden]) { display: flex; }
 body[data-nav='rail'] .rail-toggle:not([hidden]) { display: flex; justify-content: center; }
-body[data-nav='full'] #railIcon { transform: rotate(180deg); }
 .crumbs .back { color: var(--brand-strong); text-decoration: none; font-weight: 600; margin-right: var(--s-3); padding-right: var(--s-3); border-right: 1px solid var(--line-strong); }
 .crumbs .back:hover { text-decoration: underline; }
 @media (min-width: 901px) {
-  body[data-nav='rail'] .app { grid-template-columns: 84px minmax(0, 1fr); }
+  body[data-nav='rail'] .app { --nav-w: 84px; }
   body[data-nav='rail'] .sidebar { padding: var(--s-4) var(--s-2); align-items: center; overflow: visible; }
   body[data-nav='rail'] .logo-full, body[data-nav='rail'] .nav-label { display: none; }
   body[data-nav='rail'] .logo-mini { display: block; }

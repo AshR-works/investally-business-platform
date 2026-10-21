@@ -21,3 +21,6 @@ Meilleure note de la grille (122/135) ; respect d'EXD-05 par défaut ; plusieurs
 
 ## Conséquences
 Deux états de la coque à maintenir ; essai avec 3 utilisateurs à prévoir ; si le rail est mal compris, bascule vers C.
+
+## Mise à jour du 2026-10-21 (v0.4.1)
+Le bouton « Déplier » devient un **pictogramme seul**, et le panneau principal est centré : voir [DDR-0007](DDR-0007-panneau-centre-et-bouton-de-depliage.md). Le principe (hub complet, rail ailleurs, préférence mémorisée) est inchangé.

@@ -209,6 +209,8 @@ function setNavMode(view) {
     railToggle.setAttribute('aria-expanded', String(full));
     const label = full ? 'Replier' : 'Déplier';
     document.getElementById('railLabel').textContent = label;
+    document.getElementById('railUse').setAttribute('href', full ? '#i-panel-close' : '#i-panel-open');
+    railToggle.title = full ? 'Replier la navigation' : 'Déplier la navigation';
     railToggle.dataset.label = full ? 'Replier la navigation' : 'Déplier la navigation';
   }
   // Fil d'Ariane : retour à la vue d'ensemble sur tous les écrans sauf le hub
