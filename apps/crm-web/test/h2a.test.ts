@@ -7,6 +7,9 @@ describe('règles du mot de passe affichées en direct', () => {
   it('rien n\'est respecté tant que le champ est vide', () => {
     expect(passwordRules('')).toEqual([{ label: 'Au moins 12 caractères', met: false }]);
   });
+  it('avec une adresse connue, aucune règle n'est respectée sur un champ vide', () => {
+    expect(passwordRules('', 'prenom.nom@exemple.test').map((r) => r.met)).toEqual([false, false]);
+  });
   it('la longueur minimale passe de « à respecter » à « respectée »', () => {
     expect(passwordRules('court')[0].met).toBe(false);
     expect(passwordRules('Zebra-Lampe-Nuage')[0].met).toBe(true);
