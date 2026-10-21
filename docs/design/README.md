@@ -1,6 +1,6 @@
 # Livrables UX/UI — mode d'emploi
 
-**Version courante** : voir [`VERSION`](VERSION) (**0.4.1**, statut *En revue*) · **Gouvernance** : décision DEC-001, option D (Git + releases sémantiques + journal et fiches de décision).
+**Version courante** : voir [`VERSION`](VERSION) (**0.4.1**, statut *Validée*) · **Gouvernance** : décision DEC-001, option D (Git + releases sémantiques + journal et fiches de décision).
 
 ## Où est quoi
 | Dossier / fichier | Rôle |
@@ -41,4 +41,4 @@ Cycle d'une version : **Proposée → En revue → Validée (par la direction pr
 | 0.2.0 | Proposée (reconstituée) | `1687304` | + Espace agenda, tous les écrans en clair et en sombre |
 | 0.3.0 | Proposée (reconstituée) | `0b72ce4` | + Exigences EXD-01 à 04 (panneau, sélection persistante, Opportunités en cartes) |
 | **0.4.0** | **En revue** | *(voir `releases/v0.4.0/MANIFEST.md`)* | + Décisions DEC-002 et DEC-003 (navigation B+, Opportunités hybrides), hub et recherche globale, gouvernance |
-| **0.4.1** | **En revue** | *(voir `releases/v0.4.1/MANIFEST.md`)* | + Panneau principal centré (DEC-007, option B), bouton de dépliage en pictogramme (EXD-10, EXD-11) |
+| **0.4.1** | **Validée** | *(voir `releases/v0.4.1/MANIFEST.md`)* | + Panneau principal centré (DEC-007, option B), bouton de dépliage en pictogramme (EXD-10, EXD-11) |

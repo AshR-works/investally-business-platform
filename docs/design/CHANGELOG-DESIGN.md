@@ -2,7 +2,7 @@
 
 Format : une section par version, du plus récent au plus ancien. Chaque ligne renvoie à une exigence (EXD), une décision (DEC/DDR) ou une demande.
 
-## 0.4.1 — 2026-10-21 — *En revue*
+## 0.4.1 — 2026-10-21 — *Validée*
 - **EXD-10 / DEC-007 / DDR-0007** : panneau principal **centré sur la fenêtre** (option B) ; repli automatique en centrage dans l'espace restant quand la fenêtre est étroite ; largeur du panneau 1 440 px au plus ; la largeur maximale du contenu (1 320 px) est supprimée.
 - **EXD-11** : bouton de dépliage en **pictogramme seul** (44 px, nom accessible, info-bulle, état annoncé) ; pictogramme provisoire à confirmer.
 - Constat consigné : défilement horizontal entre 901 et 1 100 px avec la navigation dépliée, antérieur à cette version.
