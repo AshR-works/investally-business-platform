@@ -1,0 +1,284 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Cadrage de la session H1 — Habillage minimal et hub</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — cadrages · <a href="README.html">Index</a> · <a href="../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../design/05-AIDE-A-LA-DECISION.html">Aide à la décision</a></nav><h1>Cadrage de la session H1 — Habillage minimal et hub</h1>
+<p><strong>Date</strong> : 2026-10-21 · <strong>Statut</strong> : <strong>décidé le 2026-10-21</strong> (recommandations retenues) · <strong>Prochaine étape</strong> : ouverture de la branche <code>sprint/h1-habillage-hub</code>.</p>
+<blockquote><p>Méthode : <a href="../METHODE-D-ARBITRAGE.html">METHODE-D-ARBITRAGE.md</a>. <strong>Aucune décision n'est prise dans ce document</strong> : les recommandations sont des avis, la décision est celle de la direction produit.</p></blockquote>
+<h2>1. Objet et périmètre</h2>
+<p><strong>H1 — Habillage minimal et hub</strong> est la prochaine session (DEC-005 : Étape 0 → <strong>H1</strong> → H2 → S3.6 → cadrage UX → S4…). Elle installe le <strong>système de design validé (v0.4.1)</strong> dans l'application réelle : jetons, polices et logos hébergés, coque (rail de navigation, barre supérieure, panneau principal centré), thème clair/sombre, hub, bouton de dépliage en pictogramme.</p>
+<p><strong>Hors périmètre de H1</strong> : écrans d'authentification (H2), documents (S3.6), écrans métier (S4+), modules Stocks et Reporting, tout changement de règle de sécurité ou de logique métier.</p>
+<h2>2. Ce qui existe déjà (état vérifié)</h2>
+<div class="table-wrap"><table><thead><tr><th>Élément</th><th>État</th></tr></thead><tbody>
+<tr><td>Design validé</td><td>v0.4.1 dans <code>main</code> : prototype, jetons, spécification frontend, 26 captures</td></tr>
+<tr><td>Front</td><td>Next.js 16, React 19, une feuille <code>globals.css</code> (107 lignes), pas de Tailwind, pas d'icônes ni de polices hébergées</td></tr>
+<tr><td>Écrans réels</td><td>Connexion, MFA, invitation, mot de passe oublié, réinitialisation, Entreprises, Utilisateurs, Mon compte</td></tr>
+<tr><td>Droits dans l'interface</td><td>Profil <code>/auth/me/profile</code> ; menus conditionnés par les droits</td></tr>
+<tr><td>Accessibilité</td><td>Audit rejouable (<code>scripts/a11y-audit.mjs</code>) : 15 états à 0 violation ; titres de page ; fenêtres modales inertes</td></tr>
+<tr><td>Listes avec recherche</td><td>Entreprises et Utilisateurs (paramètre <code>search</code>)</td></tr>
+</tbody></table></div>
+<h2>3. Exigences appliquées (rappel)</h2>
+<p>EXD-01 (panneau), EXD-02 (sélection persistante), EXD-03 (pas de pastille Investudy, logo seulement dans la Formation), EXD-04 (Opportunités, cartes par 6 — écran S4.3), EXD-05 (hub), EXD-10 (panneau centré), EXD-11 (pictogramme de dépliage). Le document de design est mis à jour à chaque évolution.</p>
+<h2>4. Décisions à prendre avant de coder</h2>
+<div class="table-wrap"><table><thead><tr><th>N°</th><th>Question</th><th>Options</th><th>Ma recommandation</th></tr></thead><tbody>
+<tr><td>CAD-H1-1</td><td>Technique de style</td><td>A Tailwind v4 · B CSS structuré · C statu quo</td><td><strong>A</strong> (avec essai isolé)</td></tr>
+<tr><td>CAD-H1-2</td><td>Périmètre</td><td>A coque+hub · B + 3 écrans connectés · C tout</td><td><strong>A</strong></td></tr>
+<tr><td>CAD-H1-3</td><td>Contenu du hub</td><td>A actifs + « à venir » · B actifs seulement · C statu quo</td><td><strong>A</strong> (sans donnée fictive)</td></tr>
+<tr><td>CAD-H1-4</td><td>Recherche globale</td><td>A côté interface · B route dédiée · C différer</td><td><strong>A</strong></td></tr>
+</tbody></table></div>
+<p>Les fiches complètes suivent (gabarit de la méthode d'arbitrage).</p>
+<hr>
+<h3>CAD-H1-1 — Technique de style de l'interface</h3>
+<p><strong>Contexte.</strong> Le front n'a aucun framework de style : une seule feuille <code>globals.css</code> de 107 lignes. Le design v0.4.1 (validé) fournit des jetons CSS (<code>tokens.css</code>) et une correspondance Tailwind v4 (<code>tailwind-theme.css</code>). Il faut choisir comment le style entre dans l'application.</p>
+<p><strong>Déjà décidé, ne bouge pas.</strong> Jetons du design (clair et sombre), polices et logos hébergés (CSP <code>default-src 'self'</code>), aucune ressource externe, aucune logique de sécurité dans les composants (l'API décide).</p>
+<p><strong>Options.</strong></p>
+<p><strong>A. Tailwind CSS v4 piloté par les jetons</strong> — Installation de Tailwind, configuration par le CSS (<code>@theme</code>) vers les variables du design, classes utilitaires dans les composants (plan et spécification actuels).</p>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td>Avantages</td><td>Conforme à la spécification validée ; thème sombre par changement de variables ; très répandu, composants rapides à écrire ; fichiers de style qui ne grossissent pas.</td></tr>
+<tr><td>Inconvénients</td><td>Nouvelle dépendance de build ; versions très récentes (Tailwind v4 avec Next.js 16) ; classes longues dans le code.</td></tr>
+<tr><td>Impact UX</td><td>Rendu identique au prototype, cohérence garantie par les jetons.</td></tr>
+<tr><td>Impact métier</td><td>Aucun.</td></tr>
+<tr><td>Impact technique</td><td>Ajout de Tailwind et de son plugin PostCSS ; essai isolé avant migration ; versions épinglées.</td></tr>
+<tr><td>Impact maintenance</td><td>Une convention unique ; mises à jour de versions à suivre.</td></tr>
+<tr><td>Coût et délai</td><td>≈ 1 session (avec H1)</td></tr>
+<tr><td>Réversibilité</td><td>Moyenne : les classes sont dans tous les composants ; revenir en arrière = réécrire le style.</td></tr>
+</tbody></table></div>
+<p><strong>B. CSS classique structuré (jetons + feuilles par composant)</strong> — On garde <code>tokens.css</code> comme source des couleurs, et on écrit des feuilles CSS par composant (modules CSS de Next.js), sans Tailwind.</p>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td>Avantages</td><td>Aucune dépendance de plus ; jetons identiques ; transparence totale du CSS produit.</td></tr>
+<tr><td>Inconvénients</td><td>Écart avec la spécification validée ; plus de CSS à écrire et à relire ; risque de dérive entre écrans sans classes partagées.</td></tr>
+<tr><td>Impact UX</td><td>Identique si la discipline est tenue.</td></tr>
+<tr><td>Impact métier</td><td>Aucun.</td></tr>
+<tr><td>Impact technique</td><td>Feuilles par composant ; pas de nouvelle dépendance.</td></tr>
+<tr><td>Impact maintenance</td><td>Plus de fichiers de style à tenir cohérents.</td></tr>
+<tr><td>Coût et délai</td><td>≈ 1 à 1,3 session</td></tr>
+<tr><td>Réversibilité</td><td>Bonne : migration vers Tailwind possible composant par composant.</td></tr>
+</tbody></table></div>
+<p><strong>C. Statu quo : étendre <code>globals.css</code></strong> — On ajoute les jetons et les règles dans l'unique feuille existante.</p>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td>Avantages</td><td>Zéro nouveauté ; rapide au début.</td></tr>
+<tr><td>Inconvénients</td><td>La feuille devient ingérable dès les premiers écrans métier ; contraire à la spécification ; thème sombre et responsive coûteux.</td></tr>
+<tr><td>Impact UX</td><td>Risque d'incohérences visuelles.</td></tr>
+<tr><td>Impact métier</td><td>Aucun.</td></tr>
+<tr><td>Impact technique</td><td>Aucune.</td></tr>
+<tr><td>Impact maintenance</td><td>Dette qui croît à chaque écran.</td></tr>
+<tr><td>Coût et délai</td><td>&lt; 1 session</td></tr>
+<tr><td>Réversibilité</td><td>Facile à abandonner, mais la dette s'accumule.</td></tr>
+</tbody></table></div>
+<p><strong>Grille</strong> (notes de 1 à 5, 5 = favorable ; poids fixés avant notation ; totaux calculés).</p>
+<div class="table-wrap"><table><thead><tr><th>Critère (poids)</th><th>A</th><th>B</th><th>C</th></tr></thead><tbody>
+<tr><td>Valeur métier (5)</td><td>4</td><td>4</td><td>2</td></tr>
+<tr><td>Risque (favorable = faible) (5)</td><td>3</td><td>4</td><td>3</td></tr>
+<tr><td>Cohérence architecture / décisions (4)</td><td>5</td><td>3</td><td>1</td></tr>
+<tr><td>Réversibilité (4)</td><td>3</td><td>4</td><td>3</td></tr>
+<tr><td>Coût et délai (favorable = faible) (3)</td><td>3</td><td>3</td><td>5</td></tr>
+<tr><td><strong>Total sur 5</strong></td><td><strong>3,62</strong></td><td><strong>3,67</strong></td><td><strong>2,67</strong></td></tr>
+</tbody></table></div>
+<p><strong>Risques.</strong></p>
+<div class="table-wrap"><table><thead><tr><th>Risque</th><th>Probabilité</th><th>Impact</th><th>Parade</th></tr></thead><tbody>
+<tr><td>Tailwind v4 / Next.js 16 : incompatibilité ou bogue</td><td>Moyenne</td><td>Moyen</td><td>Essai isolé sur une page avant migration ; versions épinglées ; repli possible sur l'option B (jetons conservés)</td></tr>
+<tr><td>Dérive visuelle entre écrans</td><td>Moyenne</td><td>Moyen</td><td>Page de référence des composants + captures de référence comparées à chaque changement</td></tr>
+</tbody></table></div>
+<p><strong>Dette induite.</strong> A : dépendances à tenir à jour. B : discipline de nommage à maintenir. C : dette croissante.</p>
+<p><strong>Recommandation.</strong> <strong>A et B sont à égalité dans la grille (3,62 contre 3,67) : l'écart n'est pas significatif.</strong> Je recommande tout de même <strong>A</strong>, pour deux raisons que la grille ne capte pas : la spécification de design validée la prévoit, et le volume d'écrans à venir (une trentaine) rend les classes utilitaires plus économiques que des feuilles par composant. <strong>Condition</strong> : essai isolé réussi, sinon bascule sur B sans perdre les jetons. Ferait changer d'avis : un blocage de compatibilité Tailwind v4 / Next.js 16, ou votre préférence pour zéro dépendance de plus.</p>
+<p><strong>Décision (direction produit).</strong> ✅ <strong>Option A — Tailwind CSS v4 piloté par les jetons (essai isolé d'abord ; repli sur B si blocage)</strong> — décidé le 2026-10-21 par la direction produit (recommandation suivie).</p>
+<p><strong>Trace.</strong> À enregistrer dans <code>docs/QUESTIONS-ET-DECISIONS.md</code> (et, pour le design, dans <code>docs/design/decisions/</code>).</p>
+<hr>
+<h3>CAD-H1-2 — Périmètre de H1 (ce qui est restylé dans cette session)</h3>
+<p><strong>Contexte.</strong> DEC-005 prévoit un « H1 minimal » (coque et hub), puis H2 (authentification), puis chaque écran métier « né dans le nouveau style » (pas de H3 séparé). Il existe aujourd'hui trois écrans connectés (Entreprises, Utilisateurs, Mon compte) et six écrans d'accès.</p>
+<p><strong>Déjà décidé, ne bouge pas.</strong> Ordre Alternatif 1 (DEC-005) ; navigation B+ (DEC-002) ; panneau centré (DEC-007) ; bouton de dépliage en pictogramme (EXD-11).</p>
+<p><strong>Options.</strong></p>
+<p><strong>A. Coque et hub seulement (plan DEC-005)</strong> — Jetons, polices, logos, coque (rail, barre supérieure, panneau centré), hub, thème clair/sombre. Les écrans existants s'affichent dans la nouvelle coque, avec leur ancien contenu.</p>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td>Avantages</td><td>Session courte ; risque faible ; fidèle à DEC-005 ; la valeur visible arrive vite.</td></tr>
+<tr><td>Inconvénients</td><td>Cohabitation temporaire de la nouvelle coque et d'anciens contenus (rendu « mi-neuf »).</td></tr>
+<tr><td>Impact UX</td><td>Coque neuve, contenus hétérogènes jusqu'à H2 et S4.</td></tr>
+<tr><td>Impact métier</td><td>Aucun.</td></tr>
+<tr><td>Impact technique</td><td>Coque et jetons ; compatibilité des anciens écrans à vérifier.</td></tr>
+<tr><td>Impact maintenance</td><td>Un seul chantier à la fois.</td></tr>
+<tr><td>Coût et délai</td><td>≈ 1 session</td></tr>
+<tr><td>Réversibilité</td><td>Excellente.</td></tr>
+</tbody></table></div>
+<p><strong>B. Coque, hub et les trois écrans connectés existants</strong> — En plus : Entreprises, Utilisateurs et Mon compte sont restylés (ce que la spécification appelait H3).</p>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td>Avantages</td><td>Application cohérente pour les écrans connectés dès la fin de H1.</td></tr>
+<tr><td>Inconvénients</td><td>Écarte DEC-005 (« pas de H3 séparé ») ; Entreprises sera refaite en S4.1 : travail en partie perdu.</td></tr>
+<tr><td>Impact UX</td><td>Cohérence immédiate des écrans connectés.</td></tr>
+<tr><td>Impact métier</td><td>Aucun.</td></tr>
+<tr><td>Impact technique</td><td>Davantage de composants à écrire (tableaux, formulaires, fenêtres).</td></tr>
+<tr><td>Impact maintenance</td><td>Composants communs utiles ensuite.</td></tr>
+<tr><td>Coût et délai</td><td>≈ 1,6 session</td></tr>
+<tr><td>Réversibilité</td><td>Bonne.</td></tr>
+</tbody></table></div>
+<p><strong>C. Tout : coque, hub, écrans connectés et écrans d'accès</strong> — H1 et H2 fusionnés, sans l'endpoint d'historique.</p>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td>Avantages</td><td>Application entièrement dans le nouveau style.</td></tr>
+<tr><td>Inconvénients</td><td>Grosse session, recette large, risque de régression sur les écrans de sécurité (MFA, réinitialisation).</td></tr>
+<tr><td>Impact UX</td><td>Cohérence totale.</td></tr>
+<tr><td>Impact métier</td><td>Aucun.</td></tr>
+<tr><td>Impact technique</td><td>Touche les parcours de sécurité.</td></tr>
+<tr><td>Impact maintenance</td><td>Un seul gros lot.</td></tr>
+<tr><td>Coût et délai</td><td>≈ 2,5 sessions</td></tr>
+<tr><td>Réversibilité</td><td>Moyenne.</td></tr>
+</tbody></table></div>
+<p><strong>Grille</strong> (notes de 1 à 5, 5 = favorable ; poids fixés avant notation ; totaux calculés).</p>
+<div class="table-wrap"><table><thead><tr><th>Critère (poids)</th><th>A</th><th>B</th><th>C</th></tr></thead><tbody>
+<tr><td>Valeur métier (5)</td><td>3</td><td>4</td><td>4</td></tr>
+<tr><td>Risque (favorable = faible) (5)</td><td>4</td><td>3</td><td>2</td></tr>
+<tr><td>Cohérence architecture / décisions (4)</td><td>5</td><td>3</td><td>2</td></tr>
+<tr><td>Réversibilité (4)</td><td>5</td><td>4</td><td>3</td></tr>
+<tr><td>Coût et délai (favorable = faible) (3)</td><td>5</td><td>3</td><td>1</td></tr>
+<tr><td><strong>Total sur 5</strong></td><td><strong>4,29</strong></td><td><strong>3,43</strong></td><td><strong>2,52</strong></td></tr>
+</tbody></table></div>
+<p><strong>Risques.</strong></p>
+<div class="table-wrap"><table><thead><tr><th>Risque</th><th>Probabilité</th><th>Impact</th><th>Parade</th></tr></thead><tbody>
+<tr><td>Rendu « mi-neuf » mal perçu</td><td>Moyenne</td><td>Faible</td><td>Communiquer l'état ; les écrans suivent en H2 et S4</td></tr>
+<tr><td>Régression visuelle ou fonctionnelle des écrans existants</td><td>Moyenne</td><td>Moyen</td><td>Recette des 8 écrans rejouée, axe-core relancé (<code>scripts/a11y-audit.mjs</code>), 24 tests web</td></tr>
+</tbody></table></div>
+<p><strong>Dette induite.</strong> A : cohabitation temporaire (à tracer). B : composants d'Entreprises à refaire en S4.1. C : lot trop gros.</p>
+<p><strong>Recommandation.</strong> Option <strong>A</strong>, conforme à votre décision DEC-005 et au principe « ne pas dépenser sur des écrans qui seront refaits ». Ferait changer d'avis : si la démonstration à des tiers avant H2 exige des écrans connectés cohérents (alors B).</p>
+<p><strong>Décision (direction produit).</strong> ✅ <strong>Option A — coque et hub seulement</strong> — décidé le 2026-10-21 par la direction produit (recommandation suivie).</p>
+<p><strong>Trace.</strong> À enregistrer dans <code>docs/QUESTIONS-ET-DECISIONS.md</code> (et, pour le design, dans <code>docs/design/decisions/</code>).</p>
+<hr>
+<h3>CAD-H1-3 — Contenu réel du hub (Vue d'ensemble)</h3>
+<p><strong>Contexte.</strong> Dans le prototype, le hub montre des tuiles de modules, des indicateurs et la recherche, avec des <strong>données fictives</strong>. Dans l'application, seuls existent : Entreprises, Utilisateurs (administration) et Mon compte. Les autres modules (Opportunités, Formation, Finance, Stocks, Reporting…) n'existent pas encore.</p>
+<p><strong>Déjà décidé, ne bouge pas.</strong> Le hub est le point d'entrée et la seule page à navigation complète (DEC-002, EXD-05). <strong>Aucune donnée fictive ne doit sortir du prototype</strong> (spécification §8) ; les menus restent conditionnés par les droits du profil et re-contrôlés par le serveur.</p>
+<p><strong>Options.</strong></p>
+<p><strong>A. Modules disponibles actifs, modules à venir visibles mais inactifs</strong> — Tuiles actives pour ce qui existe (selon les droits) ; les modules futurs apparaissent grisés avec la mention « À venir », sans lien.</p>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td>Avantages</td><td>Montre la trajectoire du produit ; la navigation complète est déjà en place ; aucun lien mort.</td></tr>
+<tr><td>Inconvénients</td><td>Éléments inactifs à l'écran (risque de frustration) ; liste de modules à maintenir.</td></tr>
+<tr><td>Impact UX</td><td>Vue d'ensemble lisible et honnête.</td></tr>
+<tr><td>Impact métier</td><td>Donne de la visibilité aux utilisateurs sur la feuille de route.</td></tr>
+<tr><td>Impact technique</td><td>Liste des modules avec drapeau « disponible », filtrée par droits.</td></tr>
+<tr><td>Impact maintenance</td><td>Mettre à jour le drapeau à chaque module livré.</td></tr>
+<tr><td>Coût et délai</td><td>≈ 0,3 session</td></tr>
+<tr><td>Réversibilité</td><td>Excellente.</td></tr>
+</tbody></table></div>
+<p><strong>B. Uniquement les modules disponibles</strong> — Le hub n'affiche que ce qui fonctionne et que l'utilisateur a le droit d'ouvrir.</p>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td>Avantages</td><td>Aucun élément inactif ; plus simple ; aucune promesse.</td></tr>
+<tr><td>Inconvénients</td><td>Hub très pauvre au début (2 à 3 tuiles) ; la vision d'ensemble disparaît.</td></tr>
+<tr><td>Impact UX</td><td>Sobre, un peu vide.</td></tr>
+<tr><td>Impact métier</td><td>Aucun.</td></tr>
+<tr><td>Impact technique</td><td>Liste filtrée par droits.</td></tr>
+<tr><td>Impact maintenance</td><td>Ajouter une tuile à chaque module.</td></tr>
+<tr><td>Coût et délai</td><td>≈ 0,2 session</td></tr>
+<tr><td>Réversibilité</td><td>Excellente.</td></tr>
+</tbody></table></div>
+<p><strong>C. Statu quo : pas de hub, la page d'accueil reste la liste des entreprises</strong> — On ne construit pas le hub en H1.</p>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td>Avantages</td><td>Rien à faire.</td></tr>
+<tr><td>Inconvénients</td><td>Contredit EXD-05 et DEC-002 ; pas de point d'entrée de navigation complète.</td></tr>
+<tr><td>Impact UX</td><td>Navigation incomplète.</td></tr>
+<tr><td>Impact métier</td><td>Aucun.</td></tr>
+<tr><td>Impact technique</td><td>Aucune.</td></tr>
+<tr><td>Impact maintenance</td><td>Aucune.</td></tr>
+<tr><td>Coût et délai</td><td>0</td></tr>
+<tr><td>Réversibilité</td><td>Excellente.</td></tr>
+</tbody></table></div>
+<p><strong>Grille</strong> (notes de 1 à 5, 5 = favorable ; poids fixés avant notation ; totaux calculés).</p>
+<div class="table-wrap"><table><thead><tr><th>Critère (poids)</th><th>A</th><th>B</th><th>C</th></tr></thead><tbody>
+<tr><td>Valeur métier (5)</td><td>4</td><td>3</td><td>1</td></tr>
+<tr><td>Risque (favorable = faible) (5)</td><td>4</td><td>5</td><td>4</td></tr>
+<tr><td>Cohérence architecture / décisions (4)</td><td>5</td><td>4</td><td>1</td></tr>
+<tr><td>Réversibilité (4)</td><td>5</td><td>5</td><td>5</td></tr>
+<tr><td>Coût et délai (favorable = faible) (3)</td><td>4</td><td>5</td><td>5</td></tr>
+<tr><td><strong>Total sur 5</strong></td><td><strong>4,38</strong></td><td><strong>4,33</strong></td><td><strong>3,05</strong></td></tr>
+</tbody></table></div>
+<p><strong>Risques.</strong></p>
+<div class="table-wrap"><table><thead><tr><th>Risque</th><th>Probabilité</th><th>Impact</th><th>Parade</th></tr></thead><tbody>
+<tr><td>Données fictives affichées par erreur</td><td>Faible</td><td>Moyen</td><td>Aucun indicateur chiffré tant qu'il n'existe pas de source réelle ; revue des captures</td></tr>
+<tr><td>Fuite d'existence de modules non autorisés</td><td>Faible</td><td>Faible</td><td>Tuiles filtrées par droits, le serveur re-contrôle toujours</td></tr>
+</tbody></table></div>
+<p><strong>Dette induite.</strong> A : drapeaux de disponibilité à tenir à jour à chaque livraison de module.</p>
+<p><strong>Recommandation.</strong> Option <strong>A</strong>. Elle respecte vos exigences (hub = navigation complète) sans donnée fictive. <strong>Sous-décision à votre main</strong> : les indicateurs du prototype (chiffres, rendez-vous du jour) ne sont <strong>pas</strong> affichés tant que leur source n'existe pas.</p>
+<p><strong>Décision (direction produit).</strong> ✅ <strong>Option A — modules disponibles actifs, modules à venir visibles mais inactifs, aucune donnée fictive</strong> — décidé le 2026-10-21 par la direction produit (recommandation suivie).</p>
+<p><strong>Trace.</strong> À enregistrer dans <code>docs/QUESTIONS-ET-DECISIONS.md</code> (et, pour le design, dans <code>docs/design/decisions/</code>).</p>
+<hr>
+<h3>CAD-H1-4 — Recherche globale du hub</h3>
+<p><strong>Contexte.</strong> EXD-05 demande une recherche globale (entreprises, contacts, offres, formations, sessions, utilisateurs, documents, rapports) respectant les droits. Aujourd'hui, seules deux listes existent : entreprises et utilisateurs, et <strong>toutes deux acceptent déjà un paramètre <code>search</code></strong> et appliquent les droits côté serveur.</p>
+<p><strong>Déjà décidé, ne bouge pas.</strong> La recherche ne doit jamais montrer un objet que l'utilisateur n'a pas le droit de voir (le serveur décide, objet hors portée = introuvable).</p>
+<p><strong>Options.</strong></p>
+<p><strong>A. Recherche côté interface sur les listes existantes</strong> — Le hub interroge en parallèle les listes entreprises et utilisateurs (selon les droits du profil) et regroupe les résultats par type.</p>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td>Avantages</td><td>Aucune nouvelle route ; droits hérités des routes existantes ; livrable dans H1.</td></tr>
+<tr><td>Inconvénients</td><td>Une requête par type (2 aujourd'hui, 8 à terme) ; logique de regroupement côté client ; à remplacer par un vrai service plus tard.</td></tr>
+<tr><td>Impact UX</td><td>Résultats groupés, ⌘K ; un peu plus lent avec beaucoup de types.</td></tr>
+<tr><td>Impact métier</td><td>Couvre les deux seuls types qui existent.</td></tr>
+<tr><td>Impact technique</td><td>Appels parallèles, annulation des requêtes périmées, limitation du débit côté interface.</td></tr>
+<tr><td>Impact maintenance</td><td>Code jetable à remplacer.</td></tr>
+<tr><td>Coût et délai</td><td>≈ 0,3 session</td></tr>
+<tr><td>Réversibilité</td><td>Excellente.</td></tr>
+</tbody></table></div>
+<p><strong>B. Route de recherche dédiée côté API</strong> — Nouvelle route protégée qui interroge chaque module autorisé et renvoie des résultats groupés.</p>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td>Avantages</td><td>Conception définitive ; une seule requête ; audit et limitation centralisés.</td></tr>
+<tr><td>Inconvénients</td><td>Nouvelle surface d'attaque et nouveau contrat à tenir ; ne sert pas encore (2 types seulement) ; risque de fuite entre types si mal conçue.</td></tr>
+<tr><td>Impact UX</td><td>Meilleure à terme.</td></tr>
+<tr><td>Impact métier</td><td>Aucun avant S4.</td></tr>
+<tr><td>Impact technique</td><td>Nouveau module transverse, tests de droits par type et par rôle.</td></tr>
+<tr><td>Impact maintenance</td><td>Un contrat à faire évoluer avec chaque module.</td></tr>
+<tr><td>Coût et délai</td><td>≈ 1 session</td></tr>
+<tr><td>Réversibilité</td><td>Moyenne.</td></tr>
+</tbody></table></div>
+<p><strong>C. Différer la recherche globale (champ absent du hub en H1)</strong> — Le hub est livré sans recherche ; elle arrive avec S4.1 (contacts) ou plus tard.</p>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td>Avantages</td><td>H1 plus court ; aucun code à jeter.</td></tr>
+<tr><td>Inconvénients</td><td>Fonction centrale d'EXD-05 absente du premier hub.</td></tr>
+<tr><td>Impact UX</td><td>Hub moins utile.</td></tr>
+<tr><td>Impact métier</td><td>Aucun.</td></tr>
+<tr><td>Impact technique</td><td>Aucune.</td></tr>
+<tr><td>Impact maintenance</td><td>Aucune.</td></tr>
+<tr><td>Coût et délai</td><td>0</td></tr>
+<tr><td>Réversibilité</td><td>Excellente.</td></tr>
+</tbody></table></div>
+<p><strong>Grille</strong> (notes de 1 à 5, 5 = favorable ; poids fixés avant notation ; totaux calculés).</p>
+<div class="table-wrap"><table><thead><tr><th>Critère (poids)</th><th>A</th><th>B</th><th>C</th></tr></thead><tbody>
+<tr><td>Valeur métier (5)</td><td>3</td><td>4</td><td>1</td></tr>
+<tr><td>Risque (favorable = faible) (5)</td><td>4</td><td>3</td><td>5</td></tr>
+<tr><td>Cohérence architecture / décisions (4)</td><td>3</td><td>4</td><td>2</td></tr>
+<tr><td>Réversibilité (4)</td><td>5</td><td>3</td><td>5</td></tr>
+<tr><td>Coût et délai (favorable = faible) (3)</td><td>4</td><td>2</td><td>5</td></tr>
+<tr><td><strong>Total sur 5</strong></td><td><strong>3,76</strong></td><td><strong>3,29</strong></td><td><strong>3,48</strong></td></tr>
+</tbody></table></div>
+<p><strong>Risques.</strong></p>
+<div class="table-wrap"><table><thead><tr><th>Risque</th><th>Probabilité</th><th>Impact</th><th>Parade</th></tr></thead><tbody>
+<tr><td>Fuite d'informations entre types (option B)</td><td>Faible</td><td>Élevé</td><td>Tests de droits par rôle et par type (comme la matrice RBAC) avant mise en ligne</td></tr>
+<tr><td>Surcharge par requêtes parallèles (option A)</td><td>Faible</td><td>Faible</td><td>Seuil minimal de caractères, délai de frappe, limitation du débit</td></tr>
+</tbody></table></div>
+<p><strong>Dette induite.</strong> A : code d'agrégation à remplacer. B : contrat de recherche à maintenir. C : fonction attendue manquante.</p>
+<p><strong>Recommandation.</strong> Option <strong>A</strong> : elle livre la fonction demandée pour les types existants sans ajouter de surface d'attaque, (la note de C est abaissée en valeur et en cohérence car C ne satisfait pas EXD-05, exigence obligatoire ; sans cette réserve, C passerait devant) et prépare B quand 4 types ou plus existeront (S4.1 à S5). Ferait changer d'avis : un besoin de recherche transversale au texte intégral.</p>
+<p><strong>Décision (direction produit).</strong> ✅ <strong>Option A — recherche côté interface sur les listes existantes (entreprises, utilisateurs)</strong> — décidé le 2026-10-21 par la direction produit (recommandation suivie).</p>
+<p><strong>Trace.</strong> À enregistrer dans <code>docs/QUESTIONS-ET-DECISIONS.md</code> (et, pour le design, dans <code>docs/design/decisions/</code>).</p>
+<hr>
+<h2>5. Plan de réalisation proposé (si les recommandations sont retenues)</h2>
+<ol><li><strong>Essai isolé</strong> : Tailwind v4 + jetons sur une page de référence (composants, clair et sombre). Point d'arrêt si incompatibilité.</li><li><strong>Fondations</strong> : jetons, polices et logos hébergés, thème (suit l'appareil + bascule mémorisée).</li><li><strong>Coque</strong> : rail compact / navigation complète, panneau centré (option B de DEC-007), bouton pictogramme, barre supérieure, menus selon les droits.</li><li><strong>Hub</strong> : tuiles des modules disponibles, modules « à venir » inactifs, recherche globale sur entreprises et utilisateurs, ⌘K.</li><li><strong>Compatibilité</strong> des écrans existants dans la nouvelle coque.</li><li><strong>Preuves</strong> : tests web, typage, axe-core (<code>scripts/a11y-audit.mjs</code>), captures comparées au prototype, parcours rejoués dans un navigateur réel, vérification CSP.</li><li><strong>Documents</strong> : recette <code>SPRINT-H1-RECETTE.md</code>, index des fonctions, <strong>mise à jour du document de design</strong> (version, journal, captures).</li></ol>
+<h2>6. Prérequis et risques de la session</h2>
+<div class="table-wrap"><table><thead><tr><th>Prérequis / risque</th><th>Statut</th></tr></thead><tbody>
+<tr><td>Logos : fichiers fournis (PNG) ; SVG officiels attendus avant mise en ligne</td><td>Dette connue</td></tr>
+<tr><td>Écoute avec un vrai lecteur d'écran (dette D31)</td><td>À faire par une personne, idéalement avant H2</td></tr>
+<tr><td>Largeur 901–1 100 px : défilement horizontal préexistant avec navigation dépliée</td><td>À traiter dans H1 si le périmètre l'inclut (tableaux)</td></tr>
+<tr><td>Aucun changement de règle de sécurité</td><td>Vérifié par les tests existants (API non touchée)</td></tr>
+</tbody></table></div>
+<h2>7. Critères de réussite (recette)</h2>
+<ul><li>Parcours réels rejoués : connexion → MFA → hub → Entreprises → Utilisateurs → Mon compte, en clair et en sombre.</li><li>0 violation axe-core sur les états audités, focus visible, navigation au clavier du rail et du bouton de dépliage.</li><li>Contrastes AA mesurés ; panneau centré à 2 200, 1 700 et 1 360 px.</li><li>Aucune ressource externe (CSP intacte), aucune donnée fictive.</li><li>Tests : 24 tests web minimum + nouveaux tests des composants clés.</li></ul></main></body></html>

@@ -33,8 +33,8 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td><strong>S3.1</strong> Authentification</td><td><code>sprint/s3-1-authentication</code></td><td>10-20 20 h 50</td><td>10-20 20 h 54 (<code>dd21841</code>)</td><td><code>s3-1-validated</code></td><td>✅ « Je valide S3.1, passe à S3.2 »</td></tr>
 <tr><td><strong>S3.2</strong> Second facteur</td><td><code>sprint/s3-2-mfa</code></td><td>10-20 21 h 24</td><td>10-20 21 h 31 (<code>43f35ea</code>)</td><td><code>s3-2-validated</code></td><td>✅ « Je valide S3.2, passe à S3.3 »</td></tr>
 <tr><td><strong>S3.3</strong> Autorisation et administration</td><td><code>sprint/s3-3-authorization</code></td><td>10-20 21 h 43 → 22 h 05</td><td>10-20 22 h 15 (<code>420456b</code>)</td><td><code>s3-3-validated</code></td><td>✅ « Je valide S3.3, passe à S3.4 »</td></tr>
-<tr><td><strong>S3.4</strong> Interface de base</td><td><code>sprint/s3-4-front</code></td><td>10-20 22 h 40 → 22 h 58</td><td><strong>en attente</strong></td><td>—</td><td>⏳ <strong>validation attendue</strong></td></tr>
-<tr><td><strong>S3.5</strong> Mot de passe oublié, commentaires, livrables</td><td><code>sprint/s3-5-password-reset</code></td><td>10-21 05 h 39</td><td><strong>en attente</strong> (après S3.4)</td><td>—</td><td>⏳ <strong>validation attendue</strong></td></tr>
+<tr><td><strong>S3.4</strong> Interface de base</td><td><code>sprint/s3-4-front</code></td><td>10-20 22 h 40 → 22 h 58</td><td><strong>fusionnée</strong> (<code>s3-4-validated</code>)</td><td>—</td><td>✅ <strong>validée 2026-10-21</strong></td></tr>
+<tr><td><strong>S3.5</strong> Mot de passe oublié, commentaires, livrables</td><td><code>sprint/s3-5-password-reset</code></td><td>10-21 05 h 39</td><td><strong>fusionnée</strong> (<code>s3-5-validated</code>)</td><td>—</td><td>✅ <strong>validée 2026-10-21</strong></td></tr>
 </tbody></table></div>
 <blockquote><p><strong>Commentaire</strong> — Les dates de commits ne mesurent pas l'effort : chaque session regroupe de longs échanges, des recettes et des corrections avant le commit final. Elles prouvent en revanche l'<strong>ordre</strong> et la <strong>traçabilité</strong> : aucune fusion sans validation écrite, aucune branche sautée. Le plan annonçait « 1 semaine maximum par sprint » ; l'ensemble tient ici en <strong>moins de deux jours calendaires</strong> parce que le rythme réel a été celui des validations successives de l'ingénieur.</p></blockquote>
 <p><strong>Règles de conduite tenues depuis S0</strong></p>
@@ -94,7 +94,7 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td><strong>Preuves</strong></td><td><strong>353 unitaires + 130 intégration</strong> · test qui parcourt <strong>toutes</strong> les routes · matrice 10 rôles × 16 routes · 8 mutations détectées · parcours réel sur le serveur compilé</td></tr>
 <tr><td><strong>Validation</strong></td><td>« Je valide S3.3, passe à S3.4 »</td></tr>
 </tbody></table></div>
-<h3>S3.4 — Interface de base (2026-10-20, 22 h 40 → 22 h 58) — <strong>en attente de validation</strong></h3>
+<h3>S3.4 — Interface de base (2026-10-20, 22 h 40 → 22 h 58) — <strong>validée le 2026-10-21 (tag <code>s3-4-validated</code>)</strong></h3>
 <div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
 <tr><td><strong>Livré</strong></td><td>Connexion, second facteur (QR généré dans le navigateur), codes de secours, activation d'invitation, administration des utilisateurs, mon compte (mot de passe, codes, sessions), en-têtes de sécurité</td></tr>
 <tr><td><strong>Défaut grave trouvé</strong></td><td><strong>Un mauvais code MFA était compté deux fois</strong> contre le verrouillage (le client rejouait la requête). Invisible aux tests automatiques ; trouvé en lisant le journal réseau d'un vrai navigateur ; corrigé des deux côtés</td></tr>
@@ -102,7 +102,7 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td><strong>Preuves</strong></td><td>353 + 132 (API) · <strong>24</strong> (interface) · 4 mutations détectées · parcours réels dans un navigateur (dont le <strong>step-up réel</strong> après 10 min)</td></tr>
 <tr><td><strong>Reste</strong></td><td>Validation de l'ingénieur ; D16 (MFA récent pour changer un responsable) à trancher</td></tr>
 </tbody></table></div>
-<h3>S3.5 — Mot de passe oublié, commentaires et livrables (2026-10-21) — <strong>en attente de validation</strong></h3>
+<h3>S3.5 — Mot de passe oublié, commentaires et livrables (2026-10-21) — <strong>validée le 2026-10-21 (tag <code>s3-5-validated</code>)</strong></h3>
 <div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
 <tr><td><strong>Déclencheur</strong></td><td>« Rajouter le parcours mot de passe est-il pertinent ? » → « Quelle est la méthode actuelle ? » (<strong>aucune</strong>) → « Allons-y » → <strong>« Rajoute un bouton mot de passe oublié qui devra s'exécuter de manière sécurisée et traçable »</strong></td></tr>
 <tr><td><strong>Autres demandes</strong></td><td>« Fais des livrables pour récapituler les réalisations avec commentaires, rajoute des commentaires sur les différentes fonctions » · <strong>« Produis des livrables présentant l'état des réalisations et le suivi des sessions »</strong> (le présent document)</td></tr>
