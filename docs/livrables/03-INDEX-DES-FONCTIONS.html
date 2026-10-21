@@ -23,7 +23,7 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 @media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
 </style></head><body><main><nav class="top">Investally Business Platform — livrables · <a href="01-RECAPITULATIF-REALISATIONS.html">Récapitulatif</a> · <a href="02-GUIDE-DU-CODE.html">Guide du code</a> · <a href="03-INDEX-DES-FONCTIONS.html">Index des fonctions</a> · <a href="04-SUIVI-DES-SESSIONS.html">Suivi des sessions</a> · <a href="05-ETAT-D-AVANCEMENT.html">État d&#8217;avancement</a> · <a href="06-BESOINS-STYLE-GRAPHIQUE.html">Style graphique</a></nav><h1>Index des fonctions et composants (généré)</h1>
 <blockquote><p>Document <strong>généré</strong> par <code>node scripts/gen-function-index.mjs</code> à partir des commentaires du code. Ne pas le modifier à la main : corriger le commentaire dans le fichier source, puis relancer le script.</p></blockquote>
-<p><strong>535 déclarations commentées au total.</strong></p>
+<p><strong>536 déclarations commentées au total.</strong></p>
 <h2>API (NestJS) — 459 déclarations commentées</h2>
 <h3><code>app.module.ts</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
@@ -867,14 +867,18 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td><code>export default function ResetPasswordPage()</code></td><td>Page ouverte depuis le lien reçu par e-mail.</td></tr>
 <tr><td><code>async function submit(event: FormEvent)</code></td><td>Envoie le jeton et le nouveau mot de passe ; le serveur coupe toutes les sessions, l'utilisateur doit se reconnecter avec son second facteur.</td></tr>
 </tbody></table></div>
-<h2>Interface web — composants — 4 déclarations commentées</h2>
+<h2>Interface web — composants — 5 déclarations commentées</h2>
 <h3><code>gate.tsx</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
 <tr><td><code>export function Gate({ allow, children }: { allow: readonly Exclude&lt;AuthStatus, 'loading'&gt;[]; children: ReactNode })</code></td><td>Laisse passer uniquement les états attendus ; sinon redirige vers l'écran qui correspond à l'état réel.</td></tr>
 </tbody></table></div>
 <h3><code>modal.tsx</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
-<tr><td><code>export function Modal({ title, onClose, children }: { title: string; onClose: () =&gt; void; children: ReactNode })</code></td><td>Fenêtre modale accessible : Échap ferme, le focus entre dans la fenêtre, le fond est inerte pour les lecteurs d'écran.</td></tr>
+<tr><td><code>export function Modal({ title, onClose, children }: { title: string; onClose: () =&gt; void; children: ReactNode })</code></td><td>Fenêtre modale accessible : Échap ferme, le focus entre dans la fenêtre, le fond est rendu inerte (<code>inert</code>), Tab reste dans la fenêtre et le focus revient à l'élément d'origine à la fermeture.</td></tr>
+</tbody></table></div>
+<h3><code>page-heading.tsx</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export function PageHeading({ children, title }: { children: string; title?: string })</code></td><td>Titre de page (<code>h1</code>) qui renseigne aussi le titre du document : le lecteur d'écran l'annonce à chaque changement de page (WCAG 2.4.2) et l'onglet du navigateur dit où l'on se trouve.</td></tr>
 </tbody></table></div>
 <h3><code>step-up-dialog.tsx</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>

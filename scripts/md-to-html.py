@@ -141,7 +141,8 @@ def main():
     nav_design = design_nav('')
     docs_root = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'docs')
     nav_root = 'Investally Business Platform — méthode · <a href="design/05-AIDE-A-LA-DECISION.html">Aide à la décision</a>'
-    for folder, nav, only in ((ROOT, nav_livrables, None), (design, nav_design, None), (os.path.join(design, 'exigences'), design_nav('../'), None), (os.path.join(design, 'decisions'), design_nav('../'), None), (docs_root, nav_root, ('METHODE-D-ARBITRAGE.md',))):
+    nav_cadrages = 'Investally Business Platform — cadrages · <a href="README.html">Index</a> · <a href="../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../design/05-AIDE-A-LA-DECISION.html">Aide à la décision</a>'
+    for folder, nav, only in ((ROOT, nav_livrables, None), (design, nav_design, None), (os.path.join(design, 'exigences'), design_nav('../'), None), (os.path.join(design, 'decisions'), design_nav('../'), None), (os.path.join(docs_root, 'cadrages'), nav_cadrages, None), (docs_root, nav_root, ('METHODE-D-ARBITRAGE.md',))):
         for name in sorted(n for n in os.listdir(folder) if n.endswith('.md') and (only is None or n in only)):
             md = open(os.path.join(folder, name), encoding='utf-8').read()
             title = re.search(r'^# (.+)$', md, re.M)

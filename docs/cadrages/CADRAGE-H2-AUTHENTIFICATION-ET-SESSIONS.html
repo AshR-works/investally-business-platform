@@ -1,0 +1,218 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Cadrage de la session H2 — Authentification complète et sessions</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — cadrages · <a href="README.html">Index</a> · <a href="../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../design/05-AIDE-A-LA-DECISION.html">Aide à la décision</a></nav><h1>Cadrage de la session H2 — Authentification complète et sessions</h1>
+<p><strong>Date</strong> : 2026-10-21 · <strong>Statut</strong> : à décider · <strong>Dépend de</strong> : H1.</p>
+<blockquote><p>Méthode : <a href="../METHODE-D-ARBITRAGE.html">METHODE-D-ARBITRAGE.md</a>. <strong>Aucune décision n'est prise dans ce document</strong> : les recommandations sont des avis, la décision est celle de la direction produit.</p></blockquote>
+<h2>1. Objet et périmètre</h2>
+<p><strong>H2 — Authentification complète et sessions</strong> applique le nouveau style à tous les écrans d'accès et ajoute l'<strong>historique des connexions</strong> (seule nouvelle route de l'API). Elle suit H1 et précède S3.6 (DEC-005).</p>
+<p><strong>Hors périmètre</strong> : changement des règles d'authentification (argon2id, MFA obligatoire, verrouillage progressif, durées de vie), nouveau mode de connexion, portail apprenant.</p>
+<h2>2. État de départ (vérifié)</h2>
+<div class="table-wrap"><table><thead><tr><th>Élément</th><th>État</th></tr></thead><tbody>
+<tr><td>Écrans</td><td>Connexion, MFA (saisie, enrôlement avec QR, codes de secours), invitation, mot de passe oublié, réinitialisation, Mon compte avec ses sessions</td></tr>
+<tr><td>API</td><td><code>auth/sessions</code> (mes sessions, révocation), reset et invitation, step-up ; <strong>aucune route d'historique</strong></td></tr>
+<tr><td>Sources d'historique</td><td><code>audit.audit_logs</code> (LOGIN, LOGIN_FAILED, IP, appareil) ; <code>iam.login_attempts</code> (e-mail, IP, résultat)</td></tr>
+<tr><td>Accessibilité</td><td>Audit à 0 violation ; écoute humaine non faite (D31)</td></tr>
+</tbody></table></div>
+<h2>3. Les 18 écrans</h2>
+<p>Liste de référence : <code>docs/design/04-ANALYSE-D-IMPACT.md</code> §4.1 (A01 à A18). Enjeux UX : anti-énumération, QR et codes affichés une seule fois, reprise d'enrôlement, états d'erreur explicites (code périmé, compte verrouillé, limite de débit), lisibilité mobile.</p>
+<h2>4. Décisions à prendre avant de coder</h2>
+<div class="table-wrap"><table><thead><tr><th>N°</th><th>Question</th><th>Options</th><th>Ma recommandation</th></tr></thead><tbody>
+<tr><td>CAD-H2-1</td><td>Source de l'historique</td><td>A journal d'audit · B <code>login_attempts</code> · C nouvelle table · D pas d'historique</td><td><strong>A</strong></td></tr>
+<tr><td>CAD-H2-2</td><td>Qui voit l'historique</td><td>A le sien · B + SuperAdmin avec step-up · C + rôle Sécurité</td><td><strong>A</strong></td></tr>
+<tr><td>CAD-H2-3</td><td>Découpage</td><td>A un lot · B deux lots (H2a / H2b)</td><td><strong>B</strong></td></tr>
+</tbody></table></div>
+<hr>
+<h3>CAD-H2-1 — Source de l'historique des connexions</h3>
+<p><strong>Contexte.</strong> EXD-06 exige un écran « historique des connexions » (date, adresse IP, appareil, résultat). Il n'existe <strong>aucune route</strong> qui le fournit. Trois sources de données existent : le journal d'audit (<code>audit.audit_logs</code>, actions <code>LOGIN</code> et <code>LOGIN_FAILED</code>, avec IP et appareil, ajout seul, 10 ans), la table <code>iam.login_attempts</code> (anti-force-brute : e-mail, IP, résultat, sans appareil) et rien d'autre.</p>
+<p><strong>Déjà décidé, ne bouge pas.</strong> Le journal d'audit est la source de vérité des actions sensibles et reste en ajout seul. Les messages d'erreur d'authentification restent identiques (anti-énumération).</p>
+<p><strong>Options.</strong></p>
+<p><strong>A. Lire le journal d'audit (connexions de l'utilisateur)</strong> — Nouvelle route « mon historique » qui lit <code>audit_logs</code> filtré sur l'utilisateur et les actions de connexion.</p>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td>Avantages</td><td>Aucune nouvelle table ; contient déjà IP et appareil ; conservation longue ; index <code>(user_id, created_at)</code> existant.</td></tr>
+<tr><td>Inconvénients</td><td>Mélange lecture applicative et table d'audit partitionnée ; il faut borner la période et la taille ; dépend du format des lignes d'audit.</td></tr>
+<tr><td>Impact UX</td><td>Historique complet et fiable, avec appareil.</td></tr>
+<tr><td>Impact métier</td><td>Cohérent avec la traçabilité exigée.</td></tr>
+<tr><td>Impact technique</td><td>Un cas d'usage de lecture, pagination, bornes de dates ; à vérifier : les échecs pour un compte connu portent bien l'identifiant utilisateur.</td></tr>
+<tr><td>Impact maintenance</td><td>Lié au schéma d'audit.</td></tr>
+<tr><td>Coût et délai</td><td>≈ 0,5 session</td></tr>
+<tr><td>Réversibilité</td><td>Bonne (route remplaçable).</td></tr>
+</tbody></table></div>
+<p><strong>B. Lire <code>iam.login_attempts</code></strong> — La route lit la table de contrôle anti-force-brute.</p>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td>Avantages</td><td>Table déjà dédiée à l'authentification ; requêtes simples.</td></tr>
+<tr><td>Inconvénients</td><td>Pas d'appareil ; vocation technique (peut être purgée) ; couplée à la logique de verrouillage.</td></tr>
+<tr><td>Impact UX</td><td>Historique incomplet (pas d'appareil).</td></tr>
+<tr><td>Impact métier</td><td>Faible.</td></tr>
+<tr><td>Impact technique</td><td>Lecture simple.</td></tr>
+<tr><td>Impact maintenance</td><td>Risque de casser la logique de verrouillage si la table évolue.</td></tr>
+<tr><td>Coût et délai</td><td>≈ 0,3 session</td></tr>
+<tr><td>Réversibilité</td><td>Bonne.</td></tr>
+</tbody></table></div>
+<p><strong>C. Nouvelle table dédiée <code>login_events</code></strong> — Table d'événements d'authentification dédiée à l'affichage (alimentée à chaque connexion).</p>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td>Avantages</td><td>Modèle sur mesure ; requêtes rapides ; durée de conservation propre.</td></tr>
+<tr><td>Inconvénients</td><td>Duplique l'audit et les tentatives ; migration ; risque de divergence entre trois sources.</td></tr>
+<tr><td>Impact UX</td><td>Excellente.</td></tr>
+<tr><td>Impact métier</td><td>Aucun gain réel.</td></tr>
+<tr><td>Impact technique</td><td>Migration, écriture à chaque connexion (hors transaction critique ?), tests de cohérence.</td></tr>
+<tr><td>Impact maintenance</td><td>Trois sources à garder alignées.</td></tr>
+<tr><td>Coût et délai</td><td>≈ 1 session</td></tr>
+<tr><td>Réversibilité</td><td>Moyenne (migration).</td></tr>
+</tbody></table></div>
+<p><strong>D. Pas d'historique en H2 (sessions actives seulement)</strong> — On affiche les sessions actives et leur révocation ; l'historique vient plus tard.</p>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td>Avantages</td><td>Aucun développement d'API ; H2 plus court.</td></tr>
+<tr><td>Inconvénients</td><td>EXD-06 non satisfaite ; l'utilisateur ne peut pas repérer une connexion suspecte passée.</td></tr>
+<tr><td>Impact UX</td><td>Moins de transparence.</td></tr>
+<tr><td>Impact métier</td><td>Aucun.</td></tr>
+<tr><td>Impact technique</td><td>Aucune.</td></tr>
+<tr><td>Impact maintenance</td><td>Aucune.</td></tr>
+<tr><td>Coût et délai</td><td>0</td></tr>
+<tr><td>Réversibilité</td><td>Excellente.</td></tr>
+</tbody></table></div>
+<p><strong>Grille</strong> (notes de 1 à 5, 5 = favorable ; poids fixés avant notation ; totaux calculés).</p>
+<div class="table-wrap"><table><thead><tr><th>Critère (poids)</th><th>A</th><th>B</th><th>C</th><th>D</th></tr></thead><tbody>
+<tr><td>Valeur métier (5)</td><td>4</td><td>2</td><td>4</td><td>2</td></tr>
+<tr><td>Risque (favorable = faible) (5)</td><td>4</td><td>3</td><td>3</td><td>4</td></tr>
+<tr><td>Cohérence architecture / décisions (4)</td><td>5</td><td>3</td><td>2</td><td>2</td></tr>
+<tr><td>Réversibilité (4)</td><td>4</td><td>4</td><td>2</td><td>5</td></tr>
+<tr><td>Coût et délai (favorable = faible) (3)</td><td>4</td><td>5</td><td>2</td><td>5</td></tr>
+<tr><td><strong>Total sur 5</strong></td><td><strong>4,19</strong></td><td><strong>3,24</strong></td><td><strong>2,71</strong></td><td><strong>3,48</strong></td></tr>
+</tbody></table></div>
+<p><strong>Risques.</strong></p>
+<div class="table-wrap"><table><thead><tr><th>Risque</th><th>Probabilité</th><th>Impact</th><th>Parade</th></tr></thead><tbody>
+<tr><td>Fuite d'informations d'un autre utilisateur (IDOR)</td><td>Faible</td><td>Élevé</td><td>Route « mon historique » filtrée par l'identité du jeton, jamais par un identifiant fourni ; test dédié</td></tr>
+<tr><td>Requêtes lentes sur l'audit partitionné</td><td>Faible</td><td>Moyen</td><td>Fenêtre de dates bornée (par exemple 90 jours), pagination, plafond de lignes</td></tr>
+<tr><td>Données personnelles (IP) affichées</td><td>Moyenne</td><td>Moyen</td><td>Visible uniquement par l'intéressé (et, si décidé, par un administrateur avec step-up) ; mention dans le registre de traitement</td></tr>
+</tbody></table></div>
+<p><strong>Dette induite.</strong> A : dépendance au format des lignes d'audit (à documenter). C : une source de plus à aligner.</p>
+<p><strong>Recommandation.</strong> Option <strong>A</strong> : pas de duplication, appareil et IP disponibles, conservation déjà décidée. Condition : vérifier en début de session que les connexions échouées d'un compte connu portent l'identifiant utilisateur ; sinon, afficher uniquement les succès et les échecs rattachables. Ferait changer d'avis : une exigence de durée de conservation ou de volume incompatible avec l'audit.</p>
+<p><strong>Décision (direction produit).</strong> ☐ À renseigner : option retenue · date · motif · réserves.</p>
+<p><strong>Trace.</strong> À enregistrer dans <code>docs/QUESTIONS-ET-DECISIONS.md</code> (et, pour le design, dans <code>docs/design/decisions/</code>).</p>
+<hr>
+<h3>CAD-H2-2 — Visibilité de l'historique des connexions</h3>
+<p><strong>Contexte.</strong> L'historique contient des adresses IP et des appareils, donc des données personnelles. La question : qui peut le voir ?</p>
+<p><strong>Déjà décidé, ne bouge pas.</strong> Chacun voit ses propres sessions (route existante <code>auth/sessions</code>) ; un SuperAdmin en portée « Tous » peut révoquer des sessions avec step-up.</p>
+<p><strong>Options.</strong></p>
+<p><strong>A. Chacun voit uniquement le sien</strong> — Aucune vue administrateur de l'historique.</p>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td>Avantages</td><td>Minimisation maximale ; aucune question de finalité ; simple.</td></tr>
+<tr><td>Inconvénients</td><td>L'administrateur ne peut pas enquêter sur un compte (il garde le journal d'audit).</td></tr>
+<tr><td>Impact UX</td><td>Transparence pour l'utilisateur.</td></tr>
+<tr><td>Impact métier</td><td>Enquête de sécurité via l'audit uniquement.</td></tr>
+<tr><td>Impact technique</td><td>Une route.</td></tr>
+<tr><td>Impact maintenance</td><td>Faible.</td></tr>
+<tr><td>Coût et délai</td><td>inclus</td></tr>
+<tr><td>Réversibilité</td><td>Excellente (on peut élargir).</td></tr>
+</tbody></table></div>
+<p><strong>B. Le sien + SuperAdmin avec step-up (Utilisateurs &gt; détail)</strong> — Un SuperAdmin peut voir l'historique d'un compte après une nouvelle preuve MFA ; chaque consultation est auditée.</p>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td>Avantages</td><td>Aide à l'enquête sur un compte compromis ; usage tracé.</td></tr>
+<tr><td>Inconvénients</td><td>Donnée personnelle accessible à une autre personne ; finalité à écrire ; deuxième route et tests de droits.</td></tr>
+<tr><td>Impact UX</td><td>Écran de plus.</td></tr>
+<tr><td>Impact métier</td><td>Utile à la sécurité.</td></tr>
+<tr><td>Impact technique</td><td>Permission dédiée, step-up, audit de lecture.</td></tr>
+<tr><td>Impact maintenance</td><td>Un cas de plus dans la matrice des droits.</td></tr>
+<tr><td>Coût et délai</td><td>+ 0,3 session</td></tr>
+<tr><td>Réversibilité</td><td>Bonne.</td></tr>
+</tbody></table></div>
+<p><strong>C. Le sien + un rôle Sécurité en lecture</strong> — Un rôle (Sécurité/Support) voit les historiques, sans pouvoir d'action.</p>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td>Avantages</td><td>Séparation des pouvoirs.</td></tr>
+<tr><td>Inconvénients</td><td>Ce rôle n'existe pas dans le catalogue (10 rôles actuels) ; exige une décision de rôles.</td></tr>
+<tr><td>Impact UX</td><td>Écran de plus.</td></tr>
+<tr><td>Impact métier</td><td>Organisation à définir.</td></tr>
+<tr><td>Impact technique</td><td>Rôle, permission, tests.</td></tr>
+<tr><td>Impact maintenance</td><td>Catalogue de rôles à étendre.</td></tr>
+<tr><td>Coût et délai</td><td>+ 0,5 session</td></tr>
+<tr><td>Réversibilité</td><td>Moyenne.</td></tr>
+</tbody></table></div>
+<p><strong>Grille</strong> (notes de 1 à 5, 5 = favorable ; poids fixés avant notation ; totaux calculés).</p>
+<div class="table-wrap"><table><thead><tr><th>Critère (poids)</th><th>A</th><th>B</th><th>C</th></tr></thead><tbody>
+<tr><td>Valeur métier (5)</td><td>3</td><td>4</td><td>4</td></tr>
+<tr><td>Risque (favorable = faible) (5)</td><td>5</td><td>3</td><td>3</td></tr>
+<tr><td>Cohérence architecture / décisions (4)</td><td>5</td><td>4</td><td>2</td></tr>
+<tr><td>Réversibilité (4)</td><td>5</td><td>4</td><td>3</td></tr>
+<tr><td>Coût et délai (favorable = faible) (3)</td><td>5</td><td>3</td><td>2</td></tr>
+<tr><td><strong>Total sur 5</strong></td><td><strong>4,52</strong></td><td><strong>3,62</strong></td><td><strong>2,90</strong></td></tr>
+</tbody></table></div>
+<p><strong>Risques.</strong></p>
+<div class="table-wrap"><table><thead><tr><th>Risque</th><th>Probabilité</th><th>Impact</th><th>Parade</th></tr></thead><tbody>
+<tr><td>Accès non justifié à des données personnelles</td><td>Faible</td><td>Moyen</td><td>Finalité écrite, step-up, audit de chaque consultation, revue périodique</td></tr>
+</tbody></table></div>
+<p><strong>Dette induite.</strong> B : finalité et registre de traitement à tenir.</p>
+<p><strong>Recommandation.</strong> Option <strong>A</strong> pour H2 (minimisation) ; l'option B pourra être ajoutée plus tard sans migration. Ferait changer d'avis : une obligation d'enquête de sécurité formalisée.</p>
+<p><strong>Décision (direction produit).</strong> ☐ À renseigner : option retenue · date · motif · réserves.</p>
+<p><strong>Trace.</strong> À enregistrer dans <code>docs/QUESTIONS-ET-DECISIONS.md</code> (et, pour le design, dans <code>docs/design/decisions/</code>).</p>
+<hr>
+<h3>CAD-H2-3 — Découpage des 18 écrans en lots</h3>
+<p><strong>Contexte.</strong> Les 18 écrans d'authentification et de sessions (analyse d'impact §4.1) couvrent des parcours qui existent déjà (connexion, MFA, invitation, réinitialisation) et des états nouveaux (verrouillage, limite de débit, reprise d'enrôlement, historique).</p>
+<p><strong>Déjà décidé, ne bouge pas.</strong> Les messages d'erreur d'authentification restent identiques pour compte connu ou inconnu ; QR et codes de secours affichés une seule fois ; aucune règle de sécurité n'est modifiée.</p>
+<p><strong>Options.</strong></p>
+<p><strong>A. Un seul lot</strong> — Les 18 écrans en une session (plan actuel).</p>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td>Avantages</td><td>Parcours d'accès cohérent d'un coup ; une recette.</td></tr>
+<tr><td>Inconvénients</td><td>Session longue ; recette de sécurité très large.</td></tr>
+<tr><td>Impact UX</td><td>Cohérence immédiate.</td></tr>
+<tr><td>Impact métier</td><td>Aucun.</td></tr>
+<tr><td>Impact technique</td><td>Touche tous les écrans de sécurité à la fois.</td></tr>
+<tr><td>Impact maintenance</td><td>Un chantier.</td></tr>
+<tr><td>Coût et délai</td><td>≈ 1,5 session</td></tr>
+<tr><td>Réversibilité</td><td>Bonne.</td></tr>
+</tbody></table></div>
+<p><strong>B. Deux lots : H2a parcours d'accès, H2b compte et sessions (+ historique)</strong> — H2a : connexion, MFA, invitation, réinitialisation. H2b : Mon compte, sessions, historique, codes de secours.</p>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td>Avantages</td><td>Recettes plus courtes ; le lot sans API (H2a) est livrable seul ; risque réparti.</td></tr>
+<tr><td>Inconvénients</td><td>Deux validations ; cohabitation temporaire entre les deux lots.</td></tr>
+<tr><td>Impact UX</td><td>Livraison progressive.</td></tr>
+<tr><td>Impact métier</td><td>Aucun.</td></tr>
+<tr><td>Impact technique</td><td>H2b porte la seule nouvelle route.</td></tr>
+<tr><td>Impact maintenance</td><td>Deux recettes.</td></tr>
+<tr><td>Coût et délai</td><td>≈ 1,6 session au total</td></tr>
+<tr><td>Réversibilité</td><td>Excellente.</td></tr>
+</tbody></table></div>
+<p><strong>Grille</strong> (notes de 1 à 5, 5 = favorable ; poids fixés avant notation ; totaux calculés).</p>
+<div class="table-wrap"><table><thead><tr><th>Critère (poids)</th><th>A</th><th>B</th></tr></thead><tbody>
+<tr><td>Valeur métier (5)</td><td>4</td><td>4</td></tr>
+<tr><td>Risque (favorable = faible) (5)</td><td>3</td><td>4</td></tr>
+<tr><td>Cohérence architecture / décisions (4)</td><td>5</td><td>5</td></tr>
+<tr><td>Réversibilité (4)</td><td>4</td><td>5</td></tr>
+<tr><td>Coût et délai (favorable = faible) (3)</td><td>3</td><td>3</td></tr>
+<tr><td><strong>Total sur 5</strong></td><td><strong>3,81</strong></td><td><strong>4,24</strong></td></tr>
+</tbody></table></div>
+<p><strong>Risques.</strong></p>
+<div class="table-wrap"><table><thead><tr><th>Risque</th><th>Probabilité</th><th>Impact</th><th>Parade</th></tr></thead><tbody>
+<tr><td>Régression d'un parcours de sécurité</td><td>Moyenne</td><td>Élevé</td><td>Recette de sécurité rejouée à chaque lot (tests existants + navigateur réel), axe-core</td></tr>
+</tbody></table></div>
+<p><strong>Dette induite.</strong> Faible dans les deux cas.</p>
+<p><strong>Recommandation.</strong> Option <strong>B</strong> (deux lots) : elle réduit le risque sur des écrans de sécurité et permet de valider d'abord ce qui ne touche pas à l'API. Ferait changer d'avis : un besoin de livrer tout l'accès en une seule étape.</p>
+<p><strong>Décision (direction produit).</strong> ☐ À renseigner : option retenue · date · motif · réserves.</p>
+<p><strong>Trace.</strong> À enregistrer dans <code>docs/QUESTIONS-ET-DECISIONS.md</code> (et, pour le design, dans <code>docs/design/decisions/</code>).</p>
+<hr>
+<h2>5. Plan de réalisation proposé</h2>
+<ol><li><strong>H2a</strong> : écrans d'accès au nouveau style (connexion, MFA, invitation, réinitialisation) ; états d'erreur, verrouillage, limite de débit ; recette de sécurité rejouée.</li><li><strong>H2b</strong> : route « mon historique » (identité du jeton, fenêtre de dates bornée, pagination, test IDOR et matrice de droits), écrans Mon compte, sessions, historique, codes de secours.</li><li><strong>Preuves</strong> : tests API et web, route-protection (la nouvelle route doit être déclarée), axe-core, parcours réels, recette <code>SPRINT-H2-RECETTE.md</code>, mise à jour du document de design.</li></ol>
+<h2>6. Prérequis et réserves</h2>
+<ul><li>Écoute avec un lecteur d'écran réel avant H2 (D31) : recommandée, non bloquante (à vous de trancher).</li><li>Microsoft 365 ajourné : les e-mails de réinitialisation continuent d'utiliser l'adaptateur « journal » (aucun envoi réel).</li><li>Avis juridique sur les données personnelles (IP, appareils) : à inclure dans l'Étape 0.</li></ul>
+<h2>7. Critères de réussite</h2>
+<p>Parcours de sécurité inchangés et rejoués ; messages identiques compte connu/inconnu ; historique visible uniquement par l'intéressé ; 0 violation axe ; aucune régression des 535 commentaires et des tests existants.</p></main></body></html>

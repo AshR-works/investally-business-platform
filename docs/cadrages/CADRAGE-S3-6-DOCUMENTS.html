@@ -1,0 +1,219 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Cadrage de la session S3.6 — Documents</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — cadrages · <a href="README.html">Index</a> · <a href="../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../design/05-AIDE-A-LA-DECISION.html">Aide à la décision</a></nav><h1>Cadrage de la session S3.6 — Documents</h1>
+<p><strong>Date</strong> : 2026-10-21 · <strong>Statut</strong> : à décider · <strong>Dépend de</strong> : H2 (ordre DEC-005).</p>
+<blockquote><p>Méthode : <a href="../METHODE-D-ARBITRAGE.html">METHODE-D-ARBITRAGE.md</a>. <strong>Aucune décision n'est prise dans ce document</strong> : les recommandations sont des avis, la décision est celle de la direction produit.</p></blockquote>
+<h2>1. Objet et périmètre</h2>
+<p><strong>S3.6 — Documents</strong> livre le téléversement, la gestion des versions, l'empreinte SHA-256, le téléchargement contrôlé et la traçabilité complète des fichiers (prérequis des pièces jointes : agrément S4.4, incidents S6.3, offres, contrats).</p>
+<p><strong>Hors périmètre</strong> : antivirus (S7), prévisualisation de documents, signature électronique, recherche plein texte, adaptateur S3 de production (S7.1, selon la décision CAD-S36-1).</p>
+<h2>2. État de départ (vérifié)</h2>
+<div class="table-wrap"><table><thead><tr><th>Élément</th><th>État</th></tr></thead><tbody>
+<tr><td>Base de données</td><td><code>docs.documents</code> et <code>docs.document_versions</code> existent (statut, version courante, clé de stockage, MIME, taille, SHA-256, verrou optimiste, suppression logique)</td></tr>
+<tr><td>Audit</td><td>Lectures et écritures de documents prévues dans <code>ARCHITECTURE.md</code> (création, consultation, modification, téléchargement, export, suppression)</td></tr>
+<tr><td>API et stockage</td><td>Aucun module <code>documents</code> ; aucun service de stockage</td></tr>
+<tr><td>Sécurité</td><td><code>SECURITY.md</code> §6 : taille, liste blanche, signature, renommage, hors racine web, SHA-256 ; antivirus en S7</td></tr>
+</tbody></table></div>
+<h2>3. Règles de conception (non soumises à décision)</h2>
+<ul><li>Une version est <strong>immuable</strong> ; on ajoute une version, on ne modifie pas le contenu.</li><li><strong>Suppression = archivage logique</strong> ; aucune suppression définitive sans votre accord explicite.</li><li>Téléchargement <strong>via l'API uniquement</strong> (aucune URL directe), en pièce jointe, <code>nosniff</code>.</li><li>Chaque consultation, téléchargement, création de version, archivage est <strong>audité</strong> (qui, quand, quoi, IP).</li><li>Nom de fichier affiché ≠ clé de stockage (aléatoire).</li></ul>
+<h2>4. Décisions à prendre avant de coder</h2>
+<div class="table-wrap"><table><thead><tr><th>N°</th><th>Question</th><th>Options</th><th>Ma recommandation</th></tr></thead><tbody>
+<tr><td>CAD-S36-1</td><td>Stockage</td><td>A S3 maintenant · B port + disque local, S3 en S7.1 · C <code>bytea</code></td><td><strong>B</strong></td></tr>
+<tr><td>CAD-S36-2</td><td>Contrôles et antivirus</td><td>A base + antivirus en S7 (bloquant production) · B antivirus maintenant · C minimal</td><td><strong>A</strong></td></tr>
+<tr><td>CAD-S36-3</td><td>Droits</td><td>A permissions + portée de l'objet propriétaire · B documents autonomes · C attendre S4</td><td><strong>A</strong></td></tr>
+</tbody></table></div>
+<hr>
+<h3>CAD-S36-1 — Stockage des fichiers</h3>
+<p><strong>Contexte.</strong> La base contient déjà les tables de métadonnées (<code>docs.documents</code>, <code>docs.document_versions</code>, clé de stockage aléatoire, SHA-256). <code>ARCHITECTURE.md</code> prévoit un stockage objet compatible S3 (MinIO en développement), hors base. Aucun service de stockage n'existe encore, et Docker n'est exécuté « pour de vrai » qu'en S7.</p>
+<p><strong>Déjà décidé, ne bouge pas.</strong> Les fichiers ne sont pas stockés dans la base ; clé de stockage aléatoire (jamais le nom fourni) ; empreinte SHA-256 ; stockage hors racine web ; téléchargement uniquement via l'API après contrôle des droits.</p>
+<p><strong>Options.</strong></p>
+<p><strong>A. Stockage objet compatible S3 dès S3.6</strong> — Adaptateur S3 (MinIO en développement et en test).</p>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td>Avantages</td><td>Conforme à l'architecture ; passage à l'échelle ; sauvegarde et chiffrement par le service.</td></tr>
+<tr><td>Inconvénients</td><td>Service à installer pour les tests et le développement (binaire ou conteneur) ; environnement de test plus lourd ; configuration d'accès à sécuriser.</td></tr>
+<tr><td>Impact UX</td><td>Aucune différence.</td></tr>
+<tr><td>Impact métier</td><td>Aucun.</td></tr>
+<tr><td>Impact technique</td><td>Client S3, service de test, secrets d'accès.</td></tr>
+<tr><td>Impact maintenance</td><td>Un service de plus à exploiter.</td></tr>
+<tr><td>Coût et délai</td><td>≈ 1,3 session</td></tr>
+<tr><td>Réversibilité</td><td>Bonne (port de stockage).</td></tr>
+</tbody></table></div>
+<p><strong>B. Port de stockage + adaptateur disque local maintenant, adaptateur S3 en S7.1</strong> — Interface <code>ObjectStorage</code> ; premier adaptateur : dossier hors racine web (volume dédié, droits restreints) ; adaptateur S3 ajouté au durcissement.</p>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td>Avantages</td><td>Tests rapides sans service externe ; aucune perte de conception (même port) ; livrable plus tôt.</td></tr>
+<tr><td>Inconvénients</td><td>Le disque local ne convient pas à une exploitation sur plusieurs serveurs ; l'adaptateur S3 reste à écrire et à recetter.</td></tr>
+<tr><td>Impact UX</td><td>Aucune différence.</td></tr>
+<tr><td>Impact métier</td><td>Aucun.</td></tr>
+<tr><td>Impact technique</td><td>Port + adaptateur ; test de contrat commun aux deux adaptateurs.</td></tr>
+<tr><td>Impact maintenance</td><td>Deux adaptateurs à terme, un test de contrat.</td></tr>
+<tr><td>Coût et délai</td><td>≈ 0,9 session</td></tr>
+<tr><td>Réversibilité</td><td>Excellente.</td></tr>
+</tbody></table></div>
+<p><strong>C. Fichiers dans PostgreSQL (<code>bytea</code>)</strong> — Contenu stocké en base.</p>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td>Avantages</td><td>Aucun service ni dossier ; transactions et sauvegardes uniques.</td></tr>
+<tr><td>Inconvénients</td><td>Contredit l'architecture (documents hors base, ≈ 2 Go/an) ; base qui grossit, sauvegardes lourdes ; mauvaise piste pour le flux.</td></tr>
+<tr><td>Impact UX</td><td>Aucune différence.</td></tr>
+<tr><td>Impact métier</td><td>Aucun.</td></tr>
+<tr><td>Impact technique</td><td>Simple au départ.</td></tr>
+<tr><td>Impact maintenance</td><td>Migration coûteuse plus tard.</td></tr>
+<tr><td>Coût et délai</td><td>≈ 0,6 session</td></tr>
+<tr><td>Réversibilité</td><td>Faible.</td></tr>
+</tbody></table></div>
+<p><strong>Grille</strong> (notes de 1 à 5, 5 = favorable ; poids fixés avant notation ; totaux calculés).</p>
+<div class="table-wrap"><table><thead><tr><th>Critère (poids)</th><th>A</th><th>B</th><th>C</th></tr></thead><tbody>
+<tr><td>Valeur métier (5)</td><td>4</td><td>4</td><td>3</td></tr>
+<tr><td>Risque (favorable = faible) (5)</td><td>4</td><td>4</td><td>3</td></tr>
+<tr><td>Cohérence architecture / décisions (4)</td><td>5</td><td>4</td><td>1</td></tr>
+<tr><td>Réversibilité (4)</td><td>4</td><td>5</td><td>2</td></tr>
+<tr><td>Coût et délai (favorable = faible) (3)</td><td>2</td><td>4</td><td>4</td></tr>
+<tr><td><strong>Total sur 5</strong></td><td><strong>3,90</strong></td><td><strong>4,19</strong></td><td><strong>2,57</strong></td></tr>
+</tbody></table></div>
+<p><strong>Risques.</strong></p>
+<div class="table-wrap"><table><thead><tr><th>Risque</th><th>Probabilité</th><th>Impact</th><th>Parade</th></tr></thead><tbody>
+<tr><td>Fichier servi hors contrôle de droits</td><td>Faible</td><td>Élevé</td><td>Aucune URL directe : flux via l'API, droits contrôlés à chaque lecture, audit de chaque consultation</td></tr>
+<tr><td>Perte de fichiers</td><td>Faible</td><td>Élevé</td><td>Sauvegarde du volume ; S3 versionné en production ; vérification périodique des SHA-256</td></tr>
+</tbody></table></div>
+<p><strong>Dette induite.</strong> B : adaptateur S3 à livrer en S7.1 (à inscrire en dette). A : service à exploiter. C : migration future.</p>
+<p><strong>Recommandation.</strong> Option <strong>B</strong> : elle respecte le port prévu par l'architecture, rend S3.6 testable sans service externe et reporte l'adaptateur S3 au durcissement. Ferait changer d'avis : un besoin de production multi-serveurs avant S7 (alors A).</p>
+<p><strong>Décision (direction produit).</strong> ☐ À renseigner : option retenue · date · motif · réserves.</p>
+<p><strong>Trace.</strong> À enregistrer dans <code>docs/QUESTIONS-ET-DECISIONS.md</code> (et, pour le design, dans <code>docs/design/decisions/</code>).</p>
+<hr>
+<h3>CAD-S36-2 — Contrôles à l'envoi et antivirus</h3>
+<p><strong>Contexte.</strong> <code>SECURITY.md</code> §6 prévoit taille maximale, liste blanche d'extensions <strong>et</strong> de types détectés par signature, renommage serveur, SHA-256, et analyse antivirus « H, S7 ». Les fichiers téléversés par des utilisateurs sont un vecteur d'attaque classique.</p>
+<p><strong>Déjà décidé, ne bouge pas.</strong> Aucun fichier n'est jamais exécuté ni servi inline ; téléchargement en pièce jointe avec <code>X-Content-Type-Options: nosniff</code> ; suppression = archivage logique (jamais de suppression définitive sans votre accord).</p>
+<p><strong>Options.</strong></p>
+<p><strong>A. Contrôles de base maintenant, antivirus en S7 avec quarantaine d'ici là</strong> — Taille max, liste blanche, signature (octets magiques), SHA-256 ; un fichier reste « à vérifier » tant que l'antivirus n'a pas tourné (S7), sans blocage métier d'ici là.</p>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td>Avantages</td><td>Conforme au plan ; protège déjà des cas courants (faux types, doubles extensions) ; antivirus ajouté sans changer le modèle.</td></tr>
+<tr><td>Inconvénients</td><td>Pas d'analyse de virus avant S7 : risque résiduel (fichier Office piégé).</td></tr>
+<tr><td>Impact UX</td><td>Aucune.</td></tr>
+<tr><td>Impact métier</td><td>Risque résiduel accepté jusqu'à S7.</td></tr>
+<tr><td>Impact technique</td><td>Statut de vérification sur la version ; téléchargement conditionné à la politique choisie.</td></tr>
+<tr><td>Impact maintenance</td><td>Faible.</td></tr>
+<tr><td>Coût et délai</td><td>≈ inclus</td></tr>
+<tr><td>Réversibilité</td><td>Excellente.</td></tr>
+</tbody></table></div>
+<p><strong>B. Antivirus dès S3.6 (service d'analyse)</strong> — Service d'analyse (par exemple ClamAV) appelé à chaque envoi.</p>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td>Avantages</td><td>Protection maximale dès le premier jour.</td></tr>
+<tr><td>Inconvénients</td><td>Service supplémentaire à exploiter pour S3.6 ; environnement de test plus lourd ; mises à jour des signatures.</td></tr>
+<tr><td>Impact UX</td><td>Délai à l'envoi.</td></tr>
+<tr><td>Impact métier</td><td>Aucun.</td></tr>
+<tr><td>Impact technique</td><td>Port « scanner », adaptateur, service.</td></tr>
+<tr><td>Impact maintenance</td><td>Service et signatures à entretenir.</td></tr>
+<tr><td>Coût et délai</td><td>+ 0,8 session</td></tr>
+<tr><td>Réversibilité</td><td>Bonne.</td></tr>
+</tbody></table></div>
+<p><strong>C. Contrôles minimaux (taille et extension seulement)</strong> — Pas de contrôle de signature.</p>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td>Avantages</td><td>Très rapide.</td></tr>
+<tr><td>Inconvénients</td><td>Contredit <code>SECURITY.md</code> ; fichiers falsifiés acceptés.</td></tr>
+<tr><td>Impact UX</td><td>Aucune.</td></tr>
+<tr><td>Impact métier</td><td>Aucun.</td></tr>
+<tr><td>Impact technique</td><td>Minimal.</td></tr>
+<tr><td>Impact maintenance</td><td>Dette de sécurité.</td></tr>
+<tr><td>Coût et délai</td><td>- 0,2 session</td></tr>
+<tr><td>Réversibilité</td><td>Facile à renforcer.</td></tr>
+</tbody></table></div>
+<p><strong>Grille</strong> (notes de 1 à 5, 5 = favorable ; poids fixés avant notation ; totaux calculés).</p>
+<div class="table-wrap"><table><thead><tr><th>Critère (poids)</th><th>A</th><th>B</th><th>C</th></tr></thead><tbody>
+<tr><td>Valeur métier (5)</td><td>4</td><td>4</td><td>2</td></tr>
+<tr><td>Risque (favorable = faible) (5)</td><td>3</td><td>5</td><td>1</td></tr>
+<tr><td>Cohérence architecture / décisions (4)</td><td>5</td><td>4</td><td>1</td></tr>
+<tr><td>Réversibilité (4)</td><td>5</td><td>4</td><td>4</td></tr>
+<tr><td>Coût et délai (favorable = faible) (3)</td><td>4</td><td>2</td><td>5</td></tr>
+<tr><td><strong>Total sur 5</strong></td><td><strong>4,14</strong></td><td><strong>3,95</strong></td><td><strong>2,38</strong></td></tr>
+</tbody></table></div>
+<p><strong>Risques.</strong></p>
+<div class="table-wrap"><table><thead><tr><th>Risque</th><th>Probabilité</th><th>Impact</th><th>Parade</th></tr></thead><tbody>
+<tr><td>Fichier piégé téléversé avant S7</td><td>Faible à moyenne</td><td>Élevé</td><td>Liste blanche courte, aucun rendu inline, téléchargement forcé, statut « à vérifier », antivirus en S7 avant mise en production</td></tr>
+<tr><td>Déni de service par gros fichiers</td><td>Moyenne</td><td>Moyen</td><td>Taille maximale, limitation du débit, flux sans chargement complet en mémoire</td></tr>
+</tbody></table></div>
+<p><strong>Dette induite.</strong> A : antivirus à livrer en S7.2 (bloquant pour la mise en production).</p>
+<p><strong>Recommandation.</strong> Option <strong>A</strong>, avec l'antivirus inscrit comme condition <strong>bloquante</strong> de la mise en production (S7.2). Ferait changer d'avis : un envoi de fichiers par des tiers non authentifiés (alors B, dès maintenant). <strong>À préciser</strong> : formats autorisés (proposition : PDF, JPG, PNG, DOCX, XLSX) et taille maximale (proposition : 10 Mo).</p>
+<p><strong>Décision (direction produit).</strong> ☐ À renseigner : option retenue · date · motif · réserves.</p>
+<p><strong>Trace.</strong> À enregistrer dans <code>docs/QUESTIONS-ET-DECISIONS.md</code> (et, pour le design, dans <code>docs/design/decisions/</code>).</p>
+<hr>
+<h3>CAD-S36-3 — Droits d'accès aux documents</h3>
+<p><strong>Contexte.</strong> Un document appartient à un objet d'un autre contexte (type + identifiant, sans clé étrangère). Aujourd'hui, seules les <strong>entreprises</strong> existent comme objet propriétaire ; offres, opportunités, agréments, sessions et incidents arriveront en S4 à S6.</p>
+<p><strong>Déjà décidé, ne bouge pas.</strong> Droits fondés sur les permissions et les portées (Propre / Équipe / Tous) ; objet hors portée = introuvable (404) ; chaque lecture, téléchargement et modification est auditée.</p>
+<p><strong>Options.</strong></p>
+<p><strong>A. Permissions <code>docs.*</code> + portée héritée de l'objet propriétaire via un résolveur par module</strong> — Un document est accessible si l'utilisateur a la permission documentaire <strong>et</strong> accède à l'objet propriétaire ; chaque module fournit son résolveur (en S3.6 : entreprises).</p>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td>Avantages</td><td>Pas de contournement : un document n'est jamais plus accessible que son objet ; extensible à chaque module.</td></tr>
+<tr><td>Inconvénients</td><td>Couplage via un port à implémenter dans chaque module ; un résolveur oublié = refus par défaut (sûr, mais bloquant).</td></tr>
+<tr><td>Impact UX</td><td>Cohérent avec le reste de l'application.</td></tr>
+<tr><td>Impact métier</td><td>Les pièces suivent les droits de leur dossier.</td></tr>
+<tr><td>Impact technique</td><td>Port <code>OwnerAccess</code>, tests de matrice de droits.</td></tr>
+<tr><td>Impact maintenance</td><td>Un résolveur à écrire à chaque nouveau module.</td></tr>
+<tr><td>Coût et délai</td><td>≈ inclus</td></tr>
+<tr><td>Réversibilité</td><td>Bonne.</td></tr>
+</tbody></table></div>
+<p><strong>B. Documents autonomes (créateur + rôles)</strong> — Droits propres au document : le créateur, plus certains rôles en lecture.</p>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td>Avantages</td><td>Simple ; aucun couplage.</td></tr>
+<tr><td>Inconvénients</td><td>Un document peut devenir plus accessible que son dossier (ou l'inverse) ; incohérences de droits ; difficile à corriger après coup.</td></tr>
+<tr><td>Impact UX</td><td>Surprises possibles.</td></tr>
+<tr><td>Impact métier</td><td>Risque de fuite entre équipes.</td></tr>
+<tr><td>Impact technique</td><td>Modèle de droits parallèle.</td></tr>
+<tr><td>Impact maintenance</td><td>Double logique de droits.</td></tr>
+<tr><td>Coût et délai</td><td>- 0,2 session</td></tr>
+<tr><td>Réversibilité</td><td>Faible.</td></tr>
+</tbody></table></div>
+<p><strong>C. Attendre S4 pour livrer Documents</strong> — S3.6 décalée après S4.1.</p>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td>Avantages</td><td>On conçoit avec des objets réels.</td></tr>
+<tr><td>Inconvénients</td><td>S4.4 (agrément) et les incidents ont besoin des pièces jointes ; retarde S3.6 sans gain majeur.</td></tr>
+<tr><td>Impact UX</td><td>Aucune.</td></tr>
+<tr><td>Impact métier</td><td>Retard des pièces jointes.</td></tr>
+<tr><td>Impact technique</td><td>Aucune.</td></tr>
+<tr><td>Impact maintenance</td><td>Aucune.</td></tr>
+<tr><td>Coût et délai</td><td>0</td></tr>
+<tr><td>Réversibilité</td><td>Excellente.</td></tr>
+</tbody></table></div>
+<p><strong>Grille</strong> (notes de 1 à 5, 5 = favorable ; poids fixés avant notation ; totaux calculés).</p>
+<div class="table-wrap"><table><thead><tr><th>Critère (poids)</th><th>A</th><th>B</th><th>C</th></tr></thead><tbody>
+<tr><td>Valeur métier (5)</td><td>4</td><td>2</td><td>2</td></tr>
+<tr><td>Risque (favorable = faible) (5)</td><td>5</td><td>2</td><td>4</td></tr>
+<tr><td>Cohérence architecture / décisions (4)</td><td>5</td><td>2</td><td>3</td></tr>
+<tr><td>Réversibilité (4)</td><td>4</td><td>2</td><td>5</td></tr>
+<tr><td>Coût et délai (favorable = faible) (3)</td><td>3</td><td>4</td><td>5</td></tr>
+<tr><td><strong>Total sur 5</strong></td><td><strong>4,29</strong></td><td><strong>2,29</strong></td><td><strong>3,67</strong></td></tr>
+</tbody></table></div>
+<p><strong>Risques.</strong></p>
+<div class="table-wrap"><table><thead><tr><th>Risque</th><th>Probabilité</th><th>Impact</th><th>Parade</th></tr></thead><tbody>
+<tr><td>Document visible hors du périmètre de son dossier</td><td>Faible</td><td>Élevé</td><td>Résolveur obligatoire, refus par défaut, matrice de droits HTTP rôle × route comme pour le RBAC</td></tr>
+<tr><td>Énumération d'identifiants de documents</td><td>Faible</td><td>Moyen</td><td>Identifiants non prédictibles, 404 hors portée</td></tr>
+</tbody></table></div>
+<p><strong>Dette induite.</strong> A : un résolveur par module à entretenir.</p>
+<p><strong>Recommandation.</strong> Option <strong>A</strong> : elle garantit qu'un document n'est jamais plus visible que son dossier. Ferait changer d'avis : un besoin de partage de documents transversaux (modèles, procédures) sans objet propriétaire — à traiter alors comme un propriétaire « organisation ».</p>
+<p><strong>Décision (direction produit).</strong> ☐ À renseigner : option retenue · date · motif · réserves.</p>
+<p><strong>Trace.</strong> À enregistrer dans <code>docs/QUESTIONS-ET-DECISIONS.md</code> (et, pour le design, dans <code>docs/design/decisions/</code>).</p>
+<hr>
+<h2>5. Questions ouvertes pour la direction produit</h2>
+<ol><li><strong>Formats autorisés</strong> et <strong>taille maximale</strong> (proposition : PDF, JPG, PNG, DOCX, XLSX ; 10 Mo).</li><li><strong>Durée de conservation</strong> des documents archivés (à relier à l'avis juridique de l'Étape 0).</li><li><strong>Catégories de documents</strong> (décharge, contrat, agrément signé, justificatif…) : liste initiale à fournir.</li></ol>
+<h2>6. Plan de réalisation proposé</h2>
+<ol><li>Domaine : document, version, politiques (formats, taille), port <code>ObjectStorage</code> et port <code>OwnerAccess</code>.</li><li>Infrastructure : adaptateur de stockage, dépôt Prisma (tables déjà créées, migration éventuelle de compléments), calcul SHA-256 en flux.</li><li>API : envoi, nouvelle version, liste par propriétaire, métadonnées, téléchargement, archivage ; toutes protégées (<code>@Protected</code>), déclarées dans la matrice de droits.</li><li>Interface minimale de pièces jointes sur la fiche entreprise (composant réutilisable pour S4).</li><li>Preuves : tests unitaires, intégration (base jetable), matrice de droits, test de contrat du stockage, mutants sur les contrôles de type, recette <code>SPRINT-S3-6-RECETTE.md</code>, mise à jour de la documentation.</li></ol>
+<h2>7. Critères de réussite</h2>
+<p>Fichier falsifié (extension ≠ signature) refusé ; SHA-256 vérifié au téléchargement ; hors portée = 404 ; chaque accès tracé dans l'audit ; aucune route non protégée (test <code>route-protection</code>) ; aucun contenu servi inline.</p></main></body></html>
