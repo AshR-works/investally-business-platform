@@ -33,6 +33,11 @@
 | D29 | Deux états de la coque (hub complet, rail compact) à maintenir et tester (navigation B+, DDR-0004) | DEC-002 | Un seul composant à deux états ; tests de focus et d'info-bulles ; essai avec 3 utilisateurs | H1 |
 | D30 | Vue « Par étape » des Opportunités sans alternative clavier (DDR-0005) | DEC-003 | Menu « Déplacer vers… » ; mesurer l'usage après deux semaines | S4.3 |
 | D31 | **Écoute réelle avec lecteurs d’écran non faite** (audit automatique seulement) ; audit non branché en CI ; prototype de design non audité | A11Y-1 | Product owner / Claude | Protocole `docs/accessibilite/PROTOCOLE-LECTEUR-D-ECRAN.md` ; audit rejouable à la main |
+| D32 | **Styles « legacy »** : les écrans existants (connexion, MFA, invitation, mot de passe, Entreprises, Utilisateurs, Mon compte) gardent leurs classes CSS dans la couche `legacy` de `globals.css` (aux jetons du design) au lieu des classes Tailwind | H1 | Claude | À retirer écran par écran (H2 pour l'accès, S4 pour le métier) |
+| D33 | **Thème appliqué après le premier rendu** : un utilisateur dont le choix explicite diffère du réglage de l'appareil peut voir un bref clignotement. Corriger avec un script de pré-rendu à `nonce` (lié à D20) | H1 | Claude | Aucun impact sécurité ; défaut visuel mineur |
+| D34 | **Recherche globale côté interface** (une requête par type : 2 aujourd'hui) | H1, CAD-H1-4 | Claude | À remplacer par une route dédiée quand 4 types existent (S4.1 à S5) |
+| D35 | **Logos en PNG** (SVG officiels attendus) ; thème sombre obtenu par filtre CSS monochrome (DDR-0002), le symbole sombre n'est pas une variante dessinée | H1 | Direction produit | Fournir SVG et variante sombre avant mise en ligne |
+| D36 | **Bouton de dépliage** : pictogramme provisoire et bouton masqué sur la Vue d'ensemble (DDR-0007, points ouverts 1 et 2) | H1 | Direction produit | À confirmer (version 0.4.2 du design si changement) |
 | D5 | Hypothèses de charge et de périmètre non confirmées | Phase 3 | Revue à la fin de S1 avec les chiffres réels | Ouverte |
 
 ## Adopted Conventions

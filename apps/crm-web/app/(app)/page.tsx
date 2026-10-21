@@ -1,86 +1,68 @@
 'use client';
 
+import Link from 'next/link';
+import { GlobalSearch } from '../../components/global-search';
+import { Icon } from '../../components/icon';
 import { PageHeading } from '../../components/page-heading';
-import { FormEvent, useCallback, useEffect, useState } from 'react';
-import { api, ApiError } from '../../lib/api';
 import { useAuth } from '../../lib/auth-context';
-import { can } from '../../lib/permissions';
-import type { Company, Page } from '../../lib/types';
+import { availableModules, upcomingModules } from '../../lib/modules';
 
 /**
- * Page d'accueil : entreprises visibles selon la portée de l'utilisateur et création d'une entreprise (si le droit
- * existe).
+ * Vue d'ensemble : point d'entrée de l'application (EXD-05). Recherche globale, puis les modules disponibles pour le
+ * profil et, grisés, ceux qui arrivent (CAD-H1-3). Aucun chiffre ni donnée fictive : un indicateur n'apparaît que
+ * lorsqu'il a une source réelle.
  */
-export default function CompaniesPage() {
+export default function HubPage() {
   const { profile } = useAuth();
-  const [data, setData] = useState<Page<Company>>({ items: [], total: 0 });
-  const [name, setName] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [loadError, setLoadError] = useState<string | null>(null);
-  const canRead = can(profile, 'bd.company.read');
-  const canCreate = can(profile, 'bd.company.create');
-
-  const load = useCallback(async () => {
-    if (!canRead) return;
-    try {
-      setData(await api<Page<Company>>('/companies?pageSize=20'));
-      setLoadError(null);
-    } catch (e) {
-      setLoadError(e instanceof ApiError ? e.message : 'Chargement impossible');
-    }
-  }, [canRead]);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
-
-  /** Enregistre l'entreprise saisie puis recharge la liste. */
-  async function submit(event: FormEvent) {
-    event.preventDefault();
-    setError(null);
-    try {
-      await api('/companies', { method: 'POST', body: { name: name.trim() } });
-      setName('');
-      await load();
-    } catch (e) {
-      setError(e instanceof ApiError ? e.message : "Échec de l'enregistrement");
-    }
-  }
-
-  if (!canRead) {
-    return (
-      <>
-        <PageHeading>Bienvenue</PageHeading>
-        <p>Votre profil n&apos;a pas accès au module commercial pour le moment.</p>
-      </>
-    );
-  }
+  const available = availableModules(profile);
+  const upcoming = upcomingModules();
 
   return (
     <>
-      <PageHeading>Entreprises cibles</PageHeading>
-      {canCreate && (
-        <form onSubmit={submit} className="panel row">
-          <label style={{ flex: 1, margin: 0, minWidth: 220 }}>
-            Nouvelle entreprise
-            <input value={name} onChange={(e) => setName(e.target.value)} maxLength={200} required />
-          </label>
-          <button type="submit" style={{ alignSelf: 'flex-end' }}>Enregistrer</button>
-        </form>
-      )}
-      {error && <p role="alert" className="error">{error}</p>}
-      {loadError && <p role="alert" className="error">{loadError}</p>}
-      <p>{data.total} entreprise(s) visible(s) selon votre périmètre</p>
-      <div className="table-wrap">
-        <table>
-          <thead><tr><th>Nom</th><th>Statut</th><th>Secteur</th></tr></thead>
-          <tbody>
-            {data.items.map((company) => (
-              <tr key={company.id}><td>{company.name}</td><td>{company.status}</td><td>{company.sector ?? '—'}</td></tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="mb-6">
+        <p className="m-0 text-xs font-semibold uppercase tracking-[0.14em] text-ink-2">Vue d’ensemble</p>
+        <PageHeading title="Vue d’ensemble">{`Bonjour ${profile?.displayName ?? ""}`.trim()}</PageHeading>
+        <p className="m-0 max-w-prose text-ink-2">Recherchez une entreprise ou un utilisateur, ou ouvrez un module.</p>
       </div>
+
+      <GlobalSearch />
+
+      <section aria-labelledby="modules-disponibles" className="mt-10">
+        <h2 id="modules-disponibles" className="mb-3 text-lg">Vos modules</h2>
+        {available.length === 0 ? (
+          <p className="text-ink-2">Votre profil n’a accès à aucun module pour le moment.</p>
+        ) : (
+          <ul className="m-0 grid list-none grid-cols-[repeat(auto-fill,minmax(15rem,1fr))] gap-4 p-0">
+            {available.map((m) => (
+              <li key={m.id}>
+                <Link href={m.href!} className="flex h-full items-start gap-4 rounded-panel border border-line-strong bg-surface p-5 text-ink no-underline shadow-[var(--shadow-1)] hover:bg-surface-2">
+                  <span className="grid size-11 shrink-0 place-items-center rounded-control bg-brand-soft text-brand-strong"><Icon name={m.icon} /></span>
+                  <span>
+                    <span className="block font-semibold">{m.label}</span>
+                    <span className="block text-xs text-ink-2">{m.description}</span>
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <section aria-labelledby="modules-a-venir" className="mt-10">
+        <h2 id="modules-a-venir" className="mb-3 text-lg">À venir</h2>
+        <ul className="m-0 grid list-none grid-cols-[repeat(auto-fill,minmax(15rem,1fr))] gap-4 p-0">
+          {upcoming.map((m) => (
+            <li key={m.id} className="flex items-start gap-4 rounded-panel border border-dashed border-line-strong bg-transparent p-5 text-ink-2">
+              <span className="grid size-11 shrink-0 place-items-center rounded-control bg-surface-2 text-ink-2"><Icon name={m.icon} /></span>
+              <span>
+                <span className="block font-semibold">{m.label}</span>
+                <span className="block text-xs">{m.description}</span>
+                <span className="mt-2 inline-block rounded-full bg-surface-2 px-2 py-0.5 text-xs font-semibold text-ink-2">Bientôt disponible</span>
+              </span>
+            </li>
+          ))}
+        </ul>
+      </section>
     </>
   );
 }
