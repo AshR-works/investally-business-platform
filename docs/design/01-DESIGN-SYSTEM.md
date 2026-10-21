@@ -280,7 +280,7 @@ Détails techniques (Tailwind, structure des fichiers, polices, sécurité CSP, 
 | # | Sujet | Ma proposition | Pourquoi |
 |---|---|---|---|
 | 1 | **Polices** | Montserrat + Inter | Montserrat = police du logo ; Inter = lisibilité en tableau. Dites-moi si la capture utilise une autre police à respecter (ex. Poppins) |
-| 2 | **Fichiers du logo** | Fournir **SVG** (Investally et Investudy), fond transparent | Les PNG fournis ont un fond blanc (Investally) ou sont petits (Investudy : 199 × 63 px, flou sur écrans haute densité). J'ai **recomposé** le symbole en SVG pour le prototype : à remplacer par vos fichiers officiels |
+| 2 | **Fichiers du logo** | Investudy : **PNG haute résolution reçu** (10 072 × 3 196 px, fond transparent), utilisé dans le prototype (version réduite à 900 px). Investally : toujours à fournir en **SVG** ou PNG à fond transparent | Le symbole Investally du prototype reste une **reconstitution** ; à remplacer par vos fichiers officiels. Le SVG est préférable (net à toute taille, adaptable au thème) |
 | 3 | **Bouton principal** | Taupe avec **texte noir** | Le blanc sur taupe est illisible (2,2 : 1) ; alternative : taupe foncé `#7A6355` + texte blanc (5,6 : 1) |
 | 4 | **Thème sombre** | Oui, en plus du clair | Confort ; demandé en usage prolongé |
 | 5 | **Libellés « Investally Group › Douala »** | Sélecteur d'organisation et de site | À confirmer : plusieurs sites/pays prévus ? (la capture montre « Abidjan ») |
