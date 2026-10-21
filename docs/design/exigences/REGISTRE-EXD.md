@@ -36,3 +36,4 @@ Légende : ✅ appliqué au prototype · 🟡 appliqué en partie · 📐 spéci
 | 2026-10-21 | EXD-10 et EXD-11 enregistrées. EXD-10 appliquée (option B, DEC-007) ; EXD-11 appliquée à titre provisoire (v0.4.1). **Règle permanente** : le document de design est mis à jour à chaque évolution |
 | 2026-10-21 | **H1** : EXD-01, EXD-05, EXD-10 et EXD-11 réalisées dans l'application réelle (coque, hub, recherche globale, thème). EXD-11 reste à confirmer (pictogramme, hub) |
 | 2026-10-21 | **H1b** : EXD-02 (sélection persistante) réalisée dans l'application sur les tableaux Entreprises et Utilisateurs ; EXD-04 (cartes d'opportunités) reste pour S4.3 ; écarts consignés dans `docs/cadrages/ECART-MOCKUP-VS-REEL.md` |
+| 2026-10-22 | **H2a** : EXD-06 réalisée pour les écrans A01 à A15 (connexion, MFA, codes de secours, mot de passe oublié, réinitialisation, activation, états d'erreur et de limitation) ; sessions et historique (S01 à S03) restent pour H2b |

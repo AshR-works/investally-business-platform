@@ -1,13 +1,17 @@
 'use client';
 
-import { PageHeading } from '../../components/page-heading';
+import Link from 'next/link';
 import { FormEvent, useEffect, useRef, useState } from 'react';
-import { api, ApiError } from '../../lib/api';
+import { AuthLayout } from '../../components/auth/auth-layout';
+import { AuthNotice } from '../../components/auth/auth-notice';
+import { NewPasswordFields } from '../../components/auth/new-password-fields';
+import { api } from '../../lib/api';
+import { authErrorMessage } from '../../lib/auth-errors';
 import { parseInvitationFragment } from '../../lib/invitation';
 import { passwordHints } from '../../lib/password';
 
 /**
- * Page d'activation d'un compte invité : lit le jeton dans le fragment de l'URL, l'efface de l'adresse, puis laisse
+ * Page d'activation d'un compte invité (A13) : lit le jeton dans le fragment de l'URL, l'efface de l'adresse, puis laisse
  * choisir le mot de passe.
  */
 export default function InvitationPage() {
@@ -27,7 +31,6 @@ export default function InvitationPage() {
   }, []);
 
   const hints = passwordHints(password);
-  const mismatch = confirmation.length > 0 && confirmation !== password;
 
   /**
    * Envoie le jeton et le mot de passe ; un refus (lien invalide, mot de passe refusé) est affiché et le lien reste
@@ -45,54 +48,39 @@ export default function InvitationPage() {
       setConfirmation('');
       setDone(true);
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : 'Activation impossible. Réessayez.');
+      setError(authErrorMessage(e, 'Activation impossible. Réessayez.'));
       setBusy(false);
     }
   }
 
-  if (!ready) return <div className="center"><p role="status">Chargement…</p></div>;
+  if (!ready) return <div className="grid min-h-screen place-items-center"><p role="status">Chargement…</p></div>;
 
   if (done) {
     return (
-      <main className="center">
-        <div className="card">
-          <PageHeading>Compte activé</PageHeading>
-          <p>Votre mot de passe est enregistré. Connectez-vous : vous configurerez ensuite votre application d&apos;authentification.</p>
-          <a href="/login">Aller à la connexion</a>
-        </div>
-      </main>
+      <AuthLayout title="Compte activé">
+        <AuthNotice tone="ok" role="status">Votre mot de passe est enregistré.</AuthNotice>
+        <p className="text-ink-2">Connectez-vous : vous configurerez ensuite votre application d’authentification (obligatoire).</p>
+        <Link href="/login" className="inline-block rounded-control bg-brand px-4 py-2 font-semibold text-brand-ink no-underline hover:bg-brand-hover">Aller à la connexion</Link>
+      </AuthLayout>
     );
   }
 
   if (!token.current) {
     return (
-      <main className="center">
-        <div className="card">
-          <PageHeading title="Invitation : lien invalide">Lien invalide</PageHeading>
-          <p>Ce lien d&apos;invitation est incomplet ou a déjà été utilisé. Demandez un nouveau lien à un administrateur.</p>
-        </div>
-      </main>
+      <AuthLayout title="Lien invalide ou expiré" documentTitle="Invitation : lien invalide">
+        <AuthNotice tone="warn" role="status">Ce lien d’invitation est incomplet, a expiré ou a déjà été utilisé.</AuthNotice>
+        <p className="text-ink-2">Demandez un nouveau lien à un administrateur.</p>
+      </AuthLayout>
     );
   }
 
   return (
-    <main className="center">
-      <form className="card" onSubmit={submit}>
-        <PageHeading>Activer votre compte</PageHeading>
-        <p>Choisissez votre mot de passe. Il n&apos;est connu que de vous.</p>
-        <label>
-          Nouveau mot de passe
-          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="new-password" maxLength={256} required autoFocus />
-        </label>
-        {password.length > 0 && hints.map((h) => <p key={h} className="hint bad">{h}</p>)}
-        <label>
-          Confirmez le mot de passe
-          <input type="password" value={confirmation} onChange={(e) => setConfirmation(e.target.value)} autoComplete="new-password" maxLength={256} required />
-        </label>
-        {mismatch && <p className="hint bad">Les deux mots de passe sont différents</p>}
-        {error && <p role="alert" className="error">{error}</p>}
-        <button type="submit" disabled={busy || hints.length > 0 || password !== confirmation || password.length === 0}>Activer mon compte</button>
+    <AuthLayout title="Activer votre compte" description="Choisissez votre mot de passe. Il n’est connu que de vous.">
+      <form onSubmit={submit}>
+        {error && <AuthNotice tone="bad" role="alert">{error}</AuthNotice>}
+        <NewPasswordFields password={password} confirmation={confirmation} onPassword={setPassword} onConfirmation={setConfirmation} />
+        <button type="submit" disabled={busy || hints.length > 0 || password !== confirmation || password.length === 0} className="w-full">Activer mon compte</button>
       </form>
-    </main>
+    </AuthLayout>
   );
 }

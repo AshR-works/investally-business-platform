@@ -1,11 +1,14 @@
 'use client';
 
-import { PageHeading } from '../../components/page-heading';
 import Link from 'next/link';
 import { FormEvent, useState } from 'react';
+import { AuthLayout } from '../../components/auth/auth-layout';
+import { AuthNotice } from '../../components/auth/auth-notice';
 import { Gate } from '../../components/gate';
-import { ApiError } from '../../lib/api';
+import { Icon } from '../../components/icon';
 import { useAuth } from '../../lib/auth-context';
+import { authErrorMessage, isRateLimited, RATE_LIMIT_WAIT_SECONDS } from '../../lib/auth-errors';
+import { useCooldown } from '../../lib/use-cooldown';
 
 /** Page de connexion, réservée aux visiteurs non connectés. */
 export default function LoginPage() {
@@ -16,32 +19,55 @@ export default function LoginPage() {
   );
 }
 
-/** Formulaire de connexion (adresse, mot de passe) avec lien « Mot de passe oublié ». */
+/**
+ * Formulaire de connexion (A01) : adresse et mot de passe, lien « Mot de passe oublié ». Le message d'échec est celui du
+ * serveur, identique pour un compte inconnu, mal saisi ou verrouillé (A14) ; une limitation de débit (A15) bloque le
+ * bouton pendant un compte à rebours.
+ */
 function LoginForm() {
   const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [limited, setLimited] = useState(false);
   const [busy, setBusy] = useState(false);
+  const cooldown = useCooldown();
 
-  /** Tente la connexion ; en cas d'échec affiche le message unique du serveur et vide le mot de passe. */
+  /** Tente la connexion ; en cas d'échec affiche le message du serveur et vide le mot de passe. */
   async function submit(event: FormEvent) {
     event.preventDefault();
     setBusy(true);
     setError(null);
+    setLimited(false);
     try {
       await login(email.trim(), password);
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : 'Connexion impossible. Réessayez.');
+      setError(authErrorMessage(e, 'Connexion impossible. Réessayez.'));
+      if (isRateLimited(e)) {
+        setLimited(true);
+        cooldown.start(RATE_LIMIT_WAIT_SECONDS);
+      }
       setPassword('');
       setBusy(false);
     }
   }
 
+  const waiting = limited && cooldown.remaining > 0;
+
   return (
-    <main className="center">
-      <form className="card" onSubmit={submit}>
-        <PageHeading title="Connexion">Investally CRM</PageHeading>
+    <AuthLayout
+      title="Connexion"
+      documentTitle="Connexion"
+      description="Accédez à votre espace de travail Investally."
+      step={{ current: 1, total: 2 }}
+      footer={<p className="m-0">Compte verrouillé après plusieurs échecs ? Patientez quelques minutes ou contactez un administrateur.</p>}
+    >
+      <form onSubmit={submit}>
+        {error && (
+          <AuthNotice tone={limited ? 'warn' : 'bad'} role="alert" title={limited ? 'Trop de tentatives' : undefined}>
+            {limited ? (waiting ? `Patientez avant de réessayer : encore ${cooldown.remaining} s.` : 'Vous pouvez réessayer.') : error}
+          </AuthNotice>
+        )}
         <label>
           Adresse e-mail
           <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="username" maxLength={254} required autoFocus />
@@ -50,11 +76,13 @@ function LoginForm() {
           Mot de passe
           <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" maxLength={256} required />
         </label>
-        {error && <p role="alert" className="error">{error}</p>}
-        <button type="submit" disabled={busy}>Se connecter</button>
-        <p className="hint"><Link href="/forgot-password">Mot de passe oublié ?</Link></p>
-        <p className="hint">Un second facteur (application d&apos;authentification) vous sera demandé.</p>
+        <p className="-mt-2 mb-5 text-right text-[length:var(--text-sm)]"><Link href="/forgot-password">Mot de passe oublié ?</Link></p>
+        <button type="submit" disabled={busy || waiting} className="w-full">{waiting ? `Patientez ${cooldown.remaining} s` : 'Se connecter'}</button>
+        <p className="mt-5 flex items-center gap-2 text-[length:var(--text-sm)] text-ink-2">
+          <Icon name="user" className="size-4" />
+          Un code de votre application d’authentification vous sera demandé ensuite.
+        </p>
       </form>
-    </main>
+    </AuthLayout>
   );
 }
