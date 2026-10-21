@@ -1,5 +1,6 @@
 import { AuditRecord } from '../../src/modules/audit';
 import { AcceptInvitationUseCase, InviteUserUseCase, ResendInvitationUseCase } from '../../src/modules/iam/application/admin/invitations.use-cases';
+import { IssuePasswordResetUseCase, RequestPasswordResetUseCase, ResetPasswordUseCase } from '../../src/modules/iam/application/admin/password-reset.use-cases';
 import { ListOwnSessionsHandler, RevokeSessionUseCase, RevokeUserSessionsUseCase } from '../../src/modules/iam/application/admin/session-management.use-cases';
 import { AssignRolesUseCase, SetUserStatusUseCase, UpdateUserUseCase } from '../../src/modules/iam/application/admin/user-management.use-cases';
 import { GetUserHandler, ListRolesHandler, ListUsersHandler } from '../../src/modules/iam/application/admin/user-queries';
@@ -71,6 +72,9 @@ export function buildIamWorld() {
   const inviteUser = new InviteUserUseCase(users, invitations, refreshFactory, email, auditRecorder, unitOfWork, clock, ids, config);
   const resendInvitation = new ResendInvitationUseCase(users, invitations, refreshFactory, email, auditRecorder, unitOfWork, clock, ids, config);
   const acceptInvitation = new AcceptInvitationUseCase(users, invitations, history, refreshFactory, hasher, auditRecorder, unitOfWork, clock, ids);
+  const requestPasswordReset = new RequestPasswordResetUseCase(users, invitations, refreshFactory, email, auditRecorder, unitOfWork, clock, ids, config);
+  const issuePasswordReset = new IssuePasswordResetUseCase(users, invitations, refreshFactory, email, auditRecorder, unitOfWork, clock, ids, config);
+  const resetPassword = new ResetPasswordUseCase(users, invitations, history, sessions, refreshTokens, refreshFactory, hasher, email, auditRecorder, unitOfWork, clock, ids);
   const updateUser = new UpdateUserUseCase(users, auditRecorder, unitOfWork);
   const setStatus = new SetUserStatusUseCase(users, sessions, refreshTokens, auditRecorder, unitOfWork, clock);
   const assignRoles = new AssignRolesUseCase(users, auditRecorder, unitOfWork);
@@ -90,6 +94,7 @@ export function buildIamWorld() {
     users, history, sessions, refreshTokens, attempts, hasher, clock, ids, audit,
     createUser, login, refresh, logout, authenticate, changePassword, createDefaultUser, PASSWORD,
     recoveryCodes, cipher, startMfa, confirmMfa, verifyMfa, regenerateCodes, resetMfa, codeNow,
+    requestPasswordReset, issuePasswordReset, resetPassword,
     invitations, email, authorization, inviteUser, resendInvitation, acceptInvitation, updateUser, setStatus, assignRoles,
     listUsers, getUser, listRoles, listOwnSessions, revokeSession, revokeUserSessions, refreshFactory,
   };

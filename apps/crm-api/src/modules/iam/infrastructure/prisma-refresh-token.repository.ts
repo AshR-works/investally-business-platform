@@ -3,10 +3,15 @@ import { PrismaService } from '../../../platform/prisma.service';
 import { RefreshTokenRepository } from '../domain/auth-repositories';
 import { RefreshTokenRecord } from '../domain/refresh-token';
 
+/**
+ * Jetons de rafraîchissement : seule l'empreinte est stockée ; rotation à chaque usage, avec détection de rejeu par
+ * famille.
+ */
 @Injectable()
 export class PrismaRefreshTokenRepository implements RefreshTokenRepository {
   constructor(private readonly prisma: PrismaService) {}
 
+  /** Enregistre un jeton émis (empreinte, session, famille, échéance). */
   async save(record: RefreshTokenRecord): Promise<void> {
     await this.prisma.db.refreshToken.create({
       data: {
@@ -22,6 +27,7 @@ export class PrismaRefreshTokenRepository implements RefreshTokenRepository {
     });
   }
 
+  /** Retrouve un jeton par son empreinte, ou `null`. */
   async findByHash(tokenHash: string): Promise<RefreshTokenRecord | null> {
     const row = await this.prisma.db.refreshToken.findUnique({ where: { tokenHash } });
     return row
@@ -44,10 +50,12 @@ export class PrismaRefreshTokenRepository implements RefreshTokenRepository {
     return result.count === 1;
   }
 
+  /** Révoque toute la famille (rejeu détecté : la connexion d'origine est coupée). */
   async revokeFamily(familyId: string, now: Date): Promise<void> {
     await this.prisma.db.refreshToken.updateMany({ where: { familyId, revokedAt: null }, data: { revokedAt: now } });
   }
 
+  /** Révoque tous les jetons d'une session (déconnexion, désactivation, changement de mot de passe). */
   async revokeBySession(sessionId: string, now: Date): Promise<void> {
     await this.prisma.db.refreshToken.updateMany({ where: { sessionId, revokedAt: null }, data: { revokedAt: now } });
   }

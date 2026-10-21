@@ -13,6 +13,10 @@ export const LOCKOUT_THRESHOLD = 5;
 /** Durées de verrouillage successives (minutes) ; la dernière se répète. Jamais définitif (SECURITY.md §2.4). */
 export const LOCKOUT_STEPS_MINUTES: readonly number[] = [1, 5, 15, 60];
 
+/**
+ * État interne d'un utilisateur : identité, statut, mot de passe haché, compteurs de verrouillage, MFA, responsable,
+ * dates.
+ */
 export interface UserProps {
   id: string;
   email: Email;
@@ -33,6 +37,10 @@ export interface UserProps {
   createdAt: Date;
 }
 
+/**
+ * Agrégat Utilisateur : compte, mot de passe, verrouillage progressif, MFA, responsable et statut. Toutes les règles
+ * de compte vivent ici.
+ */
 export class User extends AggregateRoot {
   private constructor(private props: UserProps) {
     super();
@@ -89,6 +97,7 @@ export class User extends AggregateRoot {
     return this.props.status === UserStatus.Active && this.props.passwordHash !== null;
   }
 
+  /** Vrai si le compte est verrouillé à cet instant (après des échecs répétés). */
   isLocked(now: Date): boolean {
     return this.props.lockedUntil !== null && this.props.lockedUntil.getTime() > now.getTime();
   }
@@ -103,6 +112,7 @@ export class User extends AggregateRoot {
     }
   }
 
+  /** Enregistre une connexion réussie : remet à zéro les échecs et le verrouillage, note la date. */
   registerSuccessfulLogin(now: Date): void {
     this.props.failedLoginCount = 0;
     this.props.lockedUntil = null;
@@ -115,6 +125,7 @@ export class User extends AggregateRoot {
     this.props.lockedUntil = null;
   }
 
+  /** Remplace le mot de passe (déjà haché) ; lève aussi tout verrouillage en cours. */
   changePassword(passwordHash: string, now: Date): void {
     this.props.passwordHash = passwordHash;
     this.props.passwordChangedAt = now;
@@ -137,6 +148,7 @@ export class User extends AggregateRoot {
     this.props.mfaLastUsedStep = step;
   }
 
+  /** Retient le dernier pas TOTP utilisé : un même code ne peut pas servir deux fois (anti-rejeu). */
   recordMfaStep(step: number): void {
     this.props.mfaLastUsedStep = step;
   }
@@ -168,17 +180,20 @@ export class User extends AggregateRoot {
     this.props.status = UserStatus.Active;
   }
 
+  /** Change le nom affiché (1 à 200 caractères). */
   rename(displayName: string): void {
     const name = displayName.trim();
     if (name.length === 0 || name.length > 200) throw new DomainError('VALIDATION', 'Le nom doit contenir entre 1 et 200 caractères');
     this.props.displayName = name;
   }
 
+  /** Définit ou retire le responsable direct ; personne ne peut être son propre responsable. */
   assignManager(managerId: string | null): void {
     if (managerId === this.props.id) throw new DomainError('INVARIANT_VIOLATION', 'Un utilisateur ne peut pas être son propre responsable');
     this.props.managerId = managerId;
   }
 
+  /** Désactive le compte (aucune connexion possible) ; les sessions sont coupées par l'appelant. */
   disable(): void {
     this.props.status = UserStatus.Disabled;
   }

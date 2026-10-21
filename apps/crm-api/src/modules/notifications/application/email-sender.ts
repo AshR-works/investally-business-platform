@@ -1,3 +1,4 @@
+/** Un e-mail : destinataire unique, sujet, texte brut obligatoire et HTML facultatif. */
 export interface EmailMessage {
   /** Destinataire unique (les envois en masse n'existent pas dans le CRM). */
   to: string;
@@ -16,6 +17,7 @@ export interface EmailMessage {
  */
 export type EmailResult = { ok: true } | { ok: false; reason: 'INVALID' | 'REJECTED' | 'UNAVAILABLE' };
 
+/** Port d'envoi d'e-mails ; ne lève jamais d'exception, renvoie une issue (`ok` ou raison de l'échec). */
 export interface EmailSender {
   send(message: EmailMessage): Promise<EmailResult>;
 }

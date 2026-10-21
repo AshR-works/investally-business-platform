@@ -6,6 +6,10 @@ import { useAuth } from '../../lib/auth-context';
 import { can } from '../../lib/permissions';
 import type { Company, Page } from '../../lib/types';
 
+/**
+ * Page d'accueil : entreprises visibles selon la portée de l'utilisateur et création d'une entreprise (si le droit
+ * existe).
+ */
 export default function CompaniesPage() {
   const { profile } = useAuth();
   const [data, setData] = useState<Page<Company>>({ items: [], total: 0 });
@@ -29,6 +33,7 @@ export default function CompaniesPage() {
     void load();
   }, [load]);
 
+  /** Enregistre l'entreprise saisie puis recharge la liste. */
   async function submit(event: FormEvent) {
     event.preventDefault();
     setError(null);

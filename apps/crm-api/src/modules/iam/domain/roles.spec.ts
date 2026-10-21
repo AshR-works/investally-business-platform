@@ -38,7 +38,7 @@ describe('Matrice rôles → permissions', () => {
   });
 
   it("réserve la gestion des comptes et des rôles au SuperAdmin", () => {
-    const adminOnly = ['iam.user.create', 'iam.user.update', 'iam.user.disable', 'iam.user.assign_role', 'iam.user.reset_mfa', 'iam.role.manage'];
+    const adminOnly = ['iam.user.create', 'iam.user.update', 'iam.user.disable', 'iam.user.assign_role', 'iam.user.reset_mfa', 'iam.user.reset_password', 'iam.role.manage'];
     for (const role of Object.values(RoleCode).filter((r) => r !== RoleCode.SuperAdmin)) {
       expect(codesOf(role).filter((c) => adminOnly.includes(c))).toEqual([]);
     }

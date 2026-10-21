@@ -19,4 +19,5 @@ import { CompaniesController } from './presentation/companies.controller';
     { provide: COMPANY_REPOSITORY, useClass: PrismaCompanyRepository },
   ],
 })
+/** Module « Développement commercial » : entreprises cibles (première brique du pipeline commercial). */
 export class BusinessDevelopmentModule {}

@@ -26,6 +26,10 @@ export class AuthenticateAccessTokenUseCase {
     @Inject(CLOCK) private readonly clock: Clock,
   ) {}
 
+  /**
+   * Authentifie un jeton d'accès : signature et échéance, session encore active, compte autorisé à se connecter, MFA
+   * effectivement vérifié. `null` à la moindre défaillance.
+   */
   async execute(token: string): Promise<AuthenticatedActor | null> {
     const now = this.clock.now();
     const claims = await this.tokens.verify(token, now);

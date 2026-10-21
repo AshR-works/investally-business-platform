@@ -11,6 +11,7 @@ export enum UserStatusFilter {
   Disabled = 'DISABLED',
 }
 
+/** Paramètres de la liste des utilisateurs : page, taille ≤ 100, recherche ≤ 100 caractères, statut connu. */
 export class ListUsersDto {
   @ApiPropertyOptional({ default: 1 })
   @IsOptional() @Type(() => Number) @IsInt() @Min(1)
@@ -29,6 +30,7 @@ export class ListUsersDto {
   status?: UserStatusFilter;
 }
 
+/** Corps d'une invitation : adresse, nom, 1 à 10 rôles, responsable facultatif ; tout autre champ est refusé. */
 export class InviteUserDto {
   @ApiProperty({ maxLength: 254 })
   @IsString() @IsNotEmpty() @MaxLength(254)
@@ -47,6 +49,7 @@ export class InviteUserDto {
   managerId?: string;
 }
 
+/** Corps d'une modification : nom et/ou responsable. */
 export class UpdateUserDto {
   @ApiPropertyOptional({ maxLength: 200 })
   @IsOptional() @IsString() @IsNotEmpty() @MaxLength(200)
@@ -58,14 +61,39 @@ export class UpdateUserDto {
   managerId?: string | null;
 }
 
+/** Corps d'une attribution de rôles : 1 à 10 codes de rôle. */
 export class AssignRolesDto {
   @ApiProperty({ type: [String] })
   @IsArray() @ArrayMinSize(1) @ArrayMaxSize(10) @IsString({ each: true }) @MaxLength(50, { each: true })
   roles!: string[];
 }
 
+/** Corps d'activation d'un compte invité : jeton du lien et mot de passe choisi (tailles bornées). */
 export class AcceptInvitationDto {
   /** Jeton reçu dans le fragment du lien d'invitation. Plafonné : jamais de chaîne démesurée. */
+  @ApiProperty({ maxLength: 200 })
+  @IsString() @IsNotEmpty() @MaxLength(200)
+  token!: string;
+
+  @ApiProperty({ maxLength: 256 })
+  @IsString() @IsNotEmpty() @MaxLength(256)
+  password!: string;
+}
+
+/**
+ * Corps de « mot de passe oublié » : l'adresse saisie, sans validation de forme (la réponse est identique pour toute
+ * saisie).
+ */
+export class RequestPasswordResetDto {
+  /** Volontairement non validé comme e-mail : la réponse est identique pour toute saisie (aucune énumération de comptes). */
+  @ApiProperty({ maxLength: 254 })
+  @IsString() @MaxLength(254)
+  email!: string;
+}
+
+/** Corps du choix d'un nouveau mot de passe : jeton du lien (fragment d'URL) et mot de passe, tailles bornées. */
+export class ResetPasswordDto {
+  /** Jeton reçu dans le fragment du lien. Plafonné : jamais de chaîne démesurée. */
   @ApiProperty({ maxLength: 200 })
   @IsString() @IsNotEmpty() @MaxLength(200)
   token!: string;

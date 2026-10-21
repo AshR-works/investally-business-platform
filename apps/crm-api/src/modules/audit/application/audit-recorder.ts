@@ -3,6 +3,10 @@ import { ActorContext, CLOCK, Clock, ID_GENERATOR, IdGenerator } from '../../../
 import { AUDIT_REPOSITORY, AuditRepository } from '../domain/audit-repository';
 import { AuditAction } from '../domain/audit-entry';
 
+/**
+ * Ce qu'un cas d'usage fournit pour tracer une action : qui, dans quel module, sur quelle entité, quoi, avec
+ * l'ancienne et la nouvelle valeur.
+ */
 export interface AuditRecord {
   actor: ActorContext;
   module: string;
@@ -20,6 +24,10 @@ export interface AuditRecorder {
 
 export const AUDIT_RECORDER = Symbol('AuditRecorder');
 
+/**
+ * Enregistreur d'audit par défaut : complète l'enregistrement (identifiant, horodatage) puis l'ajoute au journal en
+ * ajout seul.
+ */
 @Injectable()
 export class DefaultAuditRecorder implements AuditRecorder {
   constructor(
@@ -28,6 +36,10 @@ export class DefaultAuditRecorder implements AuditRecorder {
     @Inject(ID_GENERATOR) private readonly ids: IdGenerator,
   ) {}
 
+  /**
+   * Ajoute une entrée au journal d'audit, dans la transaction en cours si elle existe (l'audit et l'action
+   * réussissent ou échouent ensemble).
+   */
   async record(record: AuditRecord): Promise<void> {
     await this.repository.append({
       id: this.ids.next(),

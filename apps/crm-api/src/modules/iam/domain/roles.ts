@@ -24,6 +24,10 @@ export enum RoleCode {
   Tax = 'TAX',
 }
 
+/**
+ * Un rôle métier : code, libellé, description et exigence de MFA (obligatoire pour tous depuis la décision du
+ * 2026-10-20).
+ */
 export interface RoleDefinition {
   code: RoleCode;
   label: string;
@@ -45,12 +49,14 @@ export const ROLES: readonly RoleDefinition[] = [
   { code: RoleCode.Tax, label: 'Fiscalité', description: "Aucun accès métier CRM (l'ERP couvrira le périmètre fiscal).", mfaRequired: true },
 ];
 
+/** Droit accordé à un rôle : permission exacte ou motif (`bd.*`) et portée (Propre, Équipe, Tous). */
 export interface Grant {
   /** Code exact (`bd.company.read`) ou motif (`bd.company.*`, `bd.*`). */
   permission: string;
   scope: Scope;
 }
 
+/** Raccourci d'écriture d'un droit dans la matrice rôles → permissions. */
 const g = (permission: string, scope: Scope): Grant => ({ permission, scope });
 const { Own, Team, All } = Scope;
 
@@ -144,6 +150,7 @@ export const ROLE_GRANTS: Record<RoleCode, readonly Grant[]> = {
   [RoleCode.Tax]: [g('iam.session.read', Own), g('iam.session.revoke', Own)],
 };
 
+/** Droit élargi : un motif est remplacé par les permissions exactes du catalogue. */
 export interface ResolvedGrant {
   permission: string;
   scope: Scope;
@@ -151,6 +158,10 @@ export interface ResolvedGrant {
 
 const SCOPE_RANK: Record<Scope, number> = { [Scope.Own]: 1, [Scope.Team]: 2, [Scope.All]: 3 };
 
+/**
+ * Élargit un motif (`iam.*`) en codes de permission du catalogue ; un code exact reste tel quel, un motif inconnu ne
+ * donne rien.
+ */
 function expand(pattern: string): string[] {
   if (PERMISSION_CODES.has(pattern)) return [pattern];
   if (!pattern.endsWith('.*')) return [];

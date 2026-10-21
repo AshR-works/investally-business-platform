@@ -12,16 +12,22 @@ const PAGE_SIZE = 20;
 type Dialog =
   | { kind: 'invite' }
   | { kind: 'roles'; user: UserView }
-  | { kind: 'confirm'; user: UserView; action: 'disable' | 'enable' | 'resetMfa' | 'revokeSessions' | 'resend' };
+  | { kind: 'confirm'; user: UserView; action: 'disable' | 'enable' | 'resetMfa' | 'revokeSessions' | 'resend' | 'resetPassword' };
 
-const CONFIRM_TEXT: Record<'disable' | 'enable' | 'resetMfa' | 'revokeSessions' | 'resend', { title: string; body: string; button: string; danger: boolean }> = {
+const CONFIRM_TEXT: Record<'disable' | 'enable' | 'resetMfa' | 'revokeSessions' | 'resend' | 'resetPassword', { title: string; body: string; button: string; danger: boolean }> = {
   disable: { title: 'Désactiver le compte', body: 'La personne ne pourra plus se connecter et ses sessions seront coupées immédiatement.', button: 'Désactiver', danger: true },
   enable: { title: 'Réactiver le compte', body: 'La personne pourra de nouveau se connecter.', button: 'Réactiver', danger: false },
   resetMfa: { title: 'Réinitialiser le second facteur', body: 'La personne devra configurer de nouveau son application d’authentification à sa prochaine connexion.', button: 'Réinitialiser', danger: true },
   revokeSessions: { title: 'Couper toutes les sessions', body: 'La personne sera déconnectée partout, immédiatement.', button: 'Couper les sessions', danger: true },
+  resetPassword: { title: 'Envoyer un lien de réinitialisation du mot de passe', body: 'Un lien (valable 48 h, usage unique) est envoyé à l’adresse e-mail de la personne. Son mot de passe actuel reste valable tant qu’elle n’a pas choisi le nouveau ; son second facteur est conservé. L’action est tracée.', button: 'Envoyer le lien', danger: false },
   resend: { title: 'Renvoyer l’invitation', body: 'Un nouveau lien (valable 48 h) est envoyé ; l’ancien cesse de fonctionner.', button: 'Renvoyer', danger: false },
 };
 
+/**
+ * Page d'administration des utilisateurs : liste, recherche, filtre, pagination et actions (inviter, rôles,
+ * désactiver, réinitialiser mot de passe ou MFA, couper les sessions). Chaque bouton dépend des droits ; le serveur
+ * re-contrôle tout.
+ */
 export default function UsersPage() {
   const { profile } = useAuth();
   const [users, setUsers] = useState<Page<UserView>>({ items: [], total: 0 });
@@ -38,6 +44,7 @@ export default function UsersPage() {
   const canAssign = can(profile, 'iam.user.assign_role');
   const canDisable = can(profile, 'iam.user.disable');
   const canResetMfa = can(profile, 'iam.user.reset_mfa');
+  const canResetPassword = can(profile, 'iam.user.reset_password');
   const canRevokeAll = profile?.permissions.some((g) => g.code === 'iam.session.revoke' && g.scope === 'ALL') ?? false;
 
   const canRead = can(profile, 'iam.user.read');
@@ -65,6 +72,10 @@ export default function UsersPage() {
 
   const pages = Math.max(1, Math.ceil(users.total / PAGE_SIZE));
 
+  /**
+   * Exécute une action d'administration, affiche son résultat (succès ou message du serveur), ferme la fenêtre et
+   * recharge la liste.
+   */
   async function run(action: () => Promise<unknown>, success: string) {
     setError(null);
     setNotice(null);
@@ -79,17 +90,22 @@ export default function UsersPage() {
     }
   }
 
-  function confirmAction(user: UserView, action: 'disable' | 'enable' | 'resetMfa' | 'revokeSessions' | 'resend') {
+  /** Associe chaque action de confirmation à son appel d'API et à son message de succès. */
+  function confirmAction(user: UserView, action: 'disable' | 'enable' | 'resetMfa' | 'revokeSessions' | 'resend' | 'resetPassword') {
     const calls = {
       disable: () => api(`/admin/users/${user.id}/disable`, { method: 'POST' }),
       enable: () => api(`/admin/users/${user.id}/enable`, { method: 'POST' }),
       resetMfa: () => api(`/admin/users/${user.id}/mfa/reset`, { method: 'POST' }),
       revokeSessions: () => api(`/admin/users/${user.id}/sessions/revoke`, { method: 'POST' }),
       resend: () => api<{ emailSent: boolean }>(`/admin/users/${user.id}/invitations`, { method: 'POST' }),
+      resetPassword: async () => {
+        const result = await api<{ emailSent: boolean }>(`/admin/users/${user.id}/password-reset`, { method: 'POST' });
+        if (!result.emailSent) throw new ApiError(502, 'EMAIL_NOT_SENT', 'Le lien est créé, mais l’e-mail n’a pas pu partir. Réessayez dans un instant.');
+      },
     };
     const done = {
       disable: 'Compte désactivé', enable: 'Compte réactivé', resetMfa: 'Second facteur réinitialisé',
-      revokeSessions: 'Sessions coupées', resend: 'Invitation renvoyée',
+      revokeSessions: 'Sessions coupées', resend: 'Invitation renvoyée', resetPassword: 'Lien de réinitialisation envoyé',
     };
     void run(calls[action], done[action]);
   }
@@ -152,6 +168,7 @@ export default function UsersPage() {
                     {canInvite && user.status === 'PENDING' && <button type="button" className="secondary small" onClick={() => setDialog({ kind: 'confirm', user, action: 'resend' })}>Renvoyer le lien</button>}
                     {canDisable && user.status !== 'DISABLED' && user.id !== profile?.userId && <button type="button" className="secondary small" onClick={() => setDialog({ kind: 'confirm', user, action: 'disable' })}>Désactiver</button>}
                     {canDisable && user.status === 'DISABLED' && <button type="button" className="secondary small" onClick={() => setDialog({ kind: 'confirm', user, action: 'enable' })}>Réactiver</button>}
+                    {canResetPassword && (user.status === 'ACTIVE' || user.status === 'LOCKED') && user.id !== profile?.userId && <button type="button" className="secondary small" onClick={() => setDialog({ kind: 'confirm', user, action: 'resetPassword' })}>Réinitialiser le mot de passe</button>}
                     {canResetMfa && user.mfaEnabled && user.id !== profile?.userId && <button type="button" className="secondary small" onClick={() => setDialog({ kind: 'confirm', user, action: 'resetMfa' })}>Réinitialiser le MFA</button>}
                     {canRevokeAll && user.id !== profile?.userId && <button type="button" className="secondary small" onClick={() => setDialog({ kind: 'confirm', user, action: 'revokeSessions' })}>Couper les sessions</button>}
                   </div>
@@ -204,6 +221,7 @@ export default function UsersPage() {
   );
 }
 
+/** Cases à cocher des rôles, avec leur description. */
 function RoleChoices({ roles, selected, onToggle }: { roles: RoleView[]; selected: string[]; onToggle: (code: string) => void }) {
   return (
     <fieldset>
@@ -218,10 +236,12 @@ function RoleChoices({ roles, selected, onToggle }: { roles: RoleView[]; selecte
   );
 }
 
+/** Ajoute le code à la liste s'il n'y est pas, le retire sinon (sans modifier la liste d'origine). */
 function toggle(list: string[], code: string): string[] {
   return list.includes(code) ? list.filter((c) => c !== code) : [...list, code];
 }
 
+/** Fenêtre d'invitation : adresse, nom, rôles et responsable facultatif. */
 function InviteDialog({ roles, managers, onClose, onSubmit }: {
   roles: RoleView[];
   managers: UserView[];
@@ -234,6 +254,7 @@ function InviteDialog({ roles, managers, onClose, onSubmit }: {
   const [managerId, setManagerId] = useState('');
   const [busy, setBusy] = useState(false);
 
+  /** Envoie l'invitation avec les rôles cochés (au moins un). */
   async function submit(event: FormEvent) {
     event.preventDefault();
     setBusy(true);
@@ -264,6 +285,10 @@ function InviteDialog({ roles, managers, onClose, onSubmit }: {
   );
 }
 
+/**
+ * Fenêtre de modification des rôles d'un utilisateur ; le changement s'applique immédiatement, y compris aux sessions
+ * ouvertes.
+ */
 function RolesDialog({ user, roles, onClose, onSubmit }: {
   user: UserView;
   roles: RoleView[];

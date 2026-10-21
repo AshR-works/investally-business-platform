@@ -5,6 +5,10 @@ export enum RiskLevel {
   Critical = 'CRITICAL',
 }
 
+/**
+ * Signaux observés à la connexion (nouvel appareil, nouveau réseau, échecs récents) qui servent à calculer le risque
+ * de la session.
+ */
 export interface RiskSignals {
   /** Appareil/navigateur jamais vu pour ce compte. */
   newDevice: boolean;

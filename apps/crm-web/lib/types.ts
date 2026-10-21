@@ -1,3 +1,4 @@
+/** Profil de l'utilisateur connecté : identité, rôles, droits (avec portée) et état du MFA. */
 export interface Profile {
   userId: string;
   email: string;
@@ -7,6 +8,7 @@ export interface Profile {
   mfaEnrolled: boolean;
 }
 
+/** Page de résultats paginés renvoyée par l'API. */
 export interface Page<T> {
   items: T[];
   total: number;
@@ -14,6 +16,7 @@ export interface Page<T> {
   pageSize?: number;
 }
 
+/** Utilisateur tel que l'API l'expose à l'administration. */
 export interface UserView {
   id: string;
   email: string;
@@ -26,6 +29,7 @@ export interface UserView {
   createdAt: string;
 }
 
+/** Rôle et ses permissions, tels que l'API les expose. */
 export interface RoleView {
   code: string;
   label: string;
@@ -34,6 +38,7 @@ export interface RoleView {
   permissions: { code: string; scope: string }[];
 }
 
+/** Session de connexion telle que l'API l'expose (la courante est marquée). */
 export interface SessionView {
   id: string;
   ipAddress: string;
@@ -46,6 +51,7 @@ export interface SessionView {
   current: boolean;
 }
 
+/** Entreprise cible telle que l'API l'expose. */
 export interface Company {
   id: string;
   name: string;

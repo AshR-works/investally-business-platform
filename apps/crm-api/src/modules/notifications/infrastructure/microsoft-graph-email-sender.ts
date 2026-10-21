@@ -30,6 +30,10 @@ export class MicrosoftGraphEmailSender implements EmailSender {
     private readonly now: () => number = () => Date.now(),
   ) {}
 
+  /**
+   * Envoie par Microsoft Graph avec un jeton d'application ; toute erreur devient une issue d'échec sans secret dans
+   * les journaux. Jamais testé contre le service réel.
+   */
   async send(message: EmailMessage): Promise<EmailResult> {
     const reason = invalidReason(message);
     if (reason) {
@@ -66,10 +70,12 @@ export class MicrosoftGraphEmailSender implements EmailSender {
     return { ok: false, reason: 'REJECTED' };
   }
 
+  /** Adresse de l'API `sendMail` de la boîte d'expédition configurée. */
   private sendUrl(): string {
     return `https://graph.microsoft.com/v1.0/users/${encodeURIComponent(this.credentials.sender)}/sendMail`;
   }
 
+  /** Corps de la requête Graph : sujet, contenu (texte ou HTML) et destinataire. */
   private payload(message: EmailMessage) {
     return {
       message: {

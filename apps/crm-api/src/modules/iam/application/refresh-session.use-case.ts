@@ -12,6 +12,7 @@ import { RiskLevel } from '../domain/session-risk';
 import { REFRESH_TOKEN_FACTORY, RefreshTokenFactory } from './ports';
 import { IssuedTokens, SessionTokenService } from './session-token.service';
 
+/** Rafraîchissement : jeton présenté (cookie) et contexte du client. */
 export interface RefreshCommand {
   refreshToken: string;
   actor: ActorContext;
@@ -21,6 +22,10 @@ type RefreshResult = { ok: true; value: IssuedTokens & { sessionId: string; user
 
 const GENERIC_FAILURE = 'Session invalide ou expirée';
 
+/**
+ * Échange un jeton de rafraîchissement contre un nouveau jeton d'accès et un nouveau jeton de rafraîchissement
+ * (rotation, détection de rejeu).
+ */
 @Injectable()
 export class RefreshSessionUseCase {
   constructor(
@@ -41,6 +46,10 @@ export class RefreshSessionUseCase {
     return result.value;
   }
 
+  /**
+   * Consomme le jeton de façon atomique ; un rejeu hors tolérance de 10 s coupe toute la famille et la session ;
+   * sinon émet la paire suivante.
+   */
   private async rotate(command: RefreshCommand): Promise<RefreshResult> {
     const now = this.clock.now();
     const hash = this.factory.hashOf(command.refreshToken);

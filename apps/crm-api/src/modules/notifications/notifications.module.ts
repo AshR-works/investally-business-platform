@@ -18,4 +18,8 @@ import { MicrosoftGraphEmailSender } from './infrastructure/microsoft-graph-emai
   ],
   exports: [EMAIL_SENDER],
 })
+/**
+ * Module de notifications : fournit le port d'envoi d'e-mails (journal en développement, Microsoft 365 en
+ * production).
+ */
 export class NotificationsModule {}

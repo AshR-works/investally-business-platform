@@ -27,6 +27,7 @@ export class RegenerateRecoveryCodesUseCase {
     @Inject(ID_GENERATOR) private readonly ids: IdGenerator,
   ) {}
 
+  /** Remplace les 10 codes de secours (les anciens cessent de fonctionner) ; exige un MFA récent. */
   async execute(command: { userId: string; sessionId: string; actor: ActorContext }): Promise<{ recoveryCodes: string[] }> {
     const now = this.clock.now();
     const session = await this.sessions.findById(command.sessionId);
@@ -70,6 +71,10 @@ export class ResetMfaUseCase {
     @Inject(CLOCK) private readonly clock: Clock,
   ) {}
 
+  /**
+   * Réinitialise le MFA d'un autre utilisateur (jamais le sien) : supprime secret et codes, coupe toutes ses
+   * sessions, audite.
+   */
   async execute(command: { targetUserId: string; actor: ActorContext }): Promise<void> {
     if (command.actor.userId !== null && command.actor.userId === command.targetUserId) {
       throw new DomainError('FORBIDDEN', 'Vous ne pouvez pas réinitialiser votre propre MFA');

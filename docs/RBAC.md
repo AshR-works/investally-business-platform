@@ -91,6 +91,7 @@ Cellule : **O**, **É**, **T** = portée accordée ; vide = non accordée.
 | `iam.user.disable` | T |  |  |  |  |  |  |  |  |  |
 | `iam.user.assign_role` | T |  |  |  |  |  |  |  |  |  |
 | `iam.user.reset_mfa` | T |  |  |  |  |  |  |  |  |  |
+| `iam.user.reset_password` | T |  |  |  |  |  |  |  |  |  |
 | `iam.role.read` | T |  |  |  |  |  |  |  |  |  |
 | `iam.role.manage` | T |  |  |  |  |  |  |  |  |  |
 | `iam.session.read` | T | O | O | O | O | O | O | O | O | O |

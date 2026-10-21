@@ -7,6 +7,10 @@ import { Gate } from '../../components/gate';
 import { useAuth } from '../../lib/auth-context';
 import { can, roleLabel } from '../../lib/permissions';
 
+/**
+ * Cadre de toutes les pages connectées : n'affiche rien tant que l'utilisateur n'est pas authentifié avec son second
+ * facteur.
+ */
 export default function AppLayout({ children }: { children: ReactNode }) {
   return (
     <Gate allow={['ready']}>
@@ -15,6 +19,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   );
 }
 
+/** Barre latérale (menus selon les droits, identité, déconnexion) et zone de contenu. */
 function Shell({ children }: { children: ReactNode }) {
   const { profile, logout } = useAuth();
   const pathname = usePathname();

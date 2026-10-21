@@ -13,6 +13,7 @@ export interface UserView {
   createdAt: string;
 }
 
+/** Transforme un utilisateur en représentation publique (jamais de hachage, de secret MFA ni de compteur interne). */
 export function toUserView(user: User, roles: readonly string[]): UserView {
   return {
     id: user.id,
@@ -27,6 +28,7 @@ export function toUserView(user: User, roles: readonly string[]): UserView {
   };
 }
 
+/** Rôle tel qu'exposé à l'administration : code, libellé, description, MFA exigé et permissions. */
 export interface RoleView {
   code: string;
   label: string;

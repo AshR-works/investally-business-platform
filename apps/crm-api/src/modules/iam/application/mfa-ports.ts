@@ -8,16 +8,19 @@ export interface SecretCipher {
   decrypt(blob: string, context: string): string;
 }
 
+/** Port : génération d'un secret TOTP. */
 export interface TotpGenerator {
   /** Nouveau secret aléatoire de 160 bits, en base32 (format des applications d'authentification). */
   generateSecret(): string;
 }
 
+/** Port : génération d'un lot de codes de secours. */
 export interface RecoveryCodeGenerator {
   /** `count` codes uniques, en forme normalisée (10 caractères, sans tiret). */
   generate(count: number): string[];
 }
 
+/** Port : stockage des codes de secours (hachages) et consommation atomique d'un code. */
 export interface RecoveryCodeRepository {
   /** Remplace TOUS les codes de l'utilisateur par ces hachages (les anciens deviennent invalides). */
   replaceAll(userId: string, hashes: { id: string; hash: string }[], now: Date): Promise<void>;

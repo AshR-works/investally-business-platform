@@ -19,4 +19,8 @@ import { UuidV7Generator } from './uuid-v7-generator';
   ],
   exports: [PrismaService, APP_CONFIG, UNIT_OF_WORK, CLOCK, ID_GENERATOR],
 })
+/**
+ * Module technique commun : accès base (Prisma), horloge, générateur d'identifiants, unité de travail et
+ * configuration.
+ */
 export class PlatformModule {}

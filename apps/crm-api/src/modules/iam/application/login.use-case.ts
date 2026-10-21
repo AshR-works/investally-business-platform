@@ -16,12 +16,14 @@ import { UserSession } from '../domain/user-session';
 import { PASSWORD_HASHER, PasswordHasher } from './ports';
 import { IssuedTokens, SessionTokenService } from './session-token.service';
 
+/** Données d'une connexion : adresse, mot de passe et contexte du client (IP, appareil). */
 export interface LoginCommand {
   email: string;
   password: string;
   actor: ActorContext;
 }
 
+/** Connexion réussie : jetons, session, niveau de risque et état du MFA (exigé, configuré, vérifié). */
 export interface LoginSuccess extends IssuedTokens {
   userId: string;
   sessionId: string;
@@ -41,6 +43,10 @@ const RECENT_FAILURES_WINDOW_MS = 24 * 60 * 60 * 1000;
 /** Message unique : jamais de distinction entre e-mail inconnu, mauvais mot de passe, compte verrouillé ou inactif. */
 const GENERIC_FAILURE = 'Identifiants invalides';
 
+/**
+ * Connexion par mot de passe : message d'échec unique, verrouillage progressif, risque de la session, audit de chaque
+ * tentative.
+ */
 @Injectable()
 export class LoginUseCase {
   constructor(
@@ -65,6 +71,10 @@ export class LoginUseCase {
     return result.value;
   }
 
+  /**
+   * Déroule une tentative sous verrou de ligne : compte inconnu (temps de hachage égalisé), verrouillé, inactif,
+   * mauvais mot de passe ou succès ; persiste toujours compteur, tentative et audit.
+   */
   private async attempt(command: LoginCommand): Promise<LoginOutcomeResult> {
     const now = this.clock.now();
     const emailKey = Email.keyOf(command.email);

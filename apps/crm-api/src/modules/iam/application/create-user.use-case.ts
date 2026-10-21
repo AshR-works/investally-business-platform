@@ -12,6 +12,10 @@ import { RoleCode } from '../domain/roles';
 import { User } from '../domain/user';
 import { PASSWORD_HASHER, PasswordHasher } from './ports';
 
+/**
+ * Création directe d'un compte actif avec mot de passe (outil de démarrage et tests ; le parcours normal est
+ * l'invitation).
+ */
 export interface CreateUserCommand {
   email: string;
   displayName: string;
@@ -21,6 +25,7 @@ export interface CreateUserCommand {
   actor: ActorContext;
 }
 
+/** Compte créé : identifiant, adresse et rôles. */
 export interface CreatedUser {
   id: string;
   email: string;
@@ -42,6 +47,10 @@ export class CreateUserUseCase {
     @Inject(ID_GENERATOR) private readonly ids: IdGenerator,
   ) {}
 
+  /**
+   * Vérifie la politique de mot de passe et l'unicité de l'adresse, crée le compte, ses rôles et son historique, et
+   * l'audite.
+   */
   async execute(command: CreateUserCommand): Promise<CreatedUser> {
     const email = Email.of(command.email);
     const displayName = command.displayName.trim();

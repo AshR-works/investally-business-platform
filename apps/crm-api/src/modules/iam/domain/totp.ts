@@ -21,12 +21,14 @@ export function timeStepOf(nowMs: number, stepSeconds = TOTP_STEP_SECONDS): numb
   return Math.floor(nowMs / 1000 / stepSeconds);
 }
 
+/** Code TOTP à 6 chiffres (RFC 6238) pour un secret et un instant donnés ; sert aux tests et à l'enrôlement. */
 export function totp(secret: Buffer, nowMs: number, digits = TOTP_DIGITS): string {
   return hotp(secret, timeStepOf(nowMs), digits);
 }
 
 export type TotpVerification = { ok: true; step: number } | { ok: false };
 
+/** Compare deux codes en temps constant (aucune information ne fuit par la durée de la comparaison). */
 function equalCodes(a: string, b: string): boolean {
   const left = Buffer.from(a);
   const right = Buffer.from(b);

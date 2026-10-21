@@ -9,6 +9,7 @@ import { CompanyStatus } from '../domain/company-status';
 
 type CompanyRow = Prisma.CompanyGetPayload<object>;
 
+/** Reconstruit une entreprise du domaine à partir d'une ligne de base de données. */
 function toDomain(row: CompanyRow): Company {
   return Company.rehydrate({
     id: row.id,
@@ -22,10 +23,12 @@ function toDomain(row: CompanyRow): Company {
   });
 }
 
+/** Persistance PostgreSQL des entreprises (suppression logique : une entreprise supprimée est ignorée partout). */
 @Injectable()
 export class PrismaCompanyRepository implements CompanyRepository {
   constructor(private readonly prisma: PrismaService) {}
 
+  /** Crée ou met à jour l'entreprise (clé de nom normalisée pour l'unicité). */
   async save(company: Company): Promise<void> {
     const data = {
       name: company.name.value,
@@ -56,15 +59,21 @@ export class PrismaCompanyRepository implements CompanyRepository {
     }
   }
 
+  /** Retrouve une entreprise non supprimée, ou `null`. */
   async findById(id: string): Promise<Company | null> {
     const row = await this.prisma.db.company.findFirst({ where: { id, deletedAt: null } });
     return row ? toDomain(row) : null;
   }
 
+  /** Vrai si une entreprise non supprimée porte déjà ce nom (comparaison sans casse). */
   async existsByName(name: CompanyName): Promise<boolean> {
     return (await this.prisma.db.company.count({ where: { nameKey: name.normalized, deletedAt: null } })) > 0;
   }
 
+  /**
+   * Liste paginée, la plus récente d'abord ; `ownerIds` restreint aux propriétaires autorisés (liste vide = aucune
+   * entreprise), absent = aucune restriction.
+   */
   async list(query: { page: number; pageSize: number; search?: string; ownerIds?: readonly string[] }): Promise<Page<Company>> {
     const where: Prisma.CompanyWhereInput = {
       deletedAt: null,

@@ -5,6 +5,7 @@ import { SessionPolicy } from '../domain/session-policy';
 import { UserSession } from '../domain/user-session';
 import { ACCESS_TOKEN_SERVICE, AccessTokenService, REFRESH_TOKEN_FACTORY, RefreshTokenFactory } from './ports';
 
+/** Jeton d'accès et jeton de rafraîchissement émis, avec leurs échéances. */
 export interface IssuedTokens {
   accessToken: string;
   accessTokenExpiresAt: Date;
@@ -22,6 +23,7 @@ export class SessionTokenService {
     @Inject(ID_GENERATOR) private readonly ids: IdGenerator,
   ) {}
 
+  /** Émet le jeton d'accès et un nouveau jeton de rafraîchissement (dont l'empreinte est stockée) pour une session. */
   async issue(input: { session: UserSession; policy: SessionPolicy; familyId: string; amr: string[]; now: Date }): Promise<IssuedTokens> {
     const { session, policy, familyId, amr, now } = input;
 

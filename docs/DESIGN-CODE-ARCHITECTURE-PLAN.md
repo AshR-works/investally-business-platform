@@ -40,7 +40,8 @@
 | **S3.2** MFA et amorçage — **validé** (tag `s3-2-validated`) | CRM | TOTP obligatoire (enrôlement, codes de secours, step-up), port e-mail Microsoft 365 (adaptateur journal en test), création du premier SuperAdmin | 8 |
 | **S3.3** Autorisation et administration (backend) — **validé** (tag `s3-3-validated`) | CRM | `@Protected` (permission + portée + step-up), API utilisateurs/rôles/sessions, invitation par e-mail, propriétaire des entreprises | 10, 11 |
 | **S3.4** Front de base — **en cours, recette exécutée, validation en attente** | CRM | Pages web : connexion, scan du QR MFA, codes de secours, activation d'invitation, administration des utilisateurs, mon compte (mot de passe, codes de secours, sessions), en-têtes de sécurité | 10 |
-| **S3.5** Documents | CRM | Téléversement, versions, SHA-256, téléchargement, traçabilité complète | 9, 10 |
+| **S3.5** Mot de passe oublié et livrables — **en cours, recette exécutée, validation en attente** | CRM | Bouton « Mot de passe oublié » (libre-service sécurisé et traçable + déclenchement par un administrateur), commentaires sur toutes les fonctions, livrables récapitulatifs (`docs/livrables/`) | 8, 10 |
+| **S3.6** Documents | CRM | Téléversement, versions, SHA-256, téléchargement, traçabilité complète | 9, 10 |
 | **Cadrage UX** (avant S4.1) | CRM | Maquettes des écrans clés du parcours commercial, validées avec vous avant d'être codées *(proposé)* | — |
 | **S4.1** Entreprises et contacts | CRM | Business Development : entreprises, contacts — **API et écrans livrés ensemble** | 10, 12 |
 | **S4.2** Offres, décharges, relances | CRM | Offre, décharge, relances planifiées | 10 |

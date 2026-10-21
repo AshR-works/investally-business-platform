@@ -5,6 +5,7 @@ import { ApiTags } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
 import { actorContextFrom } from '../../../shared-kernel';
 import { InviteUserUseCase, ResendInvitationUseCase } from '../application/admin/invitations.use-cases';
+import { IssuePasswordResetUseCase } from '../application/admin/password-reset.use-cases';
 import { ListOwnSessionsHandler, RevokeSessionUseCase, RevokeUserSessionsUseCase } from '../application/admin/session-management.use-cases';
 import { AssignRolesUseCase, SetUserStatusUseCase, UpdateUserUseCase } from '../application/admin/user-management.use-cases';
 import { GetUserHandler, ListRolesHandler, ListUsersHandler } from '../application/admin/user-queries';
@@ -20,6 +21,10 @@ function noStore(res: Response): void {
   res.setHeader('Cache-Control', 'no-store');
 }
 
+/**
+ * Routes d'administration des utilisateurs (`/admin/users`) : chaque route exige une permission, certaines un MFA
+ * récent.
+ */
 @ApiTags('admin')
 @Controller('admin/users')
 export class AdminUsersController {
@@ -32,6 +37,7 @@ export class AdminUsersController {
     private readonly setStatus: SetUserStatusUseCase,
     private readonly assignRoles: AssignRolesUseCase,
     private readonly resetMfa: ResetMfaUseCase,
+    private readonly issueReset: IssuePasswordResetUseCase,
     private readonly revokeSessions: RevokeUserSessionsUseCase,
   ) {}
 
@@ -99,6 +105,14 @@ export class AdminUsersController {
     await this.resetMfa.execute({ targetUserId: id, actor: actorContextFrom(req, actor) });
   }
 
+  /** Mot de passe oublié, côté administrateur : envoie un lien de réinitialisation (48 h, usage unique). Jamais pour soi-même. */
+  @Post(':id/password-reset')
+  @HttpCode(200)
+  @Protected('iam.user.reset_password', { stepUp: true })
+  sendPasswordReset(@Param('id', ParseUUIDPipe) id: string, @CurrentActor() actor: AuthenticatedActor, @Req() req: Request) {
+    return this.issueReset.execute({ userId: id, actor: actorContextFrom(req, actor) });
+  }
+
   /** Agit sur n'importe quel utilisateur : exige la portée « Tous » dès la garde (la portée « propre » ne suffit pas). */
   @Post(':id/sessions/revoke')
   @HttpCode(200)
@@ -108,6 +122,7 @@ export class AdminUsersController {
   }
 }
 
+/** Route de lecture du catalogue des rôles (`/admin/roles`). */
 @ApiTags('admin')
 @Controller('admin/roles')
 export class AdminRolesController {
