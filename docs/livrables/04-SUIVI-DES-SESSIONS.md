@@ -23,6 +23,8 @@
 | **Cadrages** H1, H2, S3.6, UX | `sprint/h1-cadrage` | 10-21 | **fusionnée** (`cadrages-validated`) | — | ✅ **validée 2026-10-21** (11 décisions, D19) |
 | **H1** Habillage minimal et hub | `sprint/h1-habillage-hub` | 10-21 | **fusionnée** | tests web 35/35, axe 21 états à 0 violation, CSP 0 violation | ✅ **validée 2026-10-21** (`h1-validated`) |
 | **H1b** Composants de données | `sprint/h1b-composants-de-donnees` | 10-21 | **fusionnée** | tests web 42/42, axe 24 états à 0 violation, CSP 0 violation | ✅ **validée 2026-10-21** (`h1b-validated`) |
+| **Arbitrage D21** données de l'API des entreprises | `sprint/arbitrage-api-donnees` | 10-22 | **fusionnée** (`d21-validated`) | tests web 43/43 | ✅ **validée 2026-10-22** |
+| **H2a** Écrans d'accès | `sprint/h2a-ecrans-d-acces` | 10-22 | **fusionnée** | tests web 56/56, axe 29 états à 0 violation, CSP 0 violation | ✅ **validée 2026-10-22** (`h2a-validated`) |
 
 > **Commentaire** — Les dates de commits ne mesurent pas l'effort : chaque session regroupe de longs échanges, des recettes et des corrections avant le commit final. Elles prouvent en revanche l'**ordre** et la **traçabilité** : aucune fusion sans validation écrite, aucune branche sautée. Le plan annonçait « 1 semaine maximum par sprint » ; l'ensemble tient ici en **moins de deux jours calendaires** parce que le rythme réel a été celui des validations successives de l'ingénieur.
 
