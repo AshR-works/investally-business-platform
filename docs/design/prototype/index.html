@@ -37,23 +37,18 @@
   <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
   <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></symbol>
   <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></symbol>
-  <!-- Symbole de marque : reconstruction du logo (à remplacer par le SVG officiel) -->
-  <symbol id="mark" viewBox="700 250 530 495">
-    <rect x="712" y="262" width="506" height="472" rx="46" fill="none" stroke="currentColor" stroke-width="9"/>
-    <rect x="868" y="468" width="26" height="204" fill="currentColor"/><rect x="948" y="413" width="26" height="261" fill="currentColor"/><rect x="1028" y="352" width="27" height="232" fill="currentColor"/>
-    <circle cx="881" cy="411" r="13" style="fill:var(--brand)"/><circle cx="961" cy="352" r="13" style="fill:var(--brand)"/><circle cx="1041" cy="657" r="13" style="fill:var(--brand)"/>
-  </symbol>
 </svg>
 
 <!-- ============ ÉCRAN : CONNEXION ============ -->
 <main class="auth" id="auth">
   <section class="auth-art" aria-hidden="true">
-    <div class="brand" style="padding:0"><svg class="mark" style="color:var(--hero-ink)"><use href="#mark"/></svg><span class="wordmark">Invest<b>ally</b></span></div>
+    <div></div>
     <div><h2>Simplifier, connecter, investir.</h2><p>Une seule plateforme pour piloter le développement commercial, la formation et les opérations de l’entreprise.</p></div>
     <div class="bars"><span style="height:35%"></span><span style="height:52%"></span><span style="height:44%"></span><span style="height:68%"></span><span style="height:60%"></span><span style="height:82%"></span><span style="height:100%"></span></div>
   </section>
   <section class="auth-form">
     <div class="auth-box">
+      <img class="logo-img logo-square" src="assets/logo-investally-square.png" alt="Investally" width="150" height="109">
       <div class="steps" aria-label="Étape 1 sur 2"><i class="on"></i><i></i></div>
       <h1>Connexion</h1>
       <p>Accédez à votre espace de travail Investally.</p>
@@ -74,7 +69,7 @@
 <!-- ============ COQUE ============ -->
 <div class="app">
   <aside class="sidebar" id="sidebar" aria-label="Navigation principale">
-    <a class="brand" href="#dashboard"><svg class="mark" aria-hidden="true"><use href="#mark"/></svg><div><span class="wordmark">Invest<b>ally</b></span><small>BUSINESS PLATFORM</small></div></a>
+    <a class="brand" href="#dashboard"><img class="logo-img" src="assets/logo-investally-rectangle.png" alt="Investally — Simplifier, connecter, investir" width="210" height="63"></a>
     <nav class="nav">
       <div class="nav-label">Espace de travail</div>
       <a href="#dashboard" data-nav="dashboard"><svg class="icon"><use href="#i-grid"/></svg>Vue d’ensemble</a>
@@ -90,7 +85,7 @@
       <a href="#security" data-nav="security"><svg class="icon"><use href="#i-shield"/></svg>Sécurité</a>
       <a href="#components" data-nav="components"><svg class="icon"><use href="#i-cols"/></svg>Composants</a>
     </nav>
-    <a class="academy" href="#formation"><span class="ico"><img src="assets/logo-investudy.png" alt="" width="28" style="display:none"><svg class="icon"><use href="#i-cap"/></svg></span><span><strong>Investudy</strong><span>Centre de formation</span></span><svg class="icon sm" style="margin-left:auto"><use href="#i-arrow"/></svg></a>
+    <a class="academy" href="#formation"><img class="logo-img" src="assets/logo-investudy.png" alt="Investudy — centre de formation" width="150" height="42"><svg class="icon sm" style="margin-left:auto" aria-hidden="true"><use href="#i-arrow"/></svg></a>
     <div class="me"><span class="avatar">EK</span><div><strong>Emma Koffi</strong><span>Administratrice</span></div></div>
   </aside>
 
@@ -206,7 +201,7 @@
         <div class="crumbs">Investally <svg class="icon sm"><use href="#i-chev"/></svg> Formation</div>
         <div class="page-head" style="align-items:center;margin-top:var(--s-4)">
           <div class="cell-main" style="gap:var(--s-4)">
-            <img class="logo-investudy" src="assets/logo-investudy.png" alt="Investudy" width="210" height="49">
+            <img class="logo-img logo-investudy" src="assets/logo-investudy.png" alt="Investudy" width="230" height="64">
             <div><h1 style="font-size:var(--text-xl)">Centre de formation</h1><p>Sessions, inscriptions et suivi pédagogique.</p></div>
           </div>
           <div class="actions"><button class="btn btn-secondary">Catalogue</button><button class="btn btn-primary"><svg class="icon sm"><use href="#i-plus"/></svg>Nouvelle session</button></div>

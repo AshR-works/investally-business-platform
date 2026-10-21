@@ -98,7 +98,7 @@ export function Hero(props: { label: string; value: string; trend?: { text: stri
 
 ## 7. Icônes et logos
 - **Icônes** : jeu à traits 1,6 px sur grille 24 (le prototype en contient 24, tracées à la main) ; en production, un seul jeu libre de droits (par exemple Lucide, licence ISC), importé en SVG individuels.
-- **Logos** : SVG vectoriels fournis par vos soins (Investally, Investudy) ; le **symbole** s'adapte au thème (traits en `currentColor`, points taupe). Investudy est utilisé **uniquement** dans les écrans de formation (en-tête de page et carte d'accès rapide) ; sur fond sombre, plaque claire ou version inversée.
+- **Logos** : les trois PNG fournis (Investally rectangle et carré, Investudy rectangle), recadrés, sous `public/brand/`. Emplacements : **rectangle Investally** dans la barre latérale ; **carré Investally** sur les écrans d'accès (connexion, MFA, mot de passe oublié) ; **rectangle Investudy** uniquement dans les écrans de formation (en-tête de page et carte d'accès rapide). Thème sombre : filtre monochrome blanc, en attendant une variante claire officielle ; remplacer par des SVG dès qu'ils existent.
 
 ## 8. Sécurité et conformité de l'habillage
 | Sujet | Règle |
