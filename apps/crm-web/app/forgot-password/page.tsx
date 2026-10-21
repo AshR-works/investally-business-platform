@@ -1,5 +1,6 @@
 'use client';
 
+import { PageHeading } from '../../components/page-heading';
 import Link from 'next/link';
 import { FormEvent, useState } from 'react';
 import { Gate } from '../../components/gate';
@@ -44,7 +45,7 @@ function ForgotPasswordForm() {
   return (
     <main className="center">
       <div className="card">
-        <h1>Mot de passe oublié</h1>
+        <PageHeading>Mot de passe oublié</PageHeading>
         {message ? (
           <>
             <p role="status">{message}</p>

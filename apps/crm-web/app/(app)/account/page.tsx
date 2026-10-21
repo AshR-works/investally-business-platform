@@ -1,5 +1,6 @@
 'use client';
 
+import { PageHeading } from '../../../components/page-heading';
 import { FormEvent, useCallback, useEffect, useState } from 'react';
 import { api, ApiError } from '../../../lib/api';
 import { useAuth } from '../../../lib/auth-context';
@@ -16,7 +17,7 @@ export default function AccountPage() {
   const { profile } = useAuth();
   return (
     <>
-      <h1>Mon compte</h1>
+      <PageHeading>Mon compte</PageHeading>
       <section className="panel">
         <h2>Profil</h2>
         <p><strong>{profile?.displayName}</strong><br />{profile?.email}</p>
@@ -150,7 +151,7 @@ function Sessions() {
       {error && <p role="alert" className="error">{error}</p>}
       <div className="table-wrap">
         <table>
-          <thead><tr><th>Appareil</th><th>Adresse IP</th><th>Connexion</th><th>Dernière activité</th><th /></tr></thead>
+          <thead><tr><th>Appareil</th><th>Adresse IP</th><th>Connexion</th><th>Dernière activité</th><th><span className="sr-only">Actions</span></th></tr></thead>
           <tbody>
             {sessions.map((s) => (
               <tr key={s.id}>

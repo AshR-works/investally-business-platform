@@ -1,5 +1,6 @@
 'use client';
 
+import { PageHeading } from '../../components/page-heading';
 import Link from 'next/link';
 import { FormEvent, useState } from 'react';
 import { Gate } from '../../components/gate';
@@ -40,7 +41,7 @@ function LoginForm() {
   return (
     <main className="center">
       <form className="card" onSubmit={submit}>
-        <h1>Investally CRM</h1>
+        <PageHeading title="Connexion">Investally CRM</PageHeading>
         <label>
           Adresse e-mail
           <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="username" maxLength={254} required autoFocus />
