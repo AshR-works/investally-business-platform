@@ -48,10 +48,10 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <hr>
 <h2>2. Personas et écrans prioritaires</h2>
 <div class="table-wrap"><table><thead><tr><th>Persona</th><th>Rôle(s) du CRM</th><th>Ce qu'il fait chaque jour</th><th>Écrans clés</th></tr></thead><tbody>
-<tr><td><strong>Chargé de compte</strong></td><td><code>ACCOUNT_MANAGER</code></td><td>Relances, rendez-vous, offres, inscriptions</td><td>Mes opportunités, À faire aujourd'hui, fiche entreprise</td></tr>
+<tr><td><strong>Chargé de compte</strong></td><td><code>ACCOUNT_MANAGER</code></td><td>Relances, rendez-vous, offres, inscriptions</td><td><strong>Agenda</strong>, mes opportunités, À faire aujourd'hui, fiche entreprise</td></tr>
 <tr><td><strong>Responsable commercial</strong></td><td><code>HEAD_OF_SALES</code></td><td>Pilote l'équipe et le pipeline global</td><td>Pipeline équipe, conversion, performances par personne</td></tr>
 <tr><td><strong>Responsable formation</strong></td><td><code>TRAINING_MANAGER</code></td><td>Sessions, formateurs, inscriptions, présences, certifications</td><td>Sessions à venir, remplissage, présence, apprenants</td></tr>
-<tr><td><strong>Formateur</strong></td><td><code>TRAINER</code></td><td>Anime ses sessions, saisit les présences et évaluations</td><td>Mes sessions, feuille de présence</td></tr>
+<tr><td><strong>Formateur</strong></td><td><code>TRAINER</code></td><td>Anime ses sessions, saisit les présences et évaluations</td><td><strong>Agenda</strong> (ses sessions), feuille de présence</td></tr>
 <tr><td><strong>Direction générale</strong></td><td><code>DIRECTION</code></td><td>Lit les résultats, décide</td><td>Vue d'ensemble, pipeline pondéré, inscriptions, alertes</td></tr>
 <tr><td><strong>Finance</strong></td><td><code>FINANCE</code></td><td>Prépare la facturation (périmètre CRM limité)</td><td>Agréments et inscriptions à facturer</td></tr>
 <tr><td><strong>RH</strong> / <strong>Fiscalité</strong></td><td><code>HR</code>, <code>TAX</code></td><td>Modules ERP à venir</td><td>Gabarit réservé</td></tr>
@@ -62,7 +62,7 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <hr>
 <h2>3. Architecture de l'information</h2>
 <h3>3.1 Navigation principale (barre latérale)</h3>
-<pre><code>ESPACE DE TRAVAIL      Vue d&#x27;ensemble · Entreprises · Développement (badge) · Formation
+<pre><code>ESPACE DE TRAVAIL      Vue d&#x27;ensemble · Agenda (badge) · Entreprises · Développement (badge) · Formation
 OPÉRATIONS             Finance · Ressources humaines · Fiscalité        (ERP, gabarit réservé)
 GOUVERNANCE            Administration · Sécurité
 Bas de barre           Carte Investudy (accès rapide) · profil et déconnexion</code></pre>
@@ -71,6 +71,7 @@ Bas de barre           Carte Investudy (accès rapide) · profil et déconnexion
 <p>Un menu n'apparaît que si l'utilisateur détient la permission de lecture correspondante (déjà fourni par <code>/auth/me/profile</code>). <strong>Le serveur reste seul juge</strong> : un menu caché n'est pas une protection.</p>
 <div class="table-wrap"><table><thead><tr><th>Menu</th><th>Permission de lecture</th><th>Rôles typiques</th></tr></thead><tbody>
 <tr><td>Vue d'ensemble</td><td>tableau de bord du rôle</td><td>tous</td></tr>
+<tr><td><strong>Agenda</strong></td><td>agenda personnel : <strong>tous les rôles</strong> ; agenda d'équipe : portée Équipe ou Tous</td><td>tous (périmètre = le sien, celui de son équipe, ou tous)</td></tr>
 <tr><td>Entreprises, Développement</td><td><code>bd.company.read</code>, <code>bd.*</code></td><td>Chargé de compte, Responsable commercial, Direction, Support, Finance</td></tr>
 <tr><td>Formation</td><td><code>training.*</code></td><td>Responsable formation, Formateur, Direction</td></tr>
 <tr><td>Finance / RH / Fiscalité</td><td>modules ERP</td><td>rôles correspondants (plus tard)</td></tr>
@@ -134,6 +135,10 @@ Bas de barre           Carte Investudy (accès rapide) · profil et déconnexion
 <tr><td><strong>Fenêtre modale</strong></td><td>confirmation, saisie de code MFA</td><td>ouverture, fermeture</td><td>Focus piégé, <code>Échap</code> ferme, retour du focus</td></tr>
 <tr><td><strong>Menu latéral</strong></td><td>section, entrée, entrée active, badge</td><td>survol, actif (<code>aria-current</code>)</td><td>Repliable en tiroir sur mobile</td></tr>
 <tr><td><strong>Recherche globale</strong></td><td><code>⌘K</code></td><td>focus, résultats</td><td>Palette de commandes (étape ultérieure)</td></tr>
+<tr><td><strong>Agenda</strong> (semaine, mois)</td><td>vue semaine (lun.–ven., 8 h–18 h), vue mois (5 semaines), vue jour <em>(à venir)</em></td><td>aujourd'hui, ligne « maintenant », événement, survol, focus, masqué par filtre</td><td>Chaque événement est un <strong>bouton</strong> avec libellé complet ; voir §8 pour les limites</td></tr>
+<tr><td><strong>Mini-calendrier</strong></td><td>mois en cours, semaine surlignée, points = jours occupés</td><td>aujourd'hui, semaine active, hors mois</td><td>Navigation par boutons « mois précédent/suivant »</td></tr>
+<tr><td><strong>Filtres d'agenda</strong></td><td>cases à cocher par type (rendez-vous, relances, formations, échéances, interne)</td><td>coché, décoché</td><td>Couleur <strong>et</strong> libellé ; un type masqué disparaît des deux vues</td></tr>
+<tr><td><strong>Fenêtre « Nouvel événement »</strong></td><td>titre, type, entreprise liée, date, début, fin, rappel</td><td>ouverture, erreur, enregistrement</td><td>Focus piégé, <code>Échap</code> ferme, retour du focus au bouton</td></tr>
 <tr><td><strong>Notification / toast</strong></td><td>succès, erreur, information</td><td>apparition, disparition</td><td><code>role="status"</code> ; les erreurs restent jusqu'à lecture</td></tr>
 </tbody></table></div>
 <h3>5.2 Composants métier</h3>
@@ -145,6 +150,8 @@ Bas de barre           Carte Investudy (accès rapide) · profil et déconnexion
 <tr><td><strong>Ligne d'entreprise</strong></td><td>Liste des entreprises</td><td>logo à initiales, secteur, responsable, statut, valeur, dernière activité</td></tr>
 <tr><td><strong>Ligne d'événement d'audit</strong></td><td>Centre de confiance</td><td>événement, utilisateur, origine, type, date</td></tr>
 <tr><td><strong>Carte de session</strong></td><td>« Mes sessions »</td><td>appareil lisible, IP, risque, dernière activité, bouton Révoquer</td></tr>
+<tr><td><strong>Événement d'agenda</strong></td><td>Un rendez-vous, une relance, une session ou une échéance</td><td>heure, titre, entreprise ou session liée, lieu / lien visio, rappel, type (5 teintes)</td></tr>
+<tr><td><strong>Liste « Aujourd'hui »</strong></td><td>Ce qui m'attend aujourd'hui</td><td>heure, titre, lieu, participants</td></tr>
 <tr><td><strong>Bandeau de l'agrément</strong></td><td>Suivi de la promesse de paiement</td><td>places, montant, validité, état</td></tr>
 </tbody></table></div>
 <h3>5.3 Correspondance des statuts (une seule palette pour toute l'application)</h3>
@@ -154,13 +161,14 @@ Bas de barre           Carte Investudy (accès rapide) · profil et déconnexion
 <tr><td>Compte utilisateur</td><td>Actif · Invitation en attente · Verrouillé · Désactivé</td><td>succès · attention · danger · neutre</td></tr>
 <tr><td>Session de formation</td><td>Planifiée · Agrément attendu · Confirmée · Terminée · Annulée</td><td>neutre · attention · succès · neutre · danger</td></tr>
 <tr><td>Audit</td><td>Connexion · Libre-service · Administration · Sécurité</td><td>succès · information · attention · danger</td></tr>
+<tr><td><strong>Agenda</strong> (type d'événement)</td><td>Rendez-vous client · Relance · Formation · Échéance · Interne</td><td>information · attention · succès · danger · neutre (liseré taupe)</td></tr>
 </tbody></table></div>
 <hr>
 <h2>6. Tableaux de bord par persona</h2>
 <div class="table-wrap"><table><thead><tr><th>Persona</th><th>Indicateurs (cartes)</th><th>Graphique principal</th><th>Liste d'action</th></tr></thead><tbody>
 <tr><td><strong>Direction</strong></td><td>Pipeline pondéré (XAF) · Opportunités actives · Taux de conversion · Inscrits Investudy</td><td>Carte héros : pipeline sur 12 mois</td><td>Alertes : relances en retard, agréments en attente</td></tr>
 <tr><td><strong>Responsable commercial</strong></td><td>Pipeline équipe · Conversion par étape · Opportunités sans action</td><td>Entonnoir + barres par chargé de compte</td><td>Opportunités bloquées, dérogations « RDV décideur »</td></tr>
-<tr><td><strong>Chargé de compte</strong></td><td>Mes opportunités · Mes relances · Mon objectif</td><td>Mon pipeline (kanban)</td><td><strong>À faire aujourd'hui</strong> (relances, rendez-vous)</td></tr>
+<tr><td><strong>Chargé de compte</strong></td><td>Mes opportunités · Mes relances · Mon objectif</td><td>Mon pipeline (kanban)</td><td><strong>À faire aujourd'hui</strong> (relances, rendez-vous), lien <strong>Ouvrir l'agenda</strong></td></tr>
 <tr><td><strong>Responsable formation</strong></td><td>Sessions à venir · Places confirmées · Présence moyenne · Certifiés</td><td>Remplissage par session</td><td>Sessions sans formateur, agréments à confirmer</td></tr>
 <tr><td><strong>Formateur</strong></td><td>Mes sessions · Apprenants</td><td>Calendrier</td><td>Feuilles de présence à saisir</td></tr>
 <tr><td><strong>Finance</strong></td><td>Agréments à facturer · Inscriptions confirmées</td><td>—</td><td>Liste de préparation de facturation</td></tr>
@@ -175,6 +183,9 @@ Bas de barre           Carte Investudy (accès rapide) · profil et déconnexion
 <tr><td><strong>Action sensible</strong></td><td>Bouton → <strong>fenêtre « Confirmez votre identité »</strong> (code) → action</td><td>Une seule question pour plusieurs actions</td></tr>
 <tr><td><strong>Pipeline</strong></td><td>Prospection → RDV décideur → Offre → Accord de principe → Agrément → Inscrit</td><td>Règle « RDV décideur avant accord de principe » : blocage expliqué, dérogation tracée</td></tr>
 <tr><td><strong>Agrément</strong></td><td>Accord de principe → saisie (places, montant, validité) → événement vers Investudy</td><td>Statut visible sur la fiche et sur la session liée</td></tr>
+<tr><td><strong>Planifier un rendez-vous</strong></td><td>Fiche entreprise ou opportunité → « Planifier » → fenêtre <em>Nouvel événement</em> préremplie (entreprise liée) → l'événement apparaît dans l'agenda et dans « À faire aujourd'hui »</td><td>Le <strong>rendez-vous décideur</strong> requis avant l'accord de principe se crée ici ; son achèvement débloque l'étape du pipeline</td></tr>
+<tr><td><strong>Relance planifiée</strong></td><td>Offre envoyée → relance automatique proposée à J+3 → événement « Relance »</td><td>Une relance en retard remonte en rouge sur le tableau de bord</td></tr>
+<tr><td><strong>Session de formation</strong></td><td>Création d'une session (Investudy) → événements « Formation » pour le formateur et le responsable</td><td>Un formateur ne voit <strong>que</strong> ses sessions (portée Propre)</td></tr>
 <tr><td><strong>Administration</strong></td><td>Liste → invitation / rôles / désactivation / réinitialisations</td><td>Confirmation explicite, résultat annoncé (<code>role="status"</code>)</td></tr>
 </tbody></table></div>
 <hr>
@@ -190,6 +201,8 @@ Bas de barre           Carte Investudy (accès rapide) · profil et déconnexion
 <tr><td>2.3.3 / mouvement</td><td><code>prefers-reduced-motion</code> respecté</td><td>✅</td></tr>
 <tr><td>Thème</td><td>clair, sombre, <strong>suit l'appareil</strong>, choix mémorisé</td><td>✅</td></tr>
 <tr><td>Lecteur d'écran</td><td>non éprouvé (aucun lecteur utilisé)</td><td>⏳ à tester en implémentation</td></tr>
+<tr><td><strong>Agenda</strong> : alternative textuelle</td><td>la grille horaire n'est pas un tableau : en production, <strong>vue liste</strong> équivalente (chronologique, par jour) et navigation par flèches entre événements ; la ligne « maintenant » porte une étiquette lisible</td><td>⏳ prototype visuel seulement</td></tr>
+<tr><td><strong>Agenda</strong> : couleur seule</td><td>type d'événement = <strong>teinte + liseré + libellé</strong> dans le titre</td><td>✅</td></tr>
 </tbody></table></div>
 <p><strong>Limites</strong> : audit réalisé sur le prototype, par mesure de contraste et lecture du balisage, pas par des utilisateurs ni un lecteur d'écran.</p>
 <hr>
@@ -197,23 +210,21 @@ Bas de barre           Carte Investudy (accès rapide) · profil et déconnexion
 <p>Le prototype est un dossier statique (<code>prototype/</code>). Pour l'ouvrir :</p>
 <pre><code>cd docs/design/prototype
 python -m http.server 8099</code></pre>
-<p>puis <code>http://127.0.0.1:8099/index.html</code> — liens directs : <code>#login</code>, <code>#dashboard</code>, <code>#companies</code>, <code>#pipeline</code>, <code>#formation</code>, <code>#security</code>, <code>#components</code> ; thème sombre : <code>?theme=dark#dashboard</code>. Aucune donnée réelle ; les noms d'entreprises sont fictifs.</p>
+<p>puis <code>http://127.0.0.1:8099/index.html</code> — liens directs : <code>#login</code>, <code>#dashboard</code>, <code>#agenda</code>, <code>#agenda-mois</code>, <code>#companies</code>, <code>#pipeline</code>, <code>#formation</code>, <code>#security</code>, <code>#components</code> ; thème sombre : <code>?theme=dark#dashboard</code>. Aucune donnée réelle ; les noms d'entreprises sont fictifs.</p>
 <hr>
-<h2>9 bis. Aperçus du prototype</h2>
-<p><strong>Connexion</strong> (le même gabarit sert au mot de passe oublié, à la réinitialisation et à l'invitation)</p>
-<p><img src="" alt="" loading="lazy" style="max-width:100%;border:1px solid var(--border);border-radius:10px;display:block"></p>
-<p><strong>Vue d'ensemble — Direction</strong> (carte héros, indicateurs, entonnoir, tâches du jour)</p>
-<p><img src="" alt="" loading="lazy" style="max-width:100%;border:1px solid var(--border);border-radius:10px;display:block"></p>
-<p><strong>Entreprises</strong> (liste avec onglets à compteurs, filtres, badges de statut)</p>
-<p><img src="" alt="" loading="lazy" style="max-width:100%;border:1px solid var(--border);border-radius:10px;display:block"></p>
-<p><strong>Pipeline</strong> (kanban des opportunités)</p>
-<p><img src="" alt="" loading="lazy" style="max-width:100%;border:1px solid var(--border);border-radius:10px;display:block"></p>
-<p><strong>Formation</strong> (logo Investudy dans l'en-tête de page)</p>
-<p><img src="" alt="" loading="lazy" style="max-width:100%;border:1px solid var(--border);border-radius:10px;display:block"></p>
-<p><strong>Centre de confiance</strong> (reprise de la capture de référence avec nos données d'audit)</p>
-<p><img src="" alt="" loading="lazy" style="max-width:100%;border:1px solid var(--border);border-radius:10px;display:block"></p>
-<p><strong>Thème sombre</strong></p>
-<p><img src="" alt="" loading="lazy" style="max-width:100%;border:1px solid var(--border);border-radius:10px;display:block"></p>
+<h2>9 bis. Aperçus du prototype (tous les écrans, clair et sombre)</h2>
+<p>Dossier : <code>docs/design/screens/</code> — chaque écran existe en version claire et en version sombre (<code>…-sombre.png</code>).</p>
+<div class="table-wrap"><table><thead><tr><th>Écran</th><th>Thème clair</th><th>Thème sombre</th></tr></thead><tbody>
+<tr><td><strong>Connexion</strong> (même gabarit pour mot de passe oublié, réinitialisation, invitation)</td><td><img src="" alt="" loading="lazy" style="max-width:100%;border:1px solid var(--border);border-radius:10px;display:block"></td><td><img src="" alt="" loading="lazy" style="max-width:100%;border:1px solid var(--border);border-radius:10px;display:block"></td></tr>
+<tr><td><strong>Vue d'ensemble</strong> — Direction</td><td><img src="" alt="" loading="lazy" style="max-width:100%;border:1px solid var(--border);border-radius:10px;display:block"></td><td><img src="" alt="" loading="lazy" style="max-width:100%;border:1px solid var(--border);border-radius:10px;display:block"></td></tr>
+<tr><td><strong>Agenda</strong> — vue semaine</td><td><img src="" alt="" loading="lazy" style="max-width:100%;border:1px solid var(--border);border-radius:10px;display:block"></td><td><img src="" alt="" loading="lazy" style="max-width:100%;border:1px solid var(--border);border-radius:10px;display:block"></td></tr>
+<tr><td><strong>Agenda</strong> — vue mois</td><td><img src="" alt="" loading="lazy" style="max-width:100%;border:1px solid var(--border);border-radius:10px;display:block"></td><td><img src="" alt="" loading="lazy" style="max-width:100%;border:1px solid var(--border);border-radius:10px;display:block"></td></tr>
+<tr><td><strong>Entreprises</strong></td><td><img src="" alt="" loading="lazy" style="max-width:100%;border:1px solid var(--border);border-radius:10px;display:block"></td><td><img src="" alt="" loading="lazy" style="max-width:100%;border:1px solid var(--border);border-radius:10px;display:block"></td></tr>
+<tr><td><strong>Pipeline</strong></td><td><img src="" alt="" loading="lazy" style="max-width:100%;border:1px solid var(--border);border-radius:10px;display:block"></td><td><img src="" alt="" loading="lazy" style="max-width:100%;border:1px solid var(--border);border-radius:10px;display:block"></td></tr>
+<tr><td><strong>Formation</strong> (logo Investudy)</td><td><img src="" alt="" loading="lazy" style="max-width:100%;border:1px solid var(--border);border-radius:10px;display:block"></td><td><img src="" alt="" loading="lazy" style="max-width:100%;border:1px solid var(--border);border-radius:10px;display:block"></td></tr>
+<tr><td><strong>Centre de confiance</strong></td><td><img src="" alt="" loading="lazy" style="max-width:100%;border:1px solid var(--border);border-radius:10px;display:block"></td><td><img src="" alt="" loading="lazy" style="max-width:100%;border:1px solid var(--border);border-radius:10px;display:block"></td></tr>
+<tr><td><strong>Composants</strong></td><td><img src="" alt="" loading="lazy" style="max-width:100%;border:1px solid var(--border);border-radius:10px;display:block"></td><td><img src="" alt="" loading="lazy" style="max-width:100%;border:1px solid var(--border);border-radius:10px;display:block"></td></tr>
+</tbody></table></div>
 <hr>
 <h2>10. Mise en œuvre proposée</h2>
 <div class="table-wrap"><table><thead><tr><th>Étape</th><th>Contenu</th><th>Validation</th></tr></thead><tbody>
@@ -231,8 +242,11 @@ python -m http.server 8099</code></pre>
 <tr><td>4</td><td><strong>Thème sombre</strong></td><td>Oui, en plus du clair</td><td>Confort ; demandé en usage prolongé</td></tr>
 <tr><td>5</td><td><strong>Libellés « Investally Group › Douala »</strong></td><td>Sélecteur d'organisation et de site</td><td>À confirmer : plusieurs sites/pays prévus ? (la capture montre « Abidjan »)</td></tr>
 <tr><td>6</td><td><strong>Devise</strong></td><td>XAF affichée en millions (« 184 M ») avec détail au survol</td><td>Lisibilité des gros montants</td></tr>
+<tr><td>8</td><td><strong>Agenda : périmètre</strong></td><td>Agenda <strong>personnel</strong> pour tous ; agenda <strong>d'équipe</strong> pour le Responsable commercial (portée Équipe) et la Direction (Tous) ; 5 types d'événements</td><td>Même modèle de droits que le reste du CRM ; à confirmer : un salarié voit-il l'agenda de ses collègues (disponibilités) ?</td></tr>
+<tr><td>9</td><td><strong>Agenda : synchronisation Outlook / Microsoft 365</strong></td><td><strong>Dans un second temps</strong>, après la première version autonome</td><td>Elle exige des permissions de calendrier supplémentaires sur l'application Microsoft 365 (en plus de l'envoi d'e-mails, pas encore fourni) : décision et accès à prévoir</td></tr>
+<tr><td>10</td><td><strong>Agenda : invitations aux clients</strong></td><td>Envoi d'une invitation (.ics) par e-mail au contact, <strong>à valider</strong></td><td>Ajoute un envoi externe : à encadrer comme les autres e-mails (tracé, jamais de données sensibles)</td></tr>
 <tr><td>7</td><td><strong>Dossier de références PDF</strong> (<code>C:\dev\external ressources\*.pdf</code>, une quarantaine de maquettes : connexion, tableau de bord, projets, clients, leads…)</td><td><strong>Non utilisé</strong></td><td>Vous m'avez demandé de m'inspirer de la capture et du logo ; ces PDF semblent provenir d'un kit tiers. Dites-moi s'ils doivent servir de référence (et si vous détenez leur licence)</td></tr>
 </tbody></table></div>
 <hr>
 <h2>12. Ce qui est vérifié, ce qui ne l'est pas</h2>
-<p><strong>Vérifié</strong> : le prototype s'affiche (7 écrans, clair et sombre, mobile) dans un navigateur réel ; tous les contrastes de texte du §4.1 ont été <strong>calculés</strong> ; les polices sont celles du fichier (licence OFL) ; aucune ressource externe n'est chargée. <strong>Non vérifié</strong> : rendu sur Safari et Firefox ; lecteur d'écran ; comportement avec de vraies données volumineuses ; lisibilité de la baseline du logo (« SIMPLIFIER, CONNECTER, INVESTIR. ») dans la barre latérale à petite taille.</p></main></body></html>
+<p><strong>Vérifié</strong> : le prototype s'affiche (8 écrans, clair et sombre, mobile) dans un navigateur réel ; tous les contrastes de texte du §4.1 ont été <strong>calculés</strong> ; les polices sont celles du fichier (licence OFL) ; aucune ressource externe n'est chargée. <strong>Non vérifié</strong> : rendu sur Safari et Firefox ; lecteur d'écran ; comportement avec de vraies données volumineuses ; lisibilité de la baseline du logo (« SIMPLIFIER, CONNECTER, INVESTIR. ») dans la barre latérale à petite taille.</p></main></body></html>

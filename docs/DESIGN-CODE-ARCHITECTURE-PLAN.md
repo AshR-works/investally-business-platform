@@ -45,6 +45,7 @@
 | **Cadrage UX** (avant S4.1) | CRM | Maquettes des écrans clés du parcours commercial, validées avec vous avant d'être codées *(proposé)* | — |
 | **S4.1** Entreprises et contacts | CRM | Business Development : entreprises, contacts — **API et écrans livrés ensemble** | 10, 12 |
 | **S4.2** Offres, décharges, relances | CRM | Offre, décharge, relances planifiées | 10 |
+| **S4.2b** Agenda utilisateur *(ajouté le 2026-10-21)* | CRM | Événements (rendez-vous, relances, formations, échéances), vues semaine / mois / jour, rappels, droits Propre / Équipe / Tous ; premier consommateur : les relances et rendez-vous des offres | 10 |
 | **S4.3** Rendez-vous, visites, opportunités | CRM | Pipeline, règle du RDV décideur avec dérogation | 10 |
 | **S4.4** Agrément et ambassadeurs | CRM | Agrément (promesse de paiement), ambassadeurs, événements vers Investudy | 10 |
 | **S5.1** Catalogue Investudy | CRM | Programmes, formations, salles, formateurs | 10 |

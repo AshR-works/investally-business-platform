@@ -7,6 +7,7 @@
 <meta name="robots" content="noindex">
 <link rel="stylesheet" href="tokens.css">
 <link rel="stylesheet" href="prototype.css">
+<link rel="stylesheet" href="agenda.css">
 </head>
 <body data-view="login">
 <a class="skip" href="#contenu">Aller au contenu</a>
@@ -73,6 +74,7 @@
     <nav class="nav">
       <div class="nav-label">Espace de travail</div>
       <a href="#dashboard" data-nav="dashboard"><svg class="icon"><use href="#i-grid"/></svg>Vue d’ensemble</a>
+      <a href="#agenda" data-nav="agenda"><svg class="icon"><use href="#i-cal"/></svg>Agenda<span class="count">3</span></a>
       <a href="#companies" data-nav="companies"><svg class="icon"><use href="#i-building"/></svg>Entreprises</a>
       <a href="#pipeline" data-nav="pipeline"><svg class="icon"><use href="#i-target"/></svg>Développement<span class="count">8</span></a>
       <a href="#formation" data-nav="formation"><svg class="icon"><use href="#i-cap"/></svg>Formation</a>
@@ -128,7 +130,7 @@
               <div class="row"><span>Agrément reçu</span><div class="track"><div class="fill" style="width:22%"></div></div><span class="num">14</span></div>
               <div class="row"><span>Inscrit Investudy</span><div class="track"><div class="fill" style="width:16%"></div></div><span class="num">10</span></div>
             </div></div>
-          <div class="card card-pad"><div class="card-head"><h2>À faire aujourd’hui</h2><a href="#pipeline">Tout voir</a></div>
+          <div class="card card-pad"><div class="card-head"><h2>À faire aujourd’hui</h2><a href="#agenda">Ouvrir l’agenda</a></div>
             <div class="todo">
               <label><input type="checkbox"> Relancer Groupe Kora — offre 3 jours</label>
               <label><input type="checkbox"> RDV décideur — Société Horizon, 14 h</label>
@@ -142,6 +144,74 @@
             <li><span class="avatar sm">LM</span><span class="t"><b>Lina Mensah</b> a obtenu l’agrément de <b>Atlas Négoce</b></span><span class="when">il y a 1 h</span></li>
             <li><span class="avatar sm">EK</span><span class="t"><b>Emma Koffi</b> a invité un nouveau collaborateur</span><span class="when">il y a 3 h</span></li>
           </ul></div>
+      </section>
+
+      <!-- ===== AGENDA ===== -->
+      <section class="screen" data-screen="agenda">
+        <div class="crumbs">Investally <svg class="icon sm"><use href="#i-chev"/></svg> Agenda</div>
+        <div class="eyebrow">Espace de travail</div>
+        <div class="page-head"><div><h1>Mon agenda</h1><p>Vos rendez-vous, relances, sessions de formation et échéances, au même endroit.</p></div>
+          <div class="actions"><button class="btn btn-secondary" id="todayBtn">Aujourd’hui</button><button class="btn btn-primary" id="newEvent"><svg class="icon sm"><use href="#i-plus"/></svg>Nouvel événement</button></div></div>
+        <div class="agenda">
+          <aside class="agenda-side" aria-label="Outils de l’agenda">
+            <div class="card card-pad mini" aria-label="Calendrier du mois">
+              <div class="mini-head"><button class="icon-btn" aria-label="Mois précédent"><svg class="icon sm" style="transform:rotate(90deg)"><use href="#i-chev"/></svg></button><strong>Octobre 2026</strong><button class="icon-btn" aria-label="Mois suivant"><svg class="icon sm" style="transform:rotate(-90deg)"><use href="#i-chev"/></svg></button></div>
+              <div class="mini-grid" id="miniGrid"></div>
+            </div>
+            <div class="card card-pad">
+              <h2 style="font-size:var(--text-base);margin-bottom:var(--s-3)">Mes agendas</h2>
+              <div class="legend">
+                <label><input type="checkbox" checked data-toggle="rdv"><i class="dot tone-info"></i>Rendez-vous clients</label>
+                <label><input type="checkbox" checked data-toggle="relance"><i class="dot tone-warn"></i>Relances</label>
+                <label><input type="checkbox" checked data-toggle="formation"><i class="dot tone-ok"></i>Formations</label>
+                <label><input type="checkbox" checked data-toggle="echeance"><i class="dot tone-bad"></i>Échéances</label>
+                <label><input type="checkbox" checked data-toggle="interne"><i class="dot tone-neutral"></i>Interne</label>
+              </div>
+              <p class="help" style="margin-top:var(--s-3)">Les événements liés à une entreprise ou à une opportunité s’ouvrent depuis sa fiche.</p>
+            </div>
+            <div class="card card-pad">
+              <h2 style="font-size:var(--text-base);margin-bottom:var(--s-3)">Aujourd’hui · mer. 21 oct.</h2>
+              <ul class="today">
+                <li><time>10:00</time><span><b>Point pipeline équipe</b><small>Salle Wouri · 4 participants</small></span></li>
+                <li><time>14:00</time><span><b>RDV décideur — Société Horizon</b><small>Douala · avec Marie K.</small></span></li>
+                <li><time>16:00</time><span><b>Relance — Banque du Wouri</b><small>Appel · agrément attendu</small></span></li>
+              </ul>
+            </div>
+          </aside>
+          <div class="card agenda-main">
+            <div class="toolbar">
+              <div class="row-flex" style="padding:var(--s-3) 0"><button class="icon-btn" aria-label="Période précédente"><svg class="icon" style="transform:rotate(90deg)"><use href="#i-chev"/></svg></button><button class="icon-btn" aria-label="Période suivante"><svg class="icon" style="transform:rotate(-90deg)"><use href="#i-chev"/></svg></button><strong id="rangeLabel" style="font:700 var(--text-lg) var(--font-display)">19 – 25 octobre 2026</strong></div>
+              <div class="tabs tools" role="tablist" aria-label="Vue de l’agenda" style="gap:var(--s-2);margin-left:auto">
+                <button class="tool" role="tab" aria-selected="false" data-agenda="jour" disabled title="Vue à venir">Jour</button>
+                <button class="tool" role="tab" aria-selected="true" data-agenda="semaine">Semaine</button>
+                <button class="tool" role="tab" aria-selected="false" data-agenda="mois">Mois</button>
+              </div>
+            </div>
+            <!-- Vue semaine -->
+            <div class="week" id="weekView">
+              <div class="week-head"><span></span><div>Lun. <b>19</b></div><div>Mar. <b>20</b></div><div class="today-col">Mer. <b>21</b></div><div>Jeu. <b>22</b></div><div>Ven. <b>23</b></div></div>
+              <div class="week-body">
+                <div class="hours"><span>08:00</span><span>09:00</span><span>10:00</span><span>11:00</span><span>12:00</span><span>13:00</span><span>14:00</span><span>15:00</span><span>16:00</span><span>17:00</span></div>
+                <div class="day"><button class="event relance" data-type="relance" style="top:56px;height:56px"><b>09:00</b> Relance — Groupe Kora<small>Offre envoyée</small></button></div>
+                <div class="day"><button class="event rdv" data-type="rdv" style="top:336px;height:84px"><b>14:00</b> RDV décideur — Société Horizon<small>Douala</small></button></div>
+                <div class="day now-col"><span class="now" style="top:196px" role="img" aria-label="Il est 11 h 30"></span>
+                  <button class="event interne" data-type="interne" style="top:112px;height:56px"><b>10:00</b> Point pipeline équipe<small>Salle Wouri</small></button>
+                  <button class="event rdv" data-type="rdv" style="top:336px;height:84px"><b>14:00</b> RDV décideur — Société Horizon<small>Avec Marie K.</small></button>
+                  <button class="event relance" data-type="relance" style="top:448px;height:42px"><b>16:00</b> Relance — Banque du Wouri</button></div>
+                <div class="day"><button class="event formation" data-type="formation" style="top:112px;height:112px"><b>10:00</b> Atelier de préparation — Atlas Négoce<small>Investudy · 12 inscrits</small></button>
+                  <button class="event rdv" data-type="rdv" style="top:392px;height:56px"><b>15:00</b> Appel — Sahel Logistique</button></div>
+                <div class="day"><button class="event rdv" data-type="rdv" style="top:56px;height:84px"><b>09:00</b> Appel — Énergie Littoral</button>
+                  <button class="event echeance" data-type="echeance" style="top:168px;height:56px"><b>11:00</b> Échéance — agrément Banque du Wouri</button>
+                  <button class="event interne" data-type="interne" style="top:392px;height:112px"><b>15:00</b> Revue sécurité mensuelle<small>Centre de confiance</small></button></div>
+              </div>
+            </div>
+            <!-- Vue mois -->
+            <div class="month" id="monthView" hidden>
+              <div class="month-head"><span>Lun.</span><span>Mar.</span><span>Mer.</span><span>Jeu.</span><span>Ven.</span><span>Sam.</span><span>Dim.</span></div>
+              <div class="month-grid" id="monthGrid"></div>
+            </div>
+          </div>
+        </div>
       </section>
 
       <!-- ===== ENTREPRISES ===== -->
@@ -181,7 +251,7 @@
           <div class="actions"><button class="btn btn-secondary"><svg class="icon sm"><use href="#i-filter"/></svg>Filtres</button><button class="btn btn-primary"><svg class="icon sm"><use href="#i-plus"/></svg>Opportunité</button></div></div>
         <div class="kanban">
           <div class="col"><h3>Prospection <span>4</span></h3>
-            <div class="deal"><strong>Énergie Littoral</strong><div class="amt">35 M <small class="muted">XAF</small></div><div class="foot"><span>Appel le 24 oct.</span><span class="avatar sm">YM</span></div></div>
+            <div class="deal"><strong>Énergie Littoral</strong><div class="amt">35 M <small class="muted">XAF</small></div><div class="foot"><span>Appel le 23 oct.</span><span class="avatar sm">YM</span></div></div>
             <div class="deal"><strong>Sahel Logistique</strong><div class="amt">12 M <small class="muted">XAF</small></div><div class="foot"><span>Sans action prévue</span><span class="avatar sm">LM</span></div></div></div>
           <div class="col"><h3>RDV décideur <span>3</span></h3>
             <div class="deal"><strong>Société Horizon SA</strong><div class="amt">42 M <small class="muted">XAF</small></div><div class="foot"><span class="badge info">Aujourd’hui 14 h</span><span class="avatar sm">MK</span></div></div></div>
@@ -285,6 +355,23 @@
     </div>
   </div>
 </div>
+<div class="overlay" id="eventDialog" hidden>
+  <form class="dialog" role="dialog" aria-modal="true" aria-labelledby="evTitle" onsubmit="event.preventDefault();closeEvent()">
+    <h2 id="evTitle" style="font-size:var(--text-xl);margin-bottom:var(--s-5)">Nouvel événement</h2>
+    <div class="field"><label for="ev1">Titre</label><input class="input" id="ev1" placeholder="Ex. RDV décideur — Société Horizon" required></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--s-4)">
+      <div class="field"><label for="ev2">Type</label><select class="input" id="ev2"><option>Rendez-vous client</option><option>Relance</option><option>Formation</option><option>Échéance</option><option>Interne</option></select></div>
+      <div class="field"><label for="ev3">Entreprise liée</label><select class="input" id="ev3"><option>— Aucune —</option><option>Société Horizon SA</option><option>Groupe Kora Assurances</option><option>Atlas Négoce</option></select></div>
+      <div class="field"><label for="ev4">Date</label><input class="input" id="ev4" type="date" value="2026-10-22"></div>
+      <div class="field"><label for="ev5">Rappel</label><select class="input" id="ev5"><option>15 minutes avant</option><option>1 heure avant</option><option>La veille</option></select></div>
+      <div class="field"><label for="ev6">Début</label><input class="input" id="ev6" type="time" value="10:00"></div>
+      <div class="field"><label for="ev7">Fin</label><input class="input" id="ev7" type="time" value="11:00"></div>
+    </div>
+    <p class="help">Participants, salle et lien visio seront proposés à l’étape suivante.</p>
+    <div class="row-flex" style="justify-content:flex-end;margin-top:var(--s-5)"><button type="button" class="btn btn-ghost" onclick="closeEvent()">Annuler</button><button type="submit" class="btn btn-primary">Enregistrer</button></div>
+  </form>
+</div>
 <script src="prototype.js"></script>
+<script src="agenda.js"></script>
 </body>
 </html>

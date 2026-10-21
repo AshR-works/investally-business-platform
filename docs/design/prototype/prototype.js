@@ -7,6 +7,9 @@ const navLinks = [...document.querySelectorAll('[data-nav]')];
 function go(name) {
   document.body.dataset.view = name === 'login' ? 'login' : 'app';
   if (name === 'login') return;
+  const agendaMode = name === 'agenda-mois' ? 'mois' : 'semaine';
+  if (name === 'agenda-mois') name = 'agenda';
+  if (name === 'agenda' && window.setAgendaView) window.setAgendaView(agendaMode);
   const target = screens.some((s) => s.dataset.screen === name) ? name : 'soon';
   screens.forEach((s) => s.classList.toggle('on', s.dataset.screen === target));
   navLinks.forEach((a) => (a.dataset.nav === target ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current')));
