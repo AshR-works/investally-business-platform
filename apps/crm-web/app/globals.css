@@ -102,3 +102,6 @@ legend { font-weight: 600; padding: 0 .3rem; }
   .sidebar { width: 100%; border-right: 0; border-bottom: 1px solid var(--border); }
   .sidebar nav { flex-direction: row; flex-wrap: wrap; }
 }
+
+/* Texte réservé aux lecteurs d'écran (nom d'une colonne ou d'un bouton sans libellé visible). */
+.sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }

@@ -1,5 +1,6 @@
 'use client';
 
+import { PageHeading } from '../../../../components/page-heading';
 import { FormEvent, useCallback, useEffect, useState } from 'react';
 import { Modal } from '../../../../components/modal';
 import { api, ApiError } from '../../../../lib/api';
@@ -113,7 +114,7 @@ export default function UsersPage() {
   if (!can(profile, 'iam.user.read')) {
     return (
       <>
-        <h1>Utilisateurs</h1>
+        <PageHeading>Utilisateurs</PageHeading>
         <p role="alert">Accès refusé : votre profil ne permet pas d&apos;administrer les utilisateurs.</p>
       </>
     );
@@ -122,7 +123,7 @@ export default function UsersPage() {
   return (
     <>
       <div className="row between">
-        <h1>Utilisateurs</h1>
+        <PageHeading>Utilisateurs</PageHeading>
         {canInvite && <button type="button" onClick={() => setDialog({ kind: 'invite' })}>Inviter un utilisateur</button>}
       </div>
 
