@@ -130,10 +130,12 @@ def main():
     )
     nav_design = (
         'Investally Business Platform — design · <a href="01-DESIGN-SYSTEM.html">Design system</a> · '
-        '<a href="02-SPECIFICATIONS-FRONTEND.html">Spécifications frontend</a> · <a href="03-EXIGENCES-DE-CONCEPTION.html">Exigences</a> · <a href="04-ANALYSE-D-IMPACT.html">Analyse d&#8217;impact</a> · <a href="prototype/index.html">Prototype</a>'
+        '<a href="02-SPECIFICATIONS-FRONTEND.html">Spécifications frontend</a> · <a href="03-EXIGENCES-DE-CONCEPTION.html">Exigences</a> · <a href="04-ANALYSE-D-IMPACT.html">Analyse d&#8217;impact</a> · <a href="05-AIDE-A-LA-DECISION.html">Aide à la décision</a> · <a href="prototype/index.html">Prototype</a>'
     )
-    for folder, nav in ((ROOT, nav_livrables), (design, nav_design)):
-        for name in sorted(n for n in os.listdir(folder) if n.endswith('.md')):
+    docs_root = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'docs')
+    nav_root = 'Investally Business Platform — méthode · <a href="design/05-AIDE-A-LA-DECISION.html">Aide à la décision</a>'
+    for folder, nav, only in ((ROOT, nav_livrables, None), (design, nav_design, None), (docs_root, nav_root, ('METHODE-D-ARBITRAGE.md',))):
+        for name in sorted(n for n in os.listdir(folder) if n.endswith('.md') and (only is None or n in only)):
             md = open(os.path.join(folder, name), encoding='utf-8').read()
             title = re.search(r'^# (.+)$', md, re.M)
             page = (
