@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { pageRange } from '../components/data/pagination';
 import { initialsOf } from '../components/data/entity-cell';
+import { formatDate } from '../lib/format';
 import { allSelected, setMany, someSelected, toggleId } from '../lib/selection';
 import { COMPANY_STATUS, USER_STATUS, statusStyle } from '../lib/status';
 
@@ -52,5 +53,14 @@ describe('affichage des entités et des statuts', () => {
   it('un compte verrouillé est signalé en danger, un compte actif en succès', () => {
     expect(USER_STATUS.LOCKED.tone).toBe('bad');
     expect(USER_STATUS.ACTIVE.tone).toBe('ok');
+  });
+});
+
+describe('dates', () => {
+  it('format français, tolérant aux valeurs absentes ou illisibles', () => {
+    expect(formatDate('2026-10-21T08:30:00.000Z')).toBe('21/10/2026');
+    expect(formatDate(null)).toBe('—');
+    expect(formatDate(undefined)).toBe('—');
+    expect(formatDate('pas une date')).toBe('—');
   });
 });

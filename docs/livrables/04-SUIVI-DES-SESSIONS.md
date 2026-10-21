@@ -21,8 +21,8 @@
 | **S3.5** Mot de passe oublié, commentaires, livrables | `sprint/s3-5-password-reset` | 10-21 05 h 39 | **fusionnée** (`s3-5-validated`) | — | ✅ **validée 2026-10-21** |
 | **A11Y-1** Accessibilité (lecteurs d'écran) | `sprint/a11y-1-lecteurs-d-ecran` | 10-21 | **fusionnée** (`a11y-1-validated`) | — | ✅ **validée 2026-10-21** |
 | **Cadrages** H1, H2, S3.6, UX | `sprint/h1-cadrage` | 10-21 | **fusionnée** (`cadrages-validated`) | — | ✅ **validée 2026-10-21** (11 décisions, D19) |
-| **H1** Habillage minimal et hub | `sprint/h1-habillage-hub` | 10-21 | **livrée** | tests web 35/35, axe 21 états à 0 violation, CSP 0 violation | ⏳ **validation attendue** (`docs/SPRINT-H1-RECETTE.md`) |
-| **H1b** Composants de données | `sprint/h1b-composants-de-donnees` | 10-21 | **livrée** | tests web 42/42, axe 24 états à 0 violation, CSP 0 violation | ⏳ **validation attendue** avec H1 (`docs/SPRINT-H1-RECETTE.md`) |
+| **H1** Habillage minimal et hub | `sprint/h1-habillage-hub` | 10-21 | **fusionnée** | tests web 35/35, axe 21 états à 0 violation, CSP 0 violation | ✅ **validée 2026-10-21** (`h1-validated`) |
+| **H1b** Composants de données | `sprint/h1b-composants-de-donnees` | 10-21 | **fusionnée** | tests web 42/42, axe 24 états à 0 violation, CSP 0 violation | ✅ **validée 2026-10-21** (`h1b-validated`) |
 
 > **Commentaire** — Les dates de commits ne mesurent pas l'effort : chaque session regroupe de longs échanges, des recettes et des corrections avant le commit final. Elles prouvent en revanche l'**ordre** et la **traçabilité** : aucune fusion sans validation écrite, aucune branche sautée. Le plan annonçait « 1 semaine maximum par sprint » ; l'ensemble tient ici en **moins de deux jours calendaires** parce que le rythme réel a été celui des validations successives de l'ingénieur.
 

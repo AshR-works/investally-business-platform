@@ -13,6 +13,8 @@ Chaque cadrage dit **ce que la session fait et ne fait pas**, **l'état de dépa
 | 4 | **Cadrage UX** (5 écrans clés) | [CADRAGE-UX-5-ECRANS-CLES.md](CADRAGE-UX-5-ECRANS-CLES.md) | CAD-UX-1 (+ choix des 5 écrans) |
 | 5+ | S4.1 à S4.4, S5, S6, Stocks, S7 | *Cadrages à produire au fil de l'eau* | — |
 
+| — | **Arbitrage** données de l'API des entreprises | [ARBITRAGE-API-DONNEES-ENTREPRISES.md](ARBITRAGE-API-DONNEES-ENTREPRISES.md) | ARB-API-1 à 4 (**décidés le 2026-10-21**, C, A, A, A) |
+
 ## Recommandations en un coup d'œil
 | Décision | Recommandation | Note |
 |---|---|---|
