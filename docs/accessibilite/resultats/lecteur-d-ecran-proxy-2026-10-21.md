@@ -1,6 +1,8 @@
 # Audit d'accessibilité de l'interface — 2026-10-21
 
-**États audités** : 15 · **violations** : 0 · **à vérifier à la main** : 0
+**Violations de la politique de contenu (CSP)** : 0
+
+**États audités** : 21 · **violations** : 0 · **à vérifier à la main** : 1
 
 | État d'écran | Violations | À vérifier | Éléments annoncés |
 |---|---|---|---|
@@ -9,14 +11,20 @@
 | Mot de passe oublié | 0 | 0 | 7 |
 | Mot de passe oublié — e-mail envoyé | 0 | 0 | 5 |
 | Invitation — lien invalide | 0 | 0 | 3 |
-| Réinitialisation — lien invalide | 0 | 0 | 4 |
+| Réinitialisation — lien invalide | 0 | 1 | 4 |
 | MFA — configuration (QR code et clé) | 0 | 0 | 11 |
 | MFA — code refusé | 0 | 0 | 12 |
 | MFA — codes de secours (affichage unique) | 0 | 0 | 8 |
-| Entreprises | 0 | 0 | 97 |
-| Administration des utilisateurs | 0 | 0 | 79 |
+| Vue d’ensemble (hub) | 0 | 0 | 36 |
+| Entreprises (rail compact) | 0 | 0 | 104 |
+| Entreprises (navigation dépliée) | 0 | 0 | 105 |
+| Hub — résultats de recherche | 0 | 0 | 40 |
+| Hub — thème sombre | 0 | 0 | 40 |
+| Hub — mobile, tiroir fermé | 0 | 0 | 29 |
+| Hub — mobile, tiroir ouvert | 0 | 0 | 37 |
+| Administration des utilisateurs | 0 | 0 | 85 |
 | Administration — fenêtre « Inviter » | 0 | 0 | 19 |
-| Mon compte | 0 | 0 | 32 |
+| Mon compte | 0 | 0 | 39 |
 | Réinitialisation — nouveau mot de passe | 0 | 0 | 7 |
 | Réinitialisation — indications en direct | 0 | 0 | 7 |
 
@@ -144,18 +152,67 @@ Ce que le lecteur d'écran annonce, dans l'ordre :
 - button « Continuer » désactivé
 - button « Changer de compte »
 
-## Entreprises
-*Titre de page* : « Entreprises cibles — Investally CRM » · *Langue* : fr · *Focus* : aucun élément ciblé
+## Vue d’ensemble (hub)
+*Titre de page* : « Vue d’ensemble — Investally CRM » · *Langue* : fr · *Focus* : aucun élément ciblé · *Note* : navigation complète, recherche globale, modules · polices chargées : Inter Variable, Montserrat Variable
 
 Ce que le lecteur d'écran annonce, dans l'ordre :
 
 - alert (SANS NOM)
-- complementary (SANS NOM)
+- link « Aller au contenu »
+- complementary « Barre latérale »
+- link « Investally — Vue d’ensemble »
 - navigation « Navigation principale »
+- link « Vue d’ensemble »
 - link « Entreprises »
 - link « Utilisateurs »
 - link « Mon compte »
 - button « Se déconnecter »
+- banner (SANS NOM)
+- button « Rechercher partout Ctrl K »
+- button « Passer au thème sombre »
+- main (SANS NOM)
+- heading niveau 1 « Bonjour Recette Hache Cinq »
+- search « Recherche globale »
+- status (SANS NOM)
+- region « Vos modules »
+- heading niveau 2 « Vos modules »
+- list (SANS NOM)
+- listitem niveau 1 (SANS NOM)
+- link « Entreprises Entreprises cibles et clientes »
+- listitem niveau 1 (SANS NOM)
+- link « Utilisateurs Comptes, rôles et sessions »
+- region « À venir »
+- heading niveau 2 « À venir »
+- list (SANS NOM)
+- listitem niveau 1 (SANS NOM)
+- listitem niveau 1 (SANS NOM)
+- listitem niveau 1 (SANS NOM)
+- listitem niveau 1 (SANS NOM)
+- listitem niveau 1 (SANS NOM)
+- listitem niveau 1 (SANS NOM)
+- listitem niveau 1 (SANS NOM)
+- listitem niveau 1 (SANS NOM)
+- listitem niveau 1 (SANS NOM)
+
+## Entreprises (rail compact)
+*Titre de page* : « Entreprises cibles — Investally CRM » · *Langue* : fr · *Focus* : aucun élément ciblé · *Note* : rail par défaut hors hub · 1280 px : {"nav":"rail","margeG":96,"margeD":12,"largeur":1157,"chevauche":false,"defilementX":false} · 2200 px : {"nav":"rail","margeG":373,"margeD":373,"largeur":1440,"chevauche":false,"defilementX":false}
+
+Ce que le lecteur d'écran annonce, dans l'ordre :
+
+- alert (SANS NOM)
+- link « Aller au contenu »
+- complementary « Barre latérale »
+- link « Investally — Vue d’ensemble »
+- navigation « Navigation principale »
+- link « Vue d’ensemble »
+- link « Entreprises »
+- link « Utilisateurs »
+- button « Navigation complète » déplié=false
+- link « Mon compte »
+- button « Se déconnecter »
+- banner (SANS NOM)
+- button « Rechercher partout Ctrl K »
+- button « Passer au thème sombre »
 - main (SANS NOM)
 - heading niveau 1 « Entreprises cibles »
 - form (SANS NOM)
@@ -166,6 +223,10 @@ Ce que le lecteur d'écran annonce, dans l'ordre :
 - columnheader « Nom »
 - columnheader « Statut »
 - columnheader « Secteur »
+- row (SANS NOM)
+- cell « Société Horizon SA »
+- cell « TARGET »
+- cell « — »
 - row (SANS NOM)
 - cell « Entreprise Test 25 »
 - cell « TARGET »
@@ -242,10 +303,287 @@ Ce que le lecteur d'écran annonce, dans l'ordre :
 - cell « Entreprise Test 07 »
 - cell « TARGET »
 - cell « Industrie »
+
+## Entreprises (navigation dépliée)
+*Titre de page* : « Entreprises cibles — Investally CRM » · *Langue* : fr · *Focus* : button « Navigation complète » · *Note* : bouton-pictogramme de dépliage · {"nav":"full","margeG":284,"margeD":12,"largeur":969,"chevauche":false,"defilementX":false}
+
+Ce que le lecteur d'écran annonce, dans l'ordre :
+
+- alert (SANS NOM)
+- link « Aller au contenu »
+- complementary « Barre latérale »
+- link « Investally — Vue d’ensemble »
+- navigation « Navigation principale »
+- link « Vue d’ensemble »
+- link « Entreprises »
+- link « Utilisateurs »
+- button « Navigation complète » déplié=true
+- link « Mon compte »
+- button « Se déconnecter »
+- banner (SANS NOM)
+- button « Rechercher partout Ctrl K »
+- button « Passer au thème sombre »
+- main (SANS NOM)
+- heading niveau 1 « Entreprises cibles »
+- form (SANS NOM)
+- textbox « Nouvelle entreprise » obligatoire
+- button « Enregistrer »
+- alert (SANS NOM)
+- table (SANS NOM)
 - row (SANS NOM)
-- cell « Entreprise Test 06 »
+- columnheader « Nom »
+- columnheader « Statut »
+- columnheader « Secteur »
+- row (SANS NOM)
+- cell « Société Horizon SA »
+- cell « TARGET »
+- cell « — »
+- row (SANS NOM)
+- cell « Entreprise Test 25 »
+- cell « TARGET »
+- cell « Banque »
+- row (SANS NOM)
+- cell « Entreprise Test 24 »
+- cell « TARGET »
+- cell « Énergie »
+- row (SANS NOM)
+- cell « Entreprise Test 23 »
+- cell « TARGET »
+- cell « Distribution »
+- row (SANS NOM)
+- cell « Entreprise Test 22 »
+- cell « TARGET »
+- cell « Industrie »
+- row (SANS NOM)
+- cell « Entreprise Test 21 »
 - cell « TARGET »
 - cell « Assurance »
+- row (SANS NOM)
+- cell « Entreprise Test 20 »
+- cell « TARGET »
+- cell « Banque »
+- row (SANS NOM)
+- cell « Entreprise Test 19 »
+- cell « TARGET »
+- cell « Énergie »
+- row (SANS NOM)
+- cell « Entreprise Test 18 »
+- cell « TARGET »
+- cell « Distribution »
+- row (SANS NOM)
+- cell « Entreprise Test 17 »
+- cell « TARGET »
+- cell « Industrie »
+- row (SANS NOM)
+- cell « Entreprise Test 16 »
+- cell « TARGET »
+- cell « Assurance »
+- row (SANS NOM)
+- cell « Entreprise Test 15 »
+- cell « TARGET »
+- cell « Banque »
+- row (SANS NOM)
+- cell « Entreprise Test 14 »
+- cell « TARGET »
+- cell « Énergie »
+- row (SANS NOM)
+- cell « Entreprise Test 13 »
+- cell « TARGET »
+- cell « Distribution »
+- row (SANS NOM)
+- cell « Entreprise Test 12 »
+- cell « TARGET »
+- cell « Industrie »
+- row (SANS NOM)
+- cell « Entreprise Test 11 »
+- cell « TARGET »
+- cell « Assurance »
+- row (SANS NOM)
+- cell « Entreprise Test 10 »
+- cell « TARGET »
+- cell « Banque »
+- row (SANS NOM)
+- cell « Entreprise Test 09 »
+- cell « TARGET »
+- cell « Énergie »
+- row (SANS NOM)
+- cell « Entreprise Test 08 »
+- cell « TARGET »
+- cell « Distribution »
+- row (SANS NOM)
+- cell « Entreprise Test 07 »
+- cell « TARGET »
+- cell « Industrie »
+
+## Hub — résultats de recherche
+*Titre de page* : « Vue d’ensemble — Investally CRM » · *Langue* : fr · *Focus* : aucun élément ciblé · *Note* : résultats groupés par type, annonce du nombre
+
+Ce que le lecteur d'écran annonce, dans l'ordre :
+
+- alert (SANS NOM)
+- link « Aller au contenu »
+- complementary « Barre latérale »
+- link « Investally — Vue d’ensemble »
+- navigation « Navigation principale »
+- link « Vue d’ensemble »
+- link « Entreprises »
+- link « Utilisateurs »
+- link « Mon compte »
+- button « Se déconnecter »
+- banner (SANS NOM)
+- button « Rechercher partout Ctrl K »
+- button « Passer au thème sombre »
+- main (SANS NOM)
+- heading niveau 1 « Bonjour Recette Hache Cinq »
+- search « Recherche globale »
+- status (SANS NOM)
+- heading niveau 2 « ENTREPRISES »
+- list (SANS NOM)
+- listitem niveau 1 (SANS NOM)
+- link « Société Horizon SA TARGET »
+- region « Vos modules »
+- heading niveau 2 « Vos modules »
+- list (SANS NOM)
+- listitem niveau 1 (SANS NOM)
+- link « Entreprises Entreprises cibles et clientes »
+- listitem niveau 1 (SANS NOM)
+- link « Utilisateurs Comptes, rôles et sessions »
+- region « À venir »
+- heading niveau 2 « À venir »
+- list (SANS NOM)
+- listitem niveau 1 (SANS NOM)
+- listitem niveau 1 (SANS NOM)
+- listitem niveau 1 (SANS NOM)
+- listitem niveau 1 (SANS NOM)
+- listitem niveau 1 (SANS NOM)
+- listitem niveau 1 (SANS NOM)
+- listitem niveau 1 (SANS NOM)
+- listitem niveau 1 (SANS NOM)
+- listitem niveau 1 (SANS NOM)
+
+## Hub — thème sombre
+*Titre de page* : « Vue d’ensemble — Investally CRM » · *Langue* : fr · *Focus* : aucun élément ciblé
+
+Ce que le lecteur d'écran annonce, dans l'ordre :
+
+- alert (SANS NOM)
+- link « Aller au contenu »
+- complementary « Barre latérale »
+- link « Investally — Vue d’ensemble »
+- navigation « Navigation principale »
+- link « Vue d’ensemble »
+- link « Entreprises »
+- link « Utilisateurs »
+- link « Mon compte »
+- button « Se déconnecter »
+- banner (SANS NOM)
+- button « Rechercher partout Ctrl K »
+- button « Passer au thème clair »
+- main (SANS NOM)
+- heading niveau 1 « Bonjour Recette Hache Cinq »
+- search « Recherche globale »
+- status (SANS NOM)
+- heading niveau 2 « ENTREPRISES »
+- list (SANS NOM)
+- listitem niveau 1 (SANS NOM)
+- link « Société Horizon SA TARGET »
+- region « Vos modules »
+- heading niveau 2 « Vos modules »
+- list (SANS NOM)
+- listitem niveau 1 (SANS NOM)
+- link « Entreprises Entreprises cibles et clientes »
+- listitem niveau 1 (SANS NOM)
+- link « Utilisateurs Comptes, rôles et sessions »
+- region « À venir »
+- heading niveau 2 « À venir »
+- list (SANS NOM)
+- listitem niveau 1 (SANS NOM)
+- listitem niveau 1 (SANS NOM)
+- listitem niveau 1 (SANS NOM)
+- listitem niveau 1 (SANS NOM)
+- listitem niveau 1 (SANS NOM)
+- listitem niveau 1 (SANS NOM)
+- listitem niveau 1 (SANS NOM)
+- listitem niveau 1 (SANS NOM)
+- listitem niveau 1 (SANS NOM)
+
+## Hub — mobile, tiroir fermé
+*Titre de page* : « Vue d’ensemble — Investally CRM » · *Langue* : fr · *Focus* : aucun élément ciblé · *Note* : la navigation est masquée aux lecteurs d’écran tant que le tiroir est fermé
+
+Ce que le lecteur d'écran annonce, dans l'ordre :
+
+- alert (SANS NOM)
+- link « Aller au contenu »
+- banner (SANS NOM)
+- button « Ouvrir le menu » déplié=false
+- button « Rechercher partout »
+- button « Passer au thème sombre »
+- main (SANS NOM)
+- heading niveau 1 « Bonjour Recette Hache Cinq »
+- search « Recherche globale »
+- status (SANS NOM)
+- region « Vos modules »
+- heading niveau 2 « Vos modules »
+- list (SANS NOM)
+- listitem niveau 1 (SANS NOM)
+- link « Entreprises Entreprises cibles et clientes »
+- listitem niveau 1 (SANS NOM)
+- link « Utilisateurs Comptes, rôles et sessions »
+- region « À venir »
+- heading niveau 2 « À venir »
+- list (SANS NOM)
+- listitem niveau 1 (SANS NOM)
+- listitem niveau 1 (SANS NOM)
+- listitem niveau 1 (SANS NOM)
+- listitem niveau 1 (SANS NOM)
+- listitem niveau 1 (SANS NOM)
+- listitem niveau 1 (SANS NOM)
+- listitem niveau 1 (SANS NOM)
+- listitem niveau 1 (SANS NOM)
+- listitem niveau 1 (SANS NOM)
+
+## Hub — mobile, tiroir ouvert
+*Titre de page* : « Vue d’ensemble — Investally CRM » · *Langue* : fr · *Focus* : aucun élément ciblé
+
+Ce que le lecteur d'écran annonce, dans l'ordre :
+
+- alert (SANS NOM)
+- link « Aller au contenu »
+- complementary « Barre latérale »
+- link « Investally — Vue d’ensemble »
+- navigation « Navigation principale »
+- link « Vue d’ensemble »
+- link « Entreprises »
+- link « Utilisateurs »
+- link « Mon compte »
+- button « Se déconnecter »
+- banner (SANS NOM)
+- button « Ouvrir le menu » déplié=true
+- button « Rechercher partout »
+- button « Passer au thème sombre »
+- main (SANS NOM)
+- heading niveau 1 « Bonjour Recette Hache Cinq »
+- search « Recherche globale »
+- status (SANS NOM)
+- region « Vos modules »
+- heading niveau 2 « Vos modules »
+- list (SANS NOM)
+- listitem niveau 1 (SANS NOM)
+- link « Entreprises Entreprises cibles et clientes »
+- listitem niveau 1 (SANS NOM)
+- link « Utilisateurs Comptes, rôles et sessions »
+- region « À venir »
+- heading niveau 2 « À venir »
+- list (SANS NOM)
+- listitem niveau 1 (SANS NOM)
+- listitem niveau 1 (SANS NOM)
+- listitem niveau 1 (SANS NOM)
+- listitem niveau 1 (SANS NOM)
+- listitem niveau 1 (SANS NOM)
+- listitem niveau 1 (SANS NOM)
+- listitem niveau 1 (SANS NOM)
+- listitem niveau 1 (SANS NOM)
+- listitem niveau 1 (SANS NOM)
 
 ## Administration des utilisateurs
 *Titre de page* : « Utilisateurs — Investally CRM » · *Langue* : fr · *Focus* : aucun élément ciblé
@@ -253,12 +591,19 @@ Ce que le lecteur d'écran annonce, dans l'ordre :
 Ce que le lecteur d'écran annonce, dans l'ordre :
 
 - alert (SANS NOM)
-- complementary (SANS NOM)
+- link « Aller au contenu »
+- complementary « Barre latérale »
+- link « Investally — Vue d’ensemble »
 - navigation « Navigation principale »
+- link « Vue d’ensemble »
 - link « Entreprises »
 - link « Utilisateurs »
+- button « Navigation complète » déplié=true
 - link « Mon compte »
 - button « Se déconnecter »
+- banner (SANS NOM)
+- button « Rechercher partout Ctrl K »
+- button « Passer au thème sombre »
 - main (SANS NOM)
 - heading niveau 1 « Utilisateurs »
 - button « Inviter un utilisateur »
@@ -275,19 +620,30 @@ Ce que le lecteur d'écran annonce, dans l'ordre :
 - columnheader « Dernière connexion »
 - columnheader « Actions »
 - row (SANS NOM)
-- cell « Audit Quatre lecteur4@e2e.test »
+- cell « Recette Hache Cinq h1e@e2e.test »
 - cell « Super administrateur »
 - cell « Actif »
 - cell « Activé »
-- cell « 21/10/2026 18:32:11 »
+- cell « 21/10/2026 21:25:37 »
 - cell « Rôles »
 - button « Rôles »
 - row (SANS NOM)
-- cell « Audit Trois lecteur3@e2e.test »
+- cell « Recette Hache Quatre h1d@e2e.test »
+- cell « Super administrateur »
+- cell « Actif »
+- cell « Non configuré »
+- cell « Jamais »
+- cell « Rôles Désactiver Réinitialiser le mot de passe Couper les sessions »
+- button « Rôles »
+- button « Désactiver »
+- button « Réinitialiser le mot de passe »
+- button « Couper les sessions »
+- row (SANS NOM)
+- cell « Recette Hache Trois h1c@e2e.test »
 - cell « Super administrateur »
 - cell « Actif »
 - cell « Activé »
-- cell « 21/10/2026 18:30:20 »
+- cell « 21/10/2026 21:23:10 »
 - cell « Rôles Désactiver Réinitialiser le mot de passe Réinitialiser le MFA Couper les sessions »
 - button « Rôles »
 - button « Désactiver »
@@ -295,11 +651,11 @@ Ce que le lecteur d'écran annonce, dans l'ordre :
 - button « Réinitialiser le MFA »
 - button « Couper les sessions »
 - row (SANS NOM)
-- cell « Audit Deux lecteur2@e2e.test »
+- cell « Recette Hache Deux h1b@e2e.test »
 - cell « Super administrateur »
 - cell « Actif »
 - cell « Activé »
-- cell « 21/10/2026 18:28:45 »
+- cell « 21/10/2026 21:22:17 »
 - cell « Rôles Désactiver Réinitialiser le mot de passe Réinitialiser le MFA Couper les sessions »
 - button « Rôles »
 - button « Désactiver »
@@ -307,19 +663,7 @@ Ce que le lecteur d'écran annonce, dans l'ordre :
 - button « Réinitialiser le MFA »
 - button « Couper les sessions »
 - row (SANS NOM)
-- cell « Audit Accessibilite a11y@e2e.test »
-- cell « Super administrateur »
-- cell « Actif »
-- cell « Activé »
-- cell « 21/10/2026 18:25:32 »
-- cell « Rôles Désactiver Réinitialiser le mot de passe Réinitialiser le MFA Couper les sessions »
-- button « Rôles »
-- button « Désactiver »
-- button « Réinitialiser le mot de passe »
-- button « Réinitialiser le MFA »
-- button « Couper les sessions »
-- row (SANS NOM)
-- cell « Admin E2E admin@e2e.test »
+- cell « Recette Hache Un h1@e2e.test »
 - cell « Super administrateur »
 - cell « Actif »
 - cell « Non configuré »
@@ -363,12 +707,19 @@ Ce que le lecteur d'écran annonce, dans l'ordre :
 Ce que le lecteur d'écran annonce, dans l'ordre :
 
 - alert (SANS NOM)
-- complementary (SANS NOM)
+- link « Aller au contenu »
+- complementary « Barre latérale »
+- link « Investally — Vue d’ensemble »
 - navigation « Navigation principale »
+- link « Vue d’ensemble »
 - link « Entreprises »
 - link « Utilisateurs »
+- button « Navigation complète » déplié=true
 - link « Mon compte »
 - button « Se déconnecter »
+- banner (SANS NOM)
+- button « Rechercher partout Ctrl K »
+- button « Passer au thème sombre »
 - main (SANS NOM)
 - heading niveau 1 « Mon compte »
 - heading niveau 2 « Profil »
@@ -391,8 +742,8 @@ Ce que le lecteur d'écran annonce, dans l'ordre :
 - row (SANS NOM)
 - cell « Edge sur Windows Cette session »
 - cell « 127.0.0.1 »
-- cell « 21/10/2026 18:32:11 »
-- cell « 21/10/2026 18:32:21 »
+- cell « 21/10/2026 21:25:37 »
+- cell « 21/10/2026 21:26:04 »
 - cell (SANS NOM)
 
 ## Réinitialisation — nouveau mot de passe

@@ -1,0 +1,45 @@
+/*
+ * Thème Tailwind v4 : expose les jetons du design (app/tokens.css) comme classes utilitaires
+ * (bg-surface, text-ink-2, rounded-card…). Le thème sombre change les VALEURS des variables, pas les classes.
+ * Reprise de docs/design/tailwind-theme.css.
+ */
+@theme inline {
+  --font-sans: var(--font-ui);
+  --font-display: var(--font-display);
+
+  --color-canvas: var(--canvas);
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-sidebar: var(--sidebar);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-field: var(--field-border);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-muted: var(--muted);
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-strong: var(--brand-strong);
+  --color-brand-ink: var(--brand-ink);
+  --color-brand-soft: var(--brand-soft);
+  --color-hero: var(--hero);
+  --color-hero-ink: var(--hero-ink);
+  --color-hero-muted: var(--hero-muted);
+  --color-ok: var(--ok);
+  --color-ok-bg: var(--ok-bg);
+  --color-warn: var(--warn);
+  --color-warn-bg: var(--warn-bg);
+  --color-bad: var(--bad);
+  --color-bad-bg: var(--bad-bg);
+  --color-info: var(--info);
+  --color-info-bg: var(--info-bg);
+  --color-selected: var(--selected-bg);
+
+  --radius-chip: 6px;
+  --radius-control: 10px;
+  --radius-panel: 14px;
+  --radius-card: 22px;
+
+  --shadow-panel: var(--shadow-panel);
+}

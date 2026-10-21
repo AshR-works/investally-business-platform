@@ -2,7 +2,7 @@
 
 > Document **généré** par `node scripts/gen-function-index.mjs` à partir des commentaires du code. Ne pas le modifier à la main : corriger le commentaire dans le fichier source, puis relancer le script.
 
-**536 déclarations commentées au total.**
+**557 déclarations commentées au total.**
 
 
 ## API (NestJS) — 459 déclarations commentées
@@ -1018,19 +1018,24 @@
 | `async function submit(event: FormEvent)` | Envoie l'invitation avec les rôles cochés (au moins un). |
 | `function RolesDialog({ user, roles, onClose, onSubmit }:` | Fenêtre de modification des rôles d'un utilisateur ; le changement s'applique immédiatement, y compris aux sessions ouvertes. |
 
+### `(app)/companies/page.tsx`
+
+| Déclaration | Rôle |
+|---|---|
+| `export default function CompaniesPage()` | Entreprises visibles selon la portée de l'utilisateur et création d'une entreprise (si le droit existe). |
+| `async function submit(event: FormEvent)` | Enregistre l'entreprise saisie puis recharge la liste. |
+
 ### `(app)/layout.tsx`
 
 | Déclaration | Rôle |
 |---|---|
-| `export default function AppLayout({ children }: { children: ReactNode })` | Cadre de toutes les pages connectées : n'affiche rien tant que l'utilisateur n'est pas authentifié avec son second facteur. |
-| `function Shell({ children }: { children: ReactNode })` | Barre latérale (menus selon les droits, identité, déconnexion) et zone de contenu. |
+| `export default function AppLayout({ children }: { children: ReactNode })` | Cadre de toutes les pages connectées : n'affiche rien tant que l'utilisateur n'est pas authentifié avec son second facteur, puis place la page dans la coque (navigation, barre supérieure, panneau principal centré). |
 
 ### `(app)/page.tsx`
 
 | Déclaration | Rôle |
 |---|---|
-| `export default function CompaniesPage()` | Page d'accueil : entreprises visibles selon la portée de l'utilisateur et création d'une entreprise (si le droit existe). |
-| `async function submit(event: FormEvent)` | Enregistre l'entreprise saisie puis recharge la liste. |
+| `export default function HubPage()` | Vue d'ensemble : point d'entrée de l'application (EXD-05). |
 
 ### `forgot-password/page.tsx`
 
@@ -1080,13 +1085,38 @@
 | `export default function ResetPasswordPage()` | Page ouverte depuis le lien reçu par e-mail. |
 | `async function submit(event: FormEvent)` | Envoie le jeton et le nouveau mot de passe ; le serveur coupe toutes les sessions, l'utilisateur doit se reconnecter avec son second facteur. |
 
-## Interface web — composants — 5 déclarations commentées
+## Interface web — composants — 15 déclarations commentées
+
+### `app-shell.tsx`
+
+| Déclaration | Rôle |
+|---|---|
+| `export const FOCUS_SEARCH_EVENT = 'investally:focus-search';` | Événement envoyé au hub pour mettre le focus dans la recherche globale (raccourci Ctrl/⌘ K, bouton de la barre). |
+| `export function AppShell({ children }: { children: ReactNode })` | Coque de toutes les pages connectées (EXD-01, EXD-05, EXD-10, EXD-11) : - navigation complète sur la Vue d'ensemble, rail compact ailleurs avec un bouton-pictogramme pour la déplier ; - panneau principal centré sur la fenêtre (marge gauche ≥ navigation, repli automatique quand la fenêtre est étroite) ; - sur mobile, la navigation devient un tiroir ouvert par le bouton de menu. |
+| `const openSearch = useCallback(()` | Va à la recherche globale du hub (ou y met le focus si l'on y est déjà). |
+| `function ShellLink({ href, icon, label, current, railOnly, centered, rail }: { href: string; icon: IconName; label: string; current: boolean; railOnly` | Lien de navigation : pictogramme + libellé (le libellé reste lu par les lecteurs d'écran quand le rail est replié). |
+| `function ThemeToggle()` | Bascule clair / sombre (le choix est mémorisé ; sans choix, l'application suit le réglage de l'appareil). |
 
 ### `gate.tsx`
 
 | Déclaration | Rôle |
 |---|---|
 | `export function Gate({ allow, children }: { allow: readonly Exclude<AuthStatus, 'loading'>[]; children: ReactNode })` | Laisse passer uniquement les états attendus ; sinon redirige vers l'écran qui correspond à l'état réel. |
+
+### `global-search.tsx`
+
+| Déclaration | Rôle |
+|---|---|
+| `const TYPING_DELAY = 250;` | Délai (ms) entre la dernière frappe et l'appel au serveur. |
+| `export function GlobalSearch()` | Recherche globale du hub (EXD-05, CAD-H1-4) : un champ, des résultats groupés par type. |
+
+### `icon.tsx`
+
+| Déclaration | Rôle |
+|---|---|
+| `const PATHS` | Tracés des pictogrammes (jeu unique, libre de droits, repris du prototype de design v0.4.1). |
+| `export type IconName = keyof typeof PATHS;` | Nom d'un pictogramme du jeu. |
+| `export function Icon({ name, className = 'size-5', ...rest }: { name: IconName; className?: string } & Omit<SVGProps<SVGSVGElement>, 'name'>)` | Pictogramme décoratif (`aria-hidden`) : le libellé accessible est toujours porté par le bouton ou le lien qui l'entoure. |
 
 ### `modal.tsx`
 
@@ -1107,7 +1137,7 @@
 | `export function StepUpDialog({ onDone }: { onDone: (ok: boolean) => void })` | Demande un code frais du second facteur avant une action sensible (modification de rôles, désactivation, etc.). |
 | `async function submit(event: FormEvent)` | Vérifie le code ; en cas de succès le nouveau jeton remplace l'ancien et l'action sensible est rejouée. |
 
-## Interface web — bibliothèque — 35 déclarations commentées
+## Interface web — bibliothèque — 46 déclarations commentées
 
 ### `api.ts`
 
@@ -1154,6 +1184,14 @@
 |---|---|
 | `export function parseInvitationFragment(hash: string): string \| null` | Le jeton d'invitation est dans le FRAGMENT de l'URL (`#token=…`) : le navigateur ne l'envoie ni au serveur ni dans l'en-tête Referer. |
 
+### `modules.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export interface AppModule` | Un module de l'application tel que le hub et la navigation le présentent. |
+| `export function availableModules(profile: Profile \| null): AppModule[]` | Modules livrés et que le profil a le droit d'ouvrir. |
+| `export function upcomingModules(): AppModule[]` | Modules pas encore livrés (présentés « À venir » sur le hub). |
+
 ### `password.ts`
 
 | Déclaration | Rôle |
@@ -1167,6 +1205,24 @@
 |---|---|
 | `export function can(profile: Profile \| null, permission: string): boolean` | Informatif seulement (menus, boutons) : le serveur re-contrôle chaque requête. |
 | `export const roleLabel = (code: string): string => ROLE_LABELS[code] ?? code;` | Libellé français d'un rôle (le code brut si le rôle est inconnu). |
+
+### `search.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export interface SearchHit` | Un résultat de la recherche globale. |
+| `export const MIN_QUERY_LENGTH = 2;` | Nombre minimal de caractères avant d'interroger le serveur. |
+| `export const HITS_PER_TYPE = 5;` | Résultats demandés par type. |
+| `export async function searchAll(query: string, profile: Profile \| null, signal?: AbortSignal): Promise<SearchHit[]>` | Recherche globale (CAD-H1-4) : interroge en parallèle les listes que le profil a le droit de lire (entreprises, utilisateurs). |
+
+### `theme.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export type ThemeChoice = 'light' \| 'dark' \| 'system';` | Choix de thème de l'utilisateur : `system` suit le réglage de l'appareil. |
+| `export function readTheme(): ThemeChoice` | Choix mémorisé (jamais bloquant : `system` si le stockage est indisponible ou illisible). |
+| `export function applyTheme(choice: ThemeChoice): void` | Applique le choix à la page (attribut `data-theme`, absent = réglage de l'appareil) et le mémorise. |
+| `export function effectiveTheme(choice: ThemeChoice): 'light' \| 'dark'` | Thème réellement affiché (le choix, ou le réglage de l'appareil pour `system`). |
 
 ### `types.ts`
 
