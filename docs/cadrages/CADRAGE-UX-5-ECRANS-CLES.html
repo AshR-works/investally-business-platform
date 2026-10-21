@@ -1,0 +1,105 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Cadrage UX — Séance sur 5 écrans clés (avant S4.1)</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — cadrages · <a href="README.html">Index</a> · <a href="../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../design/05-AIDE-A-LA-DECISION.html">Aide à la décision</a></nav><h1>Cadrage UX — Séance sur 5 écrans clés (avant S4.1)</h1>
+<p><strong>Date</strong> : 2026-10-21 · <strong>Statut</strong> : <strong>décidé le 2026-10-21</strong> (recommandations retenues) · <strong>Placement</strong> : après S3.6, avant S4.1 (DEC-005).</p>
+<blockquote><p>Méthode : <a href="../METHODE-D-ARBITRAGE.html">METHODE-D-ARBITRAGE.md</a>. <strong>Aucune décision n'est prise dans ce document</strong> : les recommandations sont des avis, la décision est celle de la direction produit.</p></blockquote>
+<h2>1. Objet</h2>
+<p>Une séance courte, <strong>avant S4.1</strong>, pour valider la forme des écrans métier clés avant d'écrire leur code. Le but n'est pas de redessiner : le style est validé (v0.4.1). Il s'agit de décider <strong>comment les écrans réels se comportent</strong>.</p>
+<h2>2. Les cinq écrans proposés</h2>
+<p>Proposition de ma part, <strong>à confirmer ou à remplacer</strong> par vos priorités :</p>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Écran</th><th>Pourquoi maintenant</th><th>Existe au prototype</th></tr></thead><tbody>
+<tr><td>1</td><td><strong>Fiche entreprise</strong> (vue 360° : contacts, offres, rendez-vous, documents, historique)</td><td>Cœur de S4.1 ; conditionne la navigation interne</td><td>Partiellement (liste seulement)</td></tr>
+<tr><td>2</td><td><strong>Création / modification d'une entreprise et d'un contact</strong> (formulaires, validation, doublons)</td><td>Premiers formulaires métier de S4.1</td><td>Fenêtre générique</td></tr>
+<tr><td>3</td><td><strong>Offres, décharges et relances</strong> (S4.2)</td><td>Premier flux avec états et échéances</td><td>Non</td></tr>
+<tr><td>4</td><td><strong>Opportunités</strong> (cartes par 6, étapes, sélection) — décision DEC-003</td><td>Écran le plus utilisé du commercial</td><td>Oui (v0.4.1)</td></tr>
+<tr><td>5</td><td><strong>Agenda</strong> (semaine, mois, création liée à une entreprise ou une opportunité)</td><td>S4.2b ; envie exprimée dès le début</td><td>Oui (v0.2.0)</td></tr>
+</tbody></table></div>
+<p>Réserve en attente : l'écran <strong>Agrément</strong> (S4.4) dépend de précisions métier sur l'agrément ; il est hors séance tant qu'elles manquent.</p>
+<h2>3. Questions à aborder par écran</h2>
+<ul><li>Quelles informations sont <strong>indispensables au premier regard</strong> ? Lesquelles sont secondaires ?</li><li>Quelles <strong>actions</strong> sont fréquentes (à portée d'un clic) et lesquelles sont rares ?</li><li>Quels <strong>états vides, erreurs et chargements</strong> doivent être soignés ?</li><li>Quels <strong>droits</strong> changent ce qu'on voit (Propre / Équipe / Tous) ?</li><li>Quelle <strong>alternative clavier</strong> pour toute interaction à la souris (glisser-déposer, vue « Par étape » : dette D30) ?</li><li>Quels textes et libellés métier utilisez-vous réellement ?</li></ul>
+<h2>4. Décision à prendre</h2>
+<h3>CAD-UX-1 — Format de la séance de cadrage UX</h3>
+<p><strong>Contexte.</strong> DEC-005 prévoit une « séance courte sur 5 écrans clés, à partir des prototypes existants » avant S4.1, pour que chaque écran de S4 naisse dans le bon style et évite les refontes.</p>
+<p><strong>Déjà décidé, ne bouge pas.</strong> Style validé (design v0.4.1) ; prototypes existants (hub, agenda, entreprises, opportunités, formation, sécurité) ; EXD-01 à 11 ; pas de refonte complète.</p>
+<p><strong>Options.</strong></p>
+<p><strong>A. Atelier unique (≈ 90 minutes), en direct</strong> — Vous et moi parcourons les 5 écrans sur le prototype et notons ensemble les ajustements.</p>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td>Avantages</td><td>Décisions rapides ; dialogue ; moins de risque de malentendu.</td></tr>
+<tr><td>Inconvénients</td><td>Demande un créneau commun ; moins de temps pour réfléchir à chaque écran.</td></tr>
+<tr><td>Impact UX</td><td>Retours précis et immédiats.</td></tr>
+<tr><td>Impact métier</td><td>Implique la direction produit au bon moment.</td></tr>
+<tr><td>Impact technique</td><td>Aucun.</td></tr>
+<tr><td>Impact maintenance</td><td>Aucun.</td></tr>
+<tr><td>Coût et délai</td><td>1 séance</td></tr>
+<tr><td>Réversibilité</td><td>Excellente.</td></tr>
+</tbody></table></div>
+<p><strong>B. Revue asynchrone : je prépare des variantes, vous annotez</strong> — Pour chaque écran, je produis 2 variantes et un questionnaire ; vous répondez quand vous le pouvez.</p>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td>Avantages</td><td>Souple ; temps de réflexion ; traçable par écrit.</td></tr>
+<tr><td>Inconvénients</td><td>Aller-retour plus longs ; risque de réponses partielles.</td></tr>
+<tr><td>Impact UX</td><td>Retours réfléchis, parfois moins précis.</td></tr>
+<tr><td>Impact métier</td><td>Aucun.</td></tr>
+<tr><td>Impact technique</td><td>Production de variantes.</td></tr>
+<tr><td>Impact maintenance</td><td>Aucun.</td></tr>
+<tr><td>Coût et délai</td><td>≈ 0,4 session + délais</td></tr>
+<tr><td>Réversibilité</td><td>Excellente.</td></tr>
+</tbody></table></div>
+<p><strong>C. Pas de séance : on passe du prototype au code</strong> — S4.1 démarre directement.</p>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td>Avantages</td><td>Aucune attente.</td></tr>
+<tr><td>Inconvénients</td><td>Risque de refonte d'écrans après coup ; décisions de détail prises sans vous.</td></tr>
+<tr><td>Impact UX</td><td>Écarts possibles avec vos attentes.</td></tr>
+<tr><td>Impact métier</td><td>Aucun.</td></tr>
+<tr><td>Impact technique</td><td>Aucun.</td></tr>
+<tr><td>Impact maintenance</td><td>Reprises coûteuses.</td></tr>
+<tr><td>Coût et délai</td><td>0</td></tr>
+<tr><td>Réversibilité</td><td>Facile à abandonner.</td></tr>
+</tbody></table></div>
+<p><strong>Grille</strong> (notes de 1 à 5, 5 = favorable ; poids fixés avant notation ; totaux calculés).</p>
+<div class="table-wrap"><table><thead><tr><th>Critère (poids)</th><th>A</th><th>B</th><th>C</th></tr></thead><tbody>
+<tr><td>Valeur métier (5)</td><td>4</td><td>4</td><td>2</td></tr>
+<tr><td>Risque (favorable = faible) (5)</td><td>4</td><td>4</td><td>3</td></tr>
+<tr><td>Cohérence architecture / décisions (4)</td><td>4</td><td>4</td><td>3</td></tr>
+<tr><td>Réversibilité (4)</td><td>5</td><td>5</td><td>4</td></tr>
+<tr><td>Coût et délai (favorable = faible) (3)</td><td>4</td><td>3</td><td>5</td></tr>
+<tr><td><strong>Total sur 5</strong></td><td><strong>4,19</strong></td><td><strong>4,05</strong></td><td><strong>3,24</strong></td></tr>
+</tbody></table></div>
+<p><strong>Risques.</strong></p>
+<div class="table-wrap"><table><thead><tr><th>Risque</th><th>Probabilité</th><th>Impact</th><th>Parade</th></tr></thead><tbody>
+<tr><td>Retours trop tardifs (après le code)</td><td>Moyenne</td><td>Moyen</td><td>Séance avant S4.1, décisions consignées dans le registre du design</td></tr>
+<tr><td>Périmètre qui s'élargit en séance</td><td>Moyenne</td><td>Faible</td><td>Ordre du jour fixe, hors-sujet consigné pour plus tard</td></tr>
+</tbody></table></div>
+<p><strong>Dette induite.</strong> Aucune pour A et B si les décisions sont consignées (DDR).</p>
+<p><strong>Recommandation.</strong> Option <strong>A</strong> : les cinq écrans se décident vite à deux, et le temps gagné évite des refontes en S4. L'option B convient si votre emploi du temps l'impose.</p>
+<p><strong>Décision (direction produit).</strong> ✅ <strong>Option A — atelier unique d'environ 90 minutes</strong> — décidé le 2026-10-21 par la direction produit (recommandation suivie).</p>
+<p><strong>Trace.</strong> À enregistrer dans <code>docs/QUESTIONS-ET-DECISIONS.md</code> (et, pour le design, dans <code>docs/design/decisions/</code>).</p>
+<hr>
+<h2>5. Ce que j'apporte et ce que j'attends</h2>
+<div class="table-wrap"><table><thead><tr><th>Je prépare</th><th>J'attends de vous</th></tr></thead><tbody>
+<tr><td>Le prototype à jour pour les 5 écrans, captures clair/sombre</td><td>Confirmation des 5 écrans (ou remplacement)</td></tr>
+<tr><td>Une fiche par écran : usage, données, droits, états, accessibilité</td><td>Vos priorités et vos cas d'usage réels</td></tr>
+<tr><td>Une liste de questions précises</td><td>Un créneau (option A) ou des réponses écrites (option B)</td></tr>
+</tbody></table></div>
+<h2>6. Sortie de la séance</h2>
+<p>Une <strong>fiche de décision de design (DDR)</strong> par sujet tranché, le <strong>document de design mis à jour</strong> (version 0.5.0 ou 0.4.2 selon l'ampleur), et une liste d'écrans prêts à coder pour S4.1.</p></main></body></html>
