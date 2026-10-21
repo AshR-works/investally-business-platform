@@ -1,8 +1,8 @@
 # Aide à la décision — arbitrages ouverts et gouvernance des livrables design
 
-**Date** : 2026-10-21 · **Méthode** : [METHODE-D-ARBITRAGE.md](../METHODE-D-ARBITRAGE.md) · **Références** : [03-EXIGENCES-DE-CONCEPTION.md](03-EXIGENCES-DE-CONCEPTION.md), [04-ANALYSE-D-IMPACT.md](04-ANALYSE-D-IMPACT.md), ADR-0005
+**Date** : 2026-10-21 · **Statut** : **décisions recommandées retenues et appliquées** · **Méthode** : [METHODE-D-ARBITRAGE.md](../METHODE-D-ARBITRAGE.md) · **Références** : [REGISTRE-EXD.md](exigences/REGISTRE-EXD.md), [04-ANALYSE-D-IMPACT.md](04-ANALYSE-D-IMPACT.md), ADR-0005
 
-> **Posture** : je n'ai arrêté aucune décision. Chaque arbitrage se termine par **ma recommandation**, présentée comme telle ; **la décision reste la vôtre** (case « Décision » à compléter).
+> **Posture** : je n'ai arrêté aucune décision. Chaque arbitrage se termine par **ma recommandation**, présentée comme telle ; **la décision est celle de la direction produit** : elle a retenu les recommandations le 2026-10-21 (cases cochées, journal en annexe).
 > **Notation** : 1 = défavorable, 5 = favorable. Réversibilité : 🟢 facile · 🟡 moyenne · 🔴 coûteuse. *Les hypothèses sont étiquetées (H) ; tout le reste est vérifié dans le dépôt ou dans les prototypes. Les scores sont des **aides** : ils reflètent mon jugement et les poids affichés, que vous pouvez modifier (le total se recalcule : Σ note × poids).*
 
 ## Faits de départ (vérifiés)
@@ -73,7 +73,7 @@ Combine le meilleur de B et C **sans la charge** de C :
 | **Score pondéré / 150** | **63** | **111** | **117** | **143** |
 
 > **Recommandation** : **option D**. Elle donne l'essentiel de C pour la moitié de la charge, et s'appuie sur ce que vous utilisez déjà (Git, étiquettes, « Je valide »).
-> **Décision** : ☐ A ☐ B ☐ C ☐ D ☐ autre : ______ · Date : ______
+> **Décision** : ☐ A ☐ B ☐ C ☒ **D** ☐ autre · Date : 2026-10-21 · *Recommandation retenue par la direction produit* (voir DDR-0006)
 
 ## I.3 Arborescence cible (option D)
 ```
@@ -180,7 +180,7 @@ Comme B (**rail compact par défaut hors du hub**, navigation complète au hub),
 
 > **Recommandation** : **B+** (rail compact par défaut + bouton Déplier). Si vous tenez à la **lettre** d'EXD-05, **B** ; **A** seulement si vous acceptez un coût de productivité mesurable.
 > **Ce qui me ferait changer d'avis** : un essai avec 3 utilisateurs montrant que le rail compact est mal compris → bascule vers C.
-> **Décision** : ☐ A ☐ B ☐ B+ ☐ C · Date : ______
+> **Décision** : ☐ A ☐ B ☒ **B+** ☐ C · Date : 2026-10-21 · *Recommandation retenue* (voir DDR-0004)
 
 ---
 
@@ -236,7 +236,7 @@ Trois composants combinables :
 | **Score pondéré / 135** | **86** | **103** | **118** |
 
 > **Recommandation** : **hybride** : cartes par défaut (votre exigence), bandeau d'étapes cliquable, bascule « Par étape ». Je proposerais de **mesurer** après deux semaines d'usage quelle vue est utilisée.
-> **Décision** : ☐ Colonnes ☐ Cartes ×6 ☐ Hybride · Ordre des cartes : ______ · Date : ______
+> **Décision** : ☐ Colonnes ☐ Cartes ×6 ☒ **Hybride** · Ordre des cartes : **prochaine action la plus proche, configurable** (proposition par défaut) · Date : 2026-10-21 · *Recommandation retenue* (voir DDR-0005)
 
 ---
 
@@ -302,7 +302,7 @@ Un contexte `stock` avec son **propre schéma** (`stock`), **aucune dépendance 
 > **Recommandation** : **3′**. Elle évite le piège du CRM « fourre-tout » **sans** attendre l'ERP ni payer le coût d'un service séparé.
 > **Conditions** : ADR dérogatoire ; règle d'architecture interdisant à `stock` d'importer un module du CRM ; permissions `stock.*` propres ; rôle dédié (Logistique) à confirmer ; **mouvements immuables** comme l'audit.
 > **Ce qui me ferait changer d'avis** : si l'ERP est décidé **avant** la fin de S4, l'option 2 devient préférable.
-> **Décision** : ☐ 1 CRM ☐ 2 ERP ☐ 3 service ☐ 3′ module autonome · Date : ______
+> **Décision** : ☐ 1 CRM ☐ 2 ERP ☐ 3 service ☒ **3′ module autonome** · Date : 2026-10-21 · *Recommandation retenue* (voir ADR-0007)
 
 ---
 
@@ -351,7 +351,7 @@ Habillage et S4 en parallèle. **Avantage** : débit. **Défaut** : équipe de d
 | **Score pondéré / 115** | **68** | **104** | **69** | **74** |
 
 > **Recommandation** : **ordre alternatif 1** : il garde votre ordre (habillage → authentification → S4 → reporting → stocks) et y **insère les prérequis** et **supprime le H3 séparé**.
-> **Décision** : ☐ Proposé ☐ Alt. 1 ☐ Alt. 2 ☐ Alt. 3 · Date : ______
+> **Décision** : ☐ Proposé ☒ **Alt. 1** ☐ Alt. 2 ☐ Alt. 3 · Date : 2026-10-21 · *Recommandation retenue* (voir `DESIGN-CODE-ARCHITECTURE-PLAN.md`)
 
 ---
 
@@ -415,16 +415,16 @@ Habillage et S4 en parallèle. **Avantage** : débit. **Défaut** : équipe de d
 **En tant qu'architecte produit de la plateforme Investally, je choisirais** la combinaison suivante : **versionnement D**, **navigation B+**, **Opportunités hybrides**, **Stocks en module autonome (3′)** et **l'ordre alternatif 1**.
 **Pourquoi** : c'est la combinaison qui **protège ce qui est déjà solide** (socle d'accès, règles d'architecture), **livre la valeur commerciale le plus tôt possible sans coder deux fois**, et **garde chaque décision réversible**. Les choix les plus coûteux à défaire (rattachement des Stocks, données de performance) sont traités avec des **garde-fous explicites** plutôt qu'avec de la vitesse. Le prochain geste utile n'est **pas** d'implémenter : c'est de **valider S3.4 et S3.5** et de **débloquer Microsoft 365 et les SuperAdmin**.
 
-> **Rappel** : ces recommandations n'engagent aucune réalisation. **La décision appartient à la direction produit** ; chaque case « Décision » ci-dessus est à compléter, puis je les consignerai dans le registre des décisions et mettrai les documents à jour.
+> **Suite donnée le 2026-10-21** : la direction produit a demandé d'**appliquer les décisions recommandées**. Elles sont consignées dans le journal ci-dessous (annexe), dans `QUESTIONS-ET-DECISIONS.md` (D17), et appliquées : prototype v0.4.0, gouvernance du versionnement, ADR-0007, plan réordonné.
 
 ---
 
-# Annexe — Journal de décision (à compléter)
+# Annexe — Journal de décision
 | N° | Sujet | Option retenue | Date | Motif / réserves |
 |---|---|---|---|---|
-| DEC-001 | Versionnement des livrables design | | | |
-| DEC-002 | Navigation globale (EXD-05) | | | |
-| DEC-003 | Module Opportunités | | | |
-| DEC-004 | Rattachement du module Stocks | | | |
-| DEC-005 | Ordre de réalisation | | | |
-| DEC-006 | Données de performance des employés | | | |
+| DEC-001 | Versionnement des livrables design | **D** — Git + releases sémantiques + journal et fiches de décision | 2026-10-21 | Recommandation retenue ; appliquée (README, VERSION, CHANGELOG, DDR, releases, outils) ; étiquettes posées seulement à la validation d'une version |
+| DEC-002 | Navigation globale (EXD-05) | **B+** — hub complet, rail compact par défaut, bouton Déplier | 2026-10-21 | Recommandation retenue ; appliquée au prototype v0.4.0 ; essai à 3 utilisateurs à prévoir |
+| DEC-003 | Module Opportunités | **Hybride** — cartes par défaut, bandeau d'étapes, bascule « Par étape » | 2026-10-21 | Recommandation retenue ; appliquée au prototype v0.4.0 ; alternative clavier de « Par étape » à construire ; mesure d'usage après 2 semaines |
+| DEC-004 | Rattachement du module Stocks | **3′** — module autonome hébergé dans le monolithe du CRM, conçu pour être extrait | 2026-10-21 | Recommandation retenue ; **ADR-0007** et règle d'architecture ; construction en dernier |
+| DEC-005 | Ordre de réalisation | **Alternatif 1** — prérequis d'abord, H1 minimal, authentification, Documents, S4 dans le nouveau style, Reporting (incidents d'abord), Stocks | 2026-10-21 | Recommandation retenue ; plan mis à jour ; l'étape 0 (valider S3.4/S3.5, Microsoft 365, SuperAdmin) **reste à faire par la direction produit** |
+| DEC-006 | Données de performance des employés | **Après avis juridique et RH**, avec transparence pour l'employé | 2026-10-21 | Recommandation retenue ; contrainte inscrite dans EXD-08 et le registre |

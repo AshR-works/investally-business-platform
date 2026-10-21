@@ -1,7 +1,7 @@
 # Investally Business Platform — Direction artistique et Design System
 
-**Version** : 0.2 · **Date** : 2026-10-21
-> **Les exigences de conception [EXD-01 à EXD-09](03-EXIGENCES-DE-CONCEPTION.md) priment sur ce document** (profondeur du panneau, sélection persistante, pastille Investudy supprimée, « Développement » renommé « Opportunités », navigation par hub, nouveaux modules Stocks et Reporting, parcours d'authentification complets). Voir l'[analyse d'impact](04-ANALYSE-D-IMPACT.md).
+**Version du document** : 0.3 (design v0.4.0, voir [README](README.md)) · **Date** : 2026-10-21
+> **Les exigences de conception [EXD-01 à EXD-09](exigences/REGISTRE-EXD.md) et les décisions DEC-001 à DEC-006 ([aide à la décision](05-AIDE-A-LA-DECISION.md)) priment sur ce document** (profondeur du panneau, sélection persistante, pastille Investudy supprimée, « Développement » renommé « Opportunités », navigation par hub, nouveaux modules Stocks et Reporting, parcours d'authentification complets). Voir l'[analyse d'impact](04-ANALYSE-D-IMPACT.md).
 **Références fournies** : une capture d'écran « Centre de confiance » (style visuel), le logo Investally (versions rectangle et carrée), le logo Investudy.
 **Prototype interactif** : [prototype/index.html](prototype/index.html) (à ouvrir via un petit serveur local, voir §9) · **Captures** : dossier [screens/](screens/)
 

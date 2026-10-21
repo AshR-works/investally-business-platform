@@ -1,0 +1,55 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Livrables UX/UI — mode d&#x27;emploi</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — design · <a href="README.html">Mode d&#8217;emploi</a> · <a href="01-DESIGN-SYSTEM.html">Design system</a> · <a href="02-SPECIFICATIONS-FRONTEND.html">Spécifications frontend</a> · <a href="exigences/REGISTRE-EXD.html">Exigences</a> · <a href="04-ANALYSE-D-IMPACT.html">Analyse d&#8217;impact</a> · <a href="05-AIDE-A-LA-DECISION.html">Aide à la décision</a> · <a href="decisions/REGISTRE-DDR.html">Décisions (DDR)</a> · <a href="CHANGELOG-DESIGN.html">Journal</a> · <a href="prototype/index.html">Prototype</a></nav><h1>Livrables UX/UI — mode d'emploi</h1>
+<p><strong>Version courante</strong> : voir <a href="VERSION"><code>VERSION</code></a> (<strong>0.4.0</strong>, statut <em>En revue</em>) · <strong>Gouvernance</strong> : décision DEC-001, option D (Git + releases sémantiques + journal et fiches de décision).</p>
+<h2>Où est quoi</h2>
+<div class="table-wrap"><table><thead><tr><th>Dossier / fichier</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>01-DESIGN-SYSTEM.md</code>, <code>02-SPECIFICATIONS-FRONTEND.md</code>, <code>04-ANALYSE-D-IMPACT.md</code>, <code>05-AIDE-A-LA-DECISION.md</code></td><td>Documents <strong>vivants</strong> (versionnés par Git)</td></tr>
+<tr><td><code>exigences/REGISTRE-EXD.md</code></td><td>Exigences de conception obligatoires (EXD), jamais effacées</td></tr>
+<tr><td><code>decisions/</code></td><td><strong>Fiches de décision de design (DDR)</strong> : le <em>pourquoi</em> de chaque choix, avec la version et les exigences concernées</td></tr>
+<tr><td><code>prototype/</code></td><td>Source vivante du prototype (HTML, CSS, JS, jetons, polices, logos)</td></tr>
+<tr><td><code>screens/</code></td><td>Derniers rendus (clair et sombre)</td></tr>
+<tr><td><code>releases/</code></td><td><strong>Instantanés figés</strong> des versions (captures, manifeste d'empreintes, notes) et <code>index.json</code></td></tr>
+<tr><td><code>outils/</code></td><td><code>render-screens.mjs</code> (captures), <code>release.mjs</code> (figer une version), <code>compare.html</code> (comparer)</td></tr>
+<tr><td><code>CHANGELOG-DESIGN.md</code></td><td>« Quoi de neuf », version par version, en langage clair</td></tr>
+</tbody></table></div>
+<h2>Numérotation</h2>
+<p><code>MAJEUR.MINEUR.CORRECTIF</code> — <strong>MAJEUR</strong> : rupture visuelle ou de navigation · <strong>MINEUR</strong> : nouveaux écrans ou composants · <strong>CORRECTIF</strong> : retouches sans changement de sens. Cycle d'une version : <strong>Proposée → En revue → Validée (par la direction produit) → Figée</strong>. Une version n'est <strong>étiquetée</strong> qu'une fois validée.</p>
+<h2>Les cinq gestes</h2>
+<div class="table-wrap"><table><thead><tr><th>Je veux…</th><th>Commande</th></tr></thead><tbody>
+<tr><td><strong>Régénérer les captures</strong></td><td><code>node docs/design/outils/render-screens.mjs</code></td></tr>
+<tr><td><strong>Figer une version</strong></td><td><code>node docs/design/outils/release.mjs --version 0.5.0 --status "En revue"</code></td></tr>
+<tr><td><strong>Étiqueter après validation</strong></td><td><code>git tag -a design-v0.5.0 &lt;commit&gt; -m "Design v0.5.0"</code> (la commande exacte est affichée par <code>release.mjs</code>)</td></tr>
+<tr><td><strong>Comparer deux versions</strong></td><td>Texte : <code>git diff design-v0.3.0 design-v0.4.0 -- docs/design</code> · Visuel : <code>cd docs/design &amp;&amp; python -m http.server 8099</code> puis <code>http://127.0.0.1:8099/outils/compare.html?a=0.3.0&amp;b=0.4.0</code></td></tr>
+<tr><td><strong>Revenir à une version</strong></td><td>Consulter : <code>git checkout design-v0.3.0 -- docs/design</code> · Annuler de façon tracée : <code>git revert &lt;commit&gt;</code> (<strong>jamais</strong> de réécriture d'historique)</td></tr>
+</tbody></table></div>
+<h2>Règles</h2>
+<ol><li>Toute évolution significative <strong>cite</strong> l'exigence EXD ou la décision DEC/DDR qui la justifie.</li><li>Toute décision de design a <strong>sa fiche DDR</strong> (statut : proposée, acceptée, remplacée, rejetée) ; une décision n'est jamais effacée.</li><li>Une version contient : captures figées, manifeste (empreintes SHA-256), notes ; le tout est relu avant validation.</li><li>Les instantanés pèsent ≈ 2 à 3 Mo par version : au-delà d'une trentaine de versions, on les sort du dépôt (dette connue, voir <code>05-AIDE-A-LA-DECISION.md</code>).</li><li>Les versions <strong>reconstituées</strong> (v0.1.0 à v0.3.0) le sont à partir des commits d'origine ; leur manifeste l'indique.</li></ol>
+<h2>Versions</h2>
+<div class="table-wrap"><table><thead><tr><th>Version</th><th>Statut</th><th>Commit</th><th>Contenu</th></tr></thead><tbody>
+<tr><td>0.1.0</td><td>Proposée (reconstituée)</td><td><code>35d4abf</code></td><td>Premier design system et prototype, logos fournis</td></tr>
+<tr><td>0.2.0</td><td>Proposée (reconstituée)</td><td><code>1687304</code></td><td>+ Espace agenda, tous les écrans en clair et en sombre</td></tr>
+<tr><td>0.3.0</td><td>Proposée (reconstituée)</td><td><code>0b72ce4</code></td><td>+ Exigences EXD-01 à 04 (panneau, sélection persistante, Opportunités en cartes)</td></tr>
+<tr><td><strong>0.4.0</strong></td><td><strong>En revue</strong></td><td><em>(voir <code>releases/v0.4.0/MANIFEST.md</code>)</em></td><td>+ Décisions DEC-002 et DEC-003 (navigation B+, Opportunités hybrides), hub et recherche globale, gouvernance</td></tr>
+</tbody></table></div></main></body></html>

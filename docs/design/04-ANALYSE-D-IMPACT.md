@@ -1,6 +1,6 @@
 # Analyse d'impact des exigences EXD-01 à EXD-09
 
-**Date** : 2026-10-21 · **Références** : [03-EXIGENCES-DE-CONCEPTION.md](03-EXIGENCES-DE-CONCEPTION.md), [01-DESIGN-SYSTEM.md](01-DESIGN-SYSTEM.md)
+**Date** : 2026-10-21 · **Références** : [REGISTRE-EXD.md](exigences/REGISTRE-EXD.md), [01-DESIGN-SYSTEM.md](01-DESIGN-SYSTEM.md)
 **Principe** : aucune refonte. EXD-01 à EXD-04 sont appliquées au prototype ; EXD-05 à EXD-08 sont analysées et spécifiées ici, **à construire à la prochaine itération** après vos réponses (§9).
 
 ---
