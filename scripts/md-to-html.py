@@ -44,13 +44,15 @@ def inline(text):
     text = re.sub(r'(?<![\w*])\*(?!\s)(.+?)(?<!\s)\*(?![\w*])', r'<em>\1</em>', text)
     text = re.sub(r'~~(.+?)~~', r'<del>\1</del>', text)
 
+    text = re.sub(r'!\[([^\]]*)\]\(([^)]+)\)', r'<img src="" alt="" loading="lazy" style="max-width:100%;border:1px solid var(--border);border-radius:10px;display:block">', text)
+
     def link(m):
         target = m.group(2)
         if target.endswith('.md'):
             target = target[:-3] + '.html'
         return f'<a href="{target}">{m.group(1)}</a>'
 
-    return re.sub(r'\[([^\]]+)\]\(([^)]+)\)', link, text)
+    return re.sub(r'(?<!")\[([^\]]+)\]\(([^)]+)\)', link, text)
 
 
 def convert(md):
@@ -119,22 +121,39 @@ def convert(md):
 
 
 def main():
-    names = sorted(n for n in os.listdir(ROOT) if n.endswith('.md'))
-    for name in names:
-        md = open(os.path.join(ROOT, name), encoding='utf-8').read()
-        title = re.search(r'^# (.+)$', md, re.M)
-        page = (
-            '<!doctype html><html lang="fr"><head><meta charset="utf-8">'
-            '<meta name="viewport" content="width=device-width,initial-scale=1">'
-            f'<title>{html.escape(title.group(1) if title else name)}</title><style>{CSS}</style></head><body><main>'
-            '<nav class="top">Investally Business Platform — livrables · <a href="01-RECAPITULATIF-REALISATIONS.html">Récapitulatif</a> · '
-            '<a href="02-GUIDE-DU-CODE.html">Guide du code</a> · <a href="03-INDEX-DES-FONCTIONS.html">Index des fonctions</a> · '
-            '<a href="04-SUIVI-DES-SESSIONS.html">Suivi des sessions</a> · <a href="05-ETAT-D-AVANCEMENT.html">État d&#8217;avancement</a> · <a href="06-BESOINS-STYLE-GRAPHIQUE.html">Style graphique</a></nav>'
-            + convert(md) + '</main></body></html>'
+    design = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'docs', 'design')
+    nav_livrables = (
+        'Investally Business Platform — livrables · <a href="01-RECAPITULATIF-REALISATIONS.html">Récapitulatif</a> · '
+        '<a href="02-GUIDE-DU-CODE.html">Guide du code</a> · <a href="03-INDEX-DES-FONCTIONS.html">Index des fonctions</a> · '
+        '<a href="04-SUIVI-DES-SESSIONS.html">Suivi des sessions</a> · <a href="05-ETAT-D-AVANCEMENT.html">État d&#8217;avancement</a> · '
+        '<a href="06-BESOINS-STYLE-GRAPHIQUE.html">Style graphique</a>'
+    )
+    def design_nav(prefix):
+        return (
+            'Investally Business Platform — design · '
+            f'<a href="{prefix}README.html">Mode d&#8217;emploi</a> · <a href="{prefix}01-DESIGN-SYSTEM.html">Design system</a> · '
+            f'<a href="{prefix}02-SPECIFICATIONS-FRONTEND.html">Spécifications frontend</a> · '
+            f'<a href="{prefix}exigences/REGISTRE-EXD.html">Exigences</a> · <a href="{prefix}04-ANALYSE-D-IMPACT.html">Analyse d&#8217;impact</a> · '
+            f'<a href="{prefix}05-AIDE-A-LA-DECISION.html">Aide à la décision</a> · <a href="{prefix}decisions/REGISTRE-DDR.html">Décisions (DDR)</a> · '
+            f'<a href="{prefix}CHANGELOG-DESIGN.html">Journal</a> · <a href="{prefix}prototype/index.html">Prototype</a>'
         )
-        out = os.path.join(ROOT, name[:-3] + '.html')
-        open(out, 'w', encoding='utf-8', newline='\n').write(page)
-        print('écrit', os.path.basename(out), len(page) // 1024, 'Ko')
+
+    nav_design = design_nav('')
+    docs_root = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'docs')
+    nav_root = 'Investally Business Platform — méthode · <a href="design/05-AIDE-A-LA-DECISION.html">Aide à la décision</a>'
+    for folder, nav, only in ((ROOT, nav_livrables, None), (design, nav_design, None), (os.path.join(design, 'exigences'), design_nav('../'), None), (os.path.join(design, 'decisions'), design_nav('../'), None), (docs_root, nav_root, ('METHODE-D-ARBITRAGE.md',))):
+        for name in sorted(n for n in os.listdir(folder) if n.endswith('.md') and (only is None or n in only)):
+            md = open(os.path.join(folder, name), encoding='utf-8').read()
+            title = re.search(r'^# (.+)$', md, re.M)
+            page = (
+                '<!doctype html><html lang="fr"><head><meta charset="utf-8">'
+                '<meta name="viewport" content="width=device-width,initial-scale=1">'
+                f'<title>{html.escape(title.group(1) if title else name)}</title><style>{CSS}</style></head><body><main>'
+                f'<nav class="top">{nav}</nav>' + convert(md) + '</main></body></html>'
+            )
+            out = os.path.join(folder, name[:-3] + '.html')
+            open(out, 'w', encoding='utf-8', newline=chr(10)).write(page)
+            print('écrit', os.path.relpath(out, os.path.join(ROOT, '..')), len(page) // 1024, 'Ko')
 
 
 main()

@@ -1,0 +1,36 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Journal des modifications du design</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — design · <a href="README.html">Mode d&#8217;emploi</a> · <a href="01-DESIGN-SYSTEM.html">Design system</a> · <a href="02-SPECIFICATIONS-FRONTEND.html">Spécifications frontend</a> · <a href="exigences/REGISTRE-EXD.html">Exigences</a> · <a href="04-ANALYSE-D-IMPACT.html">Analyse d&#8217;impact</a> · <a href="05-AIDE-A-LA-DECISION.html">Aide à la décision</a> · <a href="decisions/REGISTRE-DDR.html">Décisions (DDR)</a> · <a href="CHANGELOG-DESIGN.html">Journal</a> · <a href="prototype/index.html">Prototype</a></nav><h1>Journal des modifications du design</h1>
+<p>Format : une section par version, du plus récent au plus ancien. Chaque ligne renvoie à une exigence (EXD), une décision (DEC/DDR) ou une demande.</p>
+<h2>0.4.1 — 2026-10-21 — <em>Validée</em></h2>
+<ul><li><strong>EXD-10 / DEC-007 / DDR-0007</strong> : panneau principal <strong>centré sur la fenêtre</strong> (option B) ; repli automatique en centrage dans l'espace restant quand la fenêtre est étroite ; largeur du panneau 1 440 px au plus ; la largeur maximale du contenu (1 320 px) est supprimée.</li><li><strong>EXD-11</strong> : bouton de dépliage en <strong>pictogramme seul</strong> (44 px, nom accessible, info-bulle, état annoncé) ; pictogramme provisoire à confirmer.</li><li>Constat consigné : défilement horizontal entre 901 et 1 100 px avec la navigation dépliée, antérieur à cette version.</li></ul>
+<h2>0.4.0 — 2026-10-21 — <em>En revue</em></h2>
+<p><strong>Décisions appliquées</strong> (la direction produit a demandé d'appliquer les décisions recommandées) : DEC-001 à DEC-006.</p>
+<ul><li><strong>Navigation B+</strong> (DEC-002, DDR-0004, EXD-05) : le <strong>hub</strong> (Vue d'ensemble) affiche la navigation complète, la <strong>recherche globale</strong> (8 types, groupés, limités aux droits) et les <strong>tuiles de modules</strong> ; ailleurs, <strong>rail compact</strong> (icônes, info-bulles, bouton « Déplier » mémorisé) et lien « ← Vue d'ensemble » dans le fil d'Ariane ; tiroir sur mobile ; raccourci ⌘K.</li><li><strong>Opportunités hybrides</strong> (DEC-003, DDR-0005, EXD-04) : bandeau d'étapes cliquable (nombre et montant par étape), tri (prochaine action, montant, étape), cartes par lignes de 6, bascule « Par étape » ; <strong>la sélection survit au tri et au filtre</strong>.</li><li>Menu : ajout de <strong>Stocks</strong> et <strong>Reporting</strong> (modules à venir, DEC-004, EXD-07/08) ; symbole Investally isolé pour le rail.</li><li><strong>Gouvernance</strong> (DEC-001, DDR-0006) : dossiers <code>releases/</code>, <code>decisions/</code>, <code>exigences/</code>, <code>outils/</code>, README, VERSION, ce journal ; versions 0.1.0 à 0.3.0 <strong>reconstituées</strong>.</li><li><strong>Correctif</strong> : initialisation de la navigation (accès avant initialisation détecté à la recette).</li></ul>
+<h2>0.3.0 — 2026-10-21 — <em>Proposée (reconstituée)</em></h2>
+<ul><li><strong>EXD-01</strong> : zone principale en panneau sur fond global plus foncé (DDR-0003).</li><li><strong>EXD-02</strong> : sélection persistante des lignes et des cartes, barre d'actions (DDR-0003).</li><li><strong>EXD-03</strong> : pastille Investudy retirée de la barre latérale.</li><li><strong>EXD-04</strong> : « Développement » devient « Opportunités », cartes par lignes de 6.</li></ul>
+<h2>0.2.0 — 2026-10-21 — <em>Proposée (reconstituée)</em></h2>
+<ul><li><strong>Espace agenda</strong> : vues semaine et mois, filtres par type, mini-calendrier, fenêtre « Nouvel événement ».</li><li>Captures de <strong>tous les écrans en thème sombre</strong>.</li><li>Correctifs : mise en évidence du jour courant, hauteur de deux événements.</li></ul>
+<h2>0.1.0 — 2026-10-21 — <em>Proposée (reconstituée)</em></h2>
+<ul><li>Direction artistique, design system, prototype de 7 écrans (clair et sombre), jetons, polices hébergées.</li><li>Logos fournis (Investally rectangle et carré, Investudy rectangle) (DDR-0002).</li><li>Contrastes WCAG mesurés ; bordures de champs corrigées (DDR-0001).</li></ul></main></body></html>

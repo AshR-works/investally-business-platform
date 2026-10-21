@@ -29,6 +29,9 @@
 | D25 | « Mot de passe oublié » : un tiers peut invalider le lien légitime d'une victime en redemandant un lien (3 fois par heure au plus) ; aucune limite globale par IP au-delà des 100 requêtes/minute générales | S3.5 | Alerte sur les rafales `THROTTLED` (tableau de bord Sécurité) ; limite par IP dédiée si besoin | S6.2 |
 | D26 | Le traitement « mot de passe oublié » se poursuit après la réponse (en mémoire) : une panne du processus entre la réponse et l'envoi perd la demande (l'utilisateur redemande) | S3.5 | File de messages durable si l'envoi devient critique | Ouverte |
 | D27 | L'e-mail de confirmation de changement de mot de passe n'est pas envoyé après un changement fait depuis « Mon compte » (seulement après une réinitialisation) | S3.5 | Même notification pour tout changement | S3.6 |
+| D28 | **Module Stocks hébergé provisoirement dans le monolithe du CRM** (dérogation à ADR-0005, voir ADR-0007) | ADR-0007 | Extraire vers l'ERP (ou un service) ; réévaluer au démarrage de l'ERP, ou avant la fin de S4 si l'ERP est décidé | ERP |
+| D29 | Deux états de la coque (hub complet, rail compact) à maintenir et tester (navigation B+, DDR-0004) | DEC-002 | Un seul composant à deux états ; tests de focus et d'info-bulles ; essai avec 3 utilisateurs | H1 |
+| D30 | Vue « Par étape » des Opportunités sans alternative clavier (DDR-0005) | DEC-003 | Menu « Déplacer vers… » ; mesurer l'usage après deux semaines | S4.3 |
 | D5 | Hypothèses de charge et de périmètre non confirmées | Phase 3 | Revue à la fin de S1 avec les chiffres réels | Ouverte |
 
 ## Adopted Conventions

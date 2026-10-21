@@ -1,0 +1,254 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Investally Business Platform — Direction artistique et Design System</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — design · <a href="README.html">Mode d&#8217;emploi</a> · <a href="01-DESIGN-SYSTEM.html">Design system</a> · <a href="02-SPECIFICATIONS-FRONTEND.html">Spécifications frontend</a> · <a href="exigences/REGISTRE-EXD.html">Exigences</a> · <a href="04-ANALYSE-D-IMPACT.html">Analyse d&#8217;impact</a> · <a href="05-AIDE-A-LA-DECISION.html">Aide à la décision</a> · <a href="decisions/REGISTRE-DDR.html">Décisions (DDR)</a> · <a href="CHANGELOG-DESIGN.html">Journal</a> · <a href="prototype/index.html">Prototype</a></nav><h1>Investally Business Platform — Direction artistique et Design System</h1>
+<p><strong>Version du document</strong> : 0.3 (design v0.4.0, voir <a href="README.html">README</a>) · <strong>Date</strong> : 2026-10-21</p>
+<blockquote><p><strong>Les exigences de conception <a href="exigences/REGISTRE-EXD.html">EXD-01 à EXD-09</a> et les décisions DEC-001 à DEC-006 (<a href="05-AIDE-A-LA-DECISION.html">aide à la décision</a>) priment sur ce document</strong> (profondeur du panneau, sélection persistante, pastille Investudy supprimée, « Développement » renommé « Opportunités », navigation par hub, nouveaux modules Stocks et Reporting, parcours d'authentification complets). Voir l'<a href="04-ANALYSE-D-IMPACT.html">analyse d'impact</a>.</p></blockquote>
+<p><strong>Références fournies</strong> : une capture d'écran « Centre de confiance » (style visuel), le logo Investally (versions rectangle et carrée), le logo Investudy. <strong>Prototype interactif</strong> : <a href="prototype/index.html">prototype/index.html</a> (à ouvrir via un petit serveur local, voir §9) · <strong>Captures</strong> : dossier <a href="screens/">screens/</a></p>
+<blockquote><p><strong>Ce document ne remplace pas la validation du prototype.</strong> Rien n'est encore appliqué à l'application : vous validez d'abord le style ici, puis je l'applique aux écrans existants (voir §10).</p></blockquote>
+<hr>
+<h2>1. Direction artistique</h2>
+<h3>1.1 Ce que j'ai lu dans votre capture et dans vos logos</h3>
+<div class="table-wrap"><table><thead><tr><th>Observation</th><th>Conséquence pour le design</th></tr></thead><tbody>
+<tr><td>Palette <strong>chaude et sobre</strong> : fond rosé très clair, taupe (<code>#BEAB9F</code>, la couleur « ally » du logo), noir profond (<code>#1D1D1B</code>), une seule grande carte sombre</td><td>Une couleur de marque <strong>unique</strong> (le taupe) + des neutres chauds ; pas d'arc-en-ciel</td></tr>
+<tr><td><strong>Grande carte sombre</strong> en tête de page avec un indicateur géant et un histogramme taupe</td><td>Composant signature, <strong>« carte héros »</strong> : un chiffre qui compte, un graphique, un repère</td></tr>
+<tr><td><strong>Barre latérale</strong> claire avec sections (Espace de travail, Opérations, Gouvernance), entrée active en carte blanche</td><td>Navigation par domaines métier ; états actifs par <strong>surface</strong> plutôt que par couleur vive</td></tr>
+<tr><td>Tableaux aérés : avatar à initiales, <strong>badges pastel</strong>, onglets à compteurs, boutons Filtres / Colonnes</td><td>Densité « bureau » confortable ; mêmes patterns de liste partout</td></tr>
+<tr><td>Typographie géométrique, titres gras, étiquettes en capitales espacées</td><td>Montserrat pour la marque et les titres (comme le logo), Inter pour le texte</td></tr>
+<tr><td>Logo : carré arrondi, 3 barres noires, 2 points taupe ; « Invest » noir + « ally » taupe</td><td>Réutilisé tel quel ; mot-symbole recomposé en texte pour l'interface</td></tr>
+<tr><td>Investudy : même symbole, « Invest » noir + « udy » taupe</td><td>Marque <strong>fille</strong> : même famille visuelle, utilisée dans les écrans de formation</td></tr>
+</tbody></table></div>
+<h3>1.2 Principes</h3>
+<ol><li><strong>Sobre et premium</strong> : un taupe, du noir, du blanc cassé. L'élégance vient des espaces et de la typographie.</li><li><strong>Une information, un endroit</strong> : chaque écran a un titre, une phrase d'aide, une action principale, puis le contenu.</li><li><strong>La donnée d'abord</strong> : tableaux lisibles, chiffres en police tabulaire, couleurs réservées au <strong>sens</strong> (statut), jamais à la décoration.</li><li><strong>Le même gabarit partout</strong> : en-tête, indicateurs, liste. Un nouveau module ne réinvente rien.</li><li><strong>Accessible par construction</strong> : contrastes mesurés, focus visible, clavier, thème sombre, mouvement réduit.</li><li><strong>Sécurité visible mais discrète</strong> : le second facteur, les actions sensibles et l'audit ont des écrans soignés (c'est un produit fintech).</li></ol>
+<h3>1.3 Écarts volontaires par rapport à la capture (et pourquoi)</h3>
+<div class="table-wrap"><table><thead><tr><th>Dans la capture</th><th>Mesure</th><th>Dans notre système</th><th>Raison</th></tr></thead><tbody>
+<tr><td>Texte gris des libellés et des entrées de menu inactives (<code>#9F9F9F</code>)</td><td><strong>2,65 : 1</strong></td><td><code>#5E5A57</code> (6,8 : 1)</td><td>Illisible pour beaucoup d'utilisateurs ; WCAG AA exige 4,5 : 1</td></tr>
+<tr><td>Texte des badges (teal, ocre, rouge)</td><td><strong>3,4 à 3,8 : 1</strong></td><td>Teintes assombries, <strong>4,9 à 5,7 : 1</strong></td><td>Idem ; la teinte reste reconnaissable</td></tr>
+<tr><td>Texte blanc sur bouton taupe « Créer »</td><td><strong>2,2 : 1</strong></td><td><strong>Encre <code>#1D1D1B</code> sur taupe (7,7 : 1)</strong></td><td>Le blanc sur taupe ne passe pas ; le noir reste élégant</td></tr>
+<tr><td>Un seul thème</td><td>—</td><td><strong>Clair + sombre</strong> (suit l'appareil)</td><td>Usage prolongé au bureau ; demandé par la plupart des équipes finance</td></tr>
+</tbody></table></div>
+<hr>
+<h2>2. Personas et écrans prioritaires</h2>
+<div class="table-wrap"><table><thead><tr><th>Persona</th><th>Rôle(s) du CRM</th><th>Ce qu'il fait chaque jour</th><th>Écrans clés</th></tr></thead><tbody>
+<tr><td><strong>Chargé de compte</strong></td><td><code>ACCOUNT_MANAGER</code></td><td>Relances, rendez-vous, offres, inscriptions</td><td><strong>Agenda</strong>, mes opportunités, À faire aujourd'hui, fiche entreprise</td></tr>
+<tr><td><strong>Responsable commercial</strong></td><td><code>HEAD_OF_SALES</code></td><td>Pilote l'équipe et le pipeline global</td><td>Pipeline équipe, conversion, performances par personne</td></tr>
+<tr><td><strong>Responsable formation</strong></td><td><code>TRAINING_MANAGER</code></td><td>Sessions, formateurs, inscriptions, présences, certifications</td><td>Sessions à venir, remplissage, présence, apprenants</td></tr>
+<tr><td><strong>Formateur</strong></td><td><code>TRAINER</code></td><td>Anime ses sessions, saisit les présences et évaluations</td><td><strong>Agenda</strong> (ses sessions), feuille de présence</td></tr>
+<tr><td><strong>Direction générale</strong></td><td><code>DIRECTION</code></td><td>Lit les résultats, décide</td><td>Vue d'ensemble, pipeline pondéré, inscriptions, alertes</td></tr>
+<tr><td><strong>Finance</strong></td><td><code>FINANCE</code></td><td>Prépare la facturation (périmètre CRM limité)</td><td>Agréments et inscriptions à facturer</td></tr>
+<tr><td><strong>RH</strong> / <strong>Fiscalité</strong></td><td><code>HR</code>, <code>TAX</code></td><td>Modules ERP à venir</td><td>Gabarit réservé</td></tr>
+<tr><td><strong>Administrateur</strong></td><td><code>SUPER_ADMIN</code></td><td>Comptes, rôles, sessions, MFA</td><td>Utilisateurs, rôles, journal d'audit</td></tr>
+<tr><td><strong>Responsable sécurité</strong></td><td><code>SUPER_ADMIN</code> / <code>DIRECTION</code> (lecture de l'audit)</td><td>Surveille connexions, accès refusés, exports</td><td>Centre de confiance</td></tr>
+<tr><td><strong>Support</strong></td><td><code>SUPPORT</code></td><td>Consulte pour aider (lecture seule)</td><td>Recherche, fiches en lecture</td></tr>
+</tbody></table></div>
+<hr>
+<h2>3. Architecture de l'information</h2>
+<h3>3.1 Navigation principale (barre latérale)</h3>
+<pre><code>ESPACE DE TRAVAIL      Vue d&#x27;ensemble · Agenda (badge) · Entreprises · **Opportunités** (badge, ex-« Développement ») · Formation
+OPÉRATIONS             Finance · Ressources humaines · Fiscalité        (ERP, gabarit réservé)
+GOUVERNANCE            Administration · Sécurité
+Bas de barre           Carte Investudy (accès rapide) · profil et déconnexion</code></pre>
+<p>Barre supérieure : <strong>organisation et site</strong> (Investally Group · Douala), <strong>recherche globale</strong> (<code>⌘K</code>), thème, notifications, profil.</p>
+<h3>3.2 Visibilité des menus selon les droits</h3>
+<p>Un menu n'apparaît que si l'utilisateur détient la permission de lecture correspondante (déjà fourni par <code>/auth/me/profile</code>). <strong>Le serveur reste seul juge</strong> : un menu caché n'est pas une protection.</p>
+<div class="table-wrap"><table><thead><tr><th>Menu</th><th>Permission de lecture</th><th>Rôles typiques</th></tr></thead><tbody>
+<tr><td>Vue d'ensemble</td><td>tableau de bord du rôle</td><td>tous</td></tr>
+<tr><td><strong>Agenda</strong></td><td>agenda personnel : <strong>tous les rôles</strong> ; agenda d'équipe : portée Équipe ou Tous</td><td>tous (périmètre = le sien, celui de son équipe, ou tous)</td></tr>
+<tr><td>Entreprises, Opportunités</td><td><code>bd.company.read</code>, <code>bd.*</code></td><td>Chargé de compte, Responsable commercial, Direction, Support, Finance</td></tr>
+<tr><td>Formation</td><td><code>training.*</code></td><td>Responsable formation, Formateur, Direction</td></tr>
+<tr><td>Finance / RH / Fiscalité</td><td>modules ERP</td><td>rôles correspondants (plus tard)</td></tr>
+<tr><td>Administration</td><td><code>iam.user.read</code></td><td>Super administrateur</td></tr>
+<tr><td>Sécurité</td><td>lecture de l'audit</td><td>Super administrateur, Direction</td></tr>
+</tbody></table></div>
+<h3>3.3 Gabarit de page (identique partout)</h3>
+<ol><li>Fil d'Ariane · 2. Étiquette de domaine (capitales) · 3. <strong>Titre</strong> + phrase d'aide + actions (Exporter, Créer) · 4. Carte héros <em>ou</em> indicateurs · 5. Contenu (liste, kanban, détail).</li></ol>
+<hr>
+<h2>4. Jetons de design</h2>
+<p>Source unique : <a href="prototype/tokens.css">prototype/tokens.css</a> (variables CSS), reprise par Tailwind (voir <a href="02-SPECIFICATIONS-FRONTEND.html">02-SPECIFICATIONS-FRONTEND.md</a>).</p>
+<h3>4.1 Couleurs et contrastes mesurés (WCAG 2.2)</h3>
+<p>Ratio calculé sur la paire texte / fond. <strong>AA</strong> : ≥ 4,5 : 1 (texte courant), ≥ 3 : 1 (texte large, composants graphiques).</p>
+<p><strong>Thème clair</strong></p>
+<div class="table-wrap"><table><thead><tr><th>Rôle</th><th>Valeur</th><th>Utilisation</th><th>Contraste</th></tr></thead><tbody>
+<tr><td><code>--ink</code></td><td><code>#1D1D1B</code></td><td>Texte principal (couleur du logo)</td><td><strong>16,9 : 1</strong> sur blanc</td></tr>
+<tr><td><code>--ink-2</code></td><td><code>#5E5A57</code></td><td>Texte secondaire, menu inactif</td><td><strong>6,8 : 1</strong> sur blanc · 6,0 sur barre latérale</td></tr>
+<tr><td><code>--muted</code></td><td><code>#76706B</code></td><td>Méta, horodatages, aides</td><td><strong>4,9 : 1</strong> sur blanc · 4,7 sur le fond</td></tr>
+<tr><td><code>--brand</code></td><td><code>#BEAB9F</code></td><td>Remplissages, barres, avatars, bouton principal</td><td>— (texte dessus : <code>--brand-ink</code>)</td></tr>
+<tr><td><code>--brand-ink</code></td><td><code>#1D1D1B</code></td><td>Texte sur taupe</td><td><strong>7,7 : 1</strong></td></tr>
+<tr><td><code>--brand-strong</code></td><td><code>#7A6355</code></td><td>Liens, focus, onglet actif, bouton « Se connecter » (texte blanc)</td><td><strong>5,6 : 1</strong></td></tr>
+<tr><td><code>--field-border</code></td><td><code>#857E78</code> (sombre : <code>#7D766F</code>)</td><td>Bordure des <strong>champs</strong> (le seul repère visuel d'un champ)</td><td><strong>4,0 : 1</strong> sur blanc (3,8 sombre) — les bordures de cartes restent légères (décoratives)</td></tr>
+<tr><td><code>--bg</code> / <code>--surface</code> / <code>--sidebar</code></td><td><code>#FAFAFC</code> / <code>#FFFFFF</code> / <code>#F4EFEC</code></td><td>Fonds</td><td>—</td></tr>
+<tr><td><code>--hero</code></td><td><code>#303030</code></td><td>Carte héros (texte <code>#F4EFEC</code>)</td><td><strong>11,6 : 1</strong> · taupe dessus : 6,0</td></tr>
+<tr><td>Succès</td><td><code>#1F6B58</code> sur <code>#E8F5F0</code></td><td>Badges « agrément reçu », « confirmée »</td><td><strong>5,7 : 1</strong></td></tr>
+<tr><td>Attention</td><td><code>#8A5A1F</code> sur <code>#FBF2DF</code></td><td>« Offre envoyée », « agrément attendu »</td><td><strong>5,3 : 1</strong></td></tr>
+<tr><td>Danger</td><td><code>#A63D3B</code> sur <code>#FAEAE5</code></td><td>« Perdue », « relance en retard »</td><td><strong>5,4 : 1</strong></td></tr>
+<tr><td>Information</td><td><code>#2B6F86</code> sur <code>#E6F1F5</code></td><td>« RDV décideur »</td><td><strong>4,9 : 1</strong></td></tr>
+</tbody></table></div>
+<p><strong>Thème sombre</strong> : fond <code>#141413</code>, surface <code>#1E1D1C</code>, texte <code>#F2EEEB</code> (<strong>14,6 : 1</strong>), secondaire <code>#A8A19B</code> (<strong>6,6 : 1</strong>), marque <code>#CDBBAF</code> (<strong>9,1 : 1</strong> sur surface), bouton principal : encre sur taupe clair (<strong>9,9 : 1</strong>), statuts 7,0 à 8,3 : 1.</p>
+<p><strong>Règle absolue</strong> : la couleur seule ne porte jamais l'information. Chaque badge a un <strong>texte</strong> et un point ; chaque tendance a une flèche (▲ ▼).</p>
+<h3>4.2 Typographie</h3>
+<div class="table-wrap"><table><thead><tr><th>Usage</th><th>Police</th><th>Taille / graisse</th></tr></thead><tbody>
+<tr><td>Titre de page</td><td>Montserrat</td><td>32 px / 700</td></tr>
+<tr><td>Titre de section, carte</td><td>Montserrat</td><td>24 ou 18 px / 700</td></tr>
+<tr><td>Indicateurs (KPI)</td><td>Montserrat</td><td>40 px / 700, chiffres <strong>tabulaires</strong></td></tr>
+<tr><td>Texte de l'application, tableaux, champs</td><td>Inter</td><td>14 px / 400-600 (13 px en tableau dense)</td></tr>
+<tr><td>Métadonnées, aides</td><td>Inter</td><td>12 px / 500</td></tr>
+<tr><td>Étiquettes de section</td><td>Inter</td><td>11 px / 600, capitales, espacement 0,14 em</td></tr>
+</tbody></table></div>
+<p><em>Hypothèse à confirmer</em> : la police de votre capture ressemble à Poppins ; je propose <strong>Montserrat (celle du logo) + Inter</strong>, toutes deux libres (licence OFL), <strong>hébergées dans l'application</strong> (aucun appel à un service externe, compatible avec notre politique de sécurité).</p>
+<h3>4.3 Espacement, formes, élévation, mouvement</h3>
+<div class="table-wrap"><table><thead><tr><th>Famille</th><th>Valeurs</th></tr></thead><tbody>
+<tr><td>Espacement</td><td>grille de <strong>4 px</strong> : 4, 8, 12, 16, 20, 24, 32, 40, 48</td></tr>
+<tr><td>Rayons</td><td>6 (puces) · 10 (boutons, champs) · 14 (cartes de liste) · <strong>22 (cartes, héros)</strong> · pilule (badges, recherche)</td></tr>
+<tr><td>Ombres</td><td>3 niveaux, très légères ; la profondeur vient des <strong>bordures</strong> et des surfaces</td></tr>
+<tr><td>Mouvement</td><td>120 ms (survol), 200 ms (panneaux) ; courbe <code>cubic-bezier(0.2, 0, 0, 1)</code> ; <strong>désactivé</strong> si l'utilisateur demande moins d'animation</td></tr>
+<tr><td>Focus</td><td>anneau 2 px <code>--brand-strong</code> + liseré de surface, <strong>toujours visible</strong> au clavier</td></tr>
+</tbody></table></div>
+<hr>
+<h2>5. Bibliothèque de composants</h2>
+<h3>5.1 Composants de base</h3>
+<div class="table-wrap"><table><thead><tr><th>Composant</th><th>Variantes</th><th>États</th><th>Notes d'accessibilité</th></tr></thead><tbody>
+<tr><td><strong>Bouton</strong></td><td>principal (taupe), fort (taupe foncé), secondaire, fantôme, danger</td><td>repos, survol, appui, focus, désactivé, chargement</td><td>Cible ≥ 40 px ; libellé verbal (« Créer », « Exporter »)</td></tr>
+<tr><td><strong>Champ</strong></td><td>texte, e-mail, mot de passe, liste, recherche</td><td>repos, survol, focus, rempli, <strong>erreur</strong>, désactivé</td><td>Étiquette toujours visible ; erreur reliée par <code>aria-describedby</code></td></tr>
+<tr><td><strong>Champ de code (OTP)</strong></td><td>6 cases</td><td>focus, erreur, saisie complète</td><td>Saisie numérique, collage du code entier, annonce vocale</td></tr>
+<tr><td><strong>Badge de statut</strong></td><td>neutre, information, attention, succès, danger</td><td>—</td><td>Texte + point ; jamais la couleur seule</td></tr>
+<tr><td><strong>Avatar</strong></td><td>initiales (taille 26 / 36)</td><td>—</td><td>Nom en texte à côté</td></tr>
+<tr><td><strong>Onglets</strong></td><td>avec compteur</td><td>actif, inactif, focus</td><td>Rôles <code>tablist/tab</code>, flèches du clavier</td></tr>
+<tr><td><strong>Tableau</strong></td><td>sélection, tri, colonnes, pagination</td><td>survol de ligne, sélectionnée, vide, chargement, erreur</td><td>En-têtes <code>th</code>, défilement horizontal sur mobile</td></tr>
+<tr><td><strong>Fenêtre modale</strong></td><td>confirmation, saisie de code MFA</td><td>ouverture, fermeture</td><td>Focus piégé, <code>Échap</code> ferme, retour du focus</td></tr>
+<tr><td><strong>Menu latéral</strong></td><td>section, entrée, entrée active, badge</td><td>survol, actif (<code>aria-current</code>)</td><td>Repliable en tiroir sur mobile</td></tr>
+<tr><td><strong>Recherche globale</strong></td><td><code>⌘K</code></td><td>focus, résultats</td><td>Palette de commandes (étape ultérieure)</td></tr>
+<tr><td><strong>Agenda</strong> (semaine, mois)</td><td>vue semaine (lun.–ven., 8 h–18 h), vue mois (5 semaines), vue jour <em>(à venir)</em></td><td>aujourd'hui, ligne « maintenant », événement, survol, focus, masqué par filtre</td><td>Chaque événement est un <strong>bouton</strong> avec libellé complet ; voir §8 pour les limites</td></tr>
+<tr><td><strong>Mini-calendrier</strong></td><td>mois en cours, semaine surlignée, points = jours occupés</td><td>aujourd'hui, semaine active, hors mois</td><td>Navigation par boutons « mois précédent/suivant »</td></tr>
+<tr><td><strong>Filtres d'agenda</strong></td><td>cases à cocher par type (rendez-vous, relances, formations, échéances, interne)</td><td>coché, décoché</td><td>Couleur <strong>et</strong> libellé ; un type masqué disparaît des deux vues</td></tr>
+<tr><td><strong>Fenêtre « Nouvel événement »</strong></td><td>titre, type, entreprise liée, date, début, fin, rappel</td><td>ouverture, erreur, enregistrement</td><td>Focus piégé, <code>Échap</code> ferme, retour du focus au bouton</td></tr>
+<tr><td><strong>Notification / toast</strong></td><td>succès, erreur, information</td><td>apparition, disparition</td><td><code>role="status"</code> ; les erreurs restent jusqu'à lecture</td></tr>
+</tbody></table></div>
+<h3>5.2 Composants métier</h3>
+<div class="table-wrap"><table><thead><tr><th>Composant</th><th>Rôle</th><th>Données</th></tr></thead><tbody>
+<tr><td><strong>Carte héros</strong></td><td>L'indicateur majeur de la page</td><td>grand chiffre, tendance, histogramme, repère latéral</td></tr>
+<tr><td><strong>Carte KPI</strong></td><td>Un indicateur</td><td>libellé, valeur, unité, variation (▲/▼ + texte)</td></tr>
+<tr><td><strong>Entonnoir commercial</strong></td><td>Conversion étape par étape</td><td>6 étapes : Prospection → RDV décideur → Offre → Accord de principe → Agrément → Inscrit</td></tr>
+<tr><td><strong>Carte d'opportunité</strong> (kanban)</td><td>Une opportunité</td><td>entreprise, montant XAF, prochaine action, responsable, alerte de retard</td></tr>
+<tr><td><strong>Ligne d'entreprise</strong></td><td>Liste des entreprises</td><td>logo à initiales, secteur, responsable, statut, valeur, dernière activité</td></tr>
+<tr><td><strong>Ligne d'événement d'audit</strong></td><td>Centre de confiance</td><td>événement, utilisateur, origine, type, date</td></tr>
+<tr><td><strong>Carte de session</strong></td><td>« Mes sessions »</td><td>appareil lisible, IP, risque, dernière activité, bouton Révoquer</td></tr>
+<tr><td><strong>Événement d'agenda</strong></td><td>Un rendez-vous, une relance, une session ou une échéance</td><td>heure, titre, entreprise ou session liée, lieu / lien visio, rappel, type (5 teintes)</td></tr>
+<tr><td><strong>Liste « Aujourd'hui »</strong></td><td>Ce qui m'attend aujourd'hui</td><td>heure, titre, lieu, participants</td></tr>
+<tr><td><strong>Bandeau de l'agrément</strong></td><td>Suivi de la promesse de paiement</td><td>places, montant, validité, état</td></tr>
+</tbody></table></div>
+<h3>5.3 Correspondance des statuts (une seule palette pour toute l'application)</h3>
+<div class="table-wrap"><table><thead><tr><th>Domaine</th><th>Valeur</th><th>Badge</th></tr></thead><tbody>
+<tr><td>Entreprise</td><td>Cible · En discussion · Client · Perdue · Archivée</td><td>neutre · information · succès · danger · neutre</td></tr>
+<tr><td>Opportunité</td><td>RDV décideur · Offre envoyée · Accord de principe · Agrément reçu · Inscrit</td><td>information · attention · attention · succès · succès</td></tr>
+<tr><td>Compte utilisateur</td><td>Actif · Invitation en attente · Verrouillé · Désactivé</td><td>succès · attention · danger · neutre</td></tr>
+<tr><td>Session de formation</td><td>Planifiée · Agrément attendu · Confirmée · Terminée · Annulée</td><td>neutre · attention · succès · neutre · danger</td></tr>
+<tr><td>Audit</td><td>Connexion · Libre-service · Administration · Sécurité</td><td>succès · information · attention · danger</td></tr>
+<tr><td><strong>Agenda</strong> (type d'événement)</td><td>Rendez-vous client · Relance · Formation · Échéance · Interne</td><td>information · attention · succès · danger · neutre (liseré taupe)</td></tr>
+</tbody></table></div>
+<hr>
+<h2>6. Tableaux de bord par persona</h2>
+<div class="table-wrap"><table><thead><tr><th>Persona</th><th>Indicateurs (cartes)</th><th>Graphique principal</th><th>Liste d'action</th></tr></thead><tbody>
+<tr><td><strong>Direction</strong></td><td>Pipeline pondéré (XAF) · Opportunités actives · Taux de conversion · Inscrits Investudy</td><td>Carte héros : pipeline sur 12 mois</td><td>Alertes : relances en retard, agréments en attente</td></tr>
+<tr><td><strong>Responsable commercial</strong></td><td>Pipeline équipe · Conversion par étape · Opportunités sans action</td><td>Entonnoir + barres par chargé de compte</td><td>Opportunités bloquées, dérogations « RDV décideur »</td></tr>
+<tr><td><strong>Chargé de compte</strong></td><td>Mes opportunités · Mes relances · Mon objectif</td><td>Mon pipeline (kanban)</td><td><strong>À faire aujourd'hui</strong> (relances, rendez-vous), lien <strong>Ouvrir l'agenda</strong></td></tr>
+<tr><td><strong>Responsable formation</strong></td><td>Sessions à venir · Places confirmées · Présence moyenne · Certifiés</td><td>Remplissage par session</td><td>Sessions sans formateur, agréments à confirmer</td></tr>
+<tr><td><strong>Formateur</strong></td><td>Mes sessions · Apprenants</td><td>Calendrier</td><td>Feuilles de présence à saisir</td></tr>
+<tr><td><strong>Finance</strong></td><td>Agréments à facturer · Inscriptions confirmées</td><td>—</td><td>Liste de préparation de facturation</td></tr>
+<tr><td><strong>Administrateur / Sécurité</strong></td><td>Score de sécurité · Connexions · Accès refusés · Comptes en attente</td><td>Carte héros d'activité</td><td>Événements « à traiter », comptes verrouillés</td></tr>
+</tbody></table></div>
+<hr>
+<h2>7. Parcours et workflows</h2>
+<div class="table-wrap"><table><thead><tr><th>Parcours</th><th>Étapes (écrans)</th><th>Points d'attention UX</th></tr></thead><tbody>
+<tr><td><strong>Première connexion</strong></td><td>Lien d'invitation → choix du mot de passe → connexion → <strong>configuration du second facteur</strong> (QR, clé, code) → <strong>codes de secours</strong> (affichés une fois) → accueil</td><td>Barre de progression en 2 étapes ; avertissement avant de quitter la page des codes</td></tr>
+<tr><td><strong>Connexion</strong></td><td>E-mail + mot de passe → code à 6 chiffres</td><td>Message d'échec unique ; lien « Mot de passe oublié ? »</td></tr>
+<tr><td><strong>Mot de passe oublié</strong></td><td>Demande (e-mail) → message identique → lien → nouveau mot de passe → connexion</td><td>Jamais de confirmation d'existence du compte</td></tr>
+<tr><td><strong>Action sensible</strong></td><td>Bouton → <strong>fenêtre « Confirmez votre identité »</strong> (code) → action</td><td>Une seule question pour plusieurs actions</td></tr>
+<tr><td><strong>Pipeline</strong></td><td>Prospection → RDV décideur → Offre → Accord de principe → Agrément → Inscrit</td><td>Règle « RDV décideur avant accord de principe » : blocage expliqué, dérogation tracée</td></tr>
+<tr><td><strong>Agrément</strong></td><td>Accord de principe → saisie (places, montant, validité) → événement vers Investudy</td><td>Statut visible sur la fiche et sur la session liée</td></tr>
+<tr><td><strong>Planifier un rendez-vous</strong></td><td>Fiche entreprise ou opportunité → « Planifier » → fenêtre <em>Nouvel événement</em> préremplie (entreprise liée) → l'événement apparaît dans l'agenda et dans « À faire aujourd'hui »</td><td>Le <strong>rendez-vous décideur</strong> requis avant l'accord de principe se crée ici ; son achèvement débloque l'étape du pipeline</td></tr>
+<tr><td><strong>Relance planifiée</strong></td><td>Offre envoyée → relance automatique proposée à J+3 → événement « Relance »</td><td>Une relance en retard remonte en rouge sur le tableau de bord</td></tr>
+<tr><td><strong>Session de formation</strong></td><td>Création d'une session (Investudy) → événements « Formation » pour le formateur et le responsable</td><td>Un formateur ne voit <strong>que</strong> ses sessions (portée Propre)</td></tr>
+<tr><td><strong>Administration</strong></td><td>Liste → invitation / rôles / désactivation / réinitialisations</td><td>Confirmation explicite, résultat annoncé (<code>role="status"</code>)</td></tr>
+</tbody></table></div>
+<hr>
+<h2>8. Accessibilité (WCAG 2.2 AA)</h2>
+<div class="table-wrap"><table><thead><tr><th>Critère</th><th>Mesure retenue</th><th>État dans le prototype</th></tr></thead><tbody>
+<tr><td>1.4.3 Contraste du texte</td><td>≥ 4,5 : 1 partout (voir §4.1)</td><td>✅ mesuré</td></tr>
+<tr><td>1.4.11 Contraste des composants</td><td>bordures de champs <strong>≥ 3 : 1</strong> (4,0 : 1) et anneau de focus (5,6 : 1)</td><td>✅ <em>(une première version avait des bordures à 1,5 : 1 : corrigée avant livraison)</em></td></tr>
+<tr><td>1.4.1 Couleur seule</td><td>texte + symbole pour tout état</td><td>✅</td></tr>
+<tr><td>2.1.1 / 2.4.7 Clavier et focus</td><td>tout est atteignable ; anneau de focus visible</td><td>✅</td></tr>
+<tr><td>2.4.1 Lien d'évitement</td><td>« Aller au contenu »</td><td>✅</td></tr>
+<tr><td>2.5.8 Taille des cibles</td><td>≥ 24 px (boutons 40 px)</td><td>✅</td></tr>
+<tr><td>1.4.10 Adaptation</td><td>mise en page fluide de 360 à 1 920 px, tiroir de navigation</td><td>✅</td></tr>
+<tr><td>2.3.3 / mouvement</td><td><code>prefers-reduced-motion</code> respecté</td><td>✅</td></tr>
+<tr><td>Thème</td><td>clair, sombre, <strong>suit l'appareil</strong>, choix mémorisé</td><td>✅</td></tr>
+<tr><td>Lecteur d'écran</td><td>non éprouvé (aucun lecteur utilisé)</td><td>⏳ à tester en implémentation</td></tr>
+<tr><td><strong>Agenda</strong> : alternative textuelle</td><td>la grille horaire n'est pas un tableau : en production, <strong>vue liste</strong> équivalente (chronologique, par jour) et navigation par flèches entre événements ; la ligne « maintenant » porte une étiquette lisible</td><td>⏳ prototype visuel seulement</td></tr>
+<tr><td><strong>Agenda</strong> : couleur seule</td><td>type d'événement = <strong>teinte + liseré + libellé</strong> dans le titre</td><td>✅</td></tr>
+</tbody></table></div>
+<p><strong>Limites</strong> : audit réalisé sur le prototype, par mesure de contraste et lecture du balisage, pas par des utilisateurs ni un lecteur d'écran.</p>
+<hr>
+<h2>9. Utiliser le prototype</h2>
+<p>Le prototype est un dossier statique (<code>prototype/</code>). Pour l'ouvrir :</p>
+<pre><code>cd docs/design/prototype
+python -m http.server 8099</code></pre>
+<p>puis <code>http://127.0.0.1:8099/index.html</code> — liens directs : <code>#login</code>, <code>#dashboard</code>, <code>#agenda</code>, <code>#agenda-mois</code>, <code>#companies</code>, <code>#pipeline</code>, <code>#formation</code>, <code>#security</code>, <code>#components</code> ; thème sombre : <code>?theme=dark#dashboard</code>. Aucune donnée réelle ; les noms d'entreprises sont fictifs.</p>
+<hr>
+<h2>9 bis. Aperçus du prototype (tous les écrans, clair et sombre)</h2>
+<p>Dossier : <code>docs/design/screens/</code> — chaque écran existe en version claire et en version sombre (<code>…-sombre.png</code>).</p>
+<div class="table-wrap"><table><thead><tr><th>Écran</th><th>Thème clair</th><th>Thème sombre</th></tr></thead><tbody>
+<tr><td><strong>Connexion</strong> (même gabarit pour mot de passe oublié, réinitialisation, invitation)</td><td><img src="" alt="" loading="lazy" style="max-width:100%;border:1px solid var(--border);border-radius:10px;display:block"></td><td><img src="" alt="" loading="lazy" style="max-width:100%;border:1px solid var(--border);border-radius:10px;display:block"></td></tr>
+<tr><td><strong>Vue d'ensemble</strong> — Direction</td><td><img src="" alt="" loading="lazy" style="max-width:100%;border:1px solid var(--border);border-radius:10px;display:block"></td><td><img src="" alt="" loading="lazy" style="max-width:100%;border:1px solid var(--border);border-radius:10px;display:block"></td></tr>
+<tr><td><strong>Agenda</strong> — vue semaine</td><td><img src="" alt="" loading="lazy" style="max-width:100%;border:1px solid var(--border);border-radius:10px;display:block"></td><td><img src="" alt="" loading="lazy" style="max-width:100%;border:1px solid var(--border);border-radius:10px;display:block"></td></tr>
+<tr><td><strong>Agenda</strong> — vue mois</td><td><img src="" alt="" loading="lazy" style="max-width:100%;border:1px solid var(--border);border-radius:10px;display:block"></td><td><img src="" alt="" loading="lazy" style="max-width:100%;border:1px solid var(--border);border-radius:10px;display:block"></td></tr>
+<tr><td><strong>Entreprises</strong></td><td><img src="" alt="" loading="lazy" style="max-width:100%;border:1px solid var(--border);border-radius:10px;display:block"></td><td><img src="" alt="" loading="lazy" style="max-width:100%;border:1px solid var(--border);border-radius:10px;display:block"></td></tr>
+<tr><td><strong>Pipeline</strong></td><td><img src="" alt="" loading="lazy" style="max-width:100%;border:1px solid var(--border);border-radius:10px;display:block"></td><td><img src="" alt="" loading="lazy" style="max-width:100%;border:1px solid var(--border);border-radius:10px;display:block"></td></tr>
+<tr><td><strong>Formation</strong> (logo Investudy)</td><td><img src="" alt="" loading="lazy" style="max-width:100%;border:1px solid var(--border);border-radius:10px;display:block"></td><td><img src="" alt="" loading="lazy" style="max-width:100%;border:1px solid var(--border);border-radius:10px;display:block"></td></tr>
+<tr><td><strong>Centre de confiance</strong></td><td><img src="" alt="" loading="lazy" style="max-width:100%;border:1px solid var(--border);border-radius:10px;display:block"></td><td><img src="" alt="" loading="lazy" style="max-width:100%;border:1px solid var(--border);border-radius:10px;display:block"></td></tr>
+<tr><td><strong>Composants</strong></td><td><img src="" alt="" loading="lazy" style="max-width:100%;border:1px solid var(--border);border-radius:10px;display:block"></td><td><img src="" alt="" loading="lazy" style="max-width:100%;border:1px solid var(--border);border-radius:10px;display:block"></td></tr>
+</tbody></table></div>
+<hr>
+<h2>10. Mise en œuvre proposée</h2>
+<div class="table-wrap"><table><thead><tr><th>Étape</th><th>Contenu</th><th>Validation</th></tr></thead><tbody>
+<tr><td><strong>A. Valider le style</strong></td><td>Vous relisez le prototype et ce document ; décisions du §11</td><td><strong>Vous</strong></td></tr>
+<tr><td><strong>B. Habillage de l'existant</strong> (sprint dédié)</td><td>Jetons, polices hébergées, coque (barre latérale, barre supérieure), les 8 écrans actuels (connexion, MFA, mot de passe oublié, réinitialisation, invitation, entreprises, utilisateurs, mon compte)</td><td>« Je valide »</td></tr>
+<tr><td><strong>C. Bibliothèque de composants</strong></td><td>Composants réutilisables et leurs tests, page de référence interne</td><td>avec B</td></tr>
+<tr><td><strong>D. Écrans métier</strong></td><td>Pipeline, fiches, formation, tableaux de bord, <strong>au fil de S4 à S6</strong>, sur ce système</td><td>par sprint</td></tr>
+</tbody></table></div>
+<p>Détails techniques (Tailwind, structure des fichiers, polices, sécurité CSP, tests) : <a href="02-SPECIFICATIONS-FRONTEND.html">02-SPECIFICATIONS-FRONTEND.md</a>.</p>
+<h2>11. Décisions et informations à me confirmer</h2>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Sujet</th><th>Ma proposition</th><th>Pourquoi</th></tr></thead><tbody>
+<tr><td>1</td><td><strong>Polices</strong></td><td>Montserrat + Inter</td><td>Montserrat = police du logo ; Inter = lisibilité en tableau. Dites-moi si la capture utilise une autre police à respecter (ex. Poppins)</td></tr>
+<tr><td>2</td><td><strong>Fichiers du logo</strong></td><td><strong>Les trois fichiers fournis sont utilisés tels quels</strong> (<code>Investally rectangle.png</code> : barre latérale ; <code>Investally square.png</code> : connexion ; <code>Investudy rectangle.png</code> : écrans de formation et carte d'accès Investudy), recadrés et réduits à 700–1 000 px, fond transparent conservé. En <strong>thème sombre</strong>, version monochrome blanche (le noir y serait illisible)</td><td>Il manque une <strong>variante claire officielle</strong> pour le thème sombre (le taupe est perdu en monochrome) et idéalement des <strong>SVG</strong> (nets à toute taille). Les sources restent dans <code>C:\dev\external ressources\Investally</code></td></tr>
+<tr><td>3</td><td><strong>Bouton principal</strong></td><td>Taupe avec <strong>texte noir</strong></td><td>Le blanc sur taupe est illisible (2,2 : 1) ; alternative : taupe foncé <code>#7A6355</code> + texte blanc (5,6 : 1)</td></tr>
+<tr><td>4</td><td><strong>Thème sombre</strong></td><td>Oui, en plus du clair</td><td>Confort ; demandé en usage prolongé</td></tr>
+<tr><td>5</td><td><strong>Libellés « Investally Group › Douala »</strong></td><td>Sélecteur d'organisation et de site</td><td>À confirmer : plusieurs sites/pays prévus ? (la capture montre « Abidjan »)</td></tr>
+<tr><td>6</td><td><strong>Devise</strong></td><td>XAF affichée en millions (« 184 M ») avec détail au survol</td><td>Lisibilité des gros montants</td></tr>
+<tr><td>8</td><td><strong>Agenda : périmètre</strong></td><td>Agenda <strong>personnel</strong> pour tous ; agenda <strong>d'équipe</strong> pour le Responsable commercial (portée Équipe) et la Direction (Tous) ; 5 types d'événements</td><td>Même modèle de droits que le reste du CRM ; à confirmer : un salarié voit-il l'agenda de ses collègues (disponibilités) ?</td></tr>
+<tr><td>9</td><td><strong>Agenda : synchronisation Outlook / Microsoft 365</strong></td><td><strong>Dans un second temps</strong>, après la première version autonome</td><td>Elle exige des permissions de calendrier supplémentaires sur l'application Microsoft 365 (en plus de l'envoi d'e-mails, pas encore fourni) : décision et accès à prévoir</td></tr>
+<tr><td>10</td><td><strong>Agenda : invitations aux clients</strong></td><td>Envoi d'une invitation (.ics) par e-mail au contact, <strong>à valider</strong></td><td>Ajoute un envoi externe : à encadrer comme les autres e-mails (tracé, jamais de données sensibles)</td></tr>
+<tr><td>7</td><td><strong>Dossier de références PDF</strong> (<code>C:\dev\external ressources\*.pdf</code>, une quarantaine de maquettes : connexion, tableau de bord, projets, clients, leads…)</td><td><strong>Non utilisé</strong></td><td>Vous m'avez demandé de m'inspirer de la capture et du logo ; ces PDF semblent provenir d'un kit tiers. Dites-moi s'ils doivent servir de référence (et si vous détenez leur licence)</td></tr>
+</tbody></table></div>
+<hr>
+<h2>12. Ce qui est vérifié, ce qui ne l'est pas</h2>
+<p><strong>Vérifié</strong> : le prototype s'affiche (8 écrans, clair et sombre, mobile) dans un navigateur réel ; tous les contrastes de texte du §4.1 ont été <strong>calculés</strong> ; les polices sont celles du fichier (licence OFL) ; aucune ressource externe n'est chargée. <strong>Non vérifié</strong> : rendu sur Safari et Firefox ; lecteur d'écran ; comportement avec de vraies données volumineuses ; lisibilité de la baseline du logo (« SIMPLIFIER, CONNECTER, INVESTIR. ») dans la barre latérale à petite taille.</p></main></body></html>

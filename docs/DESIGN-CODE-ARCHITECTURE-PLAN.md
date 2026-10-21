@@ -41,10 +41,14 @@
 | **S3.3** Autorisation et administration (backend) — **validé** (tag `s3-3-validated`) | CRM | `@Protected` (permission + portée + step-up), API utilisateurs/rôles/sessions, invitation par e-mail, propriétaire des entreprises | 10, 11 |
 | **S3.4** Front de base — **en cours, recette exécutée, validation en attente** | CRM | Pages web : connexion, scan du QR MFA, codes de secours, activation d'invitation, administration des utilisateurs, mon compte (mot de passe, codes de secours, sessions), en-têtes de sécurité | 10 |
 | **S3.5** Mot de passe oublié et livrables — **en cours, recette exécutée, validation en attente** | CRM | Bouton « Mot de passe oublié » (libre-service sécurisé et traçable + déclenchement par un administrateur), commentaires sur toutes les fonctions, livrables récapitulatifs (`docs/livrables/`) | 8, 10 |
-| **S3.6** Documents | CRM | Téléversement, versions, SHA-256, téléchargement, traçabilité complète | 9, 10 |
-| **Cadrage UX** (avant S4.1) | CRM | Maquettes des écrans clés du parcours commercial, validées avec vous avant d'être codées *(proposé)* | — |
+| **ÉTAPE 0** *(décidée le 2026-10-21, DEC-005)* | — | **Valider S3.4 et S3.5** ; obtenir l'**accès Microsoft 365** ; désigner **deux SuperAdmin** ; lancer l'**avis juridique** (audit 10 ans, données de performance) | — |
+| **H1** Habillage minimal + hub | CRM | Tailwind, jetons, polices hébergées, logos, coque, **navigation B+ (hub, recherche globale, rail compact)** ; **le style s'applique ensuite écran par écran, sans sprint H3 séparé** | 10 |
+| **H2** Authentification complète et sessions | CRM | 18 écrans (MFA, QR, codes de secours, réinitialisation, sessions actives, historique des connexions) + endpoint d'historique | 10 |
+| **S3.6** Documents | CRM | Téléversement, versions, SHA-256, téléchargement, traçabilité complète (prérequis des pièces jointes) | 9, 10 |
+| **Cadrage UX** (avant S4.1) | CRM | Séance courte sur 5 écrans clés, **à partir des prototypes existants** ; chaque écran de S4 naît dans le nouveau style | — |
 | **S4.1** Entreprises et contacts | CRM | Business Development : entreprises, contacts — **API et écrans livrés ensemble** | 10, 12 |
 | **S4.2** Offres, décharges, relances | CRM | Offre, décharge, relances planifiées | 10 |
+| **S4.2b** Agenda utilisateur *(ajouté le 2026-10-21)* | CRM | Événements (rendez-vous, relances, formations, échéances), vues semaine / mois / jour, rappels, droits Propre / Équipe / Tous ; premier consommateur : les relances et rendez-vous des offres | 10 |
 | **S4.3** Rendez-vous, visites, opportunités | CRM | Pipeline, règle du RDV décideur avec dérogation | 10 |
 | **S4.4** Agrément et ambassadeurs | CRM | Agrément (promesse de paiement), ambassadeurs, événements vers Investudy | 10 |
 | **S5.1** Catalogue Investudy | CRM | Programmes, formations, salles, formateurs | 10 |
@@ -52,6 +56,8 @@
 | **S5.3** Suivi pédagogique | CRM | Présences, évaluations, certifications, suggestion d'ambassadeur | 10 |
 | **S6.1** KPI et dashboards commerciaux | CRM | KPI, dashboards Chargé de compte et Responsable commercial | 12, 13 |
 | **S6.2** Dashboards Investudy, Admin, Sécurité | CRM | Dashboards Investudy, Administration, Sécurité, rapports | 12, 13 |
+| **S6.3** Reporting et incidents *(EXD-08, DEC-005 : incidents d'abord)* | CRM / transverse | Incidents (opérationnels et sécurité), puis rapports périodiques ; **suivi des performances seulement après avis juridique et RH (DEC-006)** | 12, 13 |
+| **ST** Stocks *(EXD-07, DEC-004, ADR-0007)* | Module autonome hébergé dans le CRM, extractible vers l'ERP | Articles, catégories, fournisseurs, mouvements immuables, inventaire, seuils, tableau de bord | 5–7 |
 | **S7.1** Durcissement | CRM | Rôle SQL applicatif, création planifiée des partitions, sauvegardes, supervision | 8, 15 |
 | **S7.2** Mise en production | CRM | Docker et CI exécutés pour de vrai, revue de sécurité, audit avancé | 15 |
 | ERP-1…n | ERP | Finance, RH, Fiscalité, reporting direction ; extraction IAM/SSO et paquets partagés | 5–7, 13 |
@@ -97,3 +103,7 @@
 | Risques | `RISKS.md` |
 | Fiabilité, tests, conventions | `RELIABILITY.md`, `TESTING.md`, `TECH-DEBT.md` |
 | Validation métier | ✅ décisions du 2026-10-20 (reste : détails de l'agrément) |
+
+
+## Décisions du 2026-10-21 (DEC-001 à DEC-006)
+Ordre de réalisation retenu : **Étape 0** (validations, Microsoft 365, SuperAdmin, avis juridique) → **H1** → **H2** → **S3.6** → **Cadrage UX** → **S4.1 à S4.4** (+ Agenda S4.2b) → **S5** → **S6** (dont **S6.3** Reporting, incidents d'abord) → **ST** Stocks → **S7**. Détail et motifs : `design/05-AIDE-A-LA-DECISION.md`.
