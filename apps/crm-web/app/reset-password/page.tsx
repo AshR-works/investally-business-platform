@@ -1,5 +1,6 @@
 'use client';
 
+import { PageHeading } from '../../components/page-heading';
 import { FormEvent, useEffect, useRef, useState } from 'react';
 import { api, ApiError } from '../../lib/api';
 import { parseInvitationFragment } from '../../lib/invitation';
@@ -54,7 +55,7 @@ export default function ResetPasswordPage() {
     return (
       <main className="center">
         <div className="card">
-          <h1>Mot de passe modifié</h1>
+          <PageHeading>Mot de passe modifié</PageHeading>
           <p>Votre nouveau mot de passe est enregistré et toutes vos sessions ont été fermées. Connectez-vous : votre second facteur vous sera demandé comme d&apos;habitude.</p>
           <a href="/login">Aller à la connexion</a>
         </div>
@@ -66,7 +67,7 @@ export default function ResetPasswordPage() {
     return (
       <main className="center">
         <div className="card">
-          <h1>Lien invalide</h1>
+          <PageHeading title="Réinitialisation : lien invalide">Lien invalide</PageHeading>
           <p>Ce lien est incomplet ou a déjà été utilisé. Vous pouvez en demander un nouveau depuis la page de connexion (« Mot de passe oublié ? »).</p>
           <a href="/forgot-password">Demander un nouveau lien</a>
         </div>
@@ -77,7 +78,7 @@ export default function ResetPasswordPage() {
   return (
     <main className="center">
       <form className="card" onSubmit={submit}>
-        <h1>Nouveau mot de passe</h1>
+        <PageHeading>Nouveau mot de passe</PageHeading>
         <label>
           Nouveau mot de passe
           <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="new-password" maxLength={256} required autoFocus />

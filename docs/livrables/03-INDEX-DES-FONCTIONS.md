@@ -2,7 +2,7 @@
 
 > Document **généré** par `node scripts/gen-function-index.mjs` à partir des commentaires du code. Ne pas le modifier à la main : corriger le commentaire dans le fichier source, puis relancer le script.
 
-**535 déclarations commentées au total.**
+**536 déclarations commentées au total.**
 
 
 ## API (NestJS) — 459 déclarations commentées
@@ -1080,7 +1080,7 @@
 | `export default function ResetPasswordPage()` | Page ouverte depuis le lien reçu par e-mail. |
 | `async function submit(event: FormEvent)` | Envoie le jeton et le nouveau mot de passe ; le serveur coupe toutes les sessions, l'utilisateur doit se reconnecter avec son second facteur. |
 
-## Interface web — composants — 4 déclarations commentées
+## Interface web — composants — 5 déclarations commentées
 
 ### `gate.tsx`
 
@@ -1092,7 +1092,13 @@
 
 | Déclaration | Rôle |
 |---|---|
-| `export function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: ReactNode })` | Fenêtre modale accessible : Échap ferme, le focus entre dans la fenêtre, le fond est inerte pour les lecteurs d'écran. |
+| `export function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: ReactNode })` | Fenêtre modale accessible : Échap ferme, le focus entre dans la fenêtre, le fond est rendu inerte (`inert`), Tab reste dans la fenêtre et le focus revient à l'élément d'origine à la fermeture. |
+
+### `page-heading.tsx`
+
+| Déclaration | Rôle |
+|---|---|
+| `export function PageHeading({ children, title }: { children: string; title?: string })` | Titre de page (`h1`) qui renseigne aussi le titre du document : le lecteur d'écran l'annonce à chaque changement de page (WCAG 2.4.2) et l'onglet du navigateur dit où l'on se trouve. |
 
 ### `step-up-dialog.tsx`
 

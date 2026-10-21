@@ -1,5 +1,6 @@
 'use client';
 
+import { PageHeading } from '../../components/page-heading';
 import { FormEvent, useEffect, useRef, useState } from 'react';
 import { api, ApiError } from '../../lib/api';
 import { parseInvitationFragment } from '../../lib/invitation';
@@ -55,7 +56,7 @@ export default function InvitationPage() {
     return (
       <main className="center">
         <div className="card">
-          <h1>Compte activé</h1>
+          <PageHeading>Compte activé</PageHeading>
           <p>Votre mot de passe est enregistré. Connectez-vous : vous configurerez ensuite votre application d&apos;authentification.</p>
           <a href="/login">Aller à la connexion</a>
         </div>
@@ -67,7 +68,7 @@ export default function InvitationPage() {
     return (
       <main className="center">
         <div className="card">
-          <h1>Lien invalide</h1>
+          <PageHeading title="Invitation : lien invalide">Lien invalide</PageHeading>
           <p>Ce lien d&apos;invitation est incomplet ou a déjà été utilisé. Demandez un nouveau lien à un administrateur.</p>
         </div>
       </main>
@@ -77,7 +78,7 @@ export default function InvitationPage() {
   return (
     <main className="center">
       <form className="card" onSubmit={submit}>
-        <h1>Activer votre compte</h1>
+        <PageHeading>Activer votre compte</PageHeading>
         <p>Choisissez votre mot de passe. Il n&apos;est connu que de vous.</p>
         <label>
           Nouveau mot de passe

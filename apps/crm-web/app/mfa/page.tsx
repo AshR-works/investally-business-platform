@@ -1,5 +1,6 @@
 'use client';
 
+import { PageHeading } from '../../components/page-heading';
 import QRCode from 'qrcode';
 import { FormEvent, useEffect, useRef, useState } from 'react';
 import { Gate } from '../../components/gate';
@@ -53,7 +54,7 @@ function Verification() {
 
   return (
     <form onSubmit={submit}>
-      <h1>Vérification en deux étapes</h1>
+      <PageHeading>Vérification en deux étapes</PageHeading>
       <p>Saisissez le code à 6 chiffres de votre application d&apos;authentification.</p>
       <label>
         Code de vérification
@@ -135,12 +136,12 @@ function Enrollment() {
     const text = `Investally CRM - codes de secours (usage unique)\n\n${recoveryCodes.join('\n')}\n`;
     return (
       <div>
-        <h1>Conservez vos codes de secours</h1>
+        <PageHeading>Conservez vos codes de secours</PageHeading>
         <p>
           Chaque code ne sert qu&apos;<strong>une fois</strong> si vous perdez votre téléphone. Ils ne seront <strong>plus jamais affichés</strong> :
           rangez-les dans un endroit sûr (gestionnaire de mots de passe), pas dans un e-mail.
         </p>
-        <div className="codes" aria-label="Codes de secours">
+        <div className="codes" role="group" aria-label="Codes de secours">
           {recoveryCodes.map((c) => <span key={c}>{c}</span>)}
         </div>
         <div className="row">
@@ -171,7 +172,7 @@ function Enrollment() {
 
   return (
     <form onSubmit={confirm}>
-      <h1>Configurer le second facteur</h1>
+      <PageHeading>Configurer le second facteur</PageHeading>
       <p>Le second facteur est obligatoire pour accéder au CRM.</p>
       <ol>
         <li>Installez une application d&apos;authentification (Microsoft Authenticator, Google Authenticator, Aegis…).</li>

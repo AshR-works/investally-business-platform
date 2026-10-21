@@ -8,7 +8,7 @@
 
 ## 1. Synthèse en dix lignes
 
-1. **8 sessions menées** (S0 à S3.5) ; **6 validées** et fusionnées, **2 livrées en attente de validation** (S3.4, S3.5).
+1. **8 sessions menées** (S0 à S3.5), **toutes validées** et fusionnées dans `main` (S3.4 et S3.5 validées le 2026-10-21). Chantier en cours : vérification d’accessibilité (lecteurs d’écran).
 2. Le **socle de sécurité et d'accès est complet** : comptes, connexion, second facteur, rôles, périmètres, invitations, mot de passe oublié, audit.
 3. **Aucune fonctionnalité métier commerciale n'est encore livrée** hormis les entreprises cibles (début du pipeline) : c'est **voulu** — on ne bâtit pas un CRM sur un accès fragile.
 4. **380 + 141 tests** côté API, **24** côté interface, tous verts ; **0 violation** d'architecture ; **0 vulnérabilité haute**.
