@@ -19,6 +19,7 @@ export function StepUpDialog({ onDone }: { onDone: (ok: boolean) => void }) {
     return () => window.removeEventListener('keydown', onKey);
   }, [onDone]);
 
+  /** Vérifie le code ; en cas de succès le nouveau jeton remplace l'ancien et l'action sensible est rejouée. */
   async function submit(event: FormEvent) {
     event.preventDefault();
     setBusy(true);

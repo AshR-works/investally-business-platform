@@ -2,6 +2,7 @@ import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { DomainError } from '../../../shared-kernel';
 import { AuthenticatedActor } from '../application/authenticate-access-token.use-case';
 
+/** Lit l'identité posée sur la requête par la garde d'authentification. */
 function actorOf(context: ExecutionContext): AuthenticatedActor | undefined {
   return context.switchToHttp().getRequest<{ actor?: AuthenticatedActor }>().actor;
 }
@@ -13,6 +14,7 @@ function actorOf(context: ExecutionContext): AuthenticatedActor | undefined {
  */
 @Injectable()
 export class RequireMfaGuard implements CanActivate {
+  /** Refuse (403 `MFA_REQUIRED`) tant que le second facteur n'est pas vérifié pour cette session. */
   canActivate(context: ExecutionContext): boolean {
     if (!actorOf(context)?.mfaVerified) throw new DomainError('MFA_REQUIRED', 'Vérification MFA requise');
     return true;
@@ -25,6 +27,7 @@ export class RequireMfaGuard implements CanActivate {
  */
 @Injectable()
 export class RequireRecentMfaGuard implements CanActivate {
+  /** Refuse `MFA_REQUIRED` sans second facteur vérifié, et `MFA_STEP_UP_REQUIRED` s'il date de plus de 10 minutes. */
   canActivate(context: ExecutionContext): boolean {
     const actor = actorOf(context);
     if (!actor?.mfaVerified) throw new DomainError('MFA_REQUIRED', 'Vérification MFA requise');

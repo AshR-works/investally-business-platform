@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { APP_CONFIG, AppConfig } from '../../shared-kernel';
 import { AuditModule } from '../audit/audit.module';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { IssuePasswordResetUseCase, RequestPasswordResetUseCase, ResetPasswordUseCase } from './application/admin/password-reset.use-cases';
 import { AcceptInvitationUseCase, InviteUserUseCase, ResendInvitationUseCase } from './application/admin/invitations.use-cases';
 import { ListOwnSessionsHandler, RevokeSessionUseCase, RevokeUserSessionsUseCase } from './application/admin/session-management.use-cases';
 import { AssignRolesUseCase, SetUserStatusUseCase, UpdateUserUseCase } from './application/admin/user-management.use-cases';
@@ -52,7 +53,7 @@ import { RequireMfaGuard, RequireRecentMfaGuard } from './presentation/mfa.guard
     CreateUserUseCase, LoginUseCase, RefreshSessionUseCase, LogoutUseCase, ChangePasswordUseCase,
     AuthenticateAccessTokenUseCase, SessionTokenService, AccessTokenGuard, RequireMfaGuard, RequireRecentMfaGuard,
     AuthorizationService, GetProfileHandler, PermissionGuard,
-    InviteUserUseCase, ResendInvitationUseCase, AcceptInvitationUseCase, UpdateUserUseCase, SetUserStatusUseCase, AssignRolesUseCase,
+    InviteUserUseCase, ResendInvitationUseCase, AcceptInvitationUseCase, RequestPasswordResetUseCase, IssuePasswordResetUseCase, ResetPasswordUseCase, UpdateUserUseCase, SetUserStatusUseCase, AssignRolesUseCase,
     ListUsersHandler, GetUserHandler, ListRolesHandler, ListOwnSessionsHandler, RevokeSessionUseCase, RevokeUserSessionsUseCase,
     { provide: GRANT_READER, useClass: PrismaGrantReader },
     { provide: ROLE_CATALOG_READER, useClass: PrismaRoleCatalogReader },
@@ -80,4 +81,8 @@ import { RequireMfaGuard, RequireRecentMfaGuard } from './presentation/mfa.guard
   // Les modules métier utilisent `@Protected(...)` : leurs contrôleurs ont besoin de ces gardes et de ce service.
   exports: [AccessTokenGuard, RequireMfaGuard, RequireRecentMfaGuard, PermissionGuard, AuthorizationService, AuthenticateAccessTokenUseCase, CreateUserUseCase, ResetMfaUseCase],
 })
+/**
+ * Module Identité et accès : comptes, authentification, MFA, sessions, rôles et permissions, invitations et
+ * réinitialisation de mot de passe.
+ */
 export class IamModule {}

@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ThrottlerGuard } from '@nestjs/throttler';
 
+/** Forme minimale d'une requête pour calculer la clé de limitation de débit. */
 interface RequestLike {
   ip?: string;
   path?: string;
@@ -27,10 +28,14 @@ function sessionHint(authorization: string | string[] | undefined): string {
  */
 @Injectable()
 export class AppThrottlerGuard extends ThrottlerGuard {
+  /**
+   * Clé de limitation : IP + adresse saisie pour la connexion et « mot de passe oublié », IP + session pour le MFA,
+   * IP sinon.
+   */
   protected async getTracker(req: Record<string, unknown>): Promise<string> {
     const request = req as unknown as RequestLike;
     const ip = request.ip ?? 'unknown';
-    if (request.path?.endsWith('/auth/login')) {
+    if (request.path?.endsWith('/auth/login') || request.path?.endsWith('/auth/password-reset/request')) {
       const email = typeof request.body?.email === 'string' ? request.body.email.trim().toLowerCase().slice(0, 254) : '';
       return `${ip}|${email}`;
     }

@@ -2,6 +2,10 @@ import { Page } from '../../../shared-kernel';
 import { Company } from './company';
 import { CompanyName } from './company-name';
 
+/**
+ * Port de persistance des entreprises : enregistrer, retrouver, tester l'unicité du nom et lister selon les
+ * propriétaires autorisés.
+ */
 export interface CompanyRepository {
   save(company: Company): Promise<void>;
   findById(id: string): Promise<Company | null>;

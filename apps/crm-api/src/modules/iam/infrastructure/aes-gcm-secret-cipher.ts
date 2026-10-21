@@ -27,6 +27,10 @@ export class AesGcmSecretCipher implements SecretCipher {
     return new AesGcmSecretCipher(randomBytes(KEY_BYTES));
   }
 
+  /**
+   * Chiffre un secret (AES-256-GCM, IV aléatoire) ; `context` (l'identifiant de l'utilisateur) est authentifié : un
+   * secret copié sur un autre compte ne se déchiffre pas.
+   */
   encrypt(plain: string, context: string): string {
     const iv = randomBytes(IV_BYTES);
     const cipher = createCipheriv('aes-256-gcm', this.key, iv);
@@ -35,6 +39,10 @@ export class AesGcmSecretCipher implements SecretCipher {
     return [VERSION, iv.toString('base64url'), cipher.getAuthTag().toString('base64url'), encrypted.toString('base64url')].join('.');
   }
 
+  /**
+   * Déchiffre un secret ; toute altération, tout mauvais contexte ou toute mauvaise clé lève une erreur (jamais un
+   * résultat faux).
+   */
   decrypt(blob: string, context: string): string {
     const [version, ivPart, tagPart, dataPart, ...rest] = blob.split('.');
     if (version !== VERSION || !ivPart || !tagPart || dataPart === undefined || rest.length > 0) {
@@ -52,6 +60,7 @@ export class AesGcmSecretCipher implements SecretCipher {
   }
 }
 
+/** Données associées authentifiées : lient le chiffré à son usage et à son propriétaire. */
 function aad(context: string): Buffer {
   return Buffer.from(`investally:mfa:${context}`, 'utf8');
 }

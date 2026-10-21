@@ -8,6 +8,10 @@ import { CompanyName } from '../domain/company-name';
 import { COMPANY_REPOSITORY, CompanyRepository } from '../domain/company-repository';
 import { CompanyView, toCompanyView } from './company-view';
 
+/**
+ * Données d'enregistrement d'une entreprise cible ; le propriétaire vient de l'identité de l'appelant, jamais du
+ * corps de la requête.
+ */
 export interface RegisterCompanyCommand {
   name: string;
   /** Propriétaire de l'entreprise (l'utilisateur qui la crée) : détermine la portée des droits. */
@@ -17,6 +21,7 @@ export interface RegisterCompanyCommand {
   actor: ActorContext;
 }
 
+/** Cas d'usage : enregistrer une entreprise cible, refuser un doublon de nom, tracer l'opération. */
 @Injectable()
 export class RegisterCompanyUseCase {
   constructor(
@@ -27,6 +32,10 @@ export class RegisterCompanyUseCase {
     @Inject(ID_GENERATOR) private readonly ids: IdGenerator,
   ) {}
 
+  /**
+   * Crée l'entreprise et son audit dans une même transaction ; un nom déjà pris (sans tenir compte de la casse ni des
+   * espaces) est un conflit.
+   */
   async execute(command: RegisterCompanyCommand): Promise<CompanyView> {
     const name = CompanyName.of(command.name);
 

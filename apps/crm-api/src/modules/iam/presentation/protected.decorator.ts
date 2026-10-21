@@ -13,6 +13,7 @@ import { RequireMfaGuard, RequireRecentMfaGuard } from './mfa.guards';
 export const PERMISSION_KEY = 'crm:permission';
 export const MIN_SCOPE_KEY = 'crm:min-scope';
 
+/** Requête enrichie par les gardes : IP, en-têtes, identité authentifiée et droits résolus. */
 interface RequestWithIdentity {
   ip?: string;
   headers: Record<string, string | string[] | undefined>;
@@ -32,6 +33,10 @@ export class PermissionGuard implements CanActivate {
     private readonly authorization: AuthorizationService,
   ) {}
 
+  /**
+   * Vérifie que la route déclare une permission du catalogue (sinon refus), résout les droits de l'appelant en base
+   * et exige la permission, et la portée minimale si elle est demandée.
+   */
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const permission = this.reflector.get<string | undefined>(PERMISSION_KEY, context.getHandler());
     if (!permission) throw new DomainError('FORBIDDEN', 'Accès refusé');

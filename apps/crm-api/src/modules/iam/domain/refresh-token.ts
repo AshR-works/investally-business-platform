@@ -2,6 +2,7 @@
  *  (deux onglets qui se rafraîchissent en même temps). Au-delà : réutilisation = vol probable. */
 export const REUSE_GRACE_MS = 10_000;
 
+/** Jeton de rafraîchissement stocké : empreinte, session, famille de rotation, échéance, usage et révocation. */
 export interface RefreshTokenRecord {
   id: string;
   sessionId: string;

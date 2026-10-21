@@ -8,6 +8,10 @@ import { passwordHints } from '../../../lib/password';
 import { roleLabel } from '../../../lib/permissions';
 import type { SessionView } from '../../../lib/types';
 
+/**
+ * Page « Mon compte » : profil, changement de mot de passe, nouveaux codes de secours et liste des sessions de
+ * l'utilisateur connecté.
+ */
 export default function AccountPage() {
   const { profile } = useAuth();
   return (
@@ -25,6 +29,10 @@ export default function AccountPage() {
   );
 }
 
+/**
+ * Formulaire de changement de mot de passe : indications en direct, confirmation obligatoire, message d'erreur du
+ * serveur affiché tel quel.
+ */
 function PasswordForm({ email }: { email: string }) {
   const [current, setCurrent] = useState('');
   const [next, setNext] = useState('');
@@ -34,6 +42,10 @@ function PasswordForm({ email }: { email: string }) {
   const [busy, setBusy] = useState(false);
   const hints = passwordHints(next, email);
 
+  /**
+   * Envoie l'ancien et le nouveau mot de passe ; les champs sont vidés après succès (le serveur coupe les autres
+   * sessions).
+   */
   async function submit(event: FormEvent) {
     event.preventDefault();
     setBusy(true);
@@ -67,10 +79,15 @@ function PasswordForm({ email }: { email: string }) {
   );
 }
 
+/**
+ * Génère de nouveaux codes de secours (les anciens cessent de fonctionner) et les affiche une seule fois ; un code
+ * MFA récent est demandé si nécessaire.
+ */
 function RecoveryCodes() {
   const [codes, setCodes] = useState<string[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  /** Appelle la régénération et garde les codes en mémoire uniquement, jusqu'à ce que l'utilisateur les masque. */
   async function regenerate() {
     setError(null);
     try {
@@ -98,6 +115,7 @@ function RecoveryCodes() {
   );
 }
 
+/** Liste les sessions actives de l'utilisateur (appareil lisible, IP, dates) et permet de révoquer les autres. */
 function Sessions() {
   const [sessions, setSessions] = useState<SessionView[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -115,6 +133,7 @@ function Sessions() {
     void load();
   }, [load]);
 
+  /** Révoque une session puis recharge la liste. */
   async function revoke(id: string) {
     try {
       await api(`/auth/sessions/${id}`, { method: 'DELETE' });

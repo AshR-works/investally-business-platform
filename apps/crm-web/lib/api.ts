@@ -8,6 +8,7 @@
  * - Un 403 `MFA_STEP_UP_REQUIRED` demande un code à l'utilisateur (via le gestionnaire enregistré), puis UNE nouvelle tentative.
  */
 
+/** Erreur renvoyée par l'API : statut HTTP, code stable (`FORBIDDEN`, `MFA_REQUIRED`…) et message lisible. */
 export class ApiError extends Error {
   constructor(
     readonly status: number,
@@ -26,15 +27,19 @@ let stepUpHandler: (() => Promise<boolean>) | null = null;
 let stepUpInFlight: Promise<boolean> | null = null;
 let onSessionLost: (() => void) | null = null;
 
+/** Installe (ou efface) le jeton d'accès, gardé uniquement en mémoire. */
 export function setAccessToken(token: string | null): void {
   accessToken = token;
 }
+/** Vrai si un jeton d'accès est actuellement en mémoire. */
 export function hasAccessToken(): boolean {
   return accessToken !== null;
 }
+/** Enregistre la fonction qui demande un code frais à l'utilisateur quand l'API exige un MFA récent. */
 export function setStepUpHandler(handler: (() => Promise<boolean>) | null): void {
   stepUpHandler = handler;
 }
+/** Enregistre la fonction appelée quand la session est définitivement perdue (rafraîchissement refusé). */
 export function setSessionLostHandler(handler: (() => void) | null): void {
   onSessionLost = handler;
 }
@@ -47,6 +52,7 @@ export function resetApiClient(): void {
   onSessionLost = null;
 }
 
+/** Corps d'erreur `application/problem+json` de l'API (RFC 7807). */
 export interface ProblemBody {
   title?: unknown;
   detail?: unknown;
@@ -66,6 +72,7 @@ export function describeProblem(status: number, body: ProblemBody | null): { cod
   return { code, message: 'Une erreur est survenue. Réessayez.' };
 }
 
+/** Lit la réponse d'erreur et la transforme en `ApiError`. */
 async function toError(res: Response): Promise<ApiError> {
   const body = (await res.json().catch(() => null)) as ProblemBody | null;
   const { code, message } = describeProblem(res.status, body);
@@ -94,6 +101,7 @@ export function refreshAccessToken(): Promise<boolean> {
   return refreshInFlight;
 }
 
+/** Demande un code frais à l'utilisateur ; plusieurs actions simultanées ne posent qu'une seule question. */
 function requestStepUp(): Promise<boolean> {
   if (!stepUpHandler) return Promise.resolve(false);
   stepUpInFlight ??= stepUpHandler().finally(() => {
@@ -102,6 +110,7 @@ function requestStepUp(): Promise<boolean> {
   return stepUpInFlight;
 }
 
+/** Options d'un appel : méthode, corps JSON, et `auth: false` pour les routes publiques. */
 export interface RequestOptions {
   method?: string;
   body?: unknown;
@@ -109,6 +118,7 @@ export interface RequestOptions {
   auth?: boolean;
 }
 
+/** Envoie une requête vers `/api/v1` avec le jeton en en-tête (jamais dans l'URL) et sans mise en cache. */
 async function send(path: string, options: RequestOptions): Promise<Response> {
   const headers: Record<string, string> = { Accept: 'application/json' };
   if (options.body !== undefined) headers['Content-Type'] = 'application/json';
@@ -122,10 +132,18 @@ async function send(path: string, options: RequestOptions): Promise<Response> {
   });
 }
 
+/**
+ * Vrai si l'API accuse le jeton (`WWW-Authenticate: invalid_token`) : seul cas où un rafraîchissement automatique est
+ * justifié.
+ */
 function isTokenRejected(res: Response): boolean {
   return /invalid_token/i.test(res.headers.get('WWW-Authenticate') ?? '');
 }
 
+/**
+ * Appel d'API de toute l'interface : rafraîchit le jeton une fois si le jeton est refusé, demande un code MFA et
+ * rejoue une fois si l'action est sensible, sinon remonte l'erreur lisible.
+ */
 export async function api<T = unknown>(path: string, options: RequestOptions = {}): Promise<T> {
   let res = await send(path, options);
 

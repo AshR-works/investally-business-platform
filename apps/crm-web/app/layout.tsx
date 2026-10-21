@@ -9,6 +9,7 @@ export const metadata: Metadata = {
 };
 export const viewport: Viewport = { width: 'device-width', initialScale: 1 };
 
+/** Structure HTML commune (langue française) et fournisseur d'authentification de toute l'application. */
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="fr">

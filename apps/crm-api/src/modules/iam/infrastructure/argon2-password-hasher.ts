@@ -8,14 +8,23 @@ import { PasswordHasher } from '../application/ports';
  */
 const OPTIONS = { algorithm: Algorithm.Argon2id, memoryCost: 19_456, timeCost: 2, parallelism: 1 } as const;
 
+/**
+ * Hachage des mots de passe en argon2id (19 Mio, 2 passes, 1 voie : recommandation OWASP). Le sel est intégré au
+ * hachage.
+ */
 @Injectable()
 export class Argon2PasswordHasher implements PasswordHasher {
   private dummyHash: Promise<string> | null = null;
 
+  /** Hache un mot de passe en clair (sel aléatoire propre à chaque hachage). */
   hash(plain: string): Promise<string> {
     return hash(plain, OPTIONS);
   }
 
+  /**
+   * Vrai si le mot de passe correspond au hachage ; un hachage illisible donne `false`, jamais une exception qui
+   * révélerait l'état du compte.
+   */
   async verify(storedHash: string, plain: string): Promise<boolean> {
     try {
       return await verify(storedHash, plain);

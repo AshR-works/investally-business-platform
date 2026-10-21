@@ -18,6 +18,7 @@ export class AuthorizationService {
     @Inject(AUDIT_RECORDER) private readonly audit: AuditRecorder,
   ) {}
 
+  /** Lit en base les droits et l'équipe de l'utilisateur pour la durée de la requête (jamais depuis le jeton). */
   async contextFor(userId: string): Promise<AccessContext> {
     const [grants, teamMemberIds] = await Promise.all([this.grants.grantsOf(userId), this.grants.teamMemberIds(userId)]);
     return { actorId: userId, grants, teamMemberIds };

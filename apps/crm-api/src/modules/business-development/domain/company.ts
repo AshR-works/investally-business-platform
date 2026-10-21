@@ -3,6 +3,7 @@ import { CompanyName } from './company-name';
 import { CompanyStatus } from './company-status';
 import { CompanyRegistered } from './events/company-registered';
 
+/** État interne d'une entreprise (identité, nom, statut, propriétaire, horodatages). */
 export interface CompanyProps {
   id: string;
   name: CompanyName;
@@ -49,6 +50,7 @@ export class Company extends AggregateRoot {
     return new Company(props);
   }
 
+  /** Archive l'entreprise ; refuse de l'archiver deux fois (règle métier). */
   archive(): void {
     if (this.props.status === CompanyStatus.Archived) {
       throw new DomainError('INVARIANT_VIOLATION', 'L\'entreprise est déjà archivée');

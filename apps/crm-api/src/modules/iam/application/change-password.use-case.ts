@@ -13,6 +13,10 @@ import { PASSWORD_HASHER, PasswordHasher } from './ports';
 /** Nombre de mots de passe passés refusés à la réutilisation (SECURITY.md §2.1). */
 export const PASSWORD_HISTORY_DEPTH = 5;
 
+/**
+ * Changement de mot de passe par l'utilisateur connecté : ancien mot de passe, nouveau mot de passe et session à
+ * conserver.
+ */
 export interface ChangePasswordCommand {
   userId: string;
   sessionId: string;
@@ -36,6 +40,10 @@ export class ChangePasswordUseCase {
     @Inject(ID_GENERATOR) private readonly ids: IdGenerator,
   ) {}
 
+  /**
+   * Vérifie l'ancien mot de passe, la politique et l'historique des 5 derniers, change le mot de passe, coupe les
+   * autres sessions et audite.
+   */
   async execute(command: ChangePasswordCommand): Promise<void> {
     const user = await this.users.findById(command.userId);
     if (!user || !user.passwordHash || !(await this.hasher.verify(user.passwordHash, command.currentPassword))) {

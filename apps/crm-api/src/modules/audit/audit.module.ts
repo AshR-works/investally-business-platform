@@ -11,4 +11,8 @@ import { PrismaAuditRepository } from './infrastructure/prisma-audit.repository'
   ],
   exports: [AUDIT_RECORDER],
 })
+/**
+ * Module d'audit : fournit l'enregistreur (`AUDIT_RECORDER`) aux autres modules ; le journal est en ajout seul,
+ * partitionné par mois.
+ */
 export class AuditModule {}

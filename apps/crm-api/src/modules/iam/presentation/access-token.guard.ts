@@ -12,6 +12,10 @@ const BEARER = /^Bearer ([A-Za-z0-9._~+/=-]+)$/;
 export class AccessTokenGuard implements CanActivate {
   constructor(private readonly authenticate: AuthenticateAccessTokenUseCase) {}
 
+  /**
+   * Authentifie la requête par son jeton `Bearer` ; sinon 401 avec `WWW-Authenticate: invalid_token` pour que le
+   * client sache rafraîchir.
+   */
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<{ headers: Record<string, string | undefined>; actor?: AuthenticatedActor }>();
     const match = BEARER.exec(request.headers.authorization ?? '');

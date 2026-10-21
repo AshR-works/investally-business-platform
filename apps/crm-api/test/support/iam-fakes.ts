@@ -62,6 +62,7 @@ export class InMemoryInvitations implements InvitationRepository {
     return true;
   }
   async revokeAllOfUser(userId: string, now: Date) { for (const r of this.items.values()) if (r.userId === userId && !r.usedAt && !r.revokedAt) r.revokedAt = now; }
+  async countCreatedSince(userId: string, purpose: string, since: Date) { return [...this.items.values()].filter((r) => r.userId === userId && r.purpose === purpose && r.createdAt.getTime() >= since.getTime()).length; }
 }
 
 /** Droits dérivés de la VRAIE matrice de rôles, comme le seed les écrit en base. */

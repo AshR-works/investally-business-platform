@@ -1,5 +1,9 @@
 import { ResolvedGrant, Scope } from './roles';
 
+/**
+ * Question posée à la politique d'accès : droits de l'acteur, permission demandée, objet visé (propriétaire) et
+ * équipe de l'acteur.
+ */
 export interface AccessRequest {
   /** Permissions résolues de l'acteur (union de ses rôles). */
   grants: readonly ResolvedGrant[];

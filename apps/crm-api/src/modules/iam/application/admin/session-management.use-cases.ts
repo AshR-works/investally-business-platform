@@ -6,6 +6,10 @@ import {
   REFRESH_TOKEN_REPOSITORY, RefreshTokenRepository, SESSION_REPOSITORY, SessionRepository, USER_REPOSITORY, UserRepository,
 } from '../../domain/auth-repositories';
 
+/**
+ * Session telle que l'utilisateur la voit : appareil, IP, risque, MFA, dates ; `current` marque la session qui fait
+ * la demande.
+ */
 export interface SessionView {
   id: string;
   ipAddress: string;
@@ -27,6 +31,7 @@ export class ListOwnSessionsHandler {
     @Inject(CLOCK) private readonly clock: Clock,
   ) {}
 
+  /** Liste les sessions actives de l'appelant seulement. */
   async execute(actor: { userId: string; sessionId: string }): Promise<SessionView[]> {
     const active = await this.sessions.listActiveOf(actor.userId, this.clock.now());
     return active.map((session) => ({
@@ -57,6 +62,10 @@ export class RevokeSessionUseCase {
     @Inject(CLOCK) private readonly clock: Clock,
   ) {}
 
+  /**
+   * Révoque une session et ses jetons ; hors de la portée de l'appelant, elle est « introuvable » (404). Déjà
+   * révoquée : sans effet.
+   */
   async execute(command: { sessionId: string; access: AccessContext; actor: ActorContext }): Promise<void> {
     await this.unitOfWork.run(async () => {
       const now = this.clock.now();
@@ -89,6 +98,7 @@ export class RevokeUserSessionsUseCase {
     @Inject(CLOCK) private readonly clock: Clock,
   ) {}
 
+  /** Coupe toutes les sessions d'un utilisateur (portée Tous exigée) et révoque leurs jetons ; renvoie leur nombre. */
   async execute(command: { targetUserId: string; access: AccessContext; actor: ActorContext }): Promise<{ revoked: number }> {
     if (!decideFor(command.access, 'iam.session.revoke', command.targetUserId).allowed) {
       throw new DomainError('FORBIDDEN', 'Accès refusé');

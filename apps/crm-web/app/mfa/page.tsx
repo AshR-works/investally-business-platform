@@ -6,6 +6,7 @@ import { Gate } from '../../components/gate';
 import { ApiError } from '../../lib/api';
 import { useAuth } from '../../lib/auth-context';
 
+/** Page du second facteur : vérification d'un code, ou première configuration si le MFA n'est pas encore en place. */
 export default function MfaPage() {
   return (
     <Gate allow={['mfa-enroll', 'mfa-verify']}>
@@ -14,6 +15,7 @@ export default function MfaPage() {
   );
 }
 
+/** Choisit l'écran (configuration ou vérification) selon l'état de la session et permet de changer de compte. */
 function MfaScreen() {
   const { status, profile, logout } = useAuth();
   return (
@@ -28,12 +30,14 @@ function MfaScreen() {
   );
 }
 
+/** Saisie du code TOTP ou d'un code de secours à usage unique. */
 function Verification() {
   const { verifyMfa } = useAuth();
   const [code, setCode] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
+  /** Envoie le code ; un échec est affiché et le champ vidé (une seule requête par tentative). */
   async function submit(event: FormEvent) {
     event.preventDefault();
     setBusy(true);
@@ -62,10 +66,15 @@ function Verification() {
   );
 }
 
+/** Présente la clé manuelle par groupes de 4 caractères pour la saisir plus facilement. */
 function groupSecret(secret: string): string {
   return secret.replace(/(.{4})/g, '$1 ').trim();
 }
 
+/**
+ * Première configuration du MFA : QR code généré dans le navigateur, clé manuelle, confirmation par un premier code,
+ * puis affichage unique des codes de secours.
+ */
 function Enrollment() {
   const { startEnrollment, confirmEnrollment, refreshState } = useAuth();
   const [secret, setSecret] = useState<string | null>(null);
@@ -101,6 +110,10 @@ function Enrollment() {
     })();
   }, [startEnrollment]);
 
+  /**
+   * Confirme l'enrôlement avec le code saisi ; en cas de succès les codes de secours sont affichés et le secret
+   * effacé de la mémoire.
+   */
   async function confirm(event: FormEvent) {
     event.preventDefault();
     setBusy(true);

@@ -5,6 +5,7 @@ import {
   REFRESH_TOKEN_REPOSITORY, RefreshTokenRepository, SESSION_REPOSITORY, SessionRepository,
 } from '../domain/auth-repositories';
 
+/** Déconnexion : session à fermer et contexte de l'acteur. */
 export interface LogoutCommand {
   sessionId: string;
   actor: ActorContext;
@@ -21,6 +22,7 @@ export class LogoutUseCase {
     @Inject(CLOCK) private readonly clock: Clock,
   ) {}
 
+  /** Ferme la session, révoque ses jetons de rafraîchissement et audite la déconnexion. */
   async execute(command: LogoutCommand): Promise<void> {
     await this.unitOfWork.run(async () => {
       const now = this.clock.now();

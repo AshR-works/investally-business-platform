@@ -2,6 +2,10 @@ import { DomainError } from '../../../shared-kernel';
 
 const MAX_LENGTH = 200;
 
+/**
+ * Objet-valeur : nom d'entreprise normalisé (espaces nettoyés, longueur bornée) avec une clé de comparaison sans
+ * casse.
+ */
 export class CompanyName {
   private constructor(readonly value: string) {}
 

@@ -1,0 +1,103 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Livrable 2 — Guide du code</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — livrables · <a href="01-RECAPITULATIF-REALISATIONS.html">Récapitulatif</a> · <a href="02-GUIDE-DU-CODE.html">Guide du code</a> · <a href="03-INDEX-DES-FONCTIONS.html">Index des fonctions</a></nav><h1>Livrable 2 — Guide du code</h1>
+<p><em>Pour qui ?</em> Toute personne qui ouvre le code pour la première fois (nouvel ingénieur, relecteur, auditeur). <em>Objectif :</em> trouver en moins de cinq minutes <strong>où</strong> vit chaque comportement, <strong>comment</strong> une requête traverse l'application et <strong>comment</strong> ajouter une fonctionnalité sans casser les règles.</p>
+<blockquote><p>Les fonctions elles-mêmes sont commentées dans le code (535 déclarations). Leur liste complète, avec leur rôle en une phrase, est dans <a href="03-INDEX-DES-FONCTIONS.html">03-INDEX-DES-FONCTIONS.md</a> (document généré).</p></blockquote>
+<h2>1. Vue d'ensemble</h2>
+<pre><code>investally-platform/
+├── apps/
+│   ├── crm-api/          API (NestJS) — toute la logique, tous les contrôles de sécurité
+│   │   ├── src/
+│   │   │   ├── shared-kernel/      vocabulaire commun (erreurs, ports, événements) — sans dépendance
+│   │   │   ├── platform/           technique commun : base de données, configuration, horloge, gardes globales
+│   │   │   └── modules/            un dossier par contexte métier
+│   │   │       ├── audit/                journal d&#x27;audit en ajout seul
+│   │   │       ├── notifications/        envoi d&#x27;e-mails (journal en dev, Microsoft 365 en prod)
+│   │   │       ├── iam/                  comptes, connexion, MFA, sessions, rôles, invitations, mot de passe oublié
+│   │   │       └── business-development/ entreprises cibles (début du pipeline commercial)
+│   │   ├── prisma/                 schéma de base de données et migrations (SQL versionné)
+│   │   ├── scripts/                outils (base de test jetable, clés, seed, documents générés)
+│   │   └── test/                   tests de bout en bout et matrices de droits
+│   └── crm-web/          Interface (Next.js / React) — aucune règle de sécurité n&#x27;y est « décisive »
+│       ├── app/                    pages (connexion, MFA, invitation, mot de passe oublié, administration, compte)
+│       ├── components/             composants partagés (fenêtre modale, confirmation MFA, garde d&#x27;accès)
+│       └── lib/                    client HTTP, état d&#x27;authentification, droits, utilitaires
+├── docs/                 documentation (architecture, sécurité, recettes, registre des décisions, livrables)
+└── scripts/              outils du dépôt (index des fonctions)</code></pre>
+<p><strong>Règle d'or</strong> : l'interface <em>affiche</em> ce que l'utilisateur peut faire ; c'est l'API qui <em>décide</em>. Chaque requête est re-contrôlée côté serveur.</p>
+<h2>2. Les quatre couches d'un module</h2>
+<p>Chaque module de l'API est découpé de la même façon, et des règles automatiques (<code>pnpm arch</code>, outil <em>dependency-cruiser</em>) <strong>font échouer la CI</strong> si une couche importe ce qu'elle n'a pas le droit d'importer.</p>
+<div class="table-wrap"><table><thead><tr><th>Couche</th><th>Contient</th><th>Peut dépendre de</th><th>Exemple</th></tr></thead><tbody>
+<tr><td><code>domain/</code></td><td>Règles métier pures : entités, objets-valeurs, politiques, <strong>ports</strong> (interfaces)</td><td>rien (ni framework, ni base)</td><td><code>user.ts</code> (verrouillage progressif), <code>access-policy.ts</code> (qui peut quoi), <code>password-policy.ts</code></td></tr>
+<tr><td><code>application/</code></td><td><strong>Cas d'usage</strong> : un fichier = une action de l'utilisateur ; orchestre le domaine et les ports</td><td>domaine</td><td><code>login.use-case.ts</code>, <code>password-reset.use-cases.ts</code></td></tr>
+<tr><td><code>infrastructure/</code></td><td>Adaptateurs concrets : PostgreSQL (Prisma), argon2, JWT, e-mail</td><td>domaine, application</td><td><code>prisma-user.repository.ts</code>, <code>es256-access-token.service.ts</code></td></tr>
+<tr><td><code>presentation/</code></td><td>Routes HTTP, validation des entrées, gardes, cookies</td><td>application</td><td><code>auth.controller.ts</code>, <code>admin.controllers.ts</code>, <code>protected.decorator.ts</code></td></tr>
+</tbody></table></div>
+<p>Pourquoi ? Pour que les règles métier ne dépendent d'aucune technologie : on peut changer de base, de framework ou migrer vers .NET <strong>sans réécrire le métier</strong> (ADR-0002, ADR-0003).</p>
+<h2>3. Le chemin d'une requête</h2>
+<h3>3.1 Exemple : « Créer une entreprise » (<code>POST /api/v1/companies</code>)</h3>
+<ol><li><strong>Navigateur</strong> → Next.js relaie <code>/api/*</code> vers l'API (même origine, pas de CORS).</li><li><strong>Gardes globales</strong> (<code>platform/</code>) : limitation de débit (<code>app-throttler.guard.ts</code>), contrôle d'origine anti-CSRF (<code>origin.guard.ts</code>).</li><li><strong><code>@Protected('bd.company.create')</code></strong> (<code>iam/presentation/protected.decorator.ts</code>) enchaîne :</li></ol>
+<p>   <code>AccessTokenGuard</code> (jeton valide, session active) → <code>RequireMfaGuard</code> (second facteur vérifié) → <code>PermissionGuard</code> (permission lue <strong>en base</strong>, pas dans le jeton).</p>
+<ol><li><strong>Contrôleur</strong> (<code>companies.controller.ts</code>) : valide le corps (<code>RegisterCompanyDto</code> : tout champ inconnu est refusé) et injecte le <strong>propriétaire = l'utilisateur connecté</strong> (jamais lu dans le corps).</li><li><strong>Cas d'usage</strong> (<code>register-company.use-case.ts</code>) : ouvre une transaction, refuse un doublon, crée l'entreprise <strong>et</strong> l'entrée d'audit dans la même transaction.</li><li><strong>Domaine</strong> (<code>company.ts</code>, <code>company-name.ts</code>) : règles du nom et de l'état.</li><li><strong>Infrastructure</strong> (<code>prisma-company.repository.ts</code>) : écrit en base.</li><li><strong>Réponse</strong> : représentation publique (<code>company-view.ts</code>) ; erreurs au format <code>application/problem+json</code>.</li></ol>
+<h3>3.2 Exemple : « Mot de passe oublié »</h3>
+<p><code>/login</code> → lien « Mot de passe oublié ? » → <code>app/forgot-password/page.tsx</code> → <code>POST /auth/password-reset/request</code> (<code>auth.controller.ts</code>, publique, limitée à 3/min) → <strong>réponse immédiate identique</strong> → en arrière-plan <code>RequestPasswordResetUseCase</code> (<code>password-reset.use-cases.ts</code>) : verrou du compte, plafond 3/heure, révocation des anciens liens, création du lien (empreinte SHA-256 seule en base), <strong>audit</strong> <code>PASSWORD_RESET</code>, envoi de l'e-mail. L'utilisateur ouvre le lien → <code>app/reset-password/page.tsx</code> (jeton lu dans le fragment <code>#</code>, effacé de l'adresse) → <code>POST /auth/password-reset/accept</code> → <code>ResetPasswordUseCase</code> : validation du lien et de la politique, consommation <strong>atomique</strong>, changement du mot de passe, <strong>toutes les sessions coupées</strong>, audit, e-mail de confirmation. Le <strong>MFA reste exigé</strong> à la connexion suivante.</p>
+<h2>4. Conventions</h2>
+<div class="table-wrap"><table><thead><tr><th>Sujet</th><th>Règle</th></tr></thead><tbody>
+<tr><td>Langue</td><td>Code en anglais (noms techniques), <strong>commentaires et libellés en français</strong></td></tr>
+<tr><td>Commentaires</td><td>Chaque classe, fonction, méthode publique, interface et composant porte un commentaire <code>/<strong> … <em>/</code> qui dit </strong>ce que ça fait et pourquoi*</em> (pas comment, le code le dit). Un script en tire l'index des fonctions : <code>node scripts/gen-function-index.mjs</code></td></tr>
+<tr><td>Erreurs</td><td>Le domaine lève des erreurs typées (<code>DomainError</code>) ; la présentation les traduit en HTTP (400, 401, 403, 404, 409, 422)</td></tr>
+<tr><td>Temps et identifiants</td><td>Toujours injectés (<code>Clock</code>, <code>IdGenerator</code>) pour des tests déterministes</td></tr>
+<tr><td>Secrets</td><td>Jamais dans le code ni dans les journaux ; <code>.env</code> ignoré par Git, <code>.env.example</code> seul versionné</td></tr>
+<tr><td>Audit</td><td>Toute action sensible écrit dans le journal <strong>dans la même transaction</strong> ; le journal est en ajout seul (la base refuse <code>UPDATE</code> et <code>DELETE</code>)</td></tr>
+<tr><td>Dette</td><td>Tout raccourci est inscrit dans <code>docs/TECH-DEBT.md</code> avec un propriétaire</td></tr>
+<tr><td>Branches</td><td><code>sprint/&lt;nom&gt;</code> depuis <code>main</code>, jamais de commit direct sur <code>main</code> ; fusion <code>--no-ff</code> et tag <code>sN-validated</code> après validation explicite</td></tr>
+</tbody></table></div>
+<h2>5. Où sont les tests, et que prouvent-ils ?</h2>
+<div class="table-wrap"><table><thead><tr><th>Type</th><th>Où</th><th>Lancer</th><th>Ce qu'ils prouvent</th></tr></thead><tbody>
+<tr><td>Unitaires (API)</td><td><code>src/<em>*/</em>.spec.ts</code>, <code>test/*.spec.ts</code></td><td><code>pnpm test</code></td><td>Règles métier et cas d'usage, sur des faux en mémoire (rapides)</td></tr>
+<tr><td>Intégration (API + base)</td><td><code>test/*.integration.spec.ts</code></td><td><code>node apps/crm-api/scripts/test-db.mjs</code></td><td>Parcours HTTP réels sur PostgreSQL jetable : droits, courses, audit, migrations</td></tr>
+<tr><td>Matrice de droits</td><td><code>test/rbac-http.integration.spec.ts</code></td><td>idem</td><td>Chaque rôle × chaque route : autorisé exactement là où la matrice le prévoit</td></tr>
+<tr><td>Protection des routes</td><td><code>test/route-protection.spec.ts</code></td><td><code>pnpm test</code></td><td><strong>Aucune route ne peut être ouverte par oubli</strong> (test qui parcourt toutes les routes montées)</td></tr>
+<tr><td>Migration</td><td><code>scripts/check-upgrade.mjs</code></td><td><code>pnpm --filter @investally/crm-api check:upgrade</code></td><td>Une migration préserve les données existantes</td></tr>
+<tr><td>Interface</td><td><code>apps/crm-web/test/*.test.ts</code></td><td><code>pnpm test</code></td><td>Client HTTP (rafraîchissement, MFA, anti-rejeu), parseurs, droits</td></tr>
+<tr><td>Architecture</td><td><code>.dependency-cruiser.cjs</code></td><td><code>pnpm arch</code></td><td>Les couches ne se contournent pas</td></tr>
+</tbody></table></div>
+<p>La base de test est <strong>jetable</strong> (PostgreSQL embarqué, mot de passe aléatoire) : elle n'est jamais votre vraie base.</p>
+<h2>6. Recettes du développeur</h2>
+<h3>Ajouter une route protégée</h3>
+<ol><li>Choisir (ou ajouter) une permission dans <code>iam/domain/permission-catalog.ts</code> ; l'attribuer aux rôles dans <code>iam/domain/roles.ts</code> ; régénérer <code>docs/RBAC.md</code> (<code>pnpm --filter @investally/crm-api docs:rbac</code>).</li><li>Dans le contrôleur : <code>@Protected('module.ressource.action')</code> (ajouter <code>{ stepUp: true }</code> si l'action est sensible, <code>{ minScope: 'ALL' }</code> si elle agit sur n'importe quel utilisateur).</li><li>Dans le cas d'usage : appliquer la <strong>portée</strong> objet par objet (<code>decideFor</code>, <code>visibilityFor</code>) ; un objet hors portée est <strong>introuvable (404)</strong>.</li><li>Écrire le test ; <code>test/route-protection.spec.ts</code> échoue tant que la route n'est pas protégée ou déclarée publique.</li></ol>
+<h3>Ajouter un module métier</h3>
+<p>Créer <code>modules/&lt;nom&gt;/{domain,application,infrastructure,presentation}</code>, exposer <strong>uniquement</strong> <code>index.ts</code> et le fichier <code>*.module.ts</code> (les autres modules n'importent rien d'autre), enregistrer le module dans <code>app.module.ts</code>, lancer <code>pnpm arch</code>.</p>
+<h3>Ajouter une migration</h3>
+<p>Modifier <code>prisma/schema.prisma</code>, créer le SQL dans <code>prisma/migrations/&lt;date&gt;_&lt;nom&gt;/migration.sql</code> (avec les contraintes que Prisma ne sait pas exprimer : <code>CHECK</code>, index partiels), tester avec <code>check:upgrade</code>.</p>
+<h2>7. Lexique</h2>
+<div class="table-wrap"><table><thead><tr><th>Terme</th><th>Signification</th></tr></thead><tbody>
+<tr><td><strong>Portée</strong></td><td>Étendue d'un droit : <em>Propre</em> (mes objets), <em>Équipe</em> (moi + mes subordonnés directs), <em>Tous</em></td></tr>
+<tr><td><strong>Step-up</strong></td><td>Nouvelle preuve du second facteur (moins de 10 minutes) exigée pour une action sensible</td></tr>
+<tr><td><strong>Amr</strong></td><td>Méthodes d'authentification inscrites dans le jeton : <code>pwd</code> (mot de passe), <code>otp</code> (second facteur)</td></tr>
+<tr><td><strong>Famille de jetons</strong></td><td>Tous les jetons de rafraîchissement issus d'une même connexion ; un rejeu coupe la famille</td></tr>
+<tr><td><strong>IDOR</strong></td><td>Accès à l'objet d'un autre en changeant un identifiant ; contré par le « 404 hors portée »</td></tr>
+<tr><td><strong>Lien à usage unique</strong></td><td>Jeton 256 bits dont seule l'empreinte SHA-256 est stockée ; sert à l'invitation et à la réinitialisation</td></tr>
+<tr><td><strong>Agrément</strong></td><td>Promesse de paiement d'une formation par le client (métier Investudy, S4.4)</td></tr>
+</tbody></table></div></main></body></html>
