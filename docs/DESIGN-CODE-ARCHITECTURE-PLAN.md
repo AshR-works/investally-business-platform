@@ -46,6 +46,7 @@
 | **S4.1** Entreprises et contacts | CRM | Business Development : entreprises, contacts — **API et écrans livrés ensemble** | 10, 12 |
 | **S4.2** Offres, décharges, relances | CRM | Offre, décharge, relances planifiées | 10 |
 | **S4.2b** Agenda utilisateur *(ajouté le 2026-10-21)* | CRM | Événements (rendez-vous, relances, formations, échéances), vues semaine / mois / jour, rappels, droits Propre / Équipe / Tous ; premier consommateur : les relances et rendez-vous des offres | 10 |
+| **H2b** Écrans d'authentification complets et sessions *(exigence EXD-06, proposé)* | CRM | 18 écrans (MFA, QR, codes de secours, réinitialisation, sessions actives, historique des connexions) + endpoint d'historique | 10 |
 | **S4.3** Rendez-vous, visites, opportunités | CRM | Pipeline, règle du RDV décideur avec dérogation | 10 |
 | **S4.4** Agrément et ambassadeurs | CRM | Agrément (promesse de paiement), ambassadeurs, événements vers Investudy | 10 |
 | **S5.1** Catalogue Investudy | CRM | Programmes, formations, salles, formateurs | 10 |
@@ -53,6 +54,8 @@
 | **S5.3** Suivi pédagogique | CRM | Présences, évaluations, certifications, suggestion d'ambassadeur | 10 |
 | **S6.1** KPI et dashboards commerciaux | CRM | KPI, dashboards Chargé de compte et Responsable commercial | 12, 13 |
 | **S6.2** Dashboards Investudy, Admin, Sécurité | CRM | Dashboards Investudy, Administration, Sécurité, rapports | 12, 13 |
+| **S6.3** Reporting et incidents *(exigence EXD-08, proposé)* | CRM / transverse | Rapports périodiques, incidents (opérationnels et sécurité), rapports des employés ; **après avis juridique** pour les performances | 12, 13 |
+| **ERP-0** Stocks *(exigence EXD-07, proposé)* | ERP (Opérations) | Articles, catégories, fournisseurs, mouvements immuables, inventaire, seuils, tableau de bord | 5–7 |
 | **S7.1** Durcissement | CRM | Rôle SQL applicatif, création planifiée des partitions, sauvegardes, supervision | 8, 15 |
 | **S7.2** Mise en production | CRM | Docker et CI exécutés pour de vrai, revue de sécurité, audit avancé | 15 |
 | ERP-1…n | ERP | Finance, RH, Fiscalité, reporting direction ; extraction IAM/SSO et paquets partagés | 5–7, 13 |

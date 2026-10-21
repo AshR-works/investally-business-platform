@@ -1,6 +1,7 @@
 # Investally Business Platform — Direction artistique et Design System
 
-**Version** : 0.1 (proposition à valider) · **Date** : 2026-10-21
+**Version** : 0.2 · **Date** : 2026-10-21
+> **Les exigences de conception [EXD-01 à EXD-09](03-EXIGENCES-DE-CONCEPTION.md) priment sur ce document** (profondeur du panneau, sélection persistante, pastille Investudy supprimée, « Développement » renommé « Opportunités », navigation par hub, nouveaux modules Stocks et Reporting, parcours d'authentification complets). Voir l'[analyse d'impact](04-ANALYSE-D-IMPACT.md).
 **Références fournies** : une capture d'écran « Centre de confiance » (style visuel), le logo Investally (versions rectangle et carrée), le logo Investudy.
 **Prototype interactif** : [prototype/index.html](prototype/index.html) (à ouvrir via un petit serveur local, voir §9) · **Captures** : dossier [screens/](screens/)
 
@@ -60,7 +61,7 @@
 
 ### 3.1 Navigation principale (barre latérale)
 ```
-ESPACE DE TRAVAIL      Vue d'ensemble · Agenda (badge) · Entreprises · Développement (badge) · Formation
+ESPACE DE TRAVAIL      Vue d'ensemble · Agenda (badge) · Entreprises · **Opportunités** (badge, ex-« Développement ») · Formation
 OPÉRATIONS             Finance · Ressources humaines · Fiscalité        (ERP, gabarit réservé)
 GOUVERNANCE            Administration · Sécurité
 Bas de barre           Carte Investudy (accès rapide) · profil et déconnexion
@@ -74,7 +75,7 @@ Un menu n'apparaît que si l'utilisateur détient la permission de lecture corre
 |---|---|---|
 | Vue d'ensemble | tableau de bord du rôle | tous |
 | **Agenda** | agenda personnel : **tous les rôles** ; agenda d'équipe : portée Équipe ou Tous | tous (périmètre = le sien, celui de son équipe, ou tous) |
-| Entreprises, Développement | `bd.company.read`, `bd.*` | Chargé de compte, Responsable commercial, Direction, Support, Finance |
+| Entreprises, Opportunités | `bd.company.read`, `bd.*` | Chargé de compte, Responsable commercial, Direction, Support, Finance |
 | Formation | `training.*` | Responsable formation, Formateur, Direction |
 | Finance / RH / Fiscalité | modules ERP | rôles correspondants (plus tard) |
 | Administration | `iam.user.read` | Super administrateur |

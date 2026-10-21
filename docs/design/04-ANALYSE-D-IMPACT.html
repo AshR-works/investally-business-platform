@@ -1,0 +1,239 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Analyse d&#x27;impact des exigences EXD-01 à EXD-09</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — design · <a href="01-DESIGN-SYSTEM.html">Design system</a> · <a href="02-SPECIFICATIONS-FRONTEND.html">Spécifications frontend</a> · <a href="03-EXIGENCES-DE-CONCEPTION.html">Exigences</a> · <a href="04-ANALYSE-D-IMPACT.html">Analyse d&#8217;impact</a> · <a href="prototype/index.html">Prototype</a></nav><h1>Analyse d'impact des exigences EXD-01 à EXD-09</h1>
+<p><strong>Date</strong> : 2026-10-21 · <strong>Références</strong> : <a href="03-EXIGENCES-DE-CONCEPTION.html">03-EXIGENCES-DE-CONCEPTION.md</a>, <a href="01-DESIGN-SYSTEM.html">01-DESIGN-SYSTEM.md</a> <strong>Principe</strong> : aucune refonte. EXD-01 à EXD-04 sont appliquées au prototype ; EXD-05 à EXD-08 sont analysées et spécifiées ici, <strong>à construire à la prochaine itération</strong> après vos réponses (§9).</p>
+<hr>
+<h2>1. Analyse des impacts UX</h2>
+<h3>1.1 EXD-01 — Profondeur de la zone principale</h3>
+<ul><li><strong>Bénéfice</strong> : on distingue immédiatement « l'application » (panneau) de « l'environnement » (fond), ce qui structure la page sans ajouter d'éléments.</li><li><strong>Réalisation</strong> : fond global <code>#E6DFDA</code> (sombre <code>#0B0B0A</code>), panneau <code>#FAFAFC</code> (sombre <code>#171615</code>) avec bordure 1 px et ombre douce à deux couches. Le contraste fond / panneau est volontairement <strong>mesuré</strong> (≈ 1,2 : 1) pour rester premium.</li><li><strong>Effet de bord</strong> : le texte posé <em>directement sur le fond global</em> (menu latéral) doit être plus sombre : les étiquettes de section et le profil passent de <code>--muted</code> (3,9 : 1 sur ce fond, <strong>insuffisant</strong>) à <code>--ink-2</code> (5,2 : 1). Corrigé.</li></ul>
+<h3>1.2 EXD-02 — Sélection persistante</h3>
+<ul><li><strong>Règle</strong> : <em>sélectionné ≠ survolé ≠ actif de navigation</em>. Le survol est un fond léger temporaire ; la sélection est un fond teinté <strong>et</strong> une barre de 4 px <strong>et</strong> une case cochée (trois indices, jamais la couleur seule).</li><li><strong>Comportement</strong> : clic sur la ligne ou sur la case ; case d'en-tête = tout sélectionner ; une barre d'actions apparaît dès qu'une ligne est sélectionnée (« 2 sélectionnées · Exporter · Réassigner · Tout désélectionner »).</li><li><strong>Accessibilité</strong> : la <strong>case à cocher</strong> est le contrôle (nom accessible « Sélectionner &lt;entreprise&gt; ») ; le clic sur la ligne est un raccourci. Les cartes sont des boutons à bascule (<code>aria-pressed</code>).</li><li><strong>À trancher</strong> : la sélection survit-elle à la pagination et au changement de filtre ? <em>Proposition</em> : oui (compteur global), avec le bouton « Tout désélectionner ».</li></ul>
+<h3>1.3 EXD-03 — Suppression de la pastille Investudy</h3>
+<ul><li>La navigation est recentrée sur la plateforme. Investudy n'existe plus que <strong>dans le module Formation</strong> (menu « Formation » et logo dans l'en-tête de son écran).</li></ul>
+<h3>1.4 EXD-04 — Opportunités en cartes, 6 par ligne</h3>
+<ul><li><strong>Gain</strong> : comparaison visuelle immédiate ; 18 opportunités visibles d'un coup sur un écran de bureau.</li><li><strong>Perte compensée</strong> : la vue par colonnes d'étapes (kanban) permettait de voir <em>où en est chaque opportunité dans le processus</em> ; elle est conservée en bascule « Par étape ». <strong>Recommandation</strong> : garder les deux, « Cartes » par défaut comme demandé.</li><li><strong>Contrainte</strong> : « 6 par ligne » suppose une largeur de contenu d'environ 1 000 px ; en dessous de 1 360 px de largeur d'écran, la grille passe à 4, 3, 2 puis 1 colonne (téléphone).</li><li><strong>À définir</strong> : ordre des cartes (par échéance ? par montant ? par étape ?) ; <em>proposition</em> : tri par prochaine action, configurable.</li></ul>
+<h3>1.5 EXD-05 — Navigation complète uniquement dans « Vue d'ensemble » ❓</h3>
+<p>Cette exigence est la plus structurante. <strong>Risques</strong> si on supprime toute navigation ailleurs : retour systématique à l'accueil pour changer de module (3 clics au lieu de 1 pour un usage quotidien), perte d'orientation, aucune navigation mobile. <strong>Motif recommandé (« hub + rail compact + ⌘K »)</strong> :</p>
+<div class="table-wrap"><table><thead><tr><th>Où</th><th>Navigation affichée</th></tr></thead><tbody>
+<tr><td><strong>Vue d'ensemble</strong></td><td><strong>Navigation complète</strong> (sections, libellés, badges) + <strong>barre de recherche globale en grand</strong> + modules en grandes tuiles + « reprendre où j'en étais »</td></tr>
+<tr><td><strong>Toutes les autres pages</strong></td><td><strong>Rail compact</strong> (icônes seules, 72 px, info-bulle et <code>aria-label</code>) + fil d'Ariane avec <strong>« ← Vue d'ensemble »</strong> + sous-navigation propre au module (onglets) + <strong>recherche globale ⌘K</strong> toujours dans la barre supérieure</td></tr>
+</tbody></table></div>
+<p>Cela respecte l'esprit (la navigation <em>complète</em> est au hub) sans enfermer l'utilisateur. <strong>Alternative stricte</strong> (aucune navigation hors hub) : possible, mais je la déconseille (efficacité, accessibilité 2.4.5 « plusieurs moyens de navigation »). <strong>Recherche globale</strong> : entreprises, contacts, offres, formations, sessions, utilisateurs, documents, rapports ; résultats <strong>groupés par type</strong>, limités aux droits de l'utilisateur (un résultat qu'on ne peut pas ouvrir n'apparaît pas) ; raccourcis clavier ; récents. <em>Impact backend</em> : un index de recherche par module et un point d'entrée <code>/search</code> qui interroge uniquement ce que l'appelant peut lire.</p>
+<h3>1.6 EXD-06 — Authentification et sessions</h3>
+<p>18 écrans (§4.1). <strong>Enjeux UX</strong> : messages <strong>identiques</strong> pour compte connu et inconnu (anti-énumération) ; QR et codes de secours affichés <strong>une seule fois</strong> ; reprise possible si l'utilisateur quitte l'enrôlement ; états d'erreur explicites (code périmé, compte verrouillé, limite de débit) sans rien révéler de sensible. <strong>Historique des connexions</strong> : aujourd'hui l'API conserve les tentatives et les événements d'audit mais <strong>n'expose pas encore</strong> un historique utilisateur : <em>impact backend</em> à prévoir (§7). La « localisation » d'une connexion n'est pas disponible (seulement IP et appareil) : on n'affichera pas de ville sans geo-IP (décision de confidentialité).</p>
+<h3>1.7 EXD-07 — Stocks</h3>
+<p>Parcours : <em>réceptionner</em> (entrée) → <em>consommer</em> (sortie interne) → <em>compter</em> (inventaire) → <em>alerter</em> (seuils). <strong>Principes</strong> : un mouvement est <strong>immuable</strong> (on corrige par un mouvement inverse, comme l'audit) ; le stock ne peut pas devenir négatif ; chaque sortie dit <strong>qui, pour quel service, pourquoi</strong>. Les alertes (rupture, article critique) alimentent l'agenda et le tableau de bord.</p>
+<h3>1.8 EXD-08 — Reporting, incidents, rapports des employés</h3>
+<ul><li><strong>Rapports périodiques</strong> : à produire par rôle (journalier, hebdomadaire, mensuel, trimestriel, annuel), <strong>préremplis</strong> à partir des données du système (opportunités, relances, sessions, stocks, incidents) pour éviter la double saisie, avec une zone de commentaire libre. Un rapport a un cycle : <em>brouillon → soumis → validé</em>.</li><li><strong>Incidents</strong> : déclaré → attribué → en cours → résolu → clos ; chronologie des échanges ; pièces jointes (module Documents, S3.6).</li><li><strong>Rapports des employés</strong> : activités, comptes rendus, actions, problèmes remontés. ⚠ <strong>« Suivi des performances »</strong> : sensible (données personnelles de salariés). Recommandation : <strong>transparence</strong> (chaque employé voit ce qui est mesuré sur lui), finalités écrites, accès limité (l'employé, son responsable direct, la RH), pas de mesure cachée, <strong>validation juridique et RH avant construction</strong> (voir §9).</li></ul>
+<hr>
+<h2>2. Analyse des impacts UI</h2>
+<div class="table-wrap"><table><thead><tr><th>Domaine</th><th>Changement</th><th>État</th></tr></thead><tbody>
+<tr><td>Jetons</td><td><code>--canvas</code>, <code>--shadow-panel</code>, <code>--selected-bg</code>, <code>--selected-bar</code> (clair et sombre)</td><td>✅</td></tr>
+<tr><td>Coque</td><td>Fond global + panneau principal arrondi ; menu latéral transparent sur le fond ; topbar dans le panneau</td><td>✅</td></tr>
+<tr><td>Tableaux</td><td>Ligne sélectionnée persistante, curseur « main », case d'en-tête, barre d'actions</td><td>✅</td></tr>
+<tr><td>Cartes</td><td>Carte d'opportunité sélectionnable, 6 colonnes, titre sur 2 lignes maximum, montant en police d'affichage</td><td>✅</td></tr>
+<tr><td>Menu</td><td>Pastille Investudy retirée ; « Opportunités » ; (prévu) rail compact</td><td>✅ / 📐</td></tr>
+<tr><td>Nouveaux gabarits</td><td>Écran d'authentification pas à pas, formulaire de mouvement de stock, éditeur de rapport, fiche incident, résultats de recherche groupés</td><td>📐</td></tr>
+<tr><td>Accessibilité</td><td>Contrastes recalculés pour le texte sur fond global ; sélection non portée par la couleur seule</td><td>✅</td></tr>
+</tbody></table></div>
+<p><strong>Contrastes mesurés (nouveaux jetons)</strong> : encre sur fond global 13,4 : 1 · <code>--ink-2</code> sur fond global 5,2 : 1 · encre sur ligne sélectionnée 14,2 : 1 · barre de sélection <code>#7A6355</code> sur blanc 5,6 : 1.</p>
+<hr>
+<h2>3. Écrans à modifier</h2>
+<div class="table-wrap"><table><thead><tr><th>Écran</th><th>Modification</th><th>Exigence</th></tr></thead><tbody>
+<tr><td>Tous (coque)</td><td>Fond global + panneau ; menu latéral sans pastille</td><td>EXD-01, 03</td></tr>
+<tr><td>Vue d'ensemble</td><td><strong>Devient le hub</strong> : navigation complète, recherche globale en grand, tuiles de modules, « à reprendre »</td><td>EXD-05</td></tr>
+<tr><td>Entreprises</td><td>Sélection persistante, barre d'actions</td><td>EXD-02</td></tr>
+<tr><td>Opportunités (ex-Pipeline)</td><td>Cartes 6 par ligne, sélection, bascule « Par étape », nouveau nom</td><td>EXD-02, 04</td></tr>
+<tr><td>Sécurité (Centre de confiance)</td><td>Sélection persistante des événements ; lien vers « Sessions »</td><td>EXD-02, 06</td></tr>
+<tr><td>Formation</td><td>Sélection persistante ; logo Investudy conservé dans l'en-tête</td><td>EXD-02, 03</td></tr>
+<tr><td>Agenda</td><td>Ajout des échéances de stock et des rapports à rendre (types d'événements)</td><td>EXD-07, 08</td></tr>
+<tr><td>Utilisateurs, Mon compte <em>(application)</em></td><td>Reprennent la sélection persistante ; « Mon compte » se structure en onglets Sécurité</td><td>EXD-02, 06</td></tr>
+<tr><td>Composants</td><td>Fiche mise à jour (sélection, cartes, panneau)</td><td>EXD-01, 02</td></tr>
+</tbody></table></div>
+<h2>4. Nouveaux écrans à créer</h2>
+<h3>4.1 Authentification et sessions (EXD-06) — 18 écrans</h3>
+<div class="table-wrap"><table><thead><tr><th>Réf.</th><th>Écran</th><th>Notes</th></tr></thead><tbody>
+<tr><td>A01</td><td>Connexion</td><td>Existe ; ajouter états erreur, verrouillage, limite de débit</td></tr>
+<tr><td>A02</td><td>Saisie du code MFA</td><td>Code à 6 chiffres + lien « code de secours »</td></tr>
+<tr><td>A03</td><td>Utiliser un code de secours</td><td>Format <code>XXXXX-XXXXX</code>, nombre restant</td></tr>
+<tr><td>A04</td><td>Activation du MFA (introduction)</td><td>Pourquoi, 3 étapes, obligatoire pour tous</td></tr>
+<tr><td>A05</td><td>Configuration MFA — <strong>QR code</strong> et clé manuelle</td><td>QR généré dans le navigateur</td></tr>
+<tr><td>A06</td><td>Confirmation du premier code</td><td>Erreur « code invalide »</td></tr>
+<tr><td>A07</td><td><strong>Codes de secours</strong> (affichage unique)</td><td>Copier, télécharger, case « conservés » obligatoire</td></tr>
+<tr><td>A08</td><td>Mot de passe oublié (saisie de l'adresse)</td><td></td></tr>
+<tr><td>A09</td><td><strong>E-mail envoyé</strong> (message identique pour toute adresse)</td><td>Rappel : 60 min, vérifier les indésirables</td></tr>
+<tr><td>A10</td><td>Réinitialisation du mot de passe</td><td>Règles visibles en direct, confirmation</td></tr>
+<tr><td>A11</td><td>Mot de passe modifié</td><td>« Toutes vos sessions ont été fermées »</td></tr>
+<tr><td>A12</td><td>Lien invalide ou expiré</td><td>Proposer un nouveau lien</td></tr>
+<tr><td>A13</td><td>Activation d'invitation</td><td>Choix du mot de passe</td></tr>
+<tr><td>A14</td><td>Compte verrouillé (message générique)</td><td>Sans détail exploitable</td></tr>
+<tr><td>A15</td><td>Trop de tentatives (limite atteinte)</td><td>Délai d'attente</td></tr>
+<tr><td>S01</td><td><strong>Sessions actives</strong></td><td>Appareil lisible, IP, risque, « cette session », bouton Révoquer</td></tr>
+<tr><td>S02</td><td><strong>Historique des connexions</strong></td><td>Date, résultat, IP, appareil (<strong>sans localisation</strong>) ; <em>dépend d'un nouvel endpoint</em></td></tr>
+<tr><td>S03</td><td><strong>Révocation</strong> : confirmation, « tout révoquer sauf celle-ci », confirmation MFA récent</td><td></td></tr>
+</tbody></table></div>
+<h3>4.2 Stocks (EXD-07) — 11 écrans</h3>
+<div class="table-wrap"><table><thead><tr><th>Réf.</th><th>Écran</th><th>Contenu</th></tr></thead><tbody>
+<tr><td>ST00</td><td><strong>Tableau de bord Stocks</strong></td><td>Stock total (valeur), ruptures, articles critiques, derniers mouvements, consommation par service</td></tr>
+<tr><td>ST01</td><td>Articles (liste)</td><td>Référence, catégorie, stock, seuil, statut (OK / critique / rupture)</td></tr>
+<tr><td>ST02</td><td>Fiche article</td><td>Stock, seuils, fournisseurs, historique, mouvements</td></tr>
+<tr><td>ST03</td><td>Catégories</td><td>Arborescence simple, nombre d'articles</td></tr>
+<tr><td>ST04</td><td>Fournisseurs (liste et fiche)</td><td>Contact, délais, articles fournis</td></tr>
+<tr><td>ST05</td><td><strong>Entrée de stock</strong></td><td>Bon de réception : fournisseur, lignes, quantités, pièce jointe</td></tr>
+<tr><td>ST06</td><td><strong>Sortie de stock</strong></td><td>Consommation interne : article, quantité, <strong>service / employé</strong>, motif</td></tr>
+<tr><td>ST07</td><td><strong>Inventaire</strong></td><td>Comptage, écarts, validation, mouvement de régularisation</td></tr>
+<tr><td>ST08</td><td><strong>Seuils d'alerte</strong></td><td>Seuil et stock de sécurité par article, destinataires</td></tr>
+<tr><td>ST09</td><td><strong>Mouvements</strong></td><td>Journal filtrable (type, article, période, auteur), <strong>non modifiable</strong></td></tr>
+<tr><td>ST10</td><td><strong>Historique / consommations internes</strong></td><td>Par article et par service, période, export</td></tr>
+</tbody></table></div>
+<h3>4.3 Reporting et incidents (EXD-08) — 12 écrans</h3>
+<div class="table-wrap"><table><thead><tr><th>Réf.</th><th>Écran</th><th>Contenu</th></tr></thead><tbody>
+<tr><td>R00</td><td><strong>Hub Reporting</strong></td><td>Rapports à rendre (échéances), incidents ouverts, derniers rapports</td></tr>
+<tr><td>R01</td><td>Rapports journaliers</td><td>Liste, statut (brouillon, soumis, validé)</td></tr>
+<tr><td>R02</td><td>Rapports hebdomadaires</td><td>idem</td></tr>
+<tr><td>R03</td><td>Rapports mensuels</td><td>idem</td></tr>
+<tr><td>R04</td><td>Rapports trimestriels</td><td>idem</td></tr>
+<tr><td>R05</td><td>Rapports annuels</td><td>idem</td></tr>
+<tr><td>R06</td><td><strong>Détail d'un rapport</strong></td><td>Données préremplies + commentaires ; export PDF</td></tr>
+<tr><td>R07</td><td><strong>Incidents</strong> (liste, filtres, statuts)</td><td></td></tr>
+<tr><td>R08</td><td><strong>Déclarer un incident</strong></td><td>Titre, gravité, module concerné, description, pièces</td></tr>
+<tr><td>R09</td><td><strong>Fiche incident</strong></td><td>Chronologie, <strong>attribution</strong>, statut, résolution, clôture</td></tr>
+<tr><td>R10</td><td><strong>Rapports des employés</strong> (vue responsable / RH)</td><td>Par employé et par période</td></tr>
+<tr><td>R11</td><td><strong>Rédiger mon rapport</strong> (vue employé)</td><td>Activités, compte rendu, actions suivies, problèmes remontés</td></tr>
+<tr><td>R12</td><td><strong>Suivi des performances</strong></td><td>⚠ sensible : voir §9 ; indicateurs transparents</td></tr>
+</tbody></table></div>
+<h3>4.4 Transverses</h3>
+<div class="table-wrap"><table><thead><tr><th>Réf.</th><th>Écran</th><th></th></tr></thead><tbody>
+<tr><td>H00</td><td><strong>Hub (Vue d'ensemble)</strong> avec navigation complète</td><td>EXD-05</td></tr>
+<tr><td>Q01</td><td><strong>Résultats de recherche globale</strong> (groupés par type)</td><td>EXD-05</td></tr>
+<tr><td>Q02</td><td>Palette de commandes ⌘K</td><td>EXD-05</td></tr>
+</tbody></table></div>
+<p><strong>Total</strong> : 18 + 11 + 12 + 3 = <strong>44 écrans à concevoir</strong>, dont <strong>11 existent déjà, au moins en partie, dans l'application</strong> (A01, A02, A05, A07 à A13, S01) : ils sont à <strong>habiller et compléter</strong>. <strong>33 sont entièrement nouveaux.</strong></p>
+<hr>
+<h2>5. Composants à modifier ou à créer</h2>
+<div class="table-wrap"><table><thead><tr><th>Composant</th><th>Action</th><th>Détail</th></tr></thead><tbody>
+<tr><td><strong>AppShell</strong></td><td>modifier</td><td>Fond global + panneau ; mode « hub » (navigation complète) et mode « module » (rail compact)</td></tr>
+<tr><td><strong>Sidebar</strong></td><td>modifier</td><td>Sans pastille Investudy ; variante rail (icônes, info-bulles)</td></tr>
+<tr><td><strong>Table</strong></td><td>modifier</td><td>Sélection persistante, case d'en-tête, barre d'actions, sélection conservée entre pages</td></tr>
+<tr><td><strong>BulkBar</strong></td><td>créer</td><td>« n sélectionnées » + actions + désélection</td></tr>
+<tr><td><strong>OpportunityCard</strong></td><td>modifier</td><td>Version compacte sélectionnable pour la grille de 6 ; états : repos, survol, sélectionnée, retard</td></tr>
+<tr><td><strong>CardGrid</strong></td><td>créer</td><td>Grille 6 / 4 / 3 / 2 / 1 colonnes avec ordre de lecture ligne par ligne</td></tr>
+<tr><td><strong>SegmentedControl</strong></td><td>créer</td><td>Cartes / Par étape ; Jour / Semaine / Mois</td></tr>
+<tr><td><strong>GlobalSearch</strong></td><td>créer</td><td>Champ + palette ⌘K + résultats groupés par type, droits respectés</td></tr>
+<tr><td><strong>ModuleTile</strong></td><td>créer</td><td>Grande tuile de module pour le hub</td></tr>
+<tr><td><strong>StepIndicator</strong></td><td>créer</td><td>Barre d'étapes (connexion, enrôlement MFA, réinitialisation)</td></tr>
+<tr><td><strong>OtpInput</strong></td><td>créer</td><td>6 cases, collage, annonce vocale</td></tr>
+<tr><td><strong>QrPanel / RecoveryCodes</strong></td><td>créer</td><td>QR + clé manuelle ; codes copiables, affichage unique</td></tr>
+<tr><td><strong>SessionCard</strong></td><td>créer</td><td>Appareil, IP, risque, dernière activité, révocation</td></tr>
+<tr><td><strong>StockLevelBar / ThresholdBadge</strong></td><td>créer</td><td>Niveau de stock vs seuil ; OK / critique / rupture</td></tr>
+<tr><td><strong>MovementForm</strong></td><td>créer</td><td>Entrée, sortie, régularisation (quantité, motif, pièce)</td></tr>
+<tr><td><strong>ReportEditor</strong></td><td>créer</td><td>Sections préremplies + commentaires, statut de validation</td></tr>
+<tr><td><strong>IncidentTimeline</strong></td><td>créer</td><td>Chronologie, attribution, changements de statut</td></tr>
+<tr><td><strong>PersonalDataNotice</strong></td><td>créer</td><td>Bandeau de transparence sur les vues « performances »</td></tr>
+</tbody></table></div>
+<hr>
+<h2>6. Navigation mise à jour</h2>
+<p><strong>Modèle hub + rail</strong> (EXD-05, proposition à confirmer).</p>
+<pre><code>HUB — Vue d&#x27;ensemble  (navigation complète + recherche globale + tuiles)
+│
+├─ ESPACE DE TRAVAIL
+│   ├─ Agenda
+│   ├─ Entreprises                 (Business Development)
+│   ├─ Opportunités                (Business Development)   ← ex-« Développement »
+│   └─ Formation                   (Training Management — logo Investudy dans l&#x27;en-tête de page)
+│
+├─ OPÉRATIONS
+│   ├─ Finance
+│   ├─ Ressources humaines
+│   ├─ Fiscalité
+│   └─ Stocks                      ← NOUVEAU  (articles, catégories, fournisseurs, entrées, sorties,
+│                                                inventaire, seuils, mouvements, historique)
+├─ PILOTAGE
+│   └─ Reporting                   ← NOUVEAU  (rapports périodiques, incidents, rapports des employés)
+│
+├─ GOUVERNANCE
+│   ├─ Administration              (utilisateurs, rôles)
+│   └─ Sécurité                    (centre de confiance, journal d&#x27;audit)
+│
+└─ COMPTE (menu du profil, en haut à droite)
+    ├─ Mon profil
+    ├─ Sécurité du compte          (mot de passe, second facteur, codes de secours)
+    ├─ Sessions actives            ← NOUVEAU écran
+    └─ Historique des connexions   ← NOUVEAU écran</code></pre>
+<p>Hors hub : rail compact (icônes), « ← Vue d'ensemble », sous-navigation du module en onglets, recherche ⌘K. Une <strong>page « Hub »</strong> ne remplace jamais le contrôle des droits : un module non autorisé <strong>n'apparaît pas</strong>.</p>
+<hr>
+<h2>7. Architecture des modules mise à jour</h2>
+<h3>7.1 Contextes métier</h3>
+<div class="table-wrap"><table><thead><tr><th>Contexte</th><th>Contenu</th><th>Produit</th><th>État</th></tr></thead><tbody>
+<tr><td><strong>Business Development</strong></td><td>Entreprises, contacts, <strong>opportunités</strong>, offres, relances, rendez-vous, agrément, ambassadeurs</td><td>CRM</td><td>Entreprises faites ; reste S4</td></tr>
+<tr><td><strong>Training Management</strong> (Investudy)</td><td>Catalogue, sessions, inscriptions, suivi pédagogique</td><td>CRM</td><td>S5</td></tr>
+<tr><td><strong>Finance</strong></td><td>Facturation, suivi (hors paiement CRM)</td><td>ERP</td><td>à venir</td></tr>
+<tr><td><strong>RH</strong></td><td>Salariés, congés, dossiers</td><td>ERP</td><td>à venir</td></tr>
+<tr><td><strong>Fiscalité</strong></td><td>Déclarations (Cameroun, OHADA, DGI, CNPS)</td><td>ERP</td><td>à venir</td></tr>
+<tr><td><strong>Administration</strong> (<code>iam</code>)</td><td>Utilisateurs, rôles, invitations</td><td>CRM</td><td>fait</td></tr>
+<tr><td><strong>Sécurité</strong></td><td>Audit, sessions, tentatives, <strong>incidents de sécurité</strong></td><td>CRM</td><td>audit fait ; sessions exposées ; <strong>historique à exposer</strong></td></tr>
+<tr><td><strong>Stocks</strong> <em>(nouveau)</em></td><td>Articles, catégories, fournisseurs, mouvements, inventaire, seuils</td><td><strong>ERP (Opérations)</strong></td><td>à décider</td></tr>
+<tr><td><strong>Reporting</strong> <em>(nouveau)</em></td><td>Rapports périodiques, <strong>incidents opérationnels</strong>, rapports des employés</td><td><strong>Transversal</strong> (lit CRM + ERP)</td><td>à décider</td></tr>
+<tr><td><strong>Agenda</strong> <em>(ajouté)</em></td><td>Événements, rappels</td><td>CRM</td><td>prévu S4.2b</td></tr>
+<tr><td><strong>Recherche</strong> <em>(transverse)</em></td><td>Index et point d'entrée <code>/search</code> respectant les droits</td><td>CRM puis ERP</td><td>à prévoir</td></tr>
+</tbody></table></div>
+<h3>7.2 Relations (événements, pas de partage de base — ADR-0005)</h3>
+<pre><code>Business Development ─ opportunité gagnée ───────────► Training Management
+Training Management ── session confirmée ─────────────► Agenda ; Finance (à facturer)
+Stocks ── seuil franchi ─────────────────────────────► Agenda ; Reporting (incident ?) ; Notifications
+Reporting ◄─ données agrégées ─ Business Development, Training, Stocks, Sécurité, RH
+Sécurité ── événement suspect ───────────────────────► Reporting (incident de sécurité)
+RH ── effectifs, absences ───────────────────────────► Reporting (rapports des employés)</code></pre>
+<h3>7.3 Impact sur le modèle de droits</h3>
+<p>Nouvelles permissions (<code>module.ressource.action</code>, mêmes portées Propre / Équipe / Tous) : <code>stock.article.<em></code>, <code>stock.category.</em></code>, <code>stock.supplier.<em></code>, <code>stock.movement.create|read</code>, <code>stock.inventory.</em></code>, <code>stock.threshold.manage</code> · <code>report.periodic.read|write|validate</code>, <code>incident.create|read|assign|resolve</code>, <code>report.employee.read|write</code>, <code>report.performance.read</code> (<strong>la plus restreinte</strong>) · <code>search.use</code>, <code>iam.session.read</code> (existe) + <code>iam.login_history.read</code> (à créer). <strong>Rôles</strong> : « Logistique / Approvisionnement » (gestion des stocks) pourrait être nécessaire : à décider (§9).</p>
+<h3>7.4 Impact sur les données</h3>
+<p>Nouveaux schémas : <code>stock</code> (articles, catégories, fournisseurs, <strong>mouvements en ajout seul</strong>, inventaires, seuils) ; <code>reporting</code> (modèles de rapport, rapports, incidents, événements d'incident, rapports d'employé). Les mouvements de stock reprennent la règle du journal d'audit : <strong>immuables</strong>, corrigés par contre-mouvement.</p>
+<h3>7.5 Impact sur le plan (proposé, à valider)</h3>
+<div class="table-wrap"><table><thead><tr><th>Ajout</th><th>Position proposée</th></tr></thead><tbody>
+<tr><td>Habillage H1–H3 (style, coque, écrans d'accès)</td><td>avant S4.1</td></tr>
+<tr><td><strong>Hub, recherche globale, rail</strong></td><td>avec H1 (après confirmation d'EXD-05)</td></tr>
+<tr><td>Écrans d'authentification restants + sessions + <strong>endpoint d'historique des connexions</strong></td><td>avec H2 (backend minimal inclus)</td></tr>
+<tr><td><strong>Reporting et incidents</strong></td><td>après S6.1 (indicateurs), car ils consomment les données commerciales</td></tr>
+<tr><td><strong>Stocks</strong></td><td>début de la phase ERP (Opérations)</td></tr>
+</tbody></table></div>
+<blockquote><p><strong>Commentaire</strong> — Les exigences 5 à 8 ajoutent <strong>33 écrans nouveaux</strong> (et 11 à habiller) et deux contextes métier au périmètre. Cela <strong>allonge sensiblement le plan</strong> ; je ne les ai pas insérés avant S4 sans votre arbitrage.</p></blockquote>
+<hr>
+<h2>8. Recommandations supplémentaires</h2>
+<ol><li><strong>Un seul centre de notifications et de tâches</strong> : alertes de stock, incidents attribués, rapports à rendre, relances en retard, sessions suspectes. Il alimente l'Agenda et le tableau de bord (évite un « widget d'alerte » par module).</li><li><strong>Unifier la notion d'incident</strong> : un cycle de vie commun (déclaré → attribué → en cours → résolu → clos) avec deux types, <strong>opérationnel</strong> et <strong>sécurité</strong> ; un incident de sécurité peut être créé depuis un événement du centre de confiance.</li><li><strong>Réutiliser l'audit</strong> pour les mouvements de stock : même principe d'immuabilité, même tableau de consultation, mêmes exports tracés.</li><li><strong>Relier le module Documents (S3.6)</strong> : bons de réception, factures fournisseurs, pièces d'incident, rapports PDF.</li><li><strong>Préremplir les rapports</strong> à partir des données du système plutôt que demander une double saisie ; garder le commentaire humain pour l'analyse.</li><li><strong>Gouvernance des données de performance</strong> : finalités écrites, transparence pour l'employé, accès restreint, durée de conservation, <strong>avis juridique et RH avant construction</strong> ; pas de mesure cachée.</li><li><strong>Recherche globale prudente</strong> : elle ne doit jamais élargir les droits (un résultat qu'on ne peut pas ouvrir n'apparaît pas) ; les exports depuis la recherche sont tracés.</li><li><strong>Exigences d'accessibilité du hub</strong> : lien d'évitement, ordre de tabulation, rail avec info-bulles accessibles, navigation clavier dans les résultats.</li><li><strong>Étendre les jetons</strong> au prochain tour : états « sélectionné », « en alerte », « critique », « résolu », pour que stocks, incidents et rapports parlent la même langue visuelle que le reste.</li><li><strong>Prioriser par valeur</strong> : dans Stocks et Reporting, commencer par <strong>le tableau de bord et un seul parcours</strong> (sortie de stock ; déclaration d'incident) avant l'exhaustivité.</li><li><strong>Mesurer</strong> : critères de réussite par exigence (ex. « retrouver une entreprise en moins de 5 secondes depuis le hub »).</li></ol>
+<hr>
+<h2>9. Décisions et informations à me confirmer</h2>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Question</th><th>Pourquoi</th><th>Ma proposition</th></tr></thead><tbody>
+<tr><td>1</td><td><strong>EXD-05</strong> : le motif <strong>hub + rail compact + ⌘K</strong> convient-il, ou voulez-vous <strong>aucune navigation</strong> hors du hub ?</td><td>Impact majeur sur l'efficacité quotidienne et l'accessibilité</td><td>Hub + rail compact</td></tr>
+<tr><td>2</td><td><strong>Stocks</strong> : relèvent-ils du <strong>produit CRM</strong> ou de l'<strong>ERP</strong> (ADR-0005) ? Un seul site ? Quelle valorisation (coût moyen, premier entré premier sorti) ? Qui valide les sorties ?</td><td>Détermine le contexte, la base et le calendrier</td><td>ERP (Opérations), un site, coût moyen pondéré, sortie validée par le responsable de service</td></tr>
+<tr><td>3</td><td><strong>Rôle « Logistique »</strong> à créer ?</td><td>Droits <code>stock.*</code></td><td>Oui, rôle dédié</td></tr>
+<tr><td>4</td><td><strong>Reporting</strong> : qui doit rédiger quels rapports, à quelle fréquence, avec quel circuit de validation ?</td><td>Définit les modèles et les échéances</td><td>Journalier : chargés de compte ; hebdomadaire : responsables ; mensuel et au-delà : direction</td></tr>
+<tr><td>5</td><td><strong>Rapports des employés / performances</strong> : finalités, qui voit quoi, durée de conservation ; <strong>validation juridique et RH</strong></td><td>Données personnelles de salariés</td><td>Transparence, accès employé + responsable + RH, avis juridique avant construction</td></tr>
+<tr><td>6</td><td><strong>Incidents</strong> : catégories, gravités, délais de résolution ; distinguer sécurité et opérationnel ?</td><td>Cycle de vie et tableaux de bord</td><td>Deux types, un cycle commun</td></tr>
+<tr><td>7</td><td><strong>Historique des connexions</strong> : durée affichée (30 jours ?), pas de localisation</td><td>Nouvel endpoint et confidentialité</td><td>90 jours, IP et appareil seulement</td></tr>
+<tr><td>8</td><td><strong>Ordre de réalisation</strong> : habillage + authentification d'abord, puis S4, puis Reporting et Stocks ?</td><td>Le périmètre augmente de 44 écrans</td><td>Oui</td></tr>
+<tr><td>9</td><td><strong>Ordre des cartes d'opportunités</strong></td><td>Lisibilité</td><td>Prochaine action la plus proche, configurable</td></tr>
+</tbody></table></div>
+<hr>
+<h2>10. Ce qui est appliqué, vérifié, et ce qui ne l'est pas</h2>
+<p><strong>Appliqué et vérifié visuellement</strong> (captures Edge, clair et sombre, dans <code>docs/design/screens/</code>) : EXD-01 (panneau sur fond global), EXD-02 (deux lignes d'entreprises et deux cartes d'opportunités sélectionnées de façon persistante, avec barre d'actions), EXD-03 (pastille supprimée), EXD-04 (renommage, 18 cartes en 3 lignes de 6, bascule « Par étape »). <strong>Mesuré</strong> : contrastes des nouveaux jetons (§2). <strong>Non appliqué</strong> : EXD-05 à EXD-08 (spécifiés ci-dessus, en attente de vos réponses). <strong>Non vérifié</strong> : comportement de la sélection avec pagination réelle ; lecteur d'écran ; rendu Safari / Firefox.</p></main></body></html>

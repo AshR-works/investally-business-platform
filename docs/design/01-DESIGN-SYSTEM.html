@@ -21,8 +21,10 @@ th{background:var(--code)}
 hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
 nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 @media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
-</style></head><body><main><nav class="top">Investally Business Platform — design · <a href="01-DESIGN-SYSTEM.html">Design system</a> · <a href="02-SPECIFICATIONS-FRONTEND.html">Spécifications frontend</a> · <a href="prototype/index.html">Prototype</a></nav><h1>Investally Business Platform — Direction artistique et Design System</h1>
-<p><strong>Version</strong> : 0.1 (proposition à valider) · <strong>Date</strong> : 2026-10-21 <strong>Références fournies</strong> : une capture d'écran « Centre de confiance » (style visuel), le logo Investally (versions rectangle et carrée), le logo Investudy. <strong>Prototype interactif</strong> : <a href="prototype/index.html">prototype/index.html</a> (à ouvrir via un petit serveur local, voir §9) · <strong>Captures</strong> : dossier <a href="screens/">screens/</a></p>
+</style></head><body><main><nav class="top">Investally Business Platform — design · <a href="01-DESIGN-SYSTEM.html">Design system</a> · <a href="02-SPECIFICATIONS-FRONTEND.html">Spécifications frontend</a> · <a href="03-EXIGENCES-DE-CONCEPTION.html">Exigences</a> · <a href="04-ANALYSE-D-IMPACT.html">Analyse d&#8217;impact</a> · <a href="prototype/index.html">Prototype</a></nav><h1>Investally Business Platform — Direction artistique et Design System</h1>
+<p><strong>Version</strong> : 0.2 · <strong>Date</strong> : 2026-10-21</p>
+<blockquote><p><strong>Les exigences de conception <a href="03-EXIGENCES-DE-CONCEPTION.html">EXD-01 à EXD-09</a> priment sur ce document</strong> (profondeur du panneau, sélection persistante, pastille Investudy supprimée, « Développement » renommé « Opportunités », navigation par hub, nouveaux modules Stocks et Reporting, parcours d'authentification complets). Voir l'<a href="04-ANALYSE-D-IMPACT.html">analyse d'impact</a>.</p></blockquote>
+<p><strong>Références fournies</strong> : une capture d'écran « Centre de confiance » (style visuel), le logo Investally (versions rectangle et carrée), le logo Investudy. <strong>Prototype interactif</strong> : <a href="prototype/index.html">prototype/index.html</a> (à ouvrir via un petit serveur local, voir §9) · <strong>Captures</strong> : dossier <a href="screens/">screens/</a></p>
 <blockquote><p><strong>Ce document ne remplace pas la validation du prototype.</strong> Rien n'est encore appliqué à l'application : vous validez d'abord le style ici, puis je l'applique aux écrans existants (voir §10).</p></blockquote>
 <hr>
 <h2>1. Direction artistique</h2>
@@ -62,7 +64,7 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <hr>
 <h2>3. Architecture de l'information</h2>
 <h3>3.1 Navigation principale (barre latérale)</h3>
-<pre><code>ESPACE DE TRAVAIL      Vue d&#x27;ensemble · Agenda (badge) · Entreprises · Développement (badge) · Formation
+<pre><code>ESPACE DE TRAVAIL      Vue d&#x27;ensemble · Agenda (badge) · Entreprises · **Opportunités** (badge, ex-« Développement ») · Formation
 OPÉRATIONS             Finance · Ressources humaines · Fiscalité        (ERP, gabarit réservé)
 GOUVERNANCE            Administration · Sécurité
 Bas de barre           Carte Investudy (accès rapide) · profil et déconnexion</code></pre>
@@ -72,7 +74,7 @@ Bas de barre           Carte Investudy (accès rapide) · profil et déconnexion
 <div class="table-wrap"><table><thead><tr><th>Menu</th><th>Permission de lecture</th><th>Rôles typiques</th></tr></thead><tbody>
 <tr><td>Vue d'ensemble</td><td>tableau de bord du rôle</td><td>tous</td></tr>
 <tr><td><strong>Agenda</strong></td><td>agenda personnel : <strong>tous les rôles</strong> ; agenda d'équipe : portée Équipe ou Tous</td><td>tous (périmètre = le sien, celui de son équipe, ou tous)</td></tr>
-<tr><td>Entreprises, Développement</td><td><code>bd.company.read</code>, <code>bd.*</code></td><td>Chargé de compte, Responsable commercial, Direction, Support, Finance</td></tr>
+<tr><td>Entreprises, Opportunités</td><td><code>bd.company.read</code>, <code>bd.*</code></td><td>Chargé de compte, Responsable commercial, Direction, Support, Finance</td></tr>
 <tr><td>Formation</td><td><code>training.*</code></td><td>Responsable formation, Formateur, Direction</td></tr>
 <tr><td>Finance / RH / Fiscalité</td><td>modules ERP</td><td>rôles correspondants (plus tard)</td></tr>
 <tr><td>Administration</td><td><code>iam.user.read</code></td><td>Super administrateur</td></tr>
