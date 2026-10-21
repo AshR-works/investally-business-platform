@@ -66,7 +66,8 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 ├── components/
 │   ├── ui/                         composants de base : Button, Field, Badge, Avatar, Tabs, Table, Modal, Toast, OtpInput
 │   ├── layout/                     AppShell, Sidebar, Topbar, PageHeader, Hero, KpiCard
-│   └── business/                   StatusBadge, OpportunityCard, CompanyRow, AuditRow, SessionCard, Funnel
+│   └── business/                   StatusBadge, OpportunityCard, CompanyRow, AuditRow, SessionCard, Funnel,
+│                                   WeekGrid, MonthGrid, MiniCalendar, EventBlock, AgendaFilters, EventDialog
 ├── lib/
 │   ├── design/status.ts            correspondance statut métier → variante de badge (une seule source)
 │   └── …                           (existant : api, auth-context, permissions)
@@ -84,6 +85,11 @@ export const OPPORTUNITY_STATUS: Record&lt;OpportunityStage, { label: string; to
 // components/layout/Hero.tsx
 export function Hero(props: { label: string; value: string; trend?: { text: string; positive: boolean };
                               series: number[]; aside?: { label: string; value: string; hint?: string } }) {}
+
+// components/business/WeekGrid.tsx : jours × heures ; les événements sont positionnés par calcul (début, durée)
+type AgendaEvent = { id: string; type: &#x27;rdv&#x27; | &#x27;relance&#x27; | &#x27;formation&#x27; | &#x27;echeance&#x27; | &#x27;interne&#x27;; title: string;
+                     start: Date; end: Date; companyId?: string; location?: string };
+// lib/design/agenda.ts : table type → teinte (une seule source) ; conversion en pixels (1 h = 56 px) ; chevauchements en colonnes
 
 // components/ui/Table.tsx : lignes sélectionnables, tri, colonnes masquables, états vide / chargement / erreur</code></pre>
 <p><strong>Règles de code</strong> : un composant = un fichier, une phrase de commentaire sur son rôle (comme le reste du dépôt), aucune couleur écrite en dur, aucun <code>dangerouslySetInnerHTML</code>.</p>
@@ -119,6 +125,7 @@ export function Hero(props: { label: string; value: string; trend?: { text: stri
 <tr><td><strong>H1 — Fondations</strong></td><td>Tailwind, jetons, polices hébergées, logos, coque (barre latérale, barre supérieure), thème clair/sombre</td><td>page de référence + captures</td></tr>
 <tr><td><strong>H2 — Écrans d'accès</strong></td><td>Connexion, MFA (QR, codes), mot de passe oublié, réinitialisation, invitation</td><td>parcours réels rejoués</td></tr>
 <tr><td><strong>H3 — Écrans connectés</strong></td><td>Entreprises, Utilisateurs, Mon compte, fenêtres</td><td>parcours réels rejoués</td></tr>
+<tr><td><strong>Agenda (avec S4.2–S4.3)</strong></td><td>Module <code>agenda</code> côté API (événements, rappels, droits Propre/Équipe/Tous, audit) + écrans semaine, mois et jour, liste d'accessibilité, création liée à une entreprise ou à une opportunité</td><td>recette dédiée ; synchronisation Outlook ensuite</td></tr>
 <tr><td><strong>S4+</strong></td><td>Les écrans métier naissent directement dans ce système</td><td>recettes de chaque sprint</td></tr>
 </tbody></table></div>
 <h2>11. Risques</h2>
@@ -126,5 +133,6 @@ export function Hero(props: { label: string; value: string; trend?: { text: stri
 <tr><td>Tailwind v4 / Next.js 16 très récents</td><td>Versions épinglées ; essai isolé avant migration</td></tr>
 <tr><td>Logo reconstitué ≠ officiel</td><td>Remplacer par les SVG officiels avant toute mise en ligne</td></tr>
 <tr><td>Régression de comportement pendant l'habillage</td><td><strong>Aucune logique modifiée</strong> ; tests existants (24) + parcours réels rejoués</td></tr>
+<tr><td>Agenda : chevauchements, fuseaux horaires, événements récurrents</td><td>Stockage en <strong>UTC</strong> (règle déjà adoptée), affichage Africa/Douala ; chevauchements en colonnes ; récurrence <strong>hors première version</strong></td></tr>
 <tr><td>Dérive visuelle au fil des sprints</td><td>Composants uniques, table des statuts unique, vérification de contraste automatisée</td></tr>
 </tbody></table></div></main></body></html>

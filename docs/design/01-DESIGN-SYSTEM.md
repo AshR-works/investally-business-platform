@@ -43,10 +43,10 @@
 
 | Persona | Rôle(s) du CRM | Ce qu'il fait chaque jour | Écrans clés |
 |---|---|---|---|
-| **Chargé de compte** | `ACCOUNT_MANAGER` | Relances, rendez-vous, offres, inscriptions | Mes opportunités, À faire aujourd'hui, fiche entreprise |
+| **Chargé de compte** | `ACCOUNT_MANAGER` | Relances, rendez-vous, offres, inscriptions | **Agenda**, mes opportunités, À faire aujourd'hui, fiche entreprise |
 | **Responsable commercial** | `HEAD_OF_SALES` | Pilote l'équipe et le pipeline global | Pipeline équipe, conversion, performances par personne |
 | **Responsable formation** | `TRAINING_MANAGER` | Sessions, formateurs, inscriptions, présences, certifications | Sessions à venir, remplissage, présence, apprenants |
-| **Formateur** | `TRAINER` | Anime ses sessions, saisit les présences et évaluations | Mes sessions, feuille de présence |
+| **Formateur** | `TRAINER` | Anime ses sessions, saisit les présences et évaluations | **Agenda** (ses sessions), feuille de présence |
 | **Direction générale** | `DIRECTION` | Lit les résultats, décide | Vue d'ensemble, pipeline pondéré, inscriptions, alertes |
 | **Finance** | `FINANCE` | Prépare la facturation (périmètre CRM limité) | Agréments et inscriptions à facturer |
 | **RH** / **Fiscalité** | `HR`, `TAX` | Modules ERP à venir | Gabarit réservé |
@@ -60,7 +60,7 @@
 
 ### 3.1 Navigation principale (barre latérale)
 ```
-ESPACE DE TRAVAIL      Vue d'ensemble · Entreprises · Développement (badge) · Formation
+ESPACE DE TRAVAIL      Vue d'ensemble · Agenda (badge) · Entreprises · Développement (badge) · Formation
 OPÉRATIONS             Finance · Ressources humaines · Fiscalité        (ERP, gabarit réservé)
 GOUVERNANCE            Administration · Sécurité
 Bas de barre           Carte Investudy (accès rapide) · profil et déconnexion
@@ -73,6 +73,7 @@ Un menu n'apparaît que si l'utilisateur détient la permission de lecture corre
 | Menu | Permission de lecture | Rôles typiques |
 |---|---|---|
 | Vue d'ensemble | tableau de bord du rôle | tous |
+| **Agenda** | agenda personnel : **tous les rôles** ; agenda d'équipe : portée Équipe ou Tous | tous (périmètre = le sien, celui de son équipe, ou tous) |
 | Entreprises, Développement | `bd.company.read`, `bd.*` | Chargé de compte, Responsable commercial, Direction, Support, Finance |
 | Formation | `training.*` | Responsable formation, Formateur, Direction |
 | Finance / RH / Fiscalité | modules ERP | rôles correspondants (plus tard) |
@@ -150,6 +151,10 @@ Ratio calculé sur la paire texte / fond. **AA** : ≥ 4,5 : 1 (texte courant), 
 | **Fenêtre modale** | confirmation, saisie de code MFA | ouverture, fermeture | Focus piégé, `Échap` ferme, retour du focus |
 | **Menu latéral** | section, entrée, entrée active, badge | survol, actif (`aria-current`) | Repliable en tiroir sur mobile |
 | **Recherche globale** | `⌘K` | focus, résultats | Palette de commandes (étape ultérieure) |
+| **Agenda** (semaine, mois) | vue semaine (lun.–ven., 8 h–18 h), vue mois (5 semaines), vue jour *(à venir)* | aujourd'hui, ligne « maintenant », événement, survol, focus, masqué par filtre | Chaque événement est un **bouton** avec libellé complet ; voir §8 pour les limites |
+| **Mini-calendrier** | mois en cours, semaine surlignée, points = jours occupés | aujourd'hui, semaine active, hors mois | Navigation par boutons « mois précédent/suivant » |
+| **Filtres d'agenda** | cases à cocher par type (rendez-vous, relances, formations, échéances, interne) | coché, décoché | Couleur **et** libellé ; un type masqué disparaît des deux vues |
+| **Fenêtre « Nouvel événement »** | titre, type, entreprise liée, date, début, fin, rappel | ouverture, erreur, enregistrement | Focus piégé, `Échap` ferme, retour du focus au bouton |
 | **Notification / toast** | succès, erreur, information | apparition, disparition | `role="status"` ; les erreurs restent jusqu'à lecture |
 
 ### 5.2 Composants métier
@@ -162,6 +167,8 @@ Ratio calculé sur la paire texte / fond. **AA** : ≥ 4,5 : 1 (texte courant), 
 | **Ligne d'entreprise** | Liste des entreprises | logo à initiales, secteur, responsable, statut, valeur, dernière activité |
 | **Ligne d'événement d'audit** | Centre de confiance | événement, utilisateur, origine, type, date |
 | **Carte de session** | « Mes sessions » | appareil lisible, IP, risque, dernière activité, bouton Révoquer |
+| **Événement d'agenda** | Un rendez-vous, une relance, une session ou une échéance | heure, titre, entreprise ou session liée, lieu / lien visio, rappel, type (5 teintes) |
+| **Liste « Aujourd'hui »** | Ce qui m'attend aujourd'hui | heure, titre, lieu, participants |
 | **Bandeau de l'agrément** | Suivi de la promesse de paiement | places, montant, validité, état |
 
 ### 5.3 Correspondance des statuts (une seule palette pour toute l'application)
@@ -172,6 +179,7 @@ Ratio calculé sur la paire texte / fond. **AA** : ≥ 4,5 : 1 (texte courant), 
 | Compte utilisateur | Actif · Invitation en attente · Verrouillé · Désactivé | succès · attention · danger · neutre |
 | Session de formation | Planifiée · Agrément attendu · Confirmée · Terminée · Annulée | neutre · attention · succès · neutre · danger |
 | Audit | Connexion · Libre-service · Administration · Sécurité | succès · information · attention · danger |
+| **Agenda** (type d'événement) | Rendez-vous client · Relance · Formation · Échéance · Interne | information · attention · succès · danger · neutre (liseré taupe) |
 
 ---
 
@@ -181,7 +189,7 @@ Ratio calculé sur la paire texte / fond. **AA** : ≥ 4,5 : 1 (texte courant), 
 |---|---|---|---|
 | **Direction** | Pipeline pondéré (XAF) · Opportunités actives · Taux de conversion · Inscrits Investudy | Carte héros : pipeline sur 12 mois | Alertes : relances en retard, agréments en attente |
 | **Responsable commercial** | Pipeline équipe · Conversion par étape · Opportunités sans action | Entonnoir + barres par chargé de compte | Opportunités bloquées, dérogations « RDV décideur » |
-| **Chargé de compte** | Mes opportunités · Mes relances · Mon objectif | Mon pipeline (kanban) | **À faire aujourd'hui** (relances, rendez-vous) |
+| **Chargé de compte** | Mes opportunités · Mes relances · Mon objectif | Mon pipeline (kanban) | **À faire aujourd'hui** (relances, rendez-vous), lien **Ouvrir l'agenda** |
 | **Responsable formation** | Sessions à venir · Places confirmées · Présence moyenne · Certifiés | Remplissage par session | Sessions sans formateur, agréments à confirmer |
 | **Formateur** | Mes sessions · Apprenants | Calendrier | Feuilles de présence à saisir |
 | **Finance** | Agréments à facturer · Inscriptions confirmées | — | Liste de préparation de facturation |
@@ -199,6 +207,9 @@ Ratio calculé sur la paire texte / fond. **AA** : ≥ 4,5 : 1 (texte courant), 
 | **Action sensible** | Bouton → **fenêtre « Confirmez votre identité »** (code) → action | Une seule question pour plusieurs actions |
 | **Pipeline** | Prospection → RDV décideur → Offre → Accord de principe → Agrément → Inscrit | Règle « RDV décideur avant accord de principe » : blocage expliqué, dérogation tracée |
 | **Agrément** | Accord de principe → saisie (places, montant, validité) → événement vers Investudy | Statut visible sur la fiche et sur la session liée |
+| **Planifier un rendez-vous** | Fiche entreprise ou opportunité → « Planifier » → fenêtre *Nouvel événement* préremplie (entreprise liée) → l'événement apparaît dans l'agenda et dans « À faire aujourd'hui » | Le **rendez-vous décideur** requis avant l'accord de principe se crée ici ; son achèvement débloque l'étape du pipeline |
+| **Relance planifiée** | Offre envoyée → relance automatique proposée à J+3 → événement « Relance » | Une relance en retard remonte en rouge sur le tableau de bord |
+| **Session de formation** | Création d'une session (Investudy) → événements « Formation » pour le formateur et le responsable | Un formateur ne voit **que** ses sessions (portée Propre) |
 | **Administration** | Liste → invitation / rôles / désactivation / réinitialisations | Confirmation explicite, résultat annoncé (`role="status"`) |
 
 ---
@@ -217,6 +228,8 @@ Ratio calculé sur la paire texte / fond. **AA** : ≥ 4,5 : 1 (texte courant), 
 | 2.3.3 / mouvement | `prefers-reduced-motion` respecté | ✅ |
 | Thème | clair, sombre, **suit l'appareil**, choix mémorisé | ✅ |
 | Lecteur d'écran | non éprouvé (aucun lecteur utilisé) | ⏳ à tester en implémentation |
+| **Agenda** : alternative textuelle | la grille horaire n'est pas un tableau : en production, **vue liste** équivalente (chronologique, par jour) et navigation par flèches entre événements ; la ligne « maintenant » porte une étiquette lisible | ⏳ prototype visuel seulement |
+| **Agenda** : couleur seule | type d'événement = **teinte + liseré + libellé** dans le titre | ✅ |
 
 **Limites** : audit réalisé sur le prototype, par mesure de contraste et lecture du balisage, pas par des utilisateurs ni un lecteur d'écran.
 
@@ -228,39 +241,25 @@ Le prototype est un dossier statique (`prototype/`). Pour l'ouvrir :
 cd docs/design/prototype
 python -m http.server 8099
 ```
-puis `http://127.0.0.1:8099/index.html` — liens directs : `#login`, `#dashboard`, `#companies`, `#pipeline`, `#formation`, `#security`, `#components` ; thème sombre : `?theme=dark#dashboard`. Aucune donnée réelle ; les noms d'entreprises sont fictifs.
+puis `http://127.0.0.1:8099/index.html` — liens directs : `#login`, `#dashboard`, `#agenda`, `#agenda-mois`, `#companies`, `#pipeline`, `#formation`, `#security`, `#components` ; thème sombre : `?theme=dark#dashboard`. Aucune donnée réelle ; les noms d'entreprises sont fictifs.
 
 ---
 
-## 9 bis. Aperçus du prototype
+## 9 bis. Aperçus du prototype (tous les écrans, clair et sombre)
 
-**Connexion** (le même gabarit sert au mot de passe oublié, à la réinitialisation et à l'invitation)
+Dossier : `docs/design/screens/` — chaque écran existe en version claire et en version sombre (`…-sombre.png`).
 
-![Connexion](screens/01-connexion.png)
-
-**Vue d'ensemble — Direction** (carte héros, indicateurs, entonnoir, tâches du jour)
-
-![Vue d'ensemble](screens/02-vue-densemble.png)
-
-**Entreprises** (liste avec onglets à compteurs, filtres, badges de statut)
-
-![Entreprises](screens/03-entreprises.png)
-
-**Pipeline** (kanban des opportunités)
-
-![Pipeline](screens/04-pipeline.png)
-
-**Formation** (logo Investudy dans l'en-tête de page)
-
-![Formation](screens/05-formation.png)
-
-**Centre de confiance** (reprise de la capture de référence avec nos données d'audit)
-
-![Sécurité](screens/06-securite.png)
-
-**Thème sombre**
-
-![Mode sombre](screens/08-mode-sombre.png)
+| Écran | Thème clair | Thème sombre |
+|---|---|---|
+| **Connexion** (même gabarit pour mot de passe oublié, réinitialisation, invitation) | ![Connexion](screens/01-connexion.png) | ![Connexion sombre](screens/01-connexion-sombre.png) |
+| **Vue d'ensemble** — Direction | ![Vue d'ensemble](screens/02-vue-densemble.png) | ![Vue d'ensemble sombre](screens/02-vue-densemble-sombre.png) |
+| **Agenda** — vue semaine | ![Agenda semaine](screens/03-agenda-semaine.png) | ![Agenda semaine sombre](screens/03-agenda-semaine-sombre.png) |
+| **Agenda** — vue mois | ![Agenda mois](screens/04-agenda-mois.png) | ![Agenda mois sombre](screens/04-agenda-mois-sombre.png) |
+| **Entreprises** | ![Entreprises](screens/05-entreprises.png) | ![Entreprises sombre](screens/05-entreprises-sombre.png) |
+| **Pipeline** | ![Pipeline](screens/06-pipeline.png) | ![Pipeline sombre](screens/06-pipeline-sombre.png) |
+| **Formation** (logo Investudy) | ![Formation](screens/07-formation.png) | ![Formation sombre](screens/07-formation-sombre.png) |
+| **Centre de confiance** | ![Sécurité](screens/08-securite.png) | ![Sécurité sombre](screens/08-securite-sombre.png) |
+| **Composants** | ![Composants](screens/09-composants.png) | ![Composants sombre](screens/09-composants-sombre.png) |
 
 ---
 
@@ -285,10 +284,13 @@ Détails techniques (Tailwind, structure des fichiers, polices, sécurité CSP, 
 | 4 | **Thème sombre** | Oui, en plus du clair | Confort ; demandé en usage prolongé |
 | 5 | **Libellés « Investally Group › Douala »** | Sélecteur d'organisation et de site | À confirmer : plusieurs sites/pays prévus ? (la capture montre « Abidjan ») |
 | 6 | **Devise** | XAF affichée en millions (« 184 M ») avec détail au survol | Lisibilité des gros montants |
+| 8 | **Agenda : périmètre** | Agenda **personnel** pour tous ; agenda **d'équipe** pour le Responsable commercial (portée Équipe) et la Direction (Tous) ; 5 types d'événements | Même modèle de droits que le reste du CRM ; à confirmer : un salarié voit-il l'agenda de ses collègues (disponibilités) ? |
+| 9 | **Agenda : synchronisation Outlook / Microsoft 365** | **Dans un second temps**, après la première version autonome | Elle exige des permissions de calendrier supplémentaires sur l'application Microsoft 365 (en plus de l'envoi d'e-mails, pas encore fourni) : décision et accès à prévoir |
+| 10 | **Agenda : invitations aux clients** | Envoi d'une invitation (.ics) par e-mail au contact, **à valider** | Ajoute un envoi externe : à encadrer comme les autres e-mails (tracé, jamais de données sensibles) |
 | 7 | **Dossier de références PDF** (`C:\dev\external ressources\*.pdf`, une quarantaine de maquettes : connexion, tableau de bord, projets, clients, leads…) | **Non utilisé** | Vous m'avez demandé de m'inspirer de la capture et du logo ; ces PDF semblent provenir d'un kit tiers. Dites-moi s'ils doivent servir de référence (et si vous détenez leur licence) |
 
 ---
 
 ## 12. Ce qui est vérifié, ce qui ne l'est pas
-**Vérifié** : le prototype s'affiche (7 écrans, clair et sombre, mobile) dans un navigateur réel ; tous les contrastes de texte du §4.1 ont été **calculés** ; les polices sont celles du fichier (licence OFL) ; aucune ressource externe n'est chargée.
+**Vérifié** : le prototype s'affiche (8 écrans, clair et sombre, mobile) dans un navigateur réel ; tous les contrastes de texte du §4.1 ont été **calculés** ; les polices sont celles du fichier (licence OFL) ; aucune ressource externe n'est chargée.
 **Non vérifié** : rendu sur Safari et Firefox ; lecteur d'écran ; comportement avec de vraies données volumineuses ; lisibilité de la baseline du logo (« SIMPLIFIER, CONNECTER, INVESTIR. ») dans la barre latérale à petite taille.

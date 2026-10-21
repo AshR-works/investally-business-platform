@@ -57,7 +57,8 @@ apps/crm-web/
 ├── components/
 │   ├── ui/                         composants de base : Button, Field, Badge, Avatar, Tabs, Table, Modal, Toast, OtpInput
 │   ├── layout/                     AppShell, Sidebar, Topbar, PageHeader, Hero, KpiCard
-│   └── business/                   StatusBadge, OpportunityCard, CompanyRow, AuditRow, SessionCard, Funnel
+│   └── business/                   StatusBadge, OpportunityCard, CompanyRow, AuditRow, SessionCard, Funnel,
+│                                   WeekGrid, MonthGrid, MiniCalendar, EventBlock, AgendaFilters, EventDialog
 ├── lib/
 │   ├── design/status.ts            correspondance statut métier → variante de badge (une seule source)
 │   └── …                           (existant : api, auth-context, permissions)
@@ -78,6 +79,11 @@ export const OPPORTUNITY_STATUS: Record<OpportunityStage, { label: string; tone:
 // components/layout/Hero.tsx
 export function Hero(props: { label: string; value: string; trend?: { text: string; positive: boolean };
                               series: number[]; aside?: { label: string; value: string; hint?: string } }) {}
+
+// components/business/WeekGrid.tsx : jours × heures ; les événements sont positionnés par calcul (début, durée)
+type AgendaEvent = { id: string; type: 'rdv' | 'relance' | 'formation' | 'echeance' | 'interne'; title: string;
+                     start: Date; end: Date; companyId?: string; location?: string };
+// lib/design/agenda.ts : table type → teinte (une seule source) ; conversion en pixels (1 h = 56 px) ; chevauchements en colonnes
 
 // components/ui/Table.tsx : lignes sélectionnables, tri, colonnes masquables, états vide / chargement / erreur
 ```
@@ -124,6 +130,7 @@ export function Hero(props: { label: string; value: string; trend?: { text: stri
 | **H1 — Fondations** | Tailwind, jetons, polices hébergées, logos, coque (barre latérale, barre supérieure), thème clair/sombre | page de référence + captures |
 | **H2 — Écrans d'accès** | Connexion, MFA (QR, codes), mot de passe oublié, réinitialisation, invitation | parcours réels rejoués |
 | **H3 — Écrans connectés** | Entreprises, Utilisateurs, Mon compte, fenêtres | parcours réels rejoués |
+| **Agenda (avec S4.2–S4.3)** | Module `agenda` côté API (événements, rappels, droits Propre/Équipe/Tous, audit) + écrans semaine, mois et jour, liste d'accessibilité, création liée à une entreprise ou à une opportunité | recette dédiée ; synchronisation Outlook ensuite |
 | **S4+** | Les écrans métier naissent directement dans ce système | recettes de chaque sprint |
 
 ## 11. Risques
@@ -132,4 +139,5 @@ export function Hero(props: { label: string; value: string; trend?: { text: stri
 | Tailwind v4 / Next.js 16 très récents | Versions épinglées ; essai isolé avant migration |
 | Logo reconstitué ≠ officiel | Remplacer par les SVG officiels avant toute mise en ligne |
 | Régression de comportement pendant l'habillage | **Aucune logique modifiée** ; tests existants (24) + parcours réels rejoués |
+| Agenda : chevauchements, fuseaux horaires, événements récurrents | Stockage en **UTC** (règle déjà adoptée), affichage Africa/Douala ; chevauchements en colonnes ; récurrence **hors première version** |
 | Dérive visuelle au fil des sprints | Composants uniques, table des statuts unique, vérification de contraste automatisée |
