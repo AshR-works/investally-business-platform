@@ -107,3 +107,6 @@
 
 ## Décisions du 2026-10-21 (DEC-001 à DEC-006)
 Ordre de réalisation retenu : **Étape 0** (validations, Microsoft 365, SuperAdmin, avis juridique) → **H1** → **H2** → **S3.6** → **Cadrage UX** → **S4.1 à S4.4** (+ Agenda S4.2b) → **S5** → **S6** (dont **S6.3** Reporting, incidents d'abord) → **ST** Stocks → **S7**. Détail et motifs : `design/05-AIDE-A-LA-DECISION.md`.
+
+## Cadrages décidés le 2026-10-21
+Les 11 décisions de cadrage de H1, H2, S3.6 et du cadrage UX sont retenues (recommandations suivies) : voir [cadrages/README.md](cadrages/README.md) et le registre (D19). **Prochaine session : H1** (branche `sprint/h1-habillage-hub`), avec essai isolé de Tailwind en premier.

@@ -1,6 +1,6 @@
 # Cadrage UX — Séance sur 5 écrans clés (avant S4.1)
 
-**Date** : 2026-10-21 · **Statut** : à décider · **Placement** : après S3.6, avant S4.1 (DEC-005).
+**Date** : 2026-10-21 · **Statut** : **décidé le 2026-10-21** (recommandations retenues) · **Placement** : après S3.6, avant S4.1 (DEC-005).
 
 > Méthode : [METHODE-D-ARBITRAGE.md](../METHODE-D-ARBITRAGE.md). **Aucune décision n'est prise dans ce document** : les recommandations sont des avis, la décision est celle de la direction produit.
 
@@ -99,7 +99,7 @@ Réserve en attente : l'écran **Agrément** (S4.4) dépend de précisions méti
 
 **Recommandation.** Option **A** : les cinq écrans se décident vite à deux, et le temps gagné évite des refontes en S4. L'option B convient si votre emploi du temps l'impose.
 
-**Décision (direction produit).** ☐ À renseigner : option retenue · date · motif · réserves.
+**Décision (direction produit).** ✅ **Option A — atelier unique d'environ 90 minutes** — décidé le 2026-10-21 par la direction produit (recommandation suivie).
 
 **Trace.** À enregistrer dans `docs/QUESTIONS-ET-DECISIONS.md` (et, pour le design, dans `docs/design/decisions/`).
 

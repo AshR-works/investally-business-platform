@@ -22,7 +22,7 @@ hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
 nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 @media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
 </style></head><body><main><nav class="top">Investally Business Platform — cadrages · <a href="README.html">Index</a> · <a href="../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../design/05-AIDE-A-LA-DECISION.html">Aide à la décision</a></nav><h1>Cadrage de la session H2 — Authentification complète et sessions</h1>
-<p><strong>Date</strong> : 2026-10-21 · <strong>Statut</strong> : à décider · <strong>Dépend de</strong> : H1.</p>
+<p><strong>Date</strong> : 2026-10-21 · <strong>Statut</strong> : <strong>décidé le 2026-10-21</strong> (recommandations retenues) · <strong>Dépend de</strong> : H1.</p>
 <blockquote><p>Méthode : <a href="../METHODE-D-ARBITRAGE.html">METHODE-D-ARBITRAGE.md</a>. <strong>Aucune décision n'est prise dans ce document</strong> : les recommandations sont des avis, la décision est celle de la direction produit.</p></blockquote>
 <h2>1. Objet et périmètre</h2>
 <p><strong>H2 — Authentification complète et sessions</strong> applique le nouveau style à tous les écrans d'accès et ajoute l'<strong>historique des connexions</strong> (seule nouvelle route de l'API). Elle suit H1 et précède S3.6 (DEC-005).</p>
@@ -108,7 +108,7 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 </tbody></table></div>
 <p><strong>Dette induite.</strong> A : dépendance au format des lignes d'audit (à documenter). C : une source de plus à aligner.</p>
 <p><strong>Recommandation.</strong> Option <strong>A</strong> : pas de duplication, appareil et IP disponibles, conservation déjà décidée. Condition : vérifier en début de session que les connexions échouées d'un compte connu portent l'identifiant utilisateur ; sinon, afficher uniquement les succès et les échecs rattachables. Ferait changer d'avis : une exigence de durée de conservation ou de volume incompatible avec l'audit.</p>
-<p><strong>Décision (direction produit).</strong> ☐ À renseigner : option retenue · date · motif · réserves.</p>
+<p><strong>Décision (direction produit).</strong> ✅ <strong>Option A — lecture du journal d'audit (à vérifier : échecs rattachables à l'utilisateur)</strong> — décidé le 2026-10-21 par la direction produit (recommandation suivie).</p>
 <p><strong>Trace.</strong> À enregistrer dans <code>docs/QUESTIONS-ET-DECISIONS.md</code> (et, pour le design, dans <code>docs/design/decisions/</code>).</p>
 <hr>
 <h3>CAD-H2-2 — Visibilité de l'historique des connexions</h3>
@@ -163,7 +163,7 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 </tbody></table></div>
 <p><strong>Dette induite.</strong> B : finalité et registre de traitement à tenir.</p>
 <p><strong>Recommandation.</strong> Option <strong>A</strong> pour H2 (minimisation) ; l'option B pourra être ajoutée plus tard sans migration. Ferait changer d'avis : une obligation d'enquête de sécurité formalisée.</p>
-<p><strong>Décision (direction produit).</strong> ☐ À renseigner : option retenue · date · motif · réserves.</p>
+<p><strong>Décision (direction produit).</strong> ✅ <strong>Option A — chacun voit uniquement son historique</strong> — décidé le 2026-10-21 par la direction produit (recommandation suivie).</p>
 <p><strong>Trace.</strong> À enregistrer dans <code>docs/QUESTIONS-ET-DECISIONS.md</code> (et, pour le design, dans <code>docs/design/decisions/</code>).</p>
 <hr>
 <h3>CAD-H2-3 — Découpage des 18 écrans en lots</h3>
@@ -207,7 +207,7 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 </tbody></table></div>
 <p><strong>Dette induite.</strong> Faible dans les deux cas.</p>
 <p><strong>Recommandation.</strong> Option <strong>B</strong> (deux lots) : elle réduit le risque sur des écrans de sécurité et permet de valider d'abord ce qui ne touche pas à l'API. Ferait changer d'avis : un besoin de livrer tout l'accès en une seule étape.</p>
-<p><strong>Décision (direction produit).</strong> ☐ À renseigner : option retenue · date · motif · réserves.</p>
+<p><strong>Décision (direction produit).</strong> ✅ <strong>Option B — deux lots (H2a parcours d'accès, H2b compte, sessions et historique)</strong> — décidé le 2026-10-21 par la direction produit (recommandation suivie).</p>
 <p><strong>Trace.</strong> À enregistrer dans <code>docs/QUESTIONS-ET-DECISIONS.md</code> (et, pour le design, dans <code>docs/design/decisions/</code>).</p>
 <hr>
 <h2>5. Plan de réalisation proposé</h2>

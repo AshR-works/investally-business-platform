@@ -1,6 +1,6 @@
 # Cadrage de la session H2 — Authentification complète et sessions
 
-**Date** : 2026-10-21 · **Statut** : à décider · **Dépend de** : H1.
+**Date** : 2026-10-21 · **Statut** : **décidé le 2026-10-21** (recommandations retenues) · **Dépend de** : H1.
 
 > Méthode : [METHODE-D-ARBITRAGE.md](../METHODE-D-ARBITRAGE.md). **Aucune décision n'est prise dans ce document** : les recommandations sont des avis, la décision est celle de la direction produit.
 
@@ -112,7 +112,7 @@ Liste de référence : `docs/design/04-ANALYSE-D-IMPACT.md` §4.1 (A01 à A18). 
 
 **Recommandation.** Option **A** : pas de duplication, appareil et IP disponibles, conservation déjà décidée. Condition : vérifier en début de session que les connexions échouées d'un compte connu portent l'identifiant utilisateur ; sinon, afficher uniquement les succès et les échecs rattachables. Ferait changer d'avis : une exigence de durée de conservation ou de volume incompatible avec l'audit.
 
-**Décision (direction produit).** ☐ À renseigner : option retenue · date · motif · réserves.
+**Décision (direction produit).** ✅ **Option A — lecture du journal d'audit (à vérifier : échecs rattachables à l'utilisateur)** — décidé le 2026-10-21 par la direction produit (recommandation suivie).
 
 **Trace.** À enregistrer dans `docs/QUESTIONS-ET-DECISIONS.md` (et, pour le design, dans `docs/design/decisions/`).
 
@@ -186,7 +186,7 @@ Liste de référence : `docs/design/04-ANALYSE-D-IMPACT.md` §4.1 (A01 à A18). 
 
 **Recommandation.** Option **A** pour H2 (minimisation) ; l'option B pourra être ajoutée plus tard sans migration. Ferait changer d'avis : une obligation d'enquête de sécurité formalisée.
 
-**Décision (direction produit).** ☐ À renseigner : option retenue · date · motif · réserves.
+**Décision (direction produit).** ✅ **Option A — chacun voit uniquement son historique** — décidé le 2026-10-21 par la direction produit (recommandation suivie).
 
 **Trace.** À enregistrer dans `docs/QUESTIONS-ET-DECISIONS.md` (et, pour le design, dans `docs/design/decisions/`).
 
@@ -247,7 +247,7 @@ Liste de référence : `docs/design/04-ANALYSE-D-IMPACT.md` §4.1 (A01 à A18). 
 
 **Recommandation.** Option **B** (deux lots) : elle réduit le risque sur des écrans de sécurité et permet de valider d'abord ce qui ne touche pas à l'API. Ferait changer d'avis : un besoin de livrer tout l'accès en une seule étape.
 
-**Décision (direction produit).** ☐ À renseigner : option retenue · date · motif · réserves.
+**Décision (direction produit).** ✅ **Option B — deux lots (H2a parcours d'accès, H2b compte, sessions et historique)** — décidé le 2026-10-21 par la direction produit (recommandation suivie).
 
 **Trace.** À enregistrer dans `docs/QUESTIONS-ET-DECISIONS.md` (et, pour le design, dans `docs/design/decisions/`).
 
