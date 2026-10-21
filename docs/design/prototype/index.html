@@ -35,6 +35,8 @@
   <symbol id="i-chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
   <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m0 0-5-5m5 5-5 5"/></symbol>
   <symbol id="i-trend" viewBox="0 0 24 24"><path d="m3 17 6-6 4 4 8-8M15 7h6v6"/></symbol>
+  <symbol id="i-box" viewBox="0 0 24 24"><path d="M3.5 7.5 12 3l8.5 4.5v9L12 21l-8.5-4.5v-9ZM3.5 7.5 12 12l8.5-4.5M12 12v9"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V4M4 20h16M8 16v-4M12 16V8M16 16v-6"/></symbol>
   <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
   <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></symbol>
   <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></symbol>
@@ -70,24 +72,28 @@
 <!-- ============ COQUE ============ -->
 <div class="app">
   <aside class="sidebar" id="sidebar" aria-label="Navigation principale">
-    <a class="brand" href="#dashboard"><img class="logo-img" src="assets/logo-investally-rectangle.png" alt="Investally — Simplifier, connecter, investir" width="210" height="63"></a>
+    <a class="brand" href="#dashboard" aria-label="Investally — Vue d’ensemble"><img class="logo-img logo-full" src="assets/logo-investally-rectangle.png" alt="Investally — Simplifier, connecter, investir" width="210" height="63"><img class="logo-img logo-mini" src="assets/logo-investally-symbole.png" alt="" width="46" height="43"></a>
     <nav class="nav">
       <div class="nav-label">Espace de travail</div>
-      <a href="#dashboard" data-nav="dashboard"><svg class="icon"><use href="#i-grid"/></svg>Vue d’ensemble</a>
-      <a href="#agenda" data-nav="agenda"><svg class="icon"><use href="#i-cal"/></svg>Agenda<span class="count">3</span></a>
-      <a href="#companies" data-nav="companies"><svg class="icon"><use href="#i-building"/></svg>Entreprises</a>
-      <a href="#pipeline" data-nav="pipeline"><svg class="icon"><use href="#i-target"/></svg>Opportunités<span class="count">8</span></a>
-      <a href="#formation" data-nav="formation"><svg class="icon"><use href="#i-cap"/></svg>Formation</a>
+      <a href="#dashboard" data-nav="dashboard" data-label="Vue d’ensemble"><svg class="icon"><use href="#i-grid"/></svg><span class="lbl">Vue d’ensemble</span></a>
+      <a href="#agenda" data-nav="agenda" data-label="Agenda"><svg class="icon"><use href="#i-cal"/></svg><span class="lbl">Agenda</span><span class="count">3</span></a>
+      <a href="#companies" data-nav="companies" data-label="Entreprises"><svg class="icon"><use href="#i-building"/></svg><span class="lbl">Entreprises</span></a>
+      <a href="#pipeline" data-nav="pipeline" data-label="Opportunités"><svg class="icon"><use href="#i-target"/></svg><span class="lbl">Opportunités</span><span class="count">8</span></a>
+      <a href="#formation" data-nav="formation" data-label="Formation"><svg class="icon"><use href="#i-cap"/></svg><span class="lbl">Formation</span></a>
       <div class="nav-label">Opérations</div>
-      <a href="#soon"><svg class="icon"><use href="#i-card"/></svg>Finance</a>
-      <a href="#soon"><svg class="icon"><use href="#i-brief"/></svg>Ressources humaines</a>
-      <a href="#soon"><svg class="icon"><use href="#i-doc"/></svg>Fiscalité</a>
+      <a href="#soon" data-label="Finance"><svg class="icon"><use href="#i-card"/></svg><span class="lbl">Finance</span></a>
+      <a href="#soon" data-label="Ressources humaines"><svg class="icon"><use href="#i-brief"/></svg><span class="lbl">Ressources humaines</span></a>
+      <a href="#soon" data-label="Fiscalité"><svg class="icon"><use href="#i-doc"/></svg><span class="lbl">Fiscalité</span></a>
+      <a href="#soon" data-label="Stocks"><svg class="icon"><use href="#i-box"/></svg><span class="lbl">Stocks</span></a>
+      <div class="nav-label">Pilotage</div>
+      <a href="#soon" data-label="Reporting"><svg class="icon"><use href="#i-chart"/></svg><span class="lbl">Reporting</span></a>
       <div class="nav-label">Gouvernance</div>
-      <a href="#soon"><svg class="icon"><use href="#i-gear"/></svg>Administration</a>
-      <a href="#security" data-nav="security"><svg class="icon"><use href="#i-shield"/></svg>Sécurité</a>
-      <a href="#components" data-nav="components"><svg class="icon"><use href="#i-cols"/></svg>Composants</a>
+      <a href="#soon" data-label="Administration"><svg class="icon"><use href="#i-gear"/></svg><span class="lbl">Administration</span></a>
+      <a href="#security" data-nav="security" data-label="Sécurité"><svg class="icon"><use href="#i-shield"/></svg><span class="lbl">Sécurité</span></a>
+      <a href="#components" data-nav="components" data-label="Composants"><svg class="icon"><use href="#i-cols"/></svg><span class="lbl">Composants</span></a>
     </nav>
-    <div class="me"><span class="avatar">EK</span><div><strong>Emma Koffi</strong><span>Administratrice</span></div></div>
+    <button type="button" class="rail-toggle" id="railToggle" aria-expanded="false" data-label="Déplier la navigation"><svg class="icon" id="railIcon"><use href="#i-arrow"/></svg><span class="lbl" id="railLabel">Déplier</span></button>
+    <div class="me"><span class="avatar">EK</span><div class="lbl"><strong>Emma Koffi</strong><span>Administratrice</span></div></div>
   </aside>
 
   <div class="main">
@@ -108,6 +114,27 @@
         <div class="eyebrow">Direction générale</div>
         <div class="page-head"><div><h1>Bonjour Emma</h1><p>Voici l’activité commerciale et la formation de ce mois.</p></div>
           <div class="actions"><button class="btn btn-secondary"><svg class="icon sm"><use href="#i-down"/></svg>Exporter</button><button class="btn btn-primary"><svg class="icon sm"><use href="#i-plus"/></svg>Créer</button></div></div>
+        <section class="hub-search card card-pad" aria-labelledby="hubSearchTitle">
+          <h2 id="hubSearchTitle" style="font-size:var(--text-lg)">Rechercher dans toute la plateforme</h2>
+          <p class="help" style="margin:2px 0 var(--s-4)">Entreprises, contacts, offres, formations, sessions, utilisateurs, documents, rapports. Vous ne voyez que ce que vos droits permettent d’ouvrir.</p>
+          <div class="hub-field"><svg class="icon" aria-hidden="true"><use href="#i-search"/></svg><label class="sr-only" for="hubQuery">Recherche globale</label><input id="hubQuery" type="search" autocomplete="off" placeholder="Tapez un nom, une référence, un titre…" aria-controls="hubResults" aria-expanded="false"><kbd>⌘ K</kbd></div>
+          <div class="chips" aria-label="Filtrer par type"><button class="chip-btn" aria-pressed="true" data-kind="all">Tout</button><button class="chip-btn" aria-pressed="false" data-kind="Entreprises">Entreprises</button><button class="chip-btn" aria-pressed="false" data-kind="Contacts">Contacts</button><button class="chip-btn" aria-pressed="false" data-kind="Offres">Offres</button><button class="chip-btn" aria-pressed="false" data-kind="Formations">Formations</button><button class="chip-btn" aria-pressed="false" data-kind="Sessions">Sessions</button><button class="chip-btn" aria-pressed="false" data-kind="Utilisateurs">Utilisateurs</button><button class="chip-btn" aria-pressed="false" data-kind="Documents">Documents</button><button class="chip-btn" aria-pressed="false" data-kind="Rapports">Rapports</button></div>
+          <div id="hubResults" class="results" role="listbox" aria-label="Résultats de recherche" hidden></div>
+        </section>
+        <h2 class="section-title">Modules</h2>
+        <div class="tiles">
+          <a class="tile" href="#agenda"><svg class="icon"><use href="#i-cal"/></svg><strong>Agenda</strong><span>Rendez-vous, relances, échéances</span></a>
+          <a class="tile" href="#companies"><svg class="icon"><use href="#i-building"/></svg><strong>Entreprises</strong><span>Cibles et clients</span></a>
+          <a class="tile" href="#pipeline"><svg class="icon"><use href="#i-target"/></svg><strong>Opportunités</strong><span>18 en cours · 184 M XAF</span></a>
+          <a class="tile" href="#formation"><svg class="icon"><use href="#i-cap"/></svg><strong>Formation</strong><span>Sessions et inscriptions</span></a>
+          <a class="tile soon" href="#soon"><svg class="icon"><use href="#i-card"/></svg><strong>Finance</strong><span>À venir</span></a>
+          <a class="tile soon" href="#soon"><svg class="icon"><use href="#i-brief"/></svg><strong>Ressources humaines</strong><span>À venir</span></a>
+          <a class="tile soon" href="#soon"><svg class="icon"><use href="#i-doc"/></svg><strong>Fiscalité</strong><span>À venir</span></a>
+          <a class="tile soon" href="#soon"><svg class="icon"><use href="#i-box"/></svg><strong>Stocks</strong><span>À venir</span></a>
+          <a class="tile soon" href="#soon"><svg class="icon"><use href="#i-chart"/></svg><strong>Reporting</strong><span>À venir</span></a>
+          <a class="tile soon" href="#soon"><svg class="icon"><use href="#i-gear"/></svg><strong>Administration</strong><span>À venir</span></a>
+          <a class="tile" href="#security"><svg class="icon"><use href="#i-shield"/></svg><strong>Sécurité</strong><span>Centre de confiance</span></a>
+        </div>
         <div class="hero">
           <div><small>Pipeline pondéré</small><div class="big">184 M</div><span class="trend"><svg class="icon sm"><use href="#i-trend"/></svg>+8,4 % sur 30 jours · XAF</span></div>
           <div class="bars" role="img" aria-label="Pipeline mensuel sur 12 mois, en hausse"><span style="height:28%"></span><span style="height:40%"></span><span style="height:34%"></span><span style="height:52%"></span><span style="height:46%"></span><span style="height:60%"></span><span style="height:54%"></span><span style="height:72%"></span><span style="height:66%"></span><span style="height:84%"></span><span style="height:76%"></span><span style="height:100%"></span></div>
@@ -247,8 +274,9 @@
       <section class="screen" data-screen="pipeline">
         <div class="crumbs">Investally <svg class="icon sm"><use href="#i-chev"/></svg> Opportunités</div>
         <div class="eyebrow">Business Development</div>
-        <div class="page-head"><div><h1>Opportunités</h1><p>18 opportunités en cours, en lignes de 6. Un rendez-vous avec le décideur est requis avant l’accord de principe (dérogation tracée possible).</p></div>
+        <div class="page-head"><div><h1>Opportunités</h1><p><span id="oppSummary">18 opportunités en cours</span>, en lignes de 6. Un rendez-vous avec le décideur est requis avant l’accord de principe (dérogation tracée possible).</p></div>
           <div class="actions"><div class="seg" role="tablist" aria-label="Mode d’affichage"><button class="tool" role="tab" aria-selected="true" data-opp="cartes">Cartes</button><button class="tool" role="tab" aria-selected="false" data-opp="etapes">Par étape</button></div><button class="btn btn-secondary"><svg class="icon sm"><use href="#i-filter"/></svg>Filtres</button><button class="btn btn-primary"><svg class="icon sm"><use href="#i-plus"/></svg>Opportunité</button></div></div>
+        <div class="opp-tools"><div class="stagebar" id="stageBar" role="group" aria-label="Filtrer par étape"></div><label class="tool sortbox">Trier par <select id="oppSort" aria-label="Trier les opportunités"><option value="next">Prochaine action</option><option value="amount">Montant (décroissant)</option><option value="stage">Étape</option></select></label></div>
         <div class="bulkbar" id="oppBulk" hidden><span id="oppBulkCount">2 sélectionnées</span><span class="muted">·</span><button class="btn btn-ghost">Réassigner</button><button class="btn btn-ghost">Exporter</button><button class="btn btn-ghost" id="oppClear">Tout désélectionner</button></div>
         <div id="oppCards"><div class="opp-grid" id="oppGrid" aria-label="Opportunités, 6 par ligne"></div></div>
         <div id="oppStages" hidden>

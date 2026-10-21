@@ -128,13 +128,20 @@ def main():
         '<a href="04-SUIVI-DES-SESSIONS.html">Suivi des sessions</a> · <a href="05-ETAT-D-AVANCEMENT.html">État d&#8217;avancement</a> · '
         '<a href="06-BESOINS-STYLE-GRAPHIQUE.html">Style graphique</a>'
     )
-    nav_design = (
-        'Investally Business Platform — design · <a href="01-DESIGN-SYSTEM.html">Design system</a> · '
-        '<a href="02-SPECIFICATIONS-FRONTEND.html">Spécifications frontend</a> · <a href="03-EXIGENCES-DE-CONCEPTION.html">Exigences</a> · <a href="04-ANALYSE-D-IMPACT.html">Analyse d&#8217;impact</a> · <a href="05-AIDE-A-LA-DECISION.html">Aide à la décision</a> · <a href="prototype/index.html">Prototype</a>'
-    )
+    def design_nav(prefix):
+        return (
+            'Investally Business Platform — design · '
+            f'<a href="{prefix}README.html">Mode d&#8217;emploi</a> · <a href="{prefix}01-DESIGN-SYSTEM.html">Design system</a> · '
+            f'<a href="{prefix}02-SPECIFICATIONS-FRONTEND.html">Spécifications frontend</a> · '
+            f'<a href="{prefix}exigences/REGISTRE-EXD.html">Exigences</a> · <a href="{prefix}04-ANALYSE-D-IMPACT.html">Analyse d&#8217;impact</a> · '
+            f'<a href="{prefix}05-AIDE-A-LA-DECISION.html">Aide à la décision</a> · <a href="{prefix}decisions/REGISTRE-DDR.html">Décisions (DDR)</a> · '
+            f'<a href="{prefix}CHANGELOG-DESIGN.html">Journal</a> · <a href="{prefix}prototype/index.html">Prototype</a>'
+        )
+
+    nav_design = design_nav('')
     docs_root = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'docs')
     nav_root = 'Investally Business Platform — méthode · <a href="design/05-AIDE-A-LA-DECISION.html">Aide à la décision</a>'
-    for folder, nav, only in ((ROOT, nav_livrables, None), (design, nav_design, None), (docs_root, nav_root, ('METHODE-D-ARBITRAGE.md',))):
+    for folder, nav, only in ((ROOT, nav_livrables, None), (design, nav_design, None), (os.path.join(design, 'exigences'), design_nav('../'), None), (os.path.join(design, 'decisions'), design_nav('../'), None), (docs_root, nav_root, ('METHODE-D-ARBITRAGE.md',))):
         for name in sorted(n for n in os.listdir(folder) if n.endswith('.md') and (only is None or n in only)):
             md = open(os.path.join(folder, name), encoding='utf-8').read()
             title = re.search(r'^# (.+)$', md, re.M)

@@ -21,9 +21,9 @@ th{background:var(--code)}
 hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
 nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 @media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
-</style></head><body><main><nav class="top">Investally Business Platform — design · <a href="01-DESIGN-SYSTEM.html">Design system</a> · <a href="02-SPECIFICATIONS-FRONTEND.html">Spécifications frontend</a> · <a href="03-EXIGENCES-DE-CONCEPTION.html">Exigences</a> · <a href="04-ANALYSE-D-IMPACT.html">Analyse d&#8217;impact</a> · <a href="05-AIDE-A-LA-DECISION.html">Aide à la décision</a> · <a href="prototype/index.html">Prototype</a></nav><h1>Aide à la décision — arbitrages ouverts et gouvernance des livrables design</h1>
-<p><strong>Date</strong> : 2026-10-21 · <strong>Méthode</strong> : <a href="../METHODE-D-ARBITRAGE.html">METHODE-D-ARBITRAGE.md</a> · <strong>Références</strong> : <a href="03-EXIGENCES-DE-CONCEPTION.html">03-EXIGENCES-DE-CONCEPTION.md</a>, <a href="04-ANALYSE-D-IMPACT.html">04-ANALYSE-D-IMPACT.md</a>, ADR-0005</p>
-<blockquote><p><strong>Posture</strong> : je n'ai arrêté aucune décision. Chaque arbitrage se termine par <strong>ma recommandation</strong>, présentée comme telle ; <strong>la décision reste la vôtre</strong> (case « Décision » à compléter). <strong>Notation</strong> : 1 = défavorable, 5 = favorable. Réversibilité : 🟢 facile · 🟡 moyenne · 🔴 coûteuse. <em>Les hypothèses sont étiquetées (H) ; tout le reste est vérifié dans le dépôt ou dans les prototypes. Les scores sont des <strong>aides</strong> : ils reflètent mon jugement et les poids affichés, que vous pouvez modifier (le total se recalcule : Σ note × poids).</em></p></blockquote>
+</style></head><body><main><nav class="top">Investally Business Platform — design · <a href="README.html">Mode d&#8217;emploi</a> · <a href="01-DESIGN-SYSTEM.html">Design system</a> · <a href="02-SPECIFICATIONS-FRONTEND.html">Spécifications frontend</a> · <a href="exigences/REGISTRE-EXD.html">Exigences</a> · <a href="04-ANALYSE-D-IMPACT.html">Analyse d&#8217;impact</a> · <a href="05-AIDE-A-LA-DECISION.html">Aide à la décision</a> · <a href="decisions/REGISTRE-DDR.html">Décisions (DDR)</a> · <a href="CHANGELOG-DESIGN.html">Journal</a> · <a href="prototype/index.html">Prototype</a></nav><h1>Aide à la décision — arbitrages ouverts et gouvernance des livrables design</h1>
+<p><strong>Date</strong> : 2026-10-21 · <strong>Statut</strong> : <strong>décisions recommandées retenues et appliquées</strong> · <strong>Méthode</strong> : <a href="../METHODE-D-ARBITRAGE.html">METHODE-D-ARBITRAGE.md</a> · <strong>Références</strong> : <a href="exigences/REGISTRE-EXD.html">REGISTRE-EXD.md</a>, <a href="04-ANALYSE-D-IMPACT.html">04-ANALYSE-D-IMPACT.md</a>, ADR-0005</p>
+<blockquote><p><strong>Posture</strong> : je n'ai arrêté aucune décision. Chaque arbitrage se termine par <strong>ma recommandation</strong>, présentée comme telle ; <strong>la décision est celle de la direction produit</strong> : elle a retenu les recommandations le 2026-10-21 (cases cochées, journal en annexe). <strong>Notation</strong> : 1 = défavorable, 5 = favorable. Réversibilité : 🟢 facile · 🟡 moyenne · 🔴 coûteuse. <em>Les hypothèses sont étiquetées (H) ; tout le reste est vérifié dans le dépôt ou dans les prototypes. Les scores sont des <strong>aides</strong> : ils reflètent mon jugement et les poids affichés, que vous pouvez modifier (le total se recalcule : Σ note × poids).</em></p></blockquote>
 <h2>Faits de départ (vérifiés)</h2>
 <ul><li><strong>≈ 20 utilisateurs</strong> (10 employés aujourd'hui) ; sprints courts menés par vous et moi ; API NestJS + interface Next.js ; <strong>une base PostgreSQL par produit</strong> (ADR-0005), événements entre produits, <strong>aucun paquet partagé tant que l'ERP n'existe pas</strong>.</li><li><strong>Livré</strong> : socle d'accès complet (S0 à S3.5) ; <strong>en attente de votre validation</strong> : S3.4 et S3.5. <strong>Bloquants externes</strong> : accès Microsoft 365, deux SuperAdmin, avis juridique sur l'audit de 10 ans.</li><li><strong>Prototype</strong> : 9 écrans (+ agenda), clair et sombre, EXD-01 à 04 appliquées ; EXD-05 à 08 spécifiées (44 écrans, dont 33 nouveaux).</li></ul>
 <hr>
@@ -75,7 +75,7 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td>Évolutivité vers l'ERP (3)</td><td>1</td><td>3</td><td>5</td><td><strong>4</strong></td></tr>
 <tr><td><strong>Score pondéré / 150</strong></td><td><strong>63</strong></td><td><strong>111</strong></td><td><strong>117</strong></td><td><strong>143</strong></td></tr>
 </tbody></table></div>
-<blockquote><p><strong>Recommandation</strong> : <strong>option D</strong>. Elle donne l'essentiel de C pour la moitié de la charge, et s'appuie sur ce que vous utilisez déjà (Git, étiquettes, « Je valide »). <strong>Décision</strong> : ☐ A ☐ B ☐ C ☐ D ☐ autre : ______ · Date : ______</p></blockquote>
+<blockquote><p><strong>Recommandation</strong> : <strong>option D</strong>. Elle donne l'essentiel de C pour la moitié de la charge, et s'appuie sur ce que vous utilisez déjà (Git, étiquettes, « Je valide »). <strong>Décision</strong> : ☐ A ☐ B ☐ C ☒ <strong>D</strong> ☐ autre · Date : 2026-10-21 · <em>Recommandation retenue par la direction produit</em> (voir DDR-0006)</p></blockquote>
 <h2>I.3 Arborescence cible (option D)</h2>
 <pre><code>docs/design/
 ├── README.md                         index, version courante, comment lire et comparer
@@ -167,7 +167,7 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td>Réversibilité (4)</td><td>5</td><td>5</td><td>5</td><td><strong>5</strong></td></tr>
 <tr><td><strong>Score pondéré / 135</strong></td><td><strong>93</strong></td><td><strong>109</strong></td><td><strong>113</strong></td><td><strong>122</strong></td></tr>
 </tbody></table></div>
-<blockquote><p><strong>Recommandation</strong> : <strong>B+</strong> (rail compact par défaut + bouton Déplier). Si vous tenez à la <strong>lettre</strong> d'EXD-05, <strong>B</strong> ; <strong>A</strong> seulement si vous acceptez un coût de productivité mesurable. <strong>Ce qui me ferait changer d'avis</strong> : un essai avec 3 utilisateurs montrant que le rail compact est mal compris → bascule vers C. <strong>Décision</strong> : ☐ A ☐ B ☐ B+ ☐ C · Date : ______</p></blockquote>
+<blockquote><p><strong>Recommandation</strong> : <strong>B+</strong> (rail compact par défaut + bouton Déplier). Si vous tenez à la <strong>lettre</strong> d'EXD-05, <strong>B</strong> ; <strong>A</strong> seulement si vous acceptez un coût de productivité mesurable. <strong>Ce qui me ferait changer d'avis</strong> : un essai avec 3 utilisateurs montrant que le rail compact est mal compris → bascule vers C. <strong>Décision</strong> : ☐ A ☐ B ☒ <strong>B+</strong> ☐ C · Date : 2026-10-21 · <em>Recommandation retenue</em> (voir DDR-0004)</p></blockquote>
 <hr>
 <h1>PARTIE III — ARBITRAGE 2 : Module Opportunités</h1>
 <h2>Contexte</h2>
@@ -212,7 +212,7 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td>Accessibilité (4)</td><td>3</td><td>4</td><td><strong>4</strong></td></tr>
 <tr><td><strong>Score pondéré / 135</strong></td><td><strong>86</strong></td><td><strong>103</strong></td><td><strong>118</strong></td></tr>
 </tbody></table></div>
-<blockquote><p><strong>Recommandation</strong> : <strong>hybride</strong> : cartes par défaut (votre exigence), bandeau d'étapes cliquable, bascule « Par étape ». Je proposerais de <strong>mesurer</strong> après deux semaines d'usage quelle vue est utilisée. <strong>Décision</strong> : ☐ Colonnes ☐ Cartes ×6 ☐ Hybride · Ordre des cartes : ______ · Date : ______</p></blockquote>
+<blockquote><p><strong>Recommandation</strong> : <strong>hybride</strong> : cartes par défaut (votre exigence), bandeau d'étapes cliquable, bascule « Par étape ». Je proposerais de <strong>mesurer</strong> après deux semaines d'usage quelle vue est utilisée. <strong>Décision</strong> : ☐ Colonnes ☐ Cartes ×6 ☒ <strong>Hybride</strong> · Ordre des cartes : <strong>prochaine action la plus proche, configurable</strong> (proposition par défaut) · Date : 2026-10-21 · <em>Recommandation retenue</em> (voir DDR-0005)</p></blockquote>
 <hr>
 <h1>PARTIE IV — ARBITRAGE 3 : Module Stocks</h1>
 <h2>Contexte</h2>
@@ -266,7 +266,7 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td>Organisation / propriété (2)</td><td>2</td><td>4</td><td>4</td><td><strong>4</strong></td></tr>
 <tr><td><strong>Score pondéré / 130</strong></td><td><strong>73</strong></td><td><strong>78</strong></td><td><strong>68</strong></td><td><strong>104</strong></td></tr>
 </tbody></table></div>
-<blockquote><p><strong>Recommandation</strong> : <strong>3′</strong>. Elle évite le piège du CRM « fourre-tout » <strong>sans</strong> attendre l'ERP ni payer le coût d'un service séparé. <strong>Conditions</strong> : ADR dérogatoire ; règle d'architecture interdisant à <code>stock</code> d'importer un module du CRM ; permissions <code>stock.*</code> propres ; rôle dédié (Logistique) à confirmer ; <strong>mouvements immuables</strong> comme l'audit. <strong>Ce qui me ferait changer d'avis</strong> : si l'ERP est décidé <strong>avant</strong> la fin de S4, l'option 2 devient préférable. <strong>Décision</strong> : ☐ 1 CRM ☐ 2 ERP ☐ 3 service ☐ 3′ module autonome · Date : ______</p></blockquote>
+<blockquote><p><strong>Recommandation</strong> : <strong>3′</strong>. Elle évite le piège du CRM « fourre-tout » <strong>sans</strong> attendre l'ERP ni payer le coût d'un service séparé. <strong>Conditions</strong> : ADR dérogatoire ; règle d'architecture interdisant à <code>stock</code> d'importer un module du CRM ; permissions <code>stock.<em></code> propres ; rôle dédié (Logistique) à confirmer ; <strong>mouvements immuables</strong> comme l'audit. <strong>Ce qui me ferait changer d'avis</strong> : si l'ERP est décidé <strong>avant</strong> la fin de S4, l'option 2 devient préférable. <strong>Décision</strong> : ☐ 1 CRM ☐ 2 ERP ☐ 3 service ☒ <strong>3′ module autonome</strong> · Date : 2026-10-21 · *Recommandation retenue</em> (voir ADR-0007)</p></blockquote>
 <hr>
 <h1>PARTIE V — ARBITRAGE 4 : Ordre de réalisation</h1>
 <h2>Contexte</h2>
@@ -305,7 +305,7 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td>Charge de coordination (3)</td><td>4</td><td><strong>4</strong></td><td>4</td><td>1</td></tr>
 <tr><td><strong>Score pondéré / 115</strong></td><td><strong>68</strong></td><td><strong>104</strong></td><td><strong>69</strong></td><td><strong>74</strong></td></tr>
 </tbody></table></div>
-<blockquote><p><strong>Recommandation</strong> : <strong>ordre alternatif 1</strong> : il garde votre ordre (habillage → authentification → S4 → reporting → stocks) et y <strong>insère les prérequis</strong> et <strong>supprime le H3 séparé</strong>. <strong>Décision</strong> : ☐ Proposé ☐ Alt. 1 ☐ Alt. 2 ☐ Alt. 3 · Date : ______</p></blockquote>
+<blockquote><p><strong>Recommandation</strong> : <strong>ordre alternatif 1</strong> : il garde votre ordre (habillage → authentification → S4 → reporting → stocks) et y <strong>insère les prérequis</strong> et <strong>supprime le H3 séparé</strong>. <strong>Décision</strong> : ☐ Proposé ☒ <strong>Alt. 1</strong> ☐ Alt. 2 ☐ Alt. 3 · Date : 2026-10-21 · <em>Recommandation retenue</em> (voir <code>DESIGN-CODE-ARCHITECTURE-PLAN.md</code>)</p></blockquote>
 <hr>
 <h1>PARTIE VI — Décision finale</h1>
 <h2>Décisions recommandées</h2>
@@ -359,14 +359,14 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 </tbody></table></div>
 <h2>Recommandation finale globale</h2>
 <p><strong>En tant qu'architecte produit de la plateforme Investally, je choisirais</strong> la combinaison suivante : <strong>versionnement D</strong>, <strong>navigation B+</strong>, <strong>Opportunités hybrides</strong>, <strong>Stocks en module autonome (3′)</strong> et <strong>l'ordre alternatif 1</strong>. <strong>Pourquoi</strong> : c'est la combinaison qui <strong>protège ce qui est déjà solide</strong> (socle d'accès, règles d'architecture), <strong>livre la valeur commerciale le plus tôt possible sans coder deux fois</strong>, et <strong>garde chaque décision réversible</strong>. Les choix les plus coûteux à défaire (rattachement des Stocks, données de performance) sont traités avec des <strong>garde-fous explicites</strong> plutôt qu'avec de la vitesse. Le prochain geste utile n'est <strong>pas</strong> d'implémenter : c'est de <strong>valider S3.4 et S3.5</strong> et de <strong>débloquer Microsoft 365 et les SuperAdmin</strong>.</p>
-<blockquote><p><strong>Rappel</strong> : ces recommandations n'engagent aucune réalisation. <strong>La décision appartient à la direction produit</strong> ; chaque case « Décision » ci-dessus est à compléter, puis je les consignerai dans le registre des décisions et mettrai les documents à jour.</p></blockquote>
+<blockquote><p><strong>Suite donnée le 2026-10-21</strong> : la direction produit a demandé d'<strong>appliquer les décisions recommandées</strong>. Elles sont consignées dans le journal ci-dessous (annexe), dans <code>QUESTIONS-ET-DECISIONS.md</code> (D17), et appliquées : prototype v0.4.0, gouvernance du versionnement, ADR-0007, plan réordonné.</p></blockquote>
 <hr>
-<h1>Annexe — Journal de décision (à compléter)</h1>
+<h1>Annexe — Journal de décision</h1>
 <div class="table-wrap"><table><thead><tr><th>N°</th><th>Sujet</th><th>Option retenue</th><th>Date</th><th>Motif / réserves</th></tr></thead><tbody>
-<tr><td>DEC-001</td><td>Versionnement des livrables design</td><td></td><td></td><td></td></tr>
-<tr><td>DEC-002</td><td>Navigation globale (EXD-05)</td><td></td><td></td><td></td></tr>
-<tr><td>DEC-003</td><td>Module Opportunités</td><td></td><td></td><td></td></tr>
-<tr><td>DEC-004</td><td>Rattachement du module Stocks</td><td></td><td></td><td></td></tr>
-<tr><td>DEC-005</td><td>Ordre de réalisation</td><td></td><td></td><td></td></tr>
-<tr><td>DEC-006</td><td>Données de performance des employés</td><td></td><td></td><td></td></tr>
+<tr><td>DEC-001</td><td>Versionnement des livrables design</td><td><strong>D</strong> — Git + releases sémantiques + journal et fiches de décision</td><td>2026-10-21</td><td>Recommandation retenue ; appliquée (README, VERSION, CHANGELOG, DDR, releases, outils) ; étiquettes posées seulement à la validation d'une version</td></tr>
+<tr><td>DEC-002</td><td>Navigation globale (EXD-05)</td><td><strong>B+</strong> — hub complet, rail compact par défaut, bouton Déplier</td><td>2026-10-21</td><td>Recommandation retenue ; appliquée au prototype v0.4.0 ; essai à 3 utilisateurs à prévoir</td></tr>
+<tr><td>DEC-003</td><td>Module Opportunités</td><td><strong>Hybride</strong> — cartes par défaut, bandeau d'étapes, bascule « Par étape »</td><td>2026-10-21</td><td>Recommandation retenue ; appliquée au prototype v0.4.0 ; alternative clavier de « Par étape » à construire ; mesure d'usage après 2 semaines</td></tr>
+<tr><td>DEC-004</td><td>Rattachement du module Stocks</td><td><strong>3′</strong> — module autonome hébergé dans le monolithe du CRM, conçu pour être extrait</td><td>2026-10-21</td><td>Recommandation retenue ; <strong>ADR-0007</strong> et règle d'architecture ; construction en dernier</td></tr>
+<tr><td>DEC-005</td><td>Ordre de réalisation</td><td><strong>Alternatif 1</strong> — prérequis d'abord, H1 minimal, authentification, Documents, S4 dans le nouveau style, Reporting (incidents d'abord), Stocks</td><td>2026-10-21</td><td>Recommandation retenue ; plan mis à jour ; l'étape 0 (valider S3.4/S3.5, Microsoft 365, SuperAdmin) <strong>reste à faire par la direction produit</strong></td></tr>
+<tr><td>DEC-006</td><td>Données de performance des employés</td><td><strong>Après avis juridique et RH</strong>, avec transparence pour l'employé</td><td>2026-10-21</td><td>Recommandation retenue ; contrainte inscrite dans EXD-08 et le registre</td></tr>
 </tbody></table></div></main></body></html>

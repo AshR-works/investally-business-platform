@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Comparer deux versions du design</title>
+<style>
+  :root { --bg: #faf9f9; --text: #1d1d1b; --muted: #5e5a57; --line: #d9d2cc; --accent: #7a6355; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #171615; --text: #f2eeeb; --muted: #c9c2bc; --line: #403c39; --accent: #cdbbaf; } }
+  body { margin: 0; font: 15px/1.5 system-ui, sans-serif; background: var(--bg); color: var(--text); }
+  main { max-width: 1500px; margin: 0 auto; padding: 24px 16px 64px; }
+  h1 { font-size: 1.4rem; margin: 0 0 4px; } p { color: var(--muted); margin: 0 0 16px; }
+  .bar { display: flex; flex-wrap: wrap; gap: 12px; align-items: end; margin-bottom: 16px; }
+  label { display: grid; gap: 4px; font-weight: 600; font-size: .85rem; }
+  select, button { font: inherit; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: transparent; color: inherit; }
+  button[aria-pressed='true'] { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+  .stage { position: relative; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+  .stage img { display: block; width: 100%; height: auto; }
+  .stage .over { position: absolute; inset: 0; overflow: hidden; }
+  .stage .over img { position: absolute; left: 0; top: 0; max-width: none; }
+  .handle { position: absolute; top: 0; bottom: 0; width: 3px; background: var(--accent); cursor: ew-resize; }
+  .side { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .tag { font: 700 .75rem system-ui; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0 0 4px; }
+  .missing { padding: 48px; text-align: center; color: var(--muted); border: 1px dashed var(--line); border-radius: 10px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Comparer deux versions du design</h1>
+  <p>Choisissez deux versions et un écran. Le curseur découvre la version B (à gauche) par-dessus la version A (à droite). <strong>Servez le dossier <code>docs/design</code> avec <code>python -m http.server 8099</code></strong> puis ouvrez <code>http://127.0.0.1:8099/outils/compare.html</code> (un fichier local ne peut pas lire l'index).</p>
+  <div class="bar">
+    <label>Version A (avant)<select id="a"></select></label>
+    <label>Version B (après)<select id="b"></select></label>
+    <label>Écran<select id="screen"></select></label>
+    <div role="group" aria-label="Mode d’affichage"><button id="modeSlider" aria-pressed="true">Curseur</button> <button id="modeSide" aria-pressed="false">Côte à côte</button></div>
+  </div>
+  <div id="view"></div>
+</main>
+<script>
+(async () => {
+  const $ = (id) => document.getElementById(id);
+  let index = [];
+  try { index = await (await fetch('../releases/index.json')).json(); } catch { $('view').innerHTML = '<div class="missing">Impossible de lire releases/index.json. Servez le dossier avec un petit serveur local (voir ci-dessus).</div>'; return; }
+  const versions = index.map((v) => v.version);
+  const fill = (select, values, pick) => { select.innerHTML = values.map((v) => `<option value="${v}">${v}</option>`).join(''); select.value = pick; };
+  const q = new URLSearchParams(location.search);
+  fill($('a'), versions, q.get('a') ?? versions.at(-2) ?? versions[0]);
+  fill($('b'), versions, q.get('b') ?? versions.at(-1));
+  let mode = 'slider';
+  const screensOf = (v) => index.find((x) => x.version === v)?.screens ?? [];
+  function refreshScreens() {
+    const common = screensOf($('a').value).filter((s) => screensOf($('b').value).includes(s));
+    const all = [...new Set([...screensOf($('a').value), ...screensOf($('b').value)])].sort();
+    const keep = $('screen').value;
+    $('screen').innerHTML = all.map((s) => `<option value="${s}">${s.replace('.png', '')}${common.includes(s) ? '' : ' (une seule version)'}</option>`).join('');
+    $('screen').value = all.includes(keep) ? keep : (q.get('screen') && all.includes(q.get('screen')) ? q.get('screen') : all[0]);
+  }
+  function render() {
+    const a = $('a').value, b = $('b').value, s = $('screen').value;
+    const src = (v) => `../releases/v${v}/screens/${s}`;
+    const hasA = screensOf(a).includes(s), hasB = screensOf(b).includes(s);
+    if (!hasA || !hasB) {
+      $('view').innerHTML = `<div class="missing">Cet écran n’existe que dans la version ${hasA ? a : b}.</div><div class="stage" style="margin-top:12px"><img alt="Écran ${s} version ${hasA ? a : b}" src="${src(hasA ? a : b)}"></div>`;
+      return;
+    }
+    if (mode === 'side') {
+      $('view').innerHTML = `<div class="side"><div><p class="tag">A · v${a}</p><div class="stage"><img alt="${s} version ${a}" src="${src(a)}"></div></div><div><p class="tag">B · v${b}</p><div class="stage"><img alt="${s} version ${b}" src="${src(b)}"></div></div></div>`;
+      return;
+    }
+    $('view').innerHTML = `<p class="tag">B · v${b} (à gauche du curseur) — A · v${a} (à droite)</p><div class="stage" id="stage"><img alt="${s} version ${a}" src="${src(a)}"><div class="over" id="over" style="width:50%"><img id="overImg" alt="${s} version ${b}" src="${src(b)}"></div><div class="handle" id="handle" style="left:50%" role="slider" aria-label="Position du curseur" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50" tabindex="0"></div></div>`;
+    const stage = $('stage'), over = $('over'), handle = $('handle'), img = $('overImg');
+    const fit = () => { img.style.width = stage.clientWidth + 'px'; };
+    img.addEventListener('load', fit); window.addEventListener('resize', fit); fit();
+    const set = (pct) => { pct = Math.max(0, Math.min(100, pct)); over.style.width = pct + '%'; handle.style.left = pct + '%'; handle.setAttribute('aria-valuenow', Math.round(pct)); };
+    let drag = false;
+    handle.addEventListener('pointerdown', () => { drag = true; });
+    window.addEventListener('pointerup', () => { drag = false; });
+    window.addEventListener('pointermove', (e) => { if (drag) { const r = stage.getBoundingClientRect(); set(((e.clientX - r.left) / r.width) * 100); } });
+    handle.addEventListener('keydown', (e) => { const v = Number(handle.getAttribute('aria-valuenow')); if (e.key === 'ArrowLeft') set(v - 5); if (e.key === 'ArrowRight') set(v + 5); });
+  }
+  const setMode = (m) => { mode = m; $('modeSlider').setAttribute('aria-pressed', String(m === 'slider')); $('modeSide').setAttribute('aria-pressed', String(m === 'side')); render(); };
+  $('modeSlider').onclick = () => setMode('slider'); $('modeSide').onclick = () => setMode('side');
+  ['a', 'b'].forEach((id) => $(id).addEventListener('change', () => { refreshScreens(); render(); }));
+  $('screen').addEventListener('change', render);
+  refreshScreens(); render();
+})();
+</script>
+</body>
+</html>

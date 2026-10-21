@@ -1,0 +1,13 @@
+# Registre des fiches de décision de design (DDR)
+
+Chaque décision de design porte une fiche courte : **contexte, options, décision, motif, version, exigences liées, statut**. Statuts : *Proposée · Acceptée · Remplacée · Rejetée*. Une fiche n'est jamais effacée.
+Les arbitrages structurants suivent la [méthode d'arbitrage](../../METHODE-D-ARBITRAGE.md) ; leurs fiches **DEC** sont dans [../05-AIDE-A-LA-DECISION.md](../05-AIDE-A-LA-DECISION.md).
+
+| N° | Titre | Statut | Version | Exigence / décision liée |
+|---|---|---|---|---|
+| [DDR-0001](DDR-0001-style-taupe-et-contrastes.md) | Style taupe et contrastes mesurés | Acceptée | 0.1.0 | — |
+| [DDR-0002](DDR-0002-logos-et-theme-sombre.md) | Logos fournis et thème sombre monochrome | Acceptée | 0.1.0 | demande du 2026-10-21 |
+| [DDR-0003](DDR-0003-panneau-et-selection-persistante.md) | Panneau principal et sélection persistante | Acceptée | 0.3.0 | EXD-01, EXD-02 |
+| [DDR-0004](DDR-0004-navigation-b-plus.md) | Navigation B+ (hub, rail compact, bouton Déplier) | Acceptée | 0.4.0 | EXD-05, DEC-002 |
+| [DDR-0005](DDR-0005-opportunites-hybrides.md) | Opportunités hybrides | Acceptée | 0.4.0 | EXD-04, DEC-003 |
+| [DDR-0006](DDR-0006-versionnement-des-livrables.md) | Versionnement des livrables design | Acceptée | 0.4.0 | DEC-001 |

@@ -300,3 +300,69 @@ tbody tr { cursor: pointer; }
 @media (max-width: 760px) { .opp-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 480px) { .opp-grid { grid-template-columns: 1fr; } }
 @media (max-width: 900px) { .app { padding: 0; } .main { border-radius: 0; border: 0; } .sidebar { background: var(--surface); } }
+
+/* ---------- DEC-002 : navigation B+ (hub complet, rail compact ailleurs, bouton Déplier) ---------- */
+.logo-mini { display: none; }
+.rail-toggle { display: none; }
+.rail-toggle { align-items: center; gap: var(--s-3); background: transparent; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); color: var(--ink-2); padding: 8px var(--s-3); cursor: pointer; font-weight: 500; margin-top: var(--s-2); }
+.rail-toggle:hover { background: var(--surface); color: var(--ink); }
+.rail-toggle[hidden] { display: none !important; }
+body[data-nav='full'] .rail-toggle:not([hidden]) { display: flex; }
+body[data-nav='rail'] .rail-toggle:not([hidden]) { display: flex; justify-content: center; }
+body[data-nav='full'] #railIcon { transform: rotate(180deg); }
+.crumbs .back { color: var(--brand-strong); text-decoration: none; font-weight: 600; margin-right: var(--s-3); padding-right: var(--s-3); border-right: 1px solid var(--line-strong); }
+.crumbs .back:hover { text-decoration: underline; }
+@media (min-width: 901px) {
+  body[data-nav='rail'] .app { grid-template-columns: 84px minmax(0, 1fr); }
+  body[data-nav='rail'] .sidebar { padding: var(--s-4) var(--s-2); align-items: center; overflow: visible; }
+  body[data-nav='rail'] .logo-full, body[data-nav='rail'] .nav-label { display: none; }
+  body[data-nav='rail'] .logo-mini { display: block; }
+  body[data-nav='rail'] .brand { padding: var(--s-1) 0 var(--s-4); }
+  body[data-nav='rail'] .nav { width: 100%; display: grid; gap: 2px; }
+  body[data-nav='rail'] .nav a { justify-content: center; padding: 11px 0; position: relative; }
+  body[data-nav='rail'] .nav .lbl, body[data-nav='rail'] .rail-toggle .lbl, body[data-nav='rail'] .me .lbl { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  body[data-nav='rail'] .nav .count { position: absolute; top: 3px; right: 10px; font-size: 0.625rem; padding: 2px 5px; }
+  body[data-nav='rail'] .nav a + a::before { content: none; }
+  body[data-nav='rail'] .me { justify-content: center; padding: var(--s-3) 0; width: 100%; }
+  body[data-nav='rail'] .nav a[data-label]:hover::after, body[data-nav='rail'] .nav a[data-label]:focus-visible::after,
+  body[data-nav='rail'] .rail-toggle:hover::after, body[data-nav='rail'] .rail-toggle:focus-visible::after {
+    content: attr(data-label); position: absolute; left: calc(100% + 10px); top: 50%; transform: translateY(-50%); white-space: nowrap;
+    background: var(--ink); color: var(--bg); font: 600 var(--text-xs) var(--font-ui); padding: 6px 10px; border-radius: var(--radius-xs); z-index: 30; pointer-events: none;
+  }
+  body[data-nav='rail'] .rail-toggle { position: relative; }
+}
+
+/* ---------- Hub : recherche globale et tuiles ---------- */
+.hub-search { margin-bottom: var(--s-5); position: relative; }
+.hub-field { display: flex; align-items: center; gap: var(--s-3); padding: 14px var(--s-5); border: 1px solid var(--field-border); border-radius: var(--radius-pill); background: var(--surface); }
+.hub-field:focus-within { box-shadow: var(--focus); border-color: var(--brand-strong); }
+.hub-field input { flex: 1; border: 0; outline: none; background: transparent; font-size: var(--text-md); min-width: 0; }
+.chips { display: flex; flex-wrap: wrap; gap: var(--s-2); margin-top: var(--s-3); }
+.chip-btn { border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink-2); border-radius: var(--radius-pill); padding: 5px 12px; font: 500 var(--text-xs) var(--font-ui); cursor: pointer; }
+.chip-btn[aria-pressed='true'] { background: var(--brand-soft); color: var(--ink); border-color: var(--brand-strong); font-weight: 600; }
+.results { margin-top: var(--s-4); border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow-2); max-height: 340px; overflow: auto; }
+.results[hidden] { display: none; }
+.res-group { padding: var(--s-2) 0; border-bottom: 1px solid var(--line); }
+.res-group:last-child { border-bottom: 0; }
+.res-group h3 { font: 600 0.6875rem var(--font-ui); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-2); padding: var(--s-2) var(--s-5); }
+.res-item { display: flex; justify-content: space-between; gap: var(--s-4); padding: 8px var(--s-5); font-size: var(--text-sm); cursor: pointer; }
+.res-item:hover, .res-item[aria-selected='true'] { background: var(--selected-bg); }
+.res-item small { color: var(--muted); }
+.res-empty { padding: var(--s-5); color: var(--ink-2); }
+.section-title { font: 700 var(--text-lg) var(--font-display); margin: var(--s-6) 0 var(--s-3); }
+.tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: var(--s-3); margin-bottom: var(--s-6); }
+.tile { display: grid; gap: 4px; align-content: start; padding: var(--s-4); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); text-decoration: none; color: var(--ink); box-shadow: var(--shadow-1); transition: box-shadow var(--fast) var(--ease), transform var(--fast) var(--ease); }
+.tile:hover { box-shadow: var(--shadow-2); transform: translateY(-1px); }
+.tile .icon { width: 22px; height: 22px; color: var(--brand-strong); margin-bottom: var(--s-2); }
+.tile span { color: var(--ink-2); font-size: var(--text-xs); }
+.tile.soon { opacity: 0.85; border-style: dashed; }
+
+/* ---------- DEC-003 : bandeau d'étapes (Opportunités hybrides) ---------- */
+.opp-tools { display: flex; gap: var(--s-4); align-items: center; flex-wrap: wrap; margin-bottom: var(--s-4); }
+.stagebar { display: flex; gap: var(--s-2); flex-wrap: wrap; flex: 1; }
+.stage-chip { text-align: left; background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--radius-sm); padding: 8px var(--s-4); cursor: pointer; display: grid; gap: 2px; min-width: 124px; }
+.stage-chip b { font: 700 var(--text-sm) var(--font-ui); }
+.stage-chip span { color: var(--ink-2); font-size: var(--text-xs); font-variant-numeric: tabular-nums; }
+.stage-chip[aria-pressed='true'] { background: var(--selected-bg); border-color: var(--selected-bar); box-shadow: 0 0 0 1px var(--selected-bar); }
+.sortbox { gap: var(--s-2); }
+.sortbox select { border: 0; background: transparent; font-weight: 600; outline: none; cursor: pointer; }
