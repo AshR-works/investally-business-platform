@@ -2,7 +2,7 @@
 
 > Document **généré** par `node scripts/gen-function-index.mjs` à partir des commentaires du code. Ne pas le modifier à la main : corriger le commentaire dans le fichier source, puis relancer le script.
 
-**600 déclarations commentées au total.**
+**606 déclarations commentées au total.**
 
 
 ## API (NestJS) — 459 déclarations commentées
@@ -1089,7 +1089,7 @@
 | `export default function ResetPasswordPage()` | Page ouverte depuis le lien reçu par e-mail (A10 à A12). |
 | `async function submit(event: FormEvent)` | Envoie le jeton et le nouveau mot de passe ; le serveur coupe toutes les sessions, l'utilisateur doit se reconnecter avec son second facteur. |
 
-## Interface web — composants — 39 déclarations commentées
+## Interface web — composants — 40 déclarations commentées
 
 ### `app-shell.tsx`
 
@@ -1119,6 +1119,12 @@
 | Déclaration | Rôle |
 |---|---|
 | `export function NewPasswordFields({ password, confirmation, onPassword, onConfirmation }:` | Champs « nouveau mot de passe » + confirmation, avec les règles visibles en direct (chacune annoncée « respectée » ou « à respecter » aux lecteurs d'écran) et l'alerte de non-concordance. |
+
+### `auth/otp-input.tsx`
+
+| Déclaration | Rôle |
+|---|---|
+| `export function OtpInput({ label, value, onChange, disabled = false, autoFocus = false }:` | Saisie du code à 6 chiffres en six cases (EXD-06, DDR-0009). |
 
 ### `data/badge.tsx`
 
@@ -1225,7 +1231,7 @@
 | `export function StepUpDialog({ onDone }: { onDone: (ok: boolean) => void })` | Demande un code frais du second facteur avant une action sensible (modification de rôles, désactivation, etc.). |
 | `async function submit(event: FormEvent)` | Vérifie le code ; en cas de succès le nouveau jeton remplace l'ancien et l'action sensible est rejouée. |
 
-## Interface web — bibliothèque — 61 déclarations commentées
+## Interface web — bibliothèque — 66 déclarations commentées
 
 ### `api.ts`
 
@@ -1294,6 +1300,16 @@
 | `export interface AppModule` | Un module de l'application tel que le hub et la navigation le présentent. |
 | `export function availableModules(profile: Profile \| null): AppModule[]` | Modules livrés et que le profil a le droit d'ouvrir. |
 | `export function upcomingModules(): AppModule[]` | Modules pas encore livrés (présentés « À venir » sur le hub). |
+
+### `otp.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export const OTP_LENGTH = 6;` | Longueur du code du second facteur (TOTP) : six chiffres. |
+| `export function digitsOnly(raw: string): string` | Ne garde que les chiffres (le collage « 123 456 » ou « 123-456 » devient « 123456 »). |
+| `export function applyInput(value: string, index: number, raw: string, length = OTP_LENGTH): string` | Valeur après saisie de `raw` dans la case `index`. |
+| `export function backspaceOnEmpty(value: string, index: number): string` | Valeur après « Retour arrière » sur une case vide : le chiffre précédent est effacé. |
+| `export function nextFocus(value: string, length = OTP_LENGTH): number` | Index de la case qui doit recevoir le focus après une saisie aboutissant à `value`. |
 
 ### `password.ts`
 

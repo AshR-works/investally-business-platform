@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { ApiError } from '../lib/api';
 import { authErrorMessage, isRateLimited, secondsLeft } from '../lib/auth-errors';
+import { applyInput, backspaceOnEmpty, digitsOnly, nextFocus } from '../lib/otp';
 import { passwordRules } from '../lib/password';
 
 describe('règles du mot de passe affichées en direct', () => {
@@ -45,3 +46,33 @@ describe('compte à rebours', () => {
     expect(secondsLeft(10_000, 20_000)).toBe(0);
   });
 });
+
+describe('saisie du code en six cases', () => {
+  it('ne garde que les chiffres, y compris pour un code collé avec espaces ou tirets', () => {
+    expect(digitsOnly('123 456')).toBe('123456');
+    expect(digitsOnly('12-34-56')).toBe('123456');
+    expect(digitsOnly('abc')).toBe('');
+  });
+  it('un chiffre complète à la suite, remplace sur place, et ne laisse jamais de trou', () => {
+    expect(applyInput('', 0, '4')).toBe('4');
+    expect(applyInput('48', 2, '1')).toBe('481');
+    expect(applyInput('481', 1, '9')).toBe('491');
+    expect(applyInput('4', 4, '7')).toBe('47');
+  });
+  it('un code collé ou rempli automatiquement remplit toutes les cases et reste borné à 6', () => {
+    expect(applyInput('', 0, '123456')).toBe('123456');
+    expect(applyInput('', 0, '1234567890')).toBe('123456');
+    expect(applyInput('12', 2, '3456')).toBe('123456');
+  });
+  it('effacer une case retire son chiffre ; Retour arrière sur case vide retire le précédent', () => {
+    expect(applyInput('1234', 1, '')).toBe('134');
+    expect(backspaceOnEmpty('12', 2)).toBe('1');
+    expect(backspaceOnEmpty('12', 0)).toBe('12');
+  });
+  it('le focus suit la saisie sans dépasser la dernière case', () => {
+    expect(nextFocus('')).toBe(0);
+    expect(nextFocus('123')).toBe(3);
+    expect(nextFocus('123456')).toBe(5);
+  });
+});
+
