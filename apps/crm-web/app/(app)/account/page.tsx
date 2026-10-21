@@ -1,5 +1,7 @@
 'use client';
 
+import { Badge } from '../../../components/data/badge';
+import { DataTable, type Column } from '../../../components/data/data-table';
 import { PageHeading } from '../../../components/page-heading';
 import { FormEvent, useCallback, useEffect, useState } from 'react';
 import { api, ApiError } from '../../../lib/api';
@@ -144,26 +146,28 @@ function Sessions() {
     }
   }
 
+  const columns: Column<SessionView>[] = [
+    { id: 'device', header: 'Appareil', cell: (s) => <span title={s.device} className="flex flex-wrap items-center gap-2">{deviceLabel(s.device)}{s.current && <Badge tone="ok">Cette session</Badge>}</span> },
+    { id: 'ip', header: 'Adresse IP', cell: (s) => s.ipAddress },
+    { id: 'in', header: 'Connexion', cell: (s) => new Date(s.loggedInAt).toLocaleString('fr-FR') },
+    { id: 'seen', header: 'Dernière activité', cell: (s) => new Date(s.lastSeenAt).toLocaleString('fr-FR') },
+    { id: 'actions', header: 'Actions', srOnlyHeader: true, align: 'right', cell: (s) => (!s.current ? <button type="button" className="secondary small" onClick={() => void revoke(s.id)}>Révoquer</button> : null) },
+  ];
+
   return (
     <section className="panel">
       <h2>Mes sessions</h2>
       <p className="hint">Si vous ne reconnaissez pas une session, révoquez-la puis changez votre mot de passe.</p>
       {error && <p role="alert" className="error">{error}</p>}
-      <div className="table-wrap">
-        <table>
-          <thead><tr><th>Appareil</th><th>Adresse IP</th><th>Connexion</th><th>Dernière activité</th><th><span className="sr-only">Actions</span></th></tr></thead>
-          <tbody>
-            {sessions.map((s) => (
-              <tr key={s.id}>
-                <td title={s.device}>{deviceLabel(s.device)}{s.current && <span className="badge ok" style={{ marginLeft: '.5rem' }}>Cette session</span>}</td>
-                <td>{s.ipAddress}</td>
-                <td>{new Date(s.loggedInAt).toLocaleString('fr-FR')}</td>
-                <td>{new Date(s.lastSeenAt).toLocaleString('fr-FR')}</td>
-                <td>{!s.current && <button type="button" className="secondary small" onClick={() => void revoke(s.id)}>Révoquer</button>}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="overflow-hidden rounded-panel border border-line">
+        <DataTable
+          caption="Mes sessions"
+          columns={columns}
+          rows={sessions}
+          rowId={(s) => s.id}
+          rowLabel={(s) => deviceLabel(s.device)}
+          empty="Aucune session."
+        />
       </div>
     </section>
   );

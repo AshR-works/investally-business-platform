@@ -5,6 +5,8 @@ Format : une section par version, du plus récent au plus ancien. Chaque ligne r
 ## Implémentation dans l'application — session H1 (2026-10-21), sans changement de version
 Le design 0.4.1 est installé dans l'application réelle (`apps/crm-web`) : jetons (copie contrôlée par test), polices et logos hébergés, Tailwind v4, coque (navigation complète sur le hub, rail compact ailleurs, panneau centré, bouton-pictogramme), hub réel, recherche globale, thème clair/sombre. **Écarts assumés avec le prototype** (CAD-H1-3) : le hub n'affiche **aucun chiffre ni donnée fictive** (les indicateurs reviendront avec leur source) ; les modules non livrés apparaissent « À venir » et inactifs ; la liste des entreprises passe de `/` à `/companies`. Preuves : `docs/SPRINT-H1-RECETTE.md`.
 
+**H1b (même jour)** : composants de données du design dans l'application — en-tête de page, tableau avec sélection persistante (EXD-02), badges de statut, barre d'outils (filtres rapides, recherche), pagination, menu d'actions de ligne, cellule « entité » — appliqués à Entreprises, Utilisateurs et sessions de Mon compte, **avec les seules données réelles** (écarts : `docs/cadrages/ECART-MOCKUP-VS-REEL.md`).
+
 ## 0.4.1 — 2026-10-21 — *Validée*
 - **EXD-10 / DEC-007 / DDR-0007** : panneau principal **centré sur la fenêtre** (option B) ; repli automatique en centrage dans l'espace restant quand la fenêtre est étroite ; largeur du panneau 1 440 px au plus ; la largeur maximale du contenu (1 320 px) est supprimée.
 - **EXD-11** : bouton de dépliage en **pictogramme seul** (44 px, nom accessible, info-bulle, état annoncé) ; pictogramme provisoire à confirmer.

@@ -1,4 +1,4 @@
-# H1 — Habillage minimal et hub : recette
+# H1 et H1b — Habillage, hub et composants de données : recette
 
 *Branche `sprint/h1-habillage-hub` · 2026-10-21 · décisions : CAD-H1-1 à 4 (toutes « A », voir [cadrages/CADRAGE-H1-HABILLAGE-ET-HUB.md](cadrages/CADRAGE-H1-HABILLAGE-ET-HUB.md)).*
 
@@ -20,7 +20,7 @@
 | Contrôle | Résultat |
 |---|---|
 | Typage | sans erreur |
-| Tests de l'interface | **35 / 35** (24 existants + 11 nouveaux : jetons identiques à la source, catalogue des modules et droits, recherche : seuil, droits, regroupement, échec isolé, abandon ; thème) |
+| Tests de l'interface (H1 seul) | **35 / 35** (24 existants + 11 nouveaux : jetons identiques à la source, catalogue des modules et droits, recherche : seuil, droits, regroupement, échec isolé, abandon ; thème) |
 | Mutants | 2 / 2 tués (droit de lecture des utilisateurs retiré de la recherche ; jeton de couleur modifié) |
 | Audit d'accessibilité (axe-core, 21 états au total dont 7 de la nouvelle coque) | **0 violation, 0 point à vérifier** dont hub, recherche avec résultats, **thème sombre**, **mobile tiroir fermé et ouvert**, rail compact, navigation dépliée |
 | Politique de contenu (CSP) | **0 violation** pendant tout le parcours ; polices Inter et Montserrat chargées depuis l'application |
@@ -30,13 +30,35 @@
 
 Détail état par état : [accessibilite/resultats/lecteur-d-ecran-proxy-2026-10-21.md](accessibilite/resultats/lecteur-d-ecran-proxy-2026-10-21.md).
 
+## H1b — composants de données (décision du 2026-10-21, D20)
+Après la livraison de H1, la direction produit a constaté que les structures de données du mockup n'apparaissaient pas et retenu l'**option B** de CAD-H1-2 pour les composants de données.
+
+| Composant (`components/data/`) | Rôle |
+|---|---|
+| `PageHeader` | Fil d'Ariane (« ← Vue d'ensemble »), domaine, titre, description, actions |
+| `DataTable` | Tableau typé : en-têtes, **sélection persistante** (case, clic sur la ligne, fond teinté + barre de 4 px, case d'en-tête indéterminée), état vide et chargement |
+| `SelectionBar` | « n sélectionnées · Tout désélectionner », annoncée aux lecteurs d'écran |
+| `Toolbar`, `QuickFilters`, `SearchField` | Filtres rapides (boutons à bascule), recherche à saisie différée |
+| `Pagination` | « 1–20 sur 48 », Précédent / Suivant |
+| `Badge`, `EntityCell`, `Card` | Statuts (texte + point, jamais la couleur seule), cellule à initiales, surface |
+| `RowActions` | Menu « ⋯ » d'une ligne : clavier, Échap, position fixe à gauche du bouton (jamais coupé, ne recouvre pas les autres boutons) |
+
+**Appliqués** à Entreprises (création en fenêtre, recherche, pagination), Utilisateurs (filtres par statut, menu d'actions) et sessions de Mon compte. **Données réelles uniquement** : les colonnes que l'API ne fournit pas (responsable, valeur, dernière activité) sont absentes : voir [cadrages/ECART-MOCKUP-VS-REEL.md](cadrages/ECART-MOCKUP-VS-REEL.md).
+
+| Contrôle H1b | Résultat |
+|---|---|
+| Tests de l'interface | **42 / 42** (35 + 7 : sélection persistante, pagination, initiales, statuts) ; 2 mutants tués (sélection qui modifie l'ensemble d'origine ; « tout sélectionné » sur une liste vide) |
+| Audit axe-core | **24 états, 0 violation, 0 point à vérifier**, dont fenêtre de création, deux lignes sélectionnées, menu d'actions ouvert |
+| Politique de contenu (CSP) | 0 violation |
+| Défauts trouvés et corrigés pendant la recette | Menu d'actions qui recouvrait le bouton de la ligne suivante (cible tactile masquée, WCAG 2.5.8) → menu en position fixe à gauche ; **liens dans le texte sans soulignement** après la remise à zéro de Tailwind (WCAG 1.4.1) → soulignement rétabli |
+
 ## Écarts assumés avec le prototype
 - Le hub **n'affiche ni indicateurs ni rendez-vous** : ils n'ont pas de source réelle (règle « aucune donnée fictive »).
 - Le menu ne liste que ce qui est livré (3 modules + hub + Mon compte) ; les autres modules sont présentés sur le hub en « À venir ».
 - Le bouton de dépliage est masqué sur le hub (navigation toujours complète) : à confirmer (DDR-0007, point 2).
 
 ## Dette ouverte (voir `TECH-DEBT.md`)
-D32 styles legacy · D33 thème appliqué après le premier rendu · D34 recherche côté interface · D35 logos PNG et variante sombre · D36 pictogramme et bouton sur le hub · D31 écoute avec un vrai lecteur d'écran (toujours à faire).
+D37 sélection sans actions groupées · D38 colonnes et filtres métier absents · D32 styles legacy · D33 thème appliqué après le premier rendu · D34 recherche côté interface · D35 logos PNG et variante sombre · D36 pictogramme et bouton sur le hub · D31 écoute avec un vrai lecteur d'écran (toujours à faire).
 
 ## À valider par la direction produit
 1. Le rendu (ouvrir la pile de test ou consulter les captures) : coque, hub, recherche, thème sombre, mobile.
