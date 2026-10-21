@@ -1,0 +1,66 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Méthode d&#x27;arbitrage décisionnel</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — méthode · <a href="design/05-AIDE-A-LA-DECISION.html">Aide à la décision</a></nav><h1>Méthode d'arbitrage décisionnel</h1>
+<p><strong>Statut</strong> : méthode <strong>permanente</strong>, adoptée le 2026-10-21 sur demande de la direction produit. <strong>Dorénavant, toute décision structurante du projet Investally suit cette méthode.</strong> <strong>Principe fondateur</strong> : l'équipe projet <strong>éclaire</strong>, la direction produit <strong>décide</strong>. Je ne prends jamais une décision à votre place ; je présente des options comparables, une recommandation argumentée et ses conséquences.</p>
+<h2>1. Quand l'appliquer</h2>
+<p>Dès qu'un choix est <strong>structurant</strong> : navigation, architecture, périmètre, ordre de réalisation, rattachement d'un module, donnée sensible, dépendance externe, changement de méthode. Les choix mineurs (couleur d'un badge, libellé) n'en relèvent pas : ils sont tranchés dans le registre des exigences.</p>
+<h2>2. Le gabarit (toujours le même)</h2>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Rubrique</th><th>Contenu attendu</th></tr></thead><tbody>
+<tr><td>1</td><td><strong>Contexte</strong></td><td>La question, pourquoi maintenant, ce qui est déjà décidé et ne bouge pas</td></tr>
+<tr><td>2</td><td><strong>Options</strong></td><td>Au moins deux options réelles, dont le <strong>statu quo</strong> ; une option « autre » si pertinente</td></tr>
+<tr><td>3</td><td>Pour chaque option</td><td><strong>Avantages</strong> · <strong>Inconvénients</strong> · <strong>Impacts UX</strong> · <strong>Impacts métier</strong> · <strong>Impacts techniques</strong> · <strong>Impacts maintenance</strong> · coût et délai · <strong>réversibilité</strong></td></tr>
+<tr><td>4</td><td><strong>Grille de comparaison</strong></td><td>Critères notés de 1 (défavorable) à 5 (favorable), avec leur poids (voir §3)</td></tr>
+<tr><td>5</td><td><strong>Risques</strong></td><td>Ce qui peut mal tourner, probabilité, impact, parade</td></tr>
+<tr><td>6</td><td><strong>Dette induite</strong></td><td>Ce que l'option laisse à rembourser plus tard</td></tr>
+<tr><td>7</td><td><strong>Recommandation</strong></td><td>L'option que je choisirais, <strong>les raisons</strong>, les conditions, ce qui la ferait changer d'avis</td></tr>
+<tr><td>8</td><td><strong>Décision</strong></td><td><strong>Laissée à la direction produit</strong> : date, option retenue, motif, réserves</td></tr>
+<tr><td>9</td><td><strong>Trace</strong></td><td>Enregistrement dans <code>QUESTIONS-ET-DECISIONS.md</code> et, pour le design, dans le registre des décisions de design</td></tr>
+</tbody></table></div>
+<h2>3. Critères standard et pondération</h2>
+<p>Poids par défaut (à ajuster <strong>avant</strong> de noter, pas après) :</p>
+<div class="table-wrap"><table><thead><tr><th>Critère</th><th>Poids</th><th>Question posée</th></tr></thead><tbody>
+<tr><td>Valeur métier</td><td>5</td><td>Quel gain pour les utilisateurs et l'entreprise ?</td></tr>
+<tr><td>Risque (sécurité, juridique, délai)</td><td>5</td><td>Qu'est-ce qui peut gravement mal tourner ?</td></tr>
+<tr><td>Cohérence avec l'architecture et les décisions passées</td><td>4</td><td>Respecte-t-on les ADR et les exigences ?</td></tr>
+<tr><td>Réversibilité</td><td>4</td><td>Combien coûte un retour en arrière ?</td></tr>
+<tr><td>Coût et délai de réalisation</td><td>3</td><td>Combien de sprints ?</td></tr>
+<tr><td>Coût de maintenance</td><td>3</td><td>Combien en année 2 ?</td></tr>
+<tr><td>Expérience utilisateur</td><td>4</td><td>Gain ou perte de clarté et d'efficacité ?</td></tr>
+<tr><td>Accessibilité et sécurité</td><td>4</td><td>Respecte-t-on WCAG AA et la politique de sécurité ?</td></tr>
+</tbody></table></div>
+<p>Score pondéré = Σ (note × poids) ; il <strong>aide</strong>, il ne remplace pas le jugement : un risque rédhibitoire l'emporte sur un bon score.</p>
+<h2>4. Règles de rigueur</h2>
+<ol><li><strong>Statu quo toujours présenté</strong>, avec son coût réel.</li><li><strong>Aucune option de façade</strong> : chacune doit être défendable.</li><li><strong>Faits vérifiés distingués des hypothèses</strong> ; les hypothèses sont étiquetées.</li><li><strong>Réversibilité</strong> explicitée (🟢 facile · 🟡 moyenne · 🔴 coûteuse).</li><li><strong>Dissensus assumé</strong> : si je recommande contre une exigence existante, je le dis et je n'applique pas avant votre réponse.</li><li><strong>Une décision n'est jamais effacée</strong> : si elle change, on ajoute « remplacée par ».</li></ol>
+<h2>5. Modèle de fiche de décision (à copier)</h2>
+<pre><code># DEC-NNN — &lt;titre&gt;
+Date : AAAA-MM-JJ · Demandeur : … · Statut : Ouverte | Décidée | Remplacée
+## Contexte
+## Options (A, B, C) — avantages / inconvénients / impacts UX, métier, technique, maintenance / réversibilité
+## Grille pondérée
+## Risques et dette induite
+## Recommandation (argumentée)
+## Décision de la direction produit : option …, motif …, réserves …
+## Suites : documents et exigences mis à jour</code></pre>
+<h2>6. Application</h2>
+<p>La première application de cette méthode est <a href="design/05-AIDE-A-LA-DECISION.html">docs/design/05-AIDE-A-LA-DECISION.md</a> (navigation, opportunités, stocks, ordre de réalisation, versionnement des livrables design).</p></main></body></html>

@@ -1,0 +1,162 @@
+/*
+ * Investally — jetons de design (source de vérité du style).
+ *
+ * Ces variables sont reprises à l'identique par l'application (Next.js / Tailwind) : voir `tailwind.preset.ts`.
+ * Origine des valeurs : le logo (noir #1D1D1B, taupe #BEAB9F) et la capture de référence (fond rosé, carte sombre, badges
+ * pastel). Toute teinte de TEXTE a été assombrie pour atteindre le contraste WCAG AA (4,5:1) : le gris de la capture
+ * (#9F9F9F, 2,65:1) et ses badges (3,4 à 3,8:1) ne l'atteignent pas.
+ */
+
+@font-face {
+  font-family: 'Inter Variable';
+  src: url('fonts/inter-latin-wght-normal.woff2') format('woff2-variations');
+  font-weight: 100 900;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Montserrat Variable';
+  src: url('fonts/montserrat-latin-wght-normal.woff2') format('woff2-variations');
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+:root {
+  color-scheme: light;
+
+  /* Typographie */
+  --font-ui: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Montserrat Variable', 'Inter Variable', system-ui, sans-serif;
+  --text-xs: 0.75rem;    /* 12 — étiquettes, méta */
+  --text-sm: 0.8125rem;  /* 13 — tableaux, champs denses */
+  --text-base: 0.875rem; /* 14 — corps de l'application */
+  --text-md: 1rem;       /* 16 — texte courant des pages publiques */
+  --text-lg: 1.125rem;   /* 18 */
+  --text-xl: 1.5rem;     /* 24 — titres de section */
+  --text-2xl: 2rem;      /* 32 — titres de page */
+  --text-kpi: 2.5rem;    /* 40 — indicateurs */
+
+  /* Surfaces (clair) */
+  --canvas: #E6DFDA;         /* fond global : plus foncé que la zone principale (EXD-01) */
+  --bg: #FAFAFC;             /* zone principale */
+  --surface: #FFFFFF;
+  --surface-2: #F7F5F3;
+  --sidebar: #F4EFEC;
+  --line: #E9E4E0;
+  --line-strong: #D9D2CC;
+  --field-border: #857E78;   /* bordure des champs : 4,0:1 sur blanc (WCAG 1.4.11 exige 3:1) */
+
+  /* Texte */
+  --ink: #1D1D1B;
+  --ink-2: #5E5A57;
+  --muted: #76706B;
+
+  /* Marque */
+  --brand: #BEAB9F;          /* couleur du logo : remplissages, barres, graphiques */
+  --brand-hover: #B29E91;
+  --brand-ink: #1D1D1B;      /* texte SUR --brand (le blanc sur taupe ne passe pas : 2,2:1) */
+  --brand-strong: #7A6355;   /* texte, liens, focus, bouton plein à texte blanc (5,6:1) */
+  --brand-soft: #F1EAE5;
+
+  /* Carte héros sombre (identique dans les deux thèmes) */
+  --hero: #303030;
+  --hero-ink: #F4EFEC;
+  --hero-muted: #B3ADA8;
+
+  /* Sémantique : texte / fond pastel */
+  --ok: #1F6B58;   --ok-bg: #E8F5F0;
+  --warn: #8A5A1F; --warn-bg: #FBF2DF;
+  --bad: #A63D3B;  --bad-bg: #FAEAE5;
+  --info: #2B6F86; --info-bg: #E6F1F5;
+
+  /* Formes */
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius: 14px;
+  --radius-lg: 22px;
+  --radius-pill: 999px;
+
+  /* Élévation */
+  --shadow-1: 0 1px 2px rgba(29, 29, 27, 0.04);
+  --shadow-2: 0 4px 16px rgba(29, 29, 27, 0.06);
+  --shadow-3: 0 16px 48px rgba(29, 29, 27, 0.14);
+  --shadow-panel: 0 1px 2px rgba(29, 29, 27, 0.05), 0 10px 28px rgba(29, 29, 27, 0.06);
+
+  /* Sélection persistante (EXD-02) */
+  --selected-bg: #EDE3DC;
+  --selected-bar: var(--brand-strong);
+
+  /* Focus (visible au clavier, jamais supprimé) */
+  --focus: 0 0 0 3px var(--surface), 0 0 0 5px var(--brand-strong);
+
+  /* Mouvement */
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+  --fast: 120ms;
+  --base: 200ms;
+
+  /* Espacement : grille de 4 px */
+  --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-5: 20px; --s-6: 24px; --s-8: 32px; --s-10: 40px; --s-12: 48px;
+}
+
+/* Thème sombre : suit l'appareil, sauf choix explicite de l'utilisateur */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --canvas: #0B0B0A;
+  --bg: #171615;
+  --surface: #211F1E;
+  --surface-2: #282625;
+  --selected-bg: #3A322D;
+  --shadow-panel: 0 1px 2px rgba(0, 0, 0, 0.4), 0 12px 32px rgba(0, 0, 0, 0.45);
+  --sidebar: #191817;
+  --line: #2E2B29;
+  --line-strong: #403C39;
+  --field-border: #7D766F;
+  --ink: #F2EEEB;
+  --ink-2: #C9C2BC;
+  --muted: #A8A19B;
+  --brand: #CDBBAF;
+  --brand-hover: #D8C8BD;
+  --brand-ink: #141413;
+  --brand-strong: #CDBBAF;
+  --brand-soft: #2A2522;
+  --ok: #7FD1B5;   --ok-bg: #1B2A25;
+  --warn: #E3B573; --warn-bg: #2D2417;
+  --bad: #F0908D;  --bad-bg: #2E1C1B;
+  --info: #8CC4D9; --info-bg: #172529;
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-2: 0 4px 16px rgba(0, 0, 0, 0.35);
+  --shadow-3: 0 16px 48px rgba(0, 0, 0, 0.55);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --canvas: #0B0B0A;
+    --bg: #171615;
+    --surface: #211F1E;
+    --surface-2: #282625;
+    --selected-bg: #3A322D;
+    --shadow-panel: 0 1px 2px rgba(0, 0, 0, 0.4), 0 12px 32px rgba(0, 0, 0, 0.45);
+    --sidebar: #191817;
+    --line: #2E2B29;
+    --line-strong: #403C39;
+    --field-border: #7D766F;
+    --ink: #F2EEEB;
+    --ink-2: #C9C2BC;
+    --muted: #A8A19B;
+    --brand: #CDBBAF;
+    --brand-hover: #D8C8BD;
+    --brand-ink: #141413;
+    --brand-strong: #CDBBAF;
+    --brand-soft: #2A2522;
+    --ok: #7FD1B5;   --ok-bg: #1B2A25;
+    --warn: #E3B573; --warn-bg: #2D2417;
+    --bad: #F0908D;  --bad-bg: #2E1C1B;
+    --info: #8CC4D9; --info-bg: #172529;
+    --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-2: 0 4px 16px rgba(0, 0, 0, 0.35);
+    --shadow-3: 0 16px 48px rgba(0, 0, 0, 0.55);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+}

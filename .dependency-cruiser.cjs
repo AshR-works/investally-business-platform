@@ -4,6 +4,14 @@ const MODULES = '^apps/crm-api/src/modules/([^/]+)';
 module.exports = {
   forbidden: [
     {
+      name: 'stock-sans-dependance-crm',
+      comment:
+        "ADR-0007 : le module Stocks est autonome (hébergé dans le monolithe, conçu pour être extrait vers l'ERP). Il n'importe AUCUN module métier du CRM ; seuls shared-kernel et les interfaces publiques de iam, audit et notifications lui sont ouverts.",
+      severity: 'error',
+      from: { path: '^apps/crm-api/src/modules/stock' },
+      to: { path: '^apps/crm-api/src/modules/(business-development|training|agenda|reporting)' },
+    },
+    {
       name: 'domain-pur',
       comment:
         "Le Domain ne dépend ni de NestJS, ni de Prisma, ni de class-validator, ni d'une autre couche.",

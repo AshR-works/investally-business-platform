@@ -1,0 +1,372 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Aide à la décision — arbitrages ouverts et gouvernance des livrables design</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — design · <a href="README.html">Mode d&#8217;emploi</a> · <a href="01-DESIGN-SYSTEM.html">Design system</a> · <a href="02-SPECIFICATIONS-FRONTEND.html">Spécifications frontend</a> · <a href="exigences/REGISTRE-EXD.html">Exigences</a> · <a href="04-ANALYSE-D-IMPACT.html">Analyse d&#8217;impact</a> · <a href="05-AIDE-A-LA-DECISION.html">Aide à la décision</a> · <a href="decisions/REGISTRE-DDR.html">Décisions (DDR)</a> · <a href="CHANGELOG-DESIGN.html">Journal</a> · <a href="prototype/index.html">Prototype</a></nav><h1>Aide à la décision — arbitrages ouverts et gouvernance des livrables design</h1>
+<p><strong>Date</strong> : 2026-10-21 · <strong>Statut</strong> : <strong>décisions recommandées retenues et appliquées</strong> · <strong>Méthode</strong> : <a href="../METHODE-D-ARBITRAGE.html">METHODE-D-ARBITRAGE.md</a> · <strong>Références</strong> : <a href="exigences/REGISTRE-EXD.html">REGISTRE-EXD.md</a>, <a href="04-ANALYSE-D-IMPACT.html">04-ANALYSE-D-IMPACT.md</a>, ADR-0005</p>
+<blockquote><p><strong>Posture</strong> : je n'ai arrêté aucune décision. Chaque arbitrage se termine par <strong>ma recommandation</strong>, présentée comme telle ; <strong>la décision est celle de la direction produit</strong> : elle a retenu les recommandations le 2026-10-21 (cases cochées, journal en annexe). <strong>Notation</strong> : 1 = défavorable, 5 = favorable. Réversibilité : 🟢 facile · 🟡 moyenne · 🔴 coûteuse. <em>Les hypothèses sont étiquetées (H) ; tout le reste est vérifié dans le dépôt ou dans les prototypes. Les scores sont des <strong>aides</strong> : ils reflètent mon jugement et les poids affichés, que vous pouvez modifier (le total se recalcule : Σ note × poids).</em></p></blockquote>
+<h2>Faits de départ (vérifiés)</h2>
+<ul><li><strong>≈ 20 utilisateurs</strong> (10 employés aujourd'hui) ; sprints courts menés par vous et moi ; API NestJS + interface Next.js ; <strong>une base PostgreSQL par produit</strong> (ADR-0005), événements entre produits, <strong>aucun paquet partagé tant que l'ERP n'existe pas</strong>.</li><li><strong>Livré</strong> : socle d'accès complet (S0 à S3.5) ; <strong>en attente de votre validation</strong> : S3.4 et S3.5. <strong>Bloquants externes</strong> : accès Microsoft 365, deux SuperAdmin, avis juridique sur l'audit de 10 ans.</li><li><strong>Prototype</strong> : 9 écrans (+ agenda), clair et sombre, EXD-01 à 04 appliquées ; EXD-05 à 08 spécifiées (44 écrans, dont 33 nouveaux).</li></ul>
+<hr>
+<h1>PARTIE I — Gouvernance du versionnement des livrables UX/UI</h1>
+<h2>I.1 Besoins à couvrir</h2>
+<p>Conserver l'historique complet · repérer les évolutions · <strong>comparer deux versions</strong> · <strong>revenir en arrière</strong> · tracer <strong>pourquoi</strong> une décision de design a été prise.</p>
+<h2>I.2 Les options</h2>
+<h3>Option A — Versionnement simple par dossiers</h3>
+<p>Copies datées : <code>design_v1/</code>, <code>design_v2_final/</code>, <code>design_v2_final_corrigé/</code>…</p>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td><strong>Avantages</strong></td><td>Aucun outil ; compréhensible par tous ; retour en arrière = rouvrir un dossier</td></tr>
+<tr><td><strong>Inconvénients</strong></td><td><strong>Duplication massive</strong> ; aucune différence lisible entre versions ; noms ambigus (« final2 ») ; décisions non reliées aux changements ; dérive entre copies</td></tr>
+<tr><td><strong>Complexité</strong></td><td>Très faible au départ, <strong>croissante</strong> (le désordre augmente avec le temps)</td></tr>
+<tr><td><strong>Adaptation au projet</strong></td><td><strong>Faible</strong> : le dépôt Git fournit déjà un historique gratuit ; refaire des copies à la main serait régressif</td></tr>
+</tbody></table></div>
+<h3>Option B — Versionnement par releases</h3>
+<p>Un numéro de version (<code>v1.0</code>, <code>v1.1</code>) et un instantané figé à chaque jalon validé (étiquette Git + archive des livrables).</p>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td><strong>Avantages</strong></td><td>Jalons nets, <strong>traçables</strong> ; retour en arrière précis ; langage commun (« version 1.2 validée »)</td></tr>
+<tr><td><strong>Inconvénients</strong></td><td>Entre deux releases, l'historique fin n'est pas rattaché aux décisions ; sans convention, les numéros perdent leur sens</td></tr>
+<tr><td><strong>Complexité</strong></td><td>Faible à moyenne</td></tr>
+<tr><td><strong>Adaptation au projet</strong></td><td><strong>Bonne</strong> : cohérent avec vos validations (« Je valide Sx ») et les étiquettes déjà posées par sprint</td></tr>
+</tbody></table></div>
+<h3>Option C — Versionnement de type Design System</h3>
+<p>Semver du système (MAJOR rupture · MINOR ajout · PATCH correction), <strong>journal des modifications</strong> par composant, jetons versionnés, dépréciations annoncées, décisions de design consignées (<em>Design Decision Records</em>).</p>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td><strong>Avantages</strong></td><td><strong>Rigueur maximale</strong> ; compatibilité et dépréciations maîtrisées ; excellent pour de nombreuses équipes et plusieurs produits</td></tr>
+<tr><td><strong>Inconvénients</strong></td><td><strong>Lourd</strong> pour une équipe de deux ; surcoût de rédaction ; utile surtout quand plusieurs équipes consomment le système</td></tr>
+<tr><td><strong>Complexité</strong></td><td>Élevée</td></tr>
+<tr><td><strong>Adaptation au projet</strong></td><td><strong>Moyenne</strong> : on y viendra avec l'ERP (deux produits consommateurs) ; en faire trop maintenant ralentirait</td></tr>
+</tbody></table></div>
+<h3>Option D — Approche recommandée : <strong>Git comme source de vérité + releases sémantiques + journal de décisions légers</strong></h3>
+<p>Combine le meilleur de B et C <strong>sans la charge</strong> de C :</p>
+<ol><li><strong>Git</strong> garde tout l'historique ligne à ligne (aucune copie de dossiers).</li><li><strong>Releases</strong> : à chaque validation, une <strong>version sémantique</strong> <code>design-vMAJEUR.MINEUR.CORRECTIF</code> (étiquette Git) et un <strong>instantané visuel</strong> des écrans.</li><li><strong>Journal des modifications</strong> unique (<code>CHANGELOG-DESIGN.md</code>) rédigé pour des humains.</li><li><strong>Registre des décisions de design</strong> (DDR) : une fiche courte par décision, reliée aux exigences EXD et aux versions.</li><li><strong>Comparaison visuelle</strong> par une page « avant / après » générée à partir de deux instantanés.</li></ol>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td><strong>Avantages</strong></td><td>Historique complet, <strong>comparaison</strong>, <strong>retour arrière en une commande</strong>, traçabilité des <strong>pourquoi</strong> ; charge faible (le gros du travail est automatisable) ; évolue vers l'option C sans migration</td></tr>
+<tr><td><strong>Inconvénients</strong></td><td>Demande de la <strong>discipline</strong> (tenir le journal et les fiches) ; les instantanés visuels pèsent dans le dépôt (≈ 3 Mo par version à 18 captures : acceptable jusqu'à une trentaine de versions, au-delà on les sort du dépôt)</td></tr>
+<tr><td><strong>Complexité</strong></td><td>Faible à moyenne</td></tr>
+<tr><td><strong>Adaptation au projet</strong></td><td><strong>Très bonne</strong> : réutilise Git, les étiquettes, vos validations et le registre existant</td></tr>
+</tbody></table></div>
+<h3>Grille comparative</h3>
+<div class="table-wrap"><table><thead><tr><th>Critère (poids)</th><th>A Dossiers</th><th>B Releases</th><th>C Design System</th><th><strong>D Recommandée</strong></th></tr></thead><tbody>
+<tr><td>Historique complet (5)</td><td>2</td><td>4</td><td>5</td><td><strong>5</strong></td></tr>
+<tr><td>Comparer deux versions (5)</td><td>1</td><td>3</td><td>4</td><td><strong>5</strong></td></tr>
+<tr><td>Retour arrière (4)</td><td>3</td><td>5</td><td>5</td><td><strong>5</strong></td></tr>
+<tr><td>Traçabilité des décisions (5)</td><td>1</td><td>3</td><td>5</td><td><strong>5</strong></td></tr>
+<tr><td>Légèreté / faible charge (4)</td><td>4</td><td>4</td><td>1</td><td><strong>4</strong></td></tr>
+<tr><td>Adaptation équipe de deux (4)</td><td>3</td><td>4</td><td>2</td><td><strong>5</strong></td></tr>
+<tr><td>Évolutivité vers l'ERP (3)</td><td>1</td><td>3</td><td>5</td><td><strong>4</strong></td></tr>
+<tr><td><strong>Score pondéré / 150</strong></td><td><strong>63</strong></td><td><strong>111</strong></td><td><strong>117</strong></td><td><strong>143</strong></td></tr>
+</tbody></table></div>
+<blockquote><p><strong>Recommandation</strong> : <strong>option D</strong>. Elle donne l'essentiel de C pour la moitié de la charge, et s'appuie sur ce que vous utilisez déjà (Git, étiquettes, « Je valide »). <strong>Décision</strong> : ☐ A ☐ B ☐ C ☒ <strong>D</strong> ☐ autre · Date : 2026-10-21 · <em>Recommandation retenue par la direction produit</em> (voir DDR-0006)</p></blockquote>
+<h2>I.3 Arborescence cible (option D)</h2>
+<pre><code>docs/design/
+├── README.md                         index, version courante, comment lire et comparer
+├── VERSION                           ex. 0.3.0
+├── CHANGELOG-DESIGN.md               « quoi de neuf » par version, pour des humains
+├── 01-DESIGN-SYSTEM.md               documents vivants (versionnés par Git)
+├── 02-SPECIFICATIONS-FRONTEND.md
+├── exigences/
+│   └── REGISTRE-EXD.md               exigences EXD (ex-03), jamais effacées
+├── decisions/
+│   ├── REGISTRE-DDR.md               index : statut, version, exigence liée
+│   ├── DDR-0001-style-taupe-et-contrastes.md
+│   ├── DDR-0002-theme-sombre.md
+│   └── DDR-0003-navigation.md        (à rédiger après votre arbitrage)
+├── prototype/                        source vivante (HTML, CSS, JS, jetons, polices, logos)
+├── screens/                          derniers rendus (clair et sombre)
+├── releases/                         instantanés FIGÉS des versions validées
+│   ├── v0.1.0/ {NOTES.md, MANIFEST.md, screens/}
+│   ├── v0.2.0/
+│   └── v0.3.0/
+└── outils/
+    ├── render-screens.mjs            génère les captures (clair et sombre)
+    ├── release.mjs                   fige une version : captures, MANIFEST (empreintes), étiquette Git
+    └── compare.html                  page de comparaison côte à côte et curseur entre deux versions</code></pre>
+<p><strong>Conventions</strong></p>
+<div class="table-wrap"><table><thead><tr><th>Sujet</th><th>Règle</th></tr></thead><tbody>
+<tr><td>Numérotation</td><td><strong>MAJEUR</strong> : rupture visuelle ou de navigation · <strong>MINEUR</strong> : nouveaux écrans ou composants · <strong>CORRECTIF</strong> : retouches sans changement de sens</td></tr>
+<tr><td>Étiquette Git</td><td><code>design-v0.3.0</code> (distincte des étiquettes de sprint <code>sN-validated</code>)</td></tr>
+<tr><td>Cycle d'une version</td><td><em>Proposée</em> → <em>En revue</em> → <strong>Validée par la direction produit</strong> → <em>Figée</em> (dossier <code>releases/</code>)</td></tr>
+<tr><td>Fiche de décision (DDR)</td><td>Contexte, options (renvoi à l'arbitrage), décision, motif, <strong>version concernée</strong>, exigences liées, statut (<em>proposée, acceptée, remplacée, rejetée</em>)</td></tr>
+<tr><td>Comparer deux versions</td><td>Texte : <code>git diff design-v0.2.0 design-v0.3.0 -- docs/design</code> · Visuel : <code>outils/compare.html?a=v0.2.0&amp;b=v0.3.0</code></td></tr>
+<tr><td>Revenir en arrière</td><td><code>git checkout design-v0.2.0 -- docs/design</code> (consultation) ou <code>git revert</code> (annulation tracée) ; <strong>jamais</strong> de réécriture d'historique</td></tr>
+<tr><td>Lien avec le code</td><td>Chaque version de design nomme le sprint qui l'implémente ; chaque sprint cite la version de design appliquée</td></tr>
+</tbody></table></div>
+<p><strong>Reprise de l'existant (rétroactive, sans perte)</strong> :</p>
+<div class="table-wrap"><table><thead><tr><th>Version</th><th>Contenu</th><th>Commit de référence</th></tr></thead><tbody>
+<tr><td><code>design-v0.1.0</code></td><td>Premier prototype, design system, logos fournis</td><td><code>0f867a9</code> … <code>35d4abf</code></td></tr>
+<tr><td><code>design-v0.2.0</code></td><td>+ Agenda, tous les écrans en clair et en sombre</td><td><code>1687304</code></td></tr>
+<tr><td><code>design-v0.3.0</code></td><td>+ Exigences EXD-01 à 04 (panneau, sélection persistante, Opportunités en cartes)</td><td><code>0b72ce4</code></td></tr>
+</tbody></table></div>
+<hr>
+<h1>PARTIE II — ARBITRAGE 1 : Navigation globale</h1>
+<h2>Contexte</h2>
+<p>EXD-05 demande que la <strong>navigation complète n'apparaisse que dans « Vue d'ensemble »</strong>, devenue hub et moteur de recherche global. Question : comment l'interpréter, avec quelles conséquences sur la productivité et le mobile ? Déjà acquis : recherche globale, modules dans une barre latérale pour l'instant, thème clair et sombre.</p>
+<h2>Option A — Navigation complète <strong>uniquement</strong> sur la vue d'ensemble</h2>
+<p>Ailleurs : aucune barre latérale ; fil d'Ariane et bouton « Vue d'ensemble ».</p>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td><strong>Avantages</strong></td><td>Pages de contenu <strong>épurées</strong> ; hub riche ; fidèle à la lettre d'EXD-05 ; peu de code de navigation</td></tr>
+<tr><td><strong>Inconvénients</strong></td><td>Passer d'un module à un autre impose <strong>de repasser par l'accueil</strong> ; dépend fortement de la recherche ; moins de repères</td></tr>
+<tr><td><strong>Impacts UX</strong></td><td>Charge mentale plus forte hors du hub ; bon pour la découverte, mauvais pour la répétition</td></tr>
+<tr><td><strong>Impacts mobiles</strong></td><td><strong>Naturel</strong> sur téléphone (un écran = un contenu) mais sans accès rapide aux modules</td></tr>
+<tr><td><strong>Impacts productivité</strong></td><td><strong>Négatifs</strong> : +1 à +2 clics par changement de module ; pour un chargé de compte qui alterne agenda, entreprises, opportunités 30 fois par jour, c'est un coût réel (H)</td></tr>
+<tr><td><strong>Impacts techniques / maintenance</strong></td><td>Faibles ; mais un module oublié dans le hub devient <strong>introuvable</strong></td></tr>
+<tr><td><strong>Accessibilité</strong></td><td>Exige plusieurs moyens de navigation (WCAG 2.4.5) : la recherche seule ne suffit pas</td></tr>
+<tr><td>Réversibilité</td><td>🟢</td></tr>
+</tbody></table></div>
+<h2>Option B — Hub principal + <strong>rail compact</strong> (proposition actuelle)</h2>
+<p>Hub : navigation complète. Autres pages : rail d'icônes (72 px) avec info-bulles, « ← Vue d'ensemble », sous-navigation du module, recherche ⌘K.</p>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td><strong>Avantages</strong></td><td>Navigation <strong>toujours à un clic</strong> ; contenu large ; garde l'esprit d'EXD-05 (la navigation <em>détaillée</em> est au hub)</td></tr>
+<tr><td><strong>Inconvénients</strong></td><td><strong>Icônes seules</strong> : apprentissage nécessaire ; deux états de navigation à maintenir ; icônes à bien choisir</td></tr>
+<tr><td><strong>Impacts UX</strong></td><td>Bon compromis ; risque de confusion pour les nouveaux utilisateurs sur la signification des icônes</td></tr>
+<tr><td><strong>Impacts mobiles</strong></td><td>Rail remplacé par un <strong>tiroir</strong> ; cohérent</td></tr>
+<tr><td><strong>Impacts productivité</strong></td><td><strong>Quasi neutres</strong> par rapport à la barre complète</td></tr>
+<tr><td><strong>Impacts techniques / maintenance</strong></td><td>Moyens : deux modes de coque, test de focus et d'info-bulles accessibles</td></tr>
+<tr><td>Réversibilité</td><td>🟢</td></tr>
+</tbody></table></div>
+<h2>Option C — <strong>Barre latérale pliable au choix de l'utilisateur</strong> (alternative pertinente)</h2>
+<p>Barre complète partout par défaut ; bouton pour la <strong>plier en rail</strong> ; la préférence est mémorisée ; le hub reste la page d'accueil enrichie.</p>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td><strong>Avantages</strong></td><td><strong>Standard éprouvé</strong> (outils de travail modernes) ; chacun choisit ; pas d'apprentissage imposé ; un seul composant</td></tr>
+<tr><td><strong>Inconvénients</strong></td><td>S'écarte de la <strong>lettre</strong> d'EXD-05 (la navigation complète est visible partout par défaut) ; les pages sont moins « épurées » par défaut</td></tr>
+<tr><td><strong>Impacts UX</strong></td><td>Très bons ; <strong>efficacité maximale</strong> pour les usages répétitifs</td></tr>
+<tr><td><strong>Impacts mobiles</strong></td><td>Tiroir ; identique à B</td></tr>
+<tr><td><strong>Impacts productivité</strong></td><td><strong>Positifs</strong></td></tr>
+<tr><td><strong>Impacts techniques / maintenance</strong></td><td><strong>Faibles</strong> : un seul composant à deux états</td></tr>
+<tr><td>Réversibilité</td><td>🟢</td></tr>
+</tbody></table></div>
+<h3>Variante recommandée « B+ » (hybride de B et C)</h3>
+<p>Comme B (<strong>rail compact par défaut hors du hub</strong>, navigation complète au hub), <strong>avec un bouton « Déplier »</strong> qui montre la navigation complète partout, préférence mémorisée. Cela respecte EXD-05 <strong>par défaut</strong> tout en laissant la main à l'utilisateur.</p>
+<h2>Grille comparative</h2>
+<div class="table-wrap"><table><thead><tr><th>Critère (poids)</th><th>A</th><th>B</th><th>C</th><th><strong>B+</strong></th></tr></thead><tbody>
+<tr><td>Valeur métier / productivité (5)</td><td>2</td><td>4</td><td>5</td><td><strong>5</strong></td></tr>
+<tr><td>Fidélité à EXD-05 (4)</td><td>5</td><td>4</td><td>2</td><td><strong>4</strong></td></tr>
+<tr><td>Expérience utilisateur (4)</td><td>2</td><td>4</td><td>5</td><td><strong>5</strong></td></tr>
+<tr><td>Accessibilité (4)</td><td>2</td><td>4</td><td>4</td><td><strong>5</strong></td></tr>
+<tr><td>Mobile (3)</td><td>4</td><td>4</td><td>4</td><td><strong>4</strong></td></tr>
+<tr><td>Coût et maintenance (3)</td><td>5</td><td>3</td><td>4</td><td><strong>3</strong></td></tr>
+<tr><td>Réversibilité (4)</td><td>5</td><td>5</td><td>5</td><td><strong>5</strong></td></tr>
+<tr><td><strong>Score pondéré / 135</strong></td><td><strong>93</strong></td><td><strong>109</strong></td><td><strong>113</strong></td><td><strong>122</strong></td></tr>
+</tbody></table></div>
+<blockquote><p><strong>Recommandation</strong> : <strong>B+</strong> (rail compact par défaut + bouton Déplier). Si vous tenez à la <strong>lettre</strong> d'EXD-05, <strong>B</strong> ; <strong>A</strong> seulement si vous acceptez un coût de productivité mesurable. <strong>Ce qui me ferait changer d'avis</strong> : un essai avec 3 utilisateurs montrant que le rail compact est mal compris → bascule vers C. <strong>Décision</strong> : ☐ A ☐ B ☒ <strong>B+</strong> ☐ C · Date : 2026-10-21 · <em>Recommandation retenue</em> (voir DDR-0004)</p></blockquote>
+<hr>
+<h1>PARTIE III — ARBITRAGE 2 : Module Opportunités</h1>
+<h2>Contexte</h2>
+<p>Ancienne vue : <strong>colonnes par étapes</strong> (kanban). EXD-04 : <strong>cartes en lignes de 6</strong>, groupes empilés. Processus Investally (vérifié) : cycle B2B long ; étapes <em>Prospection → RDV décideur → Offre → Accord de principe → Agrément → Inscrit Investudy</em> ; règle « RDV décideur avant accord de principe » (dérogation tracée) ; plusieurs opportunités par entreprise ; ≈ 20 utilisateurs, quelques dizaines à une centaine d'opportunités actives (H).</p>
+<h2>Version actuelle — Vue en colonnes par étapes</h2>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td><strong>Lisibilité</strong></td><td>Excellente pour <strong>où en est le portefeuille</strong> ; difficile de comparer des montants entre colonnes</td></tr>
+<tr><td><strong>Scalabilité</strong></td><td>Moyenne : une colonne chargée devient longue ; au-delà de ~40 cartes, il faut filtrer</td></tr>
+<tr><td><strong>UX</strong></td><td>Naturelle pour <strong>faire avancer</strong> (glisser d'une étape à l'autre) ; l'étape est visible sans lire</td></tr>
+<tr><td><strong>Performance commerciale</strong></td><td>Révèle les <strong>goulots</strong> (trop de cartes en « Offre envoyée ») ; moins adaptée au tri par échéance</td></tr>
+<tr><td><strong>Pertinence Investally</strong></td><td><strong>Forte</strong> pour le suivi du processus et des règles d'étape ; faible pour comparer les montants</td></tr>
+<tr><td><strong>Impacts techniques / maintenance</strong></td><td>Glisser-déposer à rendre <strong>accessible au clavier</strong> (coût)</td></tr>
+</tbody></table></div>
+<h2>Nouvelle version — Cartes en lignes de 6</h2>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td><strong>Lisibilité</strong></td><td>Forte pour <strong>comparer</strong> (montants, responsables, prochaines actions) ; l'étape devient une étiquette (moins immédiate)</td></tr>
+<tr><td><strong>Scalabilité</strong></td><td>Bonne jusqu'à ~60 cartes (10 lignes) ; au-delà : pagination, regroupement ou filtres</td></tr>
+<tr><td><strong>UX</strong></td><td>Exploite bien la largeur d'écran ; sélection multiple et actions en lot <strong>naturelles</strong> ; peu adaptée pour faire avancer d'étape (menu ou fiche)</td></tr>
+<tr><td><strong>Performance commerciale</strong></td><td>Bonne pour <strong>prioriser</strong> (tri par échéance ou montant) ; masque les goulots</td></tr>
+<tr><td><strong>Pertinence Investally</strong></td><td>Bonne pour la <strong>revue d'équipe</strong> ; moins pour le suivi des étapes <strong>réglementées</strong> (règle du RDV décideur moins visible)</td></tr>
+<tr><td><strong>Impacts techniques / maintenance</strong></td><td>Plus simple (pas de glisser-déposer) ; tri et filtres indispensables</td></tr>
+</tbody></table></div>
+<h2>Version hybride — <strong>Une seule liste de données, deux présentations + bandeau d'étapes</strong></h2>
+<p>Trois composants combinables :</p>
+<ol><li><strong>Bandeau de synthèse</strong> au-dessus : une pastille par étape avec son <strong>nombre</strong> et son <strong>montant</strong> ; un clic <strong>filtre</strong> (donne la vision « goulots » du kanban).</li><li><strong>Cartes par lignes de 6</strong> (par défaut, comme demandé), <strong>triables</strong> (prochaine action, montant, étape).</li><li><strong>Bascule « Par étape »</strong> (colonnes) pour faire avancer les opportunités ; la préférence est mémorisée.</li></ol>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td><strong>Lisibilité</strong></td><td><strong>La plus forte</strong> : synthèse + comparaison</td></tr>
+<tr><td><strong>Scalabilité</strong></td><td>Bonne : le bandeau et les filtres absorbent la croissance</td></tr>
+<tr><td><strong>UX</strong></td><td>Chaque tâche a sa vue ; léger risque de choix à faire pour l'utilisateur</td></tr>
+<tr><td><strong>Performance commerciale</strong></td><td><strong>Meilleure</strong> : priorisation <strong>et</strong> détection des goulots</td></tr>
+<tr><td><strong>Pertinence Investally</strong></td><td><strong>Très forte</strong> : respecte votre exigence, rend visibles les étapes réglementées</td></tr>
+<tr><td><strong>Impacts techniques / maintenance</strong></td><td>Moyens : <strong>un seul modèle de données</strong>, deux rendus ; le prototype fait déjà la bascule</td></tr>
+</tbody></table></div>
+<h2>Grille comparative</h2>
+<div class="table-wrap"><table><thead><tr><th>Critère (poids)</th><th>Colonnes</th><th>Cartes ×6</th><th><strong>Hybride</strong></th></tr></thead><tbody>
+<tr><td>Valeur commerciale (5)</td><td>4</td><td>3</td><td><strong>5</strong></td></tr>
+<tr><td>Lisibilité / comparaison (4)</td><td>3</td><td>5</td><td><strong>5</strong></td></tr>
+<tr><td>Scalabilité (3)</td><td>3</td><td>4</td><td><strong>4</strong></td></tr>
+<tr><td>Fidélité à EXD-04 (4)</td><td>1</td><td>5</td><td><strong>5</strong></td></tr>
+<tr><td>Respect du processus et des règles d'étape (4)</td><td>5</td><td>2</td><td><strong>4</strong></td></tr>
+<tr><td>Coût / maintenance (3)</td><td>3</td><td>4</td><td><strong>3</strong></td></tr>
+<tr><td>Accessibilité (4)</td><td>3</td><td>4</td><td><strong>4</strong></td></tr>
+<tr><td><strong>Score pondéré / 135</strong></td><td><strong>86</strong></td><td><strong>103</strong></td><td><strong>118</strong></td></tr>
+</tbody></table></div>
+<blockquote><p><strong>Recommandation</strong> : <strong>hybride</strong> : cartes par défaut (votre exigence), bandeau d'étapes cliquable, bascule « Par étape ». Je proposerais de <strong>mesurer</strong> après deux semaines d'usage quelle vue est utilisée. <strong>Décision</strong> : ☐ Colonnes ☐ Cartes ×6 ☒ <strong>Hybride</strong> · Ordre des cartes : <strong>prochaine action la plus proche, configurable</strong> (proposition par défaut) · Date : 2026-10-21 · <em>Recommandation retenue</em> (voir DDR-0005)</p></blockquote>
+<hr>
+<h1>PARTIE IV — ARBITRAGE 3 : Module Stocks</h1>
+<h2>Contexte</h2>
+<p><strong>Approvisionnements internes</strong> d'Investally : articles, catégories, fournisseurs, entrées, sorties, inventaire, seuils, consommations internes. Faits : aucune relation avec les <strong>clients</strong> ni les opportunités ; <strong>tous les employés</strong> peuvent consommer, un petit nombre gère ; ADR-0005 sépare CRM et ERP (une base par produit, événements, aucun paquet partagé avant l'ERP) ; <strong>l'ERP n'existe pas encore</strong>, son socle (identité unique, paquets partagés) est à construire.</p>
+<h2>Option 1 — Stocks intégrés au <strong>CRM</strong></h2>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td><strong>Avantages</strong></td><td><strong>Le plus rapide</strong> : identité, droits, audit, interface et recette existent ; livrable en quelques sprints</td></tr>
+<tr><td><strong>Inconvénients</strong></td><td><strong>Pollue le périmètre du CRM</strong> (clients, pipeline, formation) ; contredit l'esprit d'ADR-0005 ; couple les cycles de livraison ; migration future coûteuse</td></tr>
+<tr><td><strong>Impacts métier</strong></td><td>Les stocks se retrouvent dans un outil « commercial » ; incohérence pour la finance (valorisation, achats)</td></tr>
+<tr><td><strong>Impacts techniques</strong></td><td>Schéma dans la base du CRM ; <strong>migration vers l'ERP à prévoir</strong> (🔴)</td></tr>
+<tr><td><strong>Impacts organisationnels</strong></td><td>Propriétaire flou ; droits Stocks mêlés aux rôles commerciaux</td></tr>
+<tr><td><strong>Impacts maintenance</strong></td><td>Dette de <strong>déménagement</strong> certaine</td></tr>
+<tr><td>Réversibilité</td><td>🔴</td></tr>
+</tbody></table></div>
+<h2>Option 2 — Stocks intégrés à l'<strong>ERP</strong></h2>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td><strong>Avantages</strong></td><td><strong>Cohérence métier</strong> : « Opérations » (achats, finance, stocks) au même endroit ; respecte ADR-0005 ; pas de déménagement</td></tr>
+<tr><td><strong>Inconvénients</strong></td><td><strong>Attend l'ERP</strong> (socle d'identité, paquets partagés) : plusieurs sprints avant la première ligne de stock ; risque de ne jamais commencer</td></tr>
+<tr><td><strong>Impacts métier</strong></td><td>Besoin réel (approvisionnement interne) satisfait <strong>tard</strong></td></tr>
+<tr><td><strong>Impacts techniques</strong></td><td>Propre, mais <strong>dépend de chantiers non commencés</strong></td></tr>
+<tr><td><strong>Impacts organisationnels</strong></td><td>Responsable naturel : opérations / finance</td></tr>
+<tr><td><strong>Impacts maintenance</strong></td><td>Faible une fois posé</td></tr>
+<tr><td>Réversibilité</td><td>🟡</td></tr>
+</tbody></table></div>
+<h2>Option 3 — <strong>Module indépendant partagé</strong></h2>
+<p>Un contexte <code>stock</code> autonome, utilisable par le CRM comme par l'ERP.</p>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td><strong>Avantages</strong></td><td>Découplé ; réutilisable ; <strong>évolue vers un service</strong></td></tr>
+<tr><td><strong>Inconvénients</strong></td><td>Si on en fait un <strong>service séparé</strong> dès maintenant : déploiement, authentification inter-services, observabilité… <strong>disproportionné</strong> pour 20 utilisateurs</td></tr>
+<tr><td><strong>Impacts métier</strong></td><td>Bon si le besoin dépasse un produit (H : c'est probable)</td></tr>
+<tr><td><strong>Impacts techniques</strong></td><td>Lourds s'il est déployé à part ; légers s'il reste un <strong>module</strong></td></tr>
+<tr><td><strong>Impacts organisationnels</strong></td><td>Propriétaire explicite</td></tr>
+<tr><td><strong>Impacts maintenance</strong></td><td>Moyens</td></tr>
+<tr><td>Réversibilité</td><td>🟡</td></tr>
+</tbody></table></div>
+<h3>Variante recommandée « 3′ » — <strong>Module autonome, hébergé dans le monolithe du CRM, conçu pour être extrait</strong></h3>
+<p>Un contexte <code>stock</code> avec son <strong>propre schéma</strong> (<code>stock</code>), <strong>aucune dépendance vers les modules du CRM</strong> (uniquement l'identité, l'audit et les droits via leurs interfaces publiques), échanges par <strong>événements</strong>, interface en <strong>section « Opérations »</strong> ; il s'extrait vers l'ERP (ou un service) <strong>sans réécriture</strong> quand l'ERP existera.</p>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td><strong>Avantages</strong></td><td><strong>Livrable tôt</strong> (socle réutilisé) <strong>et</strong> propre ; extraction planifiée ; respecte l'intention d'ADR-0005 (frontières nettes)</td></tr>
+<tr><td><strong>Inconvénients</strong></td><td>Exige de la <strong>discipline de frontière</strong> (règles d'architecture automatiques déjà en place) ; un <strong>ADR dérogatoire</strong> doit documenter l'hébergement provisoire</td></tr>
+<tr><td>Réversibilité</td><td>🟢 à 🟡</td></tr>
+</tbody></table></div>
+<h2>Grille comparative</h2>
+<div class="table-wrap"><table><thead><tr><th>Critère (poids)</th><th>1 CRM</th><th>2 ERP</th><th>3 Service indépendant</th><th><strong>3′ Module autonome hébergé</strong></th></tr></thead><tbody>
+<tr><td>Valeur métier / délai (5)</td><td>5</td><td>1</td><td>2</td><td><strong>4</strong></td></tr>
+<tr><td>Cohérence d'architecture (4)</td><td>1</td><td>5</td><td>4</td><td><strong>4</strong></td></tr>
+<tr><td>Réversibilité (4)</td><td>1</td><td>3</td><td>3</td><td><strong>4</strong></td></tr>
+<tr><td>Coût de réalisation (3)</td><td>5</td><td>2</td><td>1</td><td><strong>4</strong></td></tr>
+<tr><td>Maintenance (3)</td><td>2</td><td>4</td><td>3</td><td><strong>4</strong></td></tr>
+<tr><td>Risque (5)</td><td>3</td><td>3</td><td>2</td><td><strong>4</strong></td></tr>
+<tr><td>Organisation / propriété (2)</td><td>2</td><td>4</td><td>4</td><td><strong>4</strong></td></tr>
+<tr><td><strong>Score pondéré / 130</strong></td><td><strong>73</strong></td><td><strong>78</strong></td><td><strong>68</strong></td><td><strong>104</strong></td></tr>
+</tbody></table></div>
+<blockquote><p><strong>Recommandation</strong> : <strong>3′</strong>. Elle évite le piège du CRM « fourre-tout » <strong>sans</strong> attendre l'ERP ni payer le coût d'un service séparé. <strong>Conditions</strong> : ADR dérogatoire ; règle d'architecture interdisant à <code>stock</code> d'importer un module du CRM ; permissions <code>stock.<em></code> propres ; rôle dédié (Logistique) à confirmer ; <strong>mouvements immuables</strong> comme l'audit. <strong>Ce qui me ferait changer d'avis</strong> : si l'ERP est décidé <strong>avant</strong> la fin de S4, l'option 2 devient préférable. <strong>Décision</strong> : ☐ 1 CRM ☐ 2 ERP ☐ 3 service ☒ <strong>3′ module autonome</strong> · Date : 2026-10-21 · *Recommandation retenue</em> (voir ADR-0007)</p></blockquote>
+<hr>
+<h1>PARTIE V — ARBITRAGE 4 : Ordre de réalisation</h1>
+<h2>Contexte</h2>
+<p>Ordre proposé : <strong>1 Habillage UX/UI → 2 Authentification → 3 S4 → 4 Reporting → 5 Stocks</strong>. Éléments à intégrer : S3.4 et S3.5 non validés ; <strong>S3.6 Documents</strong> (pièces jointes) ; <strong>Microsoft 365</strong> et SuperAdmin (bloquants réels) ; avis juridique sur les performances ; cadrage UX avant S4.1.</p>
+<h2>Option proposée (analyse)</h2>
+<div class="table-wrap"><table><thead><tr><th>Étape</th><th>Risques</th><th>Dépendances</th><th>Valeur métier</th><th>Rapidité</th></tr></thead><tbody>
+<tr><td>1 Habillage</td><td>Aucune valeur métier visible pendant plusieurs semaines ; risque de <strong>« poli sans fond »</strong></td><td>Validation S3.4/S3.5 (le front y vit) ; logos SVG</td><td>Moyenne (image, confiance)</td><td>Rapide (3 sprints courts)</td></tr>
+<tr><td>2 Authentification</td><td>Faible ; <strong>historique des connexions</strong> demande un petit développement d'API</td><td>Habillage (gabarits) ; <strong>Microsoft 365</strong> pour les e-mails réels</td><td>Élevée pour la <strong>sécurité</strong> et l'adoption</td><td>Rapide (déjà à moitié fait)</td></tr>
+<tr><td>3 S4</td><td>Le <strong>cœur métier</strong> ; règles d'agrément floues</td><td>Cadrage UX ; Documents ; réponses sur l'agrément</td><td><strong>Très élevée</strong></td><td>Long (4 sprints+)</td></tr>
+<tr><td>4 Reporting</td><td>Dépend des <strong>données de S4</strong> ; sujet juridique (performances)</td><td>S4, S5/S6 pour les indicateurs</td><td>Moyenne à élevée</td><td>Moyen</td></tr>
+<tr><td>5 Stocks</td><td>Besoin réel mais <strong>isolé</strong></td><td>Socle ; décision d'architecture</td><td>Moyenne</td><td>Moyen</td></tr>
+</tbody></table></div>
+<p><strong>Points faibles</strong> : (a) il <strong>ignore les prérequis</strong> (validations, M365, Documents) ; (b) la valeur commerciale n'arrive qu'à l'étape 3 ; (c) tout l'habillage en un bloc retarde S4.</p>
+<h2>Ordre alternatif 1 — <strong>Valeur et prérequis d'abord</strong></h2>
+<div class="table-wrap"><table><thead><tr><th>Ordre</th><th>Contenu</th></tr></thead><tbody>
+<tr><td><strong>0</strong></td><td><strong>Valider S3.4/S3.5</strong> ; débloquer <strong>Microsoft 365</strong>, <strong>deux SuperAdmin</strong>, lancer l'avis juridique (en parallèle)</td></tr>
+<tr><td>1</td><td><strong>H1 minimal</strong> : jetons, polices, logos, coque + <strong>hub et rail</strong> (décision navigation)</td></tr>
+<tr><td>2</td><td><strong>H2 authentification complète + sessions</strong> (+ endpoint d'historique)</td></tr>
+<tr><td>3</td><td><strong>S3.6 Documents</strong> (prérequis des pièces jointes)</td></tr>
+<tr><td>4</td><td><strong>Cadrage UX court</strong> (5 écrans, à partir des prototypes)</td></tr>
+<tr><td>5</td><td><strong>S4.1 → S4.4</strong> (+ <strong>Agenda S4.2b</strong>), chaque écran <strong>né dans le nouveau style</strong> (pas de H3 séparé)</td></tr>
+<tr><td>6</td><td><strong>Reporting</strong> : d'abord <strong>incidents</strong> (valeur immédiate, léger), puis rapports périodiques ; <strong>performances en dernier, après avis juridique</strong></td></tr>
+<tr><td>7</td><td><strong>Stocks</strong> (module autonome, ou ERP-0)</td></tr>
+</tbody></table></div>
+<h2>Ordre alternatif 2 — <strong>Valeur métier d'abord</strong></h2>
+<p>S4 avant tout habillage, puis restyler. <strong>Avantage</strong> : valeur commerciale plus tôt. <strong>Défaut majeur</strong> : <strong>coder deux fois</strong> les écrans du pipeline (style actuel puis nouveau) ; incohérence visible ; je le déconseille.</p>
+<h2>Ordre alternatif 3 — <strong>Parallèle limité</strong></h2>
+<p>Habillage et S4 en parallèle. <strong>Avantage</strong> : débit. <strong>Défaut</strong> : équipe de deux, conflits de fichiers, validations croisées ; risque d'erreurs de coordination.</p>
+<h2>Grille comparative</h2>
+<div class="table-wrap"><table><thead><tr><th>Critère (poids)</th><th>Proposé</th><th><strong>Alt. 1</strong></th><th>Alt. 2</th><th>Alt. 3</th></tr></thead><tbody>
+<tr><td>Valeur métier précoce (5)</td><td>2</td><td><strong>4</strong></td><td>5</td><td>4</td></tr>
+<tr><td>Risque et dépendances traités (5)</td><td>2</td><td><strong>5</strong></td><td>2</td><td>3</td></tr>
+<tr><td>Cohérence visuelle (3)</td><td>5</td><td><strong>5</strong></td><td>1</td><td>4</td></tr>
+<tr><td>Coût total / refaire (4)</td><td>3</td><td><strong>5</strong></td><td>1</td><td>3</td></tr>
+<tr><td>Rapidité de la première valeur visible (3)</td><td>3</td><td><strong>4</strong></td><td>5</td><td>4</td></tr>
+<tr><td>Charge de coordination (3)</td><td>4</td><td><strong>4</strong></td><td>4</td><td>1</td></tr>
+<tr><td><strong>Score pondéré / 115</strong></td><td><strong>68</strong></td><td><strong>104</strong></td><td><strong>69</strong></td><td><strong>74</strong></td></tr>
+</tbody></table></div>
+<blockquote><p><strong>Recommandation</strong> : <strong>ordre alternatif 1</strong> : il garde votre ordre (habillage → authentification → S4 → reporting → stocks) et y <strong>insère les prérequis</strong> et <strong>supprime le H3 séparé</strong>. <strong>Décision</strong> : ☐ Proposé ☒ <strong>Alt. 1</strong> ☐ Alt. 2 ☐ Alt. 3 · Date : 2026-10-21 · <em>Recommandation retenue</em> (voir <code>DESIGN-CODE-ARCHITECTURE-PLAN.md</code>)</p></blockquote>
+<hr>
+<h1>PARTIE VI — Décision finale</h1>
+<h2>Décisions recommandées</h2>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Sujet</th><th>Recommandation</th></tr></thead><tbody>
+<tr><td>1</td><td>Versionnement design</td><td><strong>Option D</strong> (Git + releases sémantiques + journal et fiches de décision)</td></tr>
+<tr><td>2</td><td>Navigation</td><td><strong>B+</strong> : rail compact par défaut hors du hub, bouton « Déplier »</td></tr>
+<tr><td>3</td><td>Opportunités</td><td><strong>Hybride</strong> : cartes par défaut, bandeau d'étapes, bascule « Par étape »</td></tr>
+<tr><td>4</td><td>Stocks</td><td><strong>3′</strong> : module autonome hébergé dans le monolithe, conçu pour être extrait</td></tr>
+<tr><td>5</td><td>Ordre</td><td><strong>Alternatif 1</strong> : prérequis d'abord, H1 minimal, authentification, Documents, S4 dans le nouveau style, Reporting (incidents d'abord), Stocks</td></tr>
+<tr><td>6</td><td>Performances des employés</td><td><strong>Après avis juridique et RH</strong>, avec transparence pour l'employé</td></tr>
+<tr><td>7</td><td>Méthode</td><td>Appliquer cette <strong>méthode d'arbitrage</strong> à toute décision structurante</td></tr>
+</tbody></table></div>
+<h2>Décisions déconseillées</h2>
+<div class="table-wrap"><table><thead><tr><th>Option</th><th>Pourquoi</th></tr></thead><tbody>
+<tr><td>Versionnement <strong>par copies de dossiers</strong> (A)</td><td>Duplication, aucune comparaison lisible, dérive</td></tr>
+<tr><td>Navigation <strong>sans rail</strong> hors du hub (A, stricte)</td><td>Coût de productivité et d'accessibilité mesurable</td></tr>
+<tr><td>Opportunités <strong>cartes seules</strong> ou <strong>kanban seul</strong></td><td>Chacun perd la moitié de l'usage (comparaison ou suivi d'étape)</td></tr>
+<tr><td>Stocks <strong>directement dans le CRM sans frontière</strong> (option 1 nue)</td><td>Dette de déménagement <strong>🔴</strong> ; contredit ADR-0005</td></tr>
+<tr><td>Stocks en <strong>service séparé dès maintenant</strong></td><td>Disproportionné pour ≈ 20 utilisateurs</td></tr>
+<tr><td><strong>S4 avant l'habillage</strong> (alt. 2)</td><td>Écrans codés deux fois</td></tr>
+<tr><td>Construire le <strong>suivi de performance</strong> sans avis juridique</td><td>Risque de conformité et de confiance interne</td></tr>
+</tbody></table></div>
+<h2>Risques</h2>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Risque</th><th>Prob.</th><th>Impact</th><th>Parade</th></tr></thead><tbody>
+<tr><td>1</td><td>Microsoft 365 non fourni : e-mails réels impossibles (invitations, mot de passe oublié)</td><td>Certaine</td><td><strong>Élevé</strong></td><td>Traiter <strong>avant</strong> tout usage réel</td></tr>
+<tr><td>2</td><td>Périmètre qui <strong>gonfle</strong> (44 écrans, 2 contextes) sans date de fin</td><td>Élevée</td><td>Élevé</td><td>Prioriser par valeur ; un parcours par module d'abord</td></tr>
+<tr><td>3</td><td>Habillage perçu comme « du vernis » sans valeur métier</td><td>Moyenne</td><td>Moyen</td><td>H1 minimal ; style appliqué <strong>en même temps</strong> que S4</td></tr>
+<tr><td>4</td><td>Données de performance mal encadrées</td><td>Moyenne</td><td>Élevé (conformité)</td><td>Avis juridique, transparence, accès limité</td></tr>
+<tr><td>5</td><td>Stocks hébergés provisoirement <strong>jamais extraits</strong></td><td>Moyenne</td><td>Moyen</td><td>Règle d'architecture automatique + ADR avec échéance</td></tr>
+<tr><td>6</td><td>Versionnement non tenu par manque de discipline</td><td>Moyenne</td><td>Moyen</td><td>Automatiser les instantanés ; une règle de « Je valide »</td></tr>
+<tr><td>7</td><td>Rail compact mal compris</td><td>Faible</td><td>Moyen</td><td>Essai avec 3 utilisateurs ; bouton Déplier</td></tr>
+</tbody></table></div>
+<h2>Dette technique induite</h2>
+<div class="table-wrap"><table><thead><tr><th>Dette</th><th>Origine</th><th>Remboursement</th></tr></thead><tbody>
+<tr><td>Hébergement provisoire de Stocks dans le monolithe</td><td>Option 3′</td><td>Extraction vers l'ERP/service (ADR avec échéance)</td></tr>
+<tr><td>Deux modes de coque (hub, rail)</td><td>Navigation B+</td><td>Un seul composant à deux états ; tests de focus</td></tr>
+<tr><td>Vue « Par étape » à rendre accessible au clavier</td><td>Hybride Opportunités</td><td>Alternative clavier (menu « Déplacer vers… »)</td></tr>
+<tr><td>Instantanés visuels dans le dépôt</td><td>Versionnement D</td><td>Sortir du dépôt au-delà d'une trentaine de versions</td></tr>
+<tr><td>Index de recherche par module</td><td>Hub et recherche globale</td><td>À maintenir à chaque nouveau module</td></tr>
+<tr><td>Historique des connexions : nouvel endpoint</td><td>Écrans d'authentification</td><td>Petit développement d'API (S3.x)</td></tr>
+</tbody></table></div>
+<h2>Priorité</h2>
+<div class="table-wrap"><table><thead><tr><th>Décision</th><th>Priorité</th></tr></thead><tbody>
+<tr><td>Valider S3.4/S3.5, débloquer Microsoft 365 et les SuperAdmin</td><td><strong>Haute</strong></td></tr>
+<tr><td>Ordre de réalisation (alt. 1)</td><td><strong>Haute</strong></td></tr>
+<tr><td>Navigation (B+)</td><td><strong>Haute</strong> (conditionne H1)</td></tr>
+<tr><td>Opportunités (hybride)</td><td><strong>Moyenne</strong> (avant S4.3)</td></tr>
+<tr><td>Versionnement design (D)</td><td><strong>Moyenne</strong> (à poser avant de multiplier les versions)</td></tr>
+<tr><td>Stocks (3′)</td><td><strong>Moyenne</strong> (avant la phase ERP)</td></tr>
+<tr><td>Performances des employés</td><td><strong>Faible</strong> pour le calendrier, <strong>Haute</strong> pour le cadrage juridique</td></tr>
+</tbody></table></div>
+<h2>Recommandation finale globale</h2>
+<p><strong>En tant qu'architecte produit de la plateforme Investally, je choisirais</strong> la combinaison suivante : <strong>versionnement D</strong>, <strong>navigation B+</strong>, <strong>Opportunités hybrides</strong>, <strong>Stocks en module autonome (3′)</strong> et <strong>l'ordre alternatif 1</strong>. <strong>Pourquoi</strong> : c'est la combinaison qui <strong>protège ce qui est déjà solide</strong> (socle d'accès, règles d'architecture), <strong>livre la valeur commerciale le plus tôt possible sans coder deux fois</strong>, et <strong>garde chaque décision réversible</strong>. Les choix les plus coûteux à défaire (rattachement des Stocks, données de performance) sont traités avec des <strong>garde-fous explicites</strong> plutôt qu'avec de la vitesse. Le prochain geste utile n'est <strong>pas</strong> d'implémenter : c'est de <strong>valider S3.4 et S3.5</strong> et de <strong>débloquer Microsoft 365 et les SuperAdmin</strong>.</p>
+<blockquote><p><strong>Suite donnée le 2026-10-21</strong> : la direction produit a demandé d'<strong>appliquer les décisions recommandées</strong>. Elles sont consignées dans le journal ci-dessous (annexe), dans <code>QUESTIONS-ET-DECISIONS.md</code> (D17), et appliquées : prototype v0.4.0, gouvernance du versionnement, ADR-0007, plan réordonné.</p></blockquote>
+<hr>
+<h1>Annexe — Journal de décision</h1>
+<div class="table-wrap"><table><thead><tr><th>N°</th><th>Sujet</th><th>Option retenue</th><th>Date</th><th>Motif / réserves</th></tr></thead><tbody>
+<tr><td>DEC-001</td><td>Versionnement des livrables design</td><td><strong>D</strong> — Git + releases sémantiques + journal et fiches de décision</td><td>2026-10-21</td><td>Recommandation retenue ; appliquée (README, VERSION, CHANGELOG, DDR, releases, outils) ; étiquettes posées seulement à la validation d'une version</td></tr>
+<tr><td>DEC-002</td><td>Navigation globale (EXD-05)</td><td><strong>B+</strong> — hub complet, rail compact par défaut, bouton Déplier</td><td>2026-10-21</td><td>Recommandation retenue ; appliquée au prototype v0.4.0 ; essai à 3 utilisateurs à prévoir</td></tr>
+<tr><td>DEC-003</td><td>Module Opportunités</td><td><strong>Hybride</strong> — cartes par défaut, bandeau d'étapes, bascule « Par étape »</td><td>2026-10-21</td><td>Recommandation retenue ; appliquée au prototype v0.4.0 ; alternative clavier de « Par étape » à construire ; mesure d'usage après 2 semaines</td></tr>
+<tr><td>DEC-004</td><td>Rattachement du module Stocks</td><td><strong>3′</strong> — module autonome hébergé dans le monolithe du CRM, conçu pour être extrait</td><td>2026-10-21</td><td>Recommandation retenue ; <strong>ADR-0007</strong> et règle d'architecture ; construction en dernier</td></tr>
+<tr><td>DEC-005</td><td>Ordre de réalisation</td><td><strong>Alternatif 1</strong> — prérequis d'abord, H1 minimal, authentification, Documents, S4 dans le nouveau style, Reporting (incidents d'abord), Stocks</td><td>2026-10-21</td><td>Recommandation retenue ; plan mis à jour ; l'étape 0 (valider S3.4/S3.5, Microsoft 365, SuperAdmin) <strong>reste à faire par la direction produit</strong></td></tr>
+<tr><td>DEC-006</td><td>Données de performance des employés</td><td><strong>Après avis juridique et RH</strong>, avec transparence pour l'employé</td><td>2026-10-21</td><td>Recommandation retenue ; contrainte inscrite dans EXD-08 et le registre</td></tr>
+</tbody></table></div></main></body></html>
