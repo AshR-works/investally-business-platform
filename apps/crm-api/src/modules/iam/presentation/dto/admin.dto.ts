@@ -1,7 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
-  ArrayMaxSize, ArrayMinSize, IsArray, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, IsUUID, Max, MaxLength, Min,
+  ArrayMaxSize, ArrayMinSize, IsArray, IsEnum, IsInt, IsISO8601, IsNotEmpty, IsOptional, IsString, IsUUID, Max, MaxLength, Min,
 } from 'class-validator';
 
 export enum UserStatusFilter {
@@ -101,4 +101,18 @@ export class ResetPasswordDto {
   @ApiProperty({ maxLength: 256 })
   @IsString() @IsNotEmpty() @MaxLength(256)
   password!: string;
+}
+
+/**
+ * Paramètres de l'historique des connexions : taille (1 à 100) et curseur `before` (date ISO 8601 de la page
+ * précédente). Aucun identifiant d'utilisateur n'est accepté : l'historique est toujours celui de l'appelant.
+ */
+export class LoginHistoryQueryDto {
+  @ApiPropertyOptional({ default: 25, maximum: 100 })
+  @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(100)
+  limit?: number;
+
+  @ApiPropertyOptional({ description: 'Curseur : date ISO 8601 renvoyée par la page précédente (nextBefore).' })
+  @IsOptional() @IsISO8601({ strict: true })
+  before?: string;
 }

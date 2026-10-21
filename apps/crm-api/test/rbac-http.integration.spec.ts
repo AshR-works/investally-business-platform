@@ -26,6 +26,8 @@ const ROUTES: RouteSpec[] = [
   { method: 'POST', path: `/api/v1/admin/users/${NIL}/sessions/revoke`, permission: 'iam.session.revoke', stepUp: true, minScope: 'ALL' },
   { method: 'GET', path: '/api/v1/admin/roles', permission: 'iam.role.read' },
   { method: 'GET', path: '/api/v1/auth/sessions', permission: 'iam.session.read' },
+  { method: 'GET', path: '/api/v1/auth/sessions/history', permission: 'iam.session.read' },
+  { method: 'POST', path: '/api/v1/auth/sessions/revoke-others', permission: 'iam.session.revoke', stepUp: true },
   { method: 'DELETE', path: `/api/v1/auth/sessions/${NIL}`, permission: 'iam.session.revoke' },
   { method: 'POST', path: '/api/v1/companies', permission: 'bd.company.create', body: () => ({ name: `Société ${Math.random().toString(36).slice(2)}` }) },
   { method: 'GET', path: '/api/v1/companies', permission: 'bd.company.read' },
@@ -75,9 +77,9 @@ describeDb('Autorisation HTTP (PostgreSQL)', () => {
       const holdersOf = (route: RouteSpec) =>
         ROLES.filter((r) => resolveGrants(r.code).some((g) => g.permission === route.permission && (route.minScope !== 'ALL' || g.scope === 'ALL')));
       for (const route of ROUTES) expect(holdersOf(route).length).toBeGreaterThan(0);
-      // Seules les routes « mes propres sessions » sont ouvertes à tous les rôles ; toutes les autres en refusent au moins un.
+      // Seules les quatre routes « mes propres sessions » (liste, historique, révocation d'une, révocation des autres) sont ouvertes à tous les rôles ; toutes les autres en refusent au moins un.
       const restricted = ROUTES.filter((route) => holdersOf(route).length < ROLES.length);
-      expect(restricted.length).toBeGreaterThanOrEqual(ROUTES.length - 2);
+      expect(restricted.length).toBeGreaterThanOrEqual(ROUTES.length - 4);
     });
   });
 
