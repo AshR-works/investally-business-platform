@@ -16,7 +16,7 @@
 
 ## Numérotation
 `MAJEUR.MINEUR.CORRECTIF` — **MAJEUR** : rupture visuelle ou de navigation · **MINEUR** : nouveaux écrans ou composants · **CORRECTIF** : retouches sans changement de sens.
-Cycle d'une version : **Proposée → En revue → Validée (par la direction produit) → Figée**. Une version n'est **étiquetée** qu'une fois validée.
+Cycle d'une version : **Proposée → En revue → Validée (par la direction produit) → Figée**. Une version n'est **étiquetée** qu'une fois validée (exception : les versions **reconstituées** v0.1.0 à v0.3.0 portent une étiquette de reconstitution pour permettre les comparaisons Git).
 
 ## Les cinq gestes
 | Je veux… | Commande |

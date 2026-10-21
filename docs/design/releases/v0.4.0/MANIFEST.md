@@ -4,7 +4,7 @@
 |---|---|
 | Version | **0.4.0** |
 | Statut | En revue |
-| Commit de référence | `0d8d2e9` |
+| Commit de référence | `862785c` |
 | Étiquette Git | `design-v0.4.0` (à poser à la validation) |
 | Date de l'instantané | 2026-10-21 |
 | Captures | 26 |
