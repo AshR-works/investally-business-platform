@@ -7,6 +7,8 @@ Le design 0.4.1 est installé dans l'application réelle (`apps/crm-web`) : jeto
 
 **H1b (même jour)** : composants de données du design dans l'application — en-tête de page, tableau avec sélection persistante (EXD-02), badges de statut, barre d'outils (filtres rapides, recherche), pagination, menu d'actions de ligne, cellule « entité » — appliqués à Entreprises, Utilisateurs et sessions de Mon compte, **avec les seules données réelles** (écarts : `docs/cadrages/ECART-MOCKUP-VS-REEL.md`). **Arbitrage D21** : Pays et « Créée le » ajoutés au tableau Entreprises ; responsable, filtres et compteurs viendront avec S4.1 après le cadrage UX.
 
+**H2a (2026-10-22)** : les écrans d'accès A01 à A15 sont réalisés dans l'application au gabarit du prototype (carte d'accueil sombre, indicateur d'étape, notices, règles du mot de passe en direct, introduction du MFA en trois étapes, compte à rebours après trop de tentatives). **Écarts assumés** : code à 6 chiffres en **champ unique** (DDR-0008) ; nombre de codes de secours restants non affiché (l'API ne le fournit pas, dette D39).
+
 ## 0.4.1 — 2026-10-21 — *Validée*
 - **EXD-10 / DEC-007 / DDR-0007** : panneau principal **centré sur la fenêtre** (option B) ; repli automatique en centrage dans l'espace restant quand la fenêtre est étroite ; largeur du panneau 1 440 px au plus ; la largeur maximale du contenu (1 320 px) est supprimée.
 - **EXD-11** : bouton de dépliage en **pictogramme seul** (44 px, nom accessible, info-bulle, état annoncé) ; pictogramme provisoire à confirmer.

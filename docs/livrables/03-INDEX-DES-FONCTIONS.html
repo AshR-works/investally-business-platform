@@ -23,7 +23,7 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 @media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
 </style></head><body><main><nav class="top">Investally Business Platform — livrables · <a href="01-RECAPITULATIF-REALISATIONS.html">Récapitulatif</a> · <a href="02-GUIDE-DU-CODE.html">Guide du code</a> · <a href="03-INDEX-DES-FONCTIONS.html">Index des fonctions</a> · <a href="04-SUIVI-DES-SESSIONS.html">Suivi des sessions</a> · <a href="05-ETAT-D-AVANCEMENT.html">État d&#8217;avancement</a> · <a href="06-BESOINS-STYLE-GRAPHIQUE.html">Style graphique</a></nav><h1>Index des fonctions et composants (généré)</h1>
 <blockquote><p>Document <strong>généré</strong> par <code>node scripts/gen-function-index.mjs</code> à partir des commentaires du code. Ne pas le modifier à la main : corriger le commentaire dans le fichier source, puis relancer le script.</p></blockquote>
-<p><strong>586 déclarations commentées au total.</strong></p>
+<p><strong>600 déclarations commentées au total.</strong></p>
 <h2>API (NestJS) — 459 déclarations commentées</h2>
 <h3><code>app.module.ts</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
@@ -799,7 +799,7 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td><code>export interface RequestLike</code></td><td>Forme minimale d'une requête HTTP (sans dépendre d'Express) pour construire le contexte d'audit.</td></tr>
 <tr><td><code>export function actorContextFrom(req: RequestLike, identity: { userId: string | null; sessionId: string | null } = { userId: null, sessionId: null }</code></td><td>Qui agit, depuis où : IP et appareil de la requête (l'identité est ajoutée une fois l'utilisateur authentifié).</td></tr>
 </tbody></table></div>
-<h2>Interface web — pages (Next.js) — 39 déclarations commentées</h2>
+<h2>Interface web — pages (Next.js) — 41 déclarations commentées</h2>
 <h3><code>(app)/account/page.tsx</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
 <tr><td><code>export default function AccountPage()</code></td><td>Page « Mon compte » : profil, changement de mot de passe, nouveaux codes de secours et liste des sessions de l'utilisateur connecté.</td></tr>
@@ -839,12 +839,12 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <h3><code>forgot-password/page.tsx</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
 <tr><td><code>export default function ForgotPasswordPage()</code></td><td>Page « Mot de passe oublié » : accessible sans connexion, réservée aux visiteurs non connectés.</td></tr>
-<tr><td><code>function ForgotPasswordForm()</code></td><td>Demande un lien de réinitialisation.</td></tr>
+<tr><td><code>function ForgotPasswordForm()</code></td><td>Demande un lien de réinitialisation (A08) puis confirme l'envoi (A09).</td></tr>
 <tr><td><code>async function submit(event: FormEvent)</code></td><td>Demande le lien ; affiche toujours la même confirmation, seule une erreur de limitation ou de panne est signalée.</td></tr>
 </tbody></table></div>
 <h3><code>invitation/page.tsx</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
-<tr><td><code>export default function InvitationPage()</code></td><td>Page d'activation d'un compte invité : lit le jeton dans le fragment de l'URL, l'efface de l'adresse, puis laisse choisir le mot de passe.</td></tr>
+<tr><td><code>export default function InvitationPage()</code></td><td>Page d'activation d'un compte invité (A13) : lit le jeton dans le fragment de l'URL, l'efface de l'adresse, puis laisse choisir le mot de passe.</td></tr>
 <tr><td><code>async function submit(event: FormEvent)</code></td><td>Envoie le jeton et le mot de passe ; un refus (lien invalide, mot de passe refusé) est affiché et le lien reste utilisable si c'est le mot de passe qui est en cause.</td></tr>
 </tbody></table></div>
 <h3><code>layout.tsx</code></h3>
@@ -854,25 +854,27 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <h3><code>login/page.tsx</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
 <tr><td><code>export default function LoginPage()</code></td><td>Page de connexion, réservée aux visiteurs non connectés.</td></tr>
-<tr><td><code>function LoginForm()</code></td><td>Formulaire de connexion (adresse, mot de passe) avec lien « Mot de passe oublié ».</td></tr>
-<tr><td><code>async function submit(event: FormEvent)</code></td><td>Tente la connexion ; en cas d'échec affiche le message unique du serveur et vide le mot de passe.</td></tr>
+<tr><td><code>function LoginForm()</code></td><td>Formulaire de connexion (A01) : adresse et mot de passe, lien « Mot de passe oublié ».</td></tr>
+<tr><td><code>async function submit(event: FormEvent)</code></td><td>Tente la connexion ; en cas d'échec affiche le message du serveur et vide le mot de passe.</td></tr>
 </tbody></table></div>
 <h3><code>mfa/page.tsx</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
 <tr><td><code>export default function MfaPage()</code></td><td>Page du second facteur : vérification d'un code, ou première configuration si le MFA n'est pas encore en place.</td></tr>
-<tr><td><code>function MfaScreen()</code></td><td>Choisit l'écran (configuration ou vérification) selon l'état de la session et permet de changer de compte.</td></tr>
-<tr><td><code>function Verification()</code></td><td>Saisie du code TOTP ou d'un code de secours à usage unique.</td></tr>
+<tr><td><code>function MfaScreen()</code></td><td>Choisit l'écran (configuration ou vérification) selon l'état de la session.</td></tr>
+<tr><td><code>function AccountFooter()</code></td><td>Pied des écrans MFA : compte connecté et possibilité d'en changer.</td></tr>
+<tr><td><code>function Verification()</code></td><td>Saisie du code du second facteur (A02) ou d'un code de secours à usage unique (A03).</td></tr>
 <tr><td><code>async function submit(event: FormEvent)</code></td><td>Envoie le code ; un échec est affiché et le champ vidé (une seule requête par tentative).</td></tr>
 <tr><td><code>function groupSecret(secret: string): string</code></td><td>Présente la clé manuelle par groupes de 4 caractères pour la saisir plus facilement.</td></tr>
-<tr><td><code>function Enrollment()</code></td><td>Première configuration du MFA : QR code généré dans le navigateur, clé manuelle, confirmation par un premier code, puis affichage unique des codes de secours.</td></tr>
+<tr><td><code>function Enrollment()</code></td><td>Première configuration du MFA en trois écrans : introduction (A04), QR code et confirmation du premier code (A05, A06), codes de secours à affichage unique (A07).</td></tr>
+<tr><td><code>async function begin()</code></td><td>Démarre la configuration (un seul appel : chaque appel génère un nouveau secret et invaliderait le QR affiché).</td></tr>
 <tr><td><code>async function confirm(event: FormEvent)</code></td><td>Confirme l'enrôlement avec le code saisi ; en cas de succès les codes de secours sont affichés et le secret effacé de la mémoire.</td></tr>
 </tbody></table></div>
 <h3><code>reset-password/page.tsx</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
-<tr><td><code>export default function ResetPasswordPage()</code></td><td>Page ouverte depuis le lien reçu par e-mail.</td></tr>
+<tr><td><code>export default function ResetPasswordPage()</code></td><td>Page ouverte depuis le lien reçu par e-mail (A10 à A12).</td></tr>
 <tr><td><code>async function submit(event: FormEvent)</code></td><td>Envoie le jeton et le nouveau mot de passe ; le serveur coupe toutes les sessions, l'utilisateur doit se reconnecter avec son second facteur.</td></tr>
 </tbody></table></div>
-<h2>Interface web — composants — 35 déclarations commentées</h2>
+<h2>Interface web — composants — 39 déclarations commentées</h2>
 <h3><code>app-shell.tsx</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
 <tr><td><code>export const FOCUS_SEARCH_EVENT = 'investally:focus-search';</code></td><td>Événement envoyé au hub pour mettre le focus dans la recherche globale (raccourci Ctrl/⌘ K, bouton de la barre).</td></tr>
@@ -880,6 +882,19 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td><code>const openSearch = useCallback(()</code></td><td>Va à la recherche globale du hub (ou y met le focus si l'on y est déjà).</td></tr>
 <tr><td><code>function ShellLink({ href, icon, label, current, railOnly, centered, rail }: { href: string; icon: IconName; label: string; current: boolean; railOnly</code></td><td>Lien de navigation : pictogramme + libellé (le libellé reste lu par les lecteurs d'écran quand le rail est replié).</td></tr>
 <tr><td><code>function ThemeToggle()</code></td><td>Bascule clair / sombre (le choix est mémorisé ; sans choix, l'application suit le réglage de l'appareil).</td></tr>
+</tbody></table></div>
+<h3><code>auth/auth-layout.tsx</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>const BARS = [35, 52, 44, 68, 60, 82, 100];</code></td><td>Barres décoratives de la carte d'accueil (hauteurs en %), reprises du prototype de design.</td></tr>
+<tr><td><code>export function AuthLayout({ title, documentTitle, description, step, children, footer }:</code></td><td>Gabarit des écrans d'accès (EXD-06) : carte sombre d'accueil à gauche (masquée sur mobile), formulaire à droite avec logo, indicateur d'étape, titre et description.</td></tr>
+</tbody></table></div>
+<h3><code>auth/auth-notice.tsx</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export function AuthNotice({ tone, role, title, children }: { tone: Exclude&lt;Tone, 'neutral'&gt;; role: 'alert' | 'status'; title?: string; children?: Re</code></td><td>Encadré de message des écrans d'accès (confirmation, avertissement, erreur).</td></tr>
+</tbody></table></div>
+<h3><code>auth/new-password-fields.tsx</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export function NewPasswordFields({ password, confirmation, onPassword, onConfirmation }:</code></td><td>Champs « nouveau mot de passe » + confirmation, avec les règles visibles en direct (chacune annoncée « respectée » ou « à respecter » aux lecteurs d'écran) et l'alerte de non-concordance.</td></tr>
 </tbody></table></div>
 <h3><code>data/badge.tsx</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
@@ -956,7 +971,7 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td><code>export function StepUpDialog({ onDone }: { onDone: (ok: boolean) =&gt; void })</code></td><td>Demande un code frais du second facteur avant une action sensible (modification de rôles, désactivation, etc.).</td></tr>
 <tr><td><code>async function submit(event: FormEvent)</code></td><td>Vérifie le code ; en cas de succès le nouveau jeton remplace l'ancien et l'action sensible est rejouée.</td></tr>
 </tbody></table></div>
-<h2>Interface web — bibliothèque — 53 déclarations commentées</h2>
+<h2>Interface web — bibliothèque — 61 déclarations commentées</h2>
 <h3><code>api.ts</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
 <tr><td><code>export class ApiError extends Error</code></td><td>Erreur renvoyée par l'API : statut HTTP, code stable (<code>FORBIDDEN</code>, <code>MFA_REQUIRED</code>…) et message lisible.</td></tr>
@@ -986,9 +1001,20 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td><code>interface TokenResponse</code></td><td>Réponse de l'API contenant un nouveau jeton d'accès.</td></tr>
 <tr><td><code>export function AuthProvider({ children }: { children: ReactNode })</code></td><td>Fournisseur d'authentification : retrouve la session au chargement (cookie de rafraîchissement), pilote les états <code>anonymous</code>, <code>mfa-enroll</code>, <code>mfa-verify</code> et <code>ready</code>, et affiche la fenêtre de confirmation MFA quand il le faut.</td></tr>
 </tbody></table></div>
+<h3><code>auth-errors.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export const RATE_LIMIT_WAIT_SECONDS = 60;</code></td><td>Durée (secondes) d'attente affichée après un refus pour trop de tentatives (la limite du serveur est d'une minute).</td></tr>
+<tr><td><code>export function isRateLimited(error: unknown): boolean</code></td><td>Vrai si le serveur refuse pour trop de tentatives (limitation de débit, HTTP 429).</td></tr>
+<tr><td><code>export function authErrorMessage(error: unknown, fallback: string): string</code></td><td>Message à afficher pour un échec d'authentification : le message du serveur (identique pour un compte connu ou inconnu, jamais enrichi ici), un texte propre à la limitation de débit, ou un texte de repli pour une panne réseau.</td></tr>
+<tr><td><code>export function secondsLeft(until: number, now: number): number</code></td><td>Secondes restantes avant <code>until</code> (en millisecondes depuis l'époque), jamais négatives.</td></tr>
+</tbody></table></div>
 <h3><code>device.ts</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
 <tr><td><code>export function deviceLabel(userAgent: string): string</code></td><td>Libellé court et lisible d'un User-Agent (« Chrome sur Windows »).</td></tr>
+</tbody></table></div>
+<h3><code>format.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export function formatDate(iso: string | null | undefined): string</code></td><td>Date seule au format français (ex.</td></tr>
 </tbody></table></div>
 <h3><code>invitation.ts</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
@@ -1004,6 +1030,8 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
 <tr><td><code>export const PASSWORD_MIN_LENGTH = 12;</code></td><td>Longueur minimale d'un mot de passe (la même règle que côté serveur, qui reste seul juge).</td></tr>
 <tr><td><code>export function passwordHints(password: string, email = ''): string[]</code></td><td>Indications affichées pendant la saisie (longueur, identifiant e-mail contenu) ; la règle qui fait foi est celle du serveur.</td></tr>
+<tr><td><code>export interface PasswordRule</code></td><td>Une règle de mot de passe affichée en direct, avec son état.</td></tr>
+<tr><td><code>export function passwordRules(password: string, email = ''): PasswordRule[]</code></td><td>Règles du mot de passe avec leur état (respectée ou non), pour la liste affichée pendant la saisie.</td></tr>
 </tbody></table></div>
 <h3><code>permissions.ts</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
@@ -1045,4 +1073,8 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td><code>export interface RoleView</code></td><td>Rôle et ses permissions, tels que l'API les expose.</td></tr>
 <tr><td><code>export interface SessionView</code></td><td>Session de connexion telle que l'API l'expose (la courante est marquée).</td></tr>
 <tr><td><code>export interface Company</code></td><td>Entreprise cible telle que l'API l'expose.</td></tr>
+</tbody></table></div>
+<h3><code>use-cooldown.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export function useCooldown(): { remaining: number; start: (seconds: number) =&gt; void }</code></td><td>Compte à rebours d'attente (après un refus pour trop de tentatives) : <code>start(seconds)</code> le lance, <code>remaining</code> donne les secondes restantes (0 = on peut réessayer).</td></tr>
 </tbody></table></div></main></body></html>

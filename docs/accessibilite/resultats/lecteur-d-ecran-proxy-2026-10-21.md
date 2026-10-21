@@ -2,34 +2,39 @@
 
 **Violations de la politique de contenu (CSP)** : 0
 
-**États audités** : 24 · **violations** : 0 · **à vérifier à la main** : 0
+**États audités** : 29 · **violations** : 0 · **à vérifier à la main** : 0
 
 | État d'écran | Violations | À vérifier | Éléments annoncés |
 |---|---|---|---|
 | Connexion | 0 | 0 | 8 |
 | Connexion — erreur | 0 | 0 | 9 |
+| Connexion — thème sombre | 0 | 0 | 8 |
+| Connexion — trop de tentatives (A15) | 0 | 0 | 9 |
 | Mot de passe oublié | 0 | 0 | 7 |
-| Mot de passe oublié — e-mail envoyé | 0 | 0 | 5 |
-| Invitation — lien invalide | 0 | 0 | 3 |
-| Réinitialisation — lien invalide | 0 | 0 | 4 |
-| MFA — configuration (QR code et clé) | 0 | 0 | 11 |
-| MFA — code refusé | 0 | 0 | 12 |
-| MFA — codes de secours (affichage unique) | 0 | 0 | 8 |
+| Mot de passe oublié — e-mail envoyé | 0 | 0 | 9 |
+| Invitation — lien invalide | 0 | 0 | 4 |
+| Réinitialisation — lien invalide | 0 | 0 | 5 |
+| MFA — introduction (3 étapes) | 0 | 0 | 9 |
+| MFA — configuration (QR code et clé) | 0 | 0 | 7 |
+| MFA — code refusé | 0 | 0 | 8 |
+| MFA — codes de secours (affichage unique) | 0 | 0 | 9 |
 | Vue d’ensemble (hub) | 0 | 0 | 36 |
 | Entreprises (rail compact) | 0 | 0 | 195 |
 | Entreprises — fenêtre « Nouvelle entreprise » | 0 | 0 | 7 |
 | Entreprises — deux lignes sélectionnées | 0 | 0 | 196 |
 | Entreprises (navigation dépliée) | 0 | 0 | 195 |
-| Hub — résultats de recherche | 0 | 0 | 40 |
-| Hub — thème sombre | 0 | 0 | 40 |
+| Hub — résultats de recherche | 0 | 0 | 42 |
+| Hub — thème sombre | 0 | 0 | 42 |
 | Hub — mobile, tiroir fermé | 0 | 0 | 29 |
 | Hub — mobile, tiroir ouvert | 0 | 0 | 37 |
-| Administration des utilisateurs | 0 | 0 | 59 |
-| Administration — menu d’actions d’une ligne | 0 | 0 | 60 |
+| Administration des utilisateurs | 0 | 0 | 68 |
+| Administration — menu d’actions d’une ligne | 0 | 0 | 69 |
 | Administration — fenêtre « Inviter » | 0 | 0 | 19 |
 | Mon compte | 0 | 0 | 39 |
-| Réinitialisation — nouveau mot de passe | 0 | 0 | 7 |
-| Réinitialisation — indications en direct | 0 | 0 | 7 |
+| MFA — saisie du code (A02) | 0 | 0 | 8 |
+| MFA — code de secours (A03) | 0 | 0 | 8 |
+| Réinitialisation — nouveau mot de passe | 0 | 0 | 9 |
+| Réinitialisation — indications en direct | 0 | 0 | 9 |
 
 ## Violations
 Aucune.
@@ -41,12 +46,12 @@ Ce que le lecteur d'écran annonce, dans l'ordre :
 
 - alert (SANS NOM)
 - main (SANS NOM)
+- heading niveau 1 « Connexion »
 - form (SANS NOM)
-- heading niveau 1 « Investally CRM »
 - textbox « Adresse e-mail » obligatoire
 - textbox « Mot de passe » obligatoire
-- button « Se connecter »
 - link « Mot de passe oublié ? »
+- button « Se connecter »
 
 ## Connexion — erreur
 *Titre de page* : « Connexion — Investally CRM » · *Langue* : fr · *Focus* : aucun élément ciblé · *Note* : message d’échec annoncé par role=alert
@@ -55,13 +60,42 @@ Ce que le lecteur d'écran annonce, dans l'ordre :
 
 - alert (SANS NOM)
 - main (SANS NOM)
+- heading niveau 1 « Connexion »
 - form (SANS NOM)
-- heading niveau 1 « Investally CRM »
+- alert (SANS NOM)
 - textbox « Adresse e-mail » obligatoire
 - textbox « Mot de passe » obligatoire
-- alert (SANS NOM)
-- button « Se connecter »
 - link « Mot de passe oublié ? »
+- button « Se connecter »
+
+## Connexion — thème sombre
+*Titre de page* : « Connexion — Investally CRM » · *Langue* : fr · *Focus* : input
+
+Ce que le lecteur d'écran annonce, dans l'ordre :
+
+- alert (SANS NOM)
+- main (SANS NOM)
+- heading niveau 1 « Connexion »
+- form (SANS NOM)
+- textbox « Adresse e-mail » obligatoire
+- textbox « Mot de passe » obligatoire
+- link « Mot de passe oublié ? »
+- button « Se connecter »
+
+## Connexion — trop de tentatives (A15)
+*Titre de page* : « Connexion — Investally CRM » · *Langue* : fr · *Focus* : aucun élément ciblé · *Note* : compte à rebours, bouton désactivé
+
+Ce que le lecteur d'écran annonce, dans l'ordre :
+
+- alert (SANS NOM)
+- main (SANS NOM)
+- heading niveau 1 « Connexion »
+- form (SANS NOM)
+- alert (SANS NOM)
+- textbox « Adresse e-mail » obligatoire
+- textbox « Mot de passe » obligatoire
+- link « Mot de passe oublié ? »
+- button « Patientez 59 s » désactivé
 
 ## Mot de passe oublié
 *Titre de page* : « Mot de passe oublié — Investally CRM » · *Langue* : fr · *Focus* : input
@@ -74,18 +108,22 @@ Ce que le lecteur d'écran annonce, dans l'ordre :
 - form (SANS NOM)
 - textbox « Adresse e-mail » obligatoire
 - button « Envoyer le lien » désactivé
-- link « Retour à la connexion »
+- link « ← Retour à la connexion »
 
 ## Mot de passe oublié — e-mail envoyé
-*Titre de page* : « Mot de passe oublié — Investally CRM » · *Langue* : fr · *Focus* : aucun élément ciblé · *Note* : message identique pour toute adresse
+*Titre de page* : « Mot de passe oublié : e-mail envoyé — Investally CRM » · *Langue* : fr · *Focus* : aucun élément ciblé · *Note* : message identique pour toute adresse
 
 Ce que le lecteur d'écran annonce, dans l'ordre :
 
 - alert (SANS NOM)
 - main (SANS NOM)
-- heading niveau 1 « Mot de passe oublié »
+- heading niveau 1 « Vérifiez votre boîte de réception »
 - status (SANS NOM)
-- link « Retour à la connexion »
+- list (SANS NOM)
+- listitem niveau 1 (SANS NOM)
+- listitem niveau 1 (SANS NOM)
+- listitem niveau 1 (SANS NOM)
+- link « ← Retour à la connexion »
 
 ## Invitation — lien invalide
 *Titre de page* : « Invitation : lien invalide — Investally CRM » · *Langue* : fr · *Focus* : aucun élément ciblé
@@ -93,7 +131,8 @@ Ce que le lecteur d'écran annonce, dans l'ordre :
 Ce que le lecteur d'écran annonce, dans l'ordre :
 
 - main (SANS NOM)
-- heading niveau 1 « Lien invalide »
+- heading niveau 1 « Lien invalide ou expiré »
+- status (SANS NOM)
 - alert (SANS NOM)
 
 ## Réinitialisation — lien invalide
@@ -102,42 +141,50 @@ Ce que le lecteur d'écran annonce, dans l'ordre :
 Ce que le lecteur d'écran annonce, dans l'ordre :
 
 - main (SANS NOM)
-- heading niveau 1 « Lien invalide »
+- heading niveau 1 « Lien invalide ou expiré »
+- status (SANS NOM)
 - link « Demander un nouveau lien »
 - alert (SANS NOM)
 
-## MFA — configuration (QR code et clé)
-*Titre de page* : « Configurer le second facteur — Investally CRM » · *Langue* : fr · *Focus* : aucun élément ciblé
+## MFA — introduction (3 étapes)
+*Titre de page* : « Activez la vérification en deux étapes — Investally CRM » · *Langue* : fr · *Focus* : aucun élément ciblé
 
 Ce que le lecteur d'écran annonce, dans l'ordre :
 
 - alert (SANS NOM)
 - main (SANS NOM)
-- form (SANS NOM)
-- heading niveau 1 « Configurer le second facteur »
+- heading niveau 1 « Activez la vérification en deux étapes »
 - list (SANS NOM)
 - listitem niveau 1 (SANS NOM)
 - listitem niveau 1 (SANS NOM)
 - listitem niveau 1 (SANS NOM)
+- button « Commencer »
+- button « Changer de compte »
+
+## MFA — configuration (QR code et clé)
+*Titre de page* : « Scannez le QR code — Investally CRM » · *Langue* : fr · *Focus* : aucun élément ciblé
+
+Ce que le lecteur d'écran annonce, dans l'ordre :
+
+- alert (SANS NOM)
+- main (SANS NOM)
+- heading niveau 1 « Scannez le QR code »
+- form (SANS NOM)
 - textbox « Code de vérification » obligatoire
 - button « Confirmer » désactivé
 - button « Changer de compte »
 
 ## MFA — code refusé
-*Titre de page* : « Configurer le second facteur — Investally CRM » · *Langue* : fr · *Focus* : aucun élément ciblé
+*Titre de page* : « Scannez le QR code — Investally CRM » · *Langue* : fr · *Focus* : aucun élément ciblé
 
 Ce que le lecteur d'écran annonce, dans l'ordre :
 
 - alert (SANS NOM)
 - main (SANS NOM)
+- heading niveau 1 « Scannez le QR code »
 - form (SANS NOM)
-- heading niveau 1 « Configurer le second facteur »
-- list (SANS NOM)
-- listitem niveau 1 (SANS NOM)
-- listitem niveau 1 (SANS NOM)
-- listitem niveau 1 (SANS NOM)
-- textbox « Code de vérification » obligatoire
 - alert (SANS NOM)
+- textbox « Code de vérification » obligatoire
 - button « Confirmer » désactivé
 - button « Changer de compte »
 
@@ -151,7 +198,8 @@ Ce que le lecteur d'écran annonce, dans l'ordre :
 - heading niveau 1 « Conservez vos codes de secours »
 - button « Copier »
 - button « Télécharger »
-- checkbox « J'ai conservé ces codes en lieu sûr » coché=false
+- status (SANS NOM)
+- checkbox « J’ai conservé ces codes en lieu sûr » coché=false
 - button « Continuer » désactivé
 - button « Changer de compte »
 
@@ -174,7 +222,7 @@ Ce que le lecteur d'écran annonce, dans l'ordre :
 - button « Rechercher partout Ctrl K »
 - button « Passer au thème sombre »
 - main (SANS NOM)
-- heading niveau 1 « Bonjour Recette Arbitrage »
+- heading niveau 1 « Bonjour Recette Hache Deux B »
 - search « Recherche globale »
 - status (SANS NOM)
 - region « Vos modules »
@@ -235,6 +283,14 @@ Ce que le lecteur d'écran annonce, dans l'ordre :
 - columnheader « Statut »
 - columnheader « Créée le »
 - row (SANS NOM)
+- cell « Sélectionner Société Horizon 86011 »
+- checkbox « Sélectionner Société Horizon 86011 » coché=false
+- cell « Société Horizon 86011 »
+- cell « — »
+- cell « — »
+- cell « Cible »
+- cell « 21/10/2026 »
+- row (SANS NOM)
 - cell « Sélectionner Entreprise Test 25 »
 - checkbox « Sélectionner Entreprise Test 25 » coché=false
 - cell « Entreprise Test 25 »
@@ -383,14 +439,6 @@ Ce que le lecteur d'écran annonce, dans l'ordre :
 - checkbox « Sélectionner Entreprise Test 07 » coché=false
 - cell « Entreprise Test 07 »
 - cell « Industrie »
-- cell « Cameroun »
-- cell « Cible »
-- cell « 21/10/2026 »
-- row (SANS NOM)
-- cell « Sélectionner Entreprise Test 06 »
-- checkbox « Sélectionner Entreprise Test 06 » coché=false
-- cell « Entreprise Test 06 »
-- cell « Assurance »
 - cell « Cameroun »
 - cell « Cible »
 - cell « 21/10/2026 »
@@ -450,16 +498,24 @@ Ce que le lecteur d'écran annonce, dans l'ordre :
 - columnheader « Statut »
 - columnheader « Créée le »
 - row (SANS NOM)
-- cell « Sélectionner Société Horizon 95584 »
-- checkbox « Sélectionner Société Horizon 95584 » coché=true
-- cell « Société Horizon 95584 »
+- cell « Sélectionner Société Horizon 28177 »
+- checkbox « Sélectionner Société Horizon 28177 » coché=true
+- cell « Société Horizon 28177 »
+- cell « — »
+- cell « — »
+- cell « Cible »
+- cell « 21/10/2026 »
+- row (SANS NOM)
+- cell « Sélectionner Société Horizon 86011 »
+- checkbox « Sélectionner Société Horizon 86011 » coché=false
+- cell « Société Horizon 86011 »
 - cell « — »
 - cell « — »
 - cell « Cible »
 - cell « 21/10/2026 »
 - row (SANS NOM)
 - cell « Sélectionner Entreprise Test 25 »
-- checkbox « Sélectionner Entreprise Test 25 » coché=false
+- checkbox « Sélectionner Entreprise Test 25 » coché=true
 - cell « Entreprise Test 25 »
 - cell « Banque »
 - cell « Cameroun »
@@ -467,7 +523,7 @@ Ce que le lecteur d'écran annonce, dans l'ordre :
 - cell « 21/10/2026 »
 - row (SANS NOM)
 - cell « Sélectionner Entreprise Test 24 »
-- checkbox « Sélectionner Entreprise Test 24 » coché=true
+- checkbox « Sélectionner Entreprise Test 24 » coché=false
 - cell « Entreprise Test 24 »
 - cell « Énergie »
 - cell « Cameroun »
@@ -601,14 +657,6 @@ Ce que le lecteur d'écran annonce, dans l'ordre :
 - cell « Cameroun »
 - cell « Cible »
 - cell « 21/10/2026 »
-- row (SANS NOM)
-- cell « Sélectionner Entreprise Test 07 »
-- checkbox « Sélectionner Entreprise Test 07 » coché=false
-- cell « Entreprise Test 07 »
-- cell « Industrie »
-- cell « Cameroun »
-- cell « Cible »
-- cell « 21/10/2026 »
 - navigation « Pagination »
 - button « Précédent » désactivé
 - button « Suivant »
@@ -651,9 +699,17 @@ Ce que le lecteur d'écran annonce, dans l'ordre :
 - columnheader « Statut »
 - columnheader « Créée le »
 - row (SANS NOM)
-- cell « Sélectionner Société Horizon 95584 »
-- checkbox « Sélectionner Société Horizon 95584 » coché=false
-- cell « Société Horizon 95584 »
+- cell « Sélectionner Société Horizon 28177 »
+- checkbox « Sélectionner Société Horizon 28177 » coché=false
+- cell « Société Horizon 28177 »
+- cell « — »
+- cell « — »
+- cell « Cible »
+- cell « 21/10/2026 »
+- row (SANS NOM)
+- cell « Sélectionner Société Horizon 86011 »
+- checkbox « Sélectionner Société Horizon 86011 » coché=false
+- cell « Société Horizon 86011 »
 - cell « — »
 - cell « — »
 - cell « Cible »
@@ -802,14 +858,6 @@ Ce que le lecteur d'écran annonce, dans l'ordre :
 - cell « Cameroun »
 - cell « Cible »
 - cell « 21/10/2026 »
-- row (SANS NOM)
-- cell « Sélectionner Entreprise Test 07 »
-- checkbox « Sélectionner Entreprise Test 07 » coché=false
-- cell « Entreprise Test 07 »
-- cell « Industrie »
-- cell « Cameroun »
-- cell « Cible »
-- cell « 21/10/2026 »
 - navigation « Pagination »
 - button « Précédent » désactivé
 - button « Suivant »
@@ -833,13 +881,15 @@ Ce que le lecteur d'écran annonce, dans l'ordre :
 - button « Rechercher partout Ctrl K »
 - button « Passer au thème sombre »
 - main (SANS NOM)
-- heading niveau 1 « Bonjour Recette Arbitrage »
+- heading niveau 1 « Bonjour Recette Hache Deux B »
 - search « Recherche globale »
 - status (SANS NOM)
 - heading niveau 2 « ENTREPRISES »
 - list (SANS NOM)
 - listitem niveau 1 (SANS NOM)
-- link « Société Horizon 95584 TARGET »
+- link « Société Horizon 28177 TARGET »
+- listitem niveau 1 (SANS NOM)
+- link « Société Horizon 86011 TARGET »
 - region « Vos modules »
 - heading niveau 2 « Vos modules »
 - list (SANS NOM)
@@ -879,13 +929,15 @@ Ce que le lecteur d'écran annonce, dans l'ordre :
 - button « Rechercher partout Ctrl K »
 - button « Passer au thème clair »
 - main (SANS NOM)
-- heading niveau 1 « Bonjour Recette Arbitrage »
+- heading niveau 1 « Bonjour Recette Hache Deux B »
 - search « Recherche globale »
 - status (SANS NOM)
 - heading niveau 2 « ENTREPRISES »
 - list (SANS NOM)
 - listitem niveau 1 (SANS NOM)
-- link « Société Horizon 95584 TARGET »
+- link « Société Horizon 28177 TARGET »
+- listitem niveau 1 (SANS NOM)
+- link « Société Horizon 86011 TARGET »
 - region « Vos modules »
 - heading niveau 2 « Vos modules »
 - list (SANS NOM)
@@ -918,7 +970,7 @@ Ce que le lecteur d'écran annonce, dans l'ordre :
 - button « Rechercher partout »
 - button « Passer au thème sombre »
 - main (SANS NOM)
-- heading niveau 1 « Bonjour Recette Arbitrage »
+- heading niveau 1 « Bonjour Recette Hache Deux B »
 - search « Recherche globale »
 - status (SANS NOM)
 - region « Vos modules »
@@ -961,7 +1013,7 @@ Ce que le lecteur d'écran annonce, dans l'ordre :
 - button « Rechercher partout »
 - button « Passer au thème sombre »
 - main (SANS NOM)
-- heading niveau 1 « Bonjour Recette Arbitrage »
+- heading niveau 1 « Bonjour Recette Hache Deux B »
 - search « Recherche globale »
 - status (SANS NOM)
 - region « Vos modules »
@@ -1028,14 +1080,23 @@ Ce que le lecteur d'écran annonce, dans l'ordre :
 - columnheader « Dernière connexion »
 - columnheader « Actions »
 - row (SANS NOM)
-- cell « Sélectionner Recette Arbitrage »
-- checkbox « Sélectionner Recette Arbitrage » coché=false
-- cell « Recette Arbitrage d21@e2e.test »
+- cell « Sélectionner Recette Hache Deux B »
+- checkbox « Sélectionner Recette Hache Deux B » coché=false
+- cell « Recette Hache Deux B h2b@e2e.test »
 - cell « Super administrateur »
 - cell « Actif »
 - cell « Activé »
-- cell « 21/10/2026 23:53:04 »
-- cell « Actions pour Recette Arbitrage »
+- cell « 22/10/2026 00:16:55 »
+- cell « Actions pour Recette Hache Deux B »
+- row (SANS NOM)
+- cell « Sélectionner Recette Hache Deux A »
+- checkbox « Sélectionner Recette Hache Deux A » coché=false
+- cell « Recette Hache Deux A h2a@e2e.test »
+- cell « Super administrateur »
+- cell « Actif »
+- cell « Activé »
+- cell « 22/10/2026 00:15:10 »
+- cell « Actions pour Recette Hache Deux A »
 - row (SANS NOM)
 - cell « Sélectionner Recette Hache Un »
 - checkbox « Sélectionner Recette Hache Un » coché=false
@@ -1093,15 +1154,24 @@ Ce que le lecteur d'écran annonce, dans l'ordre :
 - columnheader « Dernière connexion »
 - columnheader « Actions »
 - row (SANS NOM)
-- cell « Sélectionner Recette Arbitrage »
-- checkbox « Sélectionner Recette Arbitrage » coché=false
-- cell « Recette Arbitrage d21@e2e.test »
+- cell « Sélectionner Recette Hache Deux B »
+- checkbox « Sélectionner Recette Hache Deux B » coché=false
+- cell « Recette Hache Deux B h2b@e2e.test »
 - cell « Super administrateur »
 - cell « Actif »
 - cell « Activé »
-- cell « 21/10/2026 23:53:04 »
-- cell « Actions pour Recette Arbitrage Modifier les rôles »
+- cell « 22/10/2026 00:16:55 »
+- cell « Actions pour Recette Hache Deux B Modifier les rôles »
 - button « Modifier les rôles »
+- row (SANS NOM)
+- cell « Sélectionner Recette Hache Deux A »
+- checkbox « Sélectionner Recette Hache Deux A » coché=false
+- cell « Recette Hache Deux A h2a@e2e.test »
+- cell « Super administrateur »
+- cell « Actif »
+- cell « Activé »
+- cell « 22/10/2026 00:15:10 »
+- cell « Actions pour Recette Hache Deux A »
 - row (SANS NOM)
 - cell « Sélectionner Recette Hache Un »
 - checkbox « Sélectionner Recette Hache Un » coché=false
@@ -1181,9 +1251,37 @@ Ce que le lecteur d'écran annonce, dans l'ordre :
 - row (SANS NOM)
 - cell « Edge sur Windows Cette session »
 - cell « 127.0.0.1 »
-- cell « 21/10/2026 23:53:04 »
-- cell « 21/10/2026 23:53:35 »
+- cell « 22/10/2026 00:16:55 »
+- cell « 22/10/2026 00:17:28 »
 - cell (SANS NOM)
+
+## MFA — saisie du code (A02)
+*Titre de page* : « Vérification en deux étapes — Investally CRM » · *Langue* : fr · *Focus* : input
+
+Ce que le lecteur d'écran annonce, dans l'ordre :
+
+- alert (SANS NOM)
+- main (SANS NOM)
+- heading niveau 1 « Vérification en deux étapes »
+- form (SANS NOM)
+- textbox « Code de vérification » obligatoire
+- button « Vérifier » désactivé
+- button « Téléphone perdu ? Utiliser un code de secours »
+- button « Changer de compte »
+
+## MFA — code de secours (A03)
+*Titre de page* : « Utiliser un code de secours — Investally CRM » · *Langue* : fr · *Focus* : input
+
+Ce que le lecteur d'écran annonce, dans l'ordre :
+
+- alert (SANS NOM)
+- main (SANS NOM)
+- heading niveau 1 « Utiliser un code de secours »
+- form (SANS NOM)
+- textbox « Code de secours » obligatoire
+- button « Vérifier » désactivé
+- button « Utiliser mon application d’authentification »
+- button « Changer de compte »
 
 ## Réinitialisation — nouveau mot de passe
 *Titre de page* : « Nouveau mot de passe — Investally CRM » · *Langue* : fr · *Focus* : input
@@ -1191,9 +1289,11 @@ Ce que le lecteur d'écran annonce, dans l'ordre :
 Ce que le lecteur d'écran annonce, dans l'ordre :
 
 - main (SANS NOM)
-- form (SANS NOM)
 - heading niveau 1 « Nouveau mot de passe »
+- form (SANS NOM)
 - textbox « Nouveau mot de passe » obligatoire
+- list « Règles du mot de passe »
+- listitem niveau 1 (SANS NOM)
 - textbox « Confirmez le mot de passe » obligatoire
 - button « Enregistrer » désactivé
 - alert (SANS NOM)
@@ -1204,9 +1304,11 @@ Ce que le lecteur d'écran annonce, dans l'ordre :
 Ce que le lecteur d'écran annonce, dans l'ordre :
 
 - main (SANS NOM)
-- form (SANS NOM)
 - heading niveau 1 « Nouveau mot de passe »
+- form (SANS NOM)
 - textbox « Nouveau mot de passe » obligatoire
+- list « Règles du mot de passe »
+- listitem niveau 1 (SANS NOM)
 - textbox « Confirmez le mot de passe » obligatoire
 - button « Enregistrer » désactivé
 - alert (SANS NOM)
