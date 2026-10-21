@@ -128,7 +128,8 @@ def main():
             '<meta name="viewport" content="width=device-width,initial-scale=1">'
             f'<title>{html.escape(title.group(1) if title else name)}</title><style>{CSS}</style></head><body><main>'
             '<nav class="top">Investally Business Platform — livrables · <a href="01-RECAPITULATIF-REALISATIONS.html">Récapitulatif</a> · '
-            '<a href="02-GUIDE-DU-CODE.html">Guide du code</a> · <a href="03-INDEX-DES-FONCTIONS.html">Index des fonctions</a></nav>'
+            '<a href="02-GUIDE-DU-CODE.html">Guide du code</a> · <a href="03-INDEX-DES-FONCTIONS.html">Index des fonctions</a> · '
+            '<a href="04-SUIVI-DES-SESSIONS.html">Suivi des sessions</a> · <a href="05-ETAT-D-AVANCEMENT.html">État d&#8217;avancement</a></nav>'
             + convert(md) + '</main></body></html>'
         )
         out = os.path.join(ROOT, name[:-3] + '.html')
