@@ -1,0 +1,130 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Spécifications frontend — Next.js, TypeScript, Tailwind CSS</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — design · <a href="01-DESIGN-SYSTEM.html">Design system</a> · <a href="02-SPECIFICATIONS-FRONTEND.html">Spécifications frontend</a> · <a href="prototype/index.html">Prototype</a></nav><h1>Spécifications frontend — Next.js, TypeScript, Tailwind CSS</h1>
+<p><strong>Objet</strong> : traduire le design system (<a href="01-DESIGN-SYSTEM.html">01-DESIGN-SYSTEM.md</a>) en code pour <code>apps/crm-web</code>, sans toucher aux règles de sécurité existantes. <strong>Statut</strong> : spécification <strong>à valider</strong> ; rien n'est encore appliqué à l'application.</p>
+<hr>
+<h2>1. Principes d'intégration</h2>
+<ol><li><strong>Les jetons sont des variables CSS</strong> (<code>tokens.css</code>) : une seule source, lisible par Tailwind, par le CSS classique et par les tests.</li><li><strong>Tailwind CSS v4, configuration par le CSS</strong> (<code>@theme</code>) : les classes utilitaires (<code>bg-surface</code>, <code>text-ink-2</code>, <code>rounded-card</code>…) pointent vers les variables ; le thème sombre est un changement de <strong>valeurs de variables</strong>, pas de classes dupliquées.</li><li><strong>Composants sans logique de sécurité</strong> : ils affichent ; l'API décide (aucune régression de <code>@Protected</code>, du step-up, de l'audit).</li><li><strong>Aucune ressource externe</strong> : polices et icônes <strong>hébergées</strong> dans l'application (politique CSP <code>default-src 'self'</code>).</li><li><strong>Pas de nouvelle dépendance sans justification</strong> : Tailwind et ses plugins sont les seules additions prévues pour l'habillage.</li></ol>
+<h2>2. Jetons Tailwind (v4)</h2>
+<p>Fichier <a href="tailwind-theme.css">tailwind-theme.css</a> : à importer après <code>tokens.css</code>.</p>
+<pre><code>@import &#x27;tailwindcss&#x27;;
+@import &#x27;./tokens.css&#x27;;
+
+@theme inline {
+  --font-sans: var(--font-ui);
+  --font-display: var(--font-display);
+
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-sidebar: var(--sidebar);
+  --color-line: var(--line);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-muted: var(--muted);
+  --color-brand: var(--brand);
+  --color-brand-strong: var(--brand-strong);
+  --color-brand-ink: var(--brand-ink);
+  --color-hero: var(--hero);
+  --color-ok: var(--ok);     --color-ok-bg: var(--ok-bg);
+  --color-warn: var(--warn); --color-warn-bg: var(--warn-bg);
+  --color-bad: var(--bad);   --color-bad-bg: var(--bad-bg);
+  --color-info: var(--info); --color-info-bg: var(--info-bg);
+
+  --radius-control: 10px;
+  --radius-card: 22px;
+  --shadow-card: var(--shadow-1);
+}</code></pre>
+<p>Exemples d'usage : <code>bg-surface text-ink border border-line rounded-card</code>, <code>bg-brand text-brand-ink</code>, <code>text-ok bg-ok-bg</code>.</p>
+<h2>3. Structure des fichiers proposée</h2>
+<pre><code>apps/crm-web/
+├── app/
+│   ├── globals.css                 import de Tailwind et des jetons
+│   ├── (auth)/                     connexion, MFA, mot de passe oublié, invitation (gabarit « auth »)
+│   └── (app)/                      pages connectées (gabarit « coque »)
+├── components/
+│   ├── ui/                         composants de base : Button, Field, Badge, Avatar, Tabs, Table, Modal, Toast, OtpInput
+│   ├── layout/                     AppShell, Sidebar, Topbar, PageHeader, Hero, KpiCard
+│   └── business/                   StatusBadge, OpportunityCard, CompanyRow, AuditRow, SessionCard, Funnel
+├── lib/
+│   ├── design/status.ts            correspondance statut métier → variante de badge (une seule source)
+│   └── …                           (existant : api, auth-context, permissions)
+└── public/
+    ├── brand/                      logos SVG (Investally, Investudy)
+    └── fonts/                      Inter, Montserrat (woff2, licence OFL)</code></pre>
+<h2>4. Contrats des composants (extraits)</h2>
+<pre><code>// components/ui/Badge.tsx
+type BadgeTone = &#x27;neutral&#x27; | &#x27;info&#x27; | &#x27;warn&#x27; | &#x27;ok&#x27; | &#x27;bad&#x27;;
+export function Badge({ tone = &#x27;neutral&#x27;, children }: { tone?: BadgeTone; children: ReactNode }) { /* point + texte */ }
+
+// lib/design/status.ts : UNE table, utilisée partout
+export const OPPORTUNITY_STATUS: Record&lt;OpportunityStage, { label: string; tone: BadgeTone }&gt; = { /* … */ };
+
+// components/layout/Hero.tsx
+export function Hero(props: { label: string; value: string; trend?: { text: string; positive: boolean };
+                              series: number[]; aside?: { label: string; value: string; hint?: string } }) {}
+
+// components/ui/Table.tsx : lignes sélectionnables, tri, colonnes masquables, états vide / chargement / erreur</code></pre>
+<p><strong>Règles de code</strong> : un composant = un fichier, une phrase de commentaire sur son rôle (comme le reste du dépôt), aucune couleur écrite en dur, aucun <code>dangerouslySetInnerHTML</code>.</p>
+<h2>5. Mise en page</h2>
+<div class="table-wrap"><table><thead><tr><th>Point de rupture</th><th>Comportement</th></tr></thead><tbody>
+<tr><td>≥ 1 100 px</td><td>Barre latérale fixe 280 px, 4 cartes KPI par ligne</td></tr>
+<tr><td>900–1 100 px</td><td>2 cartes KPI par ligne, héros sur une colonne</td></tr>
+<tr><td>&lt; 900 px</td><td>Barre latérale en <strong>tiroir</strong> (bouton menu, <code>aria-expanded</code>), tableau à défilement horizontal</td></tr>
+<tr><td>&lt; 560 px</td><td>KPI en colonne, recherche masquée (icône)</td></tr>
+</tbody></table></div>
+<h2>6. Polices</h2>
+<ul><li>Fichiers <strong>variables</strong> woff2 (latin) : <code>inter-latin-wght-normal.woff2</code>, <code>montserrat-latin-wght-normal.woff2</code>, servis depuis <code>/fonts</code> ; <code>font-display: swap</code>.</li><li>Installation proposée : paquets <code>@fontsource-variable/inter</code> et <code>@fontsource-variable/montserrat</code> (licence OFL-1.1), importés par Next.js (aucun appel réseau à l'exécution).</li><li>Licences conservées dans <code>public/fonts/</code> (déjà copiées dans le prototype).</li></ul>
+<h2>7. Icônes et logos</h2>
+<ul><li><strong>Icônes</strong> : jeu à traits 1,6 px sur grille 24 (le prototype en contient 24, tracées à la main) ; en production, un seul jeu libre de droits (par exemple Lucide, licence ISC), importé en SVG individuels.</li><li><strong>Logos</strong> : SVG vectoriels fournis par vos soins (Investally, Investudy) ; le <strong>symbole</strong> s'adapte au thème (traits en <code>currentColor</code>, points taupe). Investudy est utilisé <strong>uniquement</strong> dans les écrans de formation (en-tête de page et carte d'accès rapide) ; sur fond sombre, plaque claire ou version inversée.</li></ul>
+<h2>8. Sécurité et conformité de l'habillage</h2>
+<div class="table-wrap"><table><thead><tr><th>Sujet</th><th>Règle</th></tr></thead><tbody>
+<tr><td>CSP</td><td>Aucune ressource externe ; styles et polices locaux. <code>style-src 'unsafe-inline'</code> reste nécessaire (dette D20)</td></tr>
+<tr><td>Contenu dynamique</td><td>Texte seulement ; aucune injection de HTML</td></tr>
+<tr><td>Données dans l'interface</td><td>Les montants et noms viennent de l'API ; aucune donnée de démonstration ne sort du prototype</td></tr>
+<tr><td>Droits</td><td>Les menus et boutons restent conditionnés par <code>/auth/me/profile</code> <strong>et</strong> re-contrôlés par le serveur</td></tr>
+<tr><td>Journal</td><td>Aucun changement : l'audit n'est pas touché par l'habillage</td></tr>
+</tbody></table></div>
+<h2>9. Tests prévus</h2>
+<div class="table-wrap"><table><thead><tr><th>Type</th><th>Contenu</th></tr></thead><tbody>
+<tr><td>Unitaires</td><td>Table des statuts, formateurs de montants (XAF), libellés</td></tr>
+<tr><td>Composants</td><td>Rendu, clavier, états (Vitest + Testing Library)</td></tr>
+<tr><td>Accessibilité</td><td>Contrastes vérifiés par script à chaque changement de jeton ; axe-core sur les pages</td></tr>
+<tr><td>Visuels</td><td>Captures de référence des 8 écrans, clair et sombre (comparaison à chaque modification)</td></tr>
+<tr><td>Parcours réels</td><td>Rejeu dans un navigateur réel après habillage (comme S3.4)</td></tr>
+</tbody></table></div>
+<h2>10. Découpage proposé</h2>
+<div class="table-wrap"><table><thead><tr><th>Sprint</th><th>Livrable</th><th>Preuve</th></tr></thead><tbody>
+<tr><td><strong>H1 — Fondations</strong></td><td>Tailwind, jetons, polices hébergées, logos, coque (barre latérale, barre supérieure), thème clair/sombre</td><td>page de référence + captures</td></tr>
+<tr><td><strong>H2 — Écrans d'accès</strong></td><td>Connexion, MFA (QR, codes), mot de passe oublié, réinitialisation, invitation</td><td>parcours réels rejoués</td></tr>
+<tr><td><strong>H3 — Écrans connectés</strong></td><td>Entreprises, Utilisateurs, Mon compte, fenêtres</td><td>parcours réels rejoués</td></tr>
+<tr><td><strong>S4+</strong></td><td>Les écrans métier naissent directement dans ce système</td><td>recettes de chaque sprint</td></tr>
+</tbody></table></div>
+<h2>11. Risques</h2>
+<div class="table-wrap"><table><thead><tr><th>Risque</th><th>Réponse</th></tr></thead><tbody>
+<tr><td>Tailwind v4 / Next.js 16 très récents</td><td>Versions épinglées ; essai isolé avant migration</td></tr>
+<tr><td>Logo reconstitué ≠ officiel</td><td>Remplacer par les SVG officiels avant toute mise en ligne</td></tr>
+<tr><td>Régression de comportement pendant l'habillage</td><td><strong>Aucune logique modifiée</strong> ; tests existants (24) + parcours réels rejoués</td></tr>
+<tr><td>Dérive visuelle au fil des sprints</td><td>Composants uniques, table des statuts unique, vérification de contraste automatisée</td></tr>
+</tbody></table></div></main></body></html>
