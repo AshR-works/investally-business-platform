@@ -34,6 +34,10 @@ jobs:
         run: pnpm typecheck
       - name: Règles d'architecture (bloquant)
         run: pnpm arch
+      - name: Tests des scripts et contrôle des rapports journaliers
+        run: |
+          node --test scripts/daily-report.test.mjs
+          node scripts/daily-report.mjs check
       - name: Tests unitaires
         run: pnpm test
       - name: Migrations + tests d'intégration
