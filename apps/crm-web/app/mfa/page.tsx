@@ -5,6 +5,7 @@ import { FormEvent, ReactNode, useEffect, useRef, useState } from 'react';
 import { AuthLayout } from '../../components/auth/auth-layout';
 import { AuthNotice } from '../../components/auth/auth-notice';
 import { OtpInput } from '../../components/auth/otp-input';
+import { SecretCodesPanel } from '../../components/auth/secret-codes-panel';
 import { Gate } from '../../components/gate';
 import { Icon } from '../../components/icon';
 import { useAuth } from '../../lib/auth-context';
@@ -130,16 +131,7 @@ function Enrollment() {
   const [busy, setBusy] = useState(false);
   const [recoveryCodes, setRecoveryCodes] = useState<string[] | null>(null);
   const [saved, setSaved] = useState(false);
-  const [copied, setCopied] = useState(false);
   const started = useRef(false);
-
-  useEffect(() => {
-    // Les codes de secours ne sont affichés qu'une fois : on prévient avant de quitter ou de recharger la page.
-    if (!recoveryCodes) return;
-    const warn = (event: BeforeUnloadEvent) => event.preventDefault();
-    window.addEventListener('beforeunload', warn);
-    return () => window.removeEventListener('beforeunload', warn);
-  }, [recoveryCodes]);
 
   /** Démarre la configuration (un seul appel : chaque appel génère un nouveau secret et invaliderait le QR affiché). */
   async function begin() {
@@ -178,7 +170,6 @@ function Enrollment() {
   }
 
   if (recoveryCodes) {
-    const text = `Investally CRM - codes de secours (usage unique)\n\n${recoveryCodes.join('\n')}\n`;
     return (
       <AuthLayout
         title="Conservez vos codes de secours"
@@ -186,39 +177,7 @@ function Enrollment() {
         description={<>Chaque code ne sert qu’<strong>une fois</strong> si vous perdez votre téléphone. Ils ne seront <strong>plus jamais affichés</strong> : rangez-les dans un endroit sûr (gestionnaire de mots de passe), pas dans un e-mail.</>}
         footer={<AccountFooter />}
       >
-        <div className="codes" role="group" aria-label="Codes de secours">
-          {recoveryCodes.map((c) => <span key={c}>{c}</span>)}
-        </div>
-        <div className="row">
-          <button
-            type="button"
-            className="secondary"
-            onClick={() => {
-              void navigator.clipboard?.writeText(text).then(() => setCopied(true));
-            }}
-          >
-            Copier
-          </button>
-          <button
-            type="button"
-            className="secondary"
-            onClick={() => {
-              const url = URL.createObjectURL(new Blob([text], { type: 'text/plain' }));
-              const link = document.createElement('a');
-              link.href = url;
-              link.download = 'investally-codes-de-secours.txt';
-              link.click();
-              URL.revokeObjectURL(url);
-            }}
-          >
-            Télécharger
-          </button>
-        </div>
-        <p role="status" className="my-2 min-h-5 text-[length:var(--text-sm)] text-ok">{copied ? 'Codes copiés dans le presse-papiers.' : ''}</p>
-        <label className="inline" style={{ margin: '1rem 0' }}>
-          <input type="checkbox" checked={saved} onChange={(e) => setSaved(e.target.checked)} />
-          J’ai conservé ces codes en lieu sûr
-        </label>
+        <SecretCodesPanel codes={recoveryCodes} saved={saved} onSavedChange={setSaved} />
         <button type="button" disabled={!saved} onClick={() => void refreshState()} className="w-full">Continuer</button>
       </AuthLayout>
     );

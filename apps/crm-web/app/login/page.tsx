@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { FormEvent, useState } from 'react';
 import { AuthLayout } from '../../components/auth/auth-layout';
 import { AuthNotice } from '../../components/auth/auth-notice';
+import { PasswordField } from '../../components/auth/password-field';
 import { Gate } from '../../components/gate';
 import { Icon } from '../../components/icon';
 import { useAuth } from '../../lib/auth-context';
@@ -72,10 +73,7 @@ function LoginForm() {
           Adresse e-mail
           <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="username" maxLength={254} required autoFocus />
         </label>
-        <label>
-          Mot de passe
-          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" maxLength={256} required />
-        </label>
+        <PasswordField label="Mot de passe" value={password} onChange={setPassword} autoComplete="current-password" />
         <p className="-mt-2 mb-5 text-right text-[length:var(--text-sm)]"><Link href="/forgot-password">Mot de passe oublié ?</Link></p>
         <button type="submit" disabled={busy || waiting} className="w-full">{waiting ? `Patientez ${cooldown.remaining} s` : 'Se connecter'}</button>
         <p className="mt-5 flex items-center gap-2 text-[length:var(--text-sm)] text-ink-2">

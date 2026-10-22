@@ -167,9 +167,36 @@ async function audit(label, note = '') {
 }
 
 // ---------------------------------------------------------------- parcours
+// Vérification de comportement (en plus de l'audit d'accessibilité) : échoue bruyamment si la condition est fausse.
+const expectThat = async (label, expression) => {
+  const ok = await js(expression);
+  if (!ok) throw new Error(`Comportement attendu non constaté : ${label}`);
+  console.log(`✔ ${label}`);
+};
+
 try {
   await go('/login');
   await audit('Connexion');
+  // UX-01 : œil d'affichage du mot de passe.
+  const PWD = "input[autocomplete=current-password]";
+  const EYE = 'button[aria-label="Afficher le mot de passe"]';
+  // Adresse inexistante : cette tentative d'envoi ne doit pas compter contre le verrouillage du compte administrateur.
+  await setValue('input[type=email]', 'oeil@e2e.test');
+  await setValue(PWD, 'Valeur-Test-Visible-1');
+  await expectThat('mot de passe masqué par défaut', `document.querySelector('${PWD}').type === 'password'`);
+  await expectThat("un seul bouton « œil » (l'icône native d'Edge est masquée)", `document.querySelectorAll('${EYE}').length === 1`);
+  await js(`document.querySelector('${EYE}').click()`);
+  await expectThat('1er clic : mot de passe visible, bouton annoncé « activé »', `document.querySelector('${PWD}').type === 'text' && document.querySelector('${EYE}').getAttribute('aria-pressed') === 'true'`);
+  await expectThat('la valeur saisie est conservée', `document.querySelector('${PWD}').value === 'Valeur-Test-Visible-1'`);
+  await expectThat('la correction orthographique est coupée', `document.querySelector('${PWD}').spellcheck === false`);
+  await audit('Connexion — mot de passe affiché (œil activé)', 'bouton à bascule aria-pressed, icône œil barré');
+  await shot('connexion-oeil');
+  await js(`document.querySelector('${EYE}').click()`);
+  await expectThat('2e clic : mot de passe de nouveau masqué', `document.querySelector('${PWD}').type === 'password'`);
+  await js(`document.querySelector('${EYE}').click()`);
+  await js("document.querySelector('form').requestSubmit()");
+  await expectThat("à l'envoi du formulaire, le mot de passe est remasqué", `document.querySelector('${PWD}').type === 'password'`);
+  await waitFor("document.querySelector('[role=alert]')", 'réponse à la tentative de test');
   await setValue('input[type=email]', ADMIN_EMAIL);
   await setValue('input[type=password]', 'mauvais-mot-de-passe-1');
   await clickText('Se connecter');
@@ -391,6 +418,53 @@ try {
   await go('/account');
   await waitFor("document.querySelector('main h1') && document.body.innerText.includes('Sessions et connexions')", 'page Mon compte', 20000);
   await audit('Mon compte');
+  // UX-01 : les trois champs de « Changer le mot de passe » ont chacun leur œil.
+  await expectThat('Mon compte : 3 champs mot de passe, 3 boutons « œil »', `document.querySelectorAll('main input[autocomplete$=password]').length === 3 && document.querySelectorAll('main button[aria-label="Afficher le mot de passe"]').length === 3`);
+  // UX-03 : la régénération passe par une confirmation, et le focus est sur « Annuler ».
+  const DLG = "document.querySelector('[role=dialog]')";
+  await clickText('Générer de nouveaux codes');
+  await waitFor(DLG, 'confirmation de régénération');
+  await expectThat('la confirmation expose les trois messages de sécurité', `(() => { const t = ${DLG}.innerText; return t.includes('invalidés immédiatement') && t.includes('irréversible') && t.includes('une seule fois'); })()`);
+  await expectThat("focus initial sur « Annuler » (Entrée ne confirme jamais)", "document.activeElement && document.activeElement.textContent.trim() === 'Annuler'");
+  await expectThat("aucun code n'est généré tant qu'on n'a pas confirmé", "!document.querySelector('.codes')");
+  await audit('Mon compte — confirmation de régénération des codes (UX-03)', 'fenêtre danger, focus sur Annuler');
+  await shot('compte-confirmation-codes');
+  await js("window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }))");
+  await sleep(400);
+  await expectThat('Échap annule : fenêtre fermée, toujours aucun code', `!${DLG} && !document.querySelector('.codes')`);
+  await clickText('Générer de nouveaux codes');
+  await waitFor(DLG, 'confirmation de régénération (2)');
+  await clickText('Remplacer mes codes', DLG);
+  await waitFor("document.querySelector('.codes')", 'nouveaux codes de secours', 20000);
+  await expectThat('au moins 8 codes affichés', "document.querySelectorAll('.codes span').length >= 8");
+  await expectThat('trois actions : copier, .txt, PDF (impression)', "['Copier', 'Télécharger (.txt)', 'Imprimer ou enregistrer en PDF'].every((t) => [...document.querySelectorAll('main button')].some((b) => b.textContent.trim() === t))");
+  await audit('Mon compte — nouveaux codes de secours, affichage unique (UX-04)', 'copie, .txt, impression PDF, case de conservation');
+  await shot('compte-codes');
+  await clickText('Télécharger (.txt)');
+  await sleep(500);
+  await expectThat('le téléchargement est annoncé (role=status)', "document.querySelector('main [role=status]').textContent.includes('Fichier téléchargé')");
+  // Feuille imprimée : seule la feuille de codes reste visible, sans nom ni e-mail.
+  await send('Emulation.setEmulatedMedia', { media: 'print' });
+  await js("document.body.dataset.print = 'codes'");
+  await sleep(300);
+  await expectThat("impression : la feuille de codes est visible et le reste de la page masqué", "getComputedStyle(document.querySelector('.codes-print')).display === 'block' && [...document.body.children].filter((el) => !el.classList.contains('codes-print')).every((el) => getComputedStyle(el).display === 'none')");
+  await expectThat("impression : aucune adresse e-mail dans la feuille", "!document.querySelector('.codes-print').innerText.includes('@') && document.querySelectorAll('.codes-print li').length >= 8");
+  await js("delete document.body.dataset.print");
+  await send('Emulation.setEmulatedMedia', { media: '' });
+  // Garde de sortie : lien interne avant « j'ai conservé » → confirmation ; rester ; puis cocher et terminer.
+  await js("document.querySelector('a[href=\"/companies\"]').click()");
+  await waitFor(DLG, 'garde de sortie');
+  await expectThat("on n'a pas quitté la page et la fenêtre prévient que les codes ne seront plus affichés", `location.pathname === '/account' && ${DLG}.innerText.includes('plus jamais affichés')`);
+  await audit('Mon compte — quitter sans avoir conservé les codes (UX-04)', 'fenêtre de garde de sortie');
+  await shot('compte-sortie');
+  await clickText('Rester sur cette page', DLG);
+  await sleep(300);
+  await expectThat('rester : codes toujours affichés', "location.pathname === '/account' && Boolean(document.querySelector('.codes'))");
+  await js("document.querySelector('main input[type=checkbox]').click()");
+  await clickText('Terminer');
+  await sleep(400);
+  await expectThat('« Terminer » : les codes ont disparu et ne peuvent plus être revus', "!document.querySelector('.codes') && !document.querySelector('.codes-print')");
+  await expectThat('aucun code dans le stockage du navigateur', "!/[A-Z0-9]{5}-[A-Z0-9]{5}/.test(JSON.stringify([Object.entries(localStorage), Object.entries(sessionStorage)]))");
 
   // Sessions et historique (H2b) : de vraies connexions sans second facteur créent des sessions supplémentaires.
   // Connexions faites HORS du navigateur (Node) : celles du navigateur remplaceraient son cookie de session.
