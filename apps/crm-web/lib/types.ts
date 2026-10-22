@@ -79,3 +79,39 @@ export interface LoginHistoryPage {
   windowDays: number;
 }
 
+/** Une version d'un document (le contenu est immuable ; l'empreinte SHA-256 en atteste l'intégrité). */
+export interface DocumentVersionView {
+  number: number;
+  fileName: string;
+  mimeType: string;
+  sizeBytes: number;
+  sha256: string;
+  /** `PENDING` : le fichier n'a pas été analysé par un antivirus (le service arrive avec S7). */
+  scanStatus: 'PENDING' | 'CLEAN' | 'INFECTED';
+  uploadedAt: string;
+}
+
+/** Un document avec sa version courante. */
+export interface DocumentView {
+  id: string;
+  ownerType: string;
+  ownerId: string;
+  title: string;
+  category: string | null;
+  status: string;
+  createdAt: string;
+  current: DocumentVersionView;
+}
+
+/** Détail d'un document : toutes ses versions, de la plus récente à la plus ancienne. */
+export interface DocumentDetailView extends DocumentView {
+  versions: DocumentVersionView[];
+}
+
+/** Règles d'envoi publiées par l'API (taille maximale, extensions, catégories). */
+export interface UploadRules {
+  maxBytes: number;
+  formats: string[];
+  categories: { code: string; label: string }[];
+}
+

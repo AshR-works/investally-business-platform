@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { FormEvent, useCallback, useEffect, useState } from 'react';
 import { Badge } from '../../../components/data/badge';
 import { Card } from '../../../components/data/card';
@@ -23,7 +24,7 @@ const PAGE_SIZE = 20;
 
 /** Colonnes du tableau : seules les données que l'API fournit aujourd'hui (nom, secteur, pays, statut, date de création). */
 const COLUMNS: Column<Company>[] = [
-  { id: 'name', header: 'Entreprise', cell: (c) => <EntityCell name={c.name} /> },
+  { id: 'name', header: 'Entreprise', cell: (c) => <Link href={`/companies/${c.id}`} className="text-ink no-underline hover:underline"><EntityCell name={c.name} /></Link> },
   { id: 'sector', header: 'Secteur', cell: (c) => c.sector ?? <span className="text-ink-2">—</span> },
   { id: 'country', header: 'Pays', cell: (c) => c.country ?? <span className="text-ink-2">—</span> },
   {

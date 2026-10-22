@@ -39,6 +39,9 @@ const config: NextConfig = {
     return [{ source: '/:path*', headers: securityHeaders }];
   },
   poweredByHeader: false,
+  // Envoi de documents : la taille maximale d'un fichier est de 10 Mo (API) ; le proxy ne doit pas tronquer un fichier
+  // pile à la limite (son défaut est exactement 10 Mo, enveloppe comprise).
+  experimental: { proxyClientMaxBodySize: 12 * 1024 * 1024 },
 };
 
 export default config;
