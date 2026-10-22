@@ -6,14 +6,14 @@ import type { Request, Response } from 'express';
 import { actorContextFrom } from '../../../shared-kernel';
 import { InviteUserUseCase, ResendInvitationUseCase } from '../application/admin/invitations.use-cases';
 import { IssuePasswordResetUseCase } from '../application/admin/password-reset.use-cases';
-import { ListOwnSessionsHandler, RevokeSessionUseCase, RevokeUserSessionsUseCase } from '../application/admin/session-management.use-cases';
+import { ListOwnSessionsHandler, LoginHistoryHandler, RevokeOtherSessionsUseCase, RevokeSessionUseCase, RevokeUserSessionsUseCase } from '../application/admin/session-management.use-cases';
 import { AssignRolesUseCase, SetUserStatusUseCase, UpdateUserUseCase } from '../application/admin/user-management.use-cases';
 import { GetUserHandler, ListRolesHandler, ListUsersHandler } from '../application/admin/user-queries';
 import { AuthenticatedActor } from '../application/authenticate-access-token.use-case';
 import { ResetMfaUseCase } from '../application/mfa-management.use-cases';
 import type { AccessContext } from '../application/access-types';
 import { CurrentActor } from './access-token.guard';
-import { AssignRolesDto, InviteUserDto, ListUsersDto, UpdateUserDto } from './dto/admin.dto';
+import { AssignRolesDto, InviteUserDto, ListUsersDto, LoginHistoryQueryDto, UpdateUserDto } from './dto/admin.dto';
 import { Access, Protected } from './protected.decorator';
 
 /** Les réponses d'administration ne doivent jamais être mises en cache (données personnelles). */
@@ -143,6 +143,8 @@ export class SessionsController {
   constructor(
     private readonly listOwn: ListOwnSessionsHandler,
     private readonly revoke: RevokeSessionUseCase,
+    private readonly revokeOthers: RevokeOtherSessionsUseCase,
+    private readonly history: LoginHistoryHandler,
   ) {}
 
   @Get()
@@ -150,6 +152,22 @@ export class SessionsController {
   list(@CurrentActor() actor: AuthenticatedActor, @Res({ passthrough: true }) res: Response) {
     noStore(res);
     return this.listOwn.execute(actor);
+  }
+
+  /** Mon historique de connexions (90 jours, réussies et échouées) : toujours le MIEN, jamais celui d'un autre. */
+  @Get('history')
+  @Protected('iam.session.read')
+  loginHistory(@Query() query: LoginHistoryQueryDto, @CurrentActor() actor: AuthenticatedActor, @Res({ passthrough: true }) res: Response) {
+    noStore(res);
+    return this.history.execute({ userId: actor.userId, limit: query.limit, before: query.before ? new Date(query.before) : undefined });
+  }
+
+  /** Déconnecte tous mes autres appareils (la session courante reste ouverte). Exige un MFA récent. */
+  @Post('revoke-others')
+  @HttpCode(200)
+  @Protected('iam.session.revoke', { stepUp: true })
+  revokeAllOthers(@CurrentActor() actor: AuthenticatedActor, @Req() req: Request) {
+    return this.revokeOthers.execute({ userId: actor.userId, sessionId: actor.sessionId, actor: actorContextFrom(req, actor) });
   }
 
   @Delete(':id')

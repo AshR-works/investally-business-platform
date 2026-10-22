@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ActorContext, CLOCK, Clock, DomainError, UNIT_OF_WORK, UnitOfWork } from '../../../../shared-kernel';
-import { AUDIT_RECORDER, AuditAction, AuditRecorder } from '../../../audit';
+import { AUDIT_READER, AUDIT_RECORDER, AuditAction, AuditReader, AuditRecorder, LoginHistoryPage } from '../../../audit';
 import { AccessContext, decideFor } from '../../domain/access-context';
 import {
   REFRESH_TOKEN_REPOSITORY, RefreshTokenRepository, SESSION_REPOSITORY, SessionRepository, USER_REPOSITORY, UserRepository,
@@ -114,5 +114,46 @@ export class RevokeUserSessionsUseCase {
       });
       return { revoked: revoked.length };
     });
+  }
+}
+
+/**
+ * Révoque TOUTES les sessions de l'appelant SAUF celle qui fait la demande (« déconnecter mes autres appareils »). La
+ * cible est toujours l'appelant lui-même, tirée de son jeton : aucun identifiant n'est lu dans la requête. La route
+ * exige un MFA récent (step-up).
+ */
+@Injectable()
+export class RevokeOtherSessionsUseCase {
+  constructor(
+    @Inject(SESSION_REPOSITORY) private readonly sessions: SessionRepository,
+    @Inject(REFRESH_TOKEN_REPOSITORY) private readonly refreshTokens: RefreshTokenRepository,
+    @Inject(AUDIT_RECORDER) private readonly audit: AuditRecorder,
+    @Inject(UNIT_OF_WORK) private readonly unitOfWork: UnitOfWork,
+    @Inject(CLOCK) private readonly clock: Clock,
+  ) {}
+
+  /** Révoque les autres sessions et leurs jetons, trace l'action et renvoie le nombre de sessions coupées. */
+  async execute(command: { userId: string; sessionId: string; actor: ActorContext }): Promise<{ revoked: number }> {
+    return this.unitOfWork.run(async () => {
+      const now = this.clock.now();
+      const revoked = await this.sessions.revokeAllOfUserExcept(command.userId, command.sessionId, now, 'Autres sessions révoquées par leur propriétaire');
+      for (const sessionId of revoked) await this.refreshTokens.revokeBySession(sessionId, now);
+      await this.audit.record({
+        actor: command.actor, module: 'iam', entityType: 'User', entityId: command.userId, action: AuditAction.SessionRevoke,
+        newValue: { event: 'other_sessions_revoked', count: revoked.length, byOwner: true },
+      });
+      return { revoked: revoked.length };
+    });
+  }
+}
+
+/** Historique des connexions de l'appelant (journal d'audit, 90 jours) : jamais celui d'un autre utilisateur. */
+@Injectable()
+export class LoginHistoryHandler {
+  constructor(@Inject(AUDIT_READER) private readonly reader: AuditReader) {}
+
+  /** Page d'historique de l'utilisateur dont l'identifiant vient du jeton ; `before` est le curseur de la page suivante. */
+  async execute(query: { userId: string; before?: Date; limit?: number }): Promise<LoginHistoryPage> {
+    return this.reader.loginHistory(query);
   }
 }

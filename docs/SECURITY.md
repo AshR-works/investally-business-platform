@@ -81,6 +81,16 @@ Deux déclencheurs, **un seul mécanisme** de lien (même table que l'invitation
 | Traçabilité | Action d'audit dédiée `PASSWORD_RESET` : demande (issue `ISSUED`, `UNKNOWN`, `INELIGIBLE`, `THROTTLED`, `EMAIL_FAILED`), émission par un administrateur, usage (`password_reset_completed`), refus de lien (`ACCESS_DENIED`, motif interne) ; adresse IP et appareil de chaque appel ; **jamais** le jeton, le mot de passe ni une adresse saisie qui ne correspond à aucun compte |
 | Risques résiduels | (1) Quelqu'un qui **contrôle la boîte e-mail** de la victime peut changer son mot de passe et couper ses sessions, mais **ne peut pas se connecter sans le second facteur** ; la victime est prévenue par l'e-mail de confirmation. (2) Quelqu'un qui redemande des liens pour une adresse connue peut **invalider le lien légitime** de la victime (3 fois par heure au plus) : nuisance acceptée et tracée (D25). (3) Si le **téléphone est aussi perdu**, un administrateur doit en plus réinitialiser le MFA (D14) |
 
+### 2.8 Historique des connexions et révocation des autres sessions (H2b)
+| Point | Mesure |
+|---|---|
+| Historique (`GET /auth/sessions/history`) | **Toujours le sien** : l'identité vient du jeton, aucun identifiant n'est accepté dans la requête (`userId` → 400) ; 90 jours ; pagination bornée (≤ 100, curseur) ; `no-store` |
+| Source | Le journal d'audit (ajout seul), lu par un port d'**API publique du module Audit** (`AUDIT_READER`, lecture seule) : aucune table de plus, aucune donnée dupliquée |
+| Minimisation | Réussite ou échec **et étape** seulement (mot de passe / second facteur) ; **jamais** le motif précis (compte inconnu, verrouillé, inactif), ni identifiant de session, ni valeurs d'audit, ni localisation ; pas de tentative sur adresse inconnue |
+| Données personnelles | Adresse IP et appareil visibles par leur seul titulaire ; **avis juridique à obtenir** (Étape 0) ; pas de vue administrateur |
+| Révocation des autres sessions (`POST /auth/sessions/revoke-others`) | Cible = l'appelant (jamais lue dans la requête) ; **MFA récent exigé** ; la permission est vérifiée avant le step-up ; sessions et jetons de rafraîchissement révoqués dans une transaction ; **audité** (`SESSION_REVOKE`, nombre) ; la session courante est conservée |
+| Preuves | Tests unitaires et d'intégration, matrice rôle × route, 4 mutants tués (voir `SPRINT-H2B-RECETTE.md`) |
+
 ## 3. Sessions
 Une ligne `UserSession` par connexion : IP, appareil, navigateur, système, dates de connexion/déconnexion/dernière activité/expiration, **niveau de risque**, état MFA, motif de révocation.
 

@@ -41,6 +41,7 @@
 | D37 | **Barre de sélection sans actions groupées** : la sélection fonctionne (EXD-02) mais aucune route ne permet d'agir sur plusieurs lignes (exporter, réassigner, couper les sessions) | H1b | Claude | Cadrage de sécurité dédié (export, réassignation) après le cadrage UX, puis livraison (ARB-API-3) |
 | D38 | **Colonnes et filtres métier absents des tableaux** (responsable, valeur, dernière activité, compteurs par statut, Filtres, Colonnes, Export) : l'API ne les fournit pas | H1b | Direction produit | Échéance S4.1 (ARB-API-1 C) ; Pays et Créée le déjà affichés ; voir `cadrages/ECART-MOCKUP-VS-REEL.md` |
 | D39 | **Nombre de codes de secours restants non affiché** (écran A03) : l'API ne le fournit pas | H2a | Claude | Ajouter le compteur à la route de profil si la direction produit le souhaite (H2b) |
+| D40 | **Adresse IP des sessions et de l'historique** : exacte seulement si le proxy de production est configuré (`TRUST_PROXY`) ; sinon elle montrera l'adresse du proxy | H2b | Claude | À vérifier à la mise en production (S7.1) |
 | D5 | Hypothèses de charge et de périmètre non confirmées | Phase 3 | Revue à la fin de S1 avec les chiffres réels | Ouverte |
 
 ## Adopted Conventions

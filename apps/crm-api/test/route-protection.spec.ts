@@ -114,7 +114,7 @@ describe('Protection de toutes les routes (E2)', () => {
   });
 
   it('les actions sensibles exigent en plus un MFA récent (step-up), et la permission est vérifiée AVANT le step-up', () => {
-    const sensitive = ['POST /admin/users', 'POST /admin/users/:id/disable', 'POST /admin/users/:id/enable', 'PUT /admin/users/:id/roles', 'POST /admin/users/:id/mfa/reset', 'POST /admin/users/:id/password-reset', 'POST /admin/users/:id/sessions/revoke'];
+    const sensitive = ['POST /auth/sessions/revoke-others', 'POST /admin/users', 'POST /admin/users/:id/disable', 'POST /admin/users/:id/enable', 'PUT /admin/users/:id/roles', 'POST /admin/users/:id/mfa/reset', 'POST /admin/users/:id/password-reset', 'POST /admin/users/:id/sessions/revoke'];
     for (const key of sensitive) {
       const route = routes.find((r) => r.key === key);
       expect(route).toBeDefined();

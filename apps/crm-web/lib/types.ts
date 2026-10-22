@@ -61,3 +61,21 @@ export interface Company {
   /** Date de création (ISO 8601). */
   createdAt: string;
 }
+
+/** Une connexion de l'historique (réussie ou échouée) : étape de l'échec, adresse IP et appareil. */
+export interface LoginEvent {
+  id: string;
+  at: string;
+  result: 'SUCCESS' | 'FAILED';
+  stage?: 'PASSWORD' | 'SECOND_FACTOR';
+  ipAddress: string;
+  device: string;
+}
+
+/** Page de l'historique : `nextBefore` est le curseur de la page suivante (nul s'il n'y en a pas). */
+export interface LoginHistoryPage {
+  items: LoginEvent[];
+  nextBefore: string | null;
+  windowDays: number;
+}
+

@@ -1,19 +1,16 @@
 'use client';
 
-import { Badge } from '../../../components/data/badge';
-import { DataTable, type Column } from '../../../components/data/data-table';
 import { PageHeading } from '../../../components/page-heading';
-import { FormEvent, useCallback, useEffect, useState } from 'react';
+import Link from 'next/link';
+import { FormEvent, useState } from 'react';
 import { api, ApiError } from '../../../lib/api';
 import { useAuth } from '../../../lib/auth-context';
-import { deviceLabel } from '../../../lib/device';
 import { passwordHints } from '../../../lib/password';
 import { roleLabel } from '../../../lib/permissions';
-import type { SessionView } from '../../../lib/types';
 
 /**
- * Page « Mon compte » : profil, changement de mot de passe, nouveaux codes de secours et liste des sessions de
- * l'utilisateur connecté.
+ * Page « Mon compte » : profil, changement de mot de passe, nouveaux codes de secours et accès aux sessions et à
+ * l'historique des connexions de l'utilisateur connecté.
  */
 export default function AccountPage() {
   const { profile } = useAuth();
@@ -27,7 +24,7 @@ export default function AccountPage() {
       </section>
       <PasswordForm email={profile?.email ?? ''} />
       <RecoveryCodes />
-      <Sessions />
+      <SessionsLink />
     </>
   );
 }
@@ -118,57 +115,13 @@ function RecoveryCodes() {
   );
 }
 
-/** Liste les sessions actives de l'utilisateur (appareil lisible, IP, dates) et permet de révoquer les autres. */
-function Sessions() {
-  const [sessions, setSessions] = useState<SessionView[]>([]);
-  const [error, setError] = useState<string | null>(null);
-
-  const load = useCallback(async () => {
-    try {
-      setSessions(await api<SessionView[]>('/auth/sessions'));
-      setError(null);
-    } catch (e) {
-      setError(e instanceof ApiError ? e.message : 'Chargement impossible');
-    }
-  }, []);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
-
-  /** Révoque une session puis recharge la liste. */
-  async function revoke(id: string) {
-    try {
-      await api(`/auth/sessions/${id}`, { method: 'DELETE' });
-      await load();
-    } catch (e) {
-      setError(e instanceof ApiError ? e.message : 'Révocation impossible');
-    }
-  }
-
-  const columns: Column<SessionView>[] = [
-    { id: 'device', header: 'Appareil', cell: (s) => <span title={s.device} className="flex flex-wrap items-center gap-2">{deviceLabel(s.device)}{s.current && <Badge tone="ok">Cette session</Badge>}</span> },
-    { id: 'ip', header: 'Adresse IP', cell: (s) => s.ipAddress },
-    { id: 'in', header: 'Connexion', cell: (s) => new Date(s.loggedInAt).toLocaleString('fr-FR') },
-    { id: 'seen', header: 'Dernière activité', cell: (s) => new Date(s.lastSeenAt).toLocaleString('fr-FR') },
-    { id: 'actions', header: 'Actions', srOnlyHeader: true, align: 'right', cell: (s) => (!s.current ? <button type="button" className="secondary small" onClick={() => void revoke(s.id)}>Révoquer</button> : null) },
-  ];
-
+/** Lien vers la page « Sessions et connexions » (sessions actives, révocation, historique des connexions). */
+function SessionsLink() {
   return (
     <section className="panel">
-      <h2>Mes sessions</h2>
-      <p className="hint">Si vous ne reconnaissez pas une session, révoquez-la puis changez votre mot de passe.</p>
-      {error && <p role="alert" className="error">{error}</p>}
-      <div className="overflow-hidden rounded-panel border border-line">
-        <DataTable
-          caption="Mes sessions"
-          columns={columns}
-          rows={sessions}
-          rowId={(s) => s.id}
-          rowLabel={(s) => deviceLabel(s.device)}
-          empty="Aucune session."
-        />
-      </div>
+      <h2>Sessions et connexions</h2>
+      <p className="hint">Consultez les appareils connectés à votre compte, déconnectez-en un ou tous les autres, et relisez l&apos;historique de vos connexions.</p>
+      <Link href="/account/sessions">Voir mes sessions et mon historique</Link>
     </section>
   );
 }

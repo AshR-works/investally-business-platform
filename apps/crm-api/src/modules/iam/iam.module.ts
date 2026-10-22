@@ -4,7 +4,7 @@ import { AuditModule } from '../audit/audit.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { IssuePasswordResetUseCase, RequestPasswordResetUseCase, ResetPasswordUseCase } from './application/admin/password-reset.use-cases';
 import { AcceptInvitationUseCase, InviteUserUseCase, ResendInvitationUseCase } from './application/admin/invitations.use-cases';
-import { ListOwnSessionsHandler, RevokeSessionUseCase, RevokeUserSessionsUseCase } from './application/admin/session-management.use-cases';
+import { ListOwnSessionsHandler, LoginHistoryHandler, RevokeOtherSessionsUseCase, RevokeSessionUseCase, RevokeUserSessionsUseCase } from './application/admin/session-management.use-cases';
 import { AssignRolesUseCase, SetUserStatusUseCase, UpdateUserUseCase } from './application/admin/user-management.use-cases';
 import { GetUserHandler, ListRolesHandler, ListUsersHandler } from './application/admin/user-queries';
 import { ROLE_CATALOG_READER } from './application/admin/user-view';
@@ -54,7 +54,7 @@ import { RequireMfaGuard, RequireRecentMfaGuard } from './presentation/mfa.guard
     AuthenticateAccessTokenUseCase, SessionTokenService, AccessTokenGuard, RequireMfaGuard, RequireRecentMfaGuard,
     AuthorizationService, GetProfileHandler, PermissionGuard,
     InviteUserUseCase, ResendInvitationUseCase, AcceptInvitationUseCase, RequestPasswordResetUseCase, IssuePasswordResetUseCase, ResetPasswordUseCase, UpdateUserUseCase, SetUserStatusUseCase, AssignRolesUseCase,
-    ListUsersHandler, GetUserHandler, ListRolesHandler, ListOwnSessionsHandler, RevokeSessionUseCase, RevokeUserSessionsUseCase,
+    ListUsersHandler, GetUserHandler, ListRolesHandler, ListOwnSessionsHandler, RevokeSessionUseCase, RevokeUserSessionsUseCase, RevokeOtherSessionsUseCase, LoginHistoryHandler,
     { provide: GRANT_READER, useClass: PrismaGrantReader },
     { provide: ROLE_CATALOG_READER, useClass: PrismaRoleCatalogReader },
     { provide: INVITATION_REPOSITORY, useClass: PrismaInvitationRepository },
