@@ -270,6 +270,82 @@ try {
   results.at(-1).note += ` · ${JSON.stringify(shell2)}`;
   await shot('entreprises-deplie');
 
+  // Documents (S3.6) : fiche entreprise, envoi refusé puis réussi, nouvelle version, historique, téléchargement, archivage.
+  const docDir = mkdtempSync(join(tmpdir(), 'a11y-docs-'));
+  const goodPdf = join(docDir, 'Decharge-Horizon.pdf');
+  const v2Pdf = join(docDir, 'Decharge-Horizon-v2.pdf');
+  const fakePdf = join(docDir, 'faux.pdf');
+  writeFileSync(goodPdf, '%PDF-1.7\nversion un\n%%EOF');
+  writeFileSync(v2Pdf, '%PDF-1.7\nversion deux\n%%EOF');
+  writeFileSync(fakePdf, Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 0]));
+  const dialog = "document.querySelector('[role=dialog]')";
+  const pickFile = async (path) => {
+    const { root } = await send('DOM.getDocument', { depth: -1 });
+    const { nodeId } = await send('DOM.querySelector', { nodeId: root.nodeId, selector: '[role=dialog] input[type=file]' });
+    await send('DOM.setFileInputFiles', { files: [path], nodeId });
+    await sleep(400);
+  };
+  const openRowMenu = async () => { await js("document.querySelector('summary[aria-label^=\"Actions pour\"]').click()"); await sleep(300); };
+  await go('/companies');
+  await waitFor("document.querySelector('tbody a')", 'liste des entreprises', 20000);
+  await js("document.querySelector('tbody a').click()");
+  await waitFor("location.pathname.startsWith('/companies/') && document.querySelector('#documents-titre')", 'fiche entreprise', 20000);
+  await sleep(800);
+  await audit('Fiche entreprise — documents (vide)');
+  await shot('fiche-entreprise');
+  await clickText('Ajouter un document');
+  await waitFor(`${dialog} && document.querySelector('[role=dialog] input[type=file]')`, 'fenêtre d’ajout');
+  await pickFile(fakePdf);
+  await clickText('Envoyer', dialog);
+  await waitFor("document.querySelector('[role=dialog] [role=alert]')", 'refus du fichier trompeur', 15000);
+  await audit('Documents — envoi refusé (contenu ≠ extension)', 'message du serveur annoncé (role=alert)');
+  await shot('documents-refus');
+  await pickFile(goodPdf);
+  await clickText('Envoyer', dialog);
+  await waitFor(`!${dialog} && document.querySelector('tbody tr td strong')`, 'document ajouté', 20000);
+  await sleep(500);
+  await audit('Documents — liste avec un document');
+  await shot('documents-liste');
+  await clickText('Télécharger');
+  await sleep(1500);
+  const downloadFailed = await js("Boolean(document.querySelector('main [role=alert]'))");
+  if (downloadFailed) throw new Error('Le téléchargement du document a affiché une erreur');
+  await openRowMenu();
+  await clickText('Ajouter une nouvelle version');
+  await waitFor("document.querySelector('[role=dialog] input[type=file]')", 'fenêtre de nouvelle version');
+  await pickFile(v2Pdf);
+  await clickText('Envoyer', dialog);
+  await waitFor(`!${dialog} && document.body.innerText.includes('version 2')`, 'version 2 ajoutée', 20000);
+  await openRowMenu();
+  await clickText('Historique des versions');
+  await waitFor("document.querySelector('[role=dialog] tbody tr')", 'historique des versions', 15000);
+  await audit('Documents — historique des versions (SHA-256)');
+  await shot('documents-historique');
+  await clickText('Fermer', dialog);
+  await sleep(300);
+  await openRowMenu();
+  await clickText('Archiver');
+  await waitFor(dialog, 'confirmation d’archivage');
+  await audit('Documents — confirmation d’archivage');
+  await clickText('Archiver', dialog);
+  await waitFor("document.body.innerText.includes('Document archivé') && document.body.innerText.includes('Aucun document')", 'document archivé', 20000);
+  await audit('Documents — après archivage', 'confirmation annoncée, liste vide par défaut');
+
+  // Gros fichiers : 10,5 Mo refusé avant l'envoi (contrôle de confort), 10 Mo pile accepté de bout en bout à travers le proxy Next.js.
+  const bigPdf = join(docDir, 'Gros-Dossier.pdf');
+  const hugePdf = join(docDir, 'Trop-Gros.pdf');
+  { const head = Buffer.from('%PDF-1.7\n'); const foot = Buffer.from('%%EOF'); writeFileSync(bigPdf, Buffer.concat([head, Buffer.alloc(10 * 1024 * 1024 - head.length - foot.length), foot])); }
+  writeFileSync(hugePdf, Buffer.concat([Buffer.from('%PDF-1.7\n'), Buffer.alloc(Math.round(10.5 * 1024 * 1024)), Buffer.from('%%EOF')]));
+  await clickText('Ajouter un document');
+  await waitFor("document.querySelector('[role=dialog] input[type=file]')", 'fenêtre d’ajout (gros fichiers)');
+  await pickFile(hugePdf);
+  await clickText('Envoyer', dialog);
+  await waitFor("document.querySelector('[role=dialog] [role=alert]') && document.querySelector('[role=dialog] [role=alert]').innerText.includes('taille maximale')", 'refus du fichier trop gros', 10000);
+  await pickFile(bigPdf);
+  await clickText('Envoyer', dialog);
+  await waitFor(`!${dialog} && document.body.innerText.includes('Gros-Dossier.pdf') && document.body.innerText.includes('10 Mo')`, 'envoi de 10 Mo', 60000);
+  results.at(-1).note += ' · envoi de 10 Mo pile (la limite) accepté à travers le proxy, 10,5 Mo refusé avant l’envoi';
+
   await go('/');
   await waitFor("document.querySelector('input[type=search]')", 'champ de recherche du hub', 20000);
   await setValue('input[type=search]', 'Hori');

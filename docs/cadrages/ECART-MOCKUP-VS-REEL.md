@@ -26,6 +26,7 @@
 | **Utilisateurs** (pas de maquette dédiée, même gabarit) | Tableau complet : utilisateur, rôles, statut, MFA, dernière connexion, menu d'actions, filtres par statut, recherche, pagination | Compteurs par statut dans les filtres ; actions groupées | Compteurs : requêtes supplémentaires non prévues ; actions groupées : pas de routes | à décider |
 | **Mon compte** | Page « Sessions et connexions » : sessions actives avec risque, révocation confirmée, « tous mes autres appareils », historique des connexions sur 90 jours | Mise en page des autres blocs de Mon compte (profil, mot de passe, codes de secours) au nouveau style | Contrôles de formulaire encore « legacy » (D32) | S4 |
 | **Écrans d'accès** (connexion, MFA, invitation, mot de passe) | **Gabarit du mockup (H2a)** : carte d'accueil, indicateur d'étape, notices, règles en direct, introduction du MFA, compte à rebours, **code en six cases** | Codes de secours restants (A03) ; sessions actives et historique (S01 à S03) | L'API ne fournit pas le nombre restant ; H2b | H2b |
+| **Fiche entreprise** | Identité (statut, secteur, pays, date) et panneau Documents | Contacts, offres, rendez-vous, historique, opportunités | Modules non livrés | S4.1 à S4.3 |
 | **Opportunités** | — | Tout l'écran | Le module n'existe pas | S4.3 |
 | **Agenda** | — | Tout l'écran | Le module n'existe pas | S4.2b |
 | **Formation** | — | Tout l'écran | Le module n'existe pas | S5 |

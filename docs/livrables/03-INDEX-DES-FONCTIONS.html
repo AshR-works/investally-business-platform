@@ -23,8 +23,8 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 @media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
 </style></head><body><main><nav class="top">Investally Business Platform — livrables · <a href="01-RECAPITULATIF-REALISATIONS.html">Récapitulatif</a> · <a href="02-GUIDE-DU-CODE.html">Guide du code</a> · <a href="03-INDEX-DES-FONCTIONS.html">Index des fonctions</a> · <a href="04-SUIVI-DES-SESSIONS.html">Suivi des sessions</a> · <a href="05-ETAT-D-AVANCEMENT.html">État d&#8217;avancement</a> · <a href="06-BESOINS-STYLE-GRAPHIQUE.html">Style graphique</a></nav><h1>Index des fonctions et composants (généré)</h1>
 <blockquote><p>Document <strong>généré</strong> par <code>node scripts/gen-function-index.mjs</code> à partir des commentaires du code. Ne pas le modifier à la main : corriger le commentaire dans le fichier source, puis relancer le script.</p></blockquote>
-<p><strong>632 déclarations commentées au total.</strong></p>
-<h2>API (NestJS) — 479 déclarations commentées</h2>
+<p><strong>741 déclarations commentées au total.</strong></p>
+<h2>API (NestJS) — 572 déclarations commentées</h2>
 <h3><code>app.module.ts</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
 <tr><td><code>export class AppModule {}</code></td><td>Module racine : assemble la plateforme (base, configuration, limitation de débit, garde CSRF globale) et les modules métier (audit, notifications, IAM, développement commercial).</td></tr>
@@ -92,6 +92,13 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td><code>async append(entry: AuditEntry): Promise&lt;void&gt;</code></td><td>Ajoute une entrée immuable au journal (acteur, session, IP, appareil, entité, action, avant/après).</td></tr>
 <tr><td><code>async listByEntity(entityType: string, entityId: string): Promise&lt;AuditEntry[]&gt;</code></td><td>Historique d'une entité, du plus ancien au plus récent (500 entrées au plus).</td></tr>
 <tr><td><code>async listLoginEvents(query: LoginEventQuery): Promise&lt;AuditEntry[]&gt;</code></td><td>Connexions (<code>LOGIN</code>) et échecs (<code>LOGIN_FAILED</code>) rattachés à l'utilisateur, dans la fenêtre demandée, du plus récent au plus ancien.</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/application/company-document-owner.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export const COMPANY_OWNER_TYPE = 'company';</code></td><td>Type d'objet propriétaire déclaré au module Documents pour les entreprises.</td></tr>
+<tr><td><code>export class CompanyDocumentOwnerResolver implements DocumentOwnerResolver, OnModuleInit</code></td><td>Résolveur des entreprises pour les documents : une entreprise n'est « résolue » que si elle existe ET que l'appelant peut la lire (même règle de portée que la fiche entreprise).</td></tr>
+<tr><td><code>onModuleInit(): void</code></td><td>Se déclare auprès du registre des documents au démarrage de l'application.</td></tr>
+<tr><td><code>async resolve(ownerId: string, access: AccessContext): Promise&lt;{ ownerUserId: string | null } | null&gt;</code></td><td>Propriétaire de l'entreprise si elle existe et est lisible par l'appelant, sinon <code>null</code>.</td></tr>
 </tbody></table></div>
 <h3><code>modules/business-development/application/company-view.ts</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
@@ -161,6 +168,134 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <h3><code>modules/business-development/presentation/dto/register-company.dto.ts</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
 <tr><td><code>export class RegisterCompanyDto</code></td><td>Corps de la requête d'enregistrement : nom obligatoire, secteur et pays facultatifs, longueurs bornées ; tout autre champ (notamment le propriétaire) est refusé.</td></tr>
+</tbody></table></div>
+<h3><code>modules/documents/application/document-use-cases.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export function sha256Of(bytes: Buffer): string</code></td><td>Empreinte SHA-256 hexadécimale d'un contenu.</td></tr>
+<tr><td><code>export function newStorageKey(): string</code></td><td>Clé de stockage ALÉATOIRE (jamais le nom fourni) : deux niveaux de dossiers pour éviter un dossier géant.</td></tr>
+<tr><td><code>export class DocumentOwnerGate</code></td><td>Contrôle d'accès commun : un document n'est JAMAIS plus accessible que son objet propriétaire.</td></tr>
+<tr><td><code>async require(ownerType: string, ownerId: string, access: AccessContext, permission: string, notFound: string): Promise&lt;void&gt;</code></td><td>Vérifie l'accès à l'objet et la permission ; lève « introuvable » sinon, « validation » si le type est inconnu.</td></tr>
+<tr><td><code>export interface UploadCommand</code></td><td>Ce que reçoit un envoi : le fichier est contrôlé et stocké, jamais exécuté.</td></tr>
+<tr><td><code>export class UploadDocumentUseCase</code></td><td>Envoie un NOUVEAU document : contrôle l'objet propriétaire et le droit, contrôle le fichier (taille, format par signature, extension cohérente), calcule l'empreinte SHA-256, écrit le contenu sous une clé aléatoire puis enregistre le document, sa première version et l'audit dans UNE transaction.</td></tr>
+<tr><td><code>async execute(command: UploadCommand): Promise&lt;DocumentView&gt;</code></td><td>Enregistre le document et renvoie sa vue (version 1).</td></tr>
+<tr><td><code>export interface AddVersionCommand</code></td><td>Ce que reçoit l'ajout d'une version.</td></tr>
+<tr><td><code>export class AddDocumentVersionUseCase</code></td><td>Ajoute une VERSION à un document existant : les versions précédentes restent intactes et téléchargeables.</td></tr>
+<tr><td><code>async execute(command: AddVersionCommand): Promise&lt;DocumentView&gt;</code></td><td>Écrit le nouveau contenu puis enregistre la version, l'avancement du document et l'audit.</td></tr>
+<tr><td><code>export class ListDocumentsHandler</code></td><td>Liste les documents d'un objet propriétaire que l'appelant peut voir.</td></tr>
+<tr><td><code>async execute(query: { ownerType: string; ownerId: string; includeArchived: boolean; access: AccessContext }): Promise&lt;DocumentView[]&gt;</code></td><td>Documents de l'objet (les archivés seulement sur demande), avec leur version courante.</td></tr>
+<tr><td><code>export class GetDocumentHandler</code></td><td>Détail d'un document (versions comprises) ; hors accès, « introuvable ».</td></tr>
+<tr><td><code>async execute(query: { id: string; access: AccessContext }): Promise&lt;DocumentDetailView&gt;</code></td><td>Lit le document et toutes ses versions.</td></tr>
+<tr><td><code>export interface DownloadedFile</code></td><td>Fichier prêt à être servi : octets vérifiés, nom, type.</td></tr>
+<tr><td><code>export class DownloadDocumentUseCase</code></td><td>Télécharge une version (la courante par défaut) : contrôle d'accès, lecture du contenu, VÉRIFICATION de l'empreinte SHA-256 avant d'envoyer quoi que ce soit, et audit de chaque téléchargement.</td></tr>
+<tr><td><code>async execute(query: { id: string; versionNumber?: number; access: AccessContext; actor: ActorContext }): Promise&lt;DownloadedFile&gt;</code></td><td>Lit, vérifie et trace ; renvoie le contenu à servir en pièce jointe.</td></tr>
+<tr><td><code>export class ArchiveDocumentUseCase</code></td><td>Archive un document : suppression LOGIQUE.</td></tr>
+<tr><td><code>async execute(command: { id: string; access: AccessContext; actor: ActorContext }): Promise&lt;void&gt;</code></td><td>Passe le document à « archivé » et trace l'action.</td></tr>
+</tbody></table></div>
+<h3><code>modules/documents/application/document-views.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export interface VersionView</code></td><td>Une version telle que l'utilisateur la voit (jamais la clé de stockage ni l'identifiant de l'auteur).</td></tr>
+<tr><td><code>export interface DocumentView</code></td><td>Un document avec sa version courante (liste et détail).</td></tr>
+<tr><td><code>export interface DocumentDetailView extends DocumentView</code></td><td>Détail d'un document : le document et TOUTES ses versions, de la plus récente à la plus ancienne.</td></tr>
+<tr><td><code>export function toVersionView(version: DocumentVersion): VersionView</code></td><td>Version du domaine → version affichable.</td></tr>
+<tr><td><code>export function toDocumentView(document: Document, current: DocumentVersion): DocumentView</code></td><td>Document et version courante → vue publique (aucun objet interne n'est exposé).</td></tr>
+</tbody></table></div>
+<h3><code>modules/documents/application/owner-registry.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export interface DocumentOwnerResolver</code></td><td>Résout l'objet propriétaire d'un document (entreprise, offre, opportunité…) : renvoie le propriétaire de CET objet s'il existe ET si l'appelant peut le voir, sinon <code>null</code> (introuvable : on ne révèle pas son existence).</td></tr>
+<tr><td><code>export interface DocumentOwnerRegistry</code></td><td>Registre où chaque module métier déclare le résolveur de ses objets (<code>register('company', …)</code>).</td></tr>
+<tr><td><code>export class InMemoryDocumentOwnerRegistry implements DocumentOwnerRegistry</code></td><td>Registre en mémoire : un seul résolveur par type d'objet (un doublon est une erreur de composition).</td></tr>
+<tr><td><code>register(ownerType: string, resolver: DocumentOwnerResolver): void</code></td><td>Déclare le résolveur d'un type d'objet propriétaire ; refuse un doublon.</td></tr>
+<tr><td><code>resolver(ownerType: string): DocumentOwnerResolver | null</code></td><td>Résolveur d'un type, ou <code>null</code> si le type n'est pas déclaré (refus par défaut).</td></tr>
+<tr><td><code>types(): string[]</code></td><td>Types d'objets propriétaires déclarés.</td></tr>
+</tbody></table></div>
+<h3><code>modules/documents/application/upload-rules.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export const MAX_UPLOAD_BYTES = MAX_FILE_BYTES;</code></td><td>Taille maximale d'un envoi, exposée à la couche de présentation (qui borne la lecture du corps de la requête).</td></tr>
+<tr><td><code>export function uploadRules(): { maxBytes: number; formats: string[]; categories: readonly { code: string; label: string }[] }</code></td><td>Règles d'envoi publiées par l'API : taille maximale, extensions acceptées, catégories.</td></tr>
+</tbody></table></div>
+<h3><code>modules/documents/documents.module.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export class DocumentsModule {}</code></td><td>Module « Documents » : versions immuables avec empreinte SHA-256, stockage derrière un port, téléchargement contrôlé et audité.</td></tr>
+</tbody></table></div>
+<h3><code>modules/documents/domain/document-policy.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export const MAX_FILE_BYTES = 10 * 1024 * 1024;</code></td><td>Taille maximale d'un fichier (10 Mo).</td></tr>
+<tr><td><code>export type DocumentFormat = 'PDF' | 'JPEG' | 'PNG' | 'DOCX' | 'XLSX';</code></td><td>Formats acceptés : leur type réel est reconnu par la SIGNATURE du contenu, jamais par ce que déclare le client.</td></tr>
+<tr><td><code>export function detectFormat(bytes: Buffer): DocumentFormat | null</code></td><td>Reconnaît le format d'après le CONTENU (octets magiques).</td></tr>
+<tr><td><code>const MAX_NAME_LENGTH = 200;</code></td><td>Longueur maximale d'un nom de fichier conservé (colonne <code>file_name</code> : 255).</td></tr>
+<tr><td><code>export function sanitizeFileName(raw: string): string</code></td><td>Nom de fichier conservé pour l'affichage et le téléchargement : sans chemin, sans caractères de contrôle ni caractères réservés, borné.</td></tr>
+<tr><td><code>export function extensionOf(fileName: string): string</code></td><td>Extension en minuscules, sans le point (<code>rapport.PDF</code> → <code>pdf</code>) ; chaîne vide s'il n'y en a pas.</td></tr>
+<tr><td><code>export interface AcceptedFile</code></td><td>Fichier accepté : nom assaini, format reconnu et type MIME correspondant.</td></tr>
+<tr><td><code>export function checkUpload(rawFileName: string, bytes: Buffer): AcceptedFile</code></td><td>Contrôle d'un fichier envoyé : non vide, taille maximale, nom exploitable, format reconnu par signature, et extension COHÉRENTE avec ce format (un <code>.pdf</code> qui contient autre chose est refusé, comme un <code>.exe</code> renommé).</td></tr>
+<tr><td><code>export function checkCategory(category: string | null | undefined): string | null</code></td><td>Catégorie valide (ou absente) ; une catégorie inconnue est refusée.</td></tr>
+</tbody></table></div>
+<h3><code>modules/documents/domain/document.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export interface DocumentVersion</code></td><td>Contenu d'un document à un instant : une version immuable (fichier, empreinte SHA-256, auteur).</td></tr>
+<tr><td><code>export interface DocumentProps</code></td><td>Données d'un document reconstitué depuis la base.</td></tr>
+<tr><td><code>export class Document</code></td><td>Un document rattaché à un objet d'un autre contexte (type + identifiant, sans clé étrangère) : titre, catégorie, état et numéro de la version courante.</td></tr>
+<tr><td><code>static create(input: { id: string; ownerType: string; ownerId: string; title: string; category: string | null; createdBy: string; now: Date }): Docum</code></td><td>Nouveau document : actif avec sa première version (numéro 1).</td></tr>
+<tr><td><code>static rehydrate(props: DocumentProps): Document</code></td><td>Reconstitue un document depuis la persistance (aucune règle rejouée).</td></tr>
+<tr><td><code>get isArchived(): boolean</code></td><td>Vrai si le document est archivé (lecture seule : on n'y ajoute plus de version).</td></tr>
+<tr><td><code>nextVersionNumber(): number</code></td><td>Numéro de la prochaine version ; refusé si le document est archivé.</td></tr>
+<tr><td><code>registerVersion(versionNumber: number): void</code></td><td>Enregistre l'ajout d'une version (la courante devient celle-là).</td></tr>
+<tr><td><code>archive(): void</code></td><td>Archive le document (suppression logique, sans effet s'il l'est déjà).</td></tr>
+</tbody></table></div>
+<h3><code>modules/documents/domain/ports.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export interface DocumentRepository</code></td><td>Port de persistance des documents et de leurs versions (aucune méthode ne supprime une version).</td></tr>
+<tr><td><code>createWithVersion(document: Document, version: DocumentVersion): Promise&lt;void&gt;;</code></td><td>Crée un document et sa première version (même transaction).</td></tr>
+<tr><td><code>addVersion(document: Document, version: DocumentVersion): Promise&lt;void&gt;;</code></td><td>Ajoute une version et met à jour la version courante (verrou optimiste sur le document).</td></tr>
+<tr><td><code>save(document: Document): Promise&lt;void&gt;;</code></td><td>Enregistre l'état du document (archivage) avec verrou optimiste.</td></tr>
+<tr><td><code>listByOwner(ownerType: string, ownerId: string, includeArchived: boolean): Promise&lt;Document[]&gt;;</code></td><td>Documents d'un objet propriétaire, du plus récent au plus ancien ; les archivés seulement sur demande.</td></tr>
+<tr><td><code>currentVersions(documentIds: readonly string[]): Promise&lt;DocumentVersion[]&gt;;</code></td><td>Dernière version de chaque document donné (pour l'affichage de la liste).</td></tr>
+<tr><td><code>export interface ObjectStorage</code></td><td>Port de stockage des contenus : clé aléatoire → octets.</td></tr>
+<tr><td><code>removeOrphan(key: string): Promise&lt;void&gt;;</code></td><td>Retire un objet qu'on vient d'écrire et qu'aucune ligne en base ne référence (annulation d'un envoi).</td></tr>
+</tbody></table></div>
+<h3><code>modules/documents/infrastructure/local-disk-object-storage.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>const KEY_PATTERN = /^[0-9a-f]{2}\/[0-9a-f]{2}\/[0-9a-f]{48}$/;</code></td><td>Forme exacte d'une clé de stockage (deux niveaux de dossiers puis 48 caractères hexadécimaux) : rien d'autre ne passe.</td></tr>
+<tr><td><code>export class LocalDiskObjectStorage implements ObjectStorage</code></td><td>Stockage des contenus sur disque (CAD-S36-1 B) : dossier HORS racine web, droits restreints (dossiers 0700, fichiers 0600), écriture atomique (fichier temporaire puis renommage).</td></tr>
+<tr><td><code>private pathOf(key: string): string</code></td><td>Chemin absolu d'une clé valide ; toute autre forme est une erreur de programmation (jamais une entrée utilisateur).</td></tr>
+<tr><td><code>async put(key: string, data: Buffer): Promise&lt;void&gt;</code></td><td>Écrit le contenu sous la clé, de façon atomique.</td></tr>
+<tr><td><code>async get(key: string): Promise&lt;Buffer&gt;</code></td><td>Lit le contenu ; une clé absente est une erreur (la base référence un fichier qui n'existe plus).</td></tr>
+<tr><td><code>async removeOrphan(key: string): Promise&lt;void&gt;</code></td><td>Retire un objet qu'on vient d'écrire et qu'aucune ligne en base ne référence ; sans effet s'il n'existe pas.</td></tr>
+</tbody></table></div>
+<h3><code>modules/documents/infrastructure/prisma-document.repository.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>function toDocument(row: DocumentRow): Document</code></td><td>Ligne de base → document du domaine.</td></tr>
+<tr><td><code>function toVersion(row: VersionRow): DocumentVersion</code></td><td>Ligne de base → version du domaine (la taille est un entier 64 bits en base, un nombre ≤ 10 Mo ici).</td></tr>
+<tr><td><code>function versionData(version: DocumentVersion)</code></td><td>Données d'une version à écrire.</td></tr>
+<tr><td><code>export class PrismaDocumentRepository implements DocumentRepository</code></td><td>Persistance PostgreSQL des documents (schéma <code>docs</code>).</td></tr>
+<tr><td><code>async createWithVersion(document: Document, version: DocumentVersion): Promise&lt;void&gt;</code></td><td>Crée le document et sa première version.</td></tr>
+<tr><td><code>async addVersion(document: Document, version: DocumentVersion): Promise&lt;void&gt;</code></td><td>Ajoute une version et avance la version courante ; refus si quelqu'un d'autre a modifié le document entre-temps.</td></tr>
+<tr><td><code>async save(document: Document): Promise&lt;void&gt;</code></td><td>Enregistre l'état du document (archivage) avec verrou optimiste.</td></tr>
+<tr><td><code>async listByOwner(ownerType: string, ownerId: string, includeArchived: boolean): Promise&lt;Document[]&gt;</code></td><td>Documents d'un objet, du plus récent au plus ancien (les archivés seulement sur demande, 200 au plus).</td></tr>
+<tr><td><code>async currentVersions(documentIds: readonly string[]): Promise&lt;DocumentVersion[]&gt;</code></td><td>Version courante de chaque document donné (le numéro courant est lu sur le document lui-même).</td></tr>
+</tbody></table></div>
+<h3><code>modules/documents/presentation/documents.controller.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>function noStore(res: Response): void</code></td><td>Les réponses documentaires ne doivent jamais être mises en cache (données de l'entreprise).</td></tr>
+<tr><td><code>export class DocumentsController</code></td><td>Routes des documents (S3.6).</td></tr>
+<tr><td><code>meta(@Res({ passthrough: true }) res: Response)</code></td><td>Règles d'envoi (formats, taille maximale, catégories) pour que l'interface les affiche sans les dupliquer.</td></tr>
+<tr><td><code>async create(@Query() query: UploadDocumentQueryDto, @Req() req: Request, @Access() access: AccessContext, @CurrentActor() actor: AuthenticatedActor)</code></td><td>Envoie un nouveau document (version 1) sur un objet propriétaire.</td></tr>
+<tr><td><code>async listByOwner(@Query() query: ListDocumentsQueryDto, @Access() access: AccessContext, @Res({ passthrough: true }) res: Response)</code></td><td>Documents d'un objet propriétaire visibles de l'appelant.</td></tr>
+<tr><td><code>async detail(@Param('id', ParseUUIDPipe) id: string, @Access() access: AccessContext, @Res({ passthrough: true }) res: Response)</code></td><td>Détail d'un document et de toutes ses versions.</td></tr>
+<tr><td><code>async newVersion(@Param('id', ParseUUIDPipe) id: string, @Query() query: NewVersionQueryDto, @Req() req: Request, @Access() access: AccessContext, @Cu</code></td><td>Ajoute une version à un document (les précédentes restent intactes).</td></tr>
+<tr><td><code>async downloadVersion(</code></td><td>Télécharge une version en pièce jointe, après vérification de son empreinte SHA-256 ; chaque téléchargement est audité.</td></tr>
+<tr><td><code>async archiveDocument(@Param('id', ParseUUIDPipe) id: string, @Req() req: Request, @Access() access: AccessContext, @CurrentActor() actor: Authenticat</code></td><td>Archive un document (suppression logique : versions et fichiers conservés).</td></tr>
+</tbody></table></div>
+<h3><code>modules/documents/presentation/dto/documents.dto.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export class UploadDocumentQueryDto</code></td><td>Paramètres d'un premier envoi (le fichier lui-même est le corps de la requête) : objet propriétaire, titre, catégorie, nom.</td></tr>
+<tr><td><code>export class NewVersionQueryDto</code></td><td>Paramètres de l'ajout d'une version : seul le nom du fichier (le document est dans l'adresse).</td></tr>
+<tr><td><code>export class ListDocumentsQueryDto</code></td><td>Paramètres de la liste : objet propriétaire, archivés ou non.</td></tr>
+<tr><td><code>export class DownloadQueryDto</code></td><td>Paramètres du téléchargement : numéro de version (la courante par défaut).</td></tr>
+</tbody></table></div>
+<h3><code>modules/documents/presentation/request-body.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export async function readBinaryBody(req: Request, maxBytes: number): Promise&lt;Buffer&gt;</code></td><td>Lit le corps brut d'un envoi de fichier (<code>application/octet-stream</code>) en refusant, AVANT d'avoir tout reçu, un fichier qui dépasse la taille maximale : l'en-tête <code>Content-Length</code> puis le cumul des octets reçus sont contrôlés.</td></tr>
+<tr><td><code>export function attachmentHeader(fileName: string): string</code></td><td>En-tête <code>Content-Disposition</code> d'un téléchargement : toujours « attachment », nom ASCII de repli et nom UTF-8 exact.</td></tr>
 </tbody></table></div>
 <h3><code>modules/iam/application/access-types.ts</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
@@ -822,7 +957,7 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td><code>export interface RequestLike</code></td><td>Forme minimale d'une requête HTTP (sans dépendre d'Express) pour construire le contexte d'audit.</td></tr>
 <tr><td><code>export function actorContextFrom(req: RequestLike, identity: { userId: string | null; sessionId: string | null } = { userId: null, sessionId: null }</code></td><td>Qui agit, depuis où : IP et appareil de la requête (l'identité est ajoutée une fois l'utilisateur authentifié).</td></tr>
 </tbody></table></div>
-<h2>Interface web — pages (Next.js) — 43 déclarations commentées</h2>
+<h2>Interface web — pages (Next.js) — 44 déclarations commentées</h2>
 <h3><code>(app)/account/page.tsx</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
 <tr><td><code>export default function AccountPage()</code></td><td>Page « Mon compte » : profil, changement de mot de passe, nouveaux codes de secours et accès aux sessions et à l'historique des connexions de l'utilisateur connecté.</td></tr>
@@ -849,6 +984,10 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td><code>function InviteDialog({ roles, managers, onClose, onSubmit }:</code></td><td>Fenêtre d'invitation : adresse, nom, rôles et responsable facultatif.</td></tr>
 <tr><td><code>async function submit(event: FormEvent)</code></td><td>Envoie l'invitation avec les rôles cochés (au moins un).</td></tr>
 <tr><td><code>function RolesDialog({ user, roles, onClose, onSubmit }:</code></td><td>Fenêtre de modification des rôles d'un utilisateur ; le changement s'applique immédiatement, y compris aux sessions ouvertes.</td></tr>
+</tbody></table></div>
+<h3><code>(app)/companies/[id]/page.tsx</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export default function CompanyPage()</code></td><td>Fiche d'une entreprise (version minimale de S3.6) : identité de l'entreprise et ses documents.</td></tr>
 </tbody></table></div>
 <h3><code>(app)/companies/page.tsx</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
@@ -902,7 +1041,7 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td><code>export default function ResetPasswordPage()</code></td><td>Page ouverte depuis le lien reçu par e-mail (A10 à A12).</td></tr>
 <tr><td><code>async function submit(event: FormEvent)</code></td><td>Envoie le jeton et le nouveau mot de passe ; le serveur coupe toutes les sessions, l'utilisateur doit se reconnecter avec son second facteur.</td></tr>
 </tbody></table></div>
-<h2>Interface web — composants — 40 déclarations commentées</h2>
+<h2>Interface web — composants — 48 déclarations commentées</h2>
 <h3><code>app-shell.tsx</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
 <tr><td><code>export const FOCUS_SEARCH_EVENT = 'investally:focus-search';</code></td><td>Événement envoyé au hub pour mettre le focus dans la recherche globale (raccourci Ctrl/⌘ K, bouton de la barre).</td></tr>
@@ -975,6 +1114,17 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td><code>export function QuickFilters({ label, value, options, onChange }: { label: string; value: string; options: FilterOption[]; onChange: (value: string) =</code></td><td>Filtres rapides sous forme de boutons à bascule (un seul actif).</td></tr>
 <tr><td><code>export function SearchField({ label, placeholder = 'Rechercher', delay = 300, onSearch }: { label: string; placeholder?: string; delay?: number; onSea</code></td><td>Champ de recherche à saisie différée : n'appelle <code>onSearch</code> qu'après une courte pause (pas à chaque touche) ni au premier rendu.</td></tr>
 </tbody></table></div>
+<h3><code>documents/documents-panel.tsx</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>type Dialog</code></td><td>Ce que la fenêtre ouverte est en train de faire.</td></tr>
+<tr><td><code>function scanBadge(scan: string)</code></td><td>Teinte et texte de l'état d'analyse antivirus : tant que le service n'existe pas, le fichier est « non analysé ».</td></tr>
+<tr><td><code>async function downloadVersion(documentId: string, fileName: string, versionNumber?: number): Promise&lt;void&gt;</code></td><td>Télécharge une version : le fichier est demandé avec le jeton (jamais d'adresse directe), puis proposé à l'enregistrement.</td></tr>
+<tr><td><code>export function DocumentsPanel({ ownerType, ownerId }: { ownerType: string; ownerId: string })</code></td><td>Panneau « Documents » d'un objet (une entreprise aujourd'hui, offres et opportunités ensuite) : liste, envoi, nouvelle version, historique des versions, téléchargement et archivage.</td></tr>
+<tr><td><code>async function download(document: DocumentView, versionNumber?: number)</code></td><td>Télécharge et signale une erreur sans casser la page.</td></tr>
+<tr><td><code>function UploadDialog({ rules, title, ownerType, ownerId, existing, onClose, onDone }:</code></td><td>Fenêtre d'envoi d'un fichier : nouveau document (titre, catégorie) ou nouvelle version d'un document existant.</td></tr>
+<tr><td><code>async function submit(event: FormEvent)</code></td><td>Envoie le fichier en corps binaire ; le message du serveur s'affiche tel quel en cas de refus.</td></tr>
+<tr><td><code>function HistoryDialog({ document, canDownload, onClose, onError }: { document: DocumentView; canDownload: boolean; onClose: () =&gt; void; onError: (mes</code></td><td>Historique des versions d'un document : chaque version reste téléchargeable, avec son empreinte SHA-256.</td></tr>
+</tbody></table></div>
 <h3><code>gate.tsx</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
 <tr><td><code>export function Gate({ allow, children }: { allow: readonly Exclude&lt;AuthStatus, 'loading'&gt;[]; children: ReactNode })</code></td><td>Laisse passer uniquement les états attendus ; sinon redirige vers l'écran qui correspond à l'état réel.</td></tr>
@@ -1003,7 +1153,7 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td><code>export function StepUpDialog({ onDone }: { onDone: (ok: boolean) =&gt; void })</code></td><td>Demande un code frais du second facteur avant une action sensible (modification de rôles, désactivation, etc.).</td></tr>
 <tr><td><code>async function submit(event: FormEvent)</code></td><td>Vérifie le code ; en cas de succès le nouveau jeton remplace l'ancien et l'action sensible est rejouée.</td></tr>
 </tbody></table></div>
-<h2>Interface web — bibliothèque — 70 déclarations commentées</h2>
+<h2>Interface web — bibliothèque — 77 déclarations commentées</h2>
 <h3><code>api.ts</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
 <tr><td><code>export class ApiError extends Error</code></td><td>Erreur renvoyée par l'API : statut HTTP, code stable (<code>FORBIDDEN</code>, <code>MFA_REQUIRED</code>…) et message lisible.</td></tr>
@@ -1047,6 +1197,9 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <h3><code>format.ts</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
 <tr><td><code>export function formatDate(iso: string | null | undefined): string</code></td><td>Date seule au format français (ex.</td></tr>
+<tr><td><code>export function formatBytes(bytes: number): string</code></td><td>Taille lisible en français (« 850 o », « 12,4 Ko », « 3,2 Mo ») ; « — » si la valeur n'est pas un nombre positif.</td></tr>
+<tr><td><code>export function extensionOf(fileName: string): string</code></td><td>Extension en minuscules, sans le point (« Rapport.PDF » → « pdf ») ; vide s'il n'y en a pas.</td></tr>
+<tr><td><code>export function precheckFile(file: { name: string; size: number }, rules: { maxBytes: number; formats: readonly string[] }): string | null</code></td><td>Contrôle de confort AVANT l'envoi (le serveur reste seul juge : il reconnaît le format par le contenu) : renvoie le message à afficher si le fichier est vide, trop gros ou d'une extension non acceptée, sinon <code>null</code>.</td></tr>
 </tbody></table></div>
 <h3><code>invitation.ts</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
@@ -1120,6 +1273,10 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td><code>export interface Company</code></td><td>Entreprise cible telle que l'API l'expose.</td></tr>
 <tr><td><code>export interface LoginEvent</code></td><td>Une connexion de l'historique (réussie ou échouée) : étape de l'échec, adresse IP et appareil.</td></tr>
 <tr><td><code>export interface LoginHistoryPage</code></td><td>Page de l'historique : <code>nextBefore</code> est le curseur de la page suivante (nul s'il n'y en a pas).</td></tr>
+<tr><td><code>export interface DocumentVersionView</code></td><td>Une version d'un document (le contenu est immuable ; l'empreinte SHA-256 en atteste l'intégrité).</td></tr>
+<tr><td><code>export interface DocumentView</code></td><td>Un document avec sa version courante.</td></tr>
+<tr><td><code>export interface DocumentDetailView extends DocumentView</code></td><td>Détail d'un document : toutes ses versions, de la plus récente à la plus ancienne.</td></tr>
+<tr><td><code>export interface UploadRules</code></td><td>Règles d'envoi publiées par l'API (taille maximale, extensions, catégories).</td></tr>
 </tbody></table></div>
 <h3><code>use-cooldown.ts</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>

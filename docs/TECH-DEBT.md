@@ -42,6 +42,11 @@
 | D38 | **Colonnes et filtres métier absents des tableaux** (responsable, valeur, dernière activité, compteurs par statut, Filtres, Colonnes, Export) : l'API ne les fournit pas | H1b | Direction produit | Échéance S4.1 (ARB-API-1 C) ; Pays et Créée le déjà affichés ; voir `cadrages/ECART-MOCKUP-VS-REEL.md` |
 | D39 | **Nombre de codes de secours restants non affiché** (écran A03) : l'API ne le fournit pas | H2a | Claude | Ajouter le compteur à la route de profil si la direction produit le souhaite (H2b) |
 | D40 | **Adresse IP des sessions et de l'historique** : exacte seulement si le proxy de production est configuré (`TRUST_PROXY`) ; sinon elle montrera l'adresse du proxy | H2b | Claude | À vérifier à la mise en production (S7.1) |
+| D41 | **Stockage des documents sur disque local** : ne convient pas à plusieurs serveurs ; adaptateur S3 (versionné, chiffré) et sauvegarde du dossier à livrer (ADR-0008, CAD-S36-1) | S3.6 | Claude | S7.1 |
+| D42 | **Aucune analyse antivirus** : chaque version est `PENDING` (« non analysé »). **Condition bloquante de la mise en production** (CAD-S36-2) | S3.6 | Claude | S7.2 |
+| D43 | **Un seul type d'objet propriétaire déclaré (entreprises)** : offres, opportunités, agréments, sessions et incidents doivent déclarer leur résolveur dans le registre des documents (refus par défaut tant que non fait) | S3.6 | Claude | S4.2 à S6.3, au fil des modules |
+| D44 | **Fichier lu en entier en mémoire** (≤ 10 Mo) à l'envoi et au téléchargement pour calculer et vérifier l'empreinte ; à repasser en flux si la taille maximale augmente | S3.6 | Claude | Si la limite dépasse 10 Mo |
+| D45 | **Durée de conservation des documents archivés et catégories** : valeurs par défaut appliquées (pas de purge ; 6 catégories) faute de réponse de la direction produit | S3.6 | Direction produit | À confirmer avec l'avis juridique (Étape 0) |
 | D5 | Hypothèses de charge et de périmètre non confirmées | Phase 3 | Revue à la fin de S1 avec les chiffres réels | Ouverte |
 
 ## Adopted Conventions

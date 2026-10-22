@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { pageRange } from '../components/data/pagination';
 import { initialsOf } from '../components/data/entity-cell';
-import { formatDate } from '../lib/format';
+import { extensionOf, formatBytes, formatDate, precheckFile } from '../lib/format';
 import { allSelected, setMany, someSelected, toggleId } from '../lib/selection';
 import { COMPANY_STATUS, USER_STATUS, statusStyle } from '../lib/status';
 
@@ -64,3 +64,28 @@ describe('dates', () => {
     expect(formatDate('pas une date')).toBe('—');
   });
 });
+
+describe('envoi de documents : tailles et contrôle de confort', () => {
+  it('tailles lisibles en français', () => {
+    expect(formatBytes(0)).toBe('0 o');
+    expect(formatBytes(850)).toBe('850 o');
+    expect(formatBytes(1536)).toBe('1,5 Ko');
+    expect(formatBytes(10 * 1024 * 1024)).toBe('10 Mo');
+    expect(formatBytes(-1)).toBe('—');
+    expect(formatBytes(Number.NaN)).toBe('—');
+  });
+  it('extension en minuscules, sans le point', () => {
+    expect(extensionOf('Rapport.PDF')).toBe('pdf');
+    expect(extensionOf('LISEZMOI')).toBe('');
+    expect(extensionOf('.pdf')).toBe('');
+  });
+  const rules = { maxBytes: 10 * 1024 * 1024, formats: ['pdf', 'jpg', 'png'] };
+  it('refuse avant envoi un fichier vide, trop gros ou à extension non acceptée ; accepte le reste', () => {
+    expect(precheckFile({ name: 'a.pdf', size: 0 }, rules)).toMatch(/vide/);
+    expect(precheckFile({ name: 'a.pdf', size: rules.maxBytes + 1 }, rules)).toMatch(/taille maximale/);
+    expect(precheckFile({ name: 'a.exe', size: 10 }, rules)).toMatch(/Formats acceptés : PDF, JPG, PNG/);
+    expect(precheckFile({ name: 'SANS-EXTENSION', size: 10 }, rules)).toMatch(/Formats acceptés/);
+    expect(precheckFile({ name: 'A.PDF', size: rules.maxBytes }, rules)).toBeNull();
+  });
+});
+
