@@ -26,7 +26,7 @@
 | **Arbitrage D21** données de l'API des entreprises | `sprint/arbitrage-api-donnees` | 10-22 | **fusionnée** (`d21-validated`) | tests web 43/43 | ✅ **validée 2026-10-22** |
 | **H2a** Écrans d'accès | `sprint/h2a-ecrans-d-acces` | 10-22 | **fusionnée** | tests web 56/56, axe 29 états à 0 violation, CSP 0 violation | ✅ **validée 2026-10-22** (`h2a-validated`) |
 | **H2b** Sessions et historique des connexions | `sprint/h2b-sessions-et-historique` | 10-22 | **fusionnée** | API 391 + 149 tests, 4 mutants tués, interface 62/62, axe 33 états à 0 violation | ✅ **validée 2026-10-22** (`h2b-validated`) |
-| **S3.6** Documents | `sprint/s3-6-documents` | 10-22 | **livrée** | voir `docs/SPRINT-S3-6-RECETTE.md` | ⏳ **validation attendue** |
+| **S3.6** Documents | `sprint/s3-6-documents` | 10-22 | **fusionnée** | API 434 + 160 tests, 12 mutants tués, interface 65/65, axe 39 états à 0 violation | ✅ **validée 2026-10-22** (`s3-6-validated`) |
 
 > **Commentaire** — Les dates de commits ne mesurent pas l'effort : chaque session regroupe de longs échanges, des recettes et des corrections avant le commit final. Elles prouvent en revanche l'**ordre** et la **traçabilité** : aucune fusion sans validation écrite, aucune branche sautée. Le plan annonçait « 1 semaine maximum par sprint » ; l'ensemble tient ici en **moins de deux jours calendaires** parce que le rythme réel a été celui des validations successives de l'ingénieur.
 
