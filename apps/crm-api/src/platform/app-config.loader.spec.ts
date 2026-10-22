@@ -3,7 +3,7 @@ import { loadAppConfig } from './app-config.loader';
 const KEYS = { JWT_PRIVATE_KEY_PEM: 'priv', JWT_PUBLIC_KEY_PEM: 'pub' };
 const MFA_KEY = Buffer.alloc(32, 7).toString('base64');
 const M365 = { EMAIL_PROVIDER: 'microsoft365', M365_TENANT_ID: 't', M365_CLIENT_ID: 'c', M365_CLIENT_SECRET: 's', M365_SENDER: 'crm@investally.test' };
-const PROD = { NODE_ENV: 'production', ...KEYS, ALLOWED_ORIGINS: 'https://crm.test', MFA_ENCRYPTION_KEY: MFA_KEY, APP_PUBLIC_URL: 'https://crm.test', ...M365 };
+const PROD = { NODE_ENV: 'production', DOCUMENTS_DIR: '/var/lib/investally/documents', ...KEYS, ALLOWED_ORIGINS: 'https://crm.test', MFA_ENCRYPTION_KEY: MFA_KEY, APP_PUBLIC_URL: 'https://crm.test', ...M365 };
 
 describe('loadAppConfig', () => {
   it('autorise le développement sans clé ni configuration (paire éphémère, cookie non sécurisé)', () => {
@@ -92,5 +92,17 @@ describe('loadAppConfig', () => {
     expect(config.allowedOrigins).toEqual(['https://crm.test', 'https://autre.test']);
     expect(config.jwt.privateKeyPem).toBe('a\nb');
     expect(config.trustProxy).toBe('loopback');
+  });
+
+  it('en production, le dossier des documents est obligatoire et absolu (jamais un chemin relatif à la racine web)', () => {
+    const { DOCUMENTS_DIR: _unused, ...withoutDir } = PROD;
+    expect(() => loadAppConfig(withoutDir)).toThrow(/DOCUMENTS_DIR/);
+    expect(() => loadAppConfig({ ...PROD, DOCUMENTS_DIR: 'public/uploads' })).toThrow(/DOCUMENTS_DIR/);
+    expect(loadAppConfig(PROD).documents.directory).toBe('/var/lib/investally/documents');
+  });
+
+  it('en développement, un dossier temporaire par défaut ; DOCUMENTS_DIR le remplace', () => {
+    expect(loadAppConfig({}).documents.directory).toMatch(/investally-documents$/);
+    expect(loadAppConfig({ DOCUMENTS_DIR: 'C:/tmp/docs' }).documents.directory).toBe('C:/tmp/docs');
   });
 });
