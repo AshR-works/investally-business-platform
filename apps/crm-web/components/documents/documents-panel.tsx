@@ -142,7 +142,7 @@ export function DocumentsPanel({ ownerType, ownerId }: { ownerType: string; owne
       <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
         <h2 id="documents-titre" className="m-0">Documents</h2>
         <div className="flex flex-wrap items-center gap-4">
-          <label className="inline m-0 text-[length:var(--text-sm)]">
+          <label className="m-0 flex items-center gap-2 font-normal text-[length:var(--text-sm)]">
             <input type="checkbox" checked={showArchived} onChange={(e) => setShowArchived(e.target.checked)} />
             Afficher les documents archivés
           </label>
@@ -206,6 +206,7 @@ function UploadDialog({ rules, title, ownerType, ownerId, existing, onClose, onD
   onDone: () => Promise<void>;
 }) {
   const [docTitle, setDocTitle] = useState('');
+  const [titleEdited, setTitleEdited] = useState(false);
   const [category, setCategory] = useState('');
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -247,7 +248,7 @@ function UploadDialog({ rules, title, ownerType, ownerId, existing, onClose, onD
           <>
             <label>
               Titre du document
-              <input value={docTitle} onChange={(e) => setDocTitle(e.target.value)} maxLength={300} required />
+              <input value={docTitle} onChange={(e) => { setDocTitle(e.target.value); setTitleEdited(true); }} maxLength={300} required />
             </label>
             <label>
               Catégorie
@@ -268,7 +269,7 @@ function UploadDialog({ rules, title, ownerType, ownerId, existing, onClose, onD
               const picked = e.target.files?.[0] ?? null;
               setFile(picked);
               setError(null);
-              if (picked && !existing && docTitle.trim() === '') setDocTitle(picked.name.replace(/\.[^.]+$/, ''));
+              if (picked && !existing && !titleEdited) setDocTitle(picked.name.replace(/\.[^.]+$/, ''));
             }}
           />
         </label>

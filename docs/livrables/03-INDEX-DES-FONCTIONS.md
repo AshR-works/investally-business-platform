@@ -2,10 +2,10 @@
 
 > Document **généré** par `node scripts/gen-function-index.mjs` à partir des commentaires du code. Ne pas le modifier à la main : corriger le commentaire dans le fichier source, puis relancer le script.
 
-**632 déclarations commentées au total.**
+**741 déclarations commentées au total.**
 
 
-## API (NestJS) — 479 déclarations commentées
+## API (NestJS) — 572 déclarations commentées
 
 ### `app.module.ts`
 
@@ -98,6 +98,15 @@
 | `async append(entry: AuditEntry): Promise<void>` | Ajoute une entrée immuable au journal (acteur, session, IP, appareil, entité, action, avant/après). |
 | `async listByEntity(entityType: string, entityId: string): Promise<AuditEntry[]>` | Historique d'une entité, du plus ancien au plus récent (500 entrées au plus). |
 | `async listLoginEvents(query: LoginEventQuery): Promise<AuditEntry[]>` | Connexions (`LOGIN`) et échecs (`LOGIN_FAILED`) rattachés à l'utilisateur, dans la fenêtre demandée, du plus récent au plus ancien. |
+
+### `modules/business-development/application/company-document-owner.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export const COMPANY_OWNER_TYPE = 'company';` | Type d'objet propriétaire déclaré au module Documents pour les entreprises. |
+| `export class CompanyDocumentOwnerResolver implements DocumentOwnerResolver, OnModuleInit` | Résolveur des entreprises pour les documents : une entreprise n'est « résolue » que si elle existe ET que l'appelant peut la lire (même règle de portée que la fiche entreprise). |
+| `onModuleInit(): void` | Se déclare auprès du registre des documents au démarrage de l'application. |
+| `async resolve(ownerId: string, access: AccessContext): Promise<{ ownerUserId: string \| null } \| null>` | Propriétaire de l'entreprise si elle existe et est lisible par l'appelant, sinon `null`. |
 
 ### `modules/business-development/application/company-view.ts`
 
@@ -193,6 +202,160 @@
 | Déclaration | Rôle |
 |---|---|
 | `export class RegisterCompanyDto` | Corps de la requête d'enregistrement : nom obligatoire, secteur et pays facultatifs, longueurs bornées ; tout autre champ (notamment le propriétaire) est refusé. |
+
+### `modules/documents/application/document-use-cases.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export function sha256Of(bytes: Buffer): string` | Empreinte SHA-256 hexadécimale d'un contenu. |
+| `export function newStorageKey(): string` | Clé de stockage ALÉATOIRE (jamais le nom fourni) : deux niveaux de dossiers pour éviter un dossier géant. |
+| `export class DocumentOwnerGate` | Contrôle d'accès commun : un document n'est JAMAIS plus accessible que son objet propriétaire. |
+| `async require(ownerType: string, ownerId: string, access: AccessContext, permission: string, notFound: string): Promise<void>` | Vérifie l'accès à l'objet et la permission ; lève « introuvable » sinon, « validation » si le type est inconnu. |
+| `export interface UploadCommand` | Ce que reçoit un envoi : le fichier est contrôlé et stocké, jamais exécuté. |
+| `export class UploadDocumentUseCase` | Envoie un NOUVEAU document : contrôle l'objet propriétaire et le droit, contrôle le fichier (taille, format par signature, extension cohérente), calcule l'empreinte SHA-256, écrit le contenu sous une clé aléatoire puis enregistre le document, sa première version et l'audit dans UNE transaction. |
+| `async execute(command: UploadCommand): Promise<DocumentView>` | Enregistre le document et renvoie sa vue (version 1). |
+| `export interface AddVersionCommand` | Ce que reçoit l'ajout d'une version. |
+| `export class AddDocumentVersionUseCase` | Ajoute une VERSION à un document existant : les versions précédentes restent intactes et téléchargeables. |
+| `async execute(command: AddVersionCommand): Promise<DocumentView>` | Écrit le nouveau contenu puis enregistre la version, l'avancement du document et l'audit. |
+| `export class ListDocumentsHandler` | Liste les documents d'un objet propriétaire que l'appelant peut voir. |
+| `async execute(query: { ownerType: string; ownerId: string; includeArchived: boolean; access: AccessContext }): Promise<DocumentView[]>` | Documents de l'objet (les archivés seulement sur demande), avec leur version courante. |
+| `export class GetDocumentHandler` | Détail d'un document (versions comprises) ; hors accès, « introuvable ». |
+| `async execute(query: { id: string; access: AccessContext }): Promise<DocumentDetailView>` | Lit le document et toutes ses versions. |
+| `export interface DownloadedFile` | Fichier prêt à être servi : octets vérifiés, nom, type. |
+| `export class DownloadDocumentUseCase` | Télécharge une version (la courante par défaut) : contrôle d'accès, lecture du contenu, VÉRIFICATION de l'empreinte SHA-256 avant d'envoyer quoi que ce soit, et audit de chaque téléchargement. |
+| `async execute(query: { id: string; versionNumber?: number; access: AccessContext; actor: ActorContext }): Promise<DownloadedFile>` | Lit, vérifie et trace ; renvoie le contenu à servir en pièce jointe. |
+| `export class ArchiveDocumentUseCase` | Archive un document : suppression LOGIQUE. |
+| `async execute(command: { id: string; access: AccessContext; actor: ActorContext }): Promise<void>` | Passe le document à « archivé » et trace l'action. |
+
+### `modules/documents/application/document-views.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export interface VersionView` | Une version telle que l'utilisateur la voit (jamais la clé de stockage ni l'identifiant de l'auteur). |
+| `export interface DocumentView` | Un document avec sa version courante (liste et détail). |
+| `export interface DocumentDetailView extends DocumentView` | Détail d'un document : le document et TOUTES ses versions, de la plus récente à la plus ancienne. |
+| `export function toVersionView(version: DocumentVersion): VersionView` | Version du domaine → version affichable. |
+| `export function toDocumentView(document: Document, current: DocumentVersion): DocumentView` | Document et version courante → vue publique (aucun objet interne n'est exposé). |
+
+### `modules/documents/application/owner-registry.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export interface DocumentOwnerResolver` | Résout l'objet propriétaire d'un document (entreprise, offre, opportunité…) : renvoie le propriétaire de CET objet s'il existe ET si l'appelant peut le voir, sinon `null` (introuvable : on ne révèle pas son existence). |
+| `export interface DocumentOwnerRegistry` | Registre où chaque module métier déclare le résolveur de ses objets (`register('company', …)`). |
+| `export class InMemoryDocumentOwnerRegistry implements DocumentOwnerRegistry` | Registre en mémoire : un seul résolveur par type d'objet (un doublon est une erreur de composition). |
+| `register(ownerType: string, resolver: DocumentOwnerResolver): void` | Déclare le résolveur d'un type d'objet propriétaire ; refuse un doublon. |
+| `resolver(ownerType: string): DocumentOwnerResolver \| null` | Résolveur d'un type, ou `null` si le type n'est pas déclaré (refus par défaut). |
+| `types(): string[]` | Types d'objets propriétaires déclarés. |
+
+### `modules/documents/application/upload-rules.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export const MAX_UPLOAD_BYTES = MAX_FILE_BYTES;` | Taille maximale d'un envoi, exposée à la couche de présentation (qui borne la lecture du corps de la requête). |
+| `export function uploadRules(): { maxBytes: number; formats: string[]; categories: readonly { code: string; label: string }[] }` | Règles d'envoi publiées par l'API : taille maximale, extensions acceptées, catégories. |
+
+### `modules/documents/documents.module.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export class DocumentsModule {}` | Module « Documents » : versions immuables avec empreinte SHA-256, stockage derrière un port, téléchargement contrôlé et audité. |
+
+### `modules/documents/domain/document-policy.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export const MAX_FILE_BYTES = 10 * 1024 * 1024;` | Taille maximale d'un fichier (10 Mo). |
+| `export type DocumentFormat = 'PDF' \| 'JPEG' \| 'PNG' \| 'DOCX' \| 'XLSX';` | Formats acceptés : leur type réel est reconnu par la SIGNATURE du contenu, jamais par ce que déclare le client. |
+| `export function detectFormat(bytes: Buffer): DocumentFormat \| null` | Reconnaît le format d'après le CONTENU (octets magiques). |
+| `const MAX_NAME_LENGTH = 200;` | Longueur maximale d'un nom de fichier conservé (colonne `file_name` : 255). |
+| `export function sanitizeFileName(raw: string): string` | Nom de fichier conservé pour l'affichage et le téléchargement : sans chemin, sans caractères de contrôle ni caractères réservés, borné. |
+| `export function extensionOf(fileName: string): string` | Extension en minuscules, sans le point (`rapport.PDF` → `pdf`) ; chaîne vide s'il n'y en a pas. |
+| `export interface AcceptedFile` | Fichier accepté : nom assaini, format reconnu et type MIME correspondant. |
+| `export function checkUpload(rawFileName: string, bytes: Buffer): AcceptedFile` | Contrôle d'un fichier envoyé : non vide, taille maximale, nom exploitable, format reconnu par signature, et extension COHÉRENTE avec ce format (un `.pdf` qui contient autre chose est refusé, comme un `.exe` renommé). |
+| `export function checkCategory(category: string \| null \| undefined): string \| null` | Catégorie valide (ou absente) ; une catégorie inconnue est refusée. |
+
+### `modules/documents/domain/document.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export interface DocumentVersion` | Contenu d'un document à un instant : une version immuable (fichier, empreinte SHA-256, auteur). |
+| `export interface DocumentProps` | Données d'un document reconstitué depuis la base. |
+| `export class Document` | Un document rattaché à un objet d'un autre contexte (type + identifiant, sans clé étrangère) : titre, catégorie, état et numéro de la version courante. |
+| `static create(input: { id: string; ownerType: string; ownerId: string; title: string; category: string \| null; createdBy: string; now: Date }): Docum` | Nouveau document : actif avec sa première version (numéro 1). |
+| `static rehydrate(props: DocumentProps): Document` | Reconstitue un document depuis la persistance (aucune règle rejouée). |
+| `get isArchived(): boolean` | Vrai si le document est archivé (lecture seule : on n'y ajoute plus de version). |
+| `nextVersionNumber(): number` | Numéro de la prochaine version ; refusé si le document est archivé. |
+| `registerVersion(versionNumber: number): void` | Enregistre l'ajout d'une version (la courante devient celle-là). |
+| `archive(): void` | Archive le document (suppression logique, sans effet s'il l'est déjà). |
+
+### `modules/documents/domain/ports.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export interface DocumentRepository` | Port de persistance des documents et de leurs versions (aucune méthode ne supprime une version). |
+| `createWithVersion(document: Document, version: DocumentVersion): Promise<void>;` | Crée un document et sa première version (même transaction). |
+| `addVersion(document: Document, version: DocumentVersion): Promise<void>;` | Ajoute une version et met à jour la version courante (verrou optimiste sur le document). |
+| `save(document: Document): Promise<void>;` | Enregistre l'état du document (archivage) avec verrou optimiste. |
+| `listByOwner(ownerType: string, ownerId: string, includeArchived: boolean): Promise<Document[]>;` | Documents d'un objet propriétaire, du plus récent au plus ancien ; les archivés seulement sur demande. |
+| `currentVersions(documentIds: readonly string[]): Promise<DocumentVersion[]>;` | Dernière version de chaque document donné (pour l'affichage de la liste). |
+| `export interface ObjectStorage` | Port de stockage des contenus : clé aléatoire → octets. |
+| `removeOrphan(key: string): Promise<void>;` | Retire un objet qu'on vient d'écrire et qu'aucune ligne en base ne référence (annulation d'un envoi). |
+
+### `modules/documents/infrastructure/local-disk-object-storage.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `const KEY_PATTERN = /^[0-9a-f]{2}\/[0-9a-f]{2}\/[0-9a-f]{48}$/;` | Forme exacte d'une clé de stockage (deux niveaux de dossiers puis 48 caractères hexadécimaux) : rien d'autre ne passe. |
+| `export class LocalDiskObjectStorage implements ObjectStorage` | Stockage des contenus sur disque (CAD-S36-1 B) : dossier HORS racine web, droits restreints (dossiers 0700, fichiers 0600), écriture atomique (fichier temporaire puis renommage). |
+| `private pathOf(key: string): string` | Chemin absolu d'une clé valide ; toute autre forme est une erreur de programmation (jamais une entrée utilisateur). |
+| `async put(key: string, data: Buffer): Promise<void>` | Écrit le contenu sous la clé, de façon atomique. |
+| `async get(key: string): Promise<Buffer>` | Lit le contenu ; une clé absente est une erreur (la base référence un fichier qui n'existe plus). |
+| `async removeOrphan(key: string): Promise<void>` | Retire un objet qu'on vient d'écrire et qu'aucune ligne en base ne référence ; sans effet s'il n'existe pas. |
+
+### `modules/documents/infrastructure/prisma-document.repository.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `function toDocument(row: DocumentRow): Document` | Ligne de base → document du domaine. |
+| `function toVersion(row: VersionRow): DocumentVersion` | Ligne de base → version du domaine (la taille est un entier 64 bits en base, un nombre ≤ 10 Mo ici). |
+| `function versionData(version: DocumentVersion)` | Données d'une version à écrire. |
+| `export class PrismaDocumentRepository implements DocumentRepository` | Persistance PostgreSQL des documents (schéma `docs`). |
+| `async createWithVersion(document: Document, version: DocumentVersion): Promise<void>` | Crée le document et sa première version. |
+| `async addVersion(document: Document, version: DocumentVersion): Promise<void>` | Ajoute une version et avance la version courante ; refus si quelqu'un d'autre a modifié le document entre-temps. |
+| `async save(document: Document): Promise<void>` | Enregistre l'état du document (archivage) avec verrou optimiste. |
+| `async listByOwner(ownerType: string, ownerId: string, includeArchived: boolean): Promise<Document[]>` | Documents d'un objet, du plus récent au plus ancien (les archivés seulement sur demande, 200 au plus). |
+| `async currentVersions(documentIds: readonly string[]): Promise<DocumentVersion[]>` | Version courante de chaque document donné (le numéro courant est lu sur le document lui-même). |
+
+### `modules/documents/presentation/documents.controller.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `function noStore(res: Response): void` | Les réponses documentaires ne doivent jamais être mises en cache (données de l'entreprise). |
+| `export class DocumentsController` | Routes des documents (S3.6). |
+| `meta(@Res({ passthrough: true }) res: Response)` | Règles d'envoi (formats, taille maximale, catégories) pour que l'interface les affiche sans les dupliquer. |
+| `async create(@Query() query: UploadDocumentQueryDto, @Req() req: Request, @Access() access: AccessContext, @CurrentActor() actor: AuthenticatedActor)` | Envoie un nouveau document (version 1) sur un objet propriétaire. |
+| `async listByOwner(@Query() query: ListDocumentsQueryDto, @Access() access: AccessContext, @Res({ passthrough: true }) res: Response)` | Documents d'un objet propriétaire visibles de l'appelant. |
+| `async detail(@Param('id', ParseUUIDPipe) id: string, @Access() access: AccessContext, @Res({ passthrough: true }) res: Response)` | Détail d'un document et de toutes ses versions. |
+| `async newVersion(@Param('id', ParseUUIDPipe) id: string, @Query() query: NewVersionQueryDto, @Req() req: Request, @Access() access: AccessContext, @Cu` | Ajoute une version à un document (les précédentes restent intactes). |
+| `async downloadVersion(` | Télécharge une version en pièce jointe, après vérification de son empreinte SHA-256 ; chaque téléchargement est audité. |
+| `async archiveDocument(@Param('id', ParseUUIDPipe) id: string, @Req() req: Request, @Access() access: AccessContext, @CurrentActor() actor: Authenticat` | Archive un document (suppression logique : versions et fichiers conservés). |
+
+### `modules/documents/presentation/dto/documents.dto.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export class UploadDocumentQueryDto` | Paramètres d'un premier envoi (le fichier lui-même est le corps de la requête) : objet propriétaire, titre, catégorie, nom. |
+| `export class NewVersionQueryDto` | Paramètres de l'ajout d'une version : seul le nom du fichier (le document est dans l'adresse). |
+| `export class ListDocumentsQueryDto` | Paramètres de la liste : objet propriétaire, archivés ou non. |
+| `export class DownloadQueryDto` | Paramètres du téléchargement : numéro de version (la courante par défaut). |
+
+### `modules/documents/presentation/request-body.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export async function readBinaryBody(req: Request, maxBytes: number): Promise<Buffer>` | Lit le corps brut d'un envoi de fichier (`application/octet-stream`) en refusant, AVANT d'avoir tout reçu, un fichier qui dépasse la taille maximale : l'en-tête `Content-Length` puis le cumul des octets reçus sont contrôlés. |
+| `export function attachmentHeader(fileName: string): string` | En-tête `Content-Disposition` d'un téléchargement : toujours « attachment », nom ASCII de repli et nom UTF-8 exact. |
 
 ### `modules/iam/application/access-types.ts`
 
@@ -1016,7 +1179,7 @@
 | `export interface RequestLike` | Forme minimale d'une requête HTTP (sans dépendre d'Express) pour construire le contexte d'audit. |
 | `export function actorContextFrom(req: RequestLike, identity: { userId: string \| null; sessionId: string \| null } = { userId: null, sessionId: null }` | Qui agit, depuis où : IP et appareil de la requête (l'identité est ajoutée une fois l'utilisateur authentifié). |
 
-## Interface web — pages (Next.js) — 43 déclarations commentées
+## Interface web — pages (Next.js) — 44 déclarations commentées
 
 ### `(app)/account/page.tsx`
 
@@ -1050,6 +1213,12 @@
 | `function InviteDialog({ roles, managers, onClose, onSubmit }:` | Fenêtre d'invitation : adresse, nom, rôles et responsable facultatif. |
 | `async function submit(event: FormEvent)` | Envoie l'invitation avec les rôles cochés (au moins un). |
 | `function RolesDialog({ user, roles, onClose, onSubmit }:` | Fenêtre de modification des rôles d'un utilisateur ; le changement s'applique immédiatement, y compris aux sessions ouvertes. |
+
+### `(app)/companies/[id]/page.tsx`
+
+| Déclaration | Rôle |
+|---|---|
+| `export default function CompanyPage()` | Fiche d'une entreprise (version minimale de S3.6) : identité de l'entreprise et ses documents. |
 
 ### `(app)/companies/page.tsx`
 
@@ -1121,7 +1290,7 @@
 | `export default function ResetPasswordPage()` | Page ouverte depuis le lien reçu par e-mail (A10 à A12). |
 | `async function submit(event: FormEvent)` | Envoie le jeton et le nouveau mot de passe ; le serveur coupe toutes les sessions, l'utilisateur doit se reconnecter avec son second facteur. |
 
-## Interface web — composants — 40 déclarations commentées
+## Interface web — composants — 48 déclarations commentées
 
 ### `app-shell.tsx`
 
@@ -1223,6 +1392,19 @@
 | `export function QuickFilters({ label, value, options, onChange }: { label: string; value: string; options: FilterOption[]; onChange: (value: string) =` | Filtres rapides sous forme de boutons à bascule (un seul actif). |
 | `export function SearchField({ label, placeholder = 'Rechercher', delay = 300, onSearch }: { label: string; placeholder?: string; delay?: number; onSea` | Champ de recherche à saisie différée : n'appelle `onSearch` qu'après une courte pause (pas à chaque touche) ni au premier rendu. |
 
+### `documents/documents-panel.tsx`
+
+| Déclaration | Rôle |
+|---|---|
+| `type Dialog` | Ce que la fenêtre ouverte est en train de faire. |
+| `function scanBadge(scan: string)` | Teinte et texte de l'état d'analyse antivirus : tant que le service n'existe pas, le fichier est « non analysé ». |
+| `async function downloadVersion(documentId: string, fileName: string, versionNumber?: number): Promise<void>` | Télécharge une version : le fichier est demandé avec le jeton (jamais d'adresse directe), puis proposé à l'enregistrement. |
+| `export function DocumentsPanel({ ownerType, ownerId }: { ownerType: string; ownerId: string })` | Panneau « Documents » d'un objet (une entreprise aujourd'hui, offres et opportunités ensuite) : liste, envoi, nouvelle version, historique des versions, téléchargement et archivage. |
+| `async function download(document: DocumentView, versionNumber?: number)` | Télécharge et signale une erreur sans casser la page. |
+| `function UploadDialog({ rules, title, ownerType, ownerId, existing, onClose, onDone }:` | Fenêtre d'envoi d'un fichier : nouveau document (titre, catégorie) ou nouvelle version d'un document existant. |
+| `async function submit(event: FormEvent)` | Envoie le fichier en corps binaire ; le message du serveur s'affiche tel quel en cas de refus. |
+| `function HistoryDialog({ document, canDownload, onClose, onError }: { document: DocumentView; canDownload: boolean; onClose: () => void; onError: (mes` | Historique des versions d'un document : chaque version reste téléchargeable, avec son empreinte SHA-256. |
+
 ### `gate.tsx`
 
 | Déclaration | Rôle |
@@ -1263,7 +1445,7 @@
 | `export function StepUpDialog({ onDone }: { onDone: (ok: boolean) => void })` | Demande un code frais du second facteur avant une action sensible (modification de rôles, désactivation, etc.). |
 | `async function submit(event: FormEvent)` | Vérifie le code ; en cas de succès le nouveau jeton remplace l'ancien et l'action sensible est rejouée. |
 
-## Interface web — bibliothèque — 70 déclarations commentées
+## Interface web — bibliothèque — 77 déclarations commentées
 
 ### `api.ts`
 
@@ -1318,6 +1500,9 @@
 | Déclaration | Rôle |
 |---|---|
 | `export function formatDate(iso: string \| null \| undefined): string` | Date seule au format français (ex. |
+| `export function formatBytes(bytes: number): string` | Taille lisible en français (« 850 o », « 12,4 Ko », « 3,2 Mo ») ; « — » si la valeur n'est pas un nombre positif. |
+| `export function extensionOf(fileName: string): string` | Extension en minuscules, sans le point (« Rapport.PDF » → « pdf ») ; vide s'il n'y en a pas. |
+| `export function precheckFile(file: { name: string; size: number }, rules: { maxBytes: number; formats: readonly string[] }): string \| null` | Contrôle de confort AVANT l'envoi (le serveur reste seul juge : il reconnaît le format par le contenu) : renvoie le message à afficher si le fichier est vide, trop gros ou d'une extension non acceptée, sinon `null`. |
 
 ### `invitation.ts`
 
@@ -1413,6 +1598,10 @@
 | `export interface Company` | Entreprise cible telle que l'API l'expose. |
 | `export interface LoginEvent` | Une connexion de l'historique (réussie ou échouée) : étape de l'échec, adresse IP et appareil. |
 | `export interface LoginHistoryPage` | Page de l'historique : `nextBefore` est le curseur de la page suivante (nul s'il n'y en a pas). |
+| `export interface DocumentVersionView` | Une version d'un document (le contenu est immuable ; l'empreinte SHA-256 en atteste l'intégrité). |
+| `export interface DocumentView` | Un document avec sa version courante. |
+| `export interface DocumentDetailView extends DocumentView` | Détail d'un document : toutes ses versions, de la plus récente à la plus ancienne. |
+| `export interface UploadRules` | Règles d'envoi publiées par l'API (taille maximale, extensions, catégories). |
 
 ### `use-cooldown.ts`
 
