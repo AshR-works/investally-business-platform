@@ -8,6 +8,8 @@ export interface ApiResponse {
   headers: Headers;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   body: any;
+  /** Corps brut de la réponse (fichiers téléchargés). */
+  bytes: Buffer;
 }
 
 /** Client HTTP minimal. `ip` simule le client réel derrière le proxy (TRUST_PROXY=loopback) : une limite par IP par scénario. */
@@ -17,18 +19,21 @@ export class Api {
   async call(
     method: string,
     path: string,
-    options: { token?: string; body?: unknown; ip?: string; headers?: Record<string, string>; cookie?: string } = {},
+    options: { token?: string; body?: unknown; raw?: { type: string; data: Buffer }; ip?: string; headers?: Record<string, string>; cookie?: string } = {},
   ): Promise<ApiResponse> {
     const headers: Record<string, string> = { 'user-agent': 'recette-rbac', ...options.headers };
     if (options.body !== undefined) headers['content-type'] = 'application/json';
+    if (options.raw) headers['content-type'] = options.raw.type;
     if (options.token) headers.authorization = `Bearer ${options.token}`;
     if (options.cookie) headers.cookie = options.cookie;
     if (options.ip) headers['x-forwarded-for'] = options.ip;
-    const res = await fetch(`${this.baseUrl}${path}`, { method, headers, body: options.body === undefined ? undefined : JSON.stringify(options.body) });
-    const text = await res.text();
+    const payload = options.raw ? new Uint8Array(options.raw.data) : options.body === undefined ? undefined : JSON.stringify(options.body);
+    const res = await fetch(`${this.baseUrl}${path}`, { method, headers, body: payload });
+    const bytes = Buffer.from(await res.arrayBuffer());
+    const text = bytes.toString('utf8');
     let body: unknown = null;
     try { body = text ? JSON.parse(text) : null; } catch { body = text; }
-    return { status: res.status, headers: res.headers, body };
+    return { status: res.status, headers: res.headers, body, bytes };
   }
 }
 

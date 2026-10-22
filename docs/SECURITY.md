@@ -160,8 +160,22 @@ Refresh token en cookie `SameSite=Strict` + vérification des en-têtes `Origin`
 ### Injection SQL
 Aucune requête SQL concaténée. Les migrations SQL brutes sont relues. Test automatisé (recette S1 E2) : tentative d'injection dans les paramètres de recherche.
 
-### Téléversement de fichiers (S3)
-Taille maximale, liste blanche d'extensions **et** de types MIME détectés par signature, renommage côté serveur (clé de stockage aléatoire), stockage hors racine web, analyse antivirus (H, S7), empreinte SHA-256.
+### Téléversement de fichiers (S3.6)
+Voir §6.1 pour la mise en œuvre.
+
+### 6.1 Documents (S3.6)
+| Point | Mesure |
+|---|---|
+| Réception | Le fichier est le **corps** de la requête (`application/octet-stream`), jamais un champ de formulaire ; taille bornée **avant** réception complète (en-tête puis cumul des octets) : 10 Mo au plus ; autre type de contenu : 415 ; trop gros : 413 |
+| Format | Reconnu par la **signature du contenu** (PDF, JPEG, PNG, DOCX, XLSX), jamais par le type déclaré par le client ; l'**extension doit correspondre** au contenu (un `.pdf` qui contient un PNG, un exécutable renommé, sont refusés) ; **macros refusées** (`vbaProject.bin`) ; archive Office sans `[Content_Types].xml` refusée |
+| Nom de fichier | Assaini (chemins, caractères de contrôle et réservés retirés, borné) et **jamais utilisé comme chemin** : la clé de stockage est aléatoire (`xx/yy/` + 48 hexadécimaux) |
+| Stockage | Derrière un port (ADR-0008) ; dossier **hors racine web**, absolu et obligatoire en production, droits 0700/0600, écriture atomique, clé contrôlée à chaque appel (aucune sortie du dossier) |
+| Intégrité | **SHA-256** calculé à l'envoi, **revérifié à chaque téléchargement** : un contenu altéré ou perdu n'est jamais servi (refus, incident audité) ; **versions immuables** : la base refuse (déclencheurs) toute modification de contenu et toute suppression |
+| Suppression | **Logique seulement** (archivage) : versions et fichiers conservés ; aucune suppression définitive |
+| Droits | Permissions `docs.document.*` **et** accès à l'objet propriétaire (résolveur déclaré par chaque module métier ; type inconnu = refus) : un document n'est jamais plus accessible que son dossier ; tout refus est « introuvable » (404) |
+| Téléchargement | Via l'API uniquement (aucune adresse directe), `Content-Disposition: attachment`, `X-Content-Type-Options: nosniff`, `Content-Security-Policy: default-src 'none'; sandbox`, `Cache-Control: no-store` ; **chaque téléchargement est audité** (qui, version, empreinte) |
+| Limitation | 20 envois et 60 téléchargements par minute et par adresse |
+| Antivirus | **Pas encore** : chaque version porte `scan_status = PENDING` (« non analysé »), signalé dans l'API (`X-Document-Scan-Status`) et l'interface. **Condition bloquante de la mise en production (S7.2)** : service d'analyse, mise à jour du statut (le déclencheur autorise ce seul changement), blocage des fichiers infectés |
 
 ## 7. Données personnelles
 Cartographie à établir (apprenants, contacts, employés dans l'ERP) ; minimisation ; accès restreint par rôle ; droit d'accès/effacement via soft delete puis **anonymisation** programmée (les lignes d'audit conservent l'identifiant technique, pas les données). **Conservation de l'audit : 10 ans** (décision du 2026-10-20), dont les **2 dernières années en ligne** (partitions mensuelles actives) et le reste **archivé à froid** (partitions détachées, chiffrées, restaurables) — découpage recommandé, à ajuster. À faire valider par le juridique au titre de la réglementation applicable. Volume estimé pour ~20 utilisateurs : ≈ 5 Mo/jour, soit moins de 2 Go par an. Autres durées (apprenants, contacts) : à valider avec le juridique.

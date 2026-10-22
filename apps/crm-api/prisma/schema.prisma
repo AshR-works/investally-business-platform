@@ -391,6 +391,15 @@ enum DocumentStatus {
   @@schema("docs")
 }
 
+/// Résultat de l'analyse antivirus d'une version (l'analyse n'est livrée qu'en S7 : PENDING jusque-là).
+enum ScanStatus {
+  PENDING
+  CLEAN
+  INFECTED
+
+  @@schema("docs")
+}
+
 /// Un document appartient à un objet d'un autre contexte, référencé par type + identifiant (sans FK).
 /// L'historique d'accès (consultation, téléchargement, export…) est lu dans audit.audit_logs.
 model Document {
@@ -428,6 +437,8 @@ model DocumentVersion {
   sizeBytes     BigInt   @map("size_bytes")
   /// Empreinte SHA-256 hexadécimale du contenu.
   sha256        String   @db.Char(64)
+  /// Analyse antivirus : PENDING tant que le service d'analyse n'existe pas (S7) ; le téléchargement le signale.
+  scanStatus    ScanStatus @default(PENDING) @map("scan_status")
   uploadedBy    String   @map("uploaded_by") @db.Uuid
   createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 

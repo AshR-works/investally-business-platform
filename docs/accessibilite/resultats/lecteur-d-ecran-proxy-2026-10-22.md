@@ -2,7 +2,7 @@
 
 **Violations de la politique de contenu (CSP)** : 0
 
-**États audités** : 33 · **violations** : 0 · **à vérifier à la main** : 2
+**États audités** : 39 · **violations** : 0 · **à vérifier à la main** : 4
 
 | État d'écran | Violations | À vérifier | Éléments annoncés |
 |---|---|---|---|
@@ -19,16 +19,22 @@
 | MFA — code refusé | 0 | 0 | 13 |
 | MFA — codes de secours (affichage unique) | 0 | 0 | 9 |
 | Vue d’ensemble (hub) | 0 | 0 | 36 |
-| Entreprises (rail compact) | 0 | 0 | 195 |
+| Entreprises (rail compact) | 0 | 0 | 215 |
 | Entreprises — fenêtre « Nouvelle entreprise » | 0 | 0 | 7 |
-| Entreprises — deux lignes sélectionnées | 0 | 0 | 196 |
-| Entreprises (navigation dépliée) | 0 | 0 | 195 |
-| Hub — résultats de recherche | 0 | 0 | 48 |
-| Hub — thème sombre | 0 | 0 | 48 |
+| Entreprises — deux lignes sélectionnées | 0 | 0 | 216 |
+| Entreprises (navigation dépliée) | 0 | 0 | 215 |
+| Fiche entreprise — documents (vide) | 0 | 0 | 35 |
+| Documents — envoi refusé (contenu ≠ extension) | 0 | 0 | 11 |
+| Documents — liste avec un document | 0 | 0 | 40 |
+| Documents — historique des versions (SHA-256) | 0 | 1 | 26 |
+| Documents — confirmation d’archivage | 0 | 1 | 6 |
+| Documents — après archivage | 0 | 0 | 35 |
+| Hub — résultats de recherche | 0 | 0 | 40 |
+| Hub — thème sombre | 0 | 0 | 40 |
 | Hub — mobile, tiroir fermé | 0 | 0 | 29 |
 | Hub — mobile, tiroir ouvert | 0 | 0 | 37 |
-| Administration des utilisateurs | 0 | 0 | 104 |
-| Administration — menu d’actions d’une ligne | 0 | 0 | 105 |
+| Administration des utilisateurs | 0 | 0 | 59 |
+| Administration — menu d’actions d’une ligne | 0 | 0 | 60 |
 | Administration — fenêtre « Inviter » | 0 | 0 | 19 |
 | Mon compte | 0 | 0 | 27 |
 | Sessions et connexions (S01, S02) | 0 | 0 | 89 |
@@ -58,7 +64,7 @@ Ce que le lecteur d'écran annonce, dans l'ordre :
 - button « Se connecter »
 
 ## Connexion — erreur
-*Titre de page* : « Connexion — Investally CRM » · *Langue* : fr · *Focus* : aucun élément ciblé · *Note* : message d’échec annoncé par role=alert
+*Titre de page* : « Connexion — Investally CRM » · *Langue* : fr · *Focus* : button « Se connecter » · *Note* : message d’échec annoncé par role=alert
 
 Ce que le lecteur d'écran annonce, dans l'ordre :
 
@@ -236,7 +242,7 @@ Ce que le lecteur d'écran annonce, dans l'ordre :
 - button « Rechercher partout Ctrl K »
 - button « Passer au thème sombre »
 - main (SANS NOM)
-- heading niveau 1 « Bonjour Recette Sessions Six »
+- heading niveau 1 « Bonjour Recette Documents Quatre »
 - search « Recherche globale »
 - status (SANS NOM)
 - region « Vos modules »
@@ -297,165 +303,185 @@ Ce que le lecteur d'écran annonce, dans l'ordre :
 - columnheader « Statut »
 - columnheader « Créée le »
 - row (SANS NOM)
-- cell « Sélectionner Société Horizon 80809 »
-- checkbox « Sélectionner Société Horizon 80809 » coché=false
-- cell « Société Horizon 80809 »
-- cell « — »
-- cell « — »
-- cell « Cible »
-- cell « 21/10/2026 »
-- row (SANS NOM)
-- cell « Sélectionner Société Horizon 78770 »
-- checkbox « Sélectionner Société Horizon 78770 » coché=false
-- cell « Société Horizon 78770 »
-- cell « — »
-- cell « — »
-- cell « Cible »
-- cell « 21/10/2026 »
-- row (SANS NOM)
-- cell « Sélectionner Société Horizon 72502 »
-- checkbox « Sélectionner Société Horizon 72502 » coché=false
-- cell « Société Horizon 72502 »
-- cell « — »
-- cell « — »
-- cell « Cible »
-- cell « 21/10/2026 »
-- row (SANS NOM)
-- cell « Sélectionner Société Horizon 79302 »
-- checkbox « Sélectionner Société Horizon 79302 » coché=false
-- cell « Société Horizon 79302 »
-- cell « — »
-- cell « — »
-- cell « Cible »
-- cell « 21/10/2026 »
-- row (SANS NOM)
 - cell « Sélectionner Entreprise Test 25 »
 - checkbox « Sélectionner Entreprise Test 25 » coché=false
 - cell « Entreprise Test 25 »
+- link « Entreprise Test 25 »
 - cell « Banque »
 - cell « Cameroun »
 - cell « Cible »
-- cell « 21/10/2026 »
+- cell « 22/10/2026 »
 - row (SANS NOM)
 - cell « Sélectionner Entreprise Test 24 »
 - checkbox « Sélectionner Entreprise Test 24 » coché=false
 - cell « Entreprise Test 24 »
+- link « Entreprise Test 24 »
 - cell « Énergie »
 - cell « Cameroun »
 - cell « Cible »
-- cell « 21/10/2026 »
+- cell « 22/10/2026 »
 - row (SANS NOM)
 - cell « Sélectionner Entreprise Test 23 »
 - checkbox « Sélectionner Entreprise Test 23 » coché=false
 - cell « Entreprise Test 23 »
+- link « Entreprise Test 23 »
 - cell « Distribution »
 - cell « Cameroun »
 - cell « Cible »
-- cell « 21/10/2026 »
+- cell « 22/10/2026 »
 - row (SANS NOM)
 - cell « Sélectionner Entreprise Test 22 »
 - checkbox « Sélectionner Entreprise Test 22 » coché=false
 - cell « Entreprise Test 22 »
+- link « Entreprise Test 22 »
 - cell « Industrie »
 - cell « Cameroun »
 - cell « Cible »
-- cell « 21/10/2026 »
+- cell « 22/10/2026 »
 - row (SANS NOM)
 - cell « Sélectionner Entreprise Test 21 »
 - checkbox « Sélectionner Entreprise Test 21 » coché=false
 - cell « Entreprise Test 21 »
+- link « Entreprise Test 21 »
 - cell « Assurance »
 - cell « Cameroun »
 - cell « Cible »
-- cell « 21/10/2026 »
+- cell « 22/10/2026 »
 - row (SANS NOM)
 - cell « Sélectionner Entreprise Test 20 »
 - checkbox « Sélectionner Entreprise Test 20 » coché=false
 - cell « Entreprise Test 20 »
+- link « Entreprise Test 20 »
 - cell « Banque »
 - cell « Cameroun »
 - cell « Cible »
-- cell « 21/10/2026 »
+- cell « 22/10/2026 »
 - row (SANS NOM)
 - cell « Sélectionner Entreprise Test 19 »
 - checkbox « Sélectionner Entreprise Test 19 » coché=false
 - cell « Entreprise Test 19 »
+- link « Entreprise Test 19 »
 - cell « Énergie »
 - cell « Cameroun »
 - cell « Cible »
-- cell « 21/10/2026 »
+- cell « 22/10/2026 »
 - row (SANS NOM)
 - cell « Sélectionner Entreprise Test 18 »
 - checkbox « Sélectionner Entreprise Test 18 » coché=false
 - cell « Entreprise Test 18 »
+- link « Entreprise Test 18 »
 - cell « Distribution »
 - cell « Cameroun »
 - cell « Cible »
-- cell « 21/10/2026 »
+- cell « 22/10/2026 »
 - row (SANS NOM)
 - cell « Sélectionner Entreprise Test 17 »
 - checkbox « Sélectionner Entreprise Test 17 » coché=false
 - cell « Entreprise Test 17 »
+- link « Entreprise Test 17 »
 - cell « Industrie »
 - cell « Cameroun »
 - cell « Cible »
-- cell « 21/10/2026 »
+- cell « 22/10/2026 »
 - row (SANS NOM)
 - cell « Sélectionner Entreprise Test 16 »
 - checkbox « Sélectionner Entreprise Test 16 » coché=false
 - cell « Entreprise Test 16 »
+- link « Entreprise Test 16 »
 - cell « Assurance »
 - cell « Cameroun »
 - cell « Cible »
-- cell « 21/10/2026 »
+- cell « 22/10/2026 »
 - row (SANS NOM)
 - cell « Sélectionner Entreprise Test 15 »
 - checkbox « Sélectionner Entreprise Test 15 » coché=false
 - cell « Entreprise Test 15 »
+- link « Entreprise Test 15 »
 - cell « Banque »
 - cell « Cameroun »
 - cell « Cible »
-- cell « 21/10/2026 »
+- cell « 22/10/2026 »
 - row (SANS NOM)
 - cell « Sélectionner Entreprise Test 14 »
 - checkbox « Sélectionner Entreprise Test 14 » coché=false
 - cell « Entreprise Test 14 »
+- link « Entreprise Test 14 »
 - cell « Énergie »
 - cell « Cameroun »
 - cell « Cible »
-- cell « 21/10/2026 »
+- cell « 22/10/2026 »
 - row (SANS NOM)
 - cell « Sélectionner Entreprise Test 13 »
 - checkbox « Sélectionner Entreprise Test 13 » coché=false
 - cell « Entreprise Test 13 »
+- link « Entreprise Test 13 »
 - cell « Distribution »
 - cell « Cameroun »
 - cell « Cible »
-- cell « 21/10/2026 »
+- cell « 22/10/2026 »
 - row (SANS NOM)
 - cell « Sélectionner Entreprise Test 12 »
 - checkbox « Sélectionner Entreprise Test 12 » coché=false
 - cell « Entreprise Test 12 »
+- link « Entreprise Test 12 »
 - cell « Industrie »
 - cell « Cameroun »
 - cell « Cible »
-- cell « 21/10/2026 »
+- cell « 22/10/2026 »
 - row (SANS NOM)
 - cell « Sélectionner Entreprise Test 11 »
 - checkbox « Sélectionner Entreprise Test 11 » coché=false
 - cell « Entreprise Test 11 »
+- link « Entreprise Test 11 »
 - cell « Assurance »
 - cell « Cameroun »
 - cell « Cible »
-- cell « 21/10/2026 »
+- cell « 22/10/2026 »
 - row (SANS NOM)
 - cell « Sélectionner Entreprise Test 10 »
 - checkbox « Sélectionner Entreprise Test 10 » coché=false
 - cell « Entreprise Test 10 »
+- link « Entreprise Test 10 »
 - cell « Banque »
 - cell « Cameroun »
 - cell « Cible »
-- cell « 21/10/2026 »
+- cell « 22/10/2026 »
+- row (SANS NOM)
+- cell « Sélectionner Entreprise Test 09 »
+- checkbox « Sélectionner Entreprise Test 09 » coché=false
+- cell « Entreprise Test 09 »
+- link « Entreprise Test 09 »
+- cell « Énergie »
+- cell « Cameroun »
+- cell « Cible »
+- cell « 22/10/2026 »
+- row (SANS NOM)
+- cell « Sélectionner Entreprise Test 08 »
+- checkbox « Sélectionner Entreprise Test 08 » coché=false
+- cell « Entreprise Test 08 »
+- link « Entreprise Test 08 »
+- cell « Distribution »
+- cell « Cameroun »
+- cell « Cible »
+- cell « 22/10/2026 »
+- row (SANS NOM)
+- cell « Sélectionner Entreprise Test 07 »
+- checkbox « Sélectionner Entreprise Test 07 » coché=false
+- cell « Entreprise Test 07 »
+- link « Entreprise Test 07 »
+- cell « Industrie »
+- cell « Cameroun »
+- cell « Cible »
+- cell « 22/10/2026 »
+- row (SANS NOM)
+- cell « Sélectionner Entreprise Test 06 »
+- checkbox « Sélectionner Entreprise Test 06 » coché=false
+- cell « Entreprise Test 06 »
+- link « Entreprise Test 06 »
+- cell « Assurance »
+- cell « Cameroun »
+- cell « Cible »
+- cell « 22/10/2026 »
 - navigation « Pagination »
 - button « Précédent » désactivé
 - button « Suivant »
@@ -512,165 +538,185 @@ Ce que le lecteur d'écran annonce, dans l'ordre :
 - columnheader « Statut »
 - columnheader « Créée le »
 - row (SANS NOM)
-- cell « Sélectionner Société Horizon 87012 »
-- checkbox « Sélectionner Société Horizon 87012 » coché=true
-- cell « Société Horizon 87012 »
+- cell « Sélectionner Société Horizon 20122 »
+- checkbox « Sélectionner Société Horizon 20122 » coché=true
+- cell « Société Horizon 20122 »
+- link « Société Horizon 20122 »
 - cell « — »
 - cell « — »
 - cell « Cible »
 - cell « 22/10/2026 »
 - row (SANS NOM)
-- cell « Sélectionner Société Horizon 80809 »
-- checkbox « Sélectionner Société Horizon 80809 » coché=false
-- cell « Société Horizon 80809 »
-- cell « — »
-- cell « — »
-- cell « Cible »
-- cell « 21/10/2026 »
-- row (SANS NOM)
-- cell « Sélectionner Société Horizon 78770 »
-- checkbox « Sélectionner Société Horizon 78770 » coché=true
-- cell « Société Horizon 78770 »
-- cell « — »
-- cell « — »
-- cell « Cible »
-- cell « 21/10/2026 »
-- row (SANS NOM)
-- cell « Sélectionner Société Horizon 72502 »
-- checkbox « Sélectionner Société Horizon 72502 » coché=false
-- cell « Société Horizon 72502 »
-- cell « — »
-- cell « — »
-- cell « Cible »
-- cell « 21/10/2026 »
-- row (SANS NOM)
-- cell « Sélectionner Société Horizon 79302 »
-- checkbox « Sélectionner Société Horizon 79302 » coché=false
-- cell « Société Horizon 79302 »
-- cell « — »
-- cell « — »
-- cell « Cible »
-- cell « 21/10/2026 »
-- row (SANS NOM)
 - cell « Sélectionner Entreprise Test 25 »
 - checkbox « Sélectionner Entreprise Test 25 » coché=false
 - cell « Entreprise Test 25 »
+- link « Entreprise Test 25 »
 - cell « Banque »
 - cell « Cameroun »
 - cell « Cible »
-- cell « 21/10/2026 »
+- cell « 22/10/2026 »
 - row (SANS NOM)
 - cell « Sélectionner Entreprise Test 24 »
-- checkbox « Sélectionner Entreprise Test 24 » coché=false
+- checkbox « Sélectionner Entreprise Test 24 » coché=true
 - cell « Entreprise Test 24 »
+- link « Entreprise Test 24 »
 - cell « Énergie »
 - cell « Cameroun »
 - cell « Cible »
-- cell « 21/10/2026 »
+- cell « 22/10/2026 »
 - row (SANS NOM)
 - cell « Sélectionner Entreprise Test 23 »
 - checkbox « Sélectionner Entreprise Test 23 » coché=false
 - cell « Entreprise Test 23 »
+- link « Entreprise Test 23 »
 - cell « Distribution »
 - cell « Cameroun »
 - cell « Cible »
-- cell « 21/10/2026 »
+- cell « 22/10/2026 »
 - row (SANS NOM)
 - cell « Sélectionner Entreprise Test 22 »
 - checkbox « Sélectionner Entreprise Test 22 » coché=false
 - cell « Entreprise Test 22 »
+- link « Entreprise Test 22 »
 - cell « Industrie »
 - cell « Cameroun »
 - cell « Cible »
-- cell « 21/10/2026 »
+- cell « 22/10/2026 »
 - row (SANS NOM)
 - cell « Sélectionner Entreprise Test 21 »
 - checkbox « Sélectionner Entreprise Test 21 » coché=false
 - cell « Entreprise Test 21 »
+- link « Entreprise Test 21 »
 - cell « Assurance »
 - cell « Cameroun »
 - cell « Cible »
-- cell « 21/10/2026 »
+- cell « 22/10/2026 »
 - row (SANS NOM)
 - cell « Sélectionner Entreprise Test 20 »
 - checkbox « Sélectionner Entreprise Test 20 » coché=false
 - cell « Entreprise Test 20 »
+- link « Entreprise Test 20 »
 - cell « Banque »
 - cell « Cameroun »
 - cell « Cible »
-- cell « 21/10/2026 »
+- cell « 22/10/2026 »
 - row (SANS NOM)
 - cell « Sélectionner Entreprise Test 19 »
 - checkbox « Sélectionner Entreprise Test 19 » coché=false
 - cell « Entreprise Test 19 »
+- link « Entreprise Test 19 »
 - cell « Énergie »
 - cell « Cameroun »
 - cell « Cible »
-- cell « 21/10/2026 »
+- cell « 22/10/2026 »
 - row (SANS NOM)
 - cell « Sélectionner Entreprise Test 18 »
 - checkbox « Sélectionner Entreprise Test 18 » coché=false
 - cell « Entreprise Test 18 »
+- link « Entreprise Test 18 »
 - cell « Distribution »
 - cell « Cameroun »
 - cell « Cible »
-- cell « 21/10/2026 »
+- cell « 22/10/2026 »
 - row (SANS NOM)
 - cell « Sélectionner Entreprise Test 17 »
 - checkbox « Sélectionner Entreprise Test 17 » coché=false
 - cell « Entreprise Test 17 »
+- link « Entreprise Test 17 »
 - cell « Industrie »
 - cell « Cameroun »
 - cell « Cible »
-- cell « 21/10/2026 »
+- cell « 22/10/2026 »
 - row (SANS NOM)
 - cell « Sélectionner Entreprise Test 16 »
 - checkbox « Sélectionner Entreprise Test 16 » coché=false
 - cell « Entreprise Test 16 »
+- link « Entreprise Test 16 »
 - cell « Assurance »
 - cell « Cameroun »
 - cell « Cible »
-- cell « 21/10/2026 »
+- cell « 22/10/2026 »
 - row (SANS NOM)
 - cell « Sélectionner Entreprise Test 15 »
 - checkbox « Sélectionner Entreprise Test 15 » coché=false
 - cell « Entreprise Test 15 »
+- link « Entreprise Test 15 »
 - cell « Banque »
 - cell « Cameroun »
 - cell « Cible »
-- cell « 21/10/2026 »
+- cell « 22/10/2026 »
 - row (SANS NOM)
 - cell « Sélectionner Entreprise Test 14 »
 - checkbox « Sélectionner Entreprise Test 14 » coché=false
 - cell « Entreprise Test 14 »
+- link « Entreprise Test 14 »
 - cell « Énergie »
 - cell « Cameroun »
 - cell « Cible »
-- cell « 21/10/2026 »
+- cell « 22/10/2026 »
 - row (SANS NOM)
 - cell « Sélectionner Entreprise Test 13 »
 - checkbox « Sélectionner Entreprise Test 13 » coché=false
 - cell « Entreprise Test 13 »
+- link « Entreprise Test 13 »
 - cell « Distribution »
 - cell « Cameroun »
 - cell « Cible »
-- cell « 21/10/2026 »
+- cell « 22/10/2026 »
 - row (SANS NOM)
 - cell « Sélectionner Entreprise Test 12 »
 - checkbox « Sélectionner Entreprise Test 12 » coché=false
 - cell « Entreprise Test 12 »
+- link « Entreprise Test 12 »
 - cell « Industrie »
 - cell « Cameroun »
 - cell « Cible »
-- cell « 21/10/2026 »
+- cell « 22/10/2026 »
 - row (SANS NOM)
 - cell « Sélectionner Entreprise Test 11 »
 - checkbox « Sélectionner Entreprise Test 11 » coché=false
 - cell « Entreprise Test 11 »
+- link « Entreprise Test 11 »
 - cell « Assurance »
 - cell « Cameroun »
 - cell « Cible »
-- cell « 21/10/2026 »
+- cell « 22/10/2026 »
+- row (SANS NOM)
+- cell « Sélectionner Entreprise Test 10 »
+- checkbox « Sélectionner Entreprise Test 10 » coché=false
+- cell « Entreprise Test 10 »
+- link « Entreprise Test 10 »
+- cell « Banque »
+- cell « Cameroun »
+- cell « Cible »
+- cell « 22/10/2026 »
+- row (SANS NOM)
+- cell « Sélectionner Entreprise Test 09 »
+- checkbox « Sélectionner Entreprise Test 09 » coché=false
+- cell « Entreprise Test 09 »
+- link « Entreprise Test 09 »
+- cell « Énergie »
+- cell « Cameroun »
+- cell « Cible »
+- cell « 22/10/2026 »
+- row (SANS NOM)
+- cell « Sélectionner Entreprise Test 08 »
+- checkbox « Sélectionner Entreprise Test 08 » coché=false
+- cell « Entreprise Test 08 »
+- link « Entreprise Test 08 »
+- cell « Distribution »
+- cell « Cameroun »
+- cell « Cible »
+- cell « 22/10/2026 »
+- row (SANS NOM)
+- cell « Sélectionner Entreprise Test 07 »
+- checkbox « Sélectionner Entreprise Test 07 » coché=false
+- cell « Entreprise Test 07 »
+- link « Entreprise Test 07 »
+- cell « Industrie »
+- cell « Cameroun »
+- cell « Cible »
+- cell « 22/10/2026 »
 - navigation « Pagination »
 - button « Précédent » désactivé
 - button « Suivant »
@@ -713,168 +759,377 @@ Ce que le lecteur d'écran annonce, dans l'ordre :
 - columnheader « Statut »
 - columnheader « Créée le »
 - row (SANS NOM)
-- cell « Sélectionner Société Horizon 87012 »
-- checkbox « Sélectionner Société Horizon 87012 » coché=false
-- cell « Société Horizon 87012 »
+- cell « Sélectionner Société Horizon 20122 »
+- checkbox « Sélectionner Société Horizon 20122 » coché=false
+- cell « Société Horizon 20122 »
+- link « Société Horizon 20122 »
 - cell « — »
 - cell « — »
 - cell « Cible »
 - cell « 22/10/2026 »
 - row (SANS NOM)
-- cell « Sélectionner Société Horizon 80809 »
-- checkbox « Sélectionner Société Horizon 80809 » coché=false
-- cell « Société Horizon 80809 »
-- cell « — »
-- cell « — »
-- cell « Cible »
-- cell « 21/10/2026 »
-- row (SANS NOM)
-- cell « Sélectionner Société Horizon 78770 »
-- checkbox « Sélectionner Société Horizon 78770 » coché=false
-- cell « Société Horizon 78770 »
-- cell « — »
-- cell « — »
-- cell « Cible »
-- cell « 21/10/2026 »
-- row (SANS NOM)
-- cell « Sélectionner Société Horizon 72502 »
-- checkbox « Sélectionner Société Horizon 72502 » coché=false
-- cell « Société Horizon 72502 »
-- cell « — »
-- cell « — »
-- cell « Cible »
-- cell « 21/10/2026 »
-- row (SANS NOM)
-- cell « Sélectionner Société Horizon 79302 »
-- checkbox « Sélectionner Société Horizon 79302 » coché=false
-- cell « Société Horizon 79302 »
-- cell « — »
-- cell « — »
-- cell « Cible »
-- cell « 21/10/2026 »
-- row (SANS NOM)
 - cell « Sélectionner Entreprise Test 25 »
 - checkbox « Sélectionner Entreprise Test 25 » coché=false
 - cell « Entreprise Test 25 »
+- link « Entreprise Test 25 »
 - cell « Banque »
 - cell « Cameroun »
 - cell « Cible »
-- cell « 21/10/2026 »
+- cell « 22/10/2026 »
 - row (SANS NOM)
 - cell « Sélectionner Entreprise Test 24 »
 - checkbox « Sélectionner Entreprise Test 24 » coché=false
 - cell « Entreprise Test 24 »
+- link « Entreprise Test 24 »
 - cell « Énergie »
 - cell « Cameroun »
 - cell « Cible »
-- cell « 21/10/2026 »
+- cell « 22/10/2026 »
 - row (SANS NOM)
 - cell « Sélectionner Entreprise Test 23 »
 - checkbox « Sélectionner Entreprise Test 23 » coché=false
 - cell « Entreprise Test 23 »
+- link « Entreprise Test 23 »
 - cell « Distribution »
 - cell « Cameroun »
 - cell « Cible »
-- cell « 21/10/2026 »
+- cell « 22/10/2026 »
 - row (SANS NOM)
 - cell « Sélectionner Entreprise Test 22 »
 - checkbox « Sélectionner Entreprise Test 22 » coché=false
 - cell « Entreprise Test 22 »
+- link « Entreprise Test 22 »
 - cell « Industrie »
 - cell « Cameroun »
 - cell « Cible »
-- cell « 21/10/2026 »
+- cell « 22/10/2026 »
 - row (SANS NOM)
 - cell « Sélectionner Entreprise Test 21 »
 - checkbox « Sélectionner Entreprise Test 21 » coché=false
 - cell « Entreprise Test 21 »
+- link « Entreprise Test 21 »
 - cell « Assurance »
 - cell « Cameroun »
 - cell « Cible »
-- cell « 21/10/2026 »
+- cell « 22/10/2026 »
 - row (SANS NOM)
 - cell « Sélectionner Entreprise Test 20 »
 - checkbox « Sélectionner Entreprise Test 20 » coché=false
 - cell « Entreprise Test 20 »
+- link « Entreprise Test 20 »
 - cell « Banque »
 - cell « Cameroun »
 - cell « Cible »
-- cell « 21/10/2026 »
+- cell « 22/10/2026 »
 - row (SANS NOM)
 - cell « Sélectionner Entreprise Test 19 »
 - checkbox « Sélectionner Entreprise Test 19 » coché=false
 - cell « Entreprise Test 19 »
+- link « Entreprise Test 19 »
 - cell « Énergie »
 - cell « Cameroun »
 - cell « Cible »
-- cell « 21/10/2026 »
+- cell « 22/10/2026 »
 - row (SANS NOM)
 - cell « Sélectionner Entreprise Test 18 »
 - checkbox « Sélectionner Entreprise Test 18 » coché=false
 - cell « Entreprise Test 18 »
+- link « Entreprise Test 18 »
 - cell « Distribution »
 - cell « Cameroun »
 - cell « Cible »
-- cell « 21/10/2026 »
+- cell « 22/10/2026 »
 - row (SANS NOM)
 - cell « Sélectionner Entreprise Test 17 »
 - checkbox « Sélectionner Entreprise Test 17 » coché=false
 - cell « Entreprise Test 17 »
+- link « Entreprise Test 17 »
 - cell « Industrie »
 - cell « Cameroun »
 - cell « Cible »
-- cell « 21/10/2026 »
+- cell « 22/10/2026 »
 - row (SANS NOM)
 - cell « Sélectionner Entreprise Test 16 »
 - checkbox « Sélectionner Entreprise Test 16 » coché=false
 - cell « Entreprise Test 16 »
+- link « Entreprise Test 16 »
 - cell « Assurance »
 - cell « Cameroun »
 - cell « Cible »
-- cell « 21/10/2026 »
+- cell « 22/10/2026 »
 - row (SANS NOM)
 - cell « Sélectionner Entreprise Test 15 »
 - checkbox « Sélectionner Entreprise Test 15 » coché=false
 - cell « Entreprise Test 15 »
+- link « Entreprise Test 15 »
 - cell « Banque »
 - cell « Cameroun »
 - cell « Cible »
-- cell « 21/10/2026 »
+- cell « 22/10/2026 »
 - row (SANS NOM)
 - cell « Sélectionner Entreprise Test 14 »
 - checkbox « Sélectionner Entreprise Test 14 » coché=false
 - cell « Entreprise Test 14 »
+- link « Entreprise Test 14 »
 - cell « Énergie »
 - cell « Cameroun »
 - cell « Cible »
-- cell « 21/10/2026 »
+- cell « 22/10/2026 »
 - row (SANS NOM)
 - cell « Sélectionner Entreprise Test 13 »
 - checkbox « Sélectionner Entreprise Test 13 » coché=false
 - cell « Entreprise Test 13 »
+- link « Entreprise Test 13 »
 - cell « Distribution »
 - cell « Cameroun »
 - cell « Cible »
-- cell « 21/10/2026 »
+- cell « 22/10/2026 »
 - row (SANS NOM)
 - cell « Sélectionner Entreprise Test 12 »
 - checkbox « Sélectionner Entreprise Test 12 » coché=false
 - cell « Entreprise Test 12 »
+- link « Entreprise Test 12 »
 - cell « Industrie »
 - cell « Cameroun »
 - cell « Cible »
-- cell « 21/10/2026 »
+- cell « 22/10/2026 »
 - row (SANS NOM)
 - cell « Sélectionner Entreprise Test 11 »
 - checkbox « Sélectionner Entreprise Test 11 » coché=false
 - cell « Entreprise Test 11 »
+- link « Entreprise Test 11 »
 - cell « Assurance »
 - cell « Cameroun »
 - cell « Cible »
-- cell « 21/10/2026 »
+- cell « 22/10/2026 »
+- row (SANS NOM)
+- cell « Sélectionner Entreprise Test 10 »
+- checkbox « Sélectionner Entreprise Test 10 » coché=false
+- cell « Entreprise Test 10 »
+- link « Entreprise Test 10 »
+- cell « Banque »
+- cell « Cameroun »
+- cell « Cible »
+- cell « 22/10/2026 »
+- row (SANS NOM)
+- cell « Sélectionner Entreprise Test 09 »
+- checkbox « Sélectionner Entreprise Test 09 » coché=false
+- cell « Entreprise Test 09 »
+- link « Entreprise Test 09 »
+- cell « Énergie »
+- cell « Cameroun »
+- cell « Cible »
+- cell « 22/10/2026 »
+- row (SANS NOM)
+- cell « Sélectionner Entreprise Test 08 »
+- checkbox « Sélectionner Entreprise Test 08 » coché=false
+- cell « Entreprise Test 08 »
+- link « Entreprise Test 08 »
+- cell « Distribution »
+- cell « Cameroun »
+- cell « Cible »
+- cell « 22/10/2026 »
+- row (SANS NOM)
+- cell « Sélectionner Entreprise Test 07 »
+- checkbox « Sélectionner Entreprise Test 07 » coché=false
+- cell « Entreprise Test 07 »
+- link « Entreprise Test 07 »
+- cell « Industrie »
+- cell « Cameroun »
+- cell « Cible »
+- cell « 22/10/2026 »
 - navigation « Pagination »
 - button « Précédent » désactivé
 - button « Suivant »
+
+## Fiche entreprise — documents (vide)
+*Titre de page* : « Société Horizon 20122 — Investally CRM » · *Langue* : fr · *Focus* : aucun élément ciblé
+
+Ce que le lecteur d'écran annonce, dans l'ordre :
+
+- alert (SANS NOM)
+- link « Aller au contenu »
+- complementary « Barre latérale »
+- link « Investally — Vue d’ensemble »
+- navigation « Navigation principale »
+- link « Vue d’ensemble »
+- link « Entreprises »
+- link « Utilisateurs »
+- button « Navigation complète » déplié=true
+- link « Mon compte »
+- button « Se déconnecter »
+- banner (SANS NOM)
+- button « Rechercher partout Ctrl K »
+- button « Passer au thème sombre »
+- main (SANS NOM)
+- navigation « Fil d’Ariane »
+- list (SANS NOM)
+- listitem niveau 1 (SANS NOM)
+- link « ← Vue d’ensemble »
+- listitem niveau 1 (SANS NOM)
+- heading niveau 1 « Société Horizon 20122 »
+- region « Documents »
+- heading niveau 2 « Documents »
+- checkbox « Afficher les documents archivés » coché=false
+- button « Ajouter un document »
+- status (SANS NOM)
+- table « Documents »
+- row (SANS NOM)
+- columnheader « Document »
+- columnheader « Fichier »
+- columnheader « Version du »
+- columnheader « Antivirus »
+- columnheader « Actions »
+- row (SANS NOM)
+- cell « Aucun document pour le moment. »
+
+## Documents — envoi refusé (contenu ≠ extension)
+*Titre de page* : « Société Horizon 20122 — Investally CRM » · *Langue* : fr · *Focus* : aucun élément ciblé · *Note* : message du serveur annoncé (role=alert)
+
+Ce que le lecteur d'écran annonce, dans l'ordre :
+
+- main (SANS NOM)
+- region (SANS NOM)
+- dialog « Ajouter un document »
+- heading niveau 2 « Ajouter un document »
+- form (SANS NOM)
+- textbox « Titre du document » obligatoire
+- combobox « Catégorie » déplié=false
+- button « Fichier »
+- alert (SANS NOM)
+- button « Annuler »
+- button « Envoyer »
+
+## Documents — liste avec un document
+*Titre de page* : « Société Horizon 20122 — Investally CRM » · *Langue* : fr · *Focus* : button « Ajouter un document »
+
+Ce que le lecteur d'écran annonce, dans l'ordre :
+
+- alert (SANS NOM)
+- link « Aller au contenu »
+- complementary « Barre latérale »
+- link « Investally — Vue d’ensemble »
+- navigation « Navigation principale »
+- link « Vue d’ensemble »
+- link « Entreprises »
+- link « Utilisateurs »
+- button « Navigation complète » déplié=true
+- link « Mon compte »
+- button « Se déconnecter »
+- banner (SANS NOM)
+- button « Rechercher partout Ctrl K »
+- button « Passer au thème sombre »
+- main (SANS NOM)
+- navigation « Fil d’Ariane »
+- list (SANS NOM)
+- listitem niveau 1 (SANS NOM)
+- link « ← Vue d’ensemble »
+- listitem niveau 1 (SANS NOM)
+- heading niveau 1 « Société Horizon 20122 »
+- region « Documents »
+- heading niveau 2 « Documents »
+- checkbox « Afficher les documents archivés » coché=false
+- button « Ajouter un document »
+- status (SANS NOM)
+- table « Documents »
+- row (SANS NOM)
+- columnheader « Document »
+- columnheader « Fichier »
+- columnheader « Version du »
+- columnheader « Antivirus »
+- columnheader « Actions »
+- row (SANS NOM)
+- cell « Decharge-Horizon »
+- cell « Decharge-Horizon.pdf 25 o · version 1 »
+- cell « 22/10/2026 »
+- cell « Non analysé »
+- cell « Télécharger Actions pour Decharge-Horizon »
+- button « Télécharger »
+
+## Documents — historique des versions (SHA-256)
+*Titre de page* : « Société Horizon 20122 — Investally CRM » · *Langue* : fr · *Focus* : button « Fermer » (dans la fenêtre « Versions de « Decharge-Horizon » »)
+
+Ce que le lecteur d'écran annonce, dans l'ordre :
+
+- main (SANS NOM)
+- region (SANS NOM)
+- dialog « Versions de « Decharge-Horizon » »
+- heading niveau 2 « Versions de « Decharge-Horizon » »
+- table « Versions du document »
+- row (SANS NOM)
+- columnheader « Version »
+- columnheader « Fichier »
+- columnheader « Ajoutée le »
+- columnheader « Empreinte SHA-256 »
+- columnheader « Actions »
+- row (SANS NOM)
+- cell « 2 »
+- cell « Decharge-Horizon-v2.pdf 27 o »
+- cell « 22/10/2026 »
+- cell « e897fdb0408a… »
+- cell « Télécharger »
+- button « Télécharger »
+- row (SANS NOM)
+- cell « 1 »
+- cell « Decharge-Horizon.pdf 25 o »
+- cell « 22/10/2026 »
+- cell « c5d0e47bcc2a… »
+- cell « Télécharger »
+- button « Télécharger »
+- button « Fermer »
+
+## Documents — confirmation d’archivage
+*Titre de page* : « Société Horizon 20122 — Investally CRM » · *Langue* : fr · *Focus* : button « Annuler » (dans la fenêtre « Archiver ce document »)
+
+Ce que le lecteur d'écran annonce, dans l'ordre :
+
+- main (SANS NOM)
+- region (SANS NOM)
+- dialog « Archiver ce document »
+- heading niveau 2 « Archiver ce document »
+- button « Annuler »
+- button « Archiver »
+
+## Documents — après archivage
+*Titre de page* : « Société Horizon 20122 — Investally CRM » · *Langue* : fr · *Focus* : aucun élément ciblé · *Note* : confirmation annoncée, liste vide par défaut · envoi de 10 Mo pile (la limite) accepté à travers le proxy, 10,5 Mo refusé avant l’envoi
+
+Ce que le lecteur d'écran annonce, dans l'ordre :
+
+- alert (SANS NOM)
+- link « Aller au contenu »
+- complementary « Barre latérale »
+- link « Investally — Vue d’ensemble »
+- navigation « Navigation principale »
+- link « Vue d’ensemble »
+- link « Entreprises »
+- link « Utilisateurs »
+- button « Navigation complète » déplié=true
+- link « Mon compte »
+- button « Se déconnecter »
+- banner (SANS NOM)
+- button « Rechercher partout Ctrl K »
+- button « Passer au thème sombre »
+- main (SANS NOM)
+- navigation « Fil d’Ariane »
+- list (SANS NOM)
+- listitem niveau 1 (SANS NOM)
+- link « ← Vue d’ensemble »
+- listitem niveau 1 (SANS NOM)
+- heading niveau 1 « Société Horizon 20122 »
+- region « Documents »
+- heading niveau 2 « Documents »
+- checkbox « Afficher les documents archivés » coché=false
+- button « Ajouter un document »
+- status (SANS NOM)
+- table « Documents »
+- row (SANS NOM)
+- columnheader « Document »
+- columnheader « Fichier »
+- columnheader « Version du »
+- columnheader « Antivirus »
+- columnheader « Actions »
+- row (SANS NOM)
+- cell « Aucun document pour le moment. »
 
 ## Hub — résultats de recherche
 *Titre de page* : « Vue d’ensemble — Investally CRM » · *Langue* : fr · *Focus* : aucun élément ciblé · *Note* : résultats groupés par type, annonce du nombre
@@ -895,21 +1150,13 @@ Ce que le lecteur d'écran annonce, dans l'ordre :
 - button « Rechercher partout Ctrl K »
 - button « Passer au thème sombre »
 - main (SANS NOM)
-- heading niveau 1 « Bonjour Recette Sessions Six »
+- heading niveau 1 « Bonjour Recette Documents Quatre »
 - search « Recherche globale »
 - status (SANS NOM)
 - heading niveau 2 « ENTREPRISES »
 - list (SANS NOM)
 - listitem niveau 1 (SANS NOM)
-- link « Société Horizon 87012 TARGET »
-- listitem niveau 1 (SANS NOM)
-- link « Société Horizon 80809 TARGET »
-- listitem niveau 1 (SANS NOM)
-- link « Société Horizon 78770 TARGET »
-- listitem niveau 1 (SANS NOM)
-- link « Société Horizon 72502 TARGET »
-- listitem niveau 1 (SANS NOM)
-- link « Société Horizon 79302 TARGET »
+- link « Société Horizon 20122 TARGET »
 - region « Vos modules »
 - heading niveau 2 « Vos modules »
 - list (SANS NOM)
@@ -949,21 +1196,13 @@ Ce que le lecteur d'écran annonce, dans l'ordre :
 - button « Rechercher partout Ctrl K »
 - button « Passer au thème clair »
 - main (SANS NOM)
-- heading niveau 1 « Bonjour Recette Sessions Six »
+- heading niveau 1 « Bonjour Recette Documents Quatre »
 - search « Recherche globale »
 - status (SANS NOM)
 - heading niveau 2 « ENTREPRISES »
 - list (SANS NOM)
 - listitem niveau 1 (SANS NOM)
-- link « Société Horizon 87012 TARGET »
-- listitem niveau 1 (SANS NOM)
-- link « Société Horizon 80809 TARGET »
-- listitem niveau 1 (SANS NOM)
-- link « Société Horizon 78770 TARGET »
-- listitem niveau 1 (SANS NOM)
-- link « Société Horizon 72502 TARGET »
-- listitem niveau 1 (SANS NOM)
-- link « Société Horizon 79302 TARGET »
+- link « Société Horizon 20122 TARGET »
 - region « Vos modules »
 - heading niveau 2 « Vos modules »
 - list (SANS NOM)
@@ -996,7 +1235,7 @@ Ce que le lecteur d'écran annonce, dans l'ordre :
 - button « Rechercher partout »
 - button « Passer au thème sombre »
 - main (SANS NOM)
-- heading niveau 1 « Bonjour Recette Sessions Six »
+- heading niveau 1 « Bonjour Recette Documents Quatre »
 - search « Recherche globale »
 - status (SANS NOM)
 - region « Vos modules »
@@ -1039,7 +1278,7 @@ Ce que le lecteur d'écran annonce, dans l'ordre :
 - button « Rechercher partout »
 - button « Passer au thème sombre »
 - main (SANS NOM)
-- heading niveau 1 « Bonjour Recette Sessions Six »
+- heading niveau 1 « Bonjour Recette Documents Quatre »
 - search « Recherche globale »
 - status (SANS NOM)
 - region « Vos modules »
@@ -1106,59 +1345,14 @@ Ce que le lecteur d'écran annonce, dans l'ordre :
 - columnheader « Dernière connexion »
 - columnheader « Actions »
 - row (SANS NOM)
-- cell « Sélectionner Recette Sessions Six »
-- checkbox « Sélectionner Recette Sessions Six » coché=false
-- cell « Recette Sessions Six h2bu@e2e.test »
+- cell « Sélectionner Recette Documents Quatre »
+- checkbox « Sélectionner Recette Documents Quatre » coché=false
+- cell « Recette Documents Quatre doc4@e2e.test »
 - cell « Super administrateur »
 - cell « Actif »
 - cell « Activé »
-- cell « 22/10/2026 01:01:13 »
-- cell « Actions pour Recette Sessions Six »
-- row (SANS NOM)
-- cell « Sélectionner Recette Sessions Cinq »
-- checkbox « Sélectionner Recette Sessions Cinq » coché=false
-- cell « Recette Sessions Cinq h2bv@e2e.test »
-- cell « Super administrateur »
-- cell « Actif »
-- cell « Activé »
-- cell « 22/10/2026 01:00:11 »
-- cell « Actions pour Recette Sessions Cinq »
-- row (SANS NOM)
-- cell « Sélectionner Recette Sessions Quatre »
-- checkbox « Sélectionner Recette Sessions Quatre » coché=false
-- cell « Recette Sessions Quatre h2bw@e2e.test »
-- cell « Super administrateur »
-- cell « Actif »
-- cell « Activé »
-- cell « 22/10/2026 00:58:22 »
-- cell « Actions pour Recette Sessions Quatre »
-- row (SANS NOM)
-- cell « Sélectionner Recette Sessions Trois »
-- checkbox « Sélectionner Recette Sessions Trois » coché=false
-- cell « Recette Sessions Trois h2bz@e2e.test »
-- cell « Super administrateur »
-- cell « Actif »
-- cell « Activé »
-- cell « 22/10/2026 00:56:35 »
-- cell « Actions pour Recette Sessions Trois »
-- row (SANS NOM)
-- cell « Sélectionner Recette Sessions Deux »
-- checkbox « Sélectionner Recette Sessions Deux » coché=false
-- cell « Recette Sessions Deux h2by@e2e.test »
-- cell « Super administrateur »
-- cell « Actif »
-- cell « Activé »
-- cell « 22/10/2026 00:54:27 »
-- cell « Actions pour Recette Sessions Deux »
-- row (SANS NOM)
-- cell « Sélectionner Recette Sessions »
-- checkbox « Sélectionner Recette Sessions » coché=false
-- cell « Recette Sessions h2bx@e2e.test »
-- cell « Super administrateur »
-- cell « Actif »
-- cell « Non configuré »
-- cell « Jamais »
-- cell « Actions pour Recette Sessions »
+- cell « 22/10/2026 08:35:06 »
+- cell « Actions pour Recette Documents Quatre »
 - row (SANS NOM)
 - cell « Sélectionner Recette Hache Un »
 - checkbox « Sélectionner Recette Hache Un » coché=false
@@ -1216,60 +1410,15 @@ Ce que le lecteur d'écran annonce, dans l'ordre :
 - columnheader « Dernière connexion »
 - columnheader « Actions »
 - row (SANS NOM)
-- cell « Sélectionner Recette Sessions Six »
-- checkbox « Sélectionner Recette Sessions Six » coché=false
-- cell « Recette Sessions Six h2bu@e2e.test »
+- cell « Sélectionner Recette Documents Quatre »
+- checkbox « Sélectionner Recette Documents Quatre » coché=false
+- cell « Recette Documents Quatre doc4@e2e.test »
 - cell « Super administrateur »
 - cell « Actif »
 - cell « Activé »
-- cell « 22/10/2026 01:01:13 »
-- cell « Actions pour Recette Sessions Six Modifier les rôles »
+- cell « 22/10/2026 08:35:06 »
+- cell « Actions pour Recette Documents Quatre Modifier les rôles »
 - button « Modifier les rôles »
-- row (SANS NOM)
-- cell « Sélectionner Recette Sessions Cinq »
-- checkbox « Sélectionner Recette Sessions Cinq » coché=false
-- cell « Recette Sessions Cinq h2bv@e2e.test »
-- cell « Super administrateur »
-- cell « Actif »
-- cell « Activé »
-- cell « 22/10/2026 01:00:11 »
-- cell « Actions pour Recette Sessions Cinq »
-- row (SANS NOM)
-- cell « Sélectionner Recette Sessions Quatre »
-- checkbox « Sélectionner Recette Sessions Quatre » coché=false
-- cell « Recette Sessions Quatre h2bw@e2e.test »
-- cell « Super administrateur »
-- cell « Actif »
-- cell « Activé »
-- cell « 22/10/2026 00:58:22 »
-- cell « Actions pour Recette Sessions Quatre »
-- row (SANS NOM)
-- cell « Sélectionner Recette Sessions Trois »
-- checkbox « Sélectionner Recette Sessions Trois » coché=false
-- cell « Recette Sessions Trois h2bz@e2e.test »
-- cell « Super administrateur »
-- cell « Actif »
-- cell « Activé »
-- cell « 22/10/2026 00:56:35 »
-- cell « Actions pour Recette Sessions Trois »
-- row (SANS NOM)
-- cell « Sélectionner Recette Sessions Deux »
-- checkbox « Sélectionner Recette Sessions Deux » coché=false
-- cell « Recette Sessions Deux h2by@e2e.test »
-- cell « Super administrateur »
-- cell « Actif »
-- cell « Activé »
-- cell « 22/10/2026 00:54:27 »
-- cell « Actions pour Recette Sessions Deux »
-- row (SANS NOM)
-- cell « Sélectionner Recette Sessions »
-- checkbox « Sélectionner Recette Sessions » coché=false
-- cell « Recette Sessions h2bx@e2e.test »
-- cell « Super administrateur »
-- cell « Actif »
-- cell « Non configuré »
-- cell « Jamais »
-- cell « Actions pour Recette Sessions »
 - row (SANS NOM)
 - cell « Sélectionner Recette Hache Un »
 - checkbox « Sélectionner Recette Hache Un » coché=false
@@ -1383,24 +1532,24 @@ Ce que le lecteur d'écran annonce, dans l'ordre :
 - cell « Chrome sur Android »
 - cell « 127.0.0.1 »
 - cell « Élevé »
-- cell « 22/10/2026 01:01:50 »
-- cell « 22/10/2026 01:01:50 »
+- cell « 22/10/2026 08:36:00 »
+- cell « 22/10/2026 08:36:00 »
 - cell « Révoquer »
 - button « Révoquer »
 - row (SANS NOM)
 - cell « Firefox sur macOS »
 - cell « 127.0.0.1 »
 - cell « Élevé »
-- cell « 22/10/2026 01:01:50 »
-- cell « 22/10/2026 01:01:50 »
+- cell « 22/10/2026 08:36:00 »
+- cell « 22/10/2026 08:36:00 »
 - cell « Révoquer »
 - button « Révoquer »
 - row (SANS NOM)
 - cell « Edge sur Windows Cette session »
 - cell « 127.0.0.1 »
 - cell « Moyen »
-- cell « 22/10/2026 01:01:13 »
-- cell « 22/10/2026 01:01:50 »
+- cell « 22/10/2026 08:35:06 »
+- cell « 22/10/2026 08:36:00 »
 - cell (SANS NOM)
 - region « Historique des connexions »
 - heading niveau 2 « Historique des connexions »
@@ -1411,27 +1560,27 @@ Ce que le lecteur d'écran annonce, dans l'ordre :
 - columnheader « Adresse IP »
 - columnheader « Appareil »
 - row (SANS NOM)
-- cell « 22/10/2026 01:01:50 »
+- cell « 22/10/2026 08:36:00 »
 - cell « Connexion réussie »
 - cell « 127.0.0.1 »
 - cell « Chrome sur Android »
 - row (SANS NOM)
-- cell « 22/10/2026 01:01:50 »
+- cell « 22/10/2026 08:36:00 »
 - cell « Connexion réussie »
 - cell « 127.0.0.1 »
 - cell « Firefox sur macOS »
 - row (SANS NOM)
-- cell « 22/10/2026 01:01:15 »
+- cell « 22/10/2026 08:35:08 »
 - cell « Échec de connexion Second facteur refusé »
 - cell « 127.0.0.1 »
 - cell « Edge sur Windows »
 - row (SANS NOM)
-- cell « 22/10/2026 01:01:13 »
+- cell « 22/10/2026 08:35:06 »
 - cell « Connexion réussie »
 - cell « 127.0.0.1 »
 - cell « Edge sur Windows »
 - row (SANS NOM)
-- cell « 22/10/2026 01:00:50 »
+- cell « 22/10/2026 08:34:41 »
 - cell « Échec de connexion Identifiants refusés »
 - cell « 127.0.0.1 »
 - cell « Edge sur Windows »
@@ -1489,16 +1638,16 @@ Ce que le lecteur d'écran annonce, dans l'ordre :
 - cell « Firefox sur macOS »
 - cell « 127.0.0.1 »
 - cell « Élevé »
-- cell « 22/10/2026 01:01:50 »
-- cell « 22/10/2026 01:01:50 »
+- cell « 22/10/2026 08:36:00 »
+- cell « 22/10/2026 08:36:00 »
 - cell « Révoquer »
 - button « Révoquer »
 - row (SANS NOM)
 - cell « Edge sur Windows Cette session »
 - cell « 127.0.0.1 »
 - cell « Moyen »
-- cell « 22/10/2026 01:01:13 »
-- cell « 22/10/2026 01:01:50 »
+- cell « 22/10/2026 08:35:06 »
+- cell « 22/10/2026 08:36:00 »
 - cell (SANS NOM)
 - region « Historique des connexions »
 - heading niveau 2 « Historique des connexions »
@@ -1509,27 +1658,27 @@ Ce que le lecteur d'écran annonce, dans l'ordre :
 - columnheader « Adresse IP »
 - columnheader « Appareil »
 - row (SANS NOM)
-- cell « 22/10/2026 01:01:50 »
+- cell « 22/10/2026 08:36:00 »
 - cell « Connexion réussie »
 - cell « 127.0.0.1 »
 - cell « Chrome sur Android »
 - row (SANS NOM)
-- cell « 22/10/2026 01:01:50 »
+- cell « 22/10/2026 08:36:00 »
 - cell « Connexion réussie »
 - cell « 127.0.0.1 »
 - cell « Firefox sur macOS »
 - row (SANS NOM)
-- cell « 22/10/2026 01:01:15 »
+- cell « 22/10/2026 08:35:08 »
 - cell « Échec de connexion Second facteur refusé »
 - cell « 127.0.0.1 »
 - cell « Edge sur Windows »
 - row (SANS NOM)
-- cell « 22/10/2026 01:01:13 »
+- cell « 22/10/2026 08:35:06 »
 - cell « Connexion réussie »
 - cell « 127.0.0.1 »
 - cell « Edge sur Windows »
 - row (SANS NOM)
-- cell « 22/10/2026 01:00:50 »
+- cell « 22/10/2026 08:34:41 »
 - cell « Échec de connexion Identifiants refusés »
 - cell « 127.0.0.1 »
 - cell « Edge sur Windows »
