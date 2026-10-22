@@ -2,10 +2,10 @@
 
 > Document **généré** par `node scripts/gen-function-index.mjs` à partir des commentaires du code. Ne pas le modifier à la main : corriger le commentaire dans le fichier source, puis relancer le script.
 
-**606 déclarations commentées au total.**
+**632 déclarations commentées au total.**
 
 
-## API (NestJS) — 459 déclarations commentées
+## API (NestJS) — 479 déclarations commentées
 
 ### `app.module.ts`
 
@@ -45,6 +45,20 @@
 |---|---|
 | `async function bootstrap()` | Démarre l'API : charge la configuration (refuse de démarrer si elle est dangereuse en production), monte l'application et écoute sur l'adresse locale uniquement. |
 
+### `modules/audit/application/audit-reader.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export const LOGIN_HISTORY_WINDOW_DAYS = 90;` | Profondeur de l'historique des connexions affiché à l'utilisateur (jours). |
+| `export const LOGIN_HISTORY_DEFAULT_LIMIT = 25;` | Nombre d'événements par page (par défaut et au maximum). |
+| `export interface LoginEvent` | Une connexion telle que l'intéressé la voit. |
+| `export interface LoginHistoryPage` | Page de l'historique : `nextBefore` est le curseur de la page suivante (nul s'il n'y en a pas). |
+| `export interface AuditReader` | API publique de lecture du journal pour les autres modules (lecture seule, jamais d'écriture). |
+| `loginHistory(query: { userId: string; before?: Date; limit?: number }): Promise<LoginHistoryPage>;` | Historique des connexions d'UN utilisateur, borné dans le temps, du plus récent au plus ancien. |
+| `export function toLoginEvent(entry: AuditEntry): LoginEvent` | Entrée d'audit → événement de connexion affichable (aucun détail interne : motif, valeurs avant/après). |
+| `export class DefaultAuditReader implements AuditReader` | Lecture de l'historique des connexions dans le journal d'audit (aucune table supplémentaire). |
+| `async loginHistory(query: { userId: string; before?: Date; limit?: number }): Promise<LoginHistoryPage>` | Lit une page : fenêtre de 90 jours, taille bornée (25 par défaut, 100 au plus). |
+
 ### `modules/audit/application/audit-recorder.ts`
 
 | Déclaration | Rôle |
@@ -58,7 +72,7 @@
 
 | Déclaration | Rôle |
 |---|---|
-| `export class AuditModule {}` | Module d'audit : fournit l'enregistreur (`AUDIT_RECORDER`) aux autres modules ; le journal est en ajout seul, partitionné par mois. |
+| `export class AuditModule {}` | Module d'audit : fournit l'enregistreur (`AUDIT_RECORDER`) et le lecteur (`AUDIT_READER`, historique des connexions) aux autres modules ; le journal est en ajout seul, partitionné par mois. |
 
 ### `modules/audit/domain/audit-entry.ts`
 
@@ -70,16 +84,20 @@
 
 | Déclaration | Rôle |
 |---|---|
+| `export interface LoginEventQuery` | Critères de lecture des événements de connexion d'UN utilisateur, dans une fenêtre de dates bornée. |
 | `export interface AuditRepository` | Append-only : aucune méthode de modification ni de suppression. |
+| `listLoginEvents(query: LoginEventQuery): Promise<AuditEntry[]>;` | Connexions réussies et échouées de l'utilisateur, de la plus récente à la plus ancienne. |
 
 ### `modules/audit/infrastructure/prisma-audit.repository.ts`
 
 | Déclaration | Rôle |
 |---|---|
 | `const asJson = (value: Record<string, unknown> \| null)` | Convertit une valeur facultative en JSON Prisma (`null` devient NULL en base, pas la chaîne « null »). |
+| `function toEntry(row:` | Ligne de la table d'audit → entrée du domaine. |
 | `export class PrismaAuditRepository implements AuditRepository` | Écrit et relit le journal d'audit dans PostgreSQL (schéma `audit`). |
 | `async append(entry: AuditEntry): Promise<void>` | Ajoute une entrée immuable au journal (acteur, session, IP, appareil, entité, action, avant/après). |
 | `async listByEntity(entityType: string, entityId: string): Promise<AuditEntry[]>` | Historique d'une entité, du plus ancien au plus récent (500 entrées au plus). |
+| `async listLoginEvents(query: LoginEventQuery): Promise<AuditEntry[]>` | Connexions (`LOGIN`) et échecs (`LOGIN_FAILED`) rattachés à l'utilisateur, dans la fenêtre demandée, du plus récent au plus ancien. |
 
 ### `modules/business-development/application/company-view.ts`
 
@@ -231,6 +249,10 @@
 | `async execute(command: { sessionId: string; access: AccessContext; actor: ActorContext }): Promise<void>` | Révoque une session et ses jetons ; hors de la portée de l'appelant, elle est « introuvable » (404). |
 | `export class RevokeUserSessionsUseCase` | Coupe TOUTES les sessions d'un utilisateur (incident). |
 | `async execute(command: { targetUserId: string; access: AccessContext; actor: ActorContext }): Promise<{ revoked: number }>` | Coupe toutes les sessions d'un utilisateur (portée Tous exigée) et révoque leurs jetons ; renvoie leur nombre. |
+| `export class RevokeOtherSessionsUseCase` | Révoque TOUTES les sessions de l'appelant SAUF celle qui fait la demande (« déconnecter mes autres appareils »). |
+| `async execute(command: { userId: string; sessionId: string; actor: ActorContext }): Promise<{ revoked: number }>` | Révoque les autres sessions et leurs jetons, trace l'action et renvoie le nombre de sessions coupées. |
+| `export class LoginHistoryHandler` | Historique des connexions de l'appelant (journal d'audit, 90 jours) : jamais celui d'un autre utilisateur. |
+| `async execute(query: { userId: string; before?: Date; limit?: number }): Promise<LoginHistoryPage>` | Page d'historique de l'utilisateur dont l'identifiant vient du jeton ; `before` est le curseur de la page suivante. |
 
 ### `modules/iam/application/admin/user-management.use-cases.ts`
 
@@ -777,6 +799,8 @@
 | `revokeAll(@Param('id', ParseUUIDPipe) id: string, @Access() access: AccessContext, @CurrentActor() actor: AuthenticatedActor, @Req() req: Request)` | Agit sur n'importe quel utilisateur : exige la portée « Tous » dès la garde (la portée « propre » ne suffit pas). |
 | `export class AdminRolesController` | Route de lecture du catalogue des rôles (`/admin/roles`). |
 | `export class SessionsController` | Mes sessions : je vois et je révoque les miennes (un SuperAdmin, en portée Tous, peut révoquer celles des autres). |
+| `loginHistory(@Query() query: LoginHistoryQueryDto, @CurrentActor() actor: AuthenticatedActor, @Res({ passthrough: true }) res: Response)` | Mon historique de connexions (90 jours, réussies et échouées) : toujours le MIEN, jamais celui d'un autre. |
+| `revokeAllOthers(@CurrentActor() actor: AuthenticatedActor, @Req() req: Request)` | Déconnecte tous mes autres appareils (la session courante reste ouverte). |
 
 ### `modules/iam/presentation/auth.controller.ts`
 
@@ -813,6 +837,7 @@
 | `export class AcceptInvitationDto` | Corps d'activation d'un compte invité : jeton du lien et mot de passe choisi (tailles bornées). |
 | `export class RequestPasswordResetDto` | Corps de « mot de passe oublié » : l'adresse saisie, sans validation de forme (la réponse est identique pour toute saisie). |
 | `export class ResetPasswordDto` | Corps du choix d'un nouveau mot de passe : jeton du lien (fragment d'URL) et mot de passe, tailles bornées. |
+| `export class LoginHistoryQueryDto` | Paramètres de l'historique des connexions : taille (1 à 100) et curseur `before` (date ISO 8601 de la page précédente). |
 
 ### `modules/iam/presentation/dto/auth.dto.ts`
 
@@ -991,19 +1016,26 @@
 | `export interface RequestLike` | Forme minimale d'une requête HTTP (sans dépendre d'Express) pour construire le contexte d'audit. |
 | `export function actorContextFrom(req: RequestLike, identity: { userId: string \| null; sessionId: string \| null } = { userId: null, sessionId: null }` | Qui agit, depuis où : IP et appareil de la requête (l'identité est ajoutée une fois l'utilisateur authentifié). |
 
-## Interface web — pages (Next.js) — 41 déclarations commentées
+## Interface web — pages (Next.js) — 43 déclarations commentées
 
 ### `(app)/account/page.tsx`
 
 | Déclaration | Rôle |
 |---|---|
-| `export default function AccountPage()` | Page « Mon compte » : profil, changement de mot de passe, nouveaux codes de secours et liste des sessions de l'utilisateur connecté. |
+| `export default function AccountPage()` | Page « Mon compte » : profil, changement de mot de passe, nouveaux codes de secours et accès aux sessions et à l'historique des connexions de l'utilisateur connecté. |
 | `function PasswordForm({ email }: { email: string })` | Formulaire de changement de mot de passe : indications en direct, confirmation obligatoire, message d'erreur du serveur affiché tel quel. |
 | `async function submit(event: FormEvent)` | Envoie l'ancien et le nouveau mot de passe ; les champs sont vidés après succès (le serveur coupe les autres sessions). |
 | `function RecoveryCodes()` | Génère de nouveaux codes de secours (les anciens cessent de fonctionner) et les affiche une seule fois ; un code MFA récent est demandé si nécessaire. |
 | `async function regenerate()` | Appelle la régénération et garde les codes en mémoire uniquement, jusqu'à ce que l'utilisateur les masque. |
-| `function Sessions()` | Liste les sessions actives de l'utilisateur (appareil lisible, IP, dates) et permet de révoquer les autres. |
-| `async function revoke(id: string)` | Révoque une session puis recharge la liste. |
+| `function SessionsLink()` | Lien vers la page « Sessions et connexions » (sessions actives, révocation, historique des connexions). |
+
+### `(app)/account/sessions/page.tsx`
+
+| Déclaration | Rôle |
+|---|---|
+| `type Pending = { kind: 'one'; session: SessionView } \| { kind: 'others'; count: number };` | Ce que la fenêtre de confirmation s'apprête à faire. |
+| `export default function SessionsPage()` | Sessions et connexions (S01 à S03) : mes sessions actives, avec révocation confirmée (une seule, ou toutes les autres d'un coup, avec un MFA récent demandé par l'interface si besoin), et l'historique de mes connexions sur 90 jours. |
+| `async function confirm()` | Exécute la révocation confirmée, annonce le résultat puis recharge les deux listes (la révocation est tracée dans le journal). |
 
 ### `(app)/admin/users/page.tsx`
 
@@ -1231,7 +1263,7 @@
 | `export function StepUpDialog({ onDone }: { onDone: (ok: boolean) => void })` | Demande un code frais du second facteur avant une action sensible (modification de rôles, désactivation, etc.). |
 | `async function submit(event: FormEvent)` | Vérifie le code ; en cas de succès le nouveau jeton remplace l'ancien et l'action sensible est rejouée. |
 
-## Interface web — bibliothèque — 66 déclarations commentées
+## Interface web — bibliothèque — 70 déclarations commentées
 
 ### `api.ts`
 
@@ -1292,6 +1324,13 @@
 | Déclaration | Rôle |
 |---|---|
 | `export function parseInvitationFragment(hash: string): string \| null` | Le jeton d'invitation est dans le FRAGMENT de l'URL (`#token=…`) : le navigateur ne l'envoie ni au serveur ni dans l'en-tête Referer. |
+
+### `login-events.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export function describeLoginEvent(event: LoginEvent): { label: string; detail: string; tone: Tone }` | Texte et teinte d'une ligne de l'historique : réussite, ou échec avec l'étape où il s'est produit (sans motif précis). |
+| `export function formatDateTime(iso: string): string` | Date et heure en français (heure locale de l'utilisateur) ; « — » si la date est illisible. |
 
 ### `modules.ts`
 
@@ -1372,6 +1411,8 @@
 | `export interface RoleView` | Rôle et ses permissions, tels que l'API les expose. |
 | `export interface SessionView` | Session de connexion telle que l'API l'expose (la courante est marquée). |
 | `export interface Company` | Entreprise cible telle que l'API l'expose. |
+| `export interface LoginEvent` | Une connexion de l'historique (réussie ou échouée) : étape de l'échec, adresse IP et appareil. |
+| `export interface LoginHistoryPage` | Page de l'historique : `nextBefore` est le curseur de la page suivante (nul s'il n'y en a pas). |
 
 ### `use-cooldown.ts`
 

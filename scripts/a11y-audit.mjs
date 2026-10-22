@@ -84,7 +84,8 @@ const go = async (path) => { await send('Page.navigate', { url: BASE + path }); 
 const waitFor = async (predicate, label, timeout = 12000) => {
   const end = Date.now() + timeout;
   while (Date.now() < end) { if (await js(`Boolean(${predicate})`)) return; await sleep(250); }
-  throw new Error(`Délai dépassé : ${label}`);
+  const snapshot = await js('document.body.innerText.replace(/\s+/g, " ").slice(0, 400)').catch(() => '');
+  throw new Error(`Délai dépassé : ${label} — page : « ${snapshot} »`);
 };
 const setValue = (selector, value) => js(`(() => { const el = document.querySelector(${JSON.stringify(selector)}); const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set; set.call(el, ${JSON.stringify(value)}); el.dispatchEvent(new Event('input', { bubbles: true })); })()`);
 const clickText = (text, scope = 'document') => js(`(() => { const b = [...${scope}.querySelectorAll('button, a')].find((x) => x.textContent.trim().startsWith(${JSON.stringify(text)})); if (!b) throw new Error('Bouton introuvable : ${text}'); b.focus(); b.click(); })()`);
@@ -128,7 +129,7 @@ async function audit(label, note = '') {
   await js(`(window.axe || (0, eval)(${JSON.stringify(axeSource)}), true)`);
   const axe = await js(`axe.run(document, { runOnly: { type: 'tag', values: ${JSON.stringify(TAGS)} }, resultTypes: ['violations', 'incomplete'] }).then((r) => ({
     violations: r.violations.map((v) => ({ id: v.id, impact: v.impact, help: v.help, tags: v.tags.filter((t) => /^wcag\\d+/.test(t) || t === 'best-practice'), nodes: v.nodes.length, example: v.nodes[0] && { target: v.nodes[0].target.join(' '), html: v.nodes[0].html.slice(0, 160), why: (v.nodes[0].any[0] || v.nodes[0].all[0] || v.nodes[0].none[0] || {}).message } })),
-    incomplete: r.incomplete.map((v) => ({ id: v.id, help: v.help, nodes: v.nodes.length })),
+    incomplete: r.incomplete.map((v) => ({ id: v.id, help: v.help, nodes: v.nodes.length, example: v.nodes[0] && { target: v.nodes[0].target.join(' '), html: v.nodes[0].html.slice(0, 160), why: (v.nodes[0].any[0] || v.nodes[0].all[0] || v.nodes[0].none[0] || {}).message } })),
     passes: r.passes.length,
   }))`);
   const { nodes } = await send('Accessibility.getFullAXTree');
@@ -312,8 +313,35 @@ try {
   results.at(-1).note += ` · après Échap : ${closed}, focus rendu à ${back}`;
 
   await go('/account');
-  await waitFor("document.querySelector('table')", 'sessions', 20000);
+  await waitFor("document.querySelector('main h1') && document.body.innerText.includes('Sessions et connexions')", 'page Mon compte', 20000);
   await audit('Mon compte');
+
+  // Sessions et historique (H2b) : de vraies connexions sans second facteur créent des sessions supplémentaires.
+  // Connexions faites HORS du navigateur (Node) : celles du navigateur remplaceraient son cookie de session.
+  const secondLogin = (agent) => fetch(`${BASE}/api/v1/auth/login`, { method: 'POST', headers: { 'content-type': 'application/json', origin: BASE, 'user-agent': agent }, body: JSON.stringify({ email: ADMIN_EMAIL, password: ADMIN_PASSWORD }) }).then((r) => r.status);
+  await secondLogin('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) Gecko/20100101 Firefox/130.0');
+  await secondLogin('Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 Chrome/126.0 Mobile Safari/537.36');
+  await go('/account/sessions');
+  await waitFor("document.querySelectorAll('table').length === 2 && document.querySelectorAll('tbody tr').length > 3", 'sessions et historique', 20000);
+  await audit('Sessions et connexions (S01, S02)', 'sessions actives, historique des 90 jours');
+  await shot('sessions');
+  await clickText('Révoquer');
+  await waitFor("document.querySelector('[role=dialog]')", 'confirmation de révocation');
+  await audit('Sessions — confirmation de révocation (S03)', 'fond inerte, focus dans la fenêtre');
+  await shot('sessions-revocation');
+  await clickText('Révoquer', "document.querySelector('[role=dialog]')");
+  await waitFor("document.body.innerText.includes('révoquée')", 'session révoquée', 15000);
+  await audit('Sessions — après révocation d’une session', 'confirmation annoncée (role=status)');
+  await clickText('Déconnecter tous mes autres appareils');
+  await waitFor("document.querySelector('[role=dialog]')", 'confirmation de la révocation groupée');
+  await audit('Sessions — confirmation « tous mes autres appareils » (S03)');
+  await clickText('Tout déconnecter', "document.querySelector('[role=dialog]')");
+  await waitFor("document.body.innerText.includes('session')  && document.body.innerText.includes('révoquée')", 'révocation groupée', 15000);
+  await sleep(600);
+  const stillOpen = await js("[...document.querySelectorAll('table')][0].querySelectorAll('tbody tr').length");
+  results.at(-1).note += ` · sessions encore actives : ${stillOpen}`;
+  if (stillOpen !== 1) throw new Error(`Après « tous mes autres appareils », il doit rester 1 session (la courante), il en reste ${stillOpen}`);
+  await shot('sessions-apres');
 
   // Nouvelle connexion : saisie du code (A02) puis code de secours (A03).
   await clickText('Se déconnecter');

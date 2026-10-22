@@ -11,7 +11,7 @@
 1. **12 sessions menées** (S0 à S3.5, A11Y-1, cadrages, H1, H1b), **toutes validées** et fusionnées dans `main` le 2026-10-21 pour les plus récentes ; design v0.4.1 validé. Prochaine session : **H2** (écrans d'accès et sessions).
 2. Le **socle de sécurité et d'accès est complet** : comptes, connexion, second facteur, rôles, périmètres, invitations, mot de passe oublié, audit.
 3. **Aucune fonctionnalité métier commerciale n'est encore livrée** hormis les entreprises cibles (début du pipeline) : c'est **voulu** — on ne bâtit pas un CRM sur un accès fragile.
-4. **380 + 141 tests** côté API, **43** côté interface, tous verts ; **0 violation** d'architecture ; **0 vulnérabilité haute**.
+4. **391 + 149 tests** côté API, **62** côté interface, tous verts ; **0 violation** d'architecture ; **0 vulnérabilité haute**.
 5. **Plus de 20 défauts ou incidents** consignés et corrigés *avant* livraison (voir le suivi des sessions, §5), la plupart avec un test qui les garde.
 6. Les **deux blocages réels** ne sont pas techniques : accès **Microsoft 365** et **désignation de deux SuperAdmin**.
 7. L'interface est **vérifiée à la main** (navigateur réel) mais pas encore automatisée.
