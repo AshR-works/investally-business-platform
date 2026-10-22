@@ -1,0 +1,39 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fiabilité</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="INDEX.html">Index</a> · <a href="GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="ARCHITECTURE.html">Architecture</a> · <a href="SECURITY.html">Sécurité</a> · <a href="METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="TECH-DEBT.html">Dette</a> · <a href="design/README.html">Design</a> · <a href="livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>Fiabilité</h1>
+<blockquote><p>Statut : cadrage Sprint 0 (valeurs de départ ; ajustées en S1 avec mesures réelles).</p></blockquote>
+<h2>Integration-Point Audit</h2>
+<div class="table-wrap"><table><thead><tr><th>Dépendance</th><th>Timeout</th><th>Circuit breaker</th><th>Bulkhead</th><th>Retry</th><th>Statut</th></tr></thead><tbody>
+<tr><td>PostgreSQL</td><td>connexion 3 s, requête 10 s (<code>statement_timeout</code>)</td><td>n/a</td><td>pool dimensionné ; pool séparé pour jobs/outbox</td><td>non automatique (transaction rejouée par le use case si conflit de version)</td><td>à implémenter S1</td></tr>
+<tr><td>Fournisseur e-mail</td><td>connexion 3 s, lecture 5 s</td><td>oui (5 échecs/30 s)</td><td>via outbox, hors chemin de requête</td><td>backoff exponentiel + jitter, max 5, puis <em>dead letter</em></td><td>à implémenter S3</td></tr>
+<tr><td>Fournisseur SMS/OTP</td><td>3 s / 5 s</td><td>oui</td><td>outbox ; OTP : repli e-mail ou TOTP</td><td>max 3</td><td>à implémenter S3</td></tr>
+<tr><td>Stockage objet (documents)</td><td>3 s / 30 s (upload)</td><td>oui</td><td>pool dédié</td><td>2, idempotent par empreinte</td><td>à implémenter S3</td></tr>
+</tbody></table></div>
+<p>Règle : aucun appel externe dans une transaction de base ouverte.</p>
+<h2>Query &amp; Resource Findings</h2>
+<ul><li>Toute liste est <strong>paginée</strong> (taille max 100 par défaut) ; pas de réponse non bornée.</li><li>Exports volumineux asynchrones (job + notification), jamais dans la requête HTTP.</li><li>Dashboards lus depuis <code>reporting</code> (read models), pas par agrégation sur les tables transactionnelles.</li><li>Nettoyage planifié : jobs outbox traités, sessions expirées, tokens de rafraîchissement expirés. Partitions d'audit créées d'avance.</li></ul>
+<h2>Health Checks &amp; Metrics</h2>
+<ul><li><code>/health/live</code> (processus) et <code>/health/ready</code> (base joignable, migrations à jour, stockage joignable).</li><li>Métriques RED par endpoint (débit, erreurs, durée) ; saturation du pool de connexions ; retard de l'outbox.</li><li>Alertes sur symptômes : taux d'erreurs 5xx, latence p95, outbox &gt; N minutes de retard, échecs de connexion en rafale (détection de force brute).</li><li>Journaux structurés JSON avec identifiant de corrélation ; aucune donnée sensible dans les logs.</li></ul>
+<h2>Deploy vs Release</h2>
+<ul><li>Migrations <strong>expand/contract</strong> : ajouter d'abord, migrer, supprimer plus tard ; jamais de rupture de compatibilité en un seul déploiement.</li><li>Feature flags pour les modules non terminés.</li><li>Sauvegardes PostgreSQL chiffrées quotidiennes + archivage WAL (RPO cible ≤ 15 min, RTO ≤ 4 h, H) ; test de restauration trimestriel.</li><li>Retour arrière : image Docker précédente conservée + migrations rétro-compatibles.</li></ul></main></body></html>

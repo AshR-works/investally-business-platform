@@ -1,0 +1,85 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Sprint 3.4 — Front de base : connexion, MFA, invitation, administration, mon compte (périmètre et plan de recette)</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="INDEX.html">Index</a> · <a href="GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="ARCHITECTURE.html">Architecture</a> · <a href="SECURITY.html">Sécurité</a> · <a href="METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="TECH-DEBT.html">Dette</a> · <a href="design/README.html">Design</a> · <a href="livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>Sprint 3.4 — Front de base : connexion, MFA, invitation, administration, mon compte (périmètre et plan de recette)</h1>
+<p>Durée : 1 semaine maximum. Statuts : ✅ vérifié · ⏳ à faire · ❌ échec · ➖ non applicable · ⚠ vérifié partiellement. Validé quand tous les « Bloquant » sont ✅ <strong>et</strong> que l'ingénieur logiciel l'a explicitement validé.</p>
+<h2>Périmètre</h2>
+<p><strong>Inclus</strong> (pages web, françaises, accessibles au clavier, utilisables sur téléphone)</p>
+<ol><li><strong>Connexion</strong> (<code>/login</code>) puis <strong>second facteur</strong> (<code>/mfa</code>) : saisie du code, ou d'un code de secours.</li><li><strong>Première configuration du MFA</strong> : QR code généré dans le navigateur, clé manuelle, confirmation par un premier code, <strong>affichage unique des 10 codes de secours</strong> (copier, télécharger, case « conservés » obligatoire).</li><li><strong>Activation d'invitation</strong> (<code>/invitation</code>) : choix du mot de passe à partir du lien reçu (jeton dans le fragment, effacé de l'adresse).</li><li><strong>Entreprises</strong> (page d'accueil) : liste selon la portée de l'utilisateur et création (reprise de l'écran de S1, désormais authentifié).</li><li><strong>Administration des utilisateurs</strong> (<code>/admin/users</code>) : liste, recherche, filtre de statut, pagination ; inviter ; renvoyer le lien ; modifier les rôles ; désactiver / réactiver ; réinitialiser le MFA ; couper les sessions. Chaque bouton n'apparaît que si le droit existe.</li><li><strong>Mon compte</strong> (<code>/account</code>) : profil, changement de mot de passe, nouveaux codes de secours, mes sessions (révocation).</li><li><strong>Actions sensibles</strong> : fenêtre de confirmation par code quand l'API exige un MFA récent.</li><li><strong>En-têtes de sécurité</strong> du site.</li><li>Côté API : <code>GET /auth/me/profile</code> (nom, rôles, droits, état du MFA) et en-tête <code>WWW-Authenticate: invalid_token</code> sur les 401 dus au jeton.</li></ol>
+<p><strong>Exclus</strong> : mot de passe oublié en libre-service (D21), documents (S3.5), écrans métier (S4+), maquettes (cadrage UX), tests de bout en bout automatisés (D22).</p>
+<h2>Décisions techniques</h2>
+<div class="table-wrap"><table><thead><tr><th>Sujet</th><th>Choix</th><th>Raison</th></tr></thead><tbody>
+<tr><td>Où vit le jeton d'accès</td><td><strong>Mémoire JavaScript seulement</strong> ; cookie <code>HttpOnly</code> pour le rafraîchissement</td><td>Un script injecté ne peut pas lire un cookie <code>HttpOnly</code> ni un jeton absent du stockage du navigateur</td></tr>
+<tr><td>Appels à l'API</td><td>Même origine : Next.js relaie <code>/api</code> vers <code>127.0.0.1:3001</code></td><td>Pas de CORS, l'API reste invisible depuis l'extérieur</td></tr>
+<tr><td>Rafraîchissement</td><td>Seulement sur un 401 qui accuse le <strong>jeton</strong> (RFC 6750)</td><td>Un mauvais code MFA rejoué serait compté <strong>deux fois</strong> contre le verrouillage (défaut trouvé en recette réelle)</td></tr>
+<tr><td>Droits dans l'interface</td><td>Lus via <code>/auth/me/profile</code>, <strong>confort seulement</strong></td><td>Le serveur re-contrôle chaque requête</td></tr>
+<tr><td>QR code</td><td>Bibliothèque <code>qrcode</code> 1.5.4 <strong>épinglée</strong>, exécutée dans le navigateur</td><td>Le secret ne part vers aucun service tiers</td></tr>
+<tr><td>Tests du front</td><td><code>vitest</code> 5.0.5 (logique pure, sans navigateur simulé) + <strong>recette réelle dans un navigateur</strong></td><td>Les écrans sont vérifiés par de vrais clics ; l'automatisation de bout en bout est la dette D22</td></tr>
+<tr><td>CSP</td><td>Stricte sauf <code>script-src 'unsafe-inline'</code></td><td>Next.js sans nonce ; écart assumé et tracé (D20)</td></tr>
+</tbody></table></div>
+<h2>Plan de recette</h2>
+<div class="table-wrap"><table><thead><tr><th>Réf.</th><th>Contrôle</th><th>Bloquant</th><th>Statut</th></tr></thead><tbody>
+<tr><td>A1</td><td>Client HTTP : jeton envoyé en en-tête, jamais dans l'URL ; route publique sans jeton</td><td>Oui</td><td>✅</td></tr>
+<tr><td>A2</td><td>401 dû au jeton : <strong>un</strong> rafraîchissement partagé puis <strong>une</strong> reprise ; échec du rafraîchissement : session perdue signalée, pas de boucle</td><td>Oui</td><td>✅</td></tr>
+<tr><td>A3</td><td>401 <strong>sans</strong> <code>invalid_token</code> (mauvais code) : jamais rejoué, aucun rafraîchissement</td><td>Oui</td><td>✅</td></tr>
+<tr><td>A4</td><td>Step-up : une question à l'utilisateur pour plusieurs actions simultanées ; refus → erreur remontée ; 403 ordinaire sans question</td><td>Oui</td><td>✅</td></tr>
+<tr><td>A5</td><td>Le jeton n'est écrit ni dans <code>localStorage</code> ni dans <code>sessionStorage</code></td><td>Oui</td><td>✅ test + recherche dans le code</td></tr>
+<tr><td>A6</td><td>Lecture du lien d'invitation : fragment seulement, caractères et taille bornés</td><td>Oui</td><td>✅</td></tr>
+<tr><td>A7</td><td>Messages d'erreur : détail de l'API s'il est textuel ; jamais d'objet ni de trace affichés</td><td>Oui</td><td>✅</td></tr>
+<tr><td>B1</td><td>Visiteur anonyme → redirigé vers <code>/login</code> ; connecté sans MFA → <code>/mfa</code> ; connecté avec MFA → l'application</td><td>Oui</td><td>✅ réel</td></tr>
+<tr><td>B2</td><td>Connexion refusée : « Identifiants invalides », mot de passe effacé</td><td>Oui</td><td>✅ réel</td></tr>
+<tr><td>B3</td><td>Première configuration : QR affiché, clé manuelle, <strong>un</strong> appel de confirmation ; mauvais code refusé (<strong>une seule</strong> requête) ; bon code : 10 codes de secours</td><td>Oui</td><td>✅ réel</td></tr>
+<tr><td>B4</td><td>« Continuer » désactivé tant que la case « codes conservés » n'est pas cochée ; avertissement avant de quitter la page</td><td>Oui</td><td>✅ réel (bouton) · ⚠ avertissement du navigateur non observable par l'outil</td></tr>
+<tr><td>B5</td><td>Connexion suivante : code erroné refusé, code juste accepté</td><td>Oui</td><td>✅ réel</td></tr>
+<tr><td>B6</td><td>Activation d'invitation : indications en direct (12 caractères), refus serveur affiché (mot de passe contenant l'identifiant), lien <strong>conservé</strong> après un refus, activation réussie</td><td>Oui</td><td>✅ réel</td></tr>
+<tr><td>B7</td><td>Fragment du lien <strong>effacé de la barre d'adresse</strong> dès l'ouverture</td><td>Oui</td><td>✅ réel</td></tr>
+<tr><td>B8</td><td>Lien rejoué : « Lien invalide ou expiré » ; page ouverte sans lien : « Lien invalide »</td><td>Oui</td><td>✅ réel</td></tr>
+<tr><td>B9</td><td>Un chargé de compte : menu limité (Entreprises, Mon compte) ; ne voit <strong>que</strong> ses propres entreprises (0 sur 25 existantes, 1 après création)</td><td>Oui</td><td>✅ réel</td></tr>
+<tr><td>B10</td><td><code>/admin/users</code> sans droit : « Accès refusé », aucune donnée</td><td>Oui</td><td>✅ réel</td></tr>
+<tr><td>B11</td><td>Administrateur : invitation envoyée (rôle, e-mail), compte « Invitation en attente » visible</td><td>Oui</td><td>✅ réel</td></tr>
+<tr><td>B12</td><td>Mon compte : profil, nouveaux codes de secours (10), sessions (appareil lisible, « Cette session »)</td><td>Oui</td><td>✅ réel</td></tr>
+<tr><td>B13</td><td>Déconnexion : retour à <code>/login</code>, session coupée côté serveur (204)</td><td>Oui</td><td>✅ réel</td></tr>
+<tr><td>B14</td><td>Rechargement de la page : session conservée grâce au cookie</td><td>Oui</td><td>✅ réel</td></tr>
+<tr><td>B15</td><td><strong>Step-up réel</strong> : action sensible plus de 10 minutes après le dernier code → fenêtre de confirmation → action rejouée</td><td>Oui</td><td>✅ réel (désactivation d'un compte à 22:49, 10 min 20 s après le code précédent : fenêtre affichée, code saisi, action rejouée, « Compte désactivé »)</td></tr>
+<tr><td>C1</td><td>Mise en page sur téléphone (375 px) : navigation, formulaires, tableau défilant</td><td>Non</td><td>✅ réel</td></tr>
+<tr><td>C2</td><td>Aucune violation de la politique de contenu dans la console du navigateur</td><td>Oui</td><td>✅ réel</td></tr>
+<tr><td>C3</td><td>En-têtes : CSP, <code>X-Frame-Options</code>, <code>nosniff</code>, <code>Referrer-Policy</code>, <code>Permissions-Policy</code>, <code>COOP</code> présents</td><td>Oui</td><td>✅ réel</td></tr>
+<tr><td>D1</td><td>Types propres (API et web), architecture : 128 modules, 492 dépendances, <strong>0 violation</strong></td><td>Oui</td><td>✅</td></tr>
+<tr><td>D2</td><td>API : 353 unitaires + <strong>132 intégration</strong> (S1 à S3.3 inclus), tous verts ; route de profil protégée (test structurel des routes)</td><td>Oui</td><td>✅</td></tr>
+<tr><td>D3</td><td>Front : <strong>24 tests</strong>, tous verts</td><td>Oui</td><td>✅</td></tr>
+<tr><td>D4</td><td><code>pnpm audit --prod</code> : aucune vulnérabilité haute ; 1 moyenne connue (js-yaml via Swagger, D6)</td><td>Oui</td><td>✅</td></tr>
+<tr><td>D5</td><td>Vérification par mutation du client HTTP (voir ci-dessous)</td><td>Oui</td><td>✅</td></tr>
+</tbody></table></div>
+<h2>Vérification par mutation (client HTTP)</h2>
+<div class="table-wrap"><table><thead><tr><th>Mutant (contrôle cassé volontairement)</th><th>Détecté par</th></tr></thead><tbody>
+<tr><td>Tout 401 déclenche un rafraîchissement</td><td>test « 401 SANS invalid_token jamais rejoué »</td></tr>
+<tr><td>Rafraîchissement non partagé entre requêtes simultanées</td><td>3 tests</td></tr>
+<tr><td>Step-up non partagé entre actions simultanées</td><td>test « UNE seule question »</td></tr>
+<tr><td>Jeton écrit dans <code>localStorage</code></td><td>4 tests</td></tr>
+</tbody></table></div>
+<h2>Défauts trouvés et corrigés pendant le sprint</h2>
+<ol><li><strong>Un mauvais code MFA était compté deux fois</strong> contre le verrouillage du compte : mon client prenait le <code>401</code> pour un jeton expiré, se rafraîchissait puis <strong>rejouait</strong> la vérification. Découvert en lisant le journal réseau lors de la recette réelle (aucun test automatique ne pouvait le voir, car l'API seule se comporte correctement). Corrigé des deux côtés (en-tête RFC 6750 côté API, reprise conditionnelle côté client), testé et <strong>vérifié de nouveau dans le navigateur</strong> : une seule requête par tentative.</li><li><strong>Page d'administration affichée à un utilisateur sans droit</strong> (cadre visible, puis « Accès refusé » en bas de page) : la page vérifie maintenant les droits avant tout affichage ni appel.</li><li><strong>Codes de secours perdus par un simple rechargement</strong> pendant l'affichage unique : ajout d'un avertissement du navigateur avant de quitter la page (et possibilité de régénérer les codes depuis « Mon compte »).</li><li><strong>Libellé d'appareil illisible</strong> (User-Agent brut) : résumé en « Chrome sur Windows » (bulle d'aide avec le détail).</li><li><strong>Tableau trop haut sur téléphone</strong> (boutons d'action empilés) : largeur minimale de la colonne d'actions.</li><li><strong>Incident d'environnement (mon fait)</strong> : en redémarrant les serveurs de recette, la clé de chiffrement MFA de test avait été régénérée, rendant illisibles les secrets MFA enregistrés. Sans conséquence (base jetable), la clé est maintenant persistée pour la durée de la recette.</li></ol>
+<h2>Limites connues</h2>
+<ul><li><strong>Aucun test automatisé des écrans</strong> : les parcours ci-dessus ont été joués à la main dans un vrai navigateur (D22).</li><li><strong>Pas de « mot de passe oublié »</strong> (D21) : seul un administrateur peut renvoyer un lien à un compte en attente ; un compte actif qui perd son mot de passe n'a pas encore de parcours de récupération. <strong>Décision attendue</strong> (registre, D15).</li><li><strong>Pas de vraie application d'authentification testée</strong> : les codes de recette sont calculés par un programme (algorithme standard, vecteurs RFC validés en S3.2).</li><li><strong>Pas de Microsoft 365</strong> : l'invitation est lue dans la console de développement.</li><li>CSP avec <code>'unsafe-inline'</code> pour les scripts (D20).</li><li>Le rafraîchissement du jeton se fait au premier refus après 15 minutes (D24).</li><li>Aucune adaptation de la durée de session côté interface : l'écran de connexion réapparaît quand la session absolue expire.</li><li>Les écrans n'ont pas été relus par un spécialiste de l'accessibilité : étiquettes, focus, rôles <code>alert</code>/<code>status</code> et fenêtres modales sont en place, mais aucun lecteur d'écran n'a été utilisé.</li></ul>
+<h2>Décision de validation</h2>
+<p>Tous les contrôles bloquants sont ✅. <strong>Validation explicite de l'ingénieur logiciel requise</strong> avant fusion dans <code>main</code> et tag <code>s3-4-validated</code>.</p></main></body></html>

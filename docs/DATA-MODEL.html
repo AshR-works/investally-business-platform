@@ -1,0 +1,108 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Modèle de données Core — CRM (Sprint 2)</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="INDEX.html">Index</a> · <a href="GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="ARCHITECTURE.html">Architecture</a> · <a href="SECURITY.html">Sécurité</a> · <a href="METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="TECH-DEBT.html">Dette</a> · <a href="design/README.html">Design</a> · <a href="livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>Modèle de données Core — CRM (Sprint 2)</h1>
+<blockquote><p>Source de vérité : <code>apps/crm-api/prisma/schema.prisma</code> + migrations SQL. Ce document l'explique ; en cas de divergence, le schéma prévaut. Périmètre : schémas <code>iam</code>, <code>audit</code>, <code>docs</code> + <code>bd.companies</code> (tranche S1). Les autres contextes arrivent aux sprints S4 et S5.</p></blockquote>
+<h2>1. Principes</h2>
+<ul><li><strong>Un schéma PostgreSQL par contexte</strong> ; <strong>aucune clé étrangère entre schémas</strong> (vérifié par un test d'intégration). Les références inter-contextes sont de simples UUID (<code>user_id</code>, <code>owner_id</code>…).</li><li>Identifiants <strong>UUID v7</strong> générés par l'application ; dates en <code>timestamptz</code>, session forcée en UTC ; verrou optimiste (<code>version</code>) sur les agrégats modifiables.</li><li><strong>Soft delete</strong> (<code>deleted_at</code>) sur utilisateurs, entreprises, documents ; unicité sur les enregistrements non supprimés par <strong>index partiel</strong>.</li><li>Contraintes d'intégrité <strong>dans la base</strong> (CHECK) en plus des règles du domaine : défense en profondeur.</li><li>Secrets : seuls des <strong>hachages</strong> (mot de passe, jeton de rafraîchissement, codes de secours, OTP) ou des <strong>valeurs chiffrées</strong> (secret TOTP) sont stockés.</li></ul>
+<h3>Évolutions de S3.3</h3>
+<ul><li><code>bd.companies.owner_user_id</code> (UUID, <strong>sans clé étrangère</strong>, indexé) : propriétaire d'une entreprise, base de la portée Propre / Équipe / Tous. Les entreprises antérieures n'en ont pas (visibles de la portée Tous seulement).</li><li><code>iam.user_invitations</code> : <code>id</code>, <code>user_id</code> (FK avec cascade), <code>token_hash</code> (SHA-256 hexadécimal, unique), <code>created_by</code>, <code>created_at</code>, <code>expires_at</code> (&gt; création), <code>used_at</code>, <code>revoked_at</code>.</li><li>Évolutions de S3.2 : <code>iam.users.mfa_last_used_step</code>, <code>iam.user_sessions.mfa_verified_at</code>.</li></ul>
+<h2>2. ERD</h2>
+<pre><code> iam                                                                   docs
+ ┌─────────┐ 1   n ┌───────────┐ n   1 ┌──────┐ 1   n ┌────────────────┐ n   1 ┌────────────┐
+ │  users  ├───────┤ user_roles├───────┤ roles├───────┤role_permissions├───────┤ permissions│
+ └─┬─┬─┬─┬─┘       └───────────┘       └──────┘       │  scope O/T/A   │       └────────────┘
+   │ │ │ │ manager_id ──► users                       └────────────────┘
+   │ │ │ └──&lt; password_history
+   │ │ └────&lt; mfa_recovery_codes                      ┌───────────┐ 1   n ┌───────────────────┐
+   │ └──────&lt; one_time_passwords                      │ documents ├───────┤ document_versions │
+   └────────&lt; user_sessions ──&lt; refresh_tokens        └───────────┘       └───────────────────┘
+   login_attempts (sans FK : inclut les e-mails inconnus)
+                                                       audit
+                                                       ┌──────────────────────────────┐
+                                                       │ audit_logs  (partitionnée    │
+                                                       │ par mois, append-only)       │
+                                                       └──────────────────────────────┘</code></pre>
+<pre><code>erDiagram
+  users ||--o{ user_roles : &quot;a&quot;
+  roles ||--o{ user_roles : &quot;attribué&quot;
+  roles ||--o{ role_permissions : &quot;accorde&quot;
+  permissions ||--o{ role_permissions : &quot;accordée&quot;
+  users }o--o| users : &quot;responsable (manager_id)&quot;
+  users ||--o{ user_sessions : &quot;ouvre&quot;
+  user_sessions ||--o{ refresh_tokens : &quot;famille de rotation&quot;
+  users ||--o{ password_history : &quot;historique&quot;
+  users ||--o{ mfa_recovery_codes : &quot;codes de secours&quot;
+  users ||--o{ one_time_passwords : &quot;OTP&quot;
+  documents ||--o{ document_versions : &quot;versions&quot;
+
+  users { uuid id PK &quot;email_key unique si actif&quot; string status int failed_login_count timestamptz locked_until bool mfa_enabled uuid manager_id FK int version }
+  roles { uuid id PK string code UK bool mfa_required }
+  permissions { uuid id PK string code UK &quot;module.ressource.action&quot; }
+  role_permissions { uuid role_id PK uuid permission_id PK enum scope &quot;OWN TEAM ALL&quot; }
+  user_sessions { uuid id PK uuid user_id FK enum risk_level inet ip string device timestamptz expires_at timestamptz absolute_expires_at timestamptz revoked_at }
+  refresh_tokens { uuid id PK uuid session_id FK uuid family_id string token_hash UK timestamptz used_at }
+  documents { uuid id PK string owner_type uuid owner_id &quot;sans FK&quot; enum status int version }
+  document_versions { uuid id PK uuid document_id FK int version_number string storage_key UK char sha256 }
+  audit_logs { uuid id PK timestamptz created_at PK uuid user_id uuid session_id string entity_type string entity_id enum action jsonb old_value jsonb new_value string ip_address }</code></pre>
+<p><strong>Explication.</strong> Le contexte <code>iam</code> porte l'identité, les rôles/permissions et le cycle de vie des sessions. <code>docs</code> stocke les métadonnées des fichiers (le contenu est en stockage objet) et se rattache à n'importe quel objet métier par <code>(owner_type, owner_id)</code>. <code>audit</code> est écrit par tous les contextes et ne dépend d'aucun. <strong>Risques.</strong> (1) L'absence de FK inter-contextes impose de vérifier l'existence d'un <code>owner_id</code> dans le use case. (2) <code>login_attempts</code> et <code>audit_logs</code> grossissent vite : rétention à définir (SECURITY.md §7). (3) Le modèle de portée Équipe repose sur un seul niveau hiérarchique.</p>
+<h2>3. Diagramme d'audit</h2>
+<pre><code>  Requête HTTP ──► Guard (identité, session) ──► Use case ──► Agrégat ──► Repository ─┐
+        │                                            │                                  │ même transaction
+        │  ActorContext (userId, sessionId, IP,      ▼                                  ▼
+        └─ appareil) ──────────────────────────► AuditRecorder ───────► audit.audit_logs (append-only)
+                                                                                   │
+                                          lecture : audit.log.read ◄───────────────┘</code></pre>
+<pre><code>flowchart LR
+  R[Requête HTTP] --&gt; G[Guard : identité + session]
+  G --&gt; U[Use case]
+  U --&gt; A[Agrégat modifié]
+  U --&gt; AR[AuditRecorder]
+  A --&gt; DB[(Données métier)]
+  AR --&gt; AL[(audit.audit_logs&lt;br/&gt;append-only, partitionnée)]
+  G -. ActorContext: user, session, IP, appareil .-&gt; U
+  subgraph T[Même transaction]
+    DB
+    AL
+  end</code></pre>
+<p><strong>Explication.</strong> Qui (userId, sessionId), quoi (action), quand (createdAt, UTC), d'où (IP, appareil), sur quelle donnée (entityType, entityId), valeurs avant/après (JSON, champs sensibles masqués). L'écriture d'audit et la modification métier sont <strong>atomiques</strong> (testé : si l'audit échoue, la donnée n'est pas enregistrée). <strong>Risques.</strong> (1) Un propriétaire de table peut désactiver le déclencheur : le rôle applicatif sans droits <code>UPDATE/DELETE</code> est requis en production (S7). (2) Une ligne tombée dans la partition de secours signale des partitions mensuelles non créées : alerte à mettre en place. (3) Les actions refusées (403) doivent aussi être auditées, hors de la transaction métier annulée.</p>
+<h2>4. Diagramme de traçabilité documentaire</h2>
+<pre><code>  Création ─► docs.documents + document_versions (SHA-256, clé de stockage aléatoire) ─► audit CREATE
+  Consultation ─► contrôle RBAC (docs.document.read + portée) ─► audit VIEW
+  Modification ─► nouvelle version (l&#x27;ancienne reste) ─► audit UPDATE (ancien/nouveau n° de version)
+  Téléchargement ─► docs.document.download ─► audit DOWNLOAD
+  Export ─► docs.document.export (step-up MFA) ─► audit EXPORT
+  Suppression ─► soft delete (status DELETED, deleted_by) ─► audit DELETE ; contenu conservé selon la rétention</code></pre>
+<pre><code>stateDiagram-v2
+  [*] --&gt; DRAFT: création (audit CREATE)
+  DRAFT --&gt; ACTIVE: validation
+  ACTIVE --&gt; ACTIVE: nouvelle version (audit UPDATE)
+  ACTIVE --&gt; ARCHIVED: archivage
+  ACTIVE --&gt; DELETED: suppression douce (audit DELETE)
+  ARCHIVED --&gt; DELETED: suppression douce (audit DELETE)
+  note right of ACTIVE
+    Chaque consultation, téléchargement
+    et export écrit une ligne d&#x27;audit
+    (VIEW, DOWNLOAD, EXPORT)
+  end note</code></pre>
+<p><strong>Explication.</strong> Le cycle de vie du document est dans <code>docs.documents.status</code> ; l'<strong>historique d'accès</strong> n'est pas dupliqué : il se lit dans <code>audit.audit_logs</code> filtré sur <code>entity_type = 'Document'</code>. Une seule source de vérité. <strong>Risques.</strong> (1) La consultation génère beaucoup de lignes d'audit : volume à surveiller (partitionnement prévu). (2) Un fichier servi dans l'origine de l'application permettrait du XSS : téléchargement forcé (<code>attachment</code>) et type MIME contrôlé (SECURITY.md §6). (3) La suppression douce conserve le contenu : politique de purge à valider avec le juridique.</p></main></body></html>

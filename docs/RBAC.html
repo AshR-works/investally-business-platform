@@ -1,0 +1,202 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>RBAC — CRM Investally</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="INDEX.html">Index</a> · <a href="GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="ARCHITECTURE.html">Architecture</a> · <a href="SECURITY.html">Sécurité</a> · <a href="METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="TECH-DEBT.html">Dette</a> · <a href="design/README.html">Design</a> · <a href="livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>RBAC — CRM Investally</h1>
+<blockquote><p><strong>Document généré</strong> par <code>pnpm crm-api docs:rbac</code> à partir du code (<code>apps/crm-api/src/modules/iam/domain</code>). Ne pas modifier à la main : modifier le code puis régénérer. Les tests <code>roles.spec.ts</code> et <code>core-schema.integration.spec.ts</code> garantissent que la base contient exactement cette matrice.</p></blockquote>
+<h2>1. Modèle</h2>
+<p>Un <strong>utilisateur</strong> a un ou plusieurs <strong>rôles</strong> ; un rôle accorde des <strong>permissions</strong> (<code>module.ressource.action</code>), chacune avec une <strong>portée</strong> : <strong>O</strong>wn (ses propres objets), <strong>É</strong>quipe (lui et ses subordonnés directs), <strong>T</strong>ous. Si deux rôles accordent la même permission, la portée la plus large l'emporte. <strong>Refus par défaut</strong> : ce qui n'est pas accordé est interdit.</p>
+<pre><code>  ┌────────┐ 1..n ┌──────────┐ n..1 ┌────────┐ 1..n ┌────────────────┐ n..1 ┌────────────┐
+  │  User  ├──────┤ UserRole ├──────┤  Role  ├──────┤ RolePermission ├──────┤ Permission │
+  └───┬────┘      └──────────┘      └────────┘      │  scope: O/E/T  │      └────────────┘
+      │ managerId (définit la portée Équipe)         └────────────────┘
+      └──► User</code></pre>
+<pre><code>erDiagram
+  USER ||--o{ USER_ROLE : &quot;a&quot;
+  ROLE ||--o{ USER_ROLE : &quot;attribué par&quot;
+  ROLE ||--o{ ROLE_PERMISSION : &quot;accorde&quot;
+  PERMISSION ||--o{ ROLE_PERMISSION : &quot;est accordée&quot;
+  USER }o--o| USER : &quot;responsable de&quot;
+  ROLE_PERMISSION { enum scope &quot;OWN | TEAM | ALL&quot; }</code></pre>
+<h3>Décision d'accès (pour chaque requête, côté serveur)</h3>
+<pre><code>  Requête authentifiée (jeton valide, session non révoquée)
+        │
+        ▼   permission accordée par un des rôles ?  ── non ──► REFUS (403, audit ACCESS_DENIED)
+        │ oui
+        ▼   portée = Tous ? ── oui ──► AUTORISÉ
+        │ non
+        ▼   l&#x27;objet appartient à l&#x27;acteur (ou à un subordonné si portée Équipe) ? ── non ──► REFUS
+        │ oui
+        ▼   AUTORISÉ  (+ audit si action sensible)</code></pre>
+<pre><code>flowchart TD
+  A[Requête authentifiée] --&gt; B{Permission accordée\npar un rôle ?}
+  B -- non --&gt; X[REFUS 403 + audit ACCESS_DENIED]
+  B -- oui --&gt; C{Portée = Tous ?}
+  C -- oui --&gt; OK[AUTORISÉ]
+  C -- non --&gt; D{Objet de l&#x27;acteur\nou de son équipe ?}
+  D -- non --&gt; X
+  D -- oui --&gt; OK</code></pre>
+<h2>2. Rôles</h2>
+<div class="table-wrap"><table><thead><tr><th>Code</th><th>Libellé</th><th>MFA obligatoire</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>SUPER_ADMIN</code></td><td>Super administrateur</td><td>oui</td><td>Accès complet au CRM : administration, métier, audit et tableaux de bord. Compte à haut risque : MFA obligatoire, toutes les actions auditées, ne peut pas modifier ses propres rôles.</td></tr>
+<tr><td><code>DIRECTION</code></td><td>Direction</td><td>oui</td><td>Supervision en lecture de tout le CRM, tableaux de bord stratégiques.</td></tr>
+<tr><td><code>HEAD_OF_SALES</code></td><td>Responsable commercial</td><td>oui</td><td>Pilote l'équipe commerciale et le pipeline global.</td></tr>
+<tr><td><code>ACCOUNT_MANAGER</code></td><td>Chargé de compte</td><td>oui</td><td>Mène ses propres entreprises, offres, relances, rendez-vous et inscriptions.</td></tr>
+<tr><td><code>TRAINING_MANAGER</code></td><td>Responsable Investudy</td><td>oui</td><td>Gère programmes, sessions, salles, formateurs, apprenants, certifications.</td></tr>
+<tr><td><code>TRAINER</code></td><td>Formateur</td><td>oui</td><td>Anime ses sessions : présences, évaluations.</td></tr>
+<tr><td><code>SUPPORT</code></td><td>Support</td><td>oui</td><td>Consultation pour assister les utilisateurs et les clients.</td></tr>
+<tr><td><code>FINANCE</code></td><td>Finance</td><td>oui</td><td>Accès CRM limité à la préparation de facturation (l'ERP couvrira le reste).</td></tr>
+<tr><td><code>HR</code></td><td>RH</td><td>oui</td><td>Aucun accès métier CRM (l'ERP couvrira le périmètre RH).</td></tr>
+<tr><td><code>TAX</code></td><td>Fiscalité</td><td>oui</td><td>Aucun accès métier CRM (l'ERP couvrira le périmètre fiscal).</td></tr>
+</tbody></table></div>
+<h2>3. Matrice d'accès par module et par rôle</h2>
+<p>Légende : <strong>L:x</strong> lecture (consulter, télécharger, exporter, tableaux de bord) · <strong>E:x</strong> écriture et actions (créer, modifier, valider, révoquer…) · <strong>x</strong> = portée la plus large du rôle sur le module : <strong>O</strong> ses objets, <strong>E</strong> son équipe, <strong>T</strong> tous · <strong>—</strong> aucun accès. Exemple : <code>L:T E:O</code> = lit tout, écrit seulement sur ses propres objets.</p>
+<div class="table-wrap"><table><thead><tr><th>Module</th><th>SUPER_ADMIN</th><th>DIRECTION</th><th>HEAD_OF_SALES</th><th>ACCOUNT_MANAGER</th><th>TRAINING_MANAGER</th><th>TRAINER</th><th>SUPPORT</th><th>FINANCE</th><th>HR</th><th>TAX</th></tr></thead><tbody>
+<tr><td>Identité et accès</td><td>L:T E:T</td><td>L:O E:O</td><td>L:O E:O</td><td>L:O E:O</td><td>L:O E:O</td><td>L:O E:O</td><td>L:O E:O</td><td>L:O E:O</td><td>L:O E:O</td><td>L:O E:O</td></tr>
+<tr><td>Audit</td><td>L:T</td><td>L:T</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+<tr><td>Documents</td><td>L:T E:T</td><td>L:T</td><td>L:E E:E</td><td>L:O E:O</td><td>L:T E:T</td><td>L:O</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+<tr><td>Business Development</td><td>L:T E:T</td><td>L:T</td><td>L:T E:E</td><td>L:O E:O</td><td>L:T</td><td>—</td><td>L:T</td><td>L:T</td><td>—</td><td>—</td></tr>
+<tr><td>Investudy</td><td>L:T E:T</td><td>L:T</td><td>L:T</td><td>L:T E:O</td><td>L:T E:T</td><td>L:T E:O</td><td>L:T</td><td>L:T</td><td>—</td><td>—</td></tr>
+<tr><td>Reporting</td><td>L:T</td><td>L:T</td><td>L:T</td><td>L:O</td><td>L:T</td><td>L:O</td><td>—</td><td>L:T</td><td>—</td><td>—</td></tr>
+</tbody></table></div>
+<h2>4. Matrice détaillée rôles × permissions</h2>
+<p>Cellule : <strong>O</strong>, <strong>É</strong>, <strong>T</strong> = portée accordée ; vide = non accordée.</p>
+<h3>Identité et accès (<code>iam</code>)</h3>
+<div class="table-wrap"><table><thead><tr><th>Permission</th><th>SUPER_ADMIN</th><th>DIRECTION</th><th>HEAD_OF_SALES</th><th>ACCOUNT_MANAGER</th><th>TRAINING_MANAGER</th><th>TRAINER</th><th>SUPPORT</th><th>FINANCE</th><th>HR</th><th>TAX</th></tr></thead><tbody>
+<tr><td><code>iam.user.read</code></td><td>T</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>iam.user.create</code></td><td>T</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>iam.user.update</code></td><td>T</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>iam.user.disable</code></td><td>T</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>iam.user.assign_role</code></td><td>T</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>iam.user.reset_mfa</code></td><td>T</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>iam.user.reset_password</code></td><td>T</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>iam.role.read</code></td><td>T</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>iam.role.manage</code></td><td>T</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>iam.session.read</code></td><td>T</td><td>O</td><td>O</td><td>O</td><td>O</td><td>O</td><td>O</td><td>O</td><td>O</td><td>O</td></tr>
+<tr><td><code>iam.session.revoke</code></td><td>T</td><td>O</td><td>O</td><td>O</td><td>O</td><td>O</td><td>O</td><td>O</td><td>O</td><td>O</td></tr>
+</tbody></table></div>
+<h3>Audit (<code>audit</code>)</h3>
+<div class="table-wrap"><table><thead><tr><th>Permission</th><th>SUPER_ADMIN</th><th>DIRECTION</th><th>HEAD_OF_SALES</th><th>ACCOUNT_MANAGER</th><th>TRAINING_MANAGER</th><th>TRAINER</th><th>SUPPORT</th><th>FINANCE</th><th>HR</th><th>TAX</th></tr></thead><tbody>
+<tr><td><code>audit.log.read</code></td><td>T</td><td>T</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>audit.log.export</code></td><td>T</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+</tbody></table></div>
+<h3>Documents (<code>docs</code>)</h3>
+<div class="table-wrap"><table><thead><tr><th>Permission</th><th>SUPER_ADMIN</th><th>DIRECTION</th><th>HEAD_OF_SALES</th><th>ACCOUNT_MANAGER</th><th>TRAINING_MANAGER</th><th>TRAINER</th><th>SUPPORT</th><th>FINANCE</th><th>HR</th><th>TAX</th></tr></thead><tbody>
+<tr><td><code>docs.document.read</code></td><td>T</td><td>T</td><td>E</td><td>O</td><td>T</td><td>O</td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>docs.document.create</code></td><td>T</td><td></td><td>E</td><td>O</td><td>T</td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>docs.document.update</code></td><td>T</td><td></td><td></td><td>O</td><td>T</td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>docs.document.delete</code></td><td>T</td><td></td><td>E</td><td></td><td>T</td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>docs.document.download</code></td><td>T</td><td>T</td><td>E</td><td>O</td><td>T</td><td>O</td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>docs.document.export</code></td><td>T</td><td>T</td><td></td><td></td><td>T</td><td></td><td></td><td></td><td></td><td></td></tr>
+</tbody></table></div>
+<h3>Business Development (<code>bd</code>)</h3>
+<div class="table-wrap"><table><thead><tr><th>Permission</th><th>SUPER_ADMIN</th><th>DIRECTION</th><th>HEAD_OF_SALES</th><th>ACCOUNT_MANAGER</th><th>TRAINING_MANAGER</th><th>TRAINER</th><th>SUPPORT</th><th>FINANCE</th><th>HR</th><th>TAX</th></tr></thead><tbody>
+<tr><td><code>bd.company.read</code></td><td>T</td><td>T</td><td>E</td><td>O</td><td>T</td><td></td><td>T</td><td>T</td><td></td><td></td></tr>
+<tr><td><code>bd.company.create</code></td><td>T</td><td></td><td>E</td><td>O</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>bd.company.update</code></td><td>T</td><td></td><td>E</td><td>O</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>bd.company.archive</code></td><td>T</td><td></td><td>E</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>bd.company.export</code></td><td>T</td><td>T</td><td>E</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>bd.contact.read</code></td><td>T</td><td>T</td><td>E</td><td>O</td><td>T</td><td></td><td>T</td><td></td><td></td><td></td></tr>
+<tr><td><code>bd.contact.create</code></td><td>T</td><td></td><td>E</td><td>O</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>bd.contact.update</code></td><td>T</td><td></td><td>E</td><td>O</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>bd.contact.delete</code></td><td>T</td><td></td><td>E</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>bd.offer.read</code></td><td>T</td><td>T</td><td>E</td><td>O</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>bd.offer.create</code></td><td>T</td><td></td><td>E</td><td>O</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>bd.offer.update</code></td><td>T</td><td></td><td>E</td><td>O</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>bd.offer.withdraw</code></td><td>T</td><td></td><td>E</td><td>O</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>bd.receipt.read</code></td><td>T</td><td>T</td><td>E</td><td>O</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>bd.receipt.create</code></td><td>T</td><td></td><td>E</td><td>O</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>bd.receipt.update</code></td><td>T</td><td></td><td>E</td><td>O</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>bd.followup.read</code></td><td>T</td><td>T</td><td>E</td><td>O</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>bd.followup.create</code></td><td>T</td><td></td><td>E</td><td>O</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>bd.followup.update</code></td><td>T</td><td></td><td>E</td><td>O</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>bd.followup.complete</code></td><td>T</td><td></td><td>E</td><td>O</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>bd.appointment.read</code></td><td>T</td><td>T</td><td>E</td><td>O</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>bd.appointment.create</code></td><td>T</td><td></td><td>E</td><td>O</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>bd.appointment.update</code></td><td>T</td><td></td><td>E</td><td>O</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>bd.appointment.cancel</code></td><td>T</td><td></td><td>E</td><td>O</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>bd.visit.read</code></td><td>T</td><td>T</td><td>E</td><td>O</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>bd.visit.create</code></td><td>T</td><td></td><td>E</td><td>O</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>bd.visit.update</code></td><td>T</td><td></td><td>E</td><td>O</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>bd.opportunity.read</code></td><td>T</td><td>T</td><td>T</td><td>O</td><td>T</td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>bd.opportunity.create</code></td><td>T</td><td></td><td>E</td><td>O</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>bd.opportunity.update</code></td><td>T</td><td></td><td>E</td><td>O</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>bd.opportunity.advance</code></td><td>T</td><td></td><td>E</td><td>O</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>bd.opportunity.close</code></td><td>T</td><td></td><td>E</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>bd.opportunity.export</code></td><td>T</td><td>T</td><td>E</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>bd.ambassador.read</code></td><td>T</td><td>T</td><td>T</td><td>O</td><td>T</td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>bd.ambassador.create</code></td><td>T</td><td></td><td>E</td><td>O</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>bd.ambassador.update</code></td><td>T</td><td></td><td>E</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+</tbody></table></div>
+<h3>Investudy (<code>training</code>)</h3>
+<div class="table-wrap"><table><thead><tr><th>Permission</th><th>SUPER_ADMIN</th><th>DIRECTION</th><th>HEAD_OF_SALES</th><th>ACCOUNT_MANAGER</th><th>TRAINING_MANAGER</th><th>TRAINER</th><th>SUPPORT</th><th>FINANCE</th><th>HR</th><th>TAX</th></tr></thead><tbody>
+<tr><td><code>training.program.read</code></td><td>T</td><td>T</td><td>T</td><td>T</td><td>T</td><td>T</td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>training.program.create</code></td><td>T</td><td></td><td></td><td></td><td>T</td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>training.program.update</code></td><td>T</td><td></td><td></td><td></td><td>T</td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>training.program.archive</code></td><td>T</td><td></td><td></td><td></td><td>T</td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>training.training.read</code></td><td>T</td><td>T</td><td></td><td></td><td>T</td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>training.training.create</code></td><td>T</td><td></td><td></td><td></td><td>T</td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>training.training.update</code></td><td>T</td><td></td><td></td><td></td><td>T</td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>training.session.read</code></td><td>T</td><td>T</td><td>T</td><td>T</td><td>T</td><td>O</td><td>T</td><td>T</td><td></td><td></td></tr>
+<tr><td><code>training.session.create</code></td><td>T</td><td></td><td></td><td></td><td>T</td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>training.session.update</code></td><td>T</td><td></td><td></td><td></td><td>T</td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>training.session.cancel</code></td><td>T</td><td></td><td></td><td></td><td>T</td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>training.session.close</code></td><td>T</td><td></td><td></td><td></td><td>T</td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>training.room.read</code></td><td>T</td><td></td><td></td><td></td><td>T</td><td>T</td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>training.room.manage</code></td><td>T</td><td></td><td></td><td></td><td>T</td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>training.trainer.read</code></td><td>T</td><td></td><td></td><td></td><td>T</td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>training.trainer.manage</code></td><td>T</td><td></td><td></td><td></td><td>T</td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>training.learner.read</code></td><td>T</td><td>T</td><td>E</td><td>O</td><td>T</td><td>O</td><td>T</td><td></td><td></td><td></td></tr>
+<tr><td><code>training.learner.create</code></td><td>T</td><td></td><td></td><td>O</td><td>T</td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>training.learner.update</code></td><td>T</td><td></td><td></td><td>O</td><td>T</td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>training.learner.delete</code></td><td>T</td><td></td><td></td><td></td><td>T</td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>training.enrollment.read</code></td><td>T</td><td>T</td><td>E</td><td>O</td><td>T</td><td></td><td>T</td><td>T</td><td></td><td></td></tr>
+<tr><td><code>training.enrollment.create</code></td><td>T</td><td></td><td></td><td>O</td><td>T</td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>training.enrollment.update</code></td><td>T</td><td></td><td></td><td></td><td>T</td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>training.enrollment.cancel</code></td><td>T</td><td></td><td></td><td></td><td>T</td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>training.attendance.read</code></td><td>T</td><td>T</td><td></td><td></td><td>T</td><td>O</td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>training.attendance.record</code></td><td>T</td><td></td><td></td><td></td><td>T</td><td>O</td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>training.evaluation.read</code></td><td>T</td><td>T</td><td></td><td></td><td>T</td><td>O</td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>training.evaluation.record</code></td><td>T</td><td></td><td></td><td></td><td>T</td><td>O</td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>training.certification.read</code></td><td>T</td><td>T</td><td>E</td><td></td><td>T</td><td>O</td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>training.certification.issue</code></td><td>T</td><td></td><td></td><td></td><td>T</td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>training.certification.revoke</code></td><td>T</td><td></td><td></td><td></td><td>T</td><td></td><td></td><td></td><td></td><td></td></tr>
+</tbody></table></div>
+<h3>Reporting (<code>reporting</code>)</h3>
+<div class="table-wrap"><table><thead><tr><th>Permission</th><th>SUPER_ADMIN</th><th>DIRECTION</th><th>HEAD_OF_SALES</th><th>ACCOUNT_MANAGER</th><th>TRAINING_MANAGER</th><th>TRAINER</th><th>SUPPORT</th><th>FINANCE</th><th>HR</th><th>TAX</th></tr></thead><tbody>
+<tr><td><code>reporting.dashboard.account_manager</code></td><td>T</td><td></td><td>E</td><td>O</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>reporting.dashboard.head_of_sales</code></td><td>T</td><td>T</td><td>T</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>reporting.dashboard.training</code></td><td>T</td><td>T</td><td></td><td></td><td>T</td><td>O</td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>reporting.dashboard.direction</code></td><td>T</td><td>T</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>reporting.dashboard.security</code></td><td>T</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>reporting.dashboard.admin</code></td><td>T</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>reporting.kpi.read</code></td><td>T</td><td>T</td><td>T</td><td></td><td>T</td><td></td><td></td><td>T</td><td></td><td></td></tr>
+<tr><td><code>reporting.report.read</code></td><td>T</td><td>T</td><td>T</td><td></td><td>T</td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td><code>reporting.report.export</code></td><td>T</td><td>T</td><td>E</td><td></td><td>T</td><td></td><td></td><td></td><td></td><td></td></tr>
+</tbody></table></div>
+<h2>5. Règles de gouvernance</h2>
+<ol><li><strong>Le <code>SUPER_ADMIN</code> a un accès complet</strong> (décision produit du 2026-10-20) : toutes les permissions, en portée Tous. C'est un compte à très haut risque ; garde-fous compensatoires : MFA obligatoire, toutes ses actions auditées, interdiction de modifier ses propres rôles, au moins <strong>deux</strong> comptes SuperAdmin pour la continuité, revue périodique de la liste. Test automatisé.</li><li><strong>Seul le <code>SUPER_ADMIN</code></strong> crée/modifie/désactive des utilisateurs, attribue des rôles, réinitialise le MFA et gère les rôles. Test automatisé.</li><li><strong>Nul ne modifie ni ne supprime le journal d'audit</strong> : le catalogue ne contient que <code>audit.log.read</code> et <code>audit.log.export</code>. Test automatisé + déclencheur SQL.</li><li>La <strong>Direction</strong> est en lecture seule (consulter, télécharger, exporter) sur le métier. Test automatisé.</li><li>Un utilisateur <strong>ne peut pas modifier ses propres rôles</strong>, SuperAdmin compris (règle à implémenter dans l'attribution de rôle en S3, avec test).</li><li>Tout changement de rôle est audité (<code>ROLE_CHANGE</code>) et exige un MFA récent (step-up).</li><li>Aucun export massif pour les rôles chargé de compte, support et formateur. Test automatisé.</li><li>Droits de base <strong>implicites</strong> pour tout utilisateur authentifié, hors catalogue : consulter son profil, changer son mot de passe, gérer son MFA et voir/révoquer ses propres sessions.</li></ol>
+<h2>6. Décisions prises et points restants</h2>
+<p><strong>Décidé le 2026-10-20 :</strong></p>
+<ul><li>Rôle <code>TRAINING_MANAGER</code> (Responsable Investudy) : <strong>ajouté</strong>.</li><li><code>SUPER_ADMIN</code> : <strong>accès complet</strong> (voir la règle 1 pour les garde-fous).</li><li>Portée Équipe : <strong>subordonnés directs</strong> uniquement (<code>managerId</code>, un seul niveau).</li><li><strong>MFA obligatoire pour tous les rôles.</strong> Interprétation : « MFA obligatoire » sans distinction vaut pour tout le monde ; un rôle peut être assoupli via <code>mfaRequired</code> si besoin.</li><li>Support : lecture seule. Direction : lecture du journal d'audit (ces lectures sont elles-mêmes auditées).</li><li><code>FINANCE</code>, <code>HR</code>, <code>TAX</code> : conservés mais quasi vides dans le CRM (leur périmètre est l'ERP).</li></ul>
+<p><strong>Restant à valider :</strong></p>
+<ul><li>Droits fins du rôle <code>FINANCE</code> dans le CRM (aujourd'hui : lecture des entreprises, inscriptions, sessions et indicateurs).</li><li>Droits sur l'<strong>agrément</strong> (promesse de paiement) : qui le saisit et le valide ? À préciser avant le sprint Business Development.</li></ul></main></body></html>

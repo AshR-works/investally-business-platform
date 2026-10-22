@@ -1,0 +1,40 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Stratégie de tests</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="INDEX.html">Index</a> · <a href="GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="ARCHITECTURE.html">Architecture</a> · <a href="SECURITY.html">Sécurité</a> · <a href="METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="TECH-DEBT.html">Dette</a> · <a href="design/README.html">Design</a> · <a href="livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>Stratégie de tests</h1>
+<h2>Pyramide</h2>
+<div class="table-wrap"><table><thead><tr><th>Niveau</th><th>Cible</th><th>Outils</th><th>Part</th></tr></thead><tbody>
+<tr><td>Unitaires du Domain</td><td>Agrégats, VO, services de domaine — sans base, sans NestJS</td><td>Jest</td><td>majorité</td></tr>
+<tr><td>Use cases</td><td>Application avec repositories en mémoire / faux ports</td><td>Jest</td><td>forte</td></tr>
+<tr><td>Intégration</td><td>Repositories Prisma + mappers + contraintes (PostgreSQL réel en Docker)</td><td>Jest + Testcontainers</td><td>moyenne</td></tr>
+<tr><td>Contrat/API</td><td>Endpoints, RBAC, validation, erreurs</td><td>Supertest</td><td>moyenne</td></tr>
+<tr><td>Architecture</td><td>Règles de dépendances</td><td>dependency-cruiser / eslint-plugin-boundaries</td><td>obligatoire, bloquant</td></tr>
+<tr><td>E2E</td><td>Parcours critiques (connexion+MFA, parcours prospect→offre→décharge)</td><td>Playwright</td><td>faible</td></tr>
+<tr><td>Sécurité</td><td>Tests d'autorisation par rôle, injection, rate limiting</td><td>automatisés + revue</td><td>à chaque module</td></tr>
+</tbody></table></div>
+<h2>Règles d'architecture testées en CI</h2>
+<ol><li><code>domain/<em>*</code> n'importe ni <code>@nestjs/</em></code>, ni <code>@prisma/client</code>, ni <code>class-validator</code>, ni rien hors <code>domain/</code> et <code>shared-kernel/</code>.</li><li><code>application/<strong></code> n'importe pas <code>@prisma/client</code> ni <code>infrastructure/</strong></code>.</li><li><code>presentation/<strong></code> n'importe pas <code>@prisma/client</code> ni <code>infrastructure/</strong></code>.</li><li>Un module n'importe que l'<code>index.ts</code> public d'un autre module.</li><li>Pas de cycle entre modules.</li></ol>
+<h2>Tranche verticale (Sprint 1)</h2>
+<p>Preuve de câblage de bout en bout : créer une <code>Company</code> (BD) via Next.js → contrôleur → use case → agrégat → repository Prisma → PostgreSQL → ligne d'audit. Elle valide les frontières avant d'empiler les modules.</p>
+<h2>Habitudes</h2>
+<ul><li>Tests écrits avec le code ; un bug = un test qui échoue d'abord.</li><li>CI : lint, types, tests unitaires, tests d'architecture, intégration, build Docker, audit des dépendances.</li><li>Aucun merge si la CI est rouge.</li></ul></main></body></html>

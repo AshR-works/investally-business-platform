@@ -1,0 +1,45 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Accessibilité 1 — vérification « lecteurs d&#x27;écran » : recette</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="INDEX.html">Index</a> · <a href="GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="ARCHITECTURE.html">Architecture</a> · <a href="SECURITY.html">Sécurité</a> · <a href="METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="TECH-DEBT.html">Dette</a> · <a href="design/README.html">Design</a> · <a href="livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>Accessibilité 1 — vérification « lecteurs d'écran » : recette</h1>
+<p><em>Branche <code>sprint/a11y-1-lecteurs-d-ecran</code> · 2026-10-21 · demandé par le product owner après validation de S3.4 et S3.5.</em></p>
+<h2>Ce qui a été fait, et ce qui ne l'a pas été</h2>
+<div class="table-wrap"><table><thead><tr><th>Fait</th><th>Pas fait (et pourquoi)</th></tr></thead><tbody>
+<tr><td>Audit <strong>axe-core 4.10.2</strong> (WCAG 2.0/2.1/2.2 A et AA + bonnes pratiques) de <strong>15 états d'écran réels</strong>, dans un navigateur réel (Edge sans fenêtre), sur une pile jetable</td><td><strong>Écoute avec NVDA / Narrator / VoiceOver</strong> : je ne peux pas faire fonctionner un lecteur d'écran. Elle reste à faire par une personne : protocole prêt dans <a href="accessibilite/PROTOCOLE-LECTEUR-D-ECRAN.html"><code>accessibilite/PROTOCOLE-LECTEUR-D-ECRAN.md</code></a></td></tr>
+<tr><td>Extraction de l'<strong>arbre d'accessibilité</strong> (ce que le navigateur transmet aux lecteurs d'écran), dans l'ordre de lecture, pour chaque état</td><td>Appareils mobiles (VoiceOver iOS, TalkBack)</td></tr>
+<tr><td>Contrôle du focus : entrée dans une fenêtre, Tab qui reste dedans, retour à l'élément d'origine après Échap</td><td>Prototype de design (branche <code>design/</code>) : à auditer au moment de son application</td></tr>
+</tbody></table></div>
+<p>Outil rejouable : <code>node scripts/a11y-audit.mjs --api-log &lt;journal de l'API&gt;</code> (résultats dans <code>docs/accessibilite/resultats/</code>).</p>
+<h2>Défauts trouvés et corrigés</h2>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Défaut</th><th>Gravité</th><th>Correction</th></tr></thead><tbody>
+<tr><td>1</td><td><strong>Même titre de page partout</strong> (« Investally CRM ») : un utilisateur de lecteur d'écran ne sait pas sur quelle page il est ni quand elle change (WCAG 2.4.2). <em>Non détecté par l'outil automatique.</em></td><td>Majeure</td><td>Composant <code>PageHeading</code> : le <code>h1</code> fixe aussi le titre du document, rétabli si Next.js le remplace après une navigation interne. Titres distincts pour les liens invalides (invitation / réinitialisation)</td></tr>
+<tr><td>2</td><td><strong>Fond non inerte derrière les fenêtres</strong> : le commentaire du code l'annonçait, mais seul <code>aria-modal</code> y contribuait (non respecté par tous les lecteurs) ; Tab pouvait sortir de la fenêtre. <em>Non détecté par l'outil automatique.</em></td><td>Majeure</td><td><code>Modal</code> : le reste de la page reçoit <code>inert</code>, Tab boucle dans la fenêtre, le focus est rendu à l'élément d'origine. Vérifié : 61 éléments lisibles avant, 19 après (fenêtre ouverte)</td></tr>
+<tr><td>3</td><td>Colonne d'actions de « Mon compte » sans nom (<code>th</code> vide) — détecté par axe</td><td>Mineure</td><td>Texte réservé « Actions » (<code>.sr-only</code>)</td></tr>
+<tr><td>4</td><td>Groupe des codes de secours : <code>aria-label</code> sur un <code>div</code> sans rôle (interdit par ARIA) — signalé « à vérifier » par axe</td><td>Mineure</td><td><code>role="group"</code></td></tr>
+</tbody></table></div>
+<h2>Résultat final (après corrections)</h2>
+<ul><li><strong>15 états audités, 0 violation, 0 point à vérifier à la main.</strong></li><li>Langue du document <code>fr</code> partout. Les erreurs (<code>role="alert"</code>) et confirmations (<code>role="status"</code>) sont annoncées sans déplacer le focus. Les champs obligatoires sont annoncés comme tels. Le QR code a une alternative texte et la clé manuelle est disponible.</li><li>Tests de l'interface : 24/24 ; typage sans erreur. Détail état par état : <a href="accessibilite/resultats/lecteur-d-ecran-proxy-2026-10-21.html"><code>accessibilite/resultats/lecteur-d-ecran-proxy-2026-10-21.md</code></a>.</li></ul>
+<h2>Reste à faire (dette D31)</h2>
+<ol><li>Écoute humaine du protocole (NVDA + Firefox au minimum, Narrator, puis VoiceOver).</li><li>Brancher <code>a11y-audit.mjs</code> dans la CI quand une pile de test web sera disponible (aujourd'hui lancé à la main).</li><li>Auditer les écrans du nouveau design à leur intégration (rail de navigation, hub, cartes d'opportunités ; toute interaction au glisser-déposer devra avoir une alternative clavier).</li></ol>
+<h2>Microsoft 365 (ajourné par le product owner le 2026-10-21)</h2>
+<p>Abonnement non réglé : on poursuit avec l'adaptateur « journal » (aucun e-mail réel ; liens lus dans la console en développement). <strong>La mise en production est bloquée</strong> tant que l'accès M365 n'est pas fourni (la configuration de production exige <code>EMAIL_PROVIDER=microsoft365</code>). Aucune alternative (SMTP, autre service) n'est décidée : le sujet suivra la méthode d'arbitrage si le délai se prolonge.</p></main></body></html>

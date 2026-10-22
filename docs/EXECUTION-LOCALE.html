@@ -1,0 +1,136 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Exécuter et valider Investally sans Claude Code</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="INDEX.html">Index</a> · <a href="GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="ARCHITECTURE.html">Architecture</a> · <a href="SECURITY.html">Sécurité</a> · <a href="METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="TECH-DEBT.html">Dette</a> · <a href="design/README.html">Design</a> · <a href="livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>Exécuter et valider Investally sans Claude Code</h1>
+<p><em>2026-10-22 · branche <code>sprint/execution-locale</code> · document de cadrage (décision attendue de la direction produit, voir §2).</em></p>
+<h2>0. Constat sur l'existant (vérifié dans le dépôt)</h2>
+<div class="table-wrap"><table><thead><tr><th>Élément</th><th>État réel</th><th>Conséquence</th></tr></thead><tbody>
+<tr><td>Modules livrés</td><td>Identité et accès (connexion, MFA, invitations, rôles, sessions), entreprises (Business Development), documents</td><td>On peut tester ces parcours <strong>maintenant</strong>. Opportunités, formations, finance, RH, reporting <strong>n'existent pas encore</strong> (S4 à S6)</td></tr>
+<tr><td>Base de données</td><td>PostgreSQL 17 : <code>docker-compose.yml</code> (service <code>db</code>, port 5433) ou base embarquée jetable (<code>apps/crm-api/scripts/test-db.mjs</code>)</td><td>La base embarquée ne demande <strong>ni Docker ni identifiants</strong></td></tr>
+<tr><td>Docker</td><td>Non détecté sur le poste de l'assistant ; le <code>docker-compose.yml</code> ne contient <strong>que la base et l'API</strong> (profil <code>full</code>), pas l'interface web, pas de migration ni de seed</td><td>Le Docker complet demande du travail avant d'être utile</td></tr>
+<tr><td>Node</td><td><code>.nvmrc</code> = 22 ; le poste de l'assistant a Node 26.7 (Prisma 7 le supporte « officieusement »)</td><td>Installer Node 22 sur votre poste</td></tr>
+<tr><td>Configuration</td><td>L'API refuse de démarrer en production sans clés (JWT, MFA, documents). En développement, clés <strong>éphémères</strong> : jetons et secrets MFA perdus à chaque redémarrage</td><td>Pour tester sur la durée, il faut des secrets <strong>persistants</strong> locaux</td></tr>
+<tr><td>Premier compte</td><td>Commande <code>admin:create</code> (pas de mot de passe par défaut, MFA obligatoire)</td><td>Il faut une application TOTP (téléphone ou extension navigateur)</td></tr>
+<tr><td>E-mails</td><td><code>EMAIL_PROVIDER=log</code> : aucun e-mail réel ; les liens d'invitation s'écrivent dans la console de l'API (<code>EMAIL_LOG_CONTENT=true</code>)</td><td>Aucun accès Microsoft 365 nécessaire en local</td></tr>
+<tr><td>Maquettes interactives</td><td>Prototype statique <code>docs/design/prototype/index.html</code> (+ <code>agenda.js</code>)</td><td>S'ouvre dans un navigateur, sans serveur</td></tr>
+<tr><td>CI</td><td><code>.github/workflows/ci.yml</code> : types, architecture, tests unitaires, migrations + intégration, audit</td><td>Déjà indépendante de Claude Code (nécessite un dépôt GitHub)</td></tr>
+</tbody></table></div>
+<h2>1. Architecture d'exécution recommandée</h2>
+<pre><code>Navigateur ──► Next.js 16 (127.0.0.1:3000) ──/api/*──► NestJS 11 (127.0.0.1:3001) ──► PostgreSQL 17 (127.0.0.1:54330)
+ (mémoire : jeton)   (proxy même origine, CSP)           (ES256, RBAC, audit)           schémas bd / audit / iam / docs
+                                                              └──► DOCUMENTS_DIR (disque local, 0700/0600)
+                                                              └──► e-mails : console (EMAIL_PROVIDER=log)</code></pre>
+<div class="table-wrap"><table><thead><tr><th>Couche</th><th>Local</th><th>Cible (production)</th></tr></thead><tbody>
+<tr><td>Frontend</td><td><code>next start</code> (ou <code>next dev</code>)</td><td>Next.js derrière TLS</td></tr>
+<tr><td>Backend</td><td><code>node dist/src/main.js</code></td><td>Conteneur Node 22</td></tr>
+<tr><td>Base</td><td>PostgreSQL embarqué <strong>persistant</strong> (dossier hors OneDrive)</td><td>PostgreSQL géré, sauvegardé</td></tr>
+<tr><td>Stockage</td><td>Disque local (<code>DOCUMENTS_DIR</code>) via le port <code>ObjectStorage</code></td><td>Adaptateur S3 (S7.1, dette D41)</td></tr>
+<tr><td>Authentification</td><td>Réelle : argon2id, JWT ES256, MFA TOTP (clés locales persistantes)</td><td>Idem, clés en coffre</td></tr>
+<tr><td>Tiers</td><td>Aucun (e-mails en console)</td><td>Microsoft 365 (S7), antivirus (S7.2, bloquant)</td></tr>
+</tbody></table></div>
+<h2>2. Stratégie MVP : trois options (décision à prendre)</h2>
+<ul><li><strong>A. Interface seule, données simulées.</strong> Le prototype HTML existe déjà ; l'application Next.js n'a pas de mode « données simulées », il faudrait en construire un et le maintenir.</li><li><strong>B. Interface + API réelle + PostgreSQL embarqué, sans Docker.</strong> Tout le vrai code, sécurité comprise, sur un poste Windows nu.</li><li><strong>C. Docker complet.</strong> Reproductible partout, mais le compose actuel est incomplet et Docker n'est pas installé.</li></ul>
+<div class="table-wrap"><table><thead><tr><th>Critère (poids)</th><th>A</th><th>B</th><th>C</th></tr></thead><tbody>
+<tr><td>Fidélité au vrai produit (5)</td><td>1</td><td>5</td><td>5</td></tr>
+<tr><td>Rapidité de mise en place (5)</td><td>5</td><td>4</td><td>2</td></tr>
+<tr><td>Autonomie vis-à-vis de l'outil (4)</td><td>5</td><td>5</td><td>4</td></tr>
+<tr><td>Reproductibilité / fiabilité (4)</td><td>3</td><td>3</td><td>5</td></tr>
+<tr><td>Coût de maintenance (3)</td><td>2</td><td>4</td><td>3</td></tr>
+<tr><td><strong>Total / 105</strong></td><td><strong>68</strong></td><td><strong>89</strong></td><td><strong>80</strong></td></tr>
+</tbody></table></div>
+<div class="table-wrap"><table><thead><tr><th></th><th>Avantages</th><th>Inconvénients</th><th>Effort</th><th>Pertinence Investally</th></tr></thead><tbody>
+<tr><td>A</td><td>Immédiat pour les maquettes</td><td>Ne teste ni sécurité, ni droits, ni données ; dérive vers le vrai produit</td><td>1 jour + maintenance</td><td>Faible (le prototype couvre déjà ce besoin)</td></tr>
+<tr><td>B</td><td>Vrai produit, aucun prérequis lourd, base persistante</td><td>Windows/Node 22 à soigner ; moins proche de la production qu'un conteneur</td><td>½ jour (script écrit et testé)</td><td><strong>Forte</strong></td></tr>
+<tr><td>C</td><td>Même environnement partout, prépare S7</td><td>Docker Desktop à installer, compose à compléter (web, migration, seed, secrets), images à construire</td><td>2 à 3 jours</td><td>Moyenne maintenant, forte en S7</td></tr>
+</tbody></table></div>
+<p><strong>Recommandation (à confirmer par vous) : B maintenant, C en S7</strong> (le Dockerfile et le compose existent comme base). Risques de B : divergence avec la production (réduite par la CI qui, elle, tourne sur PostgreSQL 17 réel) ; Node hors version (le script avertit). Réversible : aucun choix de B n'empêche C.</p>
+<h2>3. Arborescence (existante, sans bouleversement)</h2>
+<pre><code>investally-platform/
+├─ apps/crm-api/        NestJS, prisma/ (schéma, migrations), scripts/, src/modules/{iam,audit,business-development,documents}
+├─ apps/crm-web/        Next.js (app/, components/, lib/, test/)
+├─ docs/                architecture, sécurité, recettes, cadrages, design/ (prototype HTML), accessibilite/
+├─ scripts/             local-stack.mjs (nouveau), a11y-audit.mjs, md-to-html.py
+├─ .github/workflows/   ci.yml
+├─ docker-compose.yml   (à compléter pour S7)
+└─ ../investally-local/ HORS dépôt : pgdata/, documents/, logs/, secrets.json</code></pre>
+<p>Pas de <code>packages/</code> tant qu'un second consommateur (ERP) n'existe pas (ADR-0005). Un dossier <code>docker/</code> n'est utile qu'en S7.</p>
+<h2>4. Mise en place locale (option B)</h2>
+<p><strong>Prérequis</strong> : Windows 10/11, Git, Node 22 LTS (via <code>nvm-windows</code> ou <code>fnm</code>), pnpm 12 (<code>corepack enable</code>), une application TOTP (téléphone, ou extension navigateur).</p>
+<pre><code>git clone &lt;dépôt&gt; C:\dev\investally-platform
+cd C:\dev\investally-platform
+git checkout main            # ou l&#x27;étiquette s3-6-validated
+pnpm install
+node scripts/local-stack.mjs --demo</code></pre>
+<p>Le script (<code>scripts/local-stack.mjs</code>, <strong>testé le 2026-10-22 sur ports et dossier jetables, voir ci-dessous</strong>) : génère des secrets locaux persistants, démarre PostgreSQL embarqué persistant (port 54330), applique les migrations, synchronise rôles/permissions, crée l'administrateur (mot de passe aléatoire affiché une seule fois), ajoute 40 entreprises fictives avec <code>--demo</code>, compile si nécessaire, démarre API et interface.</p>
+<div class="table-wrap"><table><thead><tr><th>Variable</th><th>Valeur locale</th><th>Source</th></tr></thead><tbody>
+<tr><td><code>DATABASE_URL</code></td><td><code>postgresql://investally_local:&lt;aléatoire&gt;@127.0.0.1:54330/investally_local</code></td><td>secrets.json</td></tr>
+<tr><td><code>JWT_PRIVATE_KEY_PEM</code> / <code>JWT_PUBLIC_KEY_PEM</code></td><td>paire ES256 persistante</td><td>secrets.json</td></tr>
+<tr><td><code>MFA_ENCRYPTION_KEY</code></td><td>32 octets base64 persistants</td><td>secrets.json</td></tr>
+<tr><td><code>DOCUMENTS_DIR</code></td><td><code>..\investally-local\documents</code></td><td>script</td></tr>
+<tr><td><code>ALLOWED_ORIGINS</code>, <code>APP_PUBLIC_URL</code></td><td><code>http://127.0.0.1:3000</code></td><td>script</td></tr>
+<tr><td><code>EMAIL_PROVIDER</code>, <code>EMAIL_LOG_CONTENT</code></td><td><code>log</code>, <code>true</code></td><td>script</td></tr>
+</tbody></table></div>
+<p><strong>Vérification</strong> : <code>http://127.0.0.1:3000/login</code> s'affiche → connexion avec l'e-mail <code>admin@investally.test</code> → scan du QR → fiche entreprises remplie → <code>http://127.0.0.1:3001/api/docs</code> (Swagger). Commandes utiles : <code>--dev</code> (rechargement à chaud), <code>--rebuild</code>, <code>reset</code> (efface tout après confirmation). Les liens d'invitation sont dans <code>..\investally-local\logs\api.log</code>.</p>
+<p>Qualité sans Claude Code : <code>pnpm ci</code> (types, architecture, tests) puis <code>node apps/crm-api/scripts/test-db.mjs</code> (intégration, base jetable).</p>
+<p><strong>Test réalisé</strong> (base, ports et dossier jetables, Node 26.7) : premier démarrage complet (6 migrations, 95 permissions, 10 rôles, administrateur, 40 entreprises) ; redémarrage : données conservées, aucun second administrateur, démonstration idempotente (0 ajout) ; interface 200, proxy <code>/api</code> 401 attendu, connexion par mot de passe réussie à travers le proxy. <strong>Non testé</strong> : l'enrôlement MFA dans le navigateur (à faire par vous), Node 22, <code>--dev</code>. Deux défauts corrigés pendant le test : interface compilée pour un autre port d'API (recompilation automatique), <code>next build</code> refusait <code>NODE_ENV=development</code>.</p>
+<h2>5. Docker : pas maintenant</h2>
+<p>À faire en S7 : service <code>web</code>, étape de migration, secrets par fichier, utilisateur non-root, healthchecks, image API en <code>--prod</code> (le Dockerfile actuel copie tout le dépôt avec ses dépendances de développement), réseau interne, sauvegarde du volume documents. Avantages : reproductible, proche de la production. Inconvénients : installation de Docker Desktop (WSL2, licence selon l'organisation), images à maintenir, débogage plus lent.</p>
+<h2>6. Base de données</h2>
+<div class="table-wrap"><table><thead><tr><th>Usage</th><th>Choix</th></tr></thead><tbody>
+<tr><td>Développement et recette manuelle</td><td>PostgreSQL embarqué <strong>persistant</strong> (script) ; si vous préférez une installation, PostgreSQL 17 natif avec une base dédiée <strong>jamais celle de production</strong></td></tr>
+<tr><td>Tests automatiques</td><td>PostgreSQL embarqué <strong>jetable</strong> (<code>test-db.mjs</code>) + service PostgreSQL 17 de la CI</td></tr>
+<tr><td>Préproduction / production</td><td>PostgreSQL 17 géré (ou conteneur en S7), sauvegardes testées</td></tr>
+</tbody></table></div>
+<p>Recommandation : embarqué persistant en local, PostgreSQL 17 réel en CI (déjà le cas).</p>
+<h2>7. Stratégie de tests</h2>
+<div class="table-wrap"><table><thead><tr><th>Type</th><th>Outils</th><th>Fréquence</th><th>Priorité</th></tr></thead><tbody>
+<tr><td>API et droits</td><td>Jest + Supertest (matrice rôle × route)</td><td>À chaque commit (CI)</td><td>1</td></tr>
+<tr><td>Intégration</td><td>Jest + base PostgreSQL jetable</td><td>À chaque PR</td><td>1</td></tr>
+<tr><td>Architecture</td><td>dependency-cruiser</td><td>À chaque PR</td><td>1</td></tr>
+<tr><td>Fonctionnels / parcours</td><td>Manuel guidé (§8 scénarios) maintenant ; <strong>Playwright</strong> à ajouter pour connexion+MFA et parcours prospect → offre</td><td>À chaque session livrée</td><td>2</td></tr>
+<tr><td>Accessibilité</td><td><code>scripts/a11y-audit.mjs</code> + écoute NVDA (D31)</td><td>Chaque écran nouveau</td><td>2</td></tr>
+<tr><td>UX / utilisateurs</td><td>Atelier de cadrage UX + tests avec 3 à 5 utilisateurs</td><td>Avant S4.1, puis chaque lot</td><td>2</td></tr>
+</tbody></table></div>
+<h2>8. Données de démonstration</h2>
+<p>Principe : <strong>fictives, générées, idempotentes, jamais de données réelles</strong>, comptes d'un domaine <code>.test</code>.</p>
+<div class="table-wrap"><table><thead><tr><th>Module</th><th>Maintenant</th><th>Quand</th></tr></thead><tbody>
+<tr><td>CRM : entreprises</td><td>40 entreprises (secteurs, pays, statuts) via <code>--demo</code></td><td>Prêt</td></tr>
+<tr><td>Documents</td><td>Envoi manuel d'un PDF/PNG de test</td><td>Prêt</td></tr>
+<tr><td>Comptes</td><td>1 SuperAdmin + <strong>un compte par rôle</strong> (<code>--demo</code>) : <code>direction@</code>, <code>commercial@</code>, <code>compte1@</code>, <code>compte2@</code> (deux chargés de compte pour tester la portée « propres objets »), <code>investudy@</code>, <code>formateur@</code>, <code>support@</code>, <code>finance@</code>, <code>rh@</code>, <code>fiscalite@</code> + <code>demo.investally.test</code>. Mots de passe <strong>aléatoires par compte</strong>, conservés dans <code>..\investally-local\demo-accounts.json</code> ; MFA à enrôler à la première connexion ; commande interdite en production. Les 40 entreprises sont réparties 20/20 entre <code>compte1</code> et <code>compte2</code> ; <code>compte1/2</code> ont pour responsable <code>commercial</code>, <code>formateur</code> pour responsable <code>investudy</code></td><td>Prêt</td></tr>
+<tr><td>Contacts, offres, décharges, relances, opportunités, agenda</td><td>Seed scénarisé « un prospect de A à Z »</td><td>S4.1 à S4.4</td></tr>
+<tr><td>Formations (Investudy)</td><td>Sessions, inscrits, présences</td><td>S5</td></tr>
+<tr><td>Finance, RH</td><td>Facture, paie fictives</td><td>Après S5 (ERP)</td></tr>
+<tr><td>Reporting</td><td>Calculé sur les données ci-dessus</td><td>S6</td></tr>
+</tbody></table></div>
+<p>Scénarios testables dès maintenant : (1) premier administrateur, MFA, déconnexion ; (2) invitation d'un collaborateur, activation, droits par rôle ; (3) liste et filtres des entreprises ; (4) envoi, nouvelle version, téléchargement, archivage d'un document ; (5) sessions actives et révocation ; (6) refus d'accès hors périmètre (404).</p>
+<h2>9. Environnements</h2>
+<div class="table-wrap"><table><thead><tr><th></th><th>Objectif</th><th>Configuration</th><th>Public</th><th>Données</th></tr></thead><tbody>
+<tr><td>LOCAL</td><td>Développer, recetter</td><td>Option B, secrets locaux</td><td>Vous, développeurs</td><td>Fictives</td></tr>
+<tr><td>DEV</td><td>Intégration continue partagée</td><td>Conteneurs (S7), déploiement auto depuis <code>main</code></td><td>Équipe technique</td><td>Fictives</td></tr>
+<tr><td>PREPROD</td><td>Répétition de la production, recette métier</td><td>Même configuration que PROD, antivirus, Microsoft 365 de test, TLS</td><td>Direction, utilisateurs pilotes</td><td>Anonymisées ou fictives</td></tr>
+<tr><td>PROD</td><td>Exploitation</td><td>Clés en coffre, sauvegardes, supervision, S3, antivirus</td><td>Tous</td><td>Réelles</td></tr>
+</tbody></table></div>
+<h2>10. Roadmap d'exécution</h2>
+<ol><li><strong>Maquettes</strong> (déjà : prototype HTML v0.4.1 + registre EXD).</li><li><strong>Application locale</strong> (cette étape : option B, validation de votre poste, ½ jour).</li><li><strong>Backend réel écran par écran</strong> (S4 à S6, déjà la méthode).</li><li><strong>Conteneurisation + DEV</strong> (début S7.1 : compose complet, S3, sauvegardes).</li><li><strong>Préproduction</strong> (S7.2 : antivirus bloquant, Microsoft 365, avis juridique, deux SuperAdmins, écoute lecteur d'écran, test de restauration).</li><li><strong>Production</strong> (go de la direction, plan de retour arrière).</li></ol>
+<h2>Points à décider par vous</h2>
+<ol><li>Option B maintenant puis C en S7 (recommandée), ou autre.</li><li><del>Tester le script</del> fait (voir §4) ; reste votre essai sur votre poste avec Node 22.</li><li><del>Un compte par rôle</del> fait (§8).</li><li>Ajouter Playwright (parcours connexion + MFA) dans une prochaine session ?</li></ol></main></body></html>
