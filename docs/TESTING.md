@@ -18,6 +18,9 @@
 4. Un module n'importe que l'`index.ts` public d'un autre module.
 5. Pas de cycle entre modules.
 
+## Contrat anti-IDOR
+`test/idor-contract.spec.ts` (sans base) refuse toute route à identifiant non classée dans `test/support/idor-registry.ts` ; `test/idor-contract.integration.spec.ts` (PostgreSQL jetable) sonde chaque route « objet » avec deux acteurs sans portée. Ajouter une route `:id` impose donc d'écrire sa sonde.
+
 ## Tranche verticale (Sprint 1)
 Preuve de câblage de bout en bout : créer une `Company` (BD) via Next.js → contrôleur → use case → agrégat → repository Prisma → PostgreSQL → ligne d'audit. Elle valide les frontières avant d'empiler les modules.
 
