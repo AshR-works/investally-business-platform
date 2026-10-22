@@ -1,3 +1,5 @@
+import { tmpdir } from 'node:os';
+import { isAbsolute, join } from 'node:path';
 import { AppConfig, AppEnvironment } from '../shared-kernel';
 
 /** Lit l'environnement d'exécution (`production`, `test`, sinon développement). */
@@ -80,6 +82,11 @@ export function loadAppConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     throw new Error('EMAIL_LOG_CONTENT=true est interdit en production : il écrirait des liens d\'activation dans les journaux');
   }
 
+  const documentsDirectory = env.DOCUMENTS_DIR?.trim() || (production ? '' : join(tmpdir(), 'investally-documents'));
+  if (production && !isAbsolute(documentsDirectory)) {
+    throw new Error('DOCUMENTS_DIR (chemin absolu, hors racine web) est obligatoire en production : les fichiers téléversés y sont stockés');
+  }
+
   return {
     env: environment,
     cookieSecure,
@@ -88,6 +95,7 @@ export function loadAppConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     publicUrl,
     mfa: { encryptionKeyBase64: mfaKey },
     email: { provider, microsoft365, logContent },
+    documents: { directory: documentsDirectory },
     jwt: { privateKeyPem, publicKeyPem, issuer: 'investally-crm', audience: 'investally-crm-api' },
   };
 }

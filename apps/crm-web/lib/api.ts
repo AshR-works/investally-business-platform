@@ -118,17 +118,22 @@ export interface RequestOptions {
   auth?: boolean;
   /** Permet d'abandonner une requête devenue inutile (ex. recherche dont la saisie a changé). */
   signal?: AbortSignal;
+  /** Corps binaire (envoi de fichier) : remplace `body` JSON ; le type de contenu est celui indiqué. */
+  raw?: { type: string; data: Blob };
+  /** `true` : la réponse est un fichier (téléchargement), renvoyé tel quel (`Blob`) au lieu d'être lue comme du JSON. */
+  blob?: boolean;
 }
 
 /** Envoie une requête vers `/api/v1` avec le jeton en en-tête (jamais dans l'URL) et sans mise en cache. */
 async function send(path: string, options: RequestOptions): Promise<Response> {
   const headers: Record<string, string> = { Accept: 'application/json' };
   if (options.body !== undefined) headers['Content-Type'] = 'application/json';
+  if (options.raw) headers['Content-Type'] = options.raw.type;
   if (options.auth !== false && accessToken) headers.Authorization = `Bearer ${accessToken}`;
   return fetch(`/api/v1${path}`, {
     method: options.method ?? 'GET',
     headers,
-    body: options.body === undefined ? undefined : JSON.stringify(options.body),
+    body: options.raw ? options.raw.data : options.body === undefined ? undefined : JSON.stringify(options.body),
     credentials: 'same-origin',
     cache: 'no-store',
     signal: options.signal,
@@ -169,5 +174,6 @@ export async function api<T = unknown>(path: string, options: RequestOptions = {
 
   if (!res.ok) throw await toError(res);
   if (res.status === 204) return undefined as T;
+  if (options.blob) return (await res.blob()) as T;
   return (await res.json()) as T;
 }

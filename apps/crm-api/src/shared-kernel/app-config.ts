@@ -22,6 +22,10 @@ export interface AppConfig {
     logContent: boolean;
     microsoft365: { tenantId: string; clientId: string; clientSecret: string; sender: string } | null;
   };
+  documents: {
+    /** Dossier des fichiers téléversés, HORS de toute racine web (droits restreints). Obligatoire et absolu en production. */
+    directory: string;
+  };
   jwt: {
     /** Clé privée ES256 au format PEM PKCS#8 ; absente = paire éphémère (développement et test uniquement). */
     privateKeyPem: string | null;
