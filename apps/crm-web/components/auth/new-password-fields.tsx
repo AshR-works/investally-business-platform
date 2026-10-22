@@ -1,5 +1,6 @@
 import { passwordRules } from '../../lib/password';
 import { Icon } from '../icon';
+import { PasswordField } from './password-field';
 
 /**
  * Champs « nouveau mot de passe » + confirmation, avec les règles visibles en direct (chacune annoncée « respectée » ou
@@ -16,10 +17,7 @@ export function NewPasswordFields({ password, confirmation, onPassword, onConfir
   const mismatch = confirmation.length > 0 && confirmation !== password;
   return (
     <>
-      <label>
-        Nouveau mot de passe
-        <input type="password" value={password} onChange={(e) => onPassword(e.target.value)} autoComplete="new-password" maxLength={256} required autoFocus />
-      </label>
+      <PasswordField label="Nouveau mot de passe" value={password} onChange={onPassword} autoComplete="new-password" autoFocus />
       <ul aria-label="Règles du mot de passe" className="mb-4 mt-0 flex list-none flex-col gap-1 p-0 text-[length:var(--text-sm)]">
         {rules.map((rule) => (
           <li key={rule.label} className={`flex items-center gap-2 ${rule.met ? 'text-ok' : 'text-ink-2'}`}>
@@ -28,10 +26,7 @@ export function NewPasswordFields({ password, confirmation, onPassword, onConfir
           </li>
         ))}
       </ul>
-      <label>
-        Confirmez le mot de passe
-        <input type="password" value={confirmation} onChange={(e) => onConfirmation(e.target.value)} autoComplete="new-password" maxLength={256} required aria-invalid={mismatch} />
-      </label>
+      <PasswordField label="Confirmez le mot de passe" value={confirmation} onChange={onConfirmation} autoComplete="new-password" invalid={mismatch} />
       {mismatch && <p role="alert" className="mb-4 mt-0 text-[length:var(--text-sm)] text-bad">Les deux mots de passe sont différents.</p>}
     </>
   );

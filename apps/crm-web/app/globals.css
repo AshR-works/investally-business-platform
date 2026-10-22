@@ -79,6 +79,15 @@ td .row { min-width: 15rem; }
 .qr { display: block; margin: .5rem auto 1rem; width: 220px; height: 220px; background: #fff; padding: 8px; border-radius: var(--radius-xs); }
 .secret { font-family: ui-monospace, Consolas, monospace; letter-spacing: .08em; overflow-wrap: anywhere; }
 .codes { display: grid; grid-template-columns: repeat(2, 1fr); gap: .4rem; font-family: ui-monospace, Consolas, monospace; margin: 1rem 0; }
+/* Edge affiche sa propre icône « œil » dans les champs mot de passe : on la retire, le bouton du composant PasswordField la remplace. */
+input[type='password']::-ms-reveal, input[type='password']::-ms-clear { display: none; }
+.codes-print { display: none; }
+@media print {
+  body[data-print='codes'] > *:not(.codes-print) { display: none !important; }
+  body[data-print='codes'] .codes-print { display: block; padding: 2rem; color: #000; background: #fff; font-family: ui-monospace, Consolas, monospace; }
+  body[data-print='codes'] .codes-print h1 { font-size: 1.4rem; }
+  body[data-print='codes'] .codes-print ol { font-size: 1.2rem; line-height: 2; }
+}
 .codes span { background: var(--surface-2); border: 1px solid var(--line-strong); border-radius: var(--radius-xs); padding: .3rem .5rem; text-align: center; }
 fieldset { border: 1px solid var(--line-strong); border-radius: var(--radius-xs); margin: 0 0 .9rem; padding: .6rem .9rem; }
 legend { font-weight: 600; padding: 0 .3rem; }
