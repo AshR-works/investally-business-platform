@@ -132,7 +132,7 @@ Principe : **fictives, générées, idempotentes, jamais de données réelles**,
 |---|---|---|
 | CRM : entreprises | 40 entreprises (secteurs, pays, statuts) via `--demo` | Prêt |
 | Documents | Envoi manuel d'un PDF/PNG de test | Prêt |
-| Comptes | 1 SuperAdmin ; les autres rôles se créent par invitation (le lien est dans le journal) | Prêt ; seed de 1 compte par rôle à décider (mots de passe aléatoires, jamais par défaut) |
+| Comptes | 1 SuperAdmin + **un compte par rôle** (`--demo`) : `direction@`, `commercial@`, `compte1@`, `compte2@` (deux chargés de compte pour tester la portée « propres objets »), `investudy@`, `formateur@`, `support@`, `finance@`, `rh@`, `fiscalite@` + `demo.investally.test`. Mots de passe **aléatoires par compte**, conservés dans `..\investally-local\demo-accounts.json` ; MFA à enrôler à la première connexion ; commande interdite en production. Les 40 entreprises sont réparties 20/20 entre `compte1` et `compte2` ; `compte1/2` ont pour responsable `commercial`, `formateur` pour responsable `investudy` | Prêt |
 | Contacts, offres, décharges, relances, opportunités, agenda | Seed scénarisé « un prospect de A à Z » | S4.1 à S4.4 |
 | Formations (Investudy) | Sessions, inscrits, présences | S5 |
 | Finance, RH | Facture, paie fictives | Après S5 (ERP) |
@@ -161,5 +161,5 @@ Scénarios testables dès maintenant : (1) premier administrateur, MFA, déconne
 ## Points à décider par vous
 1. Option B maintenant puis C en S7 (recommandée), ou autre.
 2. ~~Tester le script~~ fait (voir §4) ; reste votre essai sur votre poste avec Node 22.
-3. Seed d'un compte par rôle (mots de passe aléatoires) pour la recette ?
+3. ~~Un compte par rôle~~ fait (§8).
 4. Ajouter Playwright (parcours connexion + MFA) dans une prochaine session ?

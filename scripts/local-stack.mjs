@@ -184,6 +184,29 @@ if (flag('demo')) {
     added += r.rowCount;
   }
   say(`✔ Données de démonstration : ${added} entreprise(s) ajoutée(s)`);
+
+  // Un compte par rôle (mots de passe aléatoires, conservés dans demo-accounts.json, droits restreints).
+  const accountsFile = join(home, 'demo-accounts.json');
+  const before = existsSync(accountsFile) ? JSON.parse(readFileSync(accountsFile, 'utf8')).length : 0;
+  node(apiDir, join('dist', 'src', 'cli', 'create-demo-users.js'), [], { ...appEnv, DEMO_ACCOUNTS_FILE: accountsFile }, 'comptes de démonstration');
+  const accounts = JSON.parse(readFileSync(accountsFile, 'utf8'));
+  // Répartit les entreprises sans propriétaire entre les deux chargés de compte (tests de portée « propres objets »).
+  const owners = await db.query("SELECT id, email_key FROM iam.users WHERE email_key IN ('compte1@demo.investally.test', 'compte2@demo.investally.test') ORDER BY email_key");
+  if (owners.rowCount === 2) {
+    await db.query(
+      `UPDATE bd.companies SET owner_user_id = CASE WHEN (row_number % 2) = 1 THEN $1::uuid ELSE $2::uuid END
+       FROM (SELECT id AS cid, row_number() OVER (ORDER BY name) AS row_number FROM bd.companies WHERE owner_user_id IS NULL AND name LIKE 'Démo Entreprise%') t
+       WHERE bd.companies.id = t.cid`,
+      [owners.rows[0].id, owners.rows[1].id],
+    );
+  }
+  if (accounts.length > before) {
+    say('\n┌ Comptes de démonstration (un par rôle ; MFA à enrôler à la première connexion)');
+    for (const a of accounts) say(`│ ${a.role.padEnd(16)} ${a.email.padEnd(36)} ${a.password}`);
+    say(`└ Conservés dans ${accountsFile} (local, droits restreints).`);
+  } else {
+    say(`✔ Comptes de démonstration déjà présents (mots de passe : ${accountsFile})`);
+  }
 }
 await db.end();
 
