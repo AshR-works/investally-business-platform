@@ -1,0 +1,51 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>H2b — Sessions et historique des connexions : recette</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="INDEX.html">Index</a> · <a href="GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="ARCHITECTURE.html">Architecture</a> · <a href="SECURITY.html">Sécurité</a> · <a href="METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="TECH-DEBT.html">Dette</a> · <a href="design/README.html">Design</a> · <a href="livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>H2b — Sessions et historique des connexions : recette</h1>
+<p><em>Branche <code>sprint/h2b-sessions-et-historique</code> · 2026-10-22 · décisions du cadrage H2 : <strong>CAD-H2-1 A</strong> (historique lu dans le journal d'audit), <strong>CAD-H2-2 A</strong> (visible par l'intéressé seulement), <strong>CAD-H2-3 B</strong> (deux lots : H2a livré et validé, H2b = ce lot). Écrans S01 à S03.</em></p>
+<h2>Ce qui est livré</h2>
+<h3>API (seule nouveauté côté serveur de H2)</h3>
+<div class="table-wrap"><table><thead><tr><th>Route</th><th>Rôle</th><th>Garde-fous</th></tr></thead><tbody>
+<tr><td><code>GET /auth/sessions/history</code></td><td>Mes connexions réussies et échouées sur <strong>90 jours</strong>, du plus récent au plus ancien, pagination par curseur (<code>limit</code> ≤ 100, <code>before</code>)</td><td>Identité tirée <strong>du jeton seulement</strong> : aucun identifiant d'utilisateur n'est accepté (<code>?userId=</code> → 400) ; permission <code>iam.session.read</code> ; <code>Cache-Control: no-store</code> ; aucune table nouvelle (lecture du journal d'audit en ajout seul)</td></tr>
+<tr><td><code>POST /auth/sessions/revoke-others</code></td><td>Déconnecte <strong>tous mes autres appareils</strong>, la session courante reste ouverte</td><td><strong>MFA récent exigé</strong> (step-up) ; cible = l'appelant, jamais lue dans la requête ; jetons de rafraîchissement révoqués ; action <strong>auditée</strong> (<code>SESSION_REVOKE</code>, <code>other_sessions_revoked</code>, nombre)</td></tr>
+</tbody></table></div>
+<p>Ce que l'historique <strong>ne montre pas</strong> : le motif précis d'un échec (compte inconnu, verrouillé, inactif…) — seulement « identifiants refusés » ou « second facteur refusé » ; aucun identifiant de session ni valeur d'audit ; aucune localisation. Les tentatives sur une adresse inconnue n'y figurent pas (aucun compte à qui les rattacher).</p>
+<h3>Interface (nouvelle page <code>/account/sessions</code>, lien depuis « Mon compte »)</h3>
+<ul><li><strong>S01 Sessions actives</strong> : appareil lisible, adresse IP, <strong>niveau de risque</strong> (texte + teinte), « Cette session », dates.</li><li><strong>S02 Historique des connexions</strong> : date, résultat (réussie / échec et étape), IP, appareil ; « Voir les connexions plus anciennes » ; état vide.</li><li><strong>S03 Révocation</strong> : fenêtre de confirmation pour une session ou pour « tous mes autres appareils » ; le code MFA est redemandé par l'interface si le MFA n'est plus récent ; résultat annoncé (<code>role="status"</code>).</li></ul>
+<h2>Preuves</h2>
+<div class="table-wrap"><table><thead><tr><th>Contrôle</th><th>Résultat</th></tr></thead><tbody>
+<tr><td>API, tests unitaires</td><td><strong>391 / 391</strong> (dont 11 nouveaux : lecture et bornes de l'historique, aucune fuite de motif, révocation des autres sessions sans toucher les autres utilisateurs)</td></tr>
+<tr><td>API, tests d'intégration (PostgreSQL jetable)</td><td><strong>149 / 149</strong> (dont 8 nouveaux : mon historique et pas celui des autres, ordre, pagination disjointe, paramètres invalides refusés, 401 sans jeton, 403 sans second facteur, révocation des autres sessions, <strong>step-up obligatoire sans rien révoquer</strong>, aucune cible dans la requête)</td></tr>
+<tr><td>Matrice des droits (rôle × route)</td><td>Mise à jour : 2 routes ajoutées, toutes les permissions et le step-up vérifiés pour chaque rôle ; <code>route-protection</code> : aucune route ouverte par oubli</td></tr>
+<tr><td>Architecture</td><td><strong>0 violation</strong> (130 modules)</td></tr>
+<tr><td>Mutants</td><td><strong>4 / 4 tués</strong> : filtre utilisateur supprimé de la lecture ; session courante révoquée avec les autres ; step-up retiré de la route ; motif d'échec exposé</td></tr>
+<tr><td>Interface</td><td><strong>62 / 62</strong> tests ; typage sans erreur</td></tr>
+<tr><td>Navigateur réel, audit axe-core</td><td><strong>33 états, 0 violation</strong>, dont sessions et historique, les deux fenêtres de confirmation, révocation d'une session puis de toutes les autres (il reste exactement 1 session, la courante)</td></tr>
+<tr><td>Politique de contenu (CSP)</td><td>0 violation</td></tr>
+</tbody></table></div>
+<p><strong>À vérifier à la main (2, mêmes causes)</strong> : axe ne peut pas déterminer le fond du paragraphe des deux fenêtres de confirmation (« recouvrement partiel »). Contrôle manuel : texte <code>#1D1D1B</code> sur fond blanc, soit un contraste d'environ 17 : 1 (clair) ; thème sombre couvert par les mêmes jetons déjà audités.</p>
+<p>Captures : <code>docs/accessibilite/h2b-captures/</code> (<code>sessions</code>, <code>sessions-revocation</code>, <code>sessions-apres</code>).</p>
+<h2>Écarts et points d'attention</h2>
+<ul><li><strong>Adresse IP</strong> : c'est celle que le serveur voit. En production, derrière un proxy, elle n'est exacte que si <code>TRUST_PROXY</code> est configuré correctement (dette D40, à vérifier en S7).</li><li><strong>Avis juridique</strong> sur la conservation et l'affichage des adresses IP et appareils : <strong>toujours à obtenir</strong> (Étape 0). La fenêtre de 90 jours et la visibilité réservée à l'intéressé sont les mesures de minimisation retenues en attendant.</li><li>Pas de vue administrateur de l'historique (décision CAD-H2-2 A) ; extensible sans migration si la direction produit le décide.</li><li>Nombre de codes de secours restants (D39) : non traité, en attente de votre décision.</li><li>L'écoute avec un vrai lecteur d'écran (D31) doit couvrir : les six cases du code, les tableaux de sessions et d'historique, les fenêtres de confirmation.</li></ul>
+<h2>À valider</h2>
+<p>« Je valide H2b » → fusion <code>--no-ff</code> dans <code>main</code> et étiquette <code>h2b-validated</code>. Cela clôt H2 (EXD-06 réalisée : A01 à A15 et S01 à S03).</p></main></body></html>

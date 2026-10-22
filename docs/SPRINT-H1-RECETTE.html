@@ -1,0 +1,77 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>H1 et H1b — Habillage, hub et composants de données : recette</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="INDEX.html">Index</a> · <a href="GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="ARCHITECTURE.html">Architecture</a> · <a href="SECURITY.html">Sécurité</a> · <a href="METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="TECH-DEBT.html">Dette</a> · <a href="design/README.html">Design</a> · <a href="livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>H1 et H1b — Habillage, hub et composants de données : recette</h1>
+<p><em>Branche <code>sprint/h1-habillage-hub</code> · 2026-10-21 · décisions : CAD-H1-1 à 4 (toutes « A », voir <a href="cadrages/CADRAGE-H1-HABILLAGE-ET-HUB.html">cadrages/CADRAGE-H1-HABILLAGE-ET-HUB.md</a>).</em></p>
+<h2>Ce qui est livré</h2>
+<div class="table-wrap"><table><thead><tr><th>Élément</th><th>Détail</th></tr></thead><tbody>
+<tr><td><strong>Tailwind CSS v4</strong> (CAD-H1-1)</td><td><code>tailwindcss</code> et <code>@tailwindcss/postcss</code> <strong>4.3.3 épinglées</strong> ; thème déclaré dans le CSS (<code>app/theme.css</code>) ; <strong>essai isolé réussi</strong> (build Next.js 16, aucune erreur) : le repli sur le CSS structuré n'a pas été nécessaire</td></tr>
+<tr><td><strong>Jetons du design</strong></td><td><code>app/tokens.css</code> = copie du design validé v0.4.1 ; <strong>un test échoue si les valeurs divergent</strong> de <code>docs/design/prototype/tokens.css</code></td></tr>
+<tr><td><strong>Polices et logos hébergés</strong></td><td>Inter et Montserrat (OFL) dans <code>app/fonts</code>, logos dans <code>public/brand</code> ; aucune ressource externe (CSP inchangée)</td></tr>
+<tr><td><strong>Coque</strong> (EXD-01, 10, 11)</td><td>Panneau principal arrondi <strong>centré sur la fenêtre</strong>, navigation à gauche, repli automatique sur fenêtre étroite ; rail compact hors hub ; bouton-pictogramme de dépliage (préférence mémorisée) ; tiroir mobile ; lien « Aller au contenu »</td></tr>
+<tr><td><strong>Hub</strong> (EXD-05, CAD-H1-3)</td><td>Page <code>/</code> : recherche globale, <strong>modules disponibles</strong> selon les droits, <strong>modules « À venir »</strong> inactifs ; <strong>aucune donnée fictive</strong> ; la liste des entreprises passe en <code>/companies</code></td></tr>
+<tr><td><strong>Recherche globale</strong> (CAD-H1-4)</td><td>Entreprises et utilisateurs, requêtes parallèles (droits appliqués par le serveur), seuil de 2 caractères, délai de frappe, requêtes abandonnées ; Ctrl/⌘ K depuis n'importe quelle page</td></tr>
+<tr><td><strong>Thème clair / sombre</strong></td><td>Suit l'appareil, bascule mémorisée (tolère un stockage indisponible)</td></tr>
+<tr><td><strong>Écrans existants</strong></td><td>Connexion, MFA, invitation, mot de passe, Entreprises, Utilisateurs, Mon compte : mêmes écrans, <strong>jetons du design</strong> appliqués via une couche <code>legacy</code> (dette D32), aucune logique modifiée</td></tr>
+</tbody></table></div>
+<p><strong>API non modifiée</strong> : aucune règle de sécurité ni logique métier changée.</p>
+<h2>Preuves</h2>
+<div class="table-wrap"><table><thead><tr><th>Contrôle</th><th>Résultat</th></tr></thead><tbody>
+<tr><td>Typage</td><td>sans erreur</td></tr>
+<tr><td>Tests de l'interface (H1 seul)</td><td><strong>35 / 35</strong> (24 existants + 11 nouveaux : jetons identiques à la source, catalogue des modules et droits, recherche : seuil, droits, regroupement, échec isolé, abandon ; thème)</td></tr>
+<tr><td>Mutants</td><td>2 / 2 tués (droit de lecture des utilisateurs retiré de la recherche ; jeton de couleur modifié)</td></tr>
+<tr><td>Audit d'accessibilité (axe-core, 21 états au total dont 7 de la nouvelle coque)</td><td><strong>0 violation, 0 point à vérifier</strong> dont hub, recherche avec résultats, <strong>thème sombre</strong>, <strong>mobile tiroir fermé et ouvert</strong>, rail compact, navigation dépliée</td></tr>
+<tr><td>Politique de contenu (CSP)</td><td><strong>0 violation</strong> pendant tout le parcours ; polices Inter et Montserrat chargées depuis l'application</td></tr>
+<tr><td>Panneau centré (navigateur réel)</td><td>2 200 px : marges <strong>373 / 373 px</strong>, largeur 1 440 px ; 1 280 px : repli (marge gauche = rail), aucun chevauchement, aucun défilement horizontal</td></tr>
+<tr><td>Navigation mobile</td><td>Tiroir fermé : navigation <strong>masquée</strong> aux lecteurs d'écran (29 éléments lus) ; ouvert : 37</td></tr>
+<tr><td>Captures</td><td>Hub clair / sombre / recherche / mobile / menu mobile, Entreprises (rail, déplié, 2 200 px) : <code>docs/accessibilite/</code> (résultats) et dossier de session</td></tr>
+</tbody></table></div>
+<p>Détail état par état : <a href="accessibilite/resultats/lecteur-d-ecran-proxy-2026-10-21.html">accessibilite/resultats/lecteur-d-ecran-proxy-2026-10-21.md</a>.</p>
+<h2>H1b — composants de données (décision du 2026-10-21, D20)</h2>
+<p>Après la livraison de H1, la direction produit a constaté que les structures de données du mockup n'apparaissaient pas et retenu l'<strong>option B</strong> de CAD-H1-2 pour les composants de données.</p>
+<div class="table-wrap"><table><thead><tr><th>Composant (<code>components/data/</code>)</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>PageHeader</code></td><td>Fil d'Ariane (« ← Vue d'ensemble »), domaine, titre, description, actions</td></tr>
+<tr><td><code>DataTable</code></td><td>Tableau typé : en-têtes, <strong>sélection persistante</strong> (case, clic sur la ligne, fond teinté + barre de 4 px, case d'en-tête indéterminée), état vide et chargement</td></tr>
+<tr><td><code>SelectionBar</code></td><td>« n sélectionnées · Tout désélectionner », annoncée aux lecteurs d'écran</td></tr>
+<tr><td><code>Toolbar</code>, <code>QuickFilters</code>, <code>SearchField</code></td><td>Filtres rapides (boutons à bascule), recherche à saisie différée</td></tr>
+<tr><td><code>Pagination</code></td><td>« 1–20 sur 48 », Précédent / Suivant</td></tr>
+<tr><td><code>Badge</code>, <code>EntityCell</code>, <code>Card</code></td><td>Statuts (texte + point, jamais la couleur seule), cellule à initiales, surface</td></tr>
+<tr><td><code>RowActions</code></td><td>Menu « ⋯ » d'une ligne : clavier, Échap, position fixe à gauche du bouton (jamais coupé, ne recouvre pas les autres boutons)</td></tr>
+</tbody></table></div>
+<p><strong>Appliqués</strong> à Entreprises (création en fenêtre, recherche, pagination), Utilisateurs (filtres par statut, menu d'actions) et sessions de Mon compte. <strong>Données réelles uniquement</strong> : les colonnes que l'API ne fournit pas (responsable, valeur, dernière activité) sont absentes : voir <a href="cadrages/ECART-MOCKUP-VS-REEL.html">cadrages/ECART-MOCKUP-VS-REEL.md</a>.</p>
+<div class="table-wrap"><table><thead><tr><th>Contrôle H1b</th><th>Résultat</th></tr></thead><tbody>
+<tr><td>Tests de l'interface</td><td><strong>42 / 42</strong> (35 + 7 : sélection persistante, pagination, initiales, statuts) ; 2 mutants tués (sélection qui modifie l'ensemble d'origine ; « tout sélectionné » sur une liste vide)</td></tr>
+<tr><td>Audit axe-core</td><td><strong>24 états, 0 violation, 0 point à vérifier</strong>, dont fenêtre de création, deux lignes sélectionnées, menu d'actions ouvert</td></tr>
+<tr><td>Politique de contenu (CSP)</td><td>0 violation</td></tr>
+<tr><td>Défauts trouvés et corrigés pendant la recette</td><td>Menu d'actions qui recouvrait le bouton de la ligne suivante (cible tactile masquée, WCAG 2.5.8) → menu en position fixe à gauche ; <strong>liens dans le texte sans soulignement</strong> après la remise à zéro de Tailwind (WCAG 1.4.1) → soulignement rétabli</td></tr>
+</tbody></table></div>
+<h2>Écarts assumés avec le prototype</h2>
+<ul><li>Le hub <strong>n'affiche ni indicateurs ni rendez-vous</strong> : ils n'ont pas de source réelle (règle « aucune donnée fictive »).</li><li>Le menu ne liste que ce qui est livré (3 modules + hub + Mon compte) ; les autres modules sont présentés sur le hub en « À venir ».</li><li>Le bouton de dépliage est masqué sur le hub (navigation toujours complète) : à confirmer (DDR-0007, point 2).</li></ul>
+<h2>Dette ouverte (voir <code>TECH-DEBT.md</code>)</h2>
+<p>D37 sélection sans actions groupées · D38 colonnes et filtres métier absents · D32 styles legacy · D33 thème appliqué après le premier rendu · D34 recherche côté interface · D35 logos PNG et variante sombre · D36 pictogramme et bouton sur le hub · D31 écoute avec un vrai lecteur d'écran (toujours à faire).</p>
+<h2>À valider par la direction produit</h2>
+<ol><li>Le rendu (ouvrir la pile de test ou consulter les captures) : coque, hub, recherche, thème sombre, mobile.</li><li>Les écarts ci-dessus, en particulier <strong>les indicateurs absents du hub</strong> et <strong>le bouton masqué sur le hub</strong>.</li><li>« Je valide H1 » → fusion <code>--no-ff</code> dans <code>main</code> et étiquette <code>h1-validated</code>.</li></ol>
+<h2>Rejouer la recette</h2>
+<pre><code>node apps/crm-api/scripts/test-db.mjs --keep      # base jetable
+pnpm --filter @investally/crm-web build           # puis démarrer l&#x27;API et le web (voir SPRINT-3.4-RECETTE.md)
+node scripts/a11y-audit.mjs --api-log &lt;journal de l&#x27;API&gt; --shots &lt;dossier de captures&gt;</code></pre></main></body></html>

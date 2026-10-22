@@ -1,0 +1,126 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Sprint 3.3 — Autorisation, administration des comptes et invitations (périmètre et plan de recette)</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="INDEX.html">Index</a> · <a href="GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="ARCHITECTURE.html">Architecture</a> · <a href="SECURITY.html">Sécurité</a> · <a href="METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="TECH-DEBT.html">Dette</a> · <a href="design/README.html">Design</a> · <a href="livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>Sprint 3.3 — Autorisation, administration des comptes et invitations (périmètre et plan de recette)</h1>
+<p>Durée : 1 semaine maximum. Statuts : ✅ vérifié · ⏳ à faire · ❌ échec · ➖ non applicable · ⚠ vérifié partiellement. Validé quand tous les « Bloquant » sont ✅ <strong>et</strong> que l'ingénieur logiciel l'a validé explicitement.</p>
+<h2>Ajustement du plan (à confirmer)</h2>
+<p>Le plan prévoyait en S3.3 le contrôle d'accès <strong>et</strong> le front de base. Les deux ne tiennent pas dans une semaine sans sacrifier la rigueur : <strong>S3.3 livre le backend</strong>, et un nouveau <strong>S3.4</strong> livre le front de base (connexion, scan du QR MFA, codes de secours, administration des utilisateurs). Les documents passent en S3.5. Aucune autre phase n'est modifiée.</p>
+<h2>Périmètre</h2>
+<p><strong>Inclus</strong></p>
+<ol><li><strong>Autorisation par permission et portée</strong> appliquée côté serveur : décorateur <code>@Protected('permission')</code> (authentification + MFA vérifié + permission), portées Propre / Équipe / Tous, <strong>404 (et non 403) pour un objet hors portée</strong> (pas d'énumération), audit <code>ACCESS_DENIED</code>.</li><li><strong>Première vraie application sur le métier</strong> : les endpoints <code>/companies</code> exigent une identité, un MFA vérifié et la permission ; une entreprise a un <strong>propriétaire</strong> (<code>owner_user_id</code>) qui détermine la portée.</li><li><strong>API d'administration</strong> (<code>/admin</code>) : lister/consulter les utilisateurs, inviter, renvoyer une invitation, modifier, désactiver/réactiver, <strong>attribuer les rôles</strong> (step-up), <strong>réinitialiser le MFA</strong> (step-up), <strong>révoquer toutes les sessions</strong> d'un utilisateur (step-up), lister les rôles et leurs permissions.</li><li><strong>Mes sessions</strong> : lister et révoquer ses propres sessions.</li><li><strong>Invitation par e-mail</strong> : le compte est créé <strong>sans mot de passe</strong> ; l'utilisateur le choisit lui-même via un lien à usage unique valable 48 h (jeton haché, transmis dans le fragment d'URL). <strong>Cela ferme la limite D13</strong> (première inscription au MFA protégée par le seul mot de passe) : aucun mot de passe connu d'un tiers n'existe avant l'activation.</li><li><strong>Garde-fous d'administration</strong> : jamais d'auto-attribution de rôle, jamais de désactivation de soi-même, jamais de suppression du dernier SuperAdmin actif, pas de cycle hiérarchique.</li></ol>
+<p><strong>Exclus</strong> : pages web (S3.4) ; documents (S3.5) ; autres modules métier (S4+).</p>
+<h2>Décisions techniques</h2>
+<div class="table-wrap"><table><thead><tr><th>Sujet</th><th>Choix</th><th>Raison</th></tr></thead><tbody>
+<tr><td>Où l'autorisation s'applique</td><td>Garde de route (« a-t-il la permission ? ») <strong>puis</strong> filtrage/contrôle par portée dans le cas d'usage</td><td>Défense en profondeur ; la portée dépend de l'objet</td></tr>
+<tr><td>Permissions de l'utilisateur</td><td>Résolues <strong>à chaque requête</strong> depuis la base (jamais dans le jeton)</td><td>Un changement de rôle ou une désactivation prend effet immédiatement (SECURITY.md §2.2)</td></tr>
+<tr><td>Objet hors portée</td><td><strong>404</strong></td><td>Ne révèle pas l'existence de l'objet (OWASP A01, IDOR)</td></tr>
+<tr><td>Action sans permission</td><td>403 + audit <code>ACCESS_DENIED</code></td><td>Traçabilité des tentatives</td></tr>
+<tr><td>Propriétaire d'une entreprise</td><td><code>bd.companies.owner_user_id</code>, <strong>sans clé étrangère</strong> (référence inter-contextes, ARCHITECTURE.md)</td><td>Cohérent avec « aucune FK entre schémas »</td></tr>
+<tr><td>Entreprises existantes sans propriétaire</td><td>Visibles seulement des rôles en portée <strong>Tous</strong></td><td>Aucune fuite vers Propre/Équipe</td></tr>
+<tr><td>Invitation</td><td>Jeton 256 bits, haché SHA-256, 48 h, usage unique, dans le <strong>fragment</strong> <code>#</code> de l'URL</td><td>Un fragment n'est pas envoyé aux serveurs ni dans les en-têtes Referer</td></tr>
+<tr><td>Désactivation</td><td>Révoque aussitôt toutes les sessions et jetons</td><td>Accès coupé immédiatement</td></tr>
+</tbody></table></div>
+<h2>Migration (0004)</h2>
+<p><code>bd.companies.owner_user_id UUID</code> + index · <code>iam.user_invitations</code> (jeton haché unique, expiration, usage, révocation). Aucune donnée existante modifiée.</p>
+<h2>A. Domaine (sans base)</h2>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Contrôle</th><th>Bloquant</th><th>Statut</th></tr></thead><tbody>
+<tr><td>A1</td><td>Utilisateur invité : sans mot de passe, <code>PENDING</code>, ne peut pas s'authentifier ; l'activation pose le mot de passe</td><td>oui</td><td>✅ 7 tests (sans mot de passe, activation, usage unique, désactivé, réactivation)</td></tr>
+<tr><td>A2</td><td>Invitation : valide / expirée / utilisée / révoquée ; frontière exacte à 48 h</td><td>oui</td><td>✅ 4 tests (48 h exactes à la milliseconde, utilisée/révoquée, priorités)</td></tr>
+<tr><td>A3</td><td>Hiérarchie : refus d'un cycle (A→B→A), refus d'être son propre responsable</td><td>oui</td><td>✅ 5 tests (soi-même, cycle direct, cycle indirect)</td></tr>
+<tr><td>A4</td><td>Entreprise : propriétaire défini à la création, jamais vide</td><td>oui</td><td>✅</td></tr>
+</tbody></table></div>
+<h2>B. Application (faux en mémoire)</h2>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Contrôle</th><th>Bloquant</th><th>Statut</th></tr></thead><tbody>
+<tr><td>B1</td><td>Résolution des droits : union des rôles, portée la plus large, aucun droit sans rôle, compte désactivé = aucun droit</td><td>oui</td><td>✅ les 10 rôles reçoivent exactement la matrice ; cumul de rôles ; sans rôle = aucun droit ; effet immédiat d'un changement de rôle</td></tr>
+<tr><td>B2</td><td>Invitation : crée le compte <code>PENDING</code>, envoie l'e-mail (lien dans le fragment), jeton <strong>jamais</strong> en clair en base ni dans l'audit ; échec d'envoi : compte créé, renvoi possible</td><td>oui</td><td>✅ lien dans le fragment, jeton absent de la base et de l'audit, échéance 48 h ; échec d'envoi : compte créé, <code>emailSent=false</code>, échec audité, renvoi possible</td></tr>
+<tr><td>B3</td><td>Acceptation : mot de passe soumis à la politique ; jeton à usage unique ; expiré/utilisé/révoqué/inconnu : même refus générique</td><td>oui</td><td>✅ 5 cas d'échec (inconnu, vide, expiré, utilisé, révoqué) : <strong>un seul</strong> refus identique ; mot de passe refusé = lien conservé</td></tr>
+<tr><td>B4</td><td>Renvoi : révoque les jetons précédents</td><td>oui</td><td>✅ renvoi sur compte actif ou inconnu refusé</td></tr>
+<tr><td>B5</td><td>Attribution de rôles : refus pour soi-même, audit <code>ROLE_CHANGE</code> avant/après, effet immédiat</td><td>oui</td><td>✅ avant/après/ajoutés/retirés audités ; auto-attribution refusée, SuperAdmin compris</td></tr>
+<tr><td>B6</td><td>Désactivation : sessions et jetons révoqués ; refus pour soi-même ; refus pour le dernier SuperAdmin actif</td><td>oui</td><td>✅ sessions et jetons révoqués, jeton d'accès refusé aussitôt ; réactivation seulement d'un compte désactivé qui a un mot de passe</td></tr>
+<tr><td>B7</td><td>Retrait du rôle SuperAdmin au dernier SuperAdmin refusé</td><td>oui</td><td>✅ refus pour le dernier SuperAdmin actif ; un SuperAdmin désactivé ne compte pas</td></tr>
+<tr><td>B8</td><td>Modification du responsable : refus d'un cycle</td><td>oui</td><td>✅ soi-même, direct, indirect refusés ; retrait du responsable (<code>null</code>) ; audit avant/après</td></tr>
+<tr><td>B9</td><td>Portée d'une entreprise : Propre / Équipe (responsable direct seulement) / Tous ; hors portée : introuvable</td><td>oui</td><td>✅ 10 tests : Propre, Équipe (directs seulement), Tous ; orphelines réservées à la portée Tous ; recherche et pagination bornées à la portée ; hiérarchie modifiée = portée modifiée aussitôt</td></tr>
+<tr><td>B10</td><td>Mes sessions : je ne vois et ne révoque que les miennes</td><td>oui</td><td>✅ liste filtrée, session courante signalée, révocation d'une session d'autrui = introuvable ; « toutes les sessions » réservé à la portée Tous</td></tr>
+</tbody></table></div>
+<h2>C. Base de données (PostgreSQL jetable)</h2>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Contrôle</th><th>Bloquant</th><th>Statut</th></tr></thead><tbody>
+<tr><td>C1</td><td>Migration 0004 sur une base déjà remplie (données S1 → S3.3 préservées)</td><td>oui</td><td>✅ 40 lignes d'audit, 1 utilisateur et 1 session conservés à l'identique ; entreprises existantes sans propriétaire</td></tr>
+<tr><td>C2</td><td>Invitation : jeton unique, cascade avec l'utilisateur, contraintes</td><td>oui</td><td>✅ jeton non SHA-256 refusé, doublon refusé, expiration antérieure refusée, cascade avec l'utilisateur</td></tr>
+<tr><td>C3</td><td>Deux acceptations simultanées du même lien : une seule réussit</td><td>oui</td><td>✅ une seule acceptation sur deux simultanées ; une entrée d'historique</td></tr>
+<tr><td>C4</td><td>Désactivation d'un utilisateur ayant des sessions actives : toutes révoquées en base</td><td>oui</td><td>✅ 3 sessions et tous les jetons révoqués en base</td></tr>
+<tr><td>C5</td><td>Deux administrateurs retirant en même temps le rôle SuperAdmin aux deux derniers : au moins un reste (course)</td><td>oui</td><td>✅ <strong>deux courses</strong> (retrait de rôle croisé, désactivation croisée) : il reste toujours un SuperAdmin ; <strong>vérifié par mutation</strong></td></tr>
+<tr><td>C6</td><td>Listes filtrées par portée sur la vraie base (Propre, Équipe, Tous)</td><td>oui</td><td>✅ liste de propriétaires restreint ; liste vide = rien ; sans liste = tout, orphelines comprises</td></tr>
+</tbody></table></div>
+<h2>D. HTTP de bout en bout — matrice générée à partir de la matrice de rôles</h2>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Contrôle</th><th>Bloquant</th><th>Statut</th></tr></thead><tbody>
+<tr><td>D1</td><td><strong>Chaque rôle (10) × chaque route protégée</strong> : autorisé exactement quand la matrice le prévoit, 403 sinon ; la matrice est lue depuis <code>ROLE_GRANTS</code>, pas réécrite</td><td>oui</td><td>✅ <strong>160 combinaisons</strong> (10 rôles × 16 routes) : autorisé exactement quand la matrice du code le prévoit</td></tr>
+<tr><td>D2</td><td>Sans jeton : 401 ; jeton sans MFA : <code>MFA_REQUIRED</code> ; MFA périmé sur action sensible : <code>MFA_STEP_UP_REQUIRED</code></td><td>oui</td><td>✅ sans jeton : 401 sur 16 routes ; mot de passe seul : <code>MFA_REQUIRED</code> sur 16 routes (SuperAdmin compris) ; MFA périmé : <code>MFA_STEP_UP_REQUIRED</code> sur les actions sensibles ; la permission est vérifiée <strong>avant</strong> le step-up</td></tr>
+<tr><td>D3</td><td>IDOR : un chargé de compte ne lit/modifie jamais l'entreprise d'un collègue (404) ; un responsable voit celles de ses subordonnés directs, pas celles des petits-enfants</td><td>oui</td><td>✅ propriétaire = acteur (champ <code>ownerUserId</code> envoyé : 400) ; 5 accès hors portée donnent 404, <strong>corps identique</strong> à un identifiant inexistant</td></tr>
+<tr><td>D4</td><td>Parcours d'invitation complet : invitation → e-mail → acceptation → connexion → enrôlement MFA</td><td>oui</td><td>✅ parcours complet sur HTTP <strong>et sur le serveur compilé</strong> (voir « Vérification réelle »)</td></tr>
+<tr><td>D5</td><td>Désactivation : le jeton d'accès et le cookie de la personne sont refusés immédiatement</td><td>oui</td><td>✅ jeton d'accès, cookie de rafraîchissement et connexion refusés aussitôt</td></tr>
+<tr><td>D6</td><td>Changement de rôle : effet immédiat sur le jeton déjà émis</td><td>oui</td><td>✅ même jeton : création d'entreprise passe de 201 à 403 après retrait du rôle ; audit <code>ROLE_CHANGE</code></td></tr>
+<tr><td>D7</td><td>Aucune réponse n'expose de hachage, secret, jeton d'invitation ou secret MFA</td><td>oui</td><td>✅ aucun hachage, secret, jeton ni compteur interne dans 5 réponses d'administration ; <code>Cache-Control: no-store</code></td></tr>
+<tr><td>D8</td><td>Pagination bornée (≤ 100), recherche, paramètres invalides refusés</td><td>oui</td><td>✅ taille &gt; 100, page &lt; 1, recherche &gt; 100 caractères, statut inconnu : 400 ; injections dans la recherche traitées comme du texte</td></tr>
+<tr><td>D9</td><td>Contrôle d'origine (CSRF) sur toutes les routes d'écriture</td><td>oui</td><td>✅ les 15 routes d'écriture refusent une origine inconnue (403), même sans jeton ; la lecture n'est pas concernée</td></tr>
+<tr><td>D10</td><td>Les 403 génèrent une ligne d'audit <code>ACCESS_DENIED</code></td><td>oui</td><td>✅ pour chaque rôle, le nombre de lignes <code>ACCESS_DENIED</code> égale le nombre de refus</td></tr>
+</tbody></table></div>
+<h2>E. Qualité</h2>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Contrôle</th><th>Bloquant</th><th>Statut</th></tr></thead><tbody>
+<tr><td>E1</td><td>Types ; règles d'architecture ; tous les tests précédents (S1 à S3.2) toujours verts</td><td>oui</td><td>✅ types propres ; 127 modules, 486 dépendances, 0 violation ; <strong>353 unitaires + 130 intégration</strong> (S1 à S3.2 inclus)</td></tr>
+<tr><td>E2</td><td>Aucun endpoint métier n'est resté sans protection (test qui parcourt <strong>toutes</strong> les routes de l'application)</td><td>oui</td><td>✅ test qui parcourt les <strong>28 routes</strong> réellement montées : 5 publiques, 7 « authentifiées seulement », 16 protégées par permission du catalogue ; ordre des gardes vérifié</td></tr>
+<tr><td>E3</td><td><code>pnpm audit --prod</code> : aucune vulnérabilité haute</td><td>non</td><td>✅ 0 haute ; 1 moyenne (js-yaml via Swagger, dette D6)</td></tr>
+<tr><td>E4</td><td>Revue de sécurité (IDOR, énumération, auto-élévation, course de dernier SuperAdmin, fuite dans les réponses et journaux)</td><td>oui</td><td>✅ voir « Revue de sécurité »</td></tr>
+<tr><td>E5</td><td>Vérification par mutation des contrôles critiques (portée, auto-attribution, dernier SuperAdmin)</td><td>oui</td><td>✅ 9 mutants détectés (voir « Vérification par mutation »)</td></tr>
+</tbody></table></div>
+<h2>Vérification réelle sur le serveur compilé</h2>
+<p>Commande <code>admin:create</code> réelle, puis : l'administrateur enrôle son MFA (code TOTP calculé) → jeton <code>pwd+otp</code> ; une route métier avec le jeton « mot de passe seul » donne <code>403 MFA_REQUIRED</code> ; invitation d'un collègue (<code>emailSent: true</code>, compte <code>PENDING</code>) ; lien lu dans la console de développement (jeton dans le fragment <code>#token=</code>, 43 caractères) ; activation <code>204</code> ; <strong>même lien rejoué : 400 « Lien invalide ou expiré »</strong> ; le collègue se connecte, enrôle son MFA, crée une entreprise (il en est propriétaire) ; <code>GET /admin/users</code> par le collègue : <code>403 FORBIDDEN</code> ; le SuperAdmin lit l'entreprise du collègue (200) ; une entreprise inexistante donne 404. Journal du serveur : <strong>0</strong> occurrence du mot de passe. Production : refus de démarrer sans <code>APP_PUBLIC_URL</code>, avec une URL <code>http</code>, ou avec <code>EMAIL_LOG_CONTENT=true</code> ; configuration complète : démarre en 2 s, Swagger 404, routes métier et d'administration 401 sans jeton.</p>
+<h2>Revue de sécurité (E4)</h2>
+<div class="table-wrap"><table><thead><tr><th>Point</th><th>Constat</th></tr></thead><tbody>
+<tr><td>Contrôle d'accès (A01)</td><td>Test structurel sur les 28 routes ; permission du catalogue obligatoire ; ordre identité → MFA → permission → step-up ; <strong>la permission est vérifiée avant le step-up</strong></td></tr>
+<tr><td>IDOR</td><td>Objet hors portée = 404 indiscernable d'un identifiant inexistant ; entreprise orpheline refusée aux portées Propre et Équipe</td></tr>
+<tr><td>Mass assignment</td><td>Champs inconnus refusés (<code>forbidNonWhitelisted</code>) ; le propriétaire vient de l'identité, jamais du corps</td></tr>
+<tr><td>Auto-élévation</td><td>Rôles, désactivation et réinitialisation MFA interdits sur soi-même, SuperAdmin compris</td></tr>
+<tr><td>Dernier SuperAdmin</td><td>Verrou de ligne sur le rôle ; deux courses testées et vérifiées par mutation</td></tr>
+<tr><td>Invitation</td><td>Jeton 256 bits haché ; fragment d'URL ; 48 h ; usage unique atomique ; refus identique pour tous les liens invalides ; mot de passe choisi par l'utilisateur</td></tr>
+<tr><td>Fuites</td><td>Aucun champ interne dans les vues ; <code>no-store</code> ; jeton d'invitation uniquement dans l'e-mail (et dans la console en développement avec option explicite, interdite en production)</td></tr>
+<tr><td>SQL</td><td>3 <code>SELECT … FOR UPDATE</code> en <em>tagged template</em> paramétré ; recherche paramétrée</td></tr>
+<tr><td>Journaux</td><td>Aucun journal dans les couches Application et Présentation de l'IAM</td></tr>
+<tr><td>Défaut trouvé en revue</td><td><strong>Inviter un utilisateur avec des rôles ne demandait ni le droit d'attribuer des rôles ni un MFA récent</strong> : une session d'administrateur détournée aurait pu inviter un SuperAdmin. Corrigé (droit <code>assign_role</code> vérifié dans le cas d'usage + step-up) et testé</td></tr>
+</tbody></table></div>
+<h2>Défauts trouvés et corrigés pendant le sprint</h2>
+<ol><li><strong>Confusion <code>undefined</code> / <code>null</code> dans ma règle de décision de S2</strong> : un objet existant sans propriétaire était traité comme une simple liste, donc accessible aux portées Propre et Équipe. Repéré avant d'écrire le code métier, corrigé et testé (le test échoue si on remet l'ancienne règle).</li><li><strong>Route trop permissive détectée par la matrice</strong> : la Direction détient <code>iam.session.revoke</code> en portée « propre » et franchissait donc la garde de « révoquer toutes les sessions d'un autre utilisateur », avant d'être refusée plus loin avec un message flou. Ajout de <code>minScope</code> à <code>@Protected</code> : cette route exige désormais la portée <strong>Tous</strong> dès la garde.</li><li><strong>Invitation sans step-up ni droit d'attribution</strong> (revue) : voir ci-dessus.</li><li><strong>Violations d'architecture détectées par le contrat</strong> : mes contrôleurs importaient le Domain directement ; les types ont été exposés par la couche Application.</li><li><strong>Tests trop stricts ou erronés de ma part</strong> : seuil arbitraire du nombre de routes (28 réelles), attente d'une liste vide pour un rôle sans permission (la réponse correcte est 403), exigence qu'un rôle soit refusé sur des routes ouvertes à tous.</li><li><strong>Anciens tests de S1</strong> supposant des routes publiques : ils attendent maintenant 401, ce qui est précisément le comportement voulu.</li><li><strong>Incident de procédure (mon outil de mutation)</strong> : deux mutants visaient le même fichier et la restauration a échoué à mi-chemin, laissant du code muté. Détecté immédiatement, réparé depuis Git, vérifié (aucun <code>.orig</code>, aucun marqueur de mutation, écart limité aux changements voulus), script corrigé. Aucune trace dans les livrables.</li></ol>
+<h2>Vérification par mutation (E5)</h2>
+<div class="table-wrap"><table><thead><tr><th>Mutant (contrôle cassé volontairement)</th><th>Détecté par</th></tr></thead><tbody>
+<tr><td>Objet sans propriétaire traité comme une liste</td><td>tests de politique + 4 tests de portée</td></tr>
+<tr><td>Auto-attribution de rôles autorisée</td><td>« INTERDIT de modifier ses propres rôles »</td></tr>
+<tr><td>Liste d'entreprises sans filtre de portée</td><td>6 tests de portée (Propre, Équipe, total, recherche, formateur)</td></tr>
+<tr><td>Dernier SuperAdmin non vérifié</td><td>3 tests (retrait de rôle ×2, désactivation)</td></tr>
+<tr><td>Lecture d'une entreprise sans contrôle d'accès</td><td>3 tests IDOR</td></tr>
+<tr><td>Verrou du dernier SuperAdmin retiré</td><td>les <strong>2 courses</strong> de la base</td></tr>
+<tr><td>Garde de permission désactivée</td><td>9 rôles de la matrice + step-up + IDOR + effet immédiat</td></tr>
+<tr><td>Portée minimale ignorée (<strong>mutant isolé</strong>)</td><td>9 rôles de la matrice (tous sauf SuperAdmin)</td></tr>
+</tbody></table></div>
+<h2>Limites connues (à décider ou à traiter)</h2>
+<ul><li><strong>Pas de front</strong> : l'invitation est un lien dont la page n'existe qu'en S3.4. En développement, <code>EMAIL_LOG_CONTENT=true</code> affiche le lien dans la console.</li><li><strong>Microsoft 365 jamais testé en réel</strong> (registre D9).</li><li><strong>Modifier le responsable d'un utilisateur change qui voit quoi</strong> (portée Équipe) mais n'exige pas de step-up ; l'action est auditée. À décider.</li><li><strong>Les entreprises créées avant S3.3 n'ont pas de propriétaire</strong> : seuls les rôles en portée Tous les voient. Il n'existe pas encore de moyen de leur en attribuer un (S4.1).</li><li><strong>Pas de réattribution d'une entreprise</strong> à un autre propriétaire (S4.1) ; un salarié qui part garde « ses » entreprises tant qu'on ne les réattribue pas.</li><li><strong>La portée Équipe inclut les subordonnés directs désactivés ou en attente</strong>, donc leurs entreprises restent visibles de leur responsable.</li><li><strong>Durées de session des rôles privilégiés</strong> : un changement de rôle s'applique aux droits immédiatement, mais la durée absolue de session (12 h) ne change qu'au prochain renouvellement.</li><li><strong>Droits relus à chaque requête</strong> (2 requêtes SQL) : sans cache, volontairement (révocation immédiate) ; largement suffisant pour ≈ 20 utilisateurs.</li><li><strong>Pas de révocation explicite d'une invitation</strong> hors renvoi ou désactivation du compte.</li><li>Limitation de débit en mémoire, une seule instance (dette D8).</li></ul>
+<h2>Décision de validation</h2>
+<p>Tous les contrôles bloquants sont ✅. <strong>Reste la validation explicite de l'ingénieur logiciel</strong> avant fusion dans <code>main</code> et tag <code>s3-3-validated</code>.</p></main></body></html>

@@ -140,9 +140,23 @@ def main():
 
     nav_design = design_nav('')
     docs_root = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'docs')
-    nav_root = 'Investally Business Platform — méthode · <a href="design/05-AIDE-A-LA-DECISION.html">Aide à la décision</a>'
-    nav_cadrages = 'Investally Business Platform — cadrages · <a href="README.html">Index</a> · <a href="../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../design/05-AIDE-A-LA-DECISION.html">Aide à la décision</a>'
-    for folder, nav, only in ((ROOT, nav_livrables, None), (design, nav_design, None), (os.path.join(design, 'exigences'), design_nav('../'), None), (os.path.join(design, 'decisions'), design_nav('../'), None), (os.path.join(docs_root, 'cadrages'), nav_cadrages, None), (docs_root, nav_root, ('METHODE-D-ARBITRAGE.md',))):
+    def root_nav(prefix):
+        return (
+            'Investally Business Platform — documentation · '
+            f'<a href="{prefix}INDEX.html">Index</a> · <a href="{prefix}GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · '
+            f'<a href="{prefix}ARCHITECTURE.html">Architecture</a> · <a href="{prefix}SECURITY.html">Sécurité</a> · '
+            f'<a href="{prefix}METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="{prefix}QUESTIONS-ET-DECISIONS.html">Décisions</a> · '
+            f'<a href="{prefix}TECH-DEBT.html">Dette</a> · <a href="{prefix}design/README.html">Design</a> · '
+            f'<a href="{prefix}livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a>'
+        )
+    nav_cadrages = 'Investally Business Platform — cadrages · <a href="README.html">Index des cadrages</a> · <a href="../INDEX.html">Documentation</a> · <a href="../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../design/05-AIDE-A-LA-DECISION.html">Aide à la décision</a>'
+    acc = os.path.join(docs_root, 'accessibilite')
+    for folder, nav, only in (
+        (ROOT, nav_livrables, None), (design, nav_design, None), (os.path.join(design, 'exigences'), design_nav('../'), None),
+        (os.path.join(design, 'decisions'), design_nav('../'), None), (os.path.join(docs_root, 'cadrages'), nav_cadrages, None),
+        (docs_root, root_nav(''), None), (os.path.join(docs_root, 'adr'), root_nav('../'), None),
+        (acc, root_nav('../'), None), (os.path.join(acc, 'resultats'), root_nav('../../'), None),
+    ):
         for name in sorted(n for n in os.listdir(folder) if n.endswith('.md') and (only is None or n in only)):
             md = open(os.path.join(folder, name), encoding='utf-8').read()
             title = re.search(r'^# (.+)$', md, re.M)

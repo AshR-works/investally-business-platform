@@ -1,0 +1,44 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ADR-0006 — Décisions d&#x27;accès et de sécurité du 2026-10-20</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="../INDEX.html">Index</a> · <a href="../GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="../ARCHITECTURE.html">Architecture</a> · <a href="../SECURITY.html">Sécurité</a> · <a href="../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="../TECH-DEBT.html">Dette</a> · <a href="../design/README.html">Design</a> · <a href="../livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>ADR-0006 — Décisions d'accès et de sécurité du 2026-10-20</h1>
+<ul><li><strong>Statut</strong> : Accepté (décisions de la direction produit, 2026-10-20)</li><li><strong>Décideurs</strong> : Direction produit, Tech Lead</li><li><strong>Remplace</strong> : la recommandation de séparation des tâches du SuperAdmin (RBAC.md, première version)</li></ul>
+<h2>Contexte</h2>
+<p>Fin du Sprint 2, la direction a tranché les questions ouvertes de conception. Environ 20 utilisateurs au démarrage (10 employés aujourd'hui).</p>
+<h2>Décisions</h2>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Décision</th><th>Garde-fou / conséquence</th></tr></thead><tbody>
+<tr><td>1</td><td>Rôle <code>TRAINING_MANAGER</code> (Responsable Investudy) ajouté</td><td>Déjà dans la matrice ; sans lui personne ne gère programmes et sessions</td></tr>
+<tr><td>2</td><td><strong>SuperAdmin : accès complet</strong> (toutes permissions, portée Tous)</td><td>Compte à très haut risque. Compensations : MFA obligatoire, step-up pour les actions sensibles, interdiction de modifier ses propres rôles, au moins deux SuperAdmin nominatifs, audit de toutes ses actions, revue trimestrielle (SECURITY.md §2.5). Le « bris de glace » devient inutile</td></tr>
+<tr><td>3</td><td>Portée Équipe = subordonnés directs (un niveau, <code>managerId</code>)</td><td>Une couche hiérarchique supplémentaire exigera des requêtes récursives</td></tr>
+<tr><td>4</td><td><strong>MFA obligatoire pour tous les rôles</strong> (TOTP)</td><td>Enrôlement forcé à la première connexion ; codes de secours ; procédure de réinitialisation par un SuperAdmin avec step-up. <em>Interprétation : « MFA obligatoire » sans distinction vaut pour tout le monde</em></td></tr>
+<tr><td>5</td><td>Durées : jeton d'accès 15 min, inactivité 8 h, absolu 7 jours (12 h pour SuperAdmin, Direction, Finance)</td><td>Configurables par environnement</td></tr>
+<tr><td>6</td><td>E-mail via <strong>Microsoft 365</strong></td><td>API Graph recommandée (retrait progressif de l'authentification basique SMTP) ; adaptateur derrière un port ; à confirmer avec l'administrateur M365</td></tr>
+<tr><td>7</td><td>Audit conservé <strong>10 ans</strong></td><td>2 ans en ligne puis archivage à froid (recommandation) ; validation juridique à obtenir</td></tr>
+<tr><td>8</td><td>Agrément formation = promesse de paiement (propriété de Business Development)</td><td>Voir ARCHITECTURE.md</td></tr>
+<tr><td>9</td><td>Plusieurs opportunités par entreprise ; apprenant sans accès au CRM ; ambassadeur manuel ; dérogation du Responsable commercial à la règle du RDV décideur (justifiée, auditée)</td><td>Voir ARCHITECTURE.md</td></tr>
+<tr><td>10</td><td>Recommandations appliquées pour : Support en lecture seule, Direction lit l'audit (lectures auditées), XAF par défaut, pas de suivi de paiement dans le CRM, charge ≈ 20 utilisateurs</td><td></td></tr>
+</tbody></table></div>
+<h2>Conséquences</h2>
+<ul><li>(+) Exploitation simple pour une petite équipe : un administrateur sait tout faire.</li><li>(−) Un compte SuperAdmin compromis expose <strong>toutes</strong> les données du CRM. La protection repose sur le MFA, le nombre réduit de comptes et la surveillance, pas sur la séparation des tâches.</li><li>(−) MFA pour tous : support en cas de téléphone perdu ; prévoir une procédure de réinitialisation et la communication aux utilisateurs.</li><li>Les tests automatisés vérifient : SuperAdmin = toutes les permissions ; MFA exigé pour tous les rôles ; la gestion des comptes reste réservée au SuperAdmin.</li></ul>
+<h2>À revoir si</h2>
+<p>L'effectif dépasse ~50 utilisateurs, si un audit externe l'exige, ou si le périmètre inclut des données bancaires : réintroduire la séparation des tâches (rôle d'administration technique sans accès métier).</p></main></body></html>

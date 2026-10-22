@@ -1,0 +1,59 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>H2a — Écrans d&#x27;accès au nouveau style : recette</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="INDEX.html">Index</a> · <a href="GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="ARCHITECTURE.html">Architecture</a> · <a href="SECURITY.html">Sécurité</a> · <a href="METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="TECH-DEBT.html">Dette</a> · <a href="design/README.html">Design</a> · <a href="livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>H2a — Écrans d'accès au nouveau style : recette</h1>
+<p><em>Branche <code>sprint/h2a-ecrans-d-acces</code> · 2026-10-22 · décision : CAD-H2-3 option B (deux lots) — H2a = écrans A01 à A15, H2b = sessions et historique (S01 à S03). <strong>L'API n'est pas modifiée.</strong></em></p>
+<h2>Ce qui est livré</h2>
+<div class="table-wrap"><table><thead><tr><th>Écran</th><th>Réalisation</th></tr></thead><tbody>
+<tr><td><strong>A01</strong> Connexion</td><td>Gabarit du design (carte d'accueil sombre, logo, indicateur d'étape 1 sur 2), notice d'erreur</td></tr>
+<tr><td><strong>A02</strong> Code du second facteur</td><td><strong>Six cases</strong> (DDR-0009) : focus automatique, collage, saisie automatique, Retour arrière, flèches ; étape 2 sur 2</td></tr>
+<tr><td><strong>A03</strong> Code de secours</td><td>Bascule « Téléphone perdu ? », format XXXXX-XXXXX, retour à l'application</td></tr>
+<tr><td><strong>A04</strong> Introduction du MFA</td><td><strong>Nouveau</strong> : pourquoi, 3 étapes, « Commencer » ; le secret n'est créé qu'au clic</td></tr>
+<tr><td><strong>A05, A06</strong> QR code, clé manuelle, premier code</td><td>QR généré dans le navigateur, erreur « code invalide » en notice</td></tr>
+<tr><td><strong>A07</strong> Codes de secours</td><td>Affichage unique, copier (avec confirmation annoncée), télécharger, case obligatoire</td></tr>
+<tr><td><strong>A08, A09</strong> Mot de passe oublié, e-mail envoyé</td><td>Message identique pour toute adresse ; rappel 60 minutes, courriers indésirables</td></tr>
+<tr><td><strong>A10, A11</strong> Nouveau mot de passe, mot de passe modifié</td><td><strong>Règles visibles en direct</strong> (annoncées « respectée / à respecter »), « toutes vos sessions ont été fermées »</td></tr>
+<tr><td><strong>A12</strong> Lien invalide ou expiré</td><td>Notice et bouton « Demander un nouveau lien » (réinitialisation) ; invitation : contacter un administrateur</td></tr>
+<tr><td><strong>A13</strong> Activation d'invitation</td><td>Mêmes champs et règles que A10</td></tr>
+<tr><td><strong>A14</strong> Compte verrouillé</td><td>Message <strong>générique</strong> du serveur, identique pour tout échec (aucune énumération) + aide permanente sous le formulaire</td></tr>
+<tr><td><strong>A15</strong> Trop de tentatives</td><td>Notice d'avertissement, bouton désactivé avec compte à rebours (60 s)</td></tr>
+</tbody></table></div>
+<p>Composants partagés : <code>AuthLayout</code>, <code>AuthNotice</code>, <code>NewPasswordFields</code>, <code>useCooldown</code>, <code>authErrorMessage</code>.</p>
+<h2>Écart assumé avec le prototype</h2>
+<ul><li><strong>Nombre de codes de secours restants</strong> (A03) non affiché : l'API ne le fournit pas (dette D39).</li><li>Les contrôles de formulaire gardent le style « legacy » aux jetons du design (dette D32).</li><li>Le code à 6 chiffres est en <strong>six cases</strong>, comme le prototype (DDR-0009, qui remplace DDR-0008 : décision de la direction produit du 2026-10-22). Les codes de secours gardent un champ unique.</li></ul>
+<h2>Preuves</h2>
+<div class="table-wrap"><table><thead><tr><th>Contrôle</th><th>Résultat</th></tr></thead><tbody>
+<tr><td>Tests de l'interface</td><td><strong>56 / 56</strong> (43 + 13 : règles du mot de passe, erreurs d'authentification, limitation de débit, compte à rebours, saisie en six cases ; mutants tués)</td></tr>
+<tr><td>Audit axe-core, navigateur réel</td><td><strong>29 états, 0 violation, 0 point à vérifier</strong>, dont A15 en conditions réelles (6 échecs rapides → 429), connexion en <strong>thème sombre</strong>, saisie du code (A02) et code de secours (A03) après une vraie reconnexion</td></tr>
+<tr><td>Politique de contenu (CSP)</td><td><strong>0 violation</strong></td></tr>
+<tr><td>Saisie en six cases (navigateur réel)</td><td>« 481 » tapé au clavier → trois cases remplies, focus sur la quatrième ; deux Retour arrière → « 4 » ; première configuration du MFA réussie avec le code placé dans la première case (chemin de la saisie automatique)</td></tr>
+<tr><td>Sécurité</td><td><strong>Aucune règle modifiée</strong> : mêmes routes, mêmes messages du serveur (jamais enrichis côté interface), jeton de lien toujours lu dans le fragment puis effacé, secret MFA affiché une seule fois et effacé de la mémoire après confirmation</td></tr>
+<tr><td>Défauts trouvés et corrigés en recette</td><td>Barres décoratives qui recouvraient le texte de la carte d'accueil ; titre de notice redondant (« Trop de tentatives » deux fois)</td></tr>
+</tbody></table></div>
+<p>Captures : <code>docs/accessibilite/h2a-captures/</code> (connexion en limitation de débit, connexion sombre, introduction du MFA, QR code, saisie du code, code de secours).</p>
+<h2>Comportements modifiés à connaître</h2>
+<ol><li><strong>MFA</strong> : un utilisateur dont le MFA est déjà configuré doit désormais cliquer sur « Téléphone perdu ? » pour saisir un code de secours (avant : le même champ acceptait les deux).</li><li><strong>MFA, première configuration</strong> : une page d'introduction précède le QR code ; recharger la page pendant la configuration renvoie à l'introduction (un nouveau secret est créé au prochain clic).</li></ol>
+<h2>Reste (H2b)</h2>
+<p>Sessions actives, historique des connexions (nouvelle route lisant le journal d'audit, visible par l'intéressé seulement — décisions CAD-H2-1 et 2), révocation avec confirmation (S01 à S03). Avis juridique sur les adresses IP et appareils à obtenir avant H2b (recommandé, non bloquant pour H2a). L'écoute avec un vrai lecteur d'écran (D31) reste à faire.</p>
+<h2>Validation</h2>
+<p>Validée par la direction produit le 2026-10-22 (« Appliquez les 6 cases et validez H2a ») : fusion <code>--no-ff</code> dans <code>main</code>, étiquette <code>h2a-validated</code>. L'écoute avec un vrai lecteur d'écran (D31) doit couvrir le parcours des six cases (collage, saisie automatique, navigation).</p></main></body></html>

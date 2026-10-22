@@ -1,0 +1,96 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Sprint 3.5 — « Mot de passe oublié », commentaires du code et livrables (périmètre et plan de recette)</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="INDEX.html">Index</a> · <a href="GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="ARCHITECTURE.html">Architecture</a> · <a href="SECURITY.html">Sécurité</a> · <a href="METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="TECH-DEBT.html">Dette</a> · <a href="design/README.html">Design</a> · <a href="livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>Sprint 3.5 — « Mot de passe oublié », commentaires du code et livrables (périmètre et plan de recette)</h1>
+<p>Durée : 1 semaine maximum. Statuts : ✅ vérifié · ⏳ à faire · ❌ échec · ➖ non applicable · ⚠ vérifié partiellement. Validé quand tous les « Bloquant » sont ✅ <strong>et</strong> que l'ingénieur logiciel l'a explicitement validé.</p>
+<h2>Origine et ajustement du plan</h2>
+<ul><li><strong>Demande du 2026-10-21</strong> : « Rajoute un bouton mot de passe oublié qui devra s'exécuter de manière sécurisée et traçable. » Elle remplace ma recommandation initiale (réinitialisation par un administrateur seulement) par le <strong>libre-service</strong>, que j'avais classé « possible plus tard » parce qu'il exige davantage de protections. Ces protections sont <strong>toutes</strong> livrées ici.</li><li><strong>Demande du 2026-10-21</strong> : « des livrables pour récapituler les réalisations avec commentaires » et « des commentaires sur les différentes fonctions créées dans l'application ».</li><li><strong>Plan</strong> : ce sprint prend le numéro S3.5 ; <strong>les documents passent en S3.6</strong>. S3.4 (interface de base) n'est toujours pas fusionné : S3.5 est construit <strong>au-dessus</strong> de S3.4 et ne pourra être fusionné qu'après lui.</li></ul>
+<h2>Périmètre</h2>
+<p><strong>Inclus</strong></p>
+<ol><li><strong>Bouton « Mot de passe oublié ? »</strong> sur la page de connexion → page de demande (<code>/forgot-password</code>) → e-mail → page de choix du mot de passe (<code>/reset-password</code>).</li><li><strong>Libre-service</strong> : lien de <strong>60 minutes</strong>, réponse identique pour toute adresse, plafonds, audit.</li><li><strong>Déclenchement par un administrateur</strong> : bouton « Réinitialiser le mot de passe » dans l'administration (permission <code>iam.user.reset_password</code>, MFA récent, jamais pour soi-même), lien de 48 h.</li><li><strong>Effet</strong> : mot de passe changé, <strong>toutes les sessions coupées</strong>, <strong>MFA conservé</strong>, e-mail de confirmation au titulaire.</li><li><strong>Traçabilité</strong> : action d'audit <code>PASSWORD_RESET</code> (demande et issue, émission, usage, refus).</li><li><strong>Commentaires</strong> sur toutes les classes, fonctions, interfaces et composants du code.</li><li><strong>Livrables</strong> dans <code>docs/livrables/</code> : récapitulatif des réalisations, guide du code, index des fonctions (généré), versions HTML imprimables.</li></ol>
+<p><strong>Exclus</strong> : notification de changement de mot de passe après un changement fait depuis « Mon compte » (D27), file durable pour l'envoi des e-mails (D26), limite par IP dédiée (D25), documents (S3.6).</p>
+<h2>Décisions techniques</h2>
+<div class="table-wrap"><table><thead><tr><th>Sujet</th><th>Choix</th><th>Raison</th></tr></thead><tbody>
+<tr><td>Mécanisme du lien</td><td>Même table et mêmes protections que l'invitation, champ <code>purpose</code> (<code>INVITATION</code> ou <code>PASSWORD_RESET</code>)</td><td>Une seule implémentation du jeton à usage unique à auditer ; un lien ne peut pas servir à autre chose que son usage</td></tr>
+<tr><td>Anti-énumération</td><td>Réponse <strong>202 identique</strong>, traitement <strong>après</strong> la réponse</td><td>Ni le contenu ni le temps de réponse ne révèlent si un compte existe</td></tr>
+<tr><td>Durée du lien</td><td><strong>60 min</strong> (libre-service), <strong>48 h</strong> (administrateur)</td><td>Plus le déclencheur est anonyme, plus le lien doit être court</td></tr>
+<tr><td>Plafonds</td><td>3/minute par IP + adresse ; <strong>3/heure par compte</strong> (base de données, avec verrou)</td><td>Pas d'inondation de boîte e-mail, même depuis plusieurs IP</td></tr>
+<tr><td>MFA</td><td><strong>Conservé</strong></td><td>Le lien seul ne doit jamais donner un accès : le second facteur reste la barrière</td></tr>
+<tr><td>Audit</td><td>Action dédiée <code>PASSWORD_RESET</code> (migration : valeur ajoutée à l'énumération)</td><td>Retrouver en une requête toutes les réinitialisations</td></tr>
+<tr><td>Adresses inconnues</td><td><strong>Jamais</strong> écrites dans l'audit</td><td>Éviter d'y stocker des saisies arbitraires (données personnelles, injection de contenu)</td></tr>
+<tr><td>Commentaires</td><td>JSDoc en français sur toute déclaration ; index <strong>généré</strong> par script</td><td>L'index ne peut pas dériver du code</td></tr>
+</tbody></table></div>
+<h2>Plan de recette</h2>
+<div class="table-wrap"><table><thead><tr><th>Réf.</th><th>Contrôle</th><th>Bloquant</th><th>Statut</th></tr></thead><tbody>
+<tr><td>A1</td><td>Demande : e-mail avec lien dans le <strong>fragment</strong>, 60 min exactement, empreinte seule en base, jeton absent de l'audit</td><td>Oui</td><td>✅</td></tr>
+<tr><td>A2</td><td>Adresse inconnue, mal formée, vide, compte en attente ou désactivé : <strong>rien n'est envoyé</strong>, aucune différence visible pour l'appelant</td><td>Oui</td><td>✅</td></tr>
+<tr><td>A3</td><td>Une adresse inconnue <strong>n'apparaît jamais</strong> dans le journal d'audit (ni du texte injecté)</td><td>Oui</td><td>✅</td></tr>
+<tr><td>A4</td><td>Plafond : 3 liens par heure et par compte, refus silencieux audité (<code>THROTTLED</code>), reprise après une heure (borne testée à la milliseconde)</td><td>Oui</td><td>✅</td></tr>
+<tr><td>A5</td><td>Nouvelle demande : le lien précédent est révoqué</td><td>Oui</td><td>✅</td></tr>
+<tr><td>A6</td><td>Échec d'envoi : jamais d'erreur pour l'appelant, échec audité ; transaction en échec : aucun lien utilisable</td><td>Oui</td><td>✅</td></tr>
+<tr><td>B1</td><td>Succès : nouveau mot de passe actif, ancien refusé, historique à jour</td><td>Oui</td><td>✅</td></tr>
+<tr><td>B2</td><td><strong>Toutes les sessions et tous les jetons de rafraîchissement coupés</strong></td><td>Oui</td><td>✅</td></tr>
+<tr><td>B3</td><td><strong>MFA conservé</strong> : après réinitialisation, la connexion exige toujours le second facteur</td><td>Oui</td><td>✅</td></tr>
+<tr><td>B4</td><td>Verrouillage de compte levé par la réinitialisation</td><td>Oui</td><td>✅</td></tr>
+<tr><td>B5</td><td>Audit (terminée, sessions coupées, IP) ; e-mail de confirmation avec la date et l'adresse IP, sans mot de passe</td><td>Oui</td><td>✅</td></tr>
+<tr><td>B6</td><td>Usage unique ; <strong>deux usages simultanés : un seul aboutit</strong> (course sur la base)</td><td>Oui</td><td>✅</td></tr>
+<tr><td>B7</td><td>Mot de passe faible / contenant l'identité / déjà utilisé : refusé <strong>sans consommer</strong> le lien</td><td>Oui</td><td>✅</td></tr>
+<tr><td>B8</td><td>Expiration à 60 minutes ; tous les liens non valides produisent <strong>le même refus</strong></td><td>Oui</td><td>✅</td></tr>
+<tr><td>B9</td><td><strong>Usage croisé</strong> : un lien d'invitation ne réinitialise pas, un lien de réinitialisation n'active pas</td><td>Oui</td><td>✅</td></tr>
+<tr><td>B10</td><td>Compte désactivé entre la demande et l'usage : lien refusé</td><td>Oui</td><td>✅</td></tr>
+<tr><td>C1</td><td>Administrateur : lien de 48 h, audité avec son identité, lien fonctionnel</td><td>Oui</td><td>✅</td></tr>
+<tr><td>C2</td><td>Interdit pour soi-même ; refus pour un compte inconnu, en attente ou désactivé ; MFA périmé = step-up exigé ; rôle sans droit = 403 ; sans jeton = 401</td><td>Oui</td><td>✅</td></tr>
+<tr><td>D1</td><td>HTTP réel : réponses <strong>identiques</strong> (statut, corps, en-têtes) pour compte connu / inconnu / mal formé</td><td>Oui</td><td>✅</td></tr>
+<tr><td>D2</td><td>HTTP réel : limitation 3/minute (429 ensuite), autre IP non touchée ; entrées mal formées rejetées (400)</td><td>Oui</td><td>✅</td></tr>
+<tr><td>D3</td><td>HTTP réel : parcours complet, ancienne session coupée, ancien mot de passe refusé, nouveau accepté + MFA exigé, audit <code>ISSUED</code> puis <code>password_reset_completed</code></td><td>Oui</td><td>✅</td></tr>
+<tr><td>E1</td><td><strong>Navigateur réel</strong> : lien sur la page de connexion → demande → message identique → ouverture du lien → fragment effacé de l'adresse → mot de passe <strong>réutilisé refusé</strong> (message clair, lien conservé) → mot de passe neuf accepté → « Mot de passe modifié »</td><td>Oui</td><td>✅ réel</td></tr>
+<tr><td>E2</td><td>Après E1 : ancien mot de passe refusé (401), nouveau accepté (200), e-mail de confirmation émis, 3 lignes d'audit (demande, refus, usage)</td><td>Oui</td><td>✅ réel</td></tr>
+<tr><td>F1</td><td>Types propres (API et web) ; architecture : <strong>129 modules, 506 dépendances, 0 violation</strong></td><td>Oui</td><td>✅</td></tr>
+<tr><td>F2</td><td><strong>380</strong> tests unitaires API (353 + 27 nouveaux) · <strong>141</strong> tests d'intégration (132 + 9 nouveaux) · <strong>24</strong> tests web, tous verts ; test structurel des routes mis à jour (32 routes)</td><td>Oui</td><td>✅</td></tr>
+<tr><td>F3</td><td>Migration <code>20261024000000_s3_5_password_reset</code> appliquée sur base vide ; invitations existantes conservées comme <code>INVITATION</code></td><td>Oui</td><td>✅</td></tr>
+<tr><td>G1</td><td>Vérification par mutation (voir ci-dessous)</td><td>Oui</td><td>✅ 12 sur 12 détectées, <strong>après correction d'un test trop faible</strong></td></tr>
+<tr><td>H1</td><td><strong>Commentaires</strong> : 0 déclaration non commentée (script de contrôle), <strong>535 déclarations</strong> dans l'index généré ; l'ancien commentaire périmé de <code>main.ts</code> corrigé</td><td>Non</td><td>✅</td></tr>
+<tr><td>H2</td><td><strong>Livrables</strong> : récapitulatif, guide du code, index des fonctions, versions HTML</td><td>Non</td><td>✅</td></tr>
+</tbody></table></div>
+<h2>Vérification par mutation</h2>
+<div class="table-wrap"><table><thead><tr><th>Mutant (contrôle cassé volontairement)</th><th>Détecté par</th></tr></thead><tbody>
+<tr><td>M1 un lien d'invitation peut réinitialiser un mot de passe (usage croisé permis)</td><td><strong>Survécu</strong> au premier jeu de tests (le compte invité n'étant pas actif, une autre règle le refusait) → test de <strong>défense en profondeur</strong> ajouté (lien d'invitation rattaché à un compte actif) ; <strong>détecté ensuite</strong></td></tr>
+<tr><td>M2 plafond de 3 liens par heure supprimé</td><td>« plafond : 3 liens par heure et par compte… »</td></tr>
+<tr><td>M3 sessions non coupées après la réinitialisation</td><td>2 tests (audit des sessions coupées ; sessions et jetons de rafraîchissement)</td></tr>
+<tr><td>M4 historique des mots de passe non vérifié</td><td>« refusé sans consommer le lien »</td></tr>
+<tr><td>M5 une nouvelle demande ne révoque plus l'ancien lien</td><td>« une nouvelle demande révoque le lien précédent »</td></tr>
+<tr><td>M6 un administrateur peut réinitialiser son propre mot de passe</td><td>« INTERDIT pour soi-même »</td></tr>
+<tr><td>M7 l'adresse inconnue est écrite dans l'audit</td><td>« une adresse inconnue n'est JAMAIS écrite dans le journal d'audit »</td></tr>
+<tr><td>M8 consommation atomique du lien ignorée</td><td>« deux utilisations simultanées : une seule aboutit »</td></tr>
+<tr><td>M9 lien libre-service de 120 minutes au lieu de 60</td><td>2 tests (durée à la milliseconde ; expiration)</td></tr>
+<tr><td>M10 un compte désactivé peut recevoir un lien</td><td>3 tests (inéligible, désactivé entre demande et usage, administrateur)</td></tr>
+<tr><td>M11 politique de mot de passe vérifiée après consommation du lien</td><td>« refusé sans consommer le lien »</td></tr>
+<tr><td>M12 le titulaire n'est plus prévenu par e-mail</td><td>« l'opération est auditée… et le titulaire reçoit un e-mail »</td></tr>
+</tbody></table></div>
+<p><strong>Enseignement</strong> : M1 montre qu'un test peut « passer » parce qu'une <em>autre</em> règle protège déjà. Seule la mutation l'a révélé.</p>
+<h2>Défauts trouvés et corrigés pendant le sprint</h2>
+<ol><li><strong>Tests d'intégration trop impatients</strong> (ma faute) : le traitement continue après la réponse (volontairement), mes premiers tests lisaient l'audit au bout de 300 ms et échouaient sur une machine lente. Les tests <strong>attendent maintenant</strong> l'e-mail ou l'audit (jusqu'à 15 s) et le délai d'un test est relevé à 30 s. La logique n'a pas changé.</li><li><strong>Borne du plafond horaire</strong> : un lien créé <em>pile</em> une heure plus tôt compte encore. Le test le vérifie à la milliseconde plutôt que d'accepter une borne floue.</li><li><strong>Commentaire périmé</strong> : <code>main.ts</code> affirmait que le MFA et le contrôle d'accès n'étaient « pas branchés » ; corrigé.</li><li><strong>Mutant survivant M1</strong> (voir ci-dessus) : test ajouté.</li><li><strong>Premier passage complet des tests d'intégration sous charge</strong> : 4 échecs de <em>délai</em> (transaction non démarrée à temps, tests dépassant 5 s ou 60 s) dans des tests de S3.3, pendant que la machine exécutait d'autres tâches lourdes. <strong>Aucun n'a reproduit</strong> : la même suite passe seule (10/10) puis en entier au calme (<strong>141/141</strong>). Noté honnêtement comme fragilité de l'environnement de test (machine lente), pas comme défaut de code ; à surveiller.</li><li><strong>Incident d'outil de recette</strong> : le navigateur intégré <strong>suspend les requêtes réseau quand son panneau est masqué</strong> (<code>ERR_NETWORK_IO_SUSPENDED</code>) ; une soumission de formulaire n'est pas partie. Elle a été rejouée panneau visible. Aucun lien avec le code livré, noté pour ne pas le confondre avec un défaut.</li></ol>
+<h2>Limites connues</h2>
+<ul><li><strong>Microsoft 365 non testé</strong> : le lien est lu dans la console de développement (option réservée au développement, refusée en production).</li><li><strong>Traitement après la réponse, en mémoire</strong> (D26) : une panne du processus entre la réponse et l'envoi perd la demande ; l'utilisateur redemande.</li><li><strong>Nuisance possible</strong> (D25) : redemander des liens pour une adresse connue invalide le lien légitime de la victime (3 fois par heure au plus) ; tracé, non bloquant.</li><li><strong>Pas de notification</strong> après un changement fait depuis « Mon compte » (D27).</li><li>Si le <strong>téléphone est aussi perdu</strong>, un administrateur doit en plus réinitialiser le MFA (D14) ; les deux actions sont possibles et tracées.</li><li>Les écrans restent vérifiés à la main (D22).</li></ul>
+<h2>Décision de validation</h2>
+<p>Tous les contrôles bloquants sont ✅ (141/141 tests d'intégration au calme ; voir défaut 5 pour le passage sous charge). <strong>Validation explicite de l'ingénieur logiciel requise.</strong> Ordre de fusion : <strong>S3.4 d'abord, puis S3.5</strong> (S3.5 contient S3.4).</p></main></body></html>
