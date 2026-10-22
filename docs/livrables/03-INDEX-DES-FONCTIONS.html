@@ -23,8 +23,8 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 @media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
 </style></head><body><main><nav class="top">Investally Business Platform — livrables · <a href="01-RECAPITULATIF-REALISATIONS.html">Récapitulatif</a> · <a href="02-GUIDE-DU-CODE.html">Guide du code</a> · <a href="03-INDEX-DES-FONCTIONS.html">Index des fonctions</a> · <a href="04-SUIVI-DES-SESSIONS.html">Suivi des sessions</a> · <a href="05-ETAT-D-AVANCEMENT.html">État d&#8217;avancement</a> · <a href="06-BESOINS-STYLE-GRAPHIQUE.html">Style graphique</a></nav><h1>Index des fonctions et composants (généré)</h1>
 <blockquote><p>Document <strong>généré</strong> par <code>node scripts/gen-function-index.mjs</code> à partir des commentaires du code. Ne pas le modifier à la main : corriger le commentaire dans le fichier source, puis relancer le script.</p></blockquote>
-<p><strong>606 déclarations commentées au total.</strong></p>
-<h2>API (NestJS) — 459 déclarations commentées</h2>
+<p><strong>632 déclarations commentées au total.</strong></p>
+<h2>API (NestJS) — 479 déclarations commentées</h2>
 <h3><code>app.module.ts</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
 <tr><td><code>export class AppModule {}</code></td><td>Module racine : assemble la plateforme (base, configuration, limitation de débit, garde CSRF globale) et les modules métier (audit, notifications, IAM, développement commercial).</td></tr>
@@ -51,6 +51,18 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
 <tr><td><code>async function bootstrap()</code></td><td>Démarre l'API : charge la configuration (refuse de démarrer si elle est dangereuse en production), monte l'application et écoute sur l'adresse locale uniquement.</td></tr>
 </tbody></table></div>
+<h3><code>modules/audit/application/audit-reader.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export const LOGIN_HISTORY_WINDOW_DAYS = 90;</code></td><td>Profondeur de l'historique des connexions affiché à l'utilisateur (jours).</td></tr>
+<tr><td><code>export const LOGIN_HISTORY_DEFAULT_LIMIT = 25;</code></td><td>Nombre d'événements par page (par défaut et au maximum).</td></tr>
+<tr><td><code>export interface LoginEvent</code></td><td>Une connexion telle que l'intéressé la voit.</td></tr>
+<tr><td><code>export interface LoginHistoryPage</code></td><td>Page de l'historique : <code>nextBefore</code> est le curseur de la page suivante (nul s'il n'y en a pas).</td></tr>
+<tr><td><code>export interface AuditReader</code></td><td>API publique de lecture du journal pour les autres modules (lecture seule, jamais d'écriture).</td></tr>
+<tr><td><code>loginHistory(query: { userId: string; before?: Date; limit?: number }): Promise&lt;LoginHistoryPage&gt;;</code></td><td>Historique des connexions d'UN utilisateur, borné dans le temps, du plus récent au plus ancien.</td></tr>
+<tr><td><code>export function toLoginEvent(entry: AuditEntry): LoginEvent</code></td><td>Entrée d'audit → événement de connexion affichable (aucun détail interne : motif, valeurs avant/après).</td></tr>
+<tr><td><code>export class DefaultAuditReader implements AuditReader</code></td><td>Lecture de l'historique des connexions dans le journal d'audit (aucune table supplémentaire).</td></tr>
+<tr><td><code>async loginHistory(query: { userId: string; before?: Date; limit?: number }): Promise&lt;LoginHistoryPage&gt;</code></td><td>Lit une page : fenêtre de 90 jours, taille bornée (25 par défaut, 100 au plus).</td></tr>
+</tbody></table></div>
 <h3><code>modules/audit/application/audit-recorder.ts</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
 <tr><td><code>export interface AuditRecord</code></td><td>Ce qu'un cas d'usage fournit pour tracer une action : qui, dans quel module, sur quelle entité, quoi, avec l'ancienne et la nouvelle valeur.</td></tr>
@@ -60,7 +72,7 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 </tbody></table></div>
 <h3><code>modules/audit/audit.module.ts</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
-<tr><td><code>export class AuditModule {}</code></td><td>Module d'audit : fournit l'enregistreur (<code>AUDIT_RECORDER</code>) aux autres modules ; le journal est en ajout seul, partitionné par mois.</td></tr>
+<tr><td><code>export class AuditModule {}</code></td><td>Module d'audit : fournit l'enregistreur (<code>AUDIT_RECORDER</code>) et le lecteur (<code>AUDIT_READER</code>, historique des connexions) aux autres modules ; le journal est en ajout seul, partitionné par mois.</td></tr>
 </tbody></table></div>
 <h3><code>modules/audit/domain/audit-entry.ts</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
@@ -68,14 +80,18 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 </tbody></table></div>
 <h3><code>modules/audit/domain/audit-repository.ts</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export interface LoginEventQuery</code></td><td>Critères de lecture des événements de connexion d'UN utilisateur, dans une fenêtre de dates bornée.</td></tr>
 <tr><td><code>export interface AuditRepository</code></td><td>Append-only : aucune méthode de modification ni de suppression.</td></tr>
+<tr><td><code>listLoginEvents(query: LoginEventQuery): Promise&lt;AuditEntry[]&gt;;</code></td><td>Connexions réussies et échouées de l'utilisateur, de la plus récente à la plus ancienne.</td></tr>
 </tbody></table></div>
 <h3><code>modules/audit/infrastructure/prisma-audit.repository.ts</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
 <tr><td><code>const asJson = (value: Record&lt;string, unknown&gt; | null)</code></td><td>Convertit une valeur facultative en JSON Prisma (<code>null</code> devient NULL en base, pas la chaîne « null »).</td></tr>
+<tr><td><code>function toEntry(row:</code></td><td>Ligne de la table d'audit → entrée du domaine.</td></tr>
 <tr><td><code>export class PrismaAuditRepository implements AuditRepository</code></td><td>Écrit et relit le journal d'audit dans PostgreSQL (schéma <code>audit</code>).</td></tr>
 <tr><td><code>async append(entry: AuditEntry): Promise&lt;void&gt;</code></td><td>Ajoute une entrée immuable au journal (acteur, session, IP, appareil, entité, action, avant/après).</td></tr>
 <tr><td><code>async listByEntity(entityType: string, entityId: string): Promise&lt;AuditEntry[]&gt;</code></td><td>Historique d'une entité, du plus ancien au plus récent (500 entrées au plus).</td></tr>
+<tr><td><code>async listLoginEvents(query: LoginEventQuery): Promise&lt;AuditEntry[]&gt;</code></td><td>Connexions (<code>LOGIN</code>) et échecs (<code>LOGIN_FAILED</code>) rattachés à l'utilisateur, dans la fenêtre demandée, du plus récent au plus ancien.</td></tr>
 </tbody></table></div>
 <h3><code>modules/business-development/application/company-view.ts</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
@@ -193,6 +209,10 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td><code>async execute(command: { sessionId: string; access: AccessContext; actor: ActorContext }): Promise&lt;void&gt;</code></td><td>Révoque une session et ses jetons ; hors de la portée de l'appelant, elle est « introuvable » (404).</td></tr>
 <tr><td><code>export class RevokeUserSessionsUseCase</code></td><td>Coupe TOUTES les sessions d'un utilisateur (incident).</td></tr>
 <tr><td><code>async execute(command: { targetUserId: string; access: AccessContext; actor: ActorContext }): Promise&lt;{ revoked: number }&gt;</code></td><td>Coupe toutes les sessions d'un utilisateur (portée Tous exigée) et révoque leurs jetons ; renvoie leur nombre.</td></tr>
+<tr><td><code>export class RevokeOtherSessionsUseCase</code></td><td>Révoque TOUTES les sessions de l'appelant SAUF celle qui fait la demande (« déconnecter mes autres appareils »).</td></tr>
+<tr><td><code>async execute(command: { userId: string; sessionId: string; actor: ActorContext }): Promise&lt;{ revoked: number }&gt;</code></td><td>Révoque les autres sessions et leurs jetons, trace l'action et renvoie le nombre de sessions coupées.</td></tr>
+<tr><td><code>export class LoginHistoryHandler</code></td><td>Historique des connexions de l'appelant (journal d'audit, 90 jours) : jamais celui d'un autre utilisateur.</td></tr>
+<tr><td><code>async execute(query: { userId: string; before?: Date; limit?: number }): Promise&lt;LoginHistoryPage&gt;</code></td><td>Page d'historique de l'utilisateur dont l'identifiant vient du jeton ; <code>before</code> est le curseur de la page suivante.</td></tr>
 </tbody></table></div>
 <h3><code>modules/iam/application/admin/user-management.use-cases.ts</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
@@ -635,6 +655,8 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td><code>revokeAll(@Param('id', ParseUUIDPipe) id: string, @Access() access: AccessContext, @CurrentActor() actor: AuthenticatedActor, @Req() req: Request)</code></td><td>Agit sur n'importe quel utilisateur : exige la portée « Tous » dès la garde (la portée « propre » ne suffit pas).</td></tr>
 <tr><td><code>export class AdminRolesController</code></td><td>Route de lecture du catalogue des rôles (<code>/admin/roles</code>).</td></tr>
 <tr><td><code>export class SessionsController</code></td><td>Mes sessions : je vois et je révoque les miennes (un SuperAdmin, en portée Tous, peut révoquer celles des autres).</td></tr>
+<tr><td><code>loginHistory(@Query() query: LoginHistoryQueryDto, @CurrentActor() actor: AuthenticatedActor, @Res({ passthrough: true }) res: Response)</code></td><td>Mon historique de connexions (90 jours, réussies et échouées) : toujours le MIEN, jamais celui d'un autre.</td></tr>
+<tr><td><code>revokeAllOthers(@CurrentActor() actor: AuthenticatedActor, @Req() req: Request)</code></td><td>Déconnecte tous mes autres appareils (la session courante reste ouverte).</td></tr>
 </tbody></table></div>
 <h3><code>modules/iam/presentation/auth.controller.ts</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
@@ -667,6 +689,7 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td><code>export class AcceptInvitationDto</code></td><td>Corps d'activation d'un compte invité : jeton du lien et mot de passe choisi (tailles bornées).</td></tr>
 <tr><td><code>export class RequestPasswordResetDto</code></td><td>Corps de « mot de passe oublié » : l'adresse saisie, sans validation de forme (la réponse est identique pour toute saisie).</td></tr>
 <tr><td><code>export class ResetPasswordDto</code></td><td>Corps du choix d'un nouveau mot de passe : jeton du lien (fragment d'URL) et mot de passe, tailles bornées.</td></tr>
+<tr><td><code>export class LoginHistoryQueryDto</code></td><td>Paramètres de l'historique des connexions : taille (1 à 100) et curseur <code>before</code> (date ISO 8601 de la page précédente).</td></tr>
 </tbody></table></div>
 <h3><code>modules/iam/presentation/dto/auth.dto.ts</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
@@ -799,16 +822,21 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td><code>export interface RequestLike</code></td><td>Forme minimale d'une requête HTTP (sans dépendre d'Express) pour construire le contexte d'audit.</td></tr>
 <tr><td><code>export function actorContextFrom(req: RequestLike, identity: { userId: string | null; sessionId: string | null } = { userId: null, sessionId: null }</code></td><td>Qui agit, depuis où : IP et appareil de la requête (l'identité est ajoutée une fois l'utilisateur authentifié).</td></tr>
 </tbody></table></div>
-<h2>Interface web — pages (Next.js) — 41 déclarations commentées</h2>
+<h2>Interface web — pages (Next.js) — 43 déclarations commentées</h2>
 <h3><code>(app)/account/page.tsx</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
-<tr><td><code>export default function AccountPage()</code></td><td>Page « Mon compte » : profil, changement de mot de passe, nouveaux codes de secours et liste des sessions de l'utilisateur connecté.</td></tr>
+<tr><td><code>export default function AccountPage()</code></td><td>Page « Mon compte » : profil, changement de mot de passe, nouveaux codes de secours et accès aux sessions et à l'historique des connexions de l'utilisateur connecté.</td></tr>
 <tr><td><code>function PasswordForm({ email }: { email: string })</code></td><td>Formulaire de changement de mot de passe : indications en direct, confirmation obligatoire, message d'erreur du serveur affiché tel quel.</td></tr>
 <tr><td><code>async function submit(event: FormEvent)</code></td><td>Envoie l'ancien et le nouveau mot de passe ; les champs sont vidés après succès (le serveur coupe les autres sessions).</td></tr>
 <tr><td><code>function RecoveryCodes()</code></td><td>Génère de nouveaux codes de secours (les anciens cessent de fonctionner) et les affiche une seule fois ; un code MFA récent est demandé si nécessaire.</td></tr>
 <tr><td><code>async function regenerate()</code></td><td>Appelle la régénération et garde les codes en mémoire uniquement, jusqu'à ce que l'utilisateur les masque.</td></tr>
-<tr><td><code>function Sessions()</code></td><td>Liste les sessions actives de l'utilisateur (appareil lisible, IP, dates) et permet de révoquer les autres.</td></tr>
-<tr><td><code>async function revoke(id: string)</code></td><td>Révoque une session puis recharge la liste.</td></tr>
+<tr><td><code>function SessionsLink()</code></td><td>Lien vers la page « Sessions et connexions » (sessions actives, révocation, historique des connexions).</td></tr>
+</tbody></table></div>
+<h3><code>(app)/account/sessions/page.tsx</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>type Pending = { kind: 'one'; session: SessionView } | { kind: 'others'; count: number };</code></td><td>Ce que la fenêtre de confirmation s'apprête à faire.</td></tr>
+<tr><td><code>export default function SessionsPage()</code></td><td>Sessions et connexions (S01 à S03) : mes sessions actives, avec révocation confirmée (une seule, ou toutes les autres d'un coup, avec un MFA récent demandé par l'interface si besoin), et l'historique de mes connexions sur 90 jours.</td></tr>
+<tr><td><code>async function confirm()</code></td><td>Exécute la révocation confirmée, annonce le résultat puis recharge les deux listes (la révocation est tracée dans le journal).</td></tr>
 </tbody></table></div>
 <h3><code>(app)/admin/users/page.tsx</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
@@ -975,7 +1003,7 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td><code>export function StepUpDialog({ onDone }: { onDone: (ok: boolean) =&gt; void })</code></td><td>Demande un code frais du second facteur avant une action sensible (modification de rôles, désactivation, etc.).</td></tr>
 <tr><td><code>async function submit(event: FormEvent)</code></td><td>Vérifie le code ; en cas de succès le nouveau jeton remplace l'ancien et l'action sensible est rejouée.</td></tr>
 </tbody></table></div>
-<h2>Interface web — bibliothèque — 66 déclarations commentées</h2>
+<h2>Interface web — bibliothèque — 70 déclarations commentées</h2>
 <h3><code>api.ts</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
 <tr><td><code>export class ApiError extends Error</code></td><td>Erreur renvoyée par l'API : statut HTTP, code stable (<code>FORBIDDEN</code>, <code>MFA_REQUIRED</code>…) et message lisible.</td></tr>
@@ -1023,6 +1051,11 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <h3><code>invitation.ts</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
 <tr><td><code>export function parseInvitationFragment(hash: string): string | null</code></td><td>Le jeton d'invitation est dans le FRAGMENT de l'URL (<code>#token=…</code>) : le navigateur ne l'envoie ni au serveur ni dans l'en-tête Referer.</td></tr>
+</tbody></table></div>
+<h3><code>login-events.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export function describeLoginEvent(event: LoginEvent): { label: string; detail: string; tone: Tone }</code></td><td>Texte et teinte d'une ligne de l'historique : réussite, ou échec avec l'étape où il s'est produit (sans motif précis).</td></tr>
+<tr><td><code>export function formatDateTime(iso: string): string</code></td><td>Date et heure en français (heure locale de l'utilisateur) ; « — » si la date est illisible.</td></tr>
 </tbody></table></div>
 <h3><code>modules.ts</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
@@ -1085,6 +1118,8 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td><code>export interface RoleView</code></td><td>Rôle et ses permissions, tels que l'API les expose.</td></tr>
 <tr><td><code>export interface SessionView</code></td><td>Session de connexion telle que l'API l'expose (la courante est marquée).</td></tr>
 <tr><td><code>export interface Company</code></td><td>Entreprise cible telle que l'API l'expose.</td></tr>
+<tr><td><code>export interface LoginEvent</code></td><td>Une connexion de l'historique (réussie ou échouée) : étape de l'échec, adresse IP et appareil.</td></tr>
+<tr><td><code>export interface LoginHistoryPage</code></td><td>Page de l'historique : <code>nextBefore</code> est le curseur de la page suivante (nul s'il n'y en a pas).</td></tr>
 </tbody></table></div>
 <h3><code>use-cooldown.ts</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>

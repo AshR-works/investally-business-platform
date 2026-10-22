@@ -27,3 +27,11 @@ export const USER_STATUS: Record<string, StatusStyle> = {
 export function statusStyle(table: Record<string, StatusStyle>, code: string): StatusStyle {
   return table[code] ?? { label: code, tone: 'neutral' };
 }
+
+/** Niveau de risque d'une session, tel que l'API le calcule (réseau et appareil connus ou non, échecs récents). */
+export const SESSION_RISK: Record<string, StatusStyle> = {
+  LOW: { label: 'Faible', tone: 'ok' },
+  MEDIUM: { label: 'Moyen', tone: 'warn' },
+  HIGH: { label: 'Élevé', tone: 'bad' },
+};
+
