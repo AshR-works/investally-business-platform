@@ -11,6 +11,7 @@
 
 ## Présentation
 Plateforme propriétaire d'Investally : **CRM** (Business Development + centre de formation Investudy), puis **ERP** (stocks, reporting, RH, finance, fiscalité). Pays : Cameroun. Langue de travail : **français**.
+- **Périmètre de ce chat** : Investally uniquement. KwataBall (`C:\dev\kwataball`) est un projet distinct, avec son propre chat : ne pas le lire ni le modifier ici. Les enseignements transversaux passent par les standards et Skills partagés (`C:\dev\CLAUDE.md`, `C:\dev\skills`).
 - Dépôt : `https://github.com/AshR-works/investally-business-platform` (**public** : aucun secret, aucun e-mail, aucun détail exploitable d'une faille). Responsable produit : l'utilisateur (« Je valide X » = fusion).
 
 ## Vision
@@ -52,7 +53,7 @@ Ordre décidé (DEC-005) : **cadrage UX (5 écrans)** → S4.1 à S4.4 (+ agenda
 - **Avant de demander une validation** : tests et recette exécutés, `docs/QUESTIONS-ET-DECISIONS.md` et `docs/TECH-DEBT.md` à jour.
 - **Décisions structurantes** : méthode d'arbitrage (options, grille pondérée, recommandation) ; ne jamais décider à la place de l'utilisateur.
 - **Design** : toute modification du design met à jour `docs/design/` (changelog, version, registre EXD, DDR, captures, prototype) dans le même lot.
-- **Règles de fer** : base **jetable** uniquement, jamais la vraie ; pas de mot de passe administrateur par défaut ; l'API n'écoute que sur `127.0.0.1` ; ne jamais tester le service Microsoft 365 réel ; ne jamais supprimer l'ancienne copie OneDrive sans accord ; ne pas utiliser les maquettes PDF tierces de `C:\dev\external ressources` sans demande.
+- **Règles de fer** : ne jamais coller ni copier dans ce dépôt du contenu d'un autre projet (leçon du 2026-10-22 : un prompt d'un autre projet avait écrasé `docs/design/releases/index.json`, restauré depuis Git) ; base **jetable** uniquement, jamais la vraie ; pas de mot de passe administrateur par défaut ; l'API n'écoute que sur `127.0.0.1` ; ne jamais tester le service Microsoft 365 réel ; ne jamais supprimer l'ancienne copie OneDrive sans accord ; ne pas utiliser les maquettes PDF tierces de `C:\dev\external ressources` sans demande.
 - **Commandes** : installer `pnpm install --frozen-lockfile` · qualité `pnpm ci` · intégration `node apps/crm-api/scripts/test-db.mjs` · lancer en local `node scripts/local-stack.mjs --demo` · clôturer la journée `pnpm report:close`.
 - **Pièges connus** : Node 26 local alors que le projet vise Node 22 ; pnpm 12 refuse les scripts d'installation non déclarés (CI Linux) ; les réécritures Next.js sont figées à la compilation (recompiler si le port de l'API change) ; `scripts/test-db.mjs` doit sortir en erreur si un test échoue.
 
