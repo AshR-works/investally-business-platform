@@ -9,3 +9,12 @@ allowBuilds:
   prisma: true
   '@prisma/engines': true
   '@embedded-postgres/windows-x64': false
+  # Linux et macOS : le script d'installation recrée les liens symboliques des bibliothèques de PostgreSQL embarqué
+  # (nécessaire à scripts/test-db.mjs). Sans cette déclaration, pnpm 12 refuse l'installation (ERR_PNPM_IGNORED_BUILDS).
+  '@embedded-postgres/darwin-arm64': true
+  '@embedded-postgres/darwin-x64': true
+  '@embedded-postgres/linux-arm': true
+  '@embedded-postgres/linux-arm64': true
+  '@embedded-postgres/linux-ia32': true
+  '@embedded-postgres/linux-ppc64': true
+  '@embedded-postgres/linux-x64': true
