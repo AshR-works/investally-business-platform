@@ -14,3 +14,4 @@ Les arbitrages structurants suivent la [méthode d'arbitrage](../../METHODE-D-AR
 | [DDR-0007](DDR-0007-panneau-centre-et-bouton-de-depliage.md) | Panneau principal centré (option B) et bouton de dépliage en pictogramme | Acceptée (pictogramme à confirmer) | 0.4.1 | EXD-10, EXD-11, DEC-007 |
 | [DDR-0008](DDR-0008-champ-de-code-unique.md) | Champ de code unique pour le second facteur | **Remplacée** par DDR-0009 | 0.4.1 | EXD-06 |
 | [DDR-0009](DDR-0009-code-en-six-cases.md) | Code du second facteur en six cases | Acceptée | 0.4.1 | EXD-06 |
+| [DDR-0010](DDR-0010-secrets-confirmations-et-affichage-unique.md) | Mot de passe affichable, confirmation des actions irréversibles, codes de secours à affichage unique | Acceptée (prototype à mettre à jour) | 0.4.1 | EXD-12, EXD-13 |

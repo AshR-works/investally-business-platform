@@ -13,6 +13,8 @@ Le design 0.4.1 est installé dans l'application réelle (`apps/crm-web`) : jeto
 
 **H2a (2026-10-22)** : les écrans d'accès A01 à A15 sont réalisés dans l'application au gabarit du prototype (carte d'accueil sombre, indicateur d'étape, notices, règles du mot de passe en direct, introduction du MFA en trois étapes, compte à rebours après trop de tentatives). Code à 6 chiffres en **six cases**, conforme au prototype (DDR-0009, qui remplace DDR-0008 sur demande de la direction produit) ; champ unique conservé pour les codes de secours. **Écart assumé** : nombre de codes de secours restants non affiché (l'API ne le fournit pas, dette D39).
 
+**S3.7 (2026-10-22), sans changement de version** : trois composants réalisés dans l'application d'après les retours de tests locaux (DDR-0010) : champ mot de passe avec œil (`PasswordField`, EXD-12), fenêtre de confirmation `danger` (`ConfirmDialog`, EXD-13) et codes de secours à affichage unique (`SecretCodesPanel`, EXD-13). Deux icônes (`eye`, `eye-off`) et un pictogramme d'alerte ajoutés au jeu. **Prototype 0.4.1 non encore mis à jour** : ces composants seront ajoutés à la version 0.5.0 (nouveaux composants, MINEUR). Rôles et permissions (UX-02, option B+C) : lot distinct, à venir.
+
 ## 0.4.1 — 2026-10-21 — *Validée*
 - **EXD-10 / DEC-007 / DDR-0007** : panneau principal **centré sur la fenêtre** (option B) ; repli automatique en centrage dans l'espace restant quand la fenêtre est étroite ; largeur du panneau 1 440 px au plus ; la largeur maximale du contenu (1 320 px) est supprimée.
 - **EXD-11** : bouton de dépliage en **pictogramme seul** (44 px, nom accessible, info-bulle, état annoncé) ; pictogramme provisoire à confirmer.

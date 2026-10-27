@@ -30,3 +30,5 @@ export function passwordRules(password: string, email = ''): PasswordRule[] {
   return rules.map((label) => ({ label, met: password.length > 0 && !unmet.has(label) }));
 }
 
+/** Délai (ms) après lequel un mot de passe affiché est automatiquement remasqué. */
+export const PASSWORD_AUTO_HIDE_MS = 30_000;
