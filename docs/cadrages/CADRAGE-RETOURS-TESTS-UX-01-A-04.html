@@ -1,0 +1,141 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Cadrage : retours de tests locaux UX-01 à UX-04</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — cadrages · <a href="README.html">Index</a> · <a href="../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../design/05-AIDE-A-LA-DECISION.html">Aide à la décision</a></nav><h1>Cadrage : retours de tests locaux UX-01 à UX-04</h1>
+<p><em>2026-10-22 · analyse avant implémentation · aucune ligne de code produite. Source : vos retours de tests et relecture du code (<code>components/auth/</em></code>, <code>app/(app)/account</code>, <code>app/(app)/admin/users</code>, <code>app/mfa</code>, <code>components/modal.tsx</code>). Les comportements décrits ont été lus dans le code, <strong>pas rejoués dans un navigateur</strong>.*</p>
+<blockquote><p>Méthode d'arbitrage (<code>docs/METHODE-D-ARBITRAGE.md</code>) : les choix structurants (UX-02, UX-04) sont présentés avec options, grille pondérée (poids 5, 5, 4, 4, 3, total maximal 105) et recommandation. <strong>La décision vous appartient.</strong></p></blockquote>
+<h2>0. Synthèse</h2>
+<div class="table-wrap"><table><thead><tr><th></th><th>Sujet</th><th>Criticité du problème</th><th>Recommandation</th><th>Priorité</th></tr></thead><tbody>
+<tr><td>UX-01</td><td>Œil sur les mots de passe</td><td>Moyenne</td><td>Un composant unique <code>PasswordField</code> partout</td><td><strong>Haute</strong> (effort faible, gain large)</td></tr>
+<tr><td>UX-02</td><td>Rôles et permissions</td><td>Haute (une erreur d'attribution = un droit en trop)</td><td>Sélection <strong>par groupes</strong> + <strong>aperçu des droits par module</strong> en lecture seule</td><td>Moyenne (plus gros chantier, vos choix d'abord)</td></tr>
+<tr><td>UX-03</td><td>Confirmation avant régénération</td><td><strong>Haute</strong> (action irréversible sans garde-fou)</td><td>Fenêtre de confirmation « danger », focus sur Annuler, puis MFA récent</td><td><strong>Haute</strong></td></tr>
+<tr><td>UX-04</td><td>Export contrôlé des codes de secours</td><td><strong>Haute</strong> (perte des codes = compte bloqué)</td><td>Copier + TXT + PDF (impression), affichage limité à l'écran, protection à la sortie</td><td><strong>Haute</strong> (copie/TXT/sortie), Faible (PDF)</td></tr>
+</tbody></table></div>
+<p><strong>Écart avec votre liste d'écrans (UX-01)</strong> : seuls 4 écrans portent réellement un champ mot de passe. « Mot de passe oublié » ne demande que l'adresse e-mail, « Activation MFA » ne demande qu'un code à 6 chiffres, et le formulaire d'invitation côté administrateur (e-mail, nom, rôles) n'en a pas : c'est l'invité qui choisit son mot de passe sur la page d'activation. « Changement de mot de passe » et « Mon compte » sont le même écran.</p>
+<p><strong>Constat à connaître (UX-04)</strong> : l'écran d'activation MFA offre déjà <em>Copier</em> et <em>Télécharger (TXT)</em>, une case « J'ai conservé ces codes » et un avertissement avant de quitter la page. L'écran <strong>Mon compte</strong>, lui, affiche les nouveaux codes <strong>sans aucune copie ni téléchargement</strong>, jusqu'au bouton « Masquer ». Le problème que vous avez rencontré vient donc de cet écran.</p>
+<hr>
+<h2>1. UX-01 : afficher / masquer le mot de passe</h2>
+<h3>1.1 Analyse UX</h3>
+<ul><li><strong>Problème</strong> : mots de passe longs (12 caractères minimum, phrases de passe) saisis à l'aveugle ; la confirmation du nouveau mot de passe double la difficulté.</li><li><strong>Impact utilisateur</strong> : fautes de frappe, échecs de connexion comptés contre le verrouillage, abandon du parcours d'activation.</li><li><strong>Criticité</strong> : Moyenne.</li></ul>
+<h3>1.2 Analyse UI</h3>
+<ul><li><strong>Composants à modifier</strong> : <code>app/login/page.tsx</code> (1 champ), <code>components/auth/new-password-fields.tsx</code> (2 champs, réinitialisation et activation d'invitation), <code>app/(app)/account/page.tsx</code> (3 champs). Total : <strong>6 champs</strong>, <strong>un seul composant</strong> à créer.</li><li><strong>Règles visuelles</strong> : bouton <strong>pictogramme seul</strong> (EXD-11) à droite du champ, dans le champ ; icône œil quand le texte est masqué, œil barré quand il est visible ; cible ≥ 24 px (WCAG 2.5.8), visible au clavier (anneau de focus du design system), contraste 3:1 minimum.</li><li><strong>Comportement</strong> : clic = bascule ; ordre de tabulation : champ puis bouton ; la valeur et la position du curseur sont conservées.</li><li><strong>Piège réel</strong> : Microsoft Edge affiche <strong>déjà</strong> sa propre icône œil dans les champs mot de passe. Il faut la masquer (<code>::-ms-reveal</code>) sinon deux icônes se superposent.</li></ul>
+<h3>1.3 Écrans</h3>
+<p>Connexion · Réinitialisation du mot de passe · Activation d'invitation (page de l'invité) · Mon compte, « Changer le mot de passe » (3 champs).</p>
+<h3>1.4 Design System</h3>
+<ul><li><strong>Nouveau composant</strong> <code>PasswordField</code> (champ + bouton), états : masqué, visible, focus, désactivé, erreur.</li><li><strong>Deux icônes</strong> à ajouter à <code>icon.tsx</code> : <code>eye</code>, <code>eye-off</code>.</li><li>Accessibilité : bouton <code>type="button"</code>, nom accessible constant « Afficher le mot de passe » avec <code>aria-pressed</code> (le nom ne change pas, l'état est annoncé) ; jamais de valeur du champ dans une région <code>aria-live</code>.</li></ul>
+<h3>1.5 Sécurité</h3>
+<ul><li><strong>Risques</strong> : lecture par-dessus l'épaule, partage d'écran, capture d'écran.</li><li><strong>Protections</strong> : retour automatique au mode masqué à l'envoi du formulaire, quand l'onglet perd la visibilité, et après 30 s ; l'état n'est jamais conservé (ni stockage navigateur, ni URL) ; <code>autocomplete</code> inchangé pour ne pas gêner les gestionnaires de mots de passe ; la CSP n'est pas touchée.</li></ul>
+<h3>1.6 Recommandation</h3>
+<p>Un composant unique, un bouton par champ (indépendants, comportement identique partout). <strong>Priorité Haute.</strong></p>
+<hr>
+<h2>2. UX-02 : rôles et permissions</h2>
+<h3>2.1 Analyse UX</h3>
+<ul><li><strong>État actuel</strong> : une liste de 10 cases à cocher avec une description ; aucune indication des <strong>droits</strong> obtenus ; aucune aide à la désélection (« Tout effacer »), ni compteur de sélection ; l'écran ne dit pas que les rôles <strong>se cumulent</strong> (union des droits, portée la plus large retenue).</li><li><strong>Impact utilisateur</strong> : l'administrateur ne sait pas ce qu'il accorde réellement ; risque d'attribuer un rôle trop large ou d'oublier d'en retirer un.</li><li><strong>Criticité</strong> : Haute (c'est un outil d'administration des droits).</li></ul>
+<h3>2.2 Contraintes du modèle (importantes)</h3>
+<ul><li>L'API attribue des <strong>rôles</strong>, jamais des permissions isolées ; <code>PUT /admin/users/:id/roles</code> remplace la liste complète.</li><li>Les rôles s'<strong>additionnent</strong> ; pour une même permission, la portée la plus large l'emporte.</li><li>Règles serveur à refléter dans l'interface : on ne modifie <strong>pas ses propres rôles</strong> ; on ne retire pas le <strong>dernier Super administrateur actif</strong> ; l'invitation et la modification des rôles exigent un <strong>MFA récent</strong>.</li><li>Les permissions de chaque rôle (95 permissions, portées Propre / Équipe / Tous) sont <strong>déjà fournies</strong> par <code>GET /admin/roles</code> : aucune évolution d'API n'est nécessaire pour les afficher.</li></ul>
+<h3>2.3 Options comparées</h3>
+<div class="table-wrap"><table><thead><tr><th>Option</th><th>Description</th></tr></thead><tbody>
+<tr><td><strong>0. Statu quo</strong></td><td>Liste de cases à cocher avec description</td></tr>
+<tr><td><strong>A. Cases à cocher améliorées</strong></td><td>Même principe, avec compteur, « Tout effacer », recherche, aire de clic élargie</td></tr>
+<tr><td><strong>B. Sélecteur par groupes</strong></td><td>Rôles regroupés par famille métier (Pilotage, Commercial, Investudy, Support et fonctions support, Administration), chaque rôle est une carte sélectionnable avec pastilles de sélection</td></tr>
+<tr><td><strong>C. Permissions par module</strong></td><td>On choisit des permissions regroupées par module (iam, bd, docs, audit…)</td></tr>
+<tr><td><strong>B+C. Groupes + aperçu</strong></td><td>Sélection par groupes (B), avec un panneau « Droits effectifs » en lecture seule, regroupé par module (C), qui se met à jour à chaque sélection</td></tr>
+</tbody></table></div>
+<div class="table-wrap"><table><thead><tr><th>Critère (poids)</th><th>0</th><th>A</th><th>B</th><th>C</th><th>B+C</th></tr></thead><tbody>
+<tr><td>Lisibilité des rôles et des droits (5)</td><td>2</td><td>3</td><td>4</td><td>3</td><td>5</td></tr>
+<tr><td>Facilité de sélection et de désélection (5)</td><td>2</td><td>4</td><td>4</td><td>2</td><td>4</td></tr>
+<tr><td>Réduction du risque d'erreur d'attribution (4)</td><td>2</td><td>3</td><td>3</td><td>2</td><td>5</td></tr>
+<tr><td>Effort et risque techniques (4, 5 = faible)</td><td>5</td><td>4</td><td>3</td><td>1</td><td>3</td></tr>
+<tr><td>Accessibilité (3)</td><td>3</td><td>4</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td><strong>Total / 105</strong></td><td><strong>57</strong></td><td><strong>75</strong></td><td><strong>76</strong></td><td><strong>46</strong></td><td><strong>86</strong></td></tr>
+</tbody></table></div>
+<p><strong>Option C seule, écartée comme mode de sélection</strong> : elle contredit le modèle (l'API n'attribue que des rôles) et demanderait une évolution de l'API et de la matrice de droits, donc un nouvel arbitrage de sécurité. Gardée <strong>en lecture seule</strong> dans B+C.</p>
+<h3>2.4 Analyse UI (option recommandée B+C)</h3>
+<ul><li><strong>Composants à modifier</strong> : <code>RoleChoices</code>, <code>InviteDialog</code>, <code>RolesDialog</code> (dans <code>app/(app)/admin/users/page.tsx</code>).</li><li><strong>Mise en page</strong> : fenêtre large (deux colonnes ≥ 900 px, une colonne en dessous) : à gauche les groupes et leurs cartes de rôle, à droite « Droits effectifs » regroupés par module, avec la portée en pastille (Propres / Équipe / Tous) et un compteur « 3 rôles, 41 permissions ».</li><li><strong>Comportement</strong> : une carte entière est cliquable (pas seulement la case) ; barre de sélection en haut : « 2 rôles sélectionnés · <strong>Tout désélectionner</strong> » ; rôles retirés ou ajoutés mis en évidence par rapport à l'état d'origine (« + Responsable commercial », « − Support ») avant validation ; <strong>Super administrateur</strong> avec avertissement (« accès complet, toutes les actions sont auditées ») ; rôles de sa propre fiche <strong>désactivés avec explication</strong> (« Vous ne pouvez pas modifier vos propres rôles ») ; validation désactivée si aucun rôle n'est choisi.</li><li><strong>Accessibilité</strong> : cases à cocher natives (groupes en <code>fieldset</code>/<code>legend</code>), compteur annoncé en région <code>role="status"</code>, l'aperçu en accordéons natifs (<code>details</code>), tout opérable au clavier.</li></ul>
+<h3>2.5 Écrans</h3>
+<p>Utilisateurs (liste) → fenêtres « Inviter un utilisateur », « Modifier les rôles ». « Modification utilisateur » (nom, responsable) n'a pas de rôles : inchangé.</p>
+<h3>2.6 Design System</h3>
+<ul><li><strong>Nouveaux composants</strong> : <code>RoleSelector</code> (groupes, cartes), <code>RightsPreview</code> (accordéons par module, pastilles de portée), <code>SelectionSummary</code> (compteur et « Tout désélectionner »).</li><li><strong>États</strong> : carte par défaut, survol, focus, sélectionnée, désactivée (propre compte), avertissement (Super administrateur), modifiée (ajout / retrait par rapport à l'original).</li></ul>
+<h3>2.7 Sécurité</h3>
+<ul><li>Le <strong>serveur reste la seule source de vérité</strong> : l'aperçu informe, il n'autorise rien.</li><li>Le calcul « droits effectifs » côté interface (union, portée la plus large) duplique une règle serveur : <strong>un test automatique</strong> devra comparer les deux pour éviter toute dérive.</li><li>Aucune nouvelle donnée exposée : <code>GET /admin/roles</code> n'est déjà lisible qu'avec <code>iam.role.read</code>.</li><li>Les règles serveur (propres rôles, dernier Super administrateur, MFA récent) restent l'ultime garde-fou : l'interface n'en remplace aucune.</li></ul>
+<h3>2.8 Recommandation</h3>
+<p><strong>Option B+C</strong> (86/105). Priorité <strong>Moyenne</strong> (chantier le plus lourd, dépend de vos choix ci-dessous).</p>
+<hr>
+<h2>3. UX-03 : confirmation avant régénération des codes de secours</h2>
+<h3>3.1 Analyse UX</h3>
+<ul><li><strong>Problème</strong> : le bouton « Générer de nouveaux codes » appelle directement la régénération ; le texte annonce « Une confirmation par code vous sera demandée », ce qui prête à confusion avec la confirmation proprement dite.</li><li><strong>Impact</strong> : un clic accidentel invalide les anciens codes, que l'utilisateur a peut-être rangés ; s'il ne sauvegarde pas les nouveaux, il perd son filet de sécurité.</li><li><strong>Criticité</strong> : Haute.</li></ul>
+<h3>3.2 Contenu de la fenêtre</h3>
+<ul><li><strong>Titre</strong> : « Remplacer vos codes de secours ? »</li><li><strong>Corps</strong> :</li><li>« Vos codes actuels seront <strong>invalidés immédiatement</strong> et ne fonctionneront plus. »</li><li>« Cette action est <strong>irréversible</strong>. »</li><li>« Les nouveaux codes ne seront affichés <strong>qu'une seule fois</strong>. Enregistrez-les avant de quitter la page. »</li><li><strong>Actions</strong> : <strong>Annuler</strong> (bouton secondaire, <strong>focus initial</strong>) et <strong>Remplacer mes codes</strong> (bouton danger). Échap = Annuler.</li><li><strong>Hiérarchie visuelle</strong> : pictogramme d'avertissement, titre, trois puces courtes (la deuxième en gras), boutons alignés à droite ; le bouton danger ne reçoit pas le focus au départ.</li><li><strong>Messages de sécurité</strong> : après confirmation, le <strong>MFA récent</strong> est redemandé si nécessaire (déjà géré) ; message de réussite sobre ; en cas d'échec de la régénération, les anciens codes restent valables (la génération est atomique côté serveur : à vérifier par test).</li></ul>
+<h3>3.3 Analyse UI et Design System</h3>
+<ul><li>Réutiliser <code>Modal</code> (focus piégé, Échap, fond inerte, déjà accessible) ; <strong>ajouter une variante <code>danger</code></strong> (couleurs, pictogramme).</li><li>Ordre des étapes : bouton → <strong>confirmation</strong> → <strong>MFA récent</strong> → génération → affichage unique.</li></ul>
+<h3>3.4 Sécurité</h3>
+<ul><li>Risque : clic accidentel ou « clickjacking » (déjà couvert par <code>X-Frame-Options: DENY</code>).</li><li>Recommandation complémentaire (non obligatoire) : <strong>e-mail d'information</strong> à l'utilisateur après régénération. Il dépend du service de messagerie (Microsoft 365, pas encore accessible) : à inscrire en dette.</li></ul>
+<h3>3.5 Recommandation</h3>
+<p>Confirmation en fenêtre <code>danger</code>, focus sur Annuler, texte ci-dessus. <strong>Priorité Haute</strong> (effort faible).</p>
+<hr>
+<h2>4. UX-04 : export contrôlé des codes de secours</h2>
+<h3>4.1 Analyse UX</h3>
+<ul><li><strong>Écran d'activation MFA</strong> : Copier et TXT existent ; pas de PDF.</li><li><strong>Écran Mon compte</strong> : aucun export ; les codes restent affichés jusqu'à « Masquer » ; <strong>aucun avertissement si l'on quitte la page</strong> (celui de l'activation ne s'y applique pas).</li><li><strong>Impact</strong> : perte des codes = verrouillage du compte en cas de téléphone perdu. <strong>Criticité : Haute.</strong></li></ul>
+<h3>4.2 Le sens de « une seule fois »</h3>
+<p>Deux lectures possibles, à arbitrer :</p>
+<ul><li><strong>(i) Stricte</strong> : après le premier téléchargement ou la première copie, les boutons se désactivent. Risque : si le navigateur bloque le fichier, les codes sont perdus.</li><li><strong>(ii) Limitée à l'écran</strong> : les trois actions restent disponibles <strong>tant que l'écran de génération est affiché</strong> ; dès que l'on le quitte, <strong>plus aucun accès, plus aucun réaffichage</strong>.</li></ul>
+<p><strong>Recommandation : (ii)</strong>, avec case « J'ai conservé ces codes » comme sur l'écran d'activation, et confirmation avant de quitter. Elle respecte l'objectif (aucun accès ultérieur) sans créer de perte accidentelle.</p>
+<h3>4.3 Génération du PDF : options</h3>
+<div class="table-wrap"><table><thead><tr><th>Critère (poids)</th><th>Bibliothèque PDF</th><th>Générateur maison</th><th>Impression navigateur</th></tr></thead><tbody>
+<tr><td>Fidélité à « télécharger un PDF » (5)</td><td>5</td><td>5</td><td>3</td></tr>
+<tr><td>Surface d'attaque et dépendances (5)</td><td>2</td><td>5</td><td>5</td></tr>
+<tr><td>Fiabilité et rendu (4)</td><td>5</td><td>3</td><td>4</td></tr>
+<tr><td>Effort (4, 5 = faible)</td><td>4</td><td>3</td><td>5</td></tr>
+<tr><td>Maintenance (3)</td><td>3</td><td>3</td><td>5</td></tr>
+<tr><td><strong>Total / 105</strong></td><td><strong>80</strong></td><td><strong>83</strong></td><td><strong>91</strong></td></tr>
+</tbody></table></div>
+<p>Lecture : l'<strong>impression navigateur</strong> (feuille de style d'impression + « Enregistrer au format PDF ») est la plus sûre et la plus simple, mais ce n'est pas un téléchargement en un clic : l'utilisateur passe par la boîte d'impression. Le <strong>générateur maison</strong> (une page de texte, polices standard, environ 80 lignes) donne un vrai téléchargement sans dépendance, au prix d'un test de rendu. La <strong>bibliothèque</strong> ajoute une dépendance et une surface d'attaque pour un besoin minime.</p>
+<p><strong>Recommandation : impression navigateur</strong> (91/105), car la priorité du PDF est Faible et le risque minimal. <strong>Écart avec votre exigence</strong> : vous demandez un <em>téléchargement</em> PDF ; si le un-clic est indispensable, choisissez le <strong>générateur maison</strong> (83/105, écart de 8 points) et nous ajouterons un test de lecture du PDF généré (si générateur maison).</p>
+<h3>4.4 Analyse UI et Design System</h3>
+<ul><li><strong>Nouveau composant</strong> <code>SecretCodesPanel</code> réutilisé par l'activation MFA <strong>et</strong> Mon compte : grille des codes, actions <strong>Copier</strong>, <strong>Télécharger .txt</strong>, <strong>Télécharger .pdf</strong>, case « J'ai conservé ces codes », états <em>copié</em> / <em>téléchargé</em> annoncés en <code>role="status"</code>.</li><li>Contenu des fichiers : titre « Investally, codes de secours », date de génération, « Chaque code ne sert qu'une fois », liste des codes ; <strong>aucun nom ni adresse e-mail</strong> dans le fichier (il peut être perdu ou partagé).</li><li>Nom des fichiers : <code>investally-codes-de-secours.txt</code> et <code>.pdf</code>, sans donnée personnelle.</li></ul>
+<h3>4.5 Sécurité</h3>
+<ul><li><strong>Risques</strong> : fichier en clair dans « Téléchargements » ; historique du presse-papiers (Windows Win+V, synchronisation) ; capture ou lecture à l'écran ; perte à la sortie.</li><li><strong>Protections recommandées</strong> : codes <strong>uniquement en mémoire</strong> de la page (jamais dans le stockage du navigateur ni dans l'URL) ; mémoire effacée dès que l'on quitte l'écran ; avertissement avant fermeture <strong>et</strong> avant navigation interne (l'événement <code>beforeunload</code> ne couvre pas les liens internes de l'application : il faut un garde-fou de navigation) ; avertissement clair « ce fichier contient des secrets : rangez-le dans un gestionnaire de mots de passe puis supprimez-le des Téléchargements » ; génération du PDF <strong>entièrement dans le navigateur</strong> (aucun aller-retour serveur, quelle que soit l'option) ; option d'affichage masqué par défaut avec bouton « Afficher » (recommandée, faible effort).</li><li>La politique de contenu (CSP) n'est pas modifiée : un téléchargement par lien <code>blob:</code> est déjà utilisé pour le TXT.</li></ul>
+<h3>4.6 Recommandation</h3>
+<p>Lecture (ii), composant partagé, copie + TXT, PDF par impression navigateur (ou générateur maison si le un-clic est exigé), protection à la sortie. <strong>Priorité Haute</strong> pour la copie, le TXT et la protection à la sortie sur Mon compte ; <strong>Faible</strong> pour le PDF.</p>
+<hr>
+<h2>5. Design System : récapitulatif</h2>
+<div class="table-wrap"><table><thead><tr><th>Élément</th><th>Type</th><th>Détail</th></tr></thead><tbody>
+<tr><td><code>PasswordField</code></td><td>Composant</td><td>Champ + œil, états masqué/visible/focus/désactivé/erreur</td></tr>
+<tr><td><code>eye</code>, <code>eye-off</code></td><td>Icônes</td><td>Ajout à <code>icon.tsx</code></td></tr>
+<tr><td><code>Modal</code> variante <code>danger</code></td><td>Variante</td><td>Pictogramme d'alerte, bouton danger</td></tr>
+<tr><td><code>RoleSelector</code></td><td>Composant</td><td>Groupes, cartes, états (défaut, survol, focus, sélectionnée, désactivée, avertissement, modifiée)</td></tr>
+<tr><td><code>RightsPreview</code></td><td>Composant</td><td>Accordéons par module, pastilles de portée</td></tr>
+<tr><td><code>SelectionSummary</code></td><td>Composant</td><td>Compteur et « Tout désélectionner »</td></tr>
+<tr><td><code>SecretCodesPanel</code></td><td>Composant</td><td>Grille de codes, copie, TXT, PDF, case de conservation, états</td></tr>
+</tbody></table></div>
+<p>À la mise en œuvre, le <strong>document de design</strong> sera mis à jour (journal des modifications, version, registre des exigences, décisions, captures, copie locale), conformément à la règle en vigueur. Exigences candidates : EXD-12 (affichage du mot de passe), EXD-13 (confirmation des actions irréversibles).</p>
+<h2>6. Séquencement proposé</h2>
+<div class="table-wrap"><table><thead><tr><th>Lot</th><th>Contenu</th><th>Pourquoi dans cet ordre</th></tr></thead><tbody>
+<tr><td>1</td><td>UX-03 + UX-04 (copie, TXT, protection à la sortie, confirmation) + UX-01</td><td>Sécurité et effort faible ; réutilise <code>Modal</code></td></tr>
+<tr><td>2</td><td>UX-04 PDF (impression, ou générateur maison selon votre décision)</td><td>Faible priorité, isolé</td></tr>
+<tr><td>3</td><td>UX-02</td><td>Chantier le plus lourd, dépend de vos choix</td></tr>
+</tbody></table></div>
+<p>Tests prévus : composants (clavier, états annoncés), non-régression du parcours d'activation MFA, audit d'accessibilité (axe + arbre d'accessibilité) sur les écrans touchés, test de cohérence « droits effectifs » entre interface et serveur, test de lecture du PDF généré (si générateur maison).</p>
+<h2>7. Décisions attendues de votre part</h2>
+<ol><li><strong>UX-02 :</strong> option <strong>B+C</strong> (recommandée, 86/105), ou une autre ?</li><li><strong>UX-02 :</strong> conserve-t-on la possibilité de <strong>cumuler plusieurs rôles</strong> (comportement actuel de l'API) ?</li><li><strong>UX-04 :</strong> « une seule fois » lu comme <strong>(ii) limité à l'écran</strong> (recommandé) ou <strong>(i) strict</strong> ?</li><li><strong>UX-04 :</strong> PDF par <strong>impression navigateur</strong> (recommandé, 91/105) ou <strong>générateur maison</strong> (téléchargement en un clic, 83/105) ?</li></ol>
+<p>Question complémentaire, non bloquante : souhaitez-vous l'<strong>e-mail d'information</strong> après régénération (dépend de Microsoft 365, dette à inscrire) ?</p></main></body></html>
