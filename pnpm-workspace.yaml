@@ -18,3 +18,9 @@ allowBuilds:
   '@embedded-postgres/linux-ia32': true
   '@embedded-postgres/linux-ppc64': true
   '@embedded-postgres/linux-x64': true
+
+# Correctifs de sécurité (audit du 2026-10-27) : dépendances indirectes de @nestjs/platform-express (déni de service).
+# À retirer quand @nestjs/platform-express embarquera ces versions.
+overrides:
+  body-parser: '>=2.4.0'
+  multer: '>=2.5.0'
