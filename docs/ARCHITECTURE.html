@@ -1,0 +1,238 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Architecture — Investally Business Platform</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="INDEX.html">Index</a> · <a href="GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="ARCHITECTURE.html">Architecture</a> · <a href="SECURITY.html">Sécurité</a> · <a href="METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="TECH-DEBT.html">Dette</a> · <a href="design/README.html">Design</a> · <a href="livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>Architecture — Investally Business Platform</h1>
+<blockquote><p><strong>Mise à jour Sprint 1 (ADR-0005)</strong> : la plateforme est composée de <strong>deux produits séparés</strong>, le <strong>CRM</strong> (prioritaire, contient Business Development <strong>et</strong> Investudy) et l'<strong>ERP</strong> (Finance, RH, Fiscalité, reporting de direction). Chaque produit a sa base PostgreSQL et son déploiement. Les sections ci-dessous qui parlent de « la plateforme » s'appliquent à chaque produit ; les contextes sont répartis ainsi :  | Produit | Contextes | |---|---| | <strong>CRM</strong> (Sprints 1→) | Identity &amp; Access (local), Audit, Documents, Notifications, Business Development, Training / Investudy, Reporting CRM (dashboards AccountManager, HeadOfSales, Investudy, Sécurité, Administration) | | <strong>ERP</strong> (après le CRM) | Finance, HR, Tax, Reporting direction (vue 360°), IAM/SSO à extraire | | Intégration | Événements CRM → ERP (<code>EnrollmentConfirmed</code>, …) via outbox ; ERP → CRM éventuels |  Dans le schéma de la carte des contextes plus bas, les relations BD → Training → Finance restent valables ; la flèche Training → Finance traverse désormais la frontière entre produits (événement uniquement, aucune base partagée).</p></blockquote>
+<blockquote><p>Statut : <strong>brouillon Phase 1 (Sprint 0)</strong>, en attente de validation. Les sections vides seront remplies par les phases suivantes.</p></blockquote>
+<h2>System Context</h2>
+<p>Investally Business Platform est l'ERP interne d'Investally (fintech : marchés financiers, produits structurés, conseil) et d'Investudy (formation professionnelle). Il couvre le parcours : entreprise cible → contact → offre → décharge → relances → RDV DAF/décideur → visite → accord de principe → agrément → inscription → session → formation → certification → suivi → ambassadeur, ainsi que Finance, RH, Fiscalité, Reporting, Sécurité/Audit.</p>
+<p>Acteurs : SuperAdmin, Direction, HeadOfSales, AccountManager, Finance, RH, Fiscalité, Formateur, Support.</p>
+<p>Intégrations externes (hypothèse v1) : e-mail, SMS/OTP, stockage de fichiers. Toutes derrière des <em>ports</em> du Domain/Application.</p>
+<h3>Charge réelle (Phase 3 — <strong>confirmée le 2026-10-20</strong> : ≈ 20 utilisateurs au démarrage, 10 employés aujourd'hui)</h3>
+<div class="table-wrap"><table><thead><tr><th>Grandeur</th><th>Hypothèse</th><th>Résultat</th></tr></thead><tbody>
+<tr><td>Utilisateurs internes actifs</td><td>20 (croissance possible si recrutement), 8 h/jour</td><td></td></tr>
+<tr><td>Actions par utilisateur et par jour</td><td>300 (consultations incluses)</td><td>6 000 requêtes/jour</td></tr>
+<tr><td>QPS moyen</td><td>6 000 ÷ 86 400</td><td>≈ 0,07 req/s</td></tr>
+<tr><td>QPS de pointe (×5, dashboards, exports)</td><td></td><td>≈ 0,35 req/s ; marge de sécurité à 20 req/s</td></tr>
+<tr><td>Lignes d'audit (lectures de documents et écritures tracées)</td><td>≈ 5 000/jour × 1 Ko</td><td>≈ 5 Mo/jour, <strong>≈ 1,8 Go/an</strong> (≈ 18 Go sur 10 ans)</td></tr>
+<tr><td>Données métier (CRM, formation)</td><td>&lt; 0,5 Go/an</td><td>négligeable</td></tr>
+<tr><td>Documents (PDF, décharges, contrats)</td><td>≈ 2 000/an × 1 Mo</td><td>≈ 2 Go/an, <strong>hors base</strong> (stockage objet)</td></tr>
+</tbody></table></div>
+<p>L'architecture retenue (une base PostgreSQL, ni cache ni file de messages) reste <strong>largement surdimensionnée</strong> pour cette charge : c'est voulu, la marge absorbe une croissance d'un facteur 50 sans changement.</p>
+<p><strong>Premier goulot</strong> : la table <code>AuditLog</code> (croissance) et les requêtes d'agrégation des dashboards sur les tables transactionnelles. Pas le débit.</p>
+<p><strong>Techniques adoptées maintenant</strong> : PostgreSQL unique ; index sur clés de recherche ; pagination obligatoire ; partitionnement mensuel de <code>AuditLog</code> ; table <em>outbox</em> + worker pour e-mail/SMS/événements (travail lent découplé sans broker). <strong>Techniques différées (déclencheur chiffré)</strong> :</p>
+<div class="table-wrap"><table><thead><tr><th>Technique</th><th>Déclencheur</th></tr></thead><tbody>
+<tr><td>Cache (Redis)</td><td>p95 d'un endpoint de lecture &gt; 500 ms après indexation</td></tr>
+<tr><td>Réplica de lecture</td><td>CPU primaire &gt; 60 % soutenu ou requêtes de reporting gênant le transactionnel</td></tr>
+<tr><td>File de messages dédiée (broker)</td><td>&gt; 50 jobs/s ou besoin de livraison inter-services</td></tr>
+<tr><td>Sharding / multi-région / CDN</td><td>Non applicable : usage interne, charge &lt; 1 % de ces seuils</td></tr>
+<tr><td>Extraction en microservice</td><td>Contexte prouvé avec équipe et cycle de release propres</td></tr>
+</tbody></table></div>
+<h2>Layer Map &amp; Dependency Rule</h2>
+<p>Règle : <strong>les dépendances de code source pointent vers l'intérieur</strong>. Le Domain ne connaît personne.</p>
+<blockquote><p>Précision sur le contrat initial : le diagramme « Presentation → Application → Domain → Infrastructure » se lit comme un <em>empilement visuel</em>, pas comme un sens de dépendance. L'Infrastructure <strong>dépend du</strong> Domain (elle implémente ses interfaces), elle n'est pas en dessous de lui.</p></blockquote>
+<pre><code>            ┌────────────────────────────────────────────┐
+            │  PRESENTATION  (Controllers, DTO, Guards,  │
+            │                 Swagger, routes)           │
+            └───────────────────┬────────────────────────┘
+                                │ dépend de
+                                ▼
+            ┌────────────────────────────────────────────┐
+            │  APPLICATION  (Use Cases, Commands/Queries,│
+            │   Ports sortants : Clock, Mailer, Storage…)│
+            └───────────────────┬────────────────────────┘
+                                │ dépend de
+                                ▼
+            ┌────────────────────────────────────────────┐
+            │  DOMAIN  (Entities, VO, Aggregates,        │
+            │   Domain Services/Events, Repository ifaces)│
+            └────────────────────────────────────────────┘
+                                ▲
+                                │ implémente les interfaces de
+            ┌───────────────────┴────────────────────────┐
+            │  INFRASTRUCTURE  (Prisma, repositories,    │
+            │   Mail, SMS, Storage, Notifications)       │
+            └────────────────────────────────────────────┘
+   Composition root (module NestJS) : seul endroit qui câble les 4 couches.</code></pre>
+<pre><code>flowchart TD
+    P[Presentation&lt;br/&gt;Controllers · DTO · Guards · Swagger]
+    A[Application&lt;br/&gt;Use Cases · Commands · Queries · Ports]
+    D[Domain&lt;br/&gt;Entities · VO · Aggregates · Events · Repository interfaces]
+    I[Infrastructure&lt;br/&gt;Prisma · Repositories · Mail · SMS · Storage]
+    P --&gt; A
+    A --&gt; D
+    I --&gt; D
+    I -. implémente les ports de .-&gt; A</code></pre>
+<h3>Règles par couche</h3>
+<div class="table-wrap"><table><thead><tr><th>Couche</th><th>Contient</th><th>Interdit</th></tr></thead><tbody>
+<tr><td>Domain</td><td>Entities, Value Objects, Aggregates, Domain Services, Domain Events, interfaces de repository, règles métier</td><td>NestJS, Prisma, PostgreSQL, HTTP, DTO, Controllers, décorateurs de framework</td></tr>
+<tr><td>Application</td><td>Use cases, Commands/Queries, services applicatifs, ports sortants (Mailer, Storage, Clock, IdGenerator, UnitOfWork)</td><td>Prisma, SQL, HTTP</td></tr>
+<tr><td>Infrastructure</td><td>Prisma, repositories, adaptateurs e-mail/SMS/stockage</td><td>Règles métier</td></tr>
+<tr><td>Presentation</td><td>Controllers, DTO + validation d'entrée, Guards, Swagger</td><td>Prisma/SQL direct, logique métier</td></tr>
+</tbody></table></div>
+<h3>Structure d'un module</h3>
+<pre><code>src/modules/&lt;contexte&gt;/
+  domain/          entities/ value-objects/ events/ services/ repositories/ (interfaces)
+  application/     commands/ queries/ use-cases/ ports/
+  infrastructure/  persistence/ (prisma + mappers) adapters/
+  presentation/    controllers/ dto/ guards/
+  &lt;contexte&gt;.module.ts   ← composition root du module</code></pre>
+<p><code>src/shared-kernel/</code> : types minimaux partagés (Result, Id, Money, DomainEvent). Pas de logique métier d'un contexte.</p>
+<h3>Communication entre modules</h3>
+<ul><li>Un module n'importe jamais le <code>domain/</code> ou <code>infrastructure/</code> d'un autre. Il consomme son <strong>API publique</strong> (<code>index.ts</code> : use cases exposés, événements) ou ses <strong>événements de domaine</strong>.</li><li>Références entre agrégats <strong>par identifiant</strong> uniquement.</li><li>Pas de jointure Prisma inter-contextes dans le code ; les lectures transverses (reporting) passent par des <em>read models</em> dédiés.</li></ul>
+<h3>Garde-fous automatiques (Sprint 1)</h3>
+<p>Tests d'architecture (<code>dependency-cruiser</code> ou <code>eslint-plugin-boundaries</code>) bloquant la CI si : Domain importe <code>@nestjs/*</code>, <code>@prisma/client</code>, <code>class-validator</code> ; Application importe <code>@prisma/client</code> ; Controller importe Prisma ; un module importe les internes d'un autre.</p>
+<h3>Violations connues</h3>
+<div class="table-wrap"><table><thead><tr><th>Violation</th><th>Location</th><th>Fix</th><th>Status</th></tr></thead><tbody>
+<tr><td>(aucune — dépôt vide)</td><td></td><td></td><td></td></tr>
+</tbody></table></div>
+<h2>Bounded Contexts &amp; Context Map</h2>
+<blockquote><p>Statut : <strong>Phase 2 — décisions métier du 2026-10-20 intégrées</strong> (agrément, apprenant, ambassadeur, opportunités multiples). Restent des hypothèses sur le contenu exact de l'agrément (voir « Agrégats et invariants »).</p></blockquote>
+<h3>Classification des sous-domaines</h3>
+<div class="table-wrap"><table><thead><tr><th>Contexte</th><th>Type</th><th>Investissement de modélisation</th></tr></thead><tbody>
+<tr><td><strong>Business Development</strong> (pipeline, offres, décharges, relances, RDV, visites, opportunités, ambassadeurs)</td><td><strong>Core</strong> (hypothèse)</td><td>Modèle riche : machine à états, règles de transition, événements</td></tr>
+<tr><td><strong>Training / Investudy</strong> (programmes, sessions, inscriptions, présences, certifications)</td><td><strong>Core secondaire</strong></td><td>Modèle riche sur capacité, planning, inscription</td></tr>
+<tr><td>Finance (factures, paiements, dépenses, fournisseurs, budgets)</td><td>Supporting</td><td>Invariants financiers solides, pas de sur-ingénierie</td></tr>
+<tr><td>Tax (TVA, CNPS, échéances)</td><td>Supporting</td><td>Calendrier d'échéances + suivi de conformité</td></tr>
+<tr><td>HR (employés, contrats, congés, absences)</td><td>Supporting</td><td>CRUD + règles de soldes de congés</td></tr>
+<tr><td>Reporting</td><td>Supporting (lecture seule)</td><td>Read models, aucune règle métier propre</td></tr>
+<tr><td>Identity &amp; Access, Audit &amp; Security, Documents, Notifications, Workflow/Calendar</td><td><strong>Generic</strong></td><td>Simple ; librairies/standards éprouvés (JWT, TOTP, argon2)</td></tr>
+</tbody></table></div>
+<h3>Carte des contextes</h3>
+<pre><code>flowchart LR
+    IAM[Identity &amp; Access]:::g
+    AUD[Audit &amp; Security]:::g
+    DOC[Documents]:::g
+    BD[Business Development&lt;br/&gt;CORE]:::core
+    TRN[Training / Investudy&lt;br/&gt;CORE 2]:::core
+    FIN[Finance]:::s
+    TAX[Tax]:::s
+    HR[HR]:::s
+    RPT[Reporting]:::s
+    BD -- &quot;TrainingApprovalGranted (événement)&quot; --&gt; TRN
+    TRN -- &quot;EnrollmentConfirmed (événement)&quot; --&gt; FIN
+    TRN -- &quot;CertificationIssued (événement)&quot; --&gt; BD
+    FIN -- &quot;PaymentRecorded / InvoiceIssued&quot; --&gt; TAX
+    HR -- &quot;PayrollExpense&quot; --&gt; FIN
+    IAM -. &quot;OHS : identité de l&#x27;acteur&quot; .-&gt; BD &amp; TRN &amp; FIN &amp; TAX &amp; HR
+    BD &amp; TRN &amp; FIN &amp; TAX &amp; HR &amp; IAM -. &quot;événements d&#x27;audit&quot; .-&gt; AUD
+    BD &amp; TRN &amp; FIN &amp; TAX &amp; HR -. &quot;événements → read models&quot; .-&gt; RPT
+    BD &amp; TRN &amp; FIN &amp; HR &amp; TAX -. &quot;pièces jointes&quot; .-&gt; DOC
+    classDef core fill:#dbeafe,stroke:#1d4ed8;
+    classDef s fill:#f3f4f6,stroke:#6b7280;
+    classDef g fill:#fef9c3,stroke:#a16207;</code></pre>
+<div class="table-wrap"><table><thead><tr><th>Relation</th><th>Pattern</th><th>Détail</th></tr></thead><tbody>
+<tr><td>IAM → autres</td><td>Open Host Service</td><td>API publique : identité, rôles, permissions de l'acteur courant</td></tr>
+<tr><td>BD → Training</td><td>Customer/Supplier, via événements</td><td>Training ne lit jamais les tables de BD ; il reçoit <code>TrainingApprovalGranted</code> (l'agrément = promesse de paiement) avec les données utiles copiées : société payeuse, programme, places couvertes, montant, validité</td></tr>
+<tr><td>Training → BD</td><td>Événements</td><td><code>CertificationIssued</code> alimente le suivi post-formation et <strong>suggère</strong> un ambassadeur (tâche pour le chargé de compte ; la création reste manuelle)</td></tr>
+<tr><td>Training → Finance</td><td>Événements</td><td>Finance crée la facture à partir de <code>EnrollmentConfirmed</code>, sans importer le modèle d'inscription (ACL côté Finance)</td></tr>
+<tr><td>* → Audit</td><td>Published Language</td><td>Format d'événement d'audit unique et stable</td></tr>
+<tr><td>* → Reporting</td><td>Conformist (lecture seule)</td><td>Reporting se conforme aux événements/vues publiés, ne dicte rien</td></tr>
+<tr><td>Documents</td><td>Shared service (open host)</td><td>Référence par <code>documentId</code> + type d'entité propriétaire</td></tr>
+</tbody></table></div>
+<p>Sous-couches transverses <strong>Workflow</strong>, <strong>Calendar</strong>, <strong>Notifications</strong> : ports/services techniques génériques consommés par les contextes, sans logique métier propre.</p>
+<h2>Domain Glossary (Ubiquitous Language)</h2>
+<p>Le même mot recouvre des concepts différents selon le contexte : <strong>on ne les unifie pas</strong> (pas de modèle omniscient).</p>
+<div class="table-wrap"><table><thead><tr><th>Term</th><th>Meaning</th><th>Code name</th></tr></thead><tbody>
+<tr><td>Entreprise cible</td><td>Société prospectée (BD)</td><td><code>bd.Prospect</code> / <code>Company</code> dans BD</td></tr>
+<tr><td>Client (Finance)</td><td>Partie facturée ; référence l'<code>companyId</code> BD mais possède son propre modèle</td><td><code>finance.Customer</code></td></tr>
+<tr><td>Organisation cliente (Training)</td><td>Société qui finance l'inscription de ses apprenants</td><td><code>training.SponsorOrganization</code></td></tr>
+<tr><td>Contact</td><td>Interlocuteur d'une entreprise dans BD (DAF, décideur…)</td><td><code>bd.Contact</code></td></tr>
+<tr><td>Apprenant</td><td>Personne suivant une formation. <strong>N'a pas de compte et n'interagit pas avec le CRM</strong> : simple fiche saisie par le personnel. Entité distincte du <code>Contact</code> (lien facultatif)</td><td><code>training.Learner</code></td></tr>
+<tr><td>Employé</td><td>Salarié d'Investally (RH) ≠ Utilisateur</td><td><code>hr.Employee</code></td></tr>
+<tr><td>Utilisateur</td><td>Compte d'accès à la plateforme (IAM)</td><td><code>iam.User</code></td></tr>
+<tr><td>Offre</td><td>Proposition commerciale déposée chez une entreprise</td><td><code>bd.Offer</code></td></tr>
+<tr><td>Décharge</td><td>Accusé de réception signé de l'offre déposée</td><td><code>bd.AcknowledgementReceipt</code></td></tr>
+<tr><td>Relance</td><td>Action de suivi planifiée après dépôt d'offre</td><td><code>bd.FollowUp</code></td></tr>
+<tr><td>Rendez-vous</td><td>RDV avec DAF ou décideur</td><td><code>bd.Appointment</code> (type <code>FinanceDirector</code> | <code>DecisionMaker</code>)</td></tr>
+<tr><td>Visite Investally</td><td>Visite du client chez Investally</td><td><code>bd.Visit</code></td></tr>
+<tr><td>Opportunité</td><td>Parcours de qualification d'une entreprise jusqu'à l'accord</td><td><code>bd.Opportunity</code></td></tr>
+<tr><td>Accord de principe</td><td>Engagement de principe du client, étape de l'opportunité</td><td><code>OpportunityStage.AgreementInPrinciple</code></td></tr>
+<tr><td>Agrément formation</td><td><strong>Promesse de paiement de la formation</strong> donnée par le client (décision du 2026-10-20). Étape qui suit l'accord de principe et précède l'inscription ; sans agrément valide, pas d'inscription</td><td><code>bd.TrainingApproval</code></td></tr>
+<tr><td>Programme</td><td>Catalogue de formation (offre pédagogique)</td><td><code>training.TrainingProgram</code></td></tr>
+<tr><td>Formation</td><td>Programme décliné et planifié</td><td><code>training.Training</code></td></tr>
+<tr><td>Session</td><td>Occurrence datée avec salle, formateur, capacité</td><td><code>training.TrainingSession</code></td></tr>
+<tr><td>Inscription</td><td>Rattachement d'un apprenant à une session</td><td><code>training.Enrollment</code></td></tr>
+<tr><td>Présence</td><td>Participation d'un apprenant à une séance</td><td><code>training.Attendance</code></td></tr>
+<tr><td>Certification / Attestation</td><td>Certificat (réussite) / attestation (suivi)</td><td><code>training.Certification</code> / <code>training.Attestation</code></td></tr>
+<tr><td>Ambassadeur</td><td>Client ou apprenant converti en relais commercial. <strong>Création par décision manuelle</strong> du chargé de compte, suggérée après une certification</td><td><code>bd.Ambassador</code></td></tr>
+<tr><td>Caisse / Banque</td><td>Comptes de trésorerie</td><td><code>finance.CashAccount</code> / <code>BankAccount</code></td></tr>
+<tr><td>Échéance fiscale</td><td>Date limite de déclaration (TVA, CNPS…)</td><td><code>tax.FilingDeadline</code></td></tr>
+</tbody></table></div>
+<h2>Agrégats et invariants (Core)</h2>
+<div class="table-wrap"><table><thead><tr><th>Agrégat (racine)</th><th>Invariants</th><th>Références par ID</th></tr></thead><tbody>
+<tr><td><code>Opportunity</code></td><td>Étapes franchies dans l'ordre défini ; pas d'« Accord de principe » sans au moins un RDV décideur tenu (règle active, <strong>dérogation possible par le Responsable commercial avec justification obligatoire et auditée</strong>) ; une opportunité clôturée est immuable. Une entreprise peut avoir <strong>plusieurs opportunités simultanées</strong></td><td><code>companyId</code>, <code>ownerUserId</code></td></tr>
+<tr><td><code>TrainingApproval</code> (agrément = promesse de paiement) <em>(hypothèses à confirmer)</em></td><td>Rattaché à une opportunité ayant l'accord de principe ; montant &gt; 0 et devise (XAF par défaut) ; payeur identifié ; document signé joint ; période de validité ; <strong>états</strong> : demandé → reçu → honoré / expiré / annulé ; annulé ou expiré = les inscriptions non encore réglées sont signalées ; le cumul des inscriptions ne dépasse pas les places ou le montant couverts</td><td><code>opportunityId</code>, <code>companyId</code>, <code>programId</code>, <code>documentId</code></td></tr>
+<tr><td><code>Offer</code></td><td>Une seule décharge valide par offre ; relances impossibles après décharge refusée/offre retirée ; statut limité aux transitions permises</td><td><code>companyId</code>, <code>opportunityId</code></td></tr>
+<tr><td><code>TrainingSession</code></td><td>Inscrits confirmés ≤ capacité ; pas de double réservation salle/formateur sur un créneau (service de domaine) ; session clôturée = présences figées</td><td><code>programId</code>, <code>roomId</code>, <code>trainerId</code></td></tr>
+<tr><td><code>Enrollment</code></td><td>Un apprenant une seule fois par session ; inscription impossible sans agrément valide</td><td><code>learnerId</code>, <code>sessionId</code>, <code>approvalId</code></td></tr>
+<tr><td><code>Invoice</code></td><td>Immuable une fois émise (correction = avoir) ; total = somme des lignes ; paiements cumulés ≤ total</td><td><code>customerId</code>, <code>enrollmentId</code></td></tr>
+<tr><td><code>LeaveRequest</code></td><td>Solde suffisant ; pas de chevauchement</td><td><code>employeeId</code></td></tr>
+</tbody></table></div>
+<h3>Décisions métier du 2026-10-20</h3>
+<div class="table-wrap"><table><thead><tr><th>Question</th><th>Décision</th></tr></thead><tbody>
+<tr><td>Agrément formation</td><td><strong>Promesse de paiement de la formation</strong> par le client. Il appartient à <strong>Business Development</strong> (résultat du processus commercial) ; Training le reçoit par événement et refuse l'inscription sans agrément valide</td></tr>
+<tr><td>Plusieurs opportunités par entreprise</td><td><strong>Oui</strong></td></tr>
+<tr><td>Apprenant et CRM</td><td>L'apprenant <strong>n'interagit pas avec le CRM</strong> (ni compte, ni portail) ; entité distincte du contact</td></tr>
+<tr><td>Création de l'ambassadeur</td><td><strong>Manuelle</strong> (suggestion après certification)</td></tr>
+<tr><td>Règle « RDV décideur avant accord de principe »</td><td>Active, avec dérogation du Responsable commercial justifiée et auditée</td></tr>
+</tbody></table></div>
+<h3>Points encore à préciser sur l'agrément (avant le sprint Business Development)</h3>
+<ol><li>Le montant couvre-t-il un <strong>nombre de places</strong>, une <strong>somme globale</strong>, ou les deux ?</li><li>L'agrément est-il émis <strong>par le client payeur</strong> ou peut-il l'être par un <strong>tiers</strong> (employeur, bailleur, organisme) ?</li><li>Une <strong>date de validité</strong> et une règle d'<strong>expiration</strong> existent-elles ?</li><li>Que devient une inscription déjà effectuée si l'agrément est annulé ?</li><li>Le paiement effectif est-il suivi par le CRM ou seulement par la finance (ERP) ? (Défaut retenu : l'ERP ; le CRM suit seulement l'état de l'agrément.)</li></ol>
+<h2>Data &amp; Storage Decisions</h2>
+<h3>Modèle et moteur</h3>
+<ul><li><strong>PostgreSQL unique</strong>, système d'enregistrement. Modèle <strong>relationnel</strong> : relations nombreuses (société–contact–offre–opportunité), requêtes ad hoc de reporting, intégrité référentielle. Pas de polyglot persistence en v1.</li><li><strong>Un schéma PostgreSQL par contexte</strong> (<code>iam</code>, <code>audit</code>, <code>bd</code>, <code>training</code>, <code>finance</code>, <code>hr</code>, <code>tax</code>, <code>reporting</code>, <code>docs</code>) ; aucune clé étrangère entre schémas de contextes différents (références par ID applicatif, cohérence assurée par événements). Exception tolérée : <code>iam.user_id</code> référencé en simple colonne sans FK dans les autres contextes. À vérifier : support Prisma <code>multiSchema</code> selon la version retenue (sinon préfixes de tables <code>bd_…</code>).</li><li>Identifiants <strong>UUID v7</strong> générés côté application (portable EF Core, triables par date, pas de séquence exposée). Numéros métier lisibles (facture, session) via séquences dédiées.</li><li>Dates en <code>timestamptz</code> UTC. Montants en <code>numeric(18,2)</code> avec devise explicite (<code>Money</code> : montant + devise, XAF par défaut) ; jamais de flottant.</li></ul>
+<h3>Cohérence, isolation et chemins verrouillés</h3>
+<p>Isolation par défaut : <strong>Read Committed</strong>. Elle autorise le <em>write skew</em> sur les chemins « lire puis écrire » ; ils sont protégés explicitement :</p>
+<div class="table-wrap"><table><thead><tr><th>Chemin</th><th>Risque</th><th>Protection</th></tr></thead><tbody>
+<tr><td>Inscription à une session</td><td>dépasser la capacité</td><td><code>SELECT … FOR UPDATE</code> sur la ligne de session dans la transaction d'inscription</td></tr>
+<tr><td>Enregistrement d'un paiement</td><td>cumul &gt; total facture</td><td>verrou sur la facture + contrainte <code>CHECK</code></td></tr>
+<tr><td>Numérotation des factures</td><td>doublons / trous</td><td>séquence PostgreSQL ; émission transactionnelle</td></tr>
+<tr><td>Solde de congés</td><td>double validation</td><td>verrou sur le solde employé</td></tr>
+<tr><td>Transition d'<code>Opportunity</code>, <code>Offer</code>, <code>TrainingSession</code></td><td>mises à jour concurrentes</td><td><strong>verrou optimiste</strong> : colonne <code>version</code> incrémentée, échec si version obsolète</td></tr>
+<tr><td>Réservation salle/formateur</td><td>chevauchement</td><td>contrainte d'exclusion PostgreSQL (<code>EXCLUDE USING gist</code> sur plage de temps) en plus de la règle de domaine</td></tr>
+</tbody></table></div>
+<p>Tout le reste tolère la cohérence éventuelle (reporting, notifications, événements inter-contextes).</p>
+<h3>Données transverses</h3>
+<ul><li><strong>Soft delete</strong> (<code>deletedAt</code>, <code>deletedBy</code>) sur les entités métier ; <strong>jamais</strong> sur <code>AuditLog</code> (append-only, pas de suppression). Contraintes d'unicité partielles (<code>WHERE deletedAt IS NULL</code>).</li><li><strong>Versioning</strong> : <code>version</code> entier (concurrence optimiste) sur les agrégats ; historique des documents via table de versions.</li><li><strong>AuditLog</strong> : partitionné par mois, rôle applicatif sans <code>UPDATE</code>/<code>DELETE</code>, rétention à fixer avec le RSSI/juridique (proposition : 10 ans en ligne pour finance/fiscalité, archivage à froid au-delà). Masquage des champs sensibles dans <code>oldValue</code>/<code>newValue</code>.</li><li><strong>Documents</strong> : fichiers en stockage objet compatible S3 (MinIO en dev) ; en base, métadonnées, empreinte SHA-256, version et journal d'accès (création, consultation, modification, téléchargement, export, suppression).</li><li><strong>Dérivé reconstructible</strong> : tables/vues de <code>reporting</code> alimentées par événements et rafraîchies périodiquement ; perte tolérée car reconstruisibles depuis les sources. Pas de CDC ni de moteur de recherche externe en v1 ; recherche via index PostgreSQL (<code>pg_trgm</code>, full-text).</li><li><strong>Outbox transactionnelle</strong> : l'événement de domaine est écrit dans la même transaction que l'agrégat ; un worker le publie (au moins une fois) ; les consommateurs sont idempotents.</li></ul>
+<h2>Decision Log</h2>
+<div class="table-wrap"><table><thead><tr><th>Date</th><th>Decision</th><th>Why</th><th>Alternatives rejected</th></tr></thead><tbody>
+<tr><td>2026-10-20</td><td>Monolithe modulaire, un déploiement, frontières par module (ADR-0001)</td><td>Équipe unique, charge modeste, contextes non encore éprouvés</td><td>Microservices (monolithe distribué, coût ops), monolithe en couches techniques (couplage)</td></tr>
+<tr><td>2026-10-20</td><td>Prisma uniquement dans <code>infrastructure/</code> (ADR-0002)</td><td>Rend l'ORM remplaçable (EF Core) ; Domain testable sans base</td><td>Repositories dans Application, Prisma dans les use cases</td></tr>
+<tr><td>2026-10-20</td><td>Entités Domain distinctes des modèles Prisma, mappers explicites (ADR-0003)</td><td>Domain pur, migration .NET sans réécriture métier</td><td>Réutiliser les types Prisma comme entités (rapide mais couplage fort)</td></tr>
+<tr><td>2026-10-20</td><td>Audit par Domain Events + intercepteur applicatif (ADR-0004)</td><td>Traçabilité qui/quoi/quand/où/avant/après sans polluer le métier</td><td>Triggers SQL seuls (pas d'IP/session), audit manuel dans chaque use case</td></tr>
+<tr><td>2026-10-20</td><td>Core = Business Development (+ Training en core secondaire) ; le reste supporting/generic</td><td>Là où se trouve l'avantage du parcours prospect → inscrit ; effort de modélisation concentré</td><td>Modélisation profonde uniforme (dilution)</td></tr>
+<tr><td>2026-10-20</td><td>Pas de modèle unifié « Personne/Société » ; chaque contexte a son modèle, lié par ID et événements</td><td>Les mots (Client, Contact, Apprenant, Employé, Utilisateur) ont des invariants différents</td><td>Table <code>Person</code> partagée (couplage de tous les contextes)</td></tr>
+<tr><td>2026-10-20</td><td>Intégration inter-contextes par événements de domaine avec données copiées (pas de lecture des tables d'autrui)</td><td>Autonomie des contextes, extraction future possible</td><td>Appels directs/joins cross-contexte</td></tr>
+<tr><td>2026-10-20</td><td>Charge dimensionnée à ≈ 1,5 req/s de pointe : pas de cache, réplica, broker ni sharding (déclencheurs chiffrés)</td><td>Premier goulot = croissance d'AuditLog, pas le débit</td><td>Redis/broker d'emblée (complexité sans besoin)</td></tr>
+<tr><td>2026-10-20</td><td>PostgreSQL unique, schéma par contexte, sans FK inter-contextes</td><td>Frontières appliquées jusqu'à la donnée ; extraction future facilitée</td><td>Schéma unique avec FK partout (couplage)</td></tr>
+<tr><td>2026-10-20</td><td>Read Committed + verrous explicites + verrou optimiste ; contrainte d'exclusion pour les plannings</td><td>Chemins critiques protégés du write skew sans passer tout en Serializable</td><td>Serializable global (retries partout)</td></tr>
+<tr><td>2026-10-20</td><td>UUID v7 générés côté application ; Money = numeric + devise</td><td>Portabilité EF Core, pas de flottants</td><td>Entiers auto-incrémentés, float</td></tr>
+<tr><td>2026-10-20</td><td>Outbox transactionnelle pour événements, e-mail et SMS</td><td>Fiabilité sans broker</td><td>Publication directe après commit (perte possible)</td></tr>
+<tr><td>2026-10-20</td><td>CRM et ERP séparés : deux déploiements, une base chacun, événements entre eux ; CRM prioritaire et incluant Investudy (ADR-0005)</td><td>Décision produit ; livraison anticipée du CRM, isolement des données financières/RH</td><td>Monolithe unique, base partagée, deux produits totalement indépendants</td></tr>
+<tr><td>2026-10-20</td><td>L'agrément formation est une <strong>promesse de paiement</strong> détenue par Business Development ; événement <code>TrainingApprovalGranted</code> vers Training</td><td>Décision métier ; c'est un engagement commercial, pas une validation pédagogique</td><td>Agrément dans Training (couple l'inscription au commercial), simple case à cocher</td></tr>
+<tr><td>2026-10-20</td><td>Apprenant sans compte ni interaction avec le CRM, entité distincte du contact ; plusieurs opportunités par entreprise ; ambassadeur manuel</td><td>Décisions métier ; limite l'exposition des données et la surface d'attaque</td><td>Portail apprenant (hors périmètre), création automatique d'ambassadeur</td></tr>
+<tr><td>2026-10-20</td><td>SuperAdmin à accès complet, MFA obligatoire pour tous, portée Équipe = subordonnés directs, e-mail via Microsoft 365, audit conservé 10 ans (ADR-0006)</td><td>Décisions produit</td><td>Séparation des tâches stricte (écartée par la direction)</td></tr>
+<tr><td>2026-10-20</td><td>Charge confirmée à ≈ 20 utilisateurs (10 employés) ; architecture inchangée</td><td>Aucun seuil de la Phase 3 n'est approché</td><td>Réduire (impossible : déjà minimal)</td></tr>
+<tr><td>2026-10-20</td><td>Collapse volontaire : pas de CQRS bus ni event sourcing en v1</td><td>Ceremony non justifiée à cette charge ; commands/queries restent des use cases distincts</td><td>CQRS complet, event sourcing</td></tr>
+</tbody></table></div></main></body></html>

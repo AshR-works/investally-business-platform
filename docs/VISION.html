@@ -1,0 +1,48 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Vision Produit — Investally Business Platform</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="INDEX.html">Index</a> · <a href="GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="ARCHITECTURE.html">Architecture</a> · <a href="SECURITY.html">Sécurité</a> · <a href="METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="TECH-DEBT.html">Dette</a> · <a href="design/README.html">Design</a> · <a href="livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>Vision Produit — Investally Business Platform</h1>
+<blockquote><p>Statut : brouillon Sprint 0. Éléments marqués (H) = hypothèses à confirmer.</p></blockquote>
+<h2>Énoncé de vision</h2>
+<p>Donner à Investally et à Investudy <strong>une seule source de vérité traçable</strong> pour mener un prospect, depuis l'identification de l'entreprise cible jusqu'à l'ambassadeur formé et certifié, et piloter l'entreprise (finances, RH, fiscalité, sécurité) à partir des mêmes données.</p>
+<h2>Problème</h2>
+<p>Un parcours commercial long (≈ 15 étapes, plusieurs interlocuteurs, documents signés, relances) qui se perd dans des fichiers et messages dispersés : pas de vue du pipeline, des relances oubliées, aucune preuve opposable des actions, une direction qui reconstruit les chiffres à la main.</p>
+<h2>Utilisateurs et besoins principaux</h2>
+<div class="table-wrap"><table><thead><tr><th>Rôle</th><th>Besoin n°1</th></tr></thead><tbody>
+<tr><td>AccountManager</td><td>Savoir quoi faire aujourd'hui (relances, RDV) et faire avancer ses opportunités</td></tr>
+<tr><td>HeadOfSales</td><td>Voir le pipeline global et la performance de l'équipe, prévoir</td></tr>
+<tr><td>Investudy / Formateur</td><td>Planifier sessions, salles, présences, certifications</td></tr>
+<tr><td>Finance</td><td>Facturer, encaisser, suivre trésorerie et fournisseurs</td></tr>
+<tr><td>RH</td><td>Contrats, congés, absences</td></tr>
+<tr><td>Fiscalité</td><td>Ne manquer aucune échéance (TVA, CNPS…)</td></tr>
+<tr><td>Direction</td><td>Vue 360° fiable</td></tr>
+<tr><td>SuperAdmin / Sécurité</td><td>Qui a fait quoi, quand, d'où</td></tr>
+</tbody></table></div>
+<h2>Principes</h2>
+<ol><li><strong>Le parcours commercial est le cœur</strong> ; les autres modules sont construits à son service, dans l'ordre de valeur.</li><li><strong>Tout est traçable</strong> : aucune action sensible sans audit.</li><li><strong>Simple d'abord</strong> : on construit ce que la charge et le métier justifient ; chaque abstraction doit mériter sa place.</li><li><strong>Le métier survit aux frameworks</strong> : Domain pur, migrable vers .NET.</li><li><strong>Sécurité par défaut</strong> : moindre privilège, MFA, journaux immuables.</li></ol>
+<h2>Hors périmètre v1 (H)</h2>
+<p>Paiement en ligne, rapprochement bancaire automatique, télé-déclaration fiscale directe, portail apprenant/client externe, application mobile, paie complète.</p>
+<h2>Critères de succès (à mesurer, H)</h2>
+<ul><li>100 % des offres déposées ont une décharge ou une relance planifiée.</li><li>Pipeline consultable en &lt; 2 s, sans export manuel.</li><li>Toute action sensible reconstituable (qui/quand/d'où/avant/après) en &lt; 5 min.</li><li>Aucune échéance fiscale manquée sans alerte préalable.</li><li>Les règles d'architecture passent en CI à chaque merge.</li></ul>
+<h2>Parcours cible</h2>
+<p>Entreprise cible → contact → offre → décharge → relances → RDV DAF → RDV décideur → visite Investally → accord de principe → agrément formation → inscription → session → formation → certification/attestation → suivi post-formation → ambassadeur.</p></main></body></html>

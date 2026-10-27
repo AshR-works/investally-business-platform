@@ -1,0 +1,35 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ADR-0008 — Stockage des documents : port `ObjectStorage`, adaptateur disque maintenant, adaptateur S3 en S7.1</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="../INDEX.html">Index</a> · <a href="../GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="../ARCHITECTURE.html">Architecture</a> · <a href="../SECURITY.html">Sécurité</a> · <a href="../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="../TECH-DEBT.html">Dette</a> · <a href="../design/README.html">Design</a> · <a href="../livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>ADR-0008 — Stockage des documents : port <code>ObjectStorage</code>, adaptateur disque maintenant, adaptateur S3 en S7.1</h1>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td><strong>Statut</strong></td><td>Accepté (2026-10-21, décision CAD-S36-1 option B de la direction produit)</td></tr>
+<tr><td><strong>Contexte</strong></td><td>S3.6 livre les documents (pièces jointes). <code>ARCHITECTURE.md</code> prévoit un stockage objet compatible S3, hors base. Aucun service de stockage n'existe ; Docker n'est exécuté « pour de vrai » qu'en S7.</td></tr>
+<tr><td><strong>Lié à</strong></td><td><code>docs/cadrages/CADRAGE-S3-6-DOCUMENTS.md</code>, <code>docs/SECURITY.md</code> §6.1</td></tr>
+</tbody></table></div>
+<h2>Options considérées</h2>
+<ol><li><strong>S3 (MinIO) dès S3.6</strong> : conforme à l'architecture, mais un service de plus pour les tests et le développement.</li><li><strong>Fichiers dans PostgreSQL (<code>bytea</code>)</strong> : simple, mais contredit l'architecture (documents hors base, ≈ 2 Go/an) et alourdit sauvegardes et base.</li><li><strong>Port + adaptateur disque maintenant, adaptateur S3 en S7.1 (retenue)</strong> : tests rapides sans service externe, aucune perte de conception.</li></ol>
+<h2>Décision</h2>
+<ul><li>Les contenus passent par le port <code>ObjectStorage</code> (<code>put</code>, <code>get</code>, <code>removeOrphan</code>) ; le domaine et les cas d'usage ne connaissent aucun fichier ni chemin.</li><li>Adaptateur actuel : <code>LocalDiskObjectStorage</code>, dossier <code>DOCUMENTS_DIR</code> <strong>hors racine web</strong> (absolu et obligatoire en production), dossiers 0700, fichiers 0600, écriture atomique, clé contrôlée à chaque appel (forme <code>xx/yy/</code> + 48 caractères hexadécimaux : aucune sortie du dossier possible).</li><li>Le <strong>port n'a aucune méthode de suppression publique</strong> : un fichier ne disparaît jamais (la suppression est logique, statut <code>ARCHIVED</code>). Seul <code>removeOrphan</code> retire l'objet qu'un envoi vient d'écrire quand l'enregistrement en base échoue.</li><li>Clé de stockage <strong>aléatoire</strong> (jamais le nom fourni) ; contenu vérifié par <strong>SHA-256</strong> à chaque téléchargement ; versions <strong>immuables</strong> (déclencheurs SQL qui refusent la modification du contenu et toute suppression).</li></ul>
+<h2>Conséquences</h2>
+<ul><li><strong>Dette D41</strong> : l'adaptateur disque ne convient pas à une exploitation sur plusieurs serveurs ; l'adaptateur S3 (versionné, chiffré) est à livrer et recetter en <strong>S7.1</strong>, avec le même test de contrat.</li><li><strong>Sauvegarde</strong> : le dossier des documents doit être sauvegardé avec la base (à inscrire au plan de sauvegarde S7.1).</li><li>Réversible : un seul adaptateur à remplacer, les clés restent valables si le contenu est copié tel quel.</li></ul></main></body></html>

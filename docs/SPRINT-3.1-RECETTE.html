@@ -1,0 +1,102 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Sprint 3.1 — Authentification (périmètre et plan de recette)</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="INDEX.html">Index</a> · <a href="GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="ARCHITECTURE.html">Architecture</a> · <a href="SECURITY.html">Sécurité</a> · <a href="METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="TECH-DEBT.html">Dette</a> · <a href="design/README.html">Design</a> · <a href="livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>Sprint 3.1 — Authentification (périmètre et plan de recette)</h1>
+<p>Durée : 1 semaine maximum. Statuts : ✅ vérifié · ⏳ à faire · ❌ échec · ➖ non applicable. Le sprint est validé quand tous les « Bloquant » sont ✅ <strong>et</strong> que l'ingénieur logiciel l'a validé explicitement.</p>
+<h2>Périmètre</h2>
+<p><strong>Inclus</strong> : création d'un utilisateur (use case interne, sans API publique), politique de mot de passe, hachage argon2id, connexion, jeton d'accès JWT ES256, sessions avec niveau de risque, jeton de rafraîchissement à rotation et détection de réutilisation, déconnexion, verrouillage progressif, limitation de débit, journalisation des tentatives, audit des connexions, en-têtes de sécurité (helmet), garde d'authentification (<code>/auth/me</code>, <code>/auth/logout</code>).</p>
+<p><strong>Exclus (sprints suivants)</strong> :</p>
+<ul><li><strong>S3.2</strong> : MFA (TOTP, codes de secours, step-up), envoi d'e-mails Microsoft 365, création du premier SuperAdmin.</li><li><strong>S3.3</strong> : autorisation par permissions et portées sur les endpoints métier, API d'administration des utilisateurs et rôles, pages web de connexion.</li></ul>
+<h2>⚠ Limite de sécurité assumée jusqu'à S3.3</h2>
+<p>Le MFA est obligatoire pour tous (décision) mais n'existe qu'en S3.2. En S3.1 le jeton émis porte <code>amr = ["pwd"]</code> : <strong>mot de passe seul, MFA non vérifié</strong>. Aucun endpoint métier n'exige encore ce jeton (S3.3). <strong>L'API reste donc locale (127.0.0.1) et ne doit pas être exposée.</strong></p>
+<h2>Décisions techniques</h2>
+<div class="table-wrap"><table><thead><tr><th>Sujet</th><th>Choix</th><th>Raison</th></tr></thead><tbody>
+<tr><td>Hachage</td><td><code>@node-rs/argon2</code> (argon2id, binaire précompilé)</td><td>Spécifié dans SECURITY.md ; <code>crypto.argon2</code> n'existe pas dans Node 22 (cible LTS)</td></tr>
+<tr><td>JWT</td><td><code>jose</code> 5.10 (CommonJS), ES256</td><td>Bibliothèque de référence ; v6 est ESM seul, incompatible avec Jest/CommonJS du projet</td></tr>
+<tr><td>Limitation de débit</td><td><code>@nestjs/throttler</code>, stockage mémoire</td><td>Une seule instance ; à remplacer par un stockage partagé si plusieurs instances</td></tr>
+<tr><td>Cookie refresh</td><td><code>HttpOnly; Secure; SameSite=Strict; Path=/api/v1/auth</code></td><td>SECURITY.md §2.2. <code>Secure</code> désactivé seulement en développement local</td></tr>
+<tr><td>Clés de signature</td><td>Variables d'environnement ; en développement/test, paire éphémère générée au démarrage avec avertissement ; <strong>refus de démarrer en production sans clés</strong></td><td>Jamais de clé dans le dépôt</td></tr>
+<tr><td>Liste de mots de passe courants</td><td>Liste embarquée courte (~100) en S3.1</td><td><strong>Limite connue</strong> : à remplacer par une liste de 10 000 en S7 (dette notée)</td></tr>
+</tbody></table></div>
+<h2>A. Domaine (tests sans base)</h2>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Contrôle</th><th>Bloquant</th><th>Statut</th></tr></thead><tbody>
+<tr><td>A1</td><td>Politique de mot de passe : longueur 12–128, refus courants, refus dérivés de l'e-mail/nom, refus des 5 derniers</td><td>oui</td><td>✅ 10 tests (comptage des caractères Unicode, aucun écho du mot de passe)</td></tr>
+<tr><td>A2</td><td>Utilisateur : verrouillage progressif (5 échecs → 1, 5, 15, 60 min, plafonné), jamais définitif, remise à zéro après succès, compte désactivé refusé</td><td>oui</td><td>✅ 11 tests (paliers 1/5/15/60 min vérifiés, plafond, remise à zéro)</td></tr>
+<tr><td>A3</td><td>Session : expiration sur inactivité et absolue (12 h privilégiés), révocation, glissement borné par l'expiration absolue</td><td>oui</td><td>✅ 9 tests (inactivité 8 h, absolu 12 h/7 j, glissement borné)</td></tr>
+<tr><td>A4</td><td>Rotation du refresh token : valide → nouveau jeton ; déjà utilisé → réutilisation détectée, famille et session révoquées ; expiré/révoqué → refus</td><td>oui</td><td>✅ 6 tests (ROTATE, EXPIRED, REVOKED, CONCURRENT, REUSED)</td></tr>
+<tr><td>A5</td><td>Niveau de risque : nouvel appareil, nouvelle IP, échecs récents, rôle privilégié ; réutilisation = CRITICAL</td><td>oui</td><td>✅ 12 tests (table de scores, réutilisation = CRITICAL)</td></tr>
+</tbody></table></div>
+<h2>B. Application (faux en mémoire)</h2>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Contrôle</th><th>Bloquant</th><th>Statut</th></tr></thead><tbody>
+<tr><td>B1</td><td>Connexion réussie : session, jeton d'accès, refresh token, audit <code>LOGIN</code>, tentative enregistrée</td><td>oui</td><td>✅</td></tr>
+<tr><td>B2</td><td>Mauvais mot de passe : message unique « Identifiants invalides », compteur incrémenté, audit <code>LOGIN_FAILED</code></td><td>oui</td><td>✅</td></tr>
+<tr><td>B3</td><td>E-mail inconnu : <strong>même</strong> message et même chemin de calcul (hachage factice) — pas d'énumération</td><td>oui</td><td>✅ calcul factice exécuté, e-mail absent de l'audit</td></tr>
+<tr><td>B4</td><td>Compte verrouillé : refus même avec le bon mot de passe pendant le verrou ; message identique</td><td>oui</td><td>✅ y compris levée du verrou après 1 minute</td></tr>
+<tr><td>B5</td><td>Rafraîchissement : rotation OK ; réutilisation → toute la session révoquée + audit <code>SESSION_REVOKE</code></td><td>oui</td><td>✅ y compris : le jeton légitime issu de la rotation est lui aussi révoqué</td></tr>
+<tr><td>B6</td><td>Déconnexion : session et jetons révoqués, audit <code>LOGOUT</code></td><td>oui</td><td>✅ idempotente, jeton d'accès refusé immédiatement</td></tr>
+<tr><td>B7</td><td>Création d'utilisateur : applique la politique, stocke un hachage (jamais le mot de passe), historise le hachage</td><td>oui</td><td>✅</td></tr>
+</tbody></table></div>
+<h2>C. Infrastructure et base (PostgreSQL jetable)</h2>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Contrôle</th><th>Bloquant</th><th>Statut</th></tr></thead><tbody>
+<tr><td>C1</td><td>Utilisateur, session, jetons, tentatives persistés ; horodatages UTC</td><td>oui</td><td>✅ écart horodatage/horloge &lt; 10 s (UTC)</td></tr>
+<tr><td>C2</td><td>Le mot de passe en clair n'apparaît <strong>nulle part</strong> (base, audit, logs)</td><td>oui</td><td>✅ aucun secret ni hachage dans l'audit ; jeton de rafraîchissement stocké seulement en SHA-256</td></tr>
+<tr><td>C3</td><td>Le hachage vérifie le bon mot de passe et refuse le mauvais ; sel unique par hachage</td><td>oui</td><td>✅ argon2id m=19456,t=2,p=1 ; sel unique ; hachage corrompu refusé sans exception</td></tr>
+<tr><td>C4</td><td>Le jeton JWT est signé ES256, vérifié ; refusé si falsifié, expiré, <code>alg: none</code>, mauvaise clé, mauvais <code>aud</code>/<code>iss</code></td><td>oui</td><td>✅ 12 attaques : falsification, signature tronquée, alg:none, HS256, autre clé, mauvais émetteur/audience, claims mal typés, entrées absurdes</td></tr>
+<tr><td>C5</td><td>Réutilisation d'un refresh token : concurrence (deux requêtes simultanées avec le même jeton) → une seule gagne</td><td>oui</td><td>✅ deux rafraîchissements simultanés : un seul réussit, la session survit</td></tr>
+</tbody></table></div>
+<h2>D. HTTP de bout en bout</h2>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Contrôle</th><th>Bloquant</th><th>Statut</th></tr></thead><tbody>
+<tr><td>D1</td><td><code>POST /auth/login</code> OK → 200, jeton dans le corps, refresh token <strong>uniquement</strong> en cookie <code>HttpOnly; SameSite=Strict</code></td><td>oui</td><td>✅ cookie HttpOnly, SameSite=Strict, Path=/api/v1/auth ; jamais dans le corps</td></tr>
+<tr><td>D2</td><td><code>POST /auth/refresh</code> avec cookie → nouveau jeton, cookie remplacé ; sans cookie → 401</td><td>oui</td><td>✅ cookie bidon : 401 et cookie effacé</td></tr>
+<tr><td>D3</td><td><code>GET /auth/me</code> avec/sans/avec jeton falsifié → 200 / 401 / 401</td><td>oui</td><td>✅ 7 variantes d'en-tête invalides, jeton falsifié</td></tr>
+<tr><td>D4</td><td><code>POST /auth/logout</code> → 204 ; le jeton d'accès est ensuite refusé (session révoquée)</td><td>oui</td><td>✅ jeton ET cookie refusés immédiatement après</td></tr>
+<tr><td>D5</td><td>Limitation de débit : la 6e tentative de connexion en 1 minute → 429 avec <code>Retry-After</code></td><td>oui</td><td>✅ 6e tentative : 429 + Retry-After, y compris avec le bon mot de passe ; autre compte non touché</td></tr>
+<tr><td>D6</td><td>En-têtes de sécurité présents (<code>X-Content-Type-Options</code>, <code>Strict-Transport-Security</code>, pas de <code>X-Powered-By</code>)</td><td>oui</td><td>✅ sur /health/live et /auth/me</td></tr>
+<tr><td>D7</td><td>Réponses d'erreur d'authentification : jamais de détail interne ni de trace</td><td>oui</td><td>✅ route inconnue, JSON cassé : aucune trace</td></tr>
+</tbody></table></div>
+<h2>E. Contrôles de qualité</h2>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Contrôle</th><th>Bloquant</th><th>Statut</th></tr></thead><tbody>
+<tr><td>E1</td><td>Types sans erreur ; règles d'architecture (Domain pur, frontières de module)</td><td>oui</td><td>✅ types propres ; 92 modules, 287 dépendances, 0 violation</td></tr>
+<tr><td>E2</td><td>Tous les tests précédents (S1, S2) toujours verts</td><td>oui</td><td>✅ 136 unitaires + 57 intégration ; migration S1 vers S2 toujours préservée</td></tr>
+<tr><td>E3</td><td><code>pnpm audit --prod</code> : aucune vulnérabilité haute</td><td>non</td><td>✅ 0 vulnérabilité haute ; 1 moyenne (js-yaml via Swagger, dette D6 inchangée)</td></tr>
+<tr><td>E4</td><td>Revue de sécurité du code d'authentification (comparaisons en temps constant, aucun secret loggé, aucun <code>Math.random</code>)</td><td>oui</td><td>✅ voir « Revue de sécurité » ci-dessous</td></tr>
+</tbody></table></div>
+<h2>Dette et limites connues (non bloquantes)</h2>
+<ul><li>MFA absent (S3.2) ; jetons <code>amr = ["pwd"]</code>.</li><li>Liste de mots de passe courants courte (S7).</li><li>Limitation de débit en mémoire (un seul processus).</li><li>Détection d'IP « nouvelle » par préfixe (/24 en IPv4) : approximation, pas de géolocalisation.</li><li>Pas de rotation automatique des clés de signature (S7).</li></ul>
+<h2>Tests ajoutés par rapport au plan</h2>
+<ul><li>Politique : le mot de passe n'est jamais repris dans les messages d'erreur.</li><li>Concurrence : 12 connexions échouées parallèles. <strong>Vérifié par mutation</strong> : sans <code>SELECT … FOR UPDATE</code>, le test échoue (10 tentatives enregistrées sur 12, deux requêtes perdues).</li><li>Origine (CSRF) : origine inconnue → 403 ; origine autorisée ou absente → acceptée.</li><li>Changement de mot de passe : historique des 5 derniers, autres sessions révoquées, audit sans mot de passe.</li><li>Configuration : la production refuse de démarrer sans clés, sans origines, ou avec un cookie non sécurisé.</li><li>Journaux : une erreur Prisma ne journalise jamais ses valeurs (hachage, e-mail).</li></ul>
+<h2>Revue de sécurité (E4)</h2>
+<div class="table-wrap"><table><thead><tr><th>Point</th><th>Constat</th></tr></thead><tbody>
+<tr><td>Aléa</td><td>Aucun <code>Math.random</code> ; jetons de rafraîchissement par <code>crypto.randomBytes</code> (256 bits)</td></tr>
+<tr><td>Comparaisons de secrets</td><td>Mots de passe : <code>argon2.verify</code> ; jetons JWT : vérification de signature <code>jose</code> ; jeton de rafraîchissement : recherche par empreinte SHA-256 indexée (la valeur secrète n'est jamais comparée)</td></tr>
+<tr><td>Journaux</td><td>Aucun secret journalisé. <strong>Défaut corrigé pendant la revue</strong> : les erreurs Prisma embarquent les valeurs de la requête (hachage) ; seuls le nom et le code sont désormais écrits</td></tr>
+<tr><td>SQL</td><td>Un seul SQL brut (<code>FOR UPDATE</code>), en <em>tagged template</em> paramétré</td></tr>
+<tr><td>Énumération de comptes</td><td>Même message, même code, même corps, hachage factice ; y compris pour un compte verrouillé ou désactivé</td></tr>
+<tr><td>Production</td><td>Démarrage réel du build : refus sans clés (code 1) ; avec clés : santé OK, Swagger 404, HSTS et nosniff présents ; base injoignable : 500 générique sans détail</td></tr>
+</tbody></table></div>
+<h2>Défauts trouvés et corrigés pendant le sprint</h2>
+<ol><li><strong>Fuite potentielle dans les journaux</strong> (erreurs Prisma) : corrigé et testé.</li><li><strong>Test trompeur</strong> : un faux hachage reprenait le jeton en clair et faisait échouer à tort le test « seule l'empreinte est stockée ». Le faux est devenu opaque.</li><li><strong>Test mal écrit</strong> (longueur Unicode) : un remplacement sans effet. Remplacé par un vrai test (6 émojis = 12 unités UTF-16 mais 6 caractères).</li><li><strong>Swagger</strong> monté hors de la configuration testée : déplacé pour que les tests couvrent exactement ce qui tourne.</li></ol>
+<h2>Limites connues (à décider ou à traiter)</h2>
+<ul><li><strong>MFA absent</strong> : jetons <code>amr = ["pwd"]</code>, <code>mfaVerified = false</code>. Aucun endpoint métier ne les exige avant S3.3 ; <strong>ne pas exposer l'API</strong>.</li><li><strong>Verrouillage utilisable contre une victime</strong> : un attaquant qui connaît l'e-mail peut maintenir un compte verrouillé en échouant 5 fois (1 min, puis jusqu'à 60 min). Compromis assumé (SECURITY.md §2.4, jamais définitif) ; la limitation de débit réduit l'effet mais ne l'annule pas depuis plusieurs IP.</li><li><strong>Limitation de débit en mémoire</strong> : valable pour une seule instance.</li><li><strong>Liste de mots de passe courants courte</strong> (~100) : à remplacer par 10 000 entrées (S7).</li><li><strong>Pas de rotation automatique des clés de signature</strong> (S7) ; une seule clé active.</li><li><strong>Base injoignable : 500</strong> (pas 503) : à affiner en S7.</li><li><strong><code>req.ip</code> derrière le proxy Next.js</strong> : sans <code>TRUST_PROXY=loopback</code>, toutes les requêtes semblent venir de 127.0.0.1 (limitation de débit et audit imprécis). À régler au déploiement.</li><li>Les endpoints métier (<code>/companies</code>) restent <strong>sans authentification</strong> jusqu'à S3.3.</li></ul>
+<h2>Décision de validation</h2>
+<p>Tous les contrôles bloquants sont ✅. <strong>Reste la validation explicite de l'ingénieur logiciel</strong> avant fusion dans <code>main</code> et tag <code>s3-1-validated</code>.</p></main></body></html>
