@@ -110,3 +110,5 @@ try {
 } finally {
   if (!keep) await stop();
 }
+// Le arrêt de PostgreSQL embarqué peut réinitialiser le code de sortie : on le rétablit explicitement (un test rouge ne doit jamais sortir en 0).
+if (!keep) process.exit(process.exitCode ?? 0);
