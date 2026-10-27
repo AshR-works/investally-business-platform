@@ -34,6 +34,8 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 </tbody></table></div>
 <h2>Règles d'architecture testées en CI</h2>
 <ol><li><code>domain/<em>*</code> n'importe ni <code>@nestjs/</em></code>, ni <code>@prisma/client</code>, ni <code>class-validator</code>, ni rien hors <code>domain/</code> et <code>shared-kernel/</code>.</li><li><code>application/<strong></code> n'importe pas <code>@prisma/client</code> ni <code>infrastructure/</strong></code>.</li><li><code>presentation/<strong></code> n'importe pas <code>@prisma/client</code> ni <code>infrastructure/</strong></code>.</li><li>Un module n'importe que l'<code>index.ts</code> public d'un autre module.</li><li>Pas de cycle entre modules.</li></ol>
+<h2>Contrat anti-IDOR</h2>
+<p><code>test/idor-contract.spec.ts</code> (sans base) refuse toute route à identifiant non classée dans <code>test/support/idor-registry.ts</code> ; <code>test/idor-contract.integration.spec.ts</code> (PostgreSQL jetable) sonde chaque route « objet » avec deux acteurs sans portée. Ajouter une route <code>:id</code> impose donc d'écrire sa sonde.</p>
 <h2>Tranche verticale (Sprint 1)</h2>
 <p>Preuve de câblage de bout en bout : créer une <code>Company</code> (BD) via Next.js → contrôleur → use case → agrégat → repository Prisma → PostgreSQL → ligne d'audit. Elle valide les frontières avant d'empiler les modules.</p>
 <h2>Habitudes</h2>
