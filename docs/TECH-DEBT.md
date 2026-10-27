@@ -47,6 +47,10 @@
 | D43 | **Un seul type d'objet propriétaire déclaré (entreprises)** : offres, opportunités, agréments, sessions et incidents doivent déclarer leur résolveur dans le registre des documents (refus par défaut tant que non fait) | S3.6 | Claude | S4.2 à S6.3, au fil des modules |
 | D44 | **Fichier lu en entier en mémoire** (≤ 10 Mo) à l'envoi et au téléchargement pour calculer et vérifier l'empreinte ; à repasser en flux si la taille maximale augmente | S3.6 | Claude | Si la limite dépasse 10 Mo |
 | D45 | **Durée de conservation des documents archivés et catégories** : valeurs par défaut appliquées (pas de purge ; 6 catégories) faute de réponse de la direction produit | S3.6 | Direction produit | À confirmer avec l'avis juridique (Étape 0) |
+| D46 | **PDF des codes de secours par impression navigateur** : ce n'est pas un téléchargement en un clic. Un générateur interne (≈ 80 lignes, 83/105 au cadrage) reste possible si le un-clic est exigé | S3.7 | Claude | À la demande |
+| D47 | **Garde de sortie des codes de secours** : couvre la fermeture, le rechargement et les liens internes, **pas** le bouton « Précédent » du navigateur ni le bouton de déconnexion ; les codes non conservés sont alors perdus (il faut en régénérer) | S3.7 | Claude | À évaluer avec l'écoute réelle (D31) |
+| D48 | **E-mail d'information après régénération des codes de secours** (bonne pratique) : dépend de l'envoi d'e-mail réel (Microsoft 365, S7) | S3.7 | Claude | S7 |
+| D49 | **Prototype de design non mis à jour** : œil du mot de passe, fenêtre `danger`, panneau des codes ; à ajouter à la version 0.5.0 (DDR-0010) | S3.7 | Claude | Prochaine mise à jour du design |
 | D5 | Hypothèses de charge et de périmètre non confirmées | Phase 3 | Revue à la fin de S1 avec les chiffres réels | Ouverte |
 
 ## Adopted Conventions

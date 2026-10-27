@@ -13,7 +13,10 @@
     "test": "pnpm -r test",
     "typecheck": "pnpm -r typecheck",
     "ci": "pnpm typecheck && pnpm arch && pnpm test",
-    "local": "node scripts/local-stack.mjs"
+    "local": "node scripts/local-stack.mjs",
+    "report": "node scripts/daily-report.mjs",
+    "report:close": "node scripts/daily-report.mjs close",
+    "test:scripts": "node --test scripts/daily-report.test.mjs"
   },
   "devDependencies": {
     "dependency-cruiser": "latest"

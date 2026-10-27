@@ -1,0 +1,59 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Changelog</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#6b4e3d;--code:#f3f5f8;--quote:#f6f1ec}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#d9b99b;--code:#1b212a;--quote:#241f1b}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.55 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1000px;margin:0 auto;padding:2rem 1.25rem 4rem}
+header.cover{border-bottom:3px solid var(--accent);padding-bottom:1rem;margin-bottom:1.2rem}
+header.cover .kicker{color:var(--muted);font-size:.85rem;text-transform:uppercase;letter-spacing:.08em}
+h1{font-size:1.8rem;margin:.2em 0 .3em;line-height:1.25}
+h2{font-size:1.3rem;margin:2em 0 .5em;padding-bottom:.2em;border-bottom:2px solid var(--border)}
+h3{font-size:1.05rem;margin:1.4em 0 .3em}
+a{color:var(--accent)}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.5rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+.table-wrap{overflow-x:auto;margin:.8rem 0}
+table{border-collapse:collapse;width:100%;font-size:.9rem}
+th,td{border:1px solid var(--border);padding:.35rem .55rem;text-align:left;vertical-align:top}th{background:var(--code)}
+.badge{display:inline-block;padding:.1rem .55rem;border-radius:999px;border:1px solid var(--border);font-size:.78rem;font-weight:600}
+.summary{background:var(--quote);border:1px solid var(--border);border-left:5px solid var(--accent);border-radius:8px;padding:.8rem 1.1rem;margin:1rem 0}
+.summary h2{margin:.1em 0 .4em;border:0;font-size:1.05rem}
+nav.toc{border:1px solid var(--border);border-radius:8px;padding:.6rem 1.1rem;margin:1rem 0}
+nav.toc h2{margin:.1em 0 .3em;border:0;font-size:1.05rem}nav.toc ol{margin:0;padding-left:1.3rem;columns:2}
+footer{margin-top:3rem;color:var(--muted);font-size:.8rem;border-top:1px solid var(--border);padding-top:.6rem}
+@page{size:A4;margin:18mm 14mm 20mm;@bottom-left{content:"Investally Business Platform · Rapport";font:8pt system-ui;color:#666}@bottom-right{content:"Page " counter(page) " / " counter(pages);font:8pt system-ui;color:#666}}
+@media print{body{background:#fff;color:#000;font-size:10.5pt}main{max-width:none;padding:0}a{color:inherit;text-decoration:none}h2{break-after:avoid}table,pre,blockquote,.summary{break-inside:avoid}.cover-page{break-after:page}nav.toc ol{columns:1}th{background:#eee!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+</style></head><body><main>
+<div class="cover-page"><header class="cover"><div class="kicker">Investally Business Platform · Changelog</div><h1>Changelog</h1></header>
+<table><tbody></tbody></table>
+<section class="summary"><h2>Résumé exécutif</h2><p><em>Résumé à compléter.</em></p></section>
+<nav class="toc" aria-label="Sommaire"><h2>Sommaire</h2><ol><li><a href="#2026-10-22">2026-10-22</a></li><li><a href="#2026-10-21">2026-10-21</a></li><li><a href="#2026-10-20">2026-10-20</a></li></ol></nav></div>
+<p><em>Généré par <code>scripts/daily-report.mjs changelog</code> à partir de la section « Changelog du jour » de chaque rapport. Ne pas modifier ici : corrigez le rapport du jour puis régénérez.</em></p>
+<p>Format inspiré de <a href="https://keepachangelog.com/fr/1.1.0/">Keep a Changelog</a> ; les dates sont celles du fuseau du projet (Africa/Douala).</p>
+<h2 id="2026-10-22">2026-10-22</h2>
+<h3 id="ajouts">Ajouts</h3>
+<ul><li>H2a : écrans d'accès au nouveau style (A01 à A15) (<code>75ffde8</code>)</li><li>H2b : page Sessions et connexions, recette et documentation (<code>a873d85</code>)</li><li>S3.6 (API) : module Documents (versions immuables, SHA-256, stockage derrière un port, droits hérités de l'objet propriétaire) (<code>03fb1b6</code>)</li><li>S3.6 : fiche entreprise minimale, panneau Documents, recette et documentation (<code>40452a5</code>)</li><li>feat: pile locale persistante sans Docker et stratégie d'exécution (<code>ba035fc</code>)</li><li>feat: un compte de démonstration par rôle (local, idempotent, interdit en production) (<code>dfe17d2</code>)</li></ul>
+<h3 id="modifications">Modifications</h3>
+<ul><li>docs: suivi mis à jour après validation de S3.6 (<code>72ed935</code>)</li><li>docs: guide pratique d'exécution locale (<code>321c1b2</code>)</li><li>docs: pages HTML de toute la documentation et index (<code>699d0c6</code>)</li><li>docs: cadrage des retours de tests UX-01 à UX-04 (analyse avant implémentation) (<code>93fd498</code>)</li></ul>
+<h3 id="corrections">Corrections</h3>
+<ul><li>fix(ci): autoriser les scripts d'installation de PostgreSQL embarqué sous Linux et macOS (ERR_PNPM_IGNORED_BUILDS) (<code>ee4da53</code>)</li></ul>
+<h3 id="securite">Sécurité</h3>
+<ul><li>H2a : test manquant sur les règles du mot de passe (mutant survivant tué) (<code>d29b053</code>)</li><li>H2a : correction du test sur les règles du mot de passe (51/51, mutant tué) (<code>6264544</code>)</li><li>H2a : code du second facteur en six cases (DDR-0009, remplace DDR-0008) (<code>1a59b96</code>)</li><li>H2b (API) : historique des connexions et révocation des autres sessions (<code>c75044e</code>)</li><li>test: contrat anti-IDOR (registre des routes, sondes d'intégration) et sortie en erreur de test-db (<code>f651f0e</code>)</li><li>chore: dépôt public : e-mail fictif dans les tests, politique de signalement des vulnérabilités (<code>424e829</code>)</li><li>feat(ui): S3.7 UX de l'authentification : mot de passe affichable, confirmation des actions irréversibles, codes de secours à affichage unique (<code>d6a2507</code>)</li></ul>
+<h2 id="2026-10-21">2026-10-21</h2>
+<h3 id="ajouts">Ajouts</h3>
+<ul><li>a11y: titres de page, fenêtres modales inertes, audit axe-core rejouable, protocole lecteur d'écran (<code>d5ad244</code>)</li><li>H1 : habillage minimal et hub (Tailwind v4, jetons, coque centrée, hub réel, recherche globale, thème) (<code>42da53f</code>)</li><li>H1b : composants de données (tableau, sélection persistante, badges, barre d'outils, pagination, menu de ligne) (<code>89acec7</code>)</li><li>Arbitrage D21 appliqué : décisions consignées, S4.1 élargie, Pays et Créée le affichés (<code>f99ce7c</code>)</li></ul>
+<h3 id="modifications">Modifications</h3>
+<ul><li>docs(livrables): suivi des sessions et etat d'avancement (<code>0fba621</code>)</li><li>docs(livrables): besoins pour adopter le style graphique (captures, marque, decisions) (<code>fb2ad8d</code>)</li><li>design: direction artistique, design system, prototype HTML (clair/sombre), specifications frontend (<code>0f867a9</code>)</li><li>design: logo Investudy haute resolution dans le prototype (<code>43b6018</code>)</li><li>design: logos Investally (rectangle, carre) et Investudy (rectangle) fournis, utilises dans le prototype (<code>35d4abf</code>)</li><li>design: espace agenda (semaine, mois, filtres, nouvel evenement) et captures de tous les ecrans en clair et en sombre (<code>1687304</code>)</li><li>design: exigences EXD-01 a 09 (profondeur, selection persistante, Opportunites en cartes), analyse d'impact (<code>bc0e851</code>)</li><li>design: grille d'opportunites a 6 colonnes des 1360 px (<code>0b72ce4</code>)</li><li>docs: methode d'arbitrage decisionnel et aide a la decision (navigation, opportunites, stocks, ordre, versionnement design) (<code>0d8d2e9</code>)</li><li>design v0.4.0: decisions DEC-001 a 006 appliquees (navigation B+, Opportunites hybrides, versionnement, ADR-0007 Stocks, ordre de realisation) (<code>862785c</code>)</li><li>design v0.4.0: manifestes des versions et etiquettes de reconstitution (<code>05885a5</code>)</li><li>design v0.4.1: panneau principal centré (DEC-007 option B), bouton de dépliage en pictogramme (<code>9908a58</code>)</li><li>design v0.4.1 validé par la direction produit (<code>716200a</code>)</li><li>docs: cadrages de H1, H2, S3.6 et du cadrage UX (options, grilles calculées, recommandations) (<code>75b411c</code>)</li><li>docs: décisions des cadrages H1, H2, S3.6 et UX enregistrées (recommandations retenues, D19) (<code>3b8f45a</code>)</li><li>docs: arbitrage préparé sur les données manquantes de l'API des entreprises (ARB-API-1 à 4) (<code>5079f10</code>)</li><li>docs: capture du tableau Entreprises avec Pays et Créée le; résultats d'audit mis à jour (<code>3ad8540</code>)</li></ul>
+<h3 id="securite">Sécurité</h3>
+<ul><li>S3.5: mot de passe oublie (libre-service et administrateur), commentaires sur toutes les fonctions, livrables (<code>6692541</code>)</li></ul>
+<h2 id="2026-10-20">2026-10-20</h2>
+<h3 id="ajouts">Ajouts</h3>
+<ul><li>feat(crm): S1 squelette CRM - monorepo, garde-fous d'architecture, tranche Company + audit (<code>5261fbe</code>)</li><li>feat(crm): S1 frontend minimal, builds de production, plan de recette (<code>11ff3b6</code>)</li><li>wip(S3.3): autorisation par portee, API d'administration, invitations (backend, tests a venir) (<code>f988eb3</code>)</li><li>S3.3: autorisation (@Protected), API d'administration, invitations, propriétaire des entreprises (<code>f9319e8</code>)</li></ul>
+<h3 id="modifications">Modifications</h3>
+<ul><li>docs: Sprint 0 - vision, architecture, ADR, risques, fiabilite, tests (<code>a4b208a</code>)</li><li>docs: registre des questions sensibles et des decisions (<code>a335c0d</code>)</li></ul>
+<h3 id="corrections">Corrections</h3>
+<ul><li>docs(s1): recette A7/E4, dette D6 (js-yaml), correctif chemin .env (<code>84da5a8</code>)</li><li>test(s1): base PostgreSQL jetable, correctif UTC des timestamptz, recette C/D/E (<code>f6c6ce9</code>)</li></ul>
+<h3 id="securite">Sécurité</h3>
+<ul><li>feat(crm): S2 securite et donnees Core - RBAC, schema iam/docs, audit partitionne (<code>9b972e0</code>)</li><li>feat(crm): S2 decisions de la direction - SuperAdmin complet, MFA pour tous, agrement = promesse de paiement (<code>efa5a18</code>)</li><li>feat(crm): S3.1 authentification - argon2id, JWT ES256, sessions, rotation du refresh token (<code>a78d9ca</code>)</li><li>feat(crm): S3.2 MFA TOTP, e-mail Microsoft 365, creation du premier SuperAdmin (<code>d53c85a</code>)</li><li>wip(S3.4): front de base (connexion, MFA, invitation, administration, compte), /auth/me/profile, invalid_token (<code>27ad200</code>)</li><li>S3.4: front de base (connexion, MFA, invitation, administration, mon compte), en-tetes de securite, recette (<code>f7770d6</code>)</li></ul>
+<footer>Généré à partir de l'historique Git et du fichier Markdown. </footer></main></body></html>

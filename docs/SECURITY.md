@@ -128,6 +128,7 @@ Voir `RBAC.md` : contrôle **à chaque requête** côté serveur (jamais seuleme
 - **Lien d'invitation** : jeton lu dans le fragment `#`, **effacé de la barre d'adresse et de l'historique** dès la lecture, gardé en mémoire seulement ; `Referrer-Policy: no-referrer`.
 - **QR code généré dans le navigateur** (bibliothèque `qrcode` 1.5.4, épinglée) : le secret TOTP n'est transmis à aucun service tiers.
 - **Codes de secours** : affichés une seule fois, case « conservés » obligatoire, avertissement du navigateur avant de quitter la page.
+- **Codes de secours (S3.7)** : régénération précédée d'une **confirmation explicite** (focus sur Annuler) puis du MFA récent ; affichage **limité à l'écran de génération**, copie, fichier texte et impression sans nom ni e-mail, **garde de sortie** (fermeture, rechargement, liens internes) tant que « J'ai conservé ces codes » n'est pas coché, codes **uniquement en mémoire** de la page. Limites : D47, D48.
 - **Actions sensibles** : si l'API répond `MFA_STEP_UP_REQUIRED`, une fenêtre demande un code frais puis l'action est rejouée une seule fois ; plusieurs actions simultanées ne posent qu'**une** question.
 - **En-têtes** : CSP, `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: no-referrer`, `Permissions-Policy` (caméra, micro, géolocalisation, paiement, USB interdits), `Cross-Origin-Opener-Policy: same-origin`. L'API n'est jamais appelée depuis un autre site : le navigateur parle à Next.js, qui relaie `/api` vers l'API locale (même origine, pas de CORS).
 
