@@ -26,8 +26,8 @@ describe('passwordHints', () => {
     expect(passwordHints('un-mot-de-passe-assez-long')).toEqual([]);
   });
   it('signale l\'identifiant e-mail contenu dans le mot de passe', () => {
-    expect(passwordHints('jdemefack-2026-xyz', 'jdemefack@geofleetin.com')).toContain('Ne contient pas votre identifiant e-mail');
-    expect(passwordHints('une-phrase-sans-rapport', 'jdemefack@geofleetin.com')).toEqual([]);
+    expect(passwordHints('jean.dupont-2026-xyz', 'jean.dupont@exemple.test')).toContain('Ne contient pas votre identifiant e-mail');
+    expect(passwordHints('une-phrase-sans-rapport', 'jean.dupont@exemple.test')).toEqual([]);
   });
 });
 

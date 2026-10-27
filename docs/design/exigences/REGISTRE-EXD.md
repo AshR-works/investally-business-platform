@@ -21,6 +21,8 @@ Légende : ✅ appliqué au prototype · 🟡 appliqué en partie · 📐 spéci
 | **EXD-09** | **Cohérence métier** : toute modification reste cohérente avec Business Development, Training Management, Finance, RH, Fiscalité, Administration, Sécurité, Reporting | ✅ (principe) | Architecture des modules mise à jour : analyse d'impact §7 |
 | **EXD-10** | **Panneau principal centré à tout moment** (demande du 2026-10-21) | ✅ | Option B (DEC-007, DDR-0007) : centré sur la fenêtre, panneau 1 440 px au plus, repli automatique en centrage dans l'espace restant sur fenêtre étroite. Mesuré à 2 200, 1 700 et 1 360 px ; **réalisé dans l'application (H1)** : marges 373 / 373 px à 2 200 px |
 | **EXD-11** | **Bouton de dépliage = pictogramme de l'action, toujours actionnable** (demande du 2026-10-21) | 🟡 | **Réalisé dans l'application (H1)**. Pictogramme seul 44 px, nom accessible, état annoncé ; **pictogramme provisoire, à confirmer** ; reste masqué sur le hub (navigation complète) — à confirmer |
+| **EXD-12** | **Mot de passe affichable, comportement uniforme** (retour de tests UX-01, 2026-10-22) | 🟡 | **Réalisé dans l'application (S3.7)** : composant `PasswordField` unique (6 champs, 4 écrans), œil en pictogramme seul, remasquage automatique, icône native d'Edge masquée. Prototype à mettre à jour (0.5.0) · [DDR-0010](../decisions/DDR-0010-secrets-confirmations-et-affichage-unique.md) |
+| **EXD-13** | **Actions irréversibles confirmées ; secrets à affichage unique** (retours UX-03 et UX-04, 2026-10-22) | 🟡 | **Réalisé dans l'application (S3.7)** : fenêtre de confirmation `danger` (focus sur Annuler), codes de secours avec copie, fichier texte, impression PDF et garde de sortie. Prototype à mettre à jour (0.5.0) · [DDR-0010](../decisions/DDR-0010-secrets-confirmations-et-affichage-unique.md) |
 
 ## Règles d'application
 1. Une nouvelle maquette ou une nouvelle version **commence** par relire ce registre.
@@ -38,3 +40,4 @@ Légende : ✅ appliqué au prototype · 🟡 appliqué en partie · 📐 spéci
 | 2026-10-21 | **H1b** : EXD-02 (sélection persistante) réalisée dans l'application sur les tableaux Entreprises et Utilisateurs ; EXD-04 (cartes d'opportunités) reste pour S4.3 ; écarts consignés dans `docs/cadrages/ECART-MOCKUP-VS-REEL.md` |
 | 2026-10-22 | **H2a** : EXD-06 réalisée pour les écrans A01 à A15 (connexion, MFA, codes de secours, mot de passe oublié, réinitialisation, activation, états d'erreur et de limitation) ; sessions et historique (S01 à S03) restent pour H2b |
 | 2026-10-22 | **H2b** : EXD-06 **complète** (A01 à A15 et S01 à S03 réalisés dans l'application) |
+| 2026-10-22 | **S3.7** : EXD-12 et EXD-13 enregistrées et réalisées dans l'application (retours de tests UX-01, UX-03, UX-04) ; prototype non encore mis à jour |

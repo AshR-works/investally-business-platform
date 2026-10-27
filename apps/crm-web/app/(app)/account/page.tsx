@@ -1,5 +1,8 @@
 'use client';
 
+import { PasswordField } from '../../../components/auth/password-field';
+import { SecretCodesPanel } from '../../../components/auth/secret-codes-panel';
+import { ConfirmDialog } from '../../../components/confirm-dialog';
 import { PageHeading } from '../../../components/page-heading';
 import Link from 'next/link';
 import { FormEvent, useState } from 'react';
@@ -67,10 +70,10 @@ function PasswordForm({ email }: { email: string }) {
   return (
     <form className="panel" onSubmit={submit}>
       <h2>Changer le mot de passe</h2>
-      <label>Mot de passe actuel<input type="password" value={current} onChange={(e) => setCurrent(e.target.value)} autoComplete="current-password" maxLength={256} required /></label>
-      <label>Nouveau mot de passe<input type="password" value={next} onChange={(e) => setNext(e.target.value)} autoComplete="new-password" maxLength={256} required /></label>
+      <PasswordField label="Mot de passe actuel" value={current} onChange={setCurrent} autoComplete="current-password" />
+      <PasswordField label="Nouveau mot de passe" value={next} onChange={setNext} autoComplete="new-password" />
       {next.length > 0 && hints.map((h) => <p key={h} className="hint bad">{h}</p>)}
-      <label>Confirmation<input type="password" value={confirmation} onChange={(e) => setConfirmation(e.target.value)} autoComplete="new-password" maxLength={256} required /></label>
+      <PasswordField label="Confirmation" value={confirmation} onChange={setConfirmation} autoComplete="new-password" invalid={confirmation.length > 0 && confirmation !== next} />
       {confirmation.length > 0 && confirmation !== next && <p className="hint bad">Les deux mots de passe sont différents</p>}
       {error && <p role="alert" className="error">{error}</p>}
       {notice && <p role="status" className="notice">{notice}</p>}
@@ -80,36 +83,55 @@ function PasswordForm({ email }: { email: string }) {
 }
 
 /**
- * Génère de nouveaux codes de secours (les anciens cessent de fonctionner) et les affiche une seule fois ; un code
- * MFA récent est demandé si nécessaire.
+ * Régénération des codes de secours : confirmation explicite d'abord (action irréversible), puis code MFA récent si
+ * nécessaire, puis affichage UNIQUE des nouveaux codes (copie, fichier, impression). Une fois l'écran quitté, ils ne
+ * peuvent plus être revus.
  */
 function RecoveryCodes() {
   const [codes, setCodes] = useState<string[] | null>(null);
+  const [saved, setSaved] = useState(false);
+  const [confirming, setConfirming] = useState(false);
+  const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  /** Appelle la régénération et garde les codes en mémoire uniquement, jusqu'à ce que l'utilisateur les masque. */
+  /** Appelle la régénération et garde les codes en mémoire uniquement, jusqu'à ce que l'utilisateur ait terminé. */
   async function regenerate() {
+    setConfirming(false);
     setError(null);
+    setBusy(true);
     try {
       const result = await api<{ recoveryCodes: string[] }>('/auth/mfa/recovery-codes/regenerate', { method: 'POST' });
+      setSaved(false);
       setCodes(result.recoveryCodes);
     } catch (e) {
       setError(e instanceof ApiError ? e.message : 'Régénération impossible');
+    } finally {
+      setBusy(false);
     }
   }
 
   return (
     <section className="panel">
       <h2>Codes de secours</h2>
-      <p>Générer de nouveaux codes <strong>invalide les précédents</strong>. Une confirmation par code vous sera demandée.</p>
-      <button type="button" className="secondary" onClick={() => void regenerate()}>Générer de nouveaux codes</button>
+      <p>Les codes de secours vous permettent de vous connecter si vous perdez votre application d’authentification. Chacun ne sert qu’une fois.</p>
+      {!codes && <button type="button" className="secondary" disabled={busy} onClick={() => setConfirming(true)}>Générer de nouveaux codes</button>}
       {error && <p role="alert" className="error">{error}</p>}
       {codes && (
         <>
-          <p className="hint">Affichés une seule fois : conservez-les en lieu sûr.</p>
-          <div className="codes" aria-label="Nouveaux codes de secours">{codes.map((c) => <span key={c}>{c}</span>)}</div>
-          <button type="button" className="secondary small" onClick={() => setCodes(null)}>Masquer</button>
+          <p className="hint"><strong>Affichés une seule fois</strong> : copiez-les, téléchargez-les ou imprimez-les avant de quitter cette page.</p>
+          <SecretCodesPanel codes={codes} saved={saved} onSavedChange={setSaved} />
+          <button type="button" disabled={!saved} onClick={() => { setCodes(null); setSaved(false); }}>Terminer</button>
         </>
+      )}
+      {confirming && (
+        <ConfirmDialog title="Remplacer vos codes de secours ?" confirmLabel="Remplacer mes codes" onCancel={() => setConfirming(false)} onConfirm={() => void regenerate()}>
+          <ul className="m-0 flex list-disc flex-col gap-2 pl-5">
+            <li>Vos codes actuels seront <strong>invalidés immédiatement</strong> et ne fonctionneront plus.</li>
+            <li>Cette action est <strong>irréversible</strong>.</li>
+            <li>Les nouveaux codes ne seront affichés <strong>qu’une seule fois</strong> : enregistrez-les avant de quitter la page.</li>
+          </ul>
+          <p className="hint mb-0">Un code de votre application d’authentification peut vous être demandé.</p>
+        </ConfirmDialog>
       )}
     </section>
   );
