@@ -1,0 +1,63 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Guide pratique : exécuter Investally en local</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="INDEX.html">Index</a> · <a href="GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="ARCHITECTURE.html">Architecture</a> · <a href="SECURITY.html">Sécurité</a> · <a href="METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="TECH-DEBT.html">Dette</a> · <a href="design/README.html">Design</a> · <a href="livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>Guide pratique : exécuter Investally en local</h1>
+<p><em>Pile : interface Next.js (3000) → API NestJS (3001) → PostgreSQL embarqué (54330). Tout sur <code>127.0.0.1</code>, sans Docker. Stratégie et justification : <code>docs/EXECUTION-LOCALE.md</code>.</em></p>
+<h2>Démarrer</h2>
+<pre><code>cd C:\dev\investally-platform
+git checkout sprint/execution-locale      # jusqu&#x27;à la fusion dans main
+pnpm install                              # une seule fois
+node scripts/local-stack.mjs --demo       # ou : pnpm local --demo</code></pre>
+<p>Prérequis : Node 22 LTS, pnpm 12, une application TOTP (téléphone ou extension navigateur).</p>
+<h2>Ce que fait la commande</h2>
+<ol><li>Génère les secrets locaux (une fois) dans <code>C:\dev\investally-local\secrets.json</code>.</li><li>Compile l'API et l'interface (long la première fois seulement).</li><li>Démarre PostgreSQL (données dans <code>..\investally-local\pgdata</code>), applique les migrations, crée rôles et permissions.</li><li>Crée <code>admin@investally.test</code> si aucun utilisateur n'existe : mot de passe aléatoire <strong>affiché une seule fois</strong>.</li><li>Avec <code>--demo</code> : 40 entreprises fictives (20 pour <code>compte1</code>, 20 pour <code>compte2</code>) et un compte par rôle.</li><li>Démarre l'API puis l'interface et affiche les adresses.</li></ol>
+<h2>Utiliser</h2>
+<ul><li>Interface : <code>http://127.0.0.1:3000</code> · API (Swagger) : <code>http://127.0.0.1:3001/api/docs</code>.</li><li>Première connexion de <strong>chaque</strong> compte : scanner le QR code avec l'application TOTP (MFA obligatoire).</li><li>Changer de rôle : se déconnecter, se reconnecter avec un autre compte.</li><li>E-mails : aucun n'est envoyé ; les liens d'invitation et de réinitialisation sont dans <code>..\investally-local\logs\api.log</code>.</li></ul>
+<h2>Comptes de démonstration (domaine <code>demo.investally.test</code>)</h2>
+<div class="table-wrap"><table><thead><tr><th>Rôle</th><th>Adresse</th></tr></thead><tbody>
+<tr><td>Super administrateur</td><td><code>admin@investally.test</code></td></tr>
+<tr><td>Direction</td><td><code>direction@</code></td></tr>
+<tr><td>Responsable commercial</td><td><code>commercial@</code></td></tr>
+<tr><td>Chargés de compte (2)</td><td><code>compte1@</code>, <code>compte2@</code> (responsable : <code>commercial@</code>)</td></tr>
+<tr><td>Responsable Investudy</td><td><code>investudy@</code></td></tr>
+<tr><td>Formateur</td><td><code>formateur@</code> (responsable : <code>investudy@</code>)</td></tr>
+<tr><td>Support, Finance, RH, Fiscalité</td><td><code>support@</code>, <code>finance@</code>, <code>rh@</code>, <code>fiscalite@</code></td></tr>
+</tbody></table></div>
+<p>Mots de passe : <code>..\investally-local\demo-accounts.json</code> (local, hors dépôt, aléatoires, interdits en production).</p>
+<h2>Commandes courantes</h2>
+<div class="table-wrap"><table><thead><tr><th>Action</th><th>Commande</th></tr></thead><tbody>
+<tr><td>Arrêter (données conservées)</td><td><code>Ctrl+C</code> dans la console</td></tr>
+<tr><td>Relancer</td><td>même commande (rapide, sans doublon)</td></tr>
+<tr><td>Recompiler après mise à jour du code</td><td>ajouter <code>--rebuild</code></td></tr>
+<tr><td>Interface en mode développement</td><td>ajouter <code>--dev</code> (non testé)</td></tr>
+<tr><td>Tout effacer</td><td><code>node scripts/local-stack.mjs reset</code> (taper OUI)</td></tr>
+<tr><td>Autre dossier de données</td><td>variable <code>INVESTALLY_LOCAL_HOME</code></td></tr>
+<tr><td>Autres ports</td><td><code>LOCAL_DB_PORT</code>, <code>LOCAL_API_PORT</code>, <code>LOCAL_WEB_PORT</code></td></tr>
+</tbody></table></div>
+<h2>Valider la qualité sans la pile</h2>
+<pre><code>pnpm ci                                   # types, architecture, tests unitaires
+node apps/crm-api/scripts/test-db.mjs     # intégration, base jetable</code></pre>
+<h2>Scénarios à parcourir</h2>
+<ol><li>Premier administrateur : connexion, enrôlement MFA, déconnexion, reconnexion.</li><li>Invitation d'un collaborateur (lien dans <code>api.log</code>), activation, droits selon le rôle.</li><li>Entreprises : liste ; <code>compte1</code> ne voit que les siennes, <code>compte2</code> les autres.</li><li>Documents d'une entreprise : envoi, nouvelle version, téléchargement, archivage.</li><li>Sessions actives : historique et révocation des autres sessions.</li><li>Refus d'accès hors périmètre : toujours « introuvable ».</li></ol>
+<h2>Limites connues</h2>
+<ul><li>Modules livrés : identité et accès, entreprises, documents. Le reste arrive avec S4 à S6.</li><li>Non testé : enrôlement MFA dans un navigateur, Node 22, <code>--dev</code>.</li><li>Docker : prévu en S7 (voir la stratégie).</li></ul></main></body></html>

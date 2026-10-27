@@ -1,0 +1,106 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Design Code Architecture Plan — Investally Business Platform</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="INDEX.html">Index</a> · <a href="GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="ARCHITECTURE.html">Architecture</a> · <a href="SECURITY.html">Sécurité</a> · <a href="METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="TECH-DEBT.html">Dette</a> · <a href="design/README.html">Design</a> · <a href="livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>Design Code Architecture Plan — Investally Business Platform</h1>
+<h2>Context</h2>
+<ul><li><strong>Démarré le</strong> : 2026-10-20 (Sprint 0 — Cadrage)</li><li><strong>Produit</strong> : plateforme métier propriétaire Investally (fintech) + centre de formation Investudy. <strong>Deux produits : CRM (prioritaire, Business Development + Investudy) puis ERP</strong> (ADR-0005).</li><li><strong>Stack cible</strong> : Next.js + TypeScript (front), NestJS + TypeScript (back), PostgreSQL, Prisma, Docker. Migration future possible vers ASP.NET Core + EF sans réécriture du métier.</li><li><strong>Avantage différenciant (HYPOTHÈSE)</strong> : le pipeline commercial B2B jusqu'à l'inscription Investudy (cœur), le reste étant support/générique.</li><li><strong>Charge (CONFIRMÉE le 2026-10-20)</strong> : ≈ <strong>20 utilisateurs</strong> au démarrage (10 employés aujourd'hui), croissance possible si recrutement. Une seule base PostgreSQL, largement suffisante.</li><li><strong>Équipe et cadence (CONFIRMÉES le 2026-10-20)</strong> : les sprints sont menés par l'ingénieur logiciel d'Investally et Claude, <strong>durée maximale : 1 semaine</strong>.</li><li><strong>Dépendances sortantes</strong> : e-mail via <strong>Microsoft 365</strong> (décidé), stockage de documents. Paiement/banque/télé-déclaration fiscale : hors périmètre.</li><li><strong>Fiscalité (HYPOTHÈSE)</strong> : Cameroun (OHADA, DGI, CNPS), devise XAF — concerne surtout l'ERP.</li></ul>
+<h2>Phase Status</h2>
+<div class="table-wrap"><table><thead><tr><th>Phase</th><th>Skill</th><th>Status</th><th>Artifact</th><th>Date</th></tr></thead><tbody>
+<tr><td>1 — Draw the boundaries</td><td>clean-architecture</td><td>done</td><td>ARCHITECTURE.md</td><td>2026-10-20</td></tr>
+<tr><td>2 — Model the domain</td><td>domain-driven-design</td><td>done (décisions métier du 2026-10-20 intégrées ; détails de l'agrément à préciser avant S4.4)</td><td>ARCHITECTURE.md</td><td>2026-10-20</td></tr>
+<tr><td>3 — Size the system</td><td>system-design</td><td>done (charge confirmée : ≈ 20 utilisateurs)</td><td>ARCHITECTURE.md</td><td>2026-10-20</td></tr>
+<tr><td>4 — Make data decisions</td><td>ddia-systems</td><td>done</td><td>ARCHITECTURE.md</td><td>2026-10-20</td></tr>
+<tr><td>5 — Keep modules deep</td><td>software-design-philosophy</td><td>done (cadrage léger)</td><td>TECH-DEBT.md</td><td>2026-10-20</td></tr>
+<tr><td>6 — Design for failure</td><td>release-it</td><td>done (cadrage léger; valeurs à mesurer)</td><td>RELIABILITY.md</td><td>2026-10-20</td></tr>
+<tr><td>7 — Prove wiring, lock in habits</td><td>pragmatic-programmer</td><td>done</td><td>TESTING.md + TECH-DEBT.md</td><td>2026-10-20</td></tr>
+<tr><td>8 — Cut scope to essential</td><td>37signals-way</td><td>done (voir Périmètre v1)</td><td>VISION.md + ARCHITECTURE.md</td><td>2026-10-20</td></tr>
+<tr><td>Optional — Align teams</td><td>team-topologies</td><td>skipped: équipe de deux (ingénieur + Claude)</td><td>OPERATIONS.md</td><td></td></tr>
+</tbody></table></div>
+<h2>Cadence de travail</h2>
+<ul><li><strong>Sprint = 1 semaine maximum</strong>, un objectif livrable et vérifiable. Un sprint trop gros est découpé, jamais prolongé.</li><li><strong>Début de sprint</strong> : périmètre et plan de recette (<code>docs/SPRINT-n-RECETTE.md</code>) validés ensemble.</li><li><strong>Fin de sprint</strong> : recette exécutée, résultats honnêtes (vérifié / non vérifié), validation explicite de l'ingénieur, puis fusion dans <code>main</code> et tag <code>sN-validated</code>.</li><li><strong>Branches</strong> : <code>sprint/&lt;id&gt;-&lt;nom&gt;</code> depuis <code>main</code>, jamais de commit direct sur <code>main</code>.</li><li>Les identifiants d'origine (S3, S4…) désignent des <strong>phases</strong> ; chacune est découpée en sprints d'une semaine (S3.1, S3.2…).</li></ul>
+<h2>Sprint Plan (révisé le 2026-10-20 : CRM prioritaire, sprints d'une semaine)</h2>
+<div class="table-wrap"><table><thead><tr><th>Sprint</th><th>Produit</th><th>Objectif</th><th>Livrables du prompt maître</th></tr></thead><tbody>
+<tr><td>S0 Cadrage — <strong>validé</strong></td><td>—</td><td>Vision, architecture, ADR</td><td>1, 2, 4, 16</td></tr>
+<tr><td>S1 Squelette CRM — <strong>validé</strong> (tag <code>s1-validated</code>)</td><td>CRM</td><td>Monorepo, CI, garde-fous, tranche <code>Company</code> + audit</td><td>3, 14 (partiel)</td></tr>
+<tr><td>S2 Sécurité &amp; données Core — <strong>validé</strong> (tag <code>s2-validated</code>)</td><td>CRM</td><td>RBAC, audit, schéma Core, migration, seed rôles/permissions</td><td>5, 8, 9, 11</td></tr>
+<tr><td><strong>S3.1</strong> Authentification — <strong>validé</strong> (tag <code>s3-1-validated</code>)</td><td>CRM</td><td>Utilisateurs, mot de passe argon2id, connexion, JWT ES256, sessions, rotation du refresh token, verrouillage et limitation de débit, audit des connexions</td><td>8, 10</td></tr>
+<tr><td><strong>S3.2</strong> MFA et amorçage — <strong>validé</strong> (tag <code>s3-2-validated</code>)</td><td>CRM</td><td>TOTP obligatoire (enrôlement, codes de secours, step-up), port e-mail Microsoft 365 (adaptateur journal en test), création du premier SuperAdmin</td><td>8</td></tr>
+<tr><td><strong>S3.3</strong> Autorisation et administration (backend) — <strong>validé</strong> (tag <code>s3-3-validated</code>)</td><td>CRM</td><td><code>@Protected</code> (permission + portée + step-up), API utilisateurs/rôles/sessions, invitation par e-mail, propriétaire des entreprises</td><td>10, 11</td></tr>
+<tr><td><strong>S3.4</strong> Front de base — <strong>en cours, recette exécutée, validation en attente</strong></td><td>CRM</td><td>Pages web : connexion, scan du QR MFA, codes de secours, activation d'invitation, administration des utilisateurs, mon compte (mot de passe, codes de secours, sessions), en-têtes de sécurité</td><td>10</td></tr>
+<tr><td><strong>S3.5</strong> Mot de passe oublié et livrables — <strong>en cours, recette exécutée, validation en attente</strong></td><td>CRM</td><td>Bouton « Mot de passe oublié » (libre-service sécurisé et traçable + déclenchement par un administrateur), commentaires sur toutes les fonctions, livrables récapitulatifs (<code>docs/livrables/</code>)</td><td>8, 10</td></tr>
+<tr><td><strong>ÉTAPE 0</strong> <em>(décidée le 2026-10-21, DEC-005)</em></td><td>—</td><td><strong>Valider S3.4 et S3.5</strong> ; obtenir l'<strong>accès Microsoft 365</strong> ; désigner <strong>deux SuperAdmin</strong> ; lancer l'<strong>avis juridique</strong> (audit 10 ans, données de performance)</td><td>—</td></tr>
+<tr><td><strong>H1</strong> Habillage minimal + hub</td><td>CRM</td><td>Tailwind, jetons, polices hébergées, logos, coque, <strong>navigation B+ (hub, recherche globale, rail compact)</strong> ; <strong>le style s'applique ensuite écran par écran, sans sprint H3 séparé</strong></td><td>10</td></tr>
+<tr><td><strong>H2</strong> Authentification complète et sessions</td><td>CRM</td><td>18 écrans (MFA, QR, codes de secours, réinitialisation, sessions actives, historique des connexions) + endpoint d'historique</td><td>10</td></tr>
+<tr><td><strong>S3.6</strong> Documents</td><td>CRM</td><td>Téléversement, versions, SHA-256, téléchargement, traçabilité complète (prérequis des pièces jointes)</td><td>9, 10</td></tr>
+<tr><td><strong>Cadrage UX</strong> (avant S4.1)</td><td>CRM</td><td>Séance courte sur 5 écrans clés, <strong>à partir des prototypes existants</strong> ; chaque écran de S4 naît dans le nouveau style</td><td>—</td></tr>
+<tr><td><strong>S4.1</strong> Entreprises et contacts</td><td>CRM</td><td>Business Development : entreprises, contacts — <strong>API et écrans livrés ensemble</strong></td><td>10, 12</td></tr>
+<tr><td><strong>S4.2</strong> Offres, décharges, relances</td><td>CRM</td><td>Offre, décharge, relances planifiées</td><td>10</td></tr>
+<tr><td><strong>S4.2b</strong> Agenda utilisateur <em>(ajouté le 2026-10-21)</em></td><td>CRM</td><td>Événements (rendez-vous, relances, formations, échéances), vues semaine / mois / jour, rappels, droits Propre / Équipe / Tous ; premier consommateur : les relances et rendez-vous des offres</td><td>10</td></tr>
+<tr><td><strong>S4.3</strong> Rendez-vous, visites, opportunités</td><td>CRM</td><td>Pipeline, règle du RDV décideur avec dérogation</td><td>10</td></tr>
+<tr><td><strong>S4.4</strong> Agrément et ambassadeurs</td><td>CRM</td><td>Agrément (promesse de paiement), ambassadeurs, événements vers Investudy</td><td>10</td></tr>
+<tr><td><strong>S5.1</strong> Catalogue Investudy</td><td>CRM</td><td>Programmes, formations, salles, formateurs</td><td>10</td></tr>
+<tr><td><strong>S5.2</strong> Sessions et inscriptions</td><td>CRM</td><td>Sessions, apprenants, inscriptions liées à l'agrément</td><td>10</td></tr>
+<tr><td><strong>S5.3</strong> Suivi pédagogique</td><td>CRM</td><td>Présences, évaluations, certifications, suggestion d'ambassadeur</td><td>10</td></tr>
+<tr><td><strong>S6.1</strong> KPI et dashboards commerciaux</td><td>CRM</td><td>KPI, dashboards Chargé de compte et Responsable commercial</td><td>12, 13</td></tr>
+<tr><td><strong>S6.2</strong> Dashboards Investudy, Admin, Sécurité</td><td>CRM</td><td>Dashboards Investudy, Administration, Sécurité, rapports</td><td>12, 13</td></tr>
+<tr><td><strong>S6.3</strong> Reporting et incidents <em>(EXD-08, DEC-005 : incidents d'abord)</em></td><td>CRM / transverse</td><td>Incidents (opérationnels et sécurité), puis rapports périodiques ; <strong>suivi des performances seulement après avis juridique et RH (DEC-006)</strong></td><td>12, 13</td></tr>
+<tr><td><strong>ST</strong> Stocks <em>(EXD-07, DEC-004, ADR-0007)</em></td><td>Module autonome hébergé dans le CRM, extractible vers l'ERP</td><td>Articles, catégories, fournisseurs, mouvements immuables, inventaire, seuils, tableau de bord</td><td>5–7</td></tr>
+<tr><td><strong>S7.1</strong> Durcissement</td><td>CRM</td><td>Rôle SQL applicatif, création planifiée des partitions, sauvegardes, supervision</td><td>8, 15</td></tr>
+<tr><td><strong>S7.2</strong> Mise en production</td><td>CRM</td><td>Docker et CI exécutés pour de vrai, revue de sécurité, audit avancé</td><td>15</td></tr>
+<tr><td>ERP-1…n</td><td>ERP</td><td>Finance, RH, Fiscalité, reporting direction ; extraction IAM/SSO et paquets partagés</td><td>5–7, 13</td></tr>
+<tr><td>Final</td><td>—</td><td>Stratégie .NET, dette, recommandation</td><td>17, 18, 19</td></tr>
+</tbody></table></div>
+<h2>Key Decisions</h2>
+<div class="table-wrap"><table><thead><tr><th>Date</th><th>Phase</th><th>Decision</th><th>Rationale</th></tr></thead><tbody>
+<tr><td>2026-10-20</td><td>1</td><td>Monolithe modulaire (ADR-0001)</td><td>Un seul déploiement, frontières internes strictes</td></tr>
+<tr><td>2026-10-20</td><td>1</td><td>Prisma confiné à <code>infrastructure/</code> (ADR-0002)</td><td>Condition de la migration .NET</td></tr>
+<tr><td>2026-10-20</td><td>1</td><td>Entités Domain ≠ modèles Prisma (ADR-0003)</td><td>Idem ; coût de mapping assumé</td></tr>
+<tr><td>2026-10-20</td><td>1</td><td>Audit via événements de domaine + intercepteur applicatif (ADR-0004)</td><td>Traçabilité sans polluer le métier</td></tr>
+<tr><td>2026-10-20</td><td>S1</td><td>CRM séparé de l'ERP, CRM prioritaire incluant Investudy ; une base par produit (ADR-0005)</td><td>Décision produit ; simplicité</td></tr>
+<tr><td>2026-10-20</td><td>2</td><td>Core = BD (+ Training secondaire) ; pas de modèle Personne unifié ; intégration par événements</td><td>Voir Decision Log d'ARCHITECTURE.md</td></tr>
+<tr><td>2026-10-20</td><td>S2</td><td>Accès et sécurité : TRAINING_MANAGER ajouté, <strong>SuperAdmin accès complet</strong>, <strong>MFA obligatoire pour tous</strong>, équipe = subordonnés directs, durées de session confirmées, e-mail Microsoft 365, audit 10 ans (ADR-0006)</td><td>Décisions de la direction produit</td></tr>
+<tr><td>2026-10-20</td><td>2</td><td><strong>Agrément formation = promesse de paiement</strong>, propriété de Business Development ; plusieurs opportunités par entreprise ; apprenant sans accès au CRM ; ambassadeur manuel</td><td>Décisions métier</td></tr>
+<tr><td>2026-10-20</td><td>3</td><td>Charge confirmée ≈ 20 utilisateurs ; Support lecture seule ; Direction lit l'audit ; XAF par défaut ; pas de suivi de paiement dans le CRM</td><td>Décisions et recommandations appliquées</td></tr>
+<tr><td>2026-10-20</td><td>—</td><td>Sprints d'une semaine maximum, menés par l'ingénieur et Claude</td><td>Décision de la direction produit</td></tr>
+</tbody></table></div>
+<h2>Next Actions</h2>
+<ul><li>[ ] Consulter <code>QUESTIONS-ET-DECISIONS.md</code> : registre des questions sensibles, décisions et questions ouvertes (§D)</li><li>[ ] Valider S2 (voir <code>SPRINT-2-RECETTE.md</code>) puis fusionner dans <code>main</code> — Ingénieur logiciel</li><li>[ ] <strong>S3.1</strong> : planifier le périmètre et la recette de l'authentification — ensemble</li><li>[ ] Fournir l'accès Microsoft 365 pour l'envoi d'e-mails (voir <code>SECURITY.md</code> §2.6) — avant S3.2, administrateur M365</li><li>[ ] Préciser les points sur l'agrément (voir <code>ARCHITECTURE.md</code>) — avant S4.4, métier</li><li>[ ] Valider avec le juridique la conservation de l'audit (10 ans) — avant la mise en production</li><li>[ ] Désigner au moins deux futurs SuperAdmin nominatifs — avant S3.2</li></ul>
+<h2>Périmètre v1 (Phase 8 — ce qu'on coupe)</h2>
+<ul><li><strong>Livré d'abord</strong> : Core (Auth, RBAC, Audit, Documents) puis Business Development, puis Investudy.</li><li><strong>Coupé de la v1</strong> : CQRS avec bus, event sourcing, broker de messages, cache, réplicas, microservices, paiement en ligne, portail externe (apprenants compris), application mobile, paie, suivi du paiement dans le CRM.</li><li><strong>Différé avec déclencheur</strong> : voir la table de Phase 3 dans ARCHITECTURE.md.</li><li><strong>Workflow générique</strong> : pas de moteur de workflow configurable en v1 ; les machines à états vivent dans les agrégats.</li></ul>
+<h2>Clôture Sprint 0</h2>
+<div class="table-wrap"><table><thead><tr><th>Critère</th><th>État</th></tr></thead><tbody>
+<tr><td>Vision produit</td><td><code>VISION.md</code></td></tr>
+<tr><td>Architecture métier (contextes, glossaire, agrégats)</td><td><code>ARCHITECTURE.md</code></td></tr>
+<tr><td>Contrat Clean Architecture (ASCII + Mermaid, règles, garde-fous)</td><td><code>ARCHITECTURE.md</code></td></tr>
+<tr><td>Données, charge, cohérence</td><td><code>ARCHITECTURE.md</code></td></tr>
+<tr><td>ADR</td><td><code>adr/0001</code>–<code>0006</code></td></tr>
+<tr><td>Risques</td><td><code>RISKS.md</code></td></tr>
+<tr><td>Fiabilité, tests, conventions</td><td><code>RELIABILITY.md</code>, <code>TESTING.md</code>, <code>TECH-DEBT.md</code></td></tr>
+<tr><td>Validation métier</td><td>✅ décisions du 2026-10-20 (reste : détails de l'agrément)</td></tr>
+</tbody></table></div>
+<h2>Décisions du 2026-10-21 (DEC-001 à DEC-006)</h2>
+<p>Ordre de réalisation retenu : <strong>Étape 0</strong> (validations, Microsoft 365, SuperAdmin, avis juridique) → <strong>H1</strong> → <strong>H2</strong> → <strong>S3.6</strong> → <strong>Cadrage UX</strong> → <strong>S4.1 à S4.4</strong> (+ Agenda S4.2b) → <strong>S5</strong> → <strong>S6</strong> (dont <strong>S6.3</strong> Reporting, incidents d'abord) → <strong>ST</strong> Stocks → <strong>S7</strong>. Détail et motifs : <code>design/05-AIDE-A-LA-DECISION.md</code>.</p>
+<h2>Cadrages décidés le 2026-10-21</h2>
+<p>Les 11 décisions de cadrage de H1, H2, S3.6 et du cadrage UX sont retenues (recommandations suivies) : voir <a href="cadrages/README.html">cadrages/README.md</a> et le registre (D19). <strong>Prochaine session : H1</strong> (branche <code>sprint/h1-habillage-hub</code>), avec essai isolé de Tailwind en premier.</p>
+<h2>Arbitrage API des entreprises, décidé le 2026-10-21 (D21)</h2>
+<p><strong>S4.1 s'élargit d'environ 0,5 session</strong> d'un lot « tableaux » défini en séance de <strong>cadrage UX</strong> : filtres (statut, « les miennes »), tri, compteurs par statut, nom du responsable via un port d'annuaire (noyau partagé, adaptateur Identité, sans route d'annuaire). <strong>Nouveau cadrage à prévoir</strong> après le cadrage UX : sécurité de l'<strong>export</strong> et de la <strong>réassignation</strong> (permission dédiée, step-up MFA, audit, volumes). Dernière activité et valeur estimée arrivent avec S4.2 et S4.3.</p></main></body></html>

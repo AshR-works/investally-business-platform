@@ -1,0 +1,35 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ADR-0005 — CRM séparé de l&#x27;ERP, CRM prioritaire</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="../INDEX.html">Index</a> · <a href="../GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="../ARCHITECTURE.html">Architecture</a> · <a href="../SECURITY.html">Sécurité</a> · <a href="../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="../TECH-DEBT.html">Dette</a> · <a href="../design/README.html">Design</a> · <a href="../livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>ADR-0005 — CRM séparé de l'ERP, CRM prioritaire</h1>
+<ul><li><strong>Statut</strong> : Proposé (2026-10-20, Sprint 1) — amende l'ADR-0001</li><li><strong>Décideurs</strong> : Direction produit, Tech Lead, Architecte</li></ul>
+<h2>Contexte</h2>
+<p>Décision produit : le CRM est la priorité et doit être séparé de l'ERP. Périmètre CRM confirmé : pipeline commercial <strong>et Investudy complet</strong> (programmes, sessions, salles, formateurs, apprenants, inscriptions, présences, évaluations, certifications). L'ERP regroupe Finance, RH, Fiscalité et le reporting de direction. Le niveau de séparation n'a pas été imposé ; l'option recommandée est retenue.</p>
+<h2>Décision</h2>
+<ol><li>Le dépôt reste un <strong>monorepo</strong> avec deux produits déployables indépendamment :</li><li><code>apps/crm-api</code> + <code>apps/crm-web</code> : <strong>CRM</strong> (livré en premier) ;</li><li><code>apps/erp-api</code> + <code>apps/erp-web</code> : <strong>ERP</strong> (créé plus tard, pas de squelette vide d'ici là).</li><li><strong>Une base PostgreSQL par produit</strong>, aucune lecture croisée. Les produits s'échangent des <strong>événements</strong> versionnés (contrats documentés), jamais de requêtes sur la base de l'autre.</li><li>Chaque produit reste un <strong>monolithe modulaire</strong> (ADR-0001 s'applique à l'intérieur de chaque produit) avec la même discipline Clean Architecture.</li><li><strong>Pas de paquets partagés tant que l'ERP n'existe pas.</strong> Le CRM embarque son propre IAM, son audit et ses documents. À la création de l'ERP, on extraira ce qui est réellement commun (<code>shared-kernel</code>, contrats d'événements, authentification) vers <code>packages/</code>, ou on introduira un fournisseur d'identité unique (SSO/OIDC). Pour que cette extraction reste peu coûteuse : jetons JWT standards, identifiants utilisateur en UUID, événements d'intégration définis comme contrats.</li><li>Frontière CRM → ERP : le CRM publie <code>EnrollmentConfirmed</code> (et autres faits utiles à la finance) via l'outbox. L'ERP les consommera plus tard ; d'ici là ils s'accumulent sans bloquer le CRM.</li></ol>
+<h2>Conséquences</h2>
+<ul><li>(+) Le CRM est livrable et utilisable seul, sans attendre Finance/RH/Fiscalité.</li><li>(+) Blast radius réduit : un incident ou un changement ERP n'affecte pas le CRM, et inversement ; droits d'accès à la base séparés (données RH et financières hors de portée du CRM).</li><li>(−) Duplication temporaire de l'IAM/audit (assumée, voir point 4).</li><li>(−) Cohérence éventuelle entre produits : les rapports de direction transversaux (vue 360°) viendront d'événements, pas de jointures.</li><li>(−) Deux pipelines de déploiement et de migrations à terme.</li><li>Le dashboard Direction « vue 360° » devient un cas d'intégration ERP ← CRM ; le CRM expose ses propres KPI.</li></ul>
+<h2>Alternatives rejetées</h2>
+<ul><li>Un seul déploiement avec priorité différente : ne répond pas à la demande de séparation.</li><li>Base partagée avec schémas séparés : séparation des droits et des migrations moins nette.</li><li>Deux dépôts / deux IAM totalement indépendants : duplication maximale et intégration plus coûteuse, injustifiée pour une seule équipe.</li></ul>
+<h2>À revoir si</h2>
+<p>Une équipe distincte prend l'ERP (alors extraire l'IAM en service dédié) ou si le volume d'événements justifie un broker (voir déclencheurs de la Phase 3).</p></main></body></html>

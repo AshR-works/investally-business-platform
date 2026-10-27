@@ -1,0 +1,49 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Protocole d&#x27;écoute avec un vrai lecteur d&#x27;écran</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="../INDEX.html">Index</a> · <a href="../GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="../ARCHITECTURE.html">Architecture</a> · <a href="../SECURITY.html">Sécurité</a> · <a href="../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="../TECH-DEBT.html">Dette</a> · <a href="../design/README.html">Design</a> · <a href="../livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>Protocole d'écoute avec un vrai lecteur d'écran</h1>
+<p><strong>Pourquoi ce document</strong> : l'audit automatique (<code>scripts/a11y-audit.mjs</code>) vérifie ce que le navigateur <em>expose</em> aux technologies d'assistance (rôles, noms, ordre, focus). Il <strong>ne remplace pas</strong> l'écoute réelle : seul un lecteur d'écran dit comment l'interface <em>sonne</em>. Cette écoute doit être faite par une personne (idéalement une personne qui utilise un lecteur d'écran au quotidien), sur une pile de <strong>test</strong> (base jetable, jamais la production).</p>
+<p><strong>Durée</strong> : environ 45 minutes. <strong>Outils</strong> : NVDA (Windows, gratuit) + Firefox ou Edge ; en complément Narrator (Windows) ; VoiceOver (macOS/iOS) et TalkBack (Android) si l'équipe a des appareils.</p>
+<h2>Préparation</h2>
+<ol><li>Lancer la pile de test (voir <code>docs/SPRINT-3.4-RECETTE.md</code>) avec <code>EMAIL_PROVIDER=log</code> et <code>EMAIL_LOG_CONTENT=true</code> (les liens sont lus dans le journal de l'API, aucun e-mail réel n'est envoyé).</li><li>Créer un SuperAdmin de test (<code>admin:create</code>, mot de passe fourni par variable d'environnement).</li><li>Écran éteint ou yeux fermés ; navigation <strong>au clavier et au lecteur d'écran uniquement</strong> (pas de souris).</li></ol>
+<h2>Scénarios (à cocher)</h2>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Scénario</th><th>Ce qui doit être entendu / constaté</th><th>OK</th></tr></thead><tbody>
+<tr><td>1</td><td>Ouvrir <code>/login</code></td><td>Titre de page « Connexion — Investally CRM » ; focus dans « Adresse e-mail » ; champs annoncés « obligatoire »</td><td>☐</td></tr>
+<tr><td>2</td><td>Soumettre un mauvais mot de passe</td><td>Le message d'erreur est <strong>annoncé spontanément</strong> sans déplacer le focus</td><td>☐</td></tr>
+<tr><td>3</td><td>« Mot de passe oublié ? » puis envoi</td><td>Le titre de page change ; confirmation annoncée (même texte pour toute adresse)</td><td>☐</td></tr>
+<tr><td>4</td><td>Connexion puis configuration MFA</td><td>Le QR code est décrit (alternative texte) <strong>et</strong> la clé manuelle est lisible lettre par lettre ; le champ code est annoncé comme code à usage unique</td><td>☐</td></tr>
+<tr><td>5</td><td>Saisir un faux code</td><td>Erreur annoncée ; le focus reste dans le champ</td><td>☐</td></tr>
+<tr><td>6</td><td>Codes de secours</td><td>Le groupe « Codes de secours » est lu en entier ; la case de confirmation est annoncée avec son état</td><td>☐</td></tr>
+<tr><td>7</td><td>Navigation principale</td><td>Repère « Navigation principale » ; le lien de la page courante est annoncé « page courante »</td><td>☐</td></tr>
+<tr><td>8</td><td>Page Entreprises : tableau</td><td>En-têtes de colonnes annoncés à chaque cellule ; ordre de lecture logique</td><td>☐</td></tr>
+<tr><td>9</td><td>Administration : « Inviter un utilisateur »</td><td>La fenêtre est annoncée (boîte de dialogue), <strong>le fond n'est plus lisible</strong>, Tab reste dans la fenêtre</td><td>☐</td></tr>
+<tr><td>10</td><td>Fermer par Échap</td><td>Le focus revient sur le bouton « Inviter un utilisateur »</td><td>☐</td></tr>
+<tr><td>11</td><td>Action sensible (désactiver un compte) puis demande de code MFA</td><td>La fenêtre de code est annoncée et utilisable ; le résultat est annoncé</td><td>☐</td></tr>
+<tr><td>12</td><td>Mon compte : tableau des sessions</td><td>La dernière colonne est annoncée « Actions »</td><td>☐</td></tr>
+<tr><td>13</td><td>Changer de page au clavier</td><td>Le nouveau titre de page est annoncé</td><td>☐</td></tr>
+<tr><td>14</td><td>Zoom 200 % et mode contraste élevé de Windows</td><td>Aucune perte d'information, aucun texte coupé</td><td>☐</td></tr>
+</tbody></table></div>
+<h2>Comment consigner</h2>
+<p>Pour chaque ligne non cochée : outil et version, ce qui a été entendu, ce qui était attendu, capture ou enregistrement audio si possible. Les écarts sont inscrits dans <code>docs/TECH-DEBT.md</code> (dette D31) ou corrigés dans un sprint dédié.</p>
+<h2>Limites assumées</h2>
+<ul><li>Chaque lecteur d'écran interprète le HTML un peu différemment (NVDA + Firefox, JAWS + Chrome, VoiceOver + Safari ne disent pas exactement la même chose). Un seul outil ne prouve pas la conformité pour tous.</li><li>Une conformité WCAG complète exige aussi un audit d'expert (contenus dynamiques, cas limites). L'audit automatique détecte une partie seulement des problèmes connus.</li></ul></main></body></html>

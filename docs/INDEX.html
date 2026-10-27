@@ -1,0 +1,79 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Documentation Investally : index</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="INDEX.html">Index</a> · <a href="GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="ARCHITECTURE.html">Architecture</a> · <a href="SECURITY.html">Sécurité</a> · <a href="METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="TECH-DEBT.html">Dette</a> · <a href="design/README.html">Design</a> · <a href="livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>Documentation Investally : index</h1>
+<p><em>Point d'entrée de toute la documentation. Chaque document existe en Markdown (source, versionné) et en page HTML (lecture, impression PDF). Régénération : <code>python scripts/md-to-html.py</code>.</em></p>
+<h2>Pour démarrer</h2>
+<div class="table-wrap"><table><thead><tr><th>Document</th><th>Contenu</th></tr></thead><tbody>
+<tr><td><a href="GUIDE-EXECUTION-LOCALE.html">Guide d'exécution locale</a></td><td>Lancer l'application sur votre poste, comptes de démonstration, scénarios</td></tr>
+<tr><td><a href="EXECUTION-LOCALE.html">Stratégie d'exécution</a></td><td>Options comparées, environnements, feuille de route</td></tr>
+<tr><td><a href="VISION.html">Vision</a></td><td>Produit, périmètre, priorités</td></tr>
+<tr><td><a href="livrables/05-ETAT-D-AVANCEMENT.html">État d'avancement</a></td><td>Où en est le projet</td></tr>
+<tr><td><a href="livrables/04-SUIVI-DES-SESSIONS.html">Suivi des sessions</a></td><td>Sessions livrées et validées</td></tr>
+</tbody></table></div>
+<h2>Décider</h2>
+<div class="table-wrap"><table><thead><tr><th>Document</th><th>Contenu</th></tr></thead><tbody>
+<tr><td><a href="METHODE-D-ARBITRAGE.html">Méthode d'arbitrage</a></td><td>Comment les décisions structurantes sont présentées</td></tr>
+<tr><td><a href="QUESTIONS-ET-DECISIONS.html">Questions et décisions</a></td><td>Registre des questions ouvertes et des décisions prises</td></tr>
+<tr><td><a href="TECH-DEBT.html">Dette technique</a></td><td>Dettes connues et leur échéance</td></tr>
+<tr><td><a href="RISKS.html">Risques</a></td><td>Registre des risques</td></tr>
+<tr><td><a href="cadrages/README.html">Cadrages</a></td><td>Cadrages de session et arbitrages</td></tr>
+</tbody></table></div>
+<h2>Architecture et sécurité</h2>
+<div class="table-wrap"><table><thead><tr><th>Document</th><th>Contenu</th></tr></thead><tbody>
+<tr><td><a href="ARCHITECTURE.html">Architecture</a></td><td>Monolithe modulaire, couches, règles de dépendance</td></tr>
+<tr><td><a href="DATA-MODEL.html">Modèle de données</a></td><td>Schémas et tables</td></tr>
+<tr><td><a href="SECURITY.html">Sécurité</a></td><td>Authentification, MFA, sessions, documents</td></tr>
+<tr><td><a href="RBAC.html">Droits (RBAC)</a></td><td>Rôles, permissions, portées</td></tr>
+<tr><td><a href="RELIABILITY.html">Fiabilité</a></td><td>Sauvegardes, reprise, audit</td></tr>
+<tr><td><a href="TESTING.html">Stratégie de tests</a></td><td>Pyramide de tests, règles d'architecture</td></tr>
+<tr><td><a href="DESIGN-CODE-ARCHITECTURE-PLAN.html">Plan conception, code, architecture</a></td><td>Plan de référence</td></tr>
+</tbody></table></div>
+<h2>Décisions d'architecture (ADR)</h2>
+<div class="table-wrap"><table><thead><tr><th>Document</th><th>Sujet</th></tr></thead><tbody>
+<tr><td><a href="adr/0001-modular-monolith.html">ADR-0001</a></td><td>Monolithe modulaire</td></tr>
+<tr><td><a href="adr/0002-prisma-in-infrastructure-only.html">ADR-0002</a></td><td>Prisma confiné à l'infrastructure</td></tr>
+<tr><td><a href="adr/0003-domain-model-separate-from-persistence.html">ADR-0003</a></td><td>Domaine distinct de la persistance</td></tr>
+<tr><td><a href="adr/0004-audit-strategy.html">ADR-0004</a></td><td>Stratégie d'audit</td></tr>
+<tr><td><a href="adr/0005-crm-erp-separation.html">ADR-0005</a></td><td>CRM séparé de l'ERP</td></tr>
+<tr><td><a href="adr/0006-access-and-security-decisions.html">ADR-0006</a></td><td>Décisions d'accès et de sécurité</td></tr>
+<tr><td><a href="adr/0007-stocks-module-autonome-heberge.html">ADR-0007</a></td><td>Module Stocks</td></tr>
+<tr><td><a href="adr/0008-stockage-des-documents-derriere-un-port.html">ADR-0008</a></td><td>Stockage des documents</td></tr>
+</tbody></table></div>
+<h2>Recettes par session</h2>
+<div class="table-wrap"><table><thead><tr><th>Document</th><th>Session</th></tr></thead><tbody>
+<tr><td><a href="SPRINT-1-RECETTE.html">Sprint 1</a></td><td>Tranche verticale entreprises</td></tr>
+<tr><td><a href="SPRINT-2-RECETTE.html">Sprint 2</a></td><td>Socle identité, documents, audit</td></tr>
+<tr><td><a href="SPRINT-3.1-RECETTE.html">S3.1</a>, <a href="SPRINT-3.2-RECETTE.html">S3.2</a>, <a href="SPRINT-3.3-RECETTE.html">S3.3</a>, <a href="SPRINT-3.4-RECETTE.html">S3.4</a>, <a href="SPRINT-3.5-RECETTE.html">S3.5</a></td><td>Authentification, MFA, invitations, sessions, réinitialisation</td></tr>
+<tr><td><a href="SPRINT-S3-6-RECETTE.html">S3.6</a></td><td>Documents</td></tr>
+<tr><td><a href="SPRINT-A11Y-1-RECETTE.html">A11Y-1</a></td><td>Accessibilité</td></tr>
+<tr><td><a href="SPRINT-H1-RECETTE.html">H1</a>, <a href="SPRINT-H2A-RECETTE.html">H2a</a>, <a href="SPRINT-H2B-RECETTE.html">H2b</a></td><td>Habillage, authentification et sessions</td></tr>
+</tbody></table></div>
+<h2>Design et livrables</h2>
+<div class="table-wrap"><table><thead><tr><th>Document</th><th>Contenu</th></tr></thead><tbody>
+<tr><td><a href="design/README.html">Design : mode d'emploi</a></td><td>Design system, spécifications, prototype, exigences</td></tr>
+<tr><td><a href="livrables/01-RECAPITULATIF-REALISATIONS.html">Récapitulatif des réalisations</a></td><td>Ce qui est livré</td></tr>
+<tr><td><a href="livrables/02-GUIDE-DU-CODE.html">Guide du code</a></td><td>Organisation du code</td></tr>
+<tr><td><a href="livrables/03-INDEX-DES-FONCTIONS.html">Index des fonctions</a></td><td>Fonctions et responsabilités</td></tr>
+<tr><td><a href="accessibilite/PROTOCOLE-LECTEUR-D-ECRAN.html">Protocole lecteur d'écran</a></td><td>Test d'accessibilité avec un lecteur d'écran</td></tr>
+</tbody></table></div></main></body></html>

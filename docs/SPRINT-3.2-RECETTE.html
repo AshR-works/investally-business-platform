@@ -1,0 +1,119 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Sprint 3.2 — MFA, e-mail Microsoft 365 et premier SuperAdmin (périmètre et plan de recette)</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="INDEX.html">Index</a> · <a href="GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="ARCHITECTURE.html">Architecture</a> · <a href="SECURITY.html">Sécurité</a> · <a href="METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="TECH-DEBT.html">Dette</a> · <a href="design/README.html">Design</a> · <a href="livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>Sprint 3.2 — MFA, e-mail Microsoft 365 et premier SuperAdmin (périmètre et plan de recette)</h1>
+<p>Durée : 1 semaine maximum. Statuts : ✅ vérifié · ⏳ à faire · ❌ échec · ➖ non applicable · ⚠ vérifié partiellement. Validé quand tous les « Bloquant » sont ✅ <strong>et</strong> que l'ingénieur logiciel l'a validé explicitement.</p>
+<h2>Périmètre</h2>
+<p><strong>Inclus</strong></p>
+<ul><li><strong>MFA TOTP</strong> (RFC 6238), obligatoire pour tous (ADR-0006) : enrôlement (secret, URI <code>otpauth</code>), confirmation, vérification à la connexion, <strong>step-up</strong> (MFA récent &lt; 10 min), <strong>10 codes de secours</strong> à usage unique, régénération, <strong>réinitialisation</strong> par un administrateur (cas d'usage ; l'API d'administration arrive en S3.3).</li><li><strong>Secret TOTP chiffré au repos</strong> (AES-256-GCM, clé hors base, lié à l'utilisateur), <strong>anti-rejeu</strong> d'un même code, <strong>anti-force brute</strong> sur les codes.</li><li><strong>Port <code>EmailSender</code></strong> + adaptateur <strong>Microsoft Graph</strong> + adaptateur « journal » (développement et test, aucun envoi réel).</li><li><strong>Création du premier SuperAdmin</strong> par une commande d'exploitation (aucun mot de passe par défaut).</li><li>Garde <code>RequireRecentMfa</code> prête pour S3.3.</li></ul>
+<p><strong>Exclus</strong> : OTP par e-mail et récupération en libre-service (la perte du téléphone passe par une réinitialisation par un SuperAdmin, décision ADR-0006) ; flux d'invitation et de réinitialisation de mot de passe par e-mail (S3.3) ; autorisation par permission (S3.3) ; pages web (S3.3).</p>
+<h2>⚠ Ce qui ne peut pas être vérifié ici</h2>
+<ul><li><strong>L'envoi réel via Microsoft 365</strong> : je n'ai ni locataire, ni application enregistrée, ni boîte d'expédition. L'adaptateur est testé contre un faux serveur (format des requêtes, jeton, erreurs) mais <strong>jamais contre le vrai service</strong>. À valider dès que les accès existent (voir <code>QUESTIONS-ET-DECISIONS.md</code> D9).</li><li><strong>La compatibilité avec une vraie application d'authentification</strong> (Microsoft Authenticator, Google Authenticator) : les codes sont validés contre les <strong>vecteurs de test officiels de la RFC 6238</strong>, mais je n'ai pas scanné de QR avec un téléphone. À faire lors de la recette humaine.</li></ul>
+<h2>Décisions techniques</h2>
+<div class="table-wrap"><table><thead><tr><th>Sujet</th><th>Choix</th><th>Raison</th></tr></thead><tbody>
+<tr><td>TOTP</td><td>Implémentation propre sur <code>node:crypto</code> (HMAC-SHA1, 6 chiffres, pas de 30 s, fenêtre ±1), validée par les vecteurs de la RFC 6238</td><td>≈ 30 lignes, aucune dépendance supplémentaire ; SHA-1 imposé par la compatibilité des applications d'authentification</td></tr>
+<tr><td>Chiffrement du secret</td><td>AES-256-GCM, IV aléatoire de 96 bits, <strong>AAD = identifiant utilisateur</strong> (un secret copié sur un autre compte est indéchiffrable)</td><td>Intégrité et liaison au compte</td></tr>
+<tr><td>Clé de chiffrement</td><td><code>MFA_ENCRYPTION_KEY</code> (32 octets en base64) ; <strong>obligatoire en production</strong> ; éphémère en développement et test</td><td>Jamais de clé dans le dépôt</td></tr>
+<tr><td>Anti-rejeu</td><td>Colonne <code>mfa_last_used_step</code> : un code ne peut servir qu'une fois, ni un pas antérieur</td><td>RFC 6238 §5.2</td></tr>
+<tr><td>Force brute MFA</td><td>Les échecs MFA comptent dans le même compteur et le même verrouillage progressif que les échecs de mot de passe + limitation 5/min sur la vérification</td><td>Un attaquant qui connaît le mot de passe ne peut pas deviner les codes</td></tr>
+<tr><td>Codes de secours</td><td>10 codes de 10 caractères (alphabet sans ambiguïté, ≈ 50 bits), hachés argon2id, consommés atomiquement</td><td>Récupération sans téléphone, sans second canal faible</td></tr>
+<tr><td>Step-up</td><td><code>mfa_verified_at</code> sur la session ; fraîcheur maximale 10 min</td><td>SECURITY.md §2.3</td></tr>
+<tr><td>Perte du téléphone</td><td>Réinitialisation par un SuperAdmin (révoque toutes les sessions, supprime secret et codes)</td><td>ADR-0006 ; pas d'OTP e-mail en S3.2</td></tr>
+</tbody></table></div>
+<h2>Migration (0003)</h2>
+<p><code>iam.users.mfa_last_used_step BIGINT</code> · <code>iam.user_sessions.mfa_verified_at TIMESTAMPTZ</code>. Aucune donnée existante modifiée.</p>
+<h2>A. Domaine (sans base)</h2>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Contrôle</th><th>Bloquant</th><th>Statut</th></tr></thead><tbody>
+<tr><td>A1</td><td>Base32 (RFC 4648) : aller-retour, rejet des caractères invalides</td><td>oui</td><td>✅ vecteurs officiels RFC 4648 §10 (7) ; caractères invalides rejetés</td></tr>
+<tr><td>A2</td><td>TOTP conforme aux <strong>vecteurs officiels de la RFC 6238</strong> (SHA-1, 6 chiffres) ; fenêtre ±1 ; refus hors fenêtre ; zéros initiaux conservés</td><td>oui</td><td>✅ vecteurs officiels RFC 6238 (6 instants, 8 chiffres) et RFC 4226 (10 compteurs) ; fenêtre ±1 ; zéros initiaux conservés ; 61 tests</td></tr>
+<tr><td>A3</td><td>Anti-rejeu : un code déjà utilisé, ou d'un pas antérieur, est refusé</td><td>oui</td><td>✅ même pas et pas antérieur refusés, pas postérieur accepté</td></tr>
+<tr><td>A4</td><td>Utilisateur : enrôlement en attente ≠ activé ; réinitialisation ; échecs MFA verrouillent comme les échecs de mot de passe</td><td>oui</td><td>✅ 13 tests (enrôlement en attente, confirmation, réinitialisation, compteur d'échecs partagé avec le mot de passe)</td></tr>
+<tr><td>A5</td><td>Session : MFA vérifié horodaté ; fraîcheur du step-up (frontière à 10 min)</td><td>oui</td><td>✅ frontière exacte à 10 min ; horodatage futur jamais « récent »</td></tr>
+<tr><td>A6</td><td>Codes de secours : format, unicité, normalisation de la saisie (casse, tirets, espaces)</td><td>oui</td><td>✅ alphabet sans ambiguïté, normalisation, saisies impossibles rejetées</td></tr>
+</tbody></table></div>
+<h2>B. Application (faux en mémoire)</h2>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Contrôle</th><th>Bloquant</th><th>Statut</th></tr></thead><tbody>
+<tr><td>B1</td><td>Enrôlement : secret chiffré stocké, URI otpauth correcte, <strong>le secret n'apparaît jamais dans l'audit</strong></td><td>oui</td><td>✅ secret chiffré lié à l'utilisateur, absent de l'audit</td></tr>
+<tr><td>B2</td><td>Confirmation : bon code → MFA activé + 10 codes de secours (affichés une seule fois) + session vérifiée ; mauvais code → refus, MFA non activé</td><td>oui</td><td>✅ 10 codes distincts, jeton <code>pwd+otp</code> ; mauvais code : MFA inactif, échec compté</td></tr>
+<tr><td>B3</td><td>Connexion d'un compte MFA : <code>mfaEnrolled</code>, session non vérifiée ; la vérification ajoute <code>otp</code> au jeton</td><td>oui</td><td>✅ l'ancien jeton (mot de passe seul) reste non vérifié</td></tr>
+<tr><td>B4</td><td>Vérification : rejeu refusé ; code faux compté et verrouillant après 5 échecs ; message générique</td><td>oui</td><td>✅ rejeu, verrouillage au 5e échec partagé avec le mot de passe, formats absurdes</td></tr>
+<tr><td>B5</td><td>Code de secours : valable une fois, consommé atomiquement, audit ; déjà utilisé refusé</td><td>oui</td><td>✅ casse/tirets/espaces acceptés ; un code ne sert qu'une fois ; calcul factice sur saisie impossible</td></tr>
+<tr><td>B6</td><td>Step-up : met à jour l'horodatage ; la garde refuse au-delà de 10 min</td><td>oui</td><td>✅ 9 min fraîche, 11 min vérifiée mais plus fraîche, step-up la rafraîchit</td></tr>
+<tr><td>B7</td><td>Régénération des codes : exige un step-up ; anciens codes invalidés</td><td>oui</td><td>✅ MFA_STEP_UP_REQUIRED au-delà de 10 min ; anciens codes invalides</td></tr>
+<tr><td>B8</td><td>Réinitialisation par admin : secret et codes supprimés, toutes les sessions révoquées, audit <code>MFA_CHANGE</code></td><td>oui</td><td>✅ 2 sessions révoquées, secret et codes supprimés, ancien code inutilisable, réenrôlement possible</td></tr>
+<tr><td>B9</td><td>Un utilisateur ne peut pas désactiver son propre MFA (obligatoire)</td><td>oui</td><td>✅ auto-réinitialisation interdite ; remplacement d'un MFA actif refusé (409)</td></tr>
+</tbody></table></div>
+<h2>C. Infrastructure et base (PostgreSQL jetable)</h2>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Contrôle</th><th>Bloquant</th><th>Statut</th></tr></thead><tbody>
+<tr><td>C1</td><td>Migration 0003 s'applique ; migration depuis une base déjà remplie (S1 → S3.2)</td><td>oui</td><td>✅ migration S3.2 appliquée sur base remplie (40 lignes d'audit, 1 utilisateur, 1 session conservés à l'identique) ; migration S1→S2 toujours préservée</td></tr>
+<tr><td>C2</td><td>AES-256-GCM : aller-retour ; <strong>liaison à l'utilisateur</strong> (déchiffrement refusé avec un autre identifiant) ; altération détectée ; deux chiffrements du même secret diffèrent</td><td>oui</td><td>✅ 11 tests : liaison à l'utilisateur, altération de chiffré/étiquette/IV, mauvaise clé, format, clé éphémère, refus en production sans clé</td></tr>
+<tr><td>C3</td><td>Le secret TOTP n'est <strong>jamais</strong> en clair en base ni dans l'audit ni dans les journaux</td><td>oui</td><td>✅ vérifié en base, dans l'audit, les tentatives, les sessions ET sur un serveur réel (journal serveur : 0 occurrence du secret et du code)</td></tr>
+<tr><td>C4</td><td>Consommation d'un code de secours : deux requêtes simultanées, une seule réussit</td><td>oui</td><td>✅ deux consommations directes : une seule vraie ; même code de secours depuis deux sessions : une seule réussit (vérifié par mutation)</td></tr>
+<tr><td>C5</td><td>Rejeu concurrent d'un même code TOTP : une seule requête réussit</td><td>oui</td><td>✅ même code TOTP depuis deux sessions simultanées : une seule réussit ; 12 vérifications fausses parallèles : aucun échec perdu (vérifié par mutation)</td></tr>
+<tr><td>C6</td><td>Création du premier SuperAdmin : rôle SUPER_ADMIN, mot de passe jamais affiché ni stocké en clair</td><td>oui</td><td>✅ test + <strong>vraie commande</strong> sur le build compilé : refuse mot de passe en argument, sans mot de passe, faible, doublon ; création réussie</td></tr>
+</tbody></table></div>
+<h2>D. Microsoft 365 (contre un faux serveur)</h2>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Contrôle</th><th>Bloquant</th><th>Statut</th></tr></thead><tbody>
+<tr><td>D1</td><td>Jeton d'application (client credentials) : requête conforme, mise en cache jusqu'à expiration (− marge)</td><td>oui</td><td>✅ jeton client credentials conforme, mis en cache, renouvelé 2 min avant l'expiration</td></tr>
+<tr><td>D2</td><td><code>sendMail</code> : corps conforme (destinataire, sujet, contenu), réponse 202 attendue</td><td>oui</td><td>✅ corps conforme (texte et HTML), <code>saveToSentItems:false</code>, 202 exigé</td></tr>
+<tr><td>D3</td><td>Jeton rejeté (401) : un seul nouvel essai, puis erreur</td><td>oui</td><td>✅ un seul nouvel essai, pas de boucle</td></tr>
+<tr><td>D4</td><td>Erreurs : le secret client et le jeton n'apparaissent jamais dans les messages ni les journaux</td><td>oui</td><td>✅ 5 scénarios d'échec : ni secret client, ni jeton, ni contenu du message dans les journaux</td></tr>
+<tr><td>D5</td><td>Injection d'en-têtes : adresse ou sujet contenant CR/LF refusés</td><td>oui</td><td>✅ 13 messages invalides (CR/LF, adresses multiples, nom affiché…) refusés sans appel réseau ; expéditeur encodé dans l'URL</td></tr>
+<tr><td>D6</td><td>Délai d'attente borné</td><td>oui</td><td>✅ chaque appel porte un AbortSignal ; délai dépassé : UNAVAILABLE</td></tr>
+<tr><td>D7</td><td>Adaptateur journal : n'envoie rien, ne journalise pas le contenu des messages</td><td>oui</td><td>✅ n'envoie rien, aucun contenu ni adresse complète dans les journaux, mémoire bornée à 50</td></tr>
+<tr><td>D8</td><td><strong>Envoi réel vers Microsoft 365</strong></td><td>non</td><td>➖ accès non disponibles</td></tr>
+</tbody></table></div>
+<h2>E. HTTP de bout en bout</h2>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Contrôle</th><th>Bloquant</th><th>Statut</th></tr></thead><tbody>
+<tr><td>E1</td><td>Parcours complet : connexion → enrôlement → confirmation → déconnexion → connexion → vérification TOTP → <code>amr = [pwd, otp]</code></td><td>oui</td><td>✅ parcours complet sur HTTP avec de vrais codes TOTP ; secret jamais renvoyé ailleurs qu'à l'enrôlement</td></tr>
+<tr><td>E2</td><td>Code erroné : 401 générique ; 6e tentative en 1 min : 429</td><td>oui</td><td>✅ 401 générique, 429 + Retry-After à la 6e tentative ; limite par session (un collègue de la même IP n'est pas bloqué)</td></tr>
+<tr><td>E3</td><td>Code de secours via HTTP ; régénération avec step-up</td><td>oui</td><td>✅ code de secours via HTTP ; MFA_REQUIRED / MFA_STEP_UP_REQUIRED / succès après step-up</td></tr>
+<tr><td>E4</td><td>Sans jeton : 401 sur toutes les routes MFA</td><td>oui</td><td>✅ 4 routes × (sans jeton, jeton falsifié)</td></tr>
+<tr><td>E5</td><td>Contrôle d'origine (CSRF) sur les routes MFA</td><td>oui</td><td>✅ 4 routes refusées depuis une origine inconnue ; origine autorisée acceptée</td></tr>
+</tbody></table></div>
+<h2>F. Qualité</h2>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Contrôle</th><th>Bloquant</th><th>Statut</th></tr></thead><tbody>
+<tr><td>F1</td><td>Types ; règles d'architecture ; tests S1, S2, S3.1 toujours verts</td><td>oui</td><td>✅ types propres ; 110 modules, 367 dépendances, 0 violation ; <strong>277 unitaires + 91 intégration</strong> (S1, S2, S3.1 inclus)</td></tr>
+<tr><td>F2</td><td>Build de production : refuse de démarrer sans <code>MFA_ENCRYPTION_KEY</code> ni fournisseur e-mail valide</td><td>oui</td><td>✅ 5 refus réels (clé MFA absente ou de mauvaise taille, e-mail absent/« log », Microsoft 365 incomplet) ; production complète : démarre en 2 s, Swagger 404</td></tr>
+<tr><td>F3</td><td><code>pnpm audit --prod</code> : aucune vulnérabilité haute</td><td>non</td><td>✅ 0 haute ; 1 moyenne (js-yaml via Swagger, dette D6)</td></tr>
+<tr><td>F4</td><td>Revue de sécurité du code MFA (secret jamais journalisé, comparaisons en temps constant, aléa cryptographique)</td><td>oui</td><td>✅ voir « Revue de sécurité »</td></tr>
+</tbody></table></div>
+<h2>Revue de sécurité (F4)</h2>
+<div class="table-wrap"><table><thead><tr><th>Point</th><th>Constat</th></tr></thead><tbody>
+<tr><td>Secret TOTP</td><td>Généré par <code>crypto.randomBytes</code> (160 bits) ; chiffré AES-256-GCM avec l'identifiant de l'utilisateur comme donnée authentifiée ; en clair uniquement dans la réponse de démarrage d'enrôlement ; jamais en base, audit, tentatives, sessions ni journaux (vérifié sur serveur réel)</td></tr>
+<tr><td>Codes de secours</td><td><code>crypto.randomInt</code> (pas de biais) ; 50 bits ; hachés argon2id ; consommés atomiquement ; jamais dans l'audit</td></tr>
+<tr><td>Comparaisons</td><td>Codes TOTP : <code>timingSafeEqual</code> sur tous les pas de la fenêtre (pas de sortie anticipée) ; codes de secours : <code>argon2.verify</code></td></tr>
+<tr><td>Aléa</td><td>Aucun <code>Math.random</code></td></tr>
+<tr><td>Journaux</td><td>Aucun secret, code ni contenu d'e-mail ; la commande d'administration n'affiche jamais le mot de passe ; <code>seed:core</code> n'affiche plus que le message d'erreur (corrigé pendant la revue)</td></tr>
+<tr><td>SQL brut</td><td>Deux <code>SELECT … FOR UPDATE</code> en <em>tagged template</em> paramétré</td></tr>
+<tr><td>Énumération et timing</td><td>Même message « Code invalide » pour code faux, format invalide, verrouillage ; calcul factice quand la saisie ne peut pas être un code de secours</td></tr>
+<tr><td>Mot de passe de la commande</td><td>Jamais en argument (refusé explicitement) ; variable d'environnement ou saisie masquée ; aucun défaut</td></tr>
+</tbody></table></div>
+<h2>Défauts trouvés et corrigés pendant le sprint</h2>
+<ol><li><strong>Tests aléatoires que j'avais écrits</strong> : deux tests supposaient que le pas de temps TOTP ne change pas pendant leur exécution (environ 1 à 3 % d'échecs au passage d'une frontière de 30 s). Rendus déterministes (pas lu en base, pas calculé une seule fois).</li><li><strong>Arithmétique de test fausse</strong> sur la marge du cache de jeton Microsoft (le code était juste).</li><li><strong>Mot de passe d'exemple refusé à raison</strong> par la politique (il contenait un mot du nom affiché) : le test a été corrigé, pas la règle.</li><li><strong>Caractères de séparation de ligne Unicode littéraux</strong> introduits dans un fichier source par mon outil d'écriture (U+2028), qui cassaient l'analyse d'une expression régulière : remplacés par des séquences d'échappement.</li><li><strong>Affichage d'erreur complet dans <code>seed:core</code></strong> (pouvait contenir des valeurs de requête) : limité au message.</li><li><strong>Script de mise à niveau</strong> : testait seulement S1→S2 ; généralisé (toutes les migrations précédentes, données IAM incluses).</li></ol>
+<h2>Vérification par mutation</h2>
+<p>Retrait temporaire du verrou de ligne et de l'atomicité de la consommation des codes de secours : les tests « 12 vérifications parallèles » et « consommation atomique » <strong>échouent</strong>, donc ils détectent bien le défaut. Les tests de course « de bout en bout » (même code depuis deux sessions) restent verts sous cette mutation parce que le <strong>verrou optimiste</strong> (<code>version</code> de l'utilisateur) forme une seconde défense : sans le verrou de ligne, la requête perdante échoue avec un conflit au lieu d'un refus propre. Défense en profondeur confirmée, rien à corriger.</p>
+<h2>Limites connues (à décider ou à traiter)</h2>
+<ul><li><strong>Première inscription au MFA protégée par le seul mot de passe</strong> (« confiance à la première utilisation ») : quelqu'un qui connaît le mot de passe d'un compte <strong>jamais enrôlé</strong> peut y enrôler son propre appareil avant le vrai titulaire ; celui-ci verra alors son MFA déjà actif, ne pourra pas se connecter, et devra demander une réinitialisation. Atténuation prévue : en S3.3, l'enrôlement sera lié à un lien d'invitation envoyé par e-mail. D'ici là : l'administrateur enrôle immédiatement après la création du compte.</li><li><strong>Microsoft 365 jamais testé en réel</strong> (voir plus haut) ; une seule tentative après un 401 ; pas d'outbox ni de disjoncteur (dette D11).</li><li><strong>Compatibilité avec une vraie application d'authentification non vérifiée</strong> : codes conformes aux vecteurs RFC, QR jamais scanné.</li><li><strong>Pas de récupération en libre-service</strong> : la perte du téléphone passe par un SuperAdmin (décision ADR-0006) ; l'API d'administration (<code>iam.user.reset_mfa</code>) arrive en S3.3, le cas d'usage existe déjà.</li><li><strong>Une seule clé de chiffrement MFA</strong> active (rotation en S7, dette D12) ; la perdre rend tous les secrets inutilisables (tous les utilisateurs devraient se réenrôler) : à sauvegarder dans un coffre.</li><li><strong>Limitation de débit MFA en mémoire</strong>, valable pour une seule instance (dette D8) ; l'identifiant de session y est lu <strong>sans vérifier la signature</strong> (documenté : sert uniquement de clé).</li><li><strong>SHA-1</strong> dans le TOTP : imposé par la compatibilité des applications d'authentification (RFC 6238), sans faiblesse pratique pour ce usage.</li><li>Les endpoints métier restent <strong>sans authentification</strong> jusqu'à S3.3 : <strong>ne pas exposer l'API</strong>.</li></ul>
+<h2>Décision de validation</h2>
+<p>Tous les contrôles bloquants sont ✅. <strong>Reste la validation explicite de l'ingénieur logiciel</strong> avant fusion dans <code>main</code> et tag <code>s3-2-validated</code>. Vérification humaine recommandée avec un vrai téléphone (Microsoft Authenticator) lors de la recette utilisateur de S3.3.</p></main></body></html>
