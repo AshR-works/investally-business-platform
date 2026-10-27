@@ -1,0 +1,46 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>S3.7 — UX de l&#x27;authentification : recette</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="INDEX.html">Index</a> · <a href="GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="ARCHITECTURE.html">Architecture</a> · <a href="SECURITY.html">Sécurité</a> · <a href="METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="TECH-DEBT.html">Dette</a> · <a href="design/README.html">Design</a> · <a href="livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>S3.7 — UX de l'authentification : recette</h1>
+<p><em>Branche <code>sprint/s3-7-ux-authentification</code> · 2026-10-22 · issu des retours de tests locaux UX-01, UX-03 et UX-04 (cadrage : <code>docs/cadrages/CADRAGE-RETOURS-TESTS-UX-01-A-04.md</code>, décisions D23 et DDR-0010). <strong>UX-02 (rôles et permissions) n'est pas dans ce lot</strong> : option B+C retenue, lot distinct.</em></p>
+<h2>Ce qui est livré</h2>
+<div class="table-wrap"><table><thead><tr><th>Retour</th><th>Livré</th></tr></thead><tbody>
+<tr><td><strong>UX-01</strong> Afficher / masquer le mot de passe</td><td>Composant unique <code>PasswordField</code> (œil en pictogramme seul, bascule annoncée <code>aria-pressed</code>). <strong>6 champs sur 4 écrans</strong> : Connexion (1), Réinitialisation du mot de passe (2), Activation d'une invitation (2, même composant), Mon compte « Changer le mot de passe » (3 champs : actuel, nouveau, confirmation). Remasquage automatique : à l'envoi du formulaire, quand l'onglet n'est plus visible, après 30 s. Correction orthographique coupée. Icône « œil » native d'Edge masquée (sinon doublon)</td></tr>
+<tr><td><strong>UX-03</strong> Confirmation avant régénération</td><td>Fenêtre <code>ConfirmDialog</code> « Remplacer vos codes de secours ? » : codes actuels invalidés immédiatement, action irréversible, nouveaux codes affichés une seule fois. <strong>Focus initial sur « Annuler »</strong>, Échap annule, bouton rouge « Remplacer mes codes ». Le MFA récent est ensuite demandé comme avant</td></tr>
+<tr><td><strong>UX-04</strong> Codes de secours à affichage unique</td><td>Composant <code>SecretCodesPanel</code> partagé par l'activation MFA et Mon compte : <strong>Copier</strong>, <strong>Télécharger (.txt)</strong>, <strong>Imprimer ou enregistrer en PDF</strong> (feuille imprimée sans nom ni e-mail). Case « J'ai conservé ces codes » ; garde de sortie (fermeture, rechargement, <strong>liens internes</strong>) tant qu'elle n'est pas cochée ; bouton « Terminer » qui efface les codes de la mémoire. Sur Mon compte, la copie, l'export et la garde de sortie <strong>n'existaient pas</strong></td></tr>
+</tbody></table></div>
+<p>Sans changement d'API ni de base : tout est dans l'interface (<code>apps/crm-web</code>).</p>
+<h2>Preuves</h2>
+<div class="table-wrap"><table><thead><tr><th>Contrôle</th><th>Résultat</th></tr></thead><tbody>
+<tr><td>Types (<code>tsc</code>)</td><td>0 erreur</td></tr>
+<tr><td>Tests de l'interface</td><td><strong>81 / 81</strong> (dont 16 nouveaux : fichier des codes, uniformité du champ mot de passe, confirmation, affichage unique)</td></tr>
+<tr><td>Uniformité</td><td>Un test échoue si un écran déclare <code>type="password"</code> en dehors de <code>PasswordField</code></td></tr>
+<tr><td>Navigateur réel (Edge, protocole DevTools), 24 vérifications de comportement</td><td>masqué par défaut ; un seul bouton œil ; 1er clic visible et annoncé « activé » ; valeur conservée ; correction orthographique coupée ; 2e clic masqué ; remasquage à l'envoi ; 3 champs et 3 yeux sur Mon compte ; confirmation avec ses 3 messages ; focus sur Annuler ; aucun code avant confirmation ; Échap annule ; au moins 8 codes ; 3 actions présentes ; téléchargement annoncé ; <strong>impression : seule la feuille de codes reste visible, sans e-mail</strong> ; garde de sortie sur lien interne ; « Rester » conserve les codes ; « Terminer » les efface ; <strong>aucun code dans le stockage du navigateur</strong></td></tr>
+<tr><td>Audit d'accessibilité (axe-core + arbre)</td><td><strong>43 états, 0 violation</strong> (39 avant ; 4 nouveaux : œil activé, confirmation de régénération, nouveaux codes, garde de sortie) ; <strong>0</strong> violation de politique de contenu</td></tr>
+<tr><td>Captures</td><td><code>docs/accessibilite/s37-captures/</code> · résultats : <code>docs/accessibilite/resultats/axe-2026-10-22-s37.json</code></td></tr>
+</tbody></table></div>
+<p><strong>À vérifier à la main (6)</strong> : axe ne détermine pas le fond du paragraphe des fenêtres (2 nouvelles : confirmation de régénération et garde de sortie, même cas que les 4 précédentes). Contrôle manuel : texte <code>#1D1D1B</code> sur fond blanc (≈ 17 : 1), même jeton que partout.</p>
+<h2>Limites et dette</h2>
+<ul><li><strong>D46</strong> PDF par impression navigateur (pas un téléchargement en un clic) ; générateur interne possible sur demande.</li><li><strong>D47</strong> la garde de sortie ne couvre pas le bouton « Précédent » du navigateur ni la déconnexion.</li><li><strong>D48</strong> e-mail d'information après régénération : dépend de Microsoft 365 (S7).</li><li><strong>D49</strong> prototype de design non mis à jour (œil, fenêtre <code>danger</code>, panneau des codes) : version 0.5.0.</li><li>L'écoute avec un vrai lecteur d'écran (D31) doit couvrir ces écrans (bouton à bascule, fenêtre de confirmation, panneau des codes).</li><li>Non testé : la copie dans le presse-papiers réelle (le navigateur sans fenêtre l'interdit) ; le téléchargement réel du fichier ; l'ouverture de la boîte d'impression.</li></ul>
+<h2>À valider</h2>
+<ol><li>Les textes de la fenêtre de confirmation et du panneau des codes (modifiables en un endroit).</li><li>« Je valide S3.7 » → fusion <code>--no-ff</code> dans <code>main</code> et étiquette <code>s3-7-validated</code>.</li></ol></main></body></html>
