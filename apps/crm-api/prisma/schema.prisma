@@ -38,15 +38,73 @@ model Company {
   ownerUserId String?     @map("owner_user_id") @db.Uuid
   sector    String?       @db.VarChar(100)
   country   String?       @db.VarChar(100)
+  email     String?       @db.VarChar(200)
+  phone     String?       @db.VarChar(40)
   /// Verrou optimiste.
   version   Int           @default(1)
   createdAt DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt DateTime      @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt DateTime?     @map("deleted_at") @db.Timestamptz(6)
+  facilitation CompanyFacilitation?
 
   @@index([status])
   @@index([ownerUserId])
   @@map("companies")
+  @@schema("bd")
+}
+
+enum ContactMethod {
+  WHATSAPP_MESSAGE
+  PHONE_CALL
+  EMAIL
+  MEETING
+  OTHER
+
+  @@schema("bd")
+}
+
+enum CommissionType {
+  FIXED
+  PERCENT
+
+  @@schema("bd")
+}
+
+/// Facilitateur : personne qui met en relation avec une entreprise (peut en être un employé). Réutilisable.
+model Facilitator {
+  id          String    @id @db.Uuid
+  lastName    String    @map("last_name") @db.VarChar(100)
+  firstName   String    @map("first_name") @db.VarChar(100)
+  phone       String    @db.VarChar(40)
+  comment     String?   @db.VarChar(2000)
+  /// Créateur (référence inter-contextes, SANS clé étrangère) : détermine la portée des droits.
+  ownerUserId String    @map("owner_user_id") @db.Uuid
+  version     Int       @default(1)
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt   DateTime? @map("deleted_at") @db.Timestamptz(6)
+  facilitations CompanyFacilitation[]
+
+  @@index([ownerUserId])
+  @@map("facilitators")
+  @@schema("bd")
+}
+
+/// Lien entreprise ↔ facilitateur : méthode de contact, appartenance à l'entreprise, commission (cohérence en SQL).
+model CompanyFacilitation {
+  companyId          String          @id @map("company_id") @db.Uuid
+  facilitatorId      String          @map("facilitator_id") @db.Uuid
+  contactMethod      ContactMethod   @map("contact_method")
+  isCompanyEmployee  Boolean         @default(false) @map("is_company_employee")
+  commissionType     CommissionType? @map("commission_type")
+  commissionValue    Decimal?        @map("commission_value") @db.Decimal(12, 2)
+  commissionCurrency String?         @map("commission_currency") @db.Char(3)
+  createdAt          DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
+  company            Company         @relation(fields: [companyId], references: [id])
+  facilitator        Facilitator     @relation(fields: [facilitatorId], references: [id])
+
+  @@index([facilitatorId])
+  @@map("company_facilitations")
   @@schema("bd")
 }
 

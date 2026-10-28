@@ -2,6 +2,7 @@
 
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { FacilitationPanel } from '../../../../components/companies/facilitation-panel';
 import { Badge } from '../../../../components/data/badge';
 import { Card } from '../../../../components/data/card';
 import { PageHeader } from '../../../../components/data/page-header';
@@ -47,9 +48,12 @@ export default function CompanyPage() {
           <div><dt className="text-xs font-semibold text-ink-2">Statut</dt><dd className="m-0 mt-1"><Badge tone={status.tone}>{status.label}</Badge></dd></div>
           <div><dt className="text-xs font-semibold text-ink-2">Secteur</dt><dd className="m-0 mt-1">{company.sector ?? '—'}</dd></div>
           <div><dt className="text-xs font-semibold text-ink-2">Pays</dt><dd className="m-0 mt-1">{company.country ?? '—'}</dd></div>
+          <div><dt className="text-xs font-semibold text-ink-2">E-mail</dt><dd className="m-0 mt-1">{company.email ?? '—'}</dd></div>
+          <div><dt className="text-xs font-semibold text-ink-2">Téléphone</dt><dd className="m-0 mt-1">{company.phone ?? '—'}</dd></div>
           <div><dt className="text-xs font-semibold text-ink-2">Créée le</dt><dd className="m-0 mt-1">{formatDate(company.createdAt)}</dd></div>
         </dl>
       </Card>
+      <FacilitationPanel facilitation={company.facilitation} />
       {can(profile, 'docs.document.read') && <DocumentsPanel ownerType="company" ownerId={company.id} />}
     </>
   );

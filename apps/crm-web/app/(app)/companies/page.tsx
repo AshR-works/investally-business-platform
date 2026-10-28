@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { FormEvent, useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { CreateCompanyDialog } from '../../../components/companies/create-company-dialog';
 import { Badge } from '../../../components/data/badge';
 import { Card } from '../../../components/data/card';
 import { DataTable, type Column } from '../../../components/data/data-table';
@@ -11,7 +12,6 @@ import { Pagination } from '../../../components/data/pagination';
 import { SelectionBar } from '../../../components/data/selection-bar';
 import { SearchField, Toolbar } from '../../../components/data/toolbar';
 import { Icon } from '../../../components/icon';
-import { Modal } from '../../../components/modal';
 import { PageHeading } from '../../../components/page-heading';
 import { api, ApiError } from '../../../lib/api';
 import { useAuth } from '../../../lib/auth-context';
@@ -129,42 +129,5 @@ export default function CompaniesPage() {
         />
       )}
     </>
-  );
-}
-
-/** Fenêtre de création : le nom est la seule donnée obligatoire (le propriétaire est l'utilisateur connecté, décidé côté serveur). */
-function CreateCompanyDialog({ onClose, onCreated }: { onClose: () => void; onCreated: () => Promise<void> }) {
-  const [name, setName] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
-
-  /** Enregistre l'entreprise saisie ; en cas d'échec le message de l'API s'affiche dans la fenêtre. */
-  async function submit(event: FormEvent) {
-    event.preventDefault();
-    setError(null);
-    setBusy(true);
-    try {
-      await api('/companies', { method: 'POST', body: { name: name.trim() } });
-      await onCreated();
-    } catch (e) {
-      setError(e instanceof ApiError ? e.message : "Échec de l'enregistrement");
-      setBusy(false);
-    }
-  }
-
-  return (
-    <Modal title="Nouvelle entreprise" onClose={onClose}>
-      <form onSubmit={submit}>
-        <label>
-          Nom de l&apos;entreprise
-          <input value={name} onChange={(e) => setName(e.target.value)} maxLength={200} required />
-        </label>
-        {error && <p role="alert" className="error">{error}</p>}
-        <div className="row end">
-          <button type="button" className="secondary" onClick={onClose}>Annuler</button>
-          <button type="submit" disabled={busy || name.trim().length === 0}>Enregistrer</button>
-        </div>
-      </form>
-    </Modal>
   );
 }

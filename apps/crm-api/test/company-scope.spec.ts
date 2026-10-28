@@ -8,6 +8,7 @@ import { visibilityFor } from '../src/modules/iam';
 import { RoleCode } from '../src/modules/iam/domain/roles';
 import { Page } from '../src/shared-kernel';
 import { buildIamWorld } from './support/iam-world';
+import { InMemoryFacilitators } from './support/in-memory-facilitators';
 
 class InMemoryCompanies implements CompanyRepository {
   readonly items: Company[] = [];
@@ -24,7 +25,7 @@ class InMemoryCompanies implements CompanyRepository {
 
 const now = new Date('2026-10-20T10:00:00Z');
 const company = (id: string, owner: string | null) =>
-  Company.rehydrate({ id, name: CompanyName.of(`Société ${id}`), status: CompanyStatus.Target, ownerUserId: owner, sector: null, country: null, createdAt: now, version: 1 });
+  Company.rehydrate({ id, name: CompanyName.of(`Société ${id}`), status: CompanyStatus.Target, ownerUserId: owner, sector: null, country: null, email: null, phone: null, facilitation: null, createdAt: now, version: 1 });
 
 /**
  * Hiérarchie :   hos ─┬─ am1 ── intern      (am1 est aussi chargé de compte)
@@ -45,7 +46,7 @@ async function scenario() {
   for (const [id, owner] of [['hos', hos.id], ['am1', am1.id], ['am2', am2.id], ['intern', intern.id], ['legacy', null]] as const) repo.items.push(company(id, owner));
 
   const list = new ListCompaniesHandler(repo);
-  const get = new GetCompanyHandler(repo);
+  const get = new GetCompanyHandler(repo, new InMemoryFacilitators());
   const ctx = (userId: string) => w.authorization.contextFor(userId);
   const visible = async (userId: string) => {
     const access = await ctx(userId);

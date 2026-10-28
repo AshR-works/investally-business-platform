@@ -2,15 +2,19 @@ import { Injectable } from '@nestjs/common';
 import { Prisma } from '../../../../generated/prisma/client';
 import { PrismaService } from '../../../platform/prisma.service';
 import { DomainError, Page } from '../../../shared-kernel';
+import { Commission } from '../domain/commission';
 import { Company } from '../domain/company';
 import { CompanyName } from '../domain/company-name';
 import { CompanyRepository } from '../domain/company-repository';
 import { CompanyStatus } from '../domain/company-status';
+import { Facilitation } from '../domain/facilitation';
 
-type CompanyRow = Prisma.CompanyGetPayload<object>;
+const withFacilitation = { facilitation: true } satisfies Prisma.CompanyInclude;
+type CompanyRow = Prisma.CompanyGetPayload<{ include: typeof withFacilitation }>;
 
 /** Reconstruit une entreprise du domaine à partir d'une ligne de base de données. */
 function toDomain(row: CompanyRow): Company {
+  const link = row.facilitation;
   return Company.rehydrate({
     id: row.id,
     name: CompanyName.of(row.name),
@@ -18,6 +22,18 @@ function toDomain(row: CompanyRow): Company {
     ownerUserId: row.ownerUserId,
     sector: row.sector,
     country: row.country,
+    email: row.email,
+    phone: row.phone,
+    facilitation: link
+      ? Facilitation.of({
+          facilitatorId: link.facilitatorId,
+          contactMethod: link.contactMethod,
+          isCompanyEmployee: link.isCompanyEmployee,
+          commission: link.commissionType
+            ? Commission.of({ type: link.commissionType, value: link.commissionValue!.toString(), currency: link.commissionCurrency })
+            : null,
+        })
+      : null,
     createdAt: row.createdAt,
     version: row.version,
   });
@@ -28,7 +44,10 @@ function toDomain(row: CompanyRow): Company {
 export class PrismaCompanyRepository implements CompanyRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  /** Crée ou met à jour l'entreprise (clé de nom normalisée pour l'unicité). */
+  /**
+   * Crée ou met à jour l'entreprise (clé de nom normalisée pour l'unicité). Le lien avec le facilitateur est écrit à
+   * la création ; il n'est pas modifiable par cette opération.
+   */
   async save(company: Company): Promise<void> {
     const data = {
       name: company.name.value,
@@ -37,6 +56,8 @@ export class PrismaCompanyRepository implements CompanyRepository {
       ownerUserId: company.ownerUserId,
       sector: company.sector,
       country: company.country,
+      email: company.email,
+      phone: company.phone,
     };
     try {
       const updated = await this.prisma.db.company.updateMany({
@@ -48,8 +69,28 @@ export class PrismaCompanyRepository implements CompanyRepository {
       if ((await this.prisma.db.company.count({ where: { id: company.id } })) > 0) {
         throw new DomainError('CONFLICT', "L'entreprise a été modifiée par un autre utilisateur");
       }
+      const link = company.facilitation;
       await this.prisma.db.company.create({
-        data: { id: company.id, ...data, version: company.version, createdAt: company.createdAt },
+        data: {
+          id: company.id,
+          ...data,
+          version: company.version,
+          createdAt: company.createdAt,
+          ...(link
+            ? {
+                facilitation: {
+                  create: {
+                    facilitatorId: link.facilitatorId,
+                    contactMethod: link.contactMethod,
+                    isCompanyEmployee: link.isCompanyEmployee,
+                    commissionType: link.commission?.type ?? null,
+                    commissionValue: link.commission?.value ?? null,
+                    commissionCurrency: link.commission?.currency ?? null,
+                  },
+                },
+              }
+            : {}),
+        },
       });
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
@@ -61,7 +102,7 @@ export class PrismaCompanyRepository implements CompanyRepository {
 
   /** Retrouve une entreprise non supprimée, ou `null`. */
   async findById(id: string): Promise<Company | null> {
-    const row = await this.prisma.db.company.findFirst({ where: { id, deletedAt: null } });
+    const row = await this.prisma.db.company.findFirst({ where: { id, deletedAt: null }, include: withFacilitation });
     return row ? toDomain(row) : null;
   }
 
@@ -83,6 +124,7 @@ export class PrismaCompanyRepository implements CompanyRepository {
     const [rows, total] = await Promise.all([
       this.prisma.db.company.findMany({
         where,
+        include: withFacilitation,
         orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
         skip: (query.page - 1) * query.pageSize,
         take: query.pageSize,
