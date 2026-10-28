@@ -76,6 +76,7 @@ td .row { min-width: 15rem; }
 .badge.bad { color: var(--bad); background: var(--bad-bg); border-color: transparent; }
 .overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, .55); display: grid; place-items: center; padding: 1rem; z-index: 50; }
 .dialog { background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--radius); box-shadow: var(--shadow-3); padding: 1.5rem; width: 100%; max-width: 480px; max-height: 90vh; overflow: auto; }
+.dialog.wide { max-width: 1040px; }
 .qr { display: block; margin: .5rem auto 1rem; width: 220px; height: 220px; background: #fff; padding: 8px; border-radius: var(--radius-xs); }
 .secret { font-family: ui-monospace, Consolas, monospace; letter-spacing: .08em; overflow-wrap: anywhere; }
 .codes { display: grid; grid-template-columns: repeat(2, 1fr); gap: .4rem; font-family: ui-monospace, Consolas, monospace; margin: 1rem 0; }

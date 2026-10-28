@@ -50,7 +50,10 @@
 | D46 | **PDF des codes de secours par impression navigateur** : ce n'est pas un téléchargement en un clic. Un générateur interne (≈ 80 lignes, 83/105 au cadrage) reste possible si le un-clic est exigé | S3.7 | Claude | À la demande |
 | D47 | **Garde de sortie des codes de secours** : couvre la fermeture, le rechargement et les liens internes, **pas** le bouton « Précédent » du navigateur ni le bouton de déconnexion ; les codes non conservés sont alors perdus (il faut en régénérer) | S3.7 | Claude | À évaluer avec l'écoute réelle (D31) |
 | D48 | **E-mail d'information après régénération des codes de secours** (bonne pratique) : dépend de l'envoi d'e-mail réel (Microsoft 365, S7) | S3.7 | Claude | S7 |
-| D49 | **Prototype de design non mis à jour** : œil du mot de passe, fenêtre `danger`, panneau des codes ; à ajouter à la version 0.5.0 (DDR-0010) | S3.7 | Claude | Prochaine mise à jour du design |
+| D49 | **Prototype de design non mis à jour** : œil du mot de passe, fenêtre `danger`, panneau des codes ; à ajouter à la version 0.5.0 (DDR-0010 et, depuis S3.8, DDR-0011 : sélecteur de rôles) | S3.7 | Claude | Prochaine mise à jour du design |
+| D50 | **Libellés des modules, ressources et actions dupliqués dans l'interface** (`lib/roles.ts`) : un test de complétude les compare au catalogue du serveur, mais l'idéal est de les exposer par l'API | S3.8 | Claude | À l'ajout d'un module (S4) |
+| D51 | **Familles de rôles codées dans l'interface** : un nouveau rôle apparaît dans « Autres rôles » jusqu'à son rangement ; une métadonnée de famille côté API supprimerait la duplication | S3.8 | Claude | À l'ajout d'un rôle |
+| D52 | **Aperçu des droits calculé côté interface** (règle de cumul reprise du serveur) : sa cohérence est testée sur les 1 024 combinaisons, mais toute évolution de la règle serveur impose de mettre à jour l'interface | S3.8 | Claude | Permanent (test de cohérence) |
 | D5 | Hypothèses de charge et de périmètre non confirmées | Phase 3 | Revue à la fin de S1 avec les chiffres réels | Ouverte |
 
 ## Adopted Conventions

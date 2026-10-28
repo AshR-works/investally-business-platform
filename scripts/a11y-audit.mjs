@@ -60,7 +60,9 @@ const pending = new Map();
 socket.addEventListener('message', (m) => { const d = JSON.parse(m.data); if (d.id && pending.has(d.id)) { pending.get(d.id)(d); pending.delete(d.id); } });
 const send = (method, params = {}) => new Promise((resolveCall, reject) => {
   const id = ++nextId;
-  pending.set(id, (d) => (d.error ? reject(new Error(`${method}: ${d.error.message}`)) : resolveCall(d.result)));
+  // Délai maximal par appel : un navigateur qui ne répond plus fait échouer le parcours au lieu de le bloquer sans fin.
+  const timer = setTimeout(() => { pending.delete(id); reject(new Error(`${method}: pas de réponse du navigateur après 60 s`)); }, 60_000);
+  pending.set(id, (d) => { clearTimeout(timer); return d.error ? reject(new Error(`${method}: ${d.error.message}`)) : resolveCall(d.result); });
   socket.send(JSON.stringify({ id, method, params }));
 });
 await send('Page.enable');
@@ -113,8 +115,12 @@ const SHOTS = arg('shots', '');
 async function shot(name) {
   if (!SHOTS) return;
   mkdirSync(SHOTS, { recursive: true });
-  const r = await send('Page.captureScreenshot', { format: 'png' });
-  writeFileSync(join(SHOTS, `${name}.png`), Buffer.from(r.data, 'base64'));
+  try {
+    const r = await send('Page.captureScreenshot', { format: 'png' });
+    writeFileSync(join(SHOTS, `${name}.png`), Buffer.from(r.data, 'base64'));
+  } catch (error) {
+    console.warn(`⚠ capture « ${name} » non produite : ${error.message}`); // une capture manquante ne fait pas échouer le parcours
+  }
 }
 /** Géométrie de la coque : mode de navigation, marges autour du panneau principal, chevauchement. */
 const shellState = () => js(`(() => { const shell = document.querySelector('[data-nav]'); const p = shell.children[shell.children.length - 1].getBoundingClientRect(); const a = document.querySelector('aside').getBoundingClientRect(); return { nav: shell.dataset.nav, margeG: Math.round(p.left), margeD: Math.round(document.documentElement.clientWidth - p.right), largeur: Math.round(p.width), chevauche: a.right > p.left + 1, defilementX: document.documentElement.scrollWidth > innerWidth }; })()`);
@@ -414,6 +420,87 @@ try {
   const closed = await js("document.querySelector('[role=dialog]') ? 'fenêtre encore ouverte' : 'fenêtre fermée'");
   const back = await js("document.activeElement ? document.activeElement.tagName.toLowerCase() + ' « ' + document.activeElement.textContent.trim().slice(0, 40) + ' »' : 'aucun'");
   results.at(-1).note += ` · après Échap : ${closed}, focus rendu à ${back}`;
+
+  // UX-02 : sélecteur de rôles par familles, cumul, aperçu des droits, changements signalés, rôles de son propre compte bloqués.
+  const D = "document.querySelector('[role=dialog]')";
+  const card = (name) => `[...${D}.querySelectorAll('label')].find((l) => l.querySelector('strong')?.textContent.trim() === ${JSON.stringify(name)})`;
+  const status = `${D}.querySelector('[role=status]').textContent.trim()`;
+  // Action sensible : si l'API exige un MFA récent (plus de 10 min depuis la vérification), saisir un code frais.
+  const confirmStepUpIfAsked = async () => {
+    for (let i = 0; i < 12; i++) {
+      if (await js("Boolean(document.querySelector('#stepup-title'))")) {
+        await setValue("form[aria-labelledby=stepup-title] input", totp(secret));
+        await clickText('Confirmer', "document.querySelector('form[aria-labelledby=stepup-title]')");
+        await sleep(1500);
+        return true;
+      }
+      await sleep(250);
+    }
+    return false;
+  };
+  await clickText('Inviter un utilisateur');
+  await waitFor(D, 'fenêtre d’invitation (UX-02)');
+  await expectThat('5 familles (fieldset/legend) et 10 cartes de rôle', `[...${D}.querySelectorAll('fieldset legend')].map((l) => l.textContent.trim()).join('|') === 'Pilotage|Commercial|Investudy (formation)|Support et fonctions support|Administration' && ${D}.querySelectorAll('fieldset input[type=checkbox]').length === 10`);
+  await expectThat('au départ : « Aucun rôle sélectionné », aperçu vide, « Tout désélectionner » désactivé', `${status} === 'Aucun rôle sélectionné' && ${D}.innerText.includes('Cochez au moins un rôle') && [...${D}.querySelectorAll('button')].find((b) => b.textContent.trim() === 'Tout désélectionner').disabled`);
+  await expectThat('« Envoyer l’invitation » désactivé sans rôle', `[...${D}.querySelectorAll('button')].find((b) => b.textContent.trim().startsWith('Envoyer')).disabled`);
+  await js(`${card('Chargé de compte')}.click()`);
+  await expectThat('un clic sur la carte coche le rôle ; compteur « 1 rôle sélectionné · N permissions » ; module Business Development affiché', `${card('Chargé de compte')}.querySelector('input').checked && /^1 rôle sélectionné · \\d+ permissions?$/.test(${status}) && ${D}.innerText.includes('Business Development')`);
+  const oneRole = await js(`parseInt(${status}.split('·')[1])`);
+  await expectThat('le compteur égale la somme des permissions des modules de l’aperçu', `(() => { const n = parseInt(${status}.split('·')[1]); const sum = [...${D}.querySelectorAll('details summary')].reduce((t, s) => t + parseInt(s.textContent.split('·')[1]), 0); return n === sum && n > 0; })()`);
+  await js(`${card('Responsable commercial')}.click()`);
+  await expectThat('2 rôles : compteur « 2 rôles sélectionnés », davantage de permissions (cumul)', `/^2 rôles sélectionnés/.test(${status}) && parseInt(${status}.split('·')[1]) >= ${oneRole}`);
+  await expectThat('portée la plus large retenue : « Entreprises → Consulter » n’est pas limité à « Propres »', `(() => { const row = [...${D}.querySelectorAll('tbody tr')].find((r) => r.querySelector('th')?.textContent.trim() === 'Entreprises'); const li = row && [...row.querySelectorAll('li')].find((x) => x.textContent.startsWith('Consulter')); return Boolean(li) && !li.textContent.includes('Propres'); })()`);
+  // Défilement jusqu'aux derniers rôles : l'aperçu doit rester visible (position collante), pas sortir de l'écran.
+  await js(`${D}.scrollTop = ${D}.scrollHeight`);
+  await sleep(300);
+  await expectThat("l'aperçu des droits reste visible quand on défile jusqu'aux derniers rôles", `(() => { const r = ${D}.querySelector('#rights-preview-title').getBoundingClientRect(); return r.top >= 0 && r.bottom <= window.innerHeight; })()`);
+  await js(`${D}.scrollTop = 0`);
+  await js(`${card('Super administrateur')}.click()`);
+  await expectThat('rôle « Accès complet » : badge et avertissement d’audit visibles', `${card('Super administrateur')}.innerText.includes('Accès complet') && ${card('Super administrateur')}.innerText.includes('sont auditées')`);
+  await audit('Administration — Inviter : rôles par familles et aperçu des droits (UX-02)', '3 rôles cochés, aperçu par module, avertissement sur le rôle à accès complet');
+  await shot('roles-inviter');
+  await js(`[...${D}.querySelectorAll('button')].find((b) => b.textContent.trim() === 'Tout désélectionner').click()`);
+  await expectThat('« Tout désélectionner » : aucun rôle, aperçu vide, envoi désactivé', `${status} === 'Aucun rôle sélectionné' && !${D}.querySelector('details') && [...${D}.querySelectorAll('button')].find((b) => b.textContent.trim().startsWith('Envoyer')).disabled`);
+  await js(`${card('Support')}.click()`);
+  await setValue("[role=dialog] input[type=email]", `roles-${Date.now() % 100000}@e2e.test`);
+  await setValue("[role=dialog] input:not([type=email]):not([type=checkbox])", 'Recette Rôles');
+  await clickText('Envoyer', D);
+  await confirmStepUpIfAsked();
+  await waitFor("!document.querySelector('[role=dialog]') && document.body.innerText.includes('Invitation envoyée')", 'invitation envoyée avec le rôle Support', 25000);
+  await sleep(800);
+  await js(`[...document.querySelectorAll('summary[aria-label^="Actions pour"]')].find((s) => s.getAttribute('aria-label').includes('Recette Rôles')).click()`);
+  await sleep(300);
+  await clickText('Modifier les rôles');
+  await waitFor(D, 'fenêtre des rôles de la personne invitée');
+  await expectThat('les rôles actuels sont pré-cochés (Support) ; « Enregistrer » désactivé tant que rien ne change', `${card('Support')}.querySelector('input').checked && ${status}.startsWith('1 rôle') && [...${D}.querySelectorAll('button')].find((b) => b.textContent.trim() === 'Enregistrer').disabled`);
+  await js(`${card('Finance')}.click()`);
+  await js(`${card('Support')}.click()`);
+  await expectThat('changements annoncés en toutes lettres : « Sera ajouté » (Finance), « Sera retiré » (Support), phrase de synthèse', `${card('Finance')}.innerText.includes('Sera ajouté') && ${card('Support')}.innerText.includes('Sera retiré') && ${D}.innerText.includes('ajout de Finance') && ${D}.innerText.includes('retrait de Support')`);
+  await expectThat('« Enregistrer » devient actif', `![...${D}.querySelectorAll('button')].find((b) => b.textContent.trim() === 'Enregistrer').disabled`);
+  await audit('Administration — Modifier les rôles : changements signalés (UX-02)', 'Sera ajouté / Sera retiré, synthèse, aperçu à jour');
+  await shot('roles-modifier');
+  await js(`${card('Finance')}.click()`);
+  await js(`${card('Support')}.click()`);
+  await expectThat('revenir à l’état d’origine désactive de nouveau « Enregistrer » (rien à enregistrer)', `[...${D}.querySelectorAll('button')].find((b) => b.textContent.trim() === 'Enregistrer').disabled && !${D}.innerText.includes('Sera ajouté')`);
+  await js(`${card('Finance')}.click()`);
+  await js(`${card('Support')}.click()`);
+  await clickText('Enregistrer', D);
+  await confirmStepUpIfAsked();
+  await waitFor("!document.querySelector('[role=dialog]') && document.body.innerText.includes('Rôles mis à jour')", 'rôles mis à jour', 25000);
+  await sleep(800);
+  await expectThat('la liste affiche le nouveau rôle de la personne (Finance, plus Support)', "(() => { const row = [...document.querySelectorAll('tbody tr')].find((r) => r.textContent.includes('Recette Rôles')); return Boolean(row) && row.textContent.includes('Finance') && !row.textContent.includes('Support'); })()");
+  // Ses propres rôles : sélection bloquée avec explication.
+  // Les menus des autres lignes peuvent rester ouverts : on agit uniquement dans le menu de SA ligne (nom sans « Rôles »).
+  const ownRow = "[...document.querySelectorAll('summary[aria-label^=\"Actions pour\"]')].find((s) => !s.getAttribute('aria-label').includes('Rôles'))";
+  await js(`${ownRow}.click()`);
+  await sleep(300);
+  await js(`[...${ownRow}.parentElement.querySelectorAll('button')].find((b) => b.textContent.trim() === 'Modifier les rôles').click()`);
+  await waitFor(D, 'fenêtre des rôles de son propre compte');
+  await expectThat('ses propres rôles : explication affichée, toutes les cases et « Tout désélectionner » désactivés, « Enregistrer » désactivé', `${D}.innerText.includes('Vous ne pouvez pas modifier vos propres rôles') && [...${D}.querySelectorAll('fieldset input[type=checkbox]')].every((i) => i.disabled) && [...${D}.querySelectorAll('button')].filter((b) => ['Tout désélectionner', 'Enregistrer'].includes(b.textContent.trim())).every((b) => b.disabled)`);
+  await audit('Administration — Modifier ses propres rôles : sélection bloquée (UX-02)', 'message explicatif, cases désactivées');
+  await shot('roles-soi-meme');
+  await js("window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }))");
+  await sleep(400);
 
   await go('/account');
   await waitFor("document.querySelector('main h1') && document.body.innerText.includes('Sessions et connexions')", 'page Mon compte', 20000);
