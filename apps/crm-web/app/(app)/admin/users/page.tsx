@@ -10,12 +10,14 @@ import { Pagination } from '../../../../components/data/pagination';
 import { RowAction, RowActions } from '../../../../components/data/row-actions';
 import { SelectionBar } from '../../../../components/data/selection-bar';
 import { QuickFilters, SearchField, Toolbar } from '../../../../components/data/toolbar';
+import { RolePicker } from '../../../../components/admin/role-picker';
 import { Icon } from '../../../../components/icon';
 import { Modal } from '../../../../components/modal';
 import { PageHeading } from '../../../../components/page-heading';
 import { api, ApiError } from '../../../../lib/api';
 import { useAuth } from '../../../../lib/auth-context';
 import { can, roleLabel } from '../../../../lib/permissions';
+import { sameRoles } from '../../../../lib/roles';
 import { statusStyle, USER_STATUS } from '../../../../lib/status';
 import type { Page, RoleView, UserView } from '../../../../lib/types';
 
@@ -213,6 +215,7 @@ export default function UsersPage() {
         <RolesDialog
           user={dialog.user}
           roles={roles}
+          isSelf={dialog.user.id === profile?.userId}
           onClose={() => setDialog(null)}
           onSubmit={(codes) => run(() => api(`/admin/users/${dialog.user.id}/roles`, { method: 'PUT', body: { roles: codes } }), 'Rôles mis à jour')}
         />
@@ -229,26 +232,6 @@ export default function UsersPage() {
       )}
     </>
   );
-}
-
-/** Cases à cocher des rôles, avec leur description. */
-function RoleChoices({ roles, selected, onToggle }: { roles: RoleView[]; selected: string[]; onToggle: (code: string) => void }) {
-  return (
-    <fieldset>
-      <legend>Rôles</legend>
-      {roles.map((role) => (
-        <label key={role.code} className="inline" style={{ marginBottom: '.4rem' }}>
-          <input type="checkbox" checked={selected.includes(role.code)} onChange={() => onToggle(role.code)} />
-          <span><strong>{roleLabel(role.code)}</strong><br /><span className="hint">{role.description}</span></span>
-        </label>
-      ))}
-    </fieldset>
-  );
-}
-
-/** Ajoute le code à la liste s'il n'y est pas, le retire sinon (sans modifier la liste d'origine). */
-function toggle(list: string[], code: string): string[] {
-  return list.includes(code) ? list.filter((c) => c !== code) : [...list, code];
 }
 
 /** Fenêtre d'invitation : adresse, nom, rôles et responsable facultatif. */
@@ -273,12 +256,12 @@ function InviteDialog({ roles, managers, onClose, onSubmit }: {
   }
 
   return (
-    <Modal title="Inviter un utilisateur" onClose={onClose}>
+    <Modal title="Inviter un utilisateur" onClose={onClose} size="wide">
       <form onSubmit={submit}>
         <label>Adresse e-mail<input type="email" value={email} onChange={(e) => setEmail(e.target.value)} maxLength={254} required /></label>
         <label>Nom affiché<input value={displayName} onChange={(e) => setDisplayName(e.target.value)} maxLength={200} required /></label>
-        <RoleChoices roles={roles} selected={selected} onToggle={(code) => setSelected(toggle(selected, code))} />
-        <label>
+        <RolePicker roles={roles} selected={selected} onChange={setSelected} />
+        <label className="mt-4">
           Responsable direct (facultatif)
           <select value={managerId} onChange={(e) => setManagerId(e.target.value)}>
             <option value="">Aucun</option>
@@ -299,16 +282,17 @@ function InviteDialog({ roles, managers, onClose, onSubmit }: {
  * Fenêtre de modification des rôles d'un utilisateur ; le changement s'applique immédiatement, y compris aux sessions
  * ouvertes.
  */
-function RolesDialog({ user, roles, onClose, onSubmit }: {
+function RolesDialog({ user, roles, isSelf, onClose, onSubmit }: {
   user: UserView;
   roles: RoleView[];
+  isSelf: boolean;
   onClose: () => void;
   onSubmit: (codes: string[]) => Promise<void>;
 }) {
   const [selected, setSelected] = useState<string[]>(user.roles);
   const [busy, setBusy] = useState(false);
   return (
-    <Modal title={`Rôles de ${user.displayName}`} onClose={onClose}>
+    <Modal title={`Rôles de ${user.displayName}`} onClose={onClose} size="wide">
       <form
         onSubmit={async (e) => {
           e.preventDefault();
@@ -317,11 +301,17 @@ function RolesDialog({ user, roles, onClose, onSubmit }: {
           setBusy(false);
         }}
       >
-        <RoleChoices roles={roles} selected={selected} onToggle={(code) => setSelected(toggle(selected, code))} />
-        <p className="hint">Le changement s’applique immédiatement, y compris aux sessions déjà ouvertes.</p>
+        <RolePicker
+          roles={roles}
+          selected={selected}
+          onChange={setSelected}
+          original={user.roles}
+          locked={isSelf ? 'Vous ne pouvez pas modifier vos propres rôles : demandez à un autre Super administrateur.' : undefined}
+        />
+        <p className="hint mt-4">Le changement s’applique immédiatement, y compris aux sessions déjà ouvertes.</p>
         <div className="row end">
           <button type="button" className="secondary" onClick={onClose}>Annuler</button>
-          <button type="submit" disabled={busy || selected.length === 0}>Enregistrer</button>
+          <button type="submit" disabled={busy || isSelf || selected.length === 0 || sameRoles(user.roles, selected)}>Enregistrer</button>
         </div>
       </form>
     </Modal>

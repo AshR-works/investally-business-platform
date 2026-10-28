@@ -15,3 +15,4 @@ Les arbitrages structurants suivent la [méthode d'arbitrage](../../METHODE-D-AR
 | [DDR-0008](DDR-0008-champ-de-code-unique.md) | Champ de code unique pour le second facteur | **Remplacée** par DDR-0009 | 0.4.1 | EXD-06 |
 | [DDR-0009](DDR-0009-code-en-six-cases.md) | Code du second facteur en six cases | Acceptée | 0.4.1 | EXD-06 |
 | [DDR-0010](DDR-0010-secrets-confirmations-et-affichage-unique.md) | Mot de passe affichable, confirmation des actions irréversibles, codes de secours à affichage unique | Acceptée (prototype à mettre à jour) | 0.4.1 | EXD-12, EXD-13 |
+| [DDR-0011](DDR-0011-selecteur-de-roles-et-apercu-des-droits.md) | Sélecteur de rôles par familles et aperçu des droits effectifs | Acceptée (prototype à mettre à jour) | 0.4.1 | EXD-14 |
