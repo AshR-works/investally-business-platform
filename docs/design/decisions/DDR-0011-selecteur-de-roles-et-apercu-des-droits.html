@@ -1,0 +1,38 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>DDR-0011 — Sélecteur de rôles par familles et aperçu des droits effectifs</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — design · <a href="../README.html">Mode d&#8217;emploi</a> · <a href="../01-DESIGN-SYSTEM.html">Design system</a> · <a href="../02-SPECIFICATIONS-FRONTEND.html">Spécifications frontend</a> · <a href="../exigences/REGISTRE-EXD.html">Exigences</a> · <a href="../04-ANALYSE-D-IMPACT.html">Analyse d&#8217;impact</a> · <a href="../05-AIDE-A-LA-DECISION.html">Aide à la décision</a> · <a href="../decisions/REGISTRE-DDR.html">Décisions (DDR)</a> · <a href="../CHANGELOG-DESIGN.html">Journal</a> · <a href="../prototype/index.html">Prototype</a></nav><h1>DDR-0011 — Sélecteur de rôles par familles et aperçu des droits effectifs</h1>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td><strong>Statut</strong></td><td>Acceptée (réalisée dans l'application) ; prototype à mettre à jour</td></tr>
+<tr><td><strong>Date</strong></td><td>2026-10-28</td></tr>
+<tr><td><strong>Version du design</strong></td><td>0.4.1 (le prototype n'est pas encore à jour : version 0.5.0 à décider)</td></tr>
+<tr><td><strong>Lié à</strong></td><td>EXD-14 ; retour de tests UX-02 ; <code>docs/cadrages/CADRAGE-RETOURS-TESTS-UX-01-A-04.md</code> §2 ; décision D23</td></tr>
+</tbody></table></div>
+<h2>Contexte</h2>
+<p>Les fenêtres « Inviter un utilisateur » et « Modifier les rôles » présentaient dix cases à cocher avec une description : difficiles à (dé)sélectionner, sans indication des <strong>droits</strong> réellement accordés, ni du fait que les rôles se <strong>cumulent</strong> (portée la plus large retenue).</p>
+<h2>Décisions (option B+C du cadrage, retenue par la direction produit le 2026-10-22)</h2>
+<ol><li><strong>Sélection par familles</strong> : Pilotage, Commercial, Investudy (formation), Support et fonctions support, Administration (en dernier). Chaque rôle est une <strong>carte entièrement cliquable</strong> (case native, nom, description, nombre de permissions). Un rôle inconnu de l'interface tombe dans « Autres rôles » au lieu de disparaître.</li><li><strong>Aperçu des droits effectifs, en lecture seule</strong>, regroupé par module (accordéons natifs <code>details</code>) puis par ressource, avec la portée <strong>écrite</strong> (Propres, Équipe, Tous) ; il se met à jour à chaque choix. Le cumul de plusieurs rôles est conservé : la portée la plus large l'emporte.</li><li><strong>Aides</strong> : compteur annoncé (<code>role="status"</code>) « N rôles sélectionnés · M permissions », bouton <strong>Tout désélectionner</strong>, badge <strong>Accès complet</strong> et avertissement d'audit sur le Super administrateur.</li><li><strong>Modification</strong> : les rôles ajoutés ou retirés sont signalés en toutes lettres (« Sera ajouté », « Sera retiré ») avec une phrase de synthèse ; « Enregistrer » exige un <strong>changement réel</strong> et au moins un rôle.</li><li><strong>Ses propres rôles</strong> : sélection bloquée avec explication (le serveur l'interdisait déjà) ; « Enregistrer » désactivé.</li><li><strong>Fenêtres larges</strong> (<code>Modal size="wide"</code>, deux colonnes à partir de 1024 px, une colonne en dessous).</li><li><strong>Option C seule (sélection de permissions une à une) écartée</strong> : elle contredit le modèle (l'API n'attribue que des rôles). Elle n'existe qu'en aperçu.</li></ol>
+<h2>Mesures de rigueur</h2>
+<ul><li><strong>Aucun changement d'API ni de droits</strong> : <code>GET /admin/roles</code> fournit déjà les permissions de chaque rôle. L'aperçu <strong>informe</strong>, le serveur reste le seul juge de chaque requête.</li><li><strong>La règle de cumul de l'interface est comparée à celle du serveur</strong> par un test automatique sur les <strong>1 024 combinaisons</strong> de rôles ; un autre test vérifie que tous les modules, ressources et actions du catalogue du serveur ont un libellé (aucun code brut à l'écran).</li><li>Accessibilité : familles en <code>fieldset</code>/<code>legend</code>, nom et description reliés (<code>aria-labelledby</code>/<code>aria-describedby</code>), l'état est dit par le texte (jamais par la couleur seule), tout au clavier.</li></ul>
+<h2>Conséquences</h2>
+<ul><li>Réversible : trois composants (<code>RolePicker</code>, <code>RightsPreview</code>, <code>Modal</code> large).</li><li><strong>Dette</strong> : libellés des ressources et familles de rôles codés dans l'interface (D50, D51) ; prototype à mettre à jour (D49).</li></ul></main></body></html>
