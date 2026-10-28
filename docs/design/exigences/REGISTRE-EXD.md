@@ -23,6 +23,7 @@ Légende : ✅ appliqué au prototype · 🟡 appliqué en partie · 📐 spéci
 | **EXD-11** | **Bouton de dépliage = pictogramme de l'action, toujours actionnable** (demande du 2026-10-21) | 🟡 | **Réalisé dans l'application (H1)**. Pictogramme seul 44 px, nom accessible, état annoncé ; **pictogramme provisoire, à confirmer** ; reste masqué sur le hub (navigation complète) — à confirmer |
 | **EXD-12** | **Mot de passe affichable, comportement uniforme** (retour de tests UX-01, 2026-10-22) | 🟡 | **Réalisé dans l'application (S3.7)** : composant `PasswordField` unique (6 champs, 4 écrans), œil en pictogramme seul, remasquage automatique, icône native d'Edge masquée. Prototype à mettre à jour (0.5.0) · [DDR-0010](../decisions/DDR-0010-secrets-confirmations-et-affichage-unique.md) |
 | **EXD-13** | **Actions irréversibles confirmées ; secrets à affichage unique** (retours UX-03 et UX-04, 2026-10-22) | 🟡 | **Réalisé dans l'application (S3.7)** : fenêtre de confirmation `danger` (focus sur Annuler), codes de secours avec copie, fichier texte, impression PDF et garde de sortie. Prototype à mettre à jour (0.5.0) · [DDR-0010](../decisions/DDR-0010-secrets-confirmations-et-affichage-unique.md) |
+| **EXD-14** | **Droits visibles avant attribution ; sélection de rôles lisible** (retour de tests UX-02, 2026-10-22) | 🟡 | **Réalisé dans l'application (S3.8)** : sélection par familles (cartes cliquables), aperçu des droits effectifs par module en lecture seule, compteur annoncé, « Tout désélectionner », changements signalés en toutes lettres, ses propres rôles bloqués. Prototype à mettre à jour (0.5.0) · [DDR-0011](../decisions/DDR-0011-selecteur-de-roles-et-apercu-des-droits.md) |
 
 ## Règles d'application
 1. Une nouvelle maquette ou une nouvelle version **commence** par relire ce registre.
@@ -41,3 +42,4 @@ Légende : ✅ appliqué au prototype · 🟡 appliqué en partie · 📐 spéci
 | 2026-10-22 | **H2a** : EXD-06 réalisée pour les écrans A01 à A15 (connexion, MFA, codes de secours, mot de passe oublié, réinitialisation, activation, états d'erreur et de limitation) ; sessions et historique (S01 à S03) restent pour H2b |
 | 2026-10-22 | **H2b** : EXD-06 **complète** (A01 à A15 et S01 à S03 réalisés dans l'application) |
 | 2026-10-22 | **S3.7** : EXD-12 et EXD-13 enregistrées et réalisées dans l'application (retours de tests UX-01, UX-03, UX-04) ; prototype non encore mis à jour |
+| 2026-10-28 | **S3.8** : EXD-14 enregistrée et réalisée dans l'application (retour de tests UX-02, option B+C) ; prototype non encore mis à jour |

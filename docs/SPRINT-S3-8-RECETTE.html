@@ -1,0 +1,56 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>S3.8 — Rôles et permissions (UX-02) : recette</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="INDEX.html">Index</a> · <a href="GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="ARCHITECTURE.html">Architecture</a> · <a href="SECURITY.html">Sécurité</a> · <a href="METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="TECH-DEBT.html">Dette</a> · <a href="design/README.html">Design</a> · <a href="livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>S3.8 — Rôles et permissions (UX-02) : recette</h1>
+<p><em>Branche <code>sprint/s3-8-roles-ux</code> · 2026-10-28 · retour de tests UX-02 (cadrage : <code>docs/cadrages/CADRAGE-RETOURS-TESTS-UX-01-A-04.md</code> §2 ; décisions D23 et DDR-0011).</em></p>
+<h2>Ce qui est livré</h2>
+<div class="table-wrap"><table><thead><tr><th>Élément</th><th>Livré</th></tr></thead><tbody>
+<tr><td><strong>Sélecteur de rôles par familles</strong></td><td>Pilotage, Commercial, Investudy (formation), Support et fonctions support, Administration (en dernier). Chaque rôle est une <strong>carte entièrement cliquable</strong> : case native, nom, description, nombre de permissions. Un rôle inconnu tombe dans « Autres rôles »</td></tr>
+<tr><td><strong>Aperçu des droits effectifs</strong> (lecture seule)</td><td>Par module (accordéons natifs), puis par ressource ; portée <strong>écrite</strong> (Propres, Équipe, Tous). Se met à jour à chaque choix. <strong>Collé en haut de la fenêtre</strong> : il reste visible pendant qu'on choisit les derniers rôles</td></tr>
+<tr><td><strong>Cumul de rôles</strong> (conservé)</td><td>Pour une même permission, la <strong>portée la plus large</strong> l'emporte (règle du serveur)</td></tr>
+<tr><td><strong>Aides</strong></td><td>Compteur annoncé (« 2 rôles sélectionnés · N permissions »), « Tout désélectionner », badge « Accès complet » et avertissement d'audit sur le Super administrateur</td></tr>
+<tr><td><strong>Modification d'un compte</strong></td><td>Rôles ajoutés ou retirés signalés en toutes lettres (« Sera ajouté », « Sera retiré ») + phrase de synthèse ; « Enregistrer » actif <strong>seulement</strong> s'il y a un changement réel et au moins un rôle</td></tr>
+<tr><td><strong>Ses propres rôles</strong></td><td>Sélection bloquée avec explication (le serveur l'interdisait déjà, l'interface laissait essayer)</td></tr>
+<tr><td><strong>Fenêtres larges</strong></td><td><code>Modal size="wide"</code> : deux colonnes dès 1 024 px, une colonne en dessous</td></tr>
+</tbody></table></div>
+<p><strong>Aucun changement d'API ni de droits</strong> : <code>GET /admin/roles</code> fournit déjà les permissions de chaque rôle ; le serveur reste le seul juge de chaque requête.</p>
+<h2>Preuves</h2>
+<div class="table-wrap"><table><thead><tr><th>Contrôle</th><th>Résultat</th></tr></thead><tbody>
+<tr><td>Types (<code>tsc</code>)</td><td>0 erreur</td></tr>
+<tr><td>Tests de l'interface</td><td><strong>102 / 102</strong> (dont 21 nouveaux)</td></tr>
+<tr><td><strong>Cohérence interface ↔ serveur</strong></td><td>La fusion des droits de l'interface est comparée à celle du serveur (matrice et <code>widestScope</code> réels) sur <strong>les 1 024 combinaisons</strong> de rôles : identique pour chaque permission</td></tr>
+<tr><td>Libellés</td><td>Tous les modules, ressources et actions du catalogue du serveur ont un libellé (un test échoue sinon) ; les 10 rôles du serveur sont rangés dans une famille, sans oubli ni doublon</td></tr>
+<tr><td>Mutants (logique des droits et contrat de l'interface)</td><td><strong>11 / 11 tués</strong> (portée la plus étroite, rôles non choisis comptés, rôle inconnu perdu, retraits non calculés, « inchangé » toujours vrai, ordre des modules, pluriel, libellé manquant, blocage de ses propres rôles, enregistrement sans changement…). Un mutant avait d'abord survécu : le test manquant a été ajouté</td></tr>
+<tr><td><strong>Navigateur réel (Edge)</strong></td><td>Invitation <strong>réelle</strong> (avec confirmation MFA récente) puis modification <strong>réelle</strong> d'un compte : 5 familles / 10 cartes ; clic sur la carte ; compteur égal à la somme des permissions de l'aperçu ; cumul de 2 rôles ; portée la plus large retenue (« Entreprises → Consulter » non limité à « Propres ») ; <strong>l'aperçu reste visible après défilement</strong> ; badge et avertissement « Accès complet » ; « Tout désélectionner » ; rôles actuels pré-cochés ; « Sera ajouté / Sera retiré » et synthèse ; retour à l'état d'origine = « Enregistrer » désactivé ; liste mise à jour ; <strong>ses propres rôles bloqués</strong></td></tr>
+<tr><td>Audit d'accessibilité (axe-core + arbre)</td><td>Nouveaux états : Inviter avec aperçu, Modifier les rôles (changements signalés), Modifier ses propres rôles : <strong>0 violation</strong> ; <strong>0</strong> violation de politique de contenu</td></tr>
+<tr><td>Captures</td><td><code>docs/accessibilite/s38-captures/</code> · résultats : <code>docs/accessibilite/resultats/axe-2026-10-28-s38.json</code></td></tr>
+</tbody></table></div>
+<p><strong>À vérifier à la main</strong> : axe ne détermine pas le fond du paragraphe des deux nouvelles fenêtres (« recouvrement partiel »), comme pour les fenêtres précédentes. Contrôle manuel : texte <code>#1D1D1B</code> sur fond blanc (≈ 17 : 1), même jeton que partout.</p>
+<h2>Défaut trouvé et corrigé pendant la recette</h2>
+<p>Les captures ont montré que l'aperçu des droits, placé en haut de la colonne de droite, <strong>sortait de l'écran</strong> quand on défilait vers les derniers rôles (Support, Finance, Super administrateur) : on choisissait sans rien voir. Il est maintenant <strong>collé en haut</strong> (<code>lg:sticky</code>) et ne s'étire plus. Un test de contrat et un contrôle dans le navigateur réel l'empêchent de revenir.</p>
+<h2>Réserves sur la recette</h2>
+<ul><li><strong>Un passage complet de bout en bout</strong> (82 vérifications, 46 états, 0 violation) a été obtenu <strong>avant</strong> la correction de l'aperçu collé ; ses résultats détaillés n'ont pas été conservés. Le dernier passage, <strong>après</strong> la correction, couvre tout UX-02 et 42 états (0 violation) mais s'est interrompu plus loin, sur la révocation groupée des sessions (écran de H2b que ce lot ne modifie pas), à cause d'une <strong>machine presque sans mémoire libre</strong> (0,5 Go sur 15,8 Go : captures d'écran de plus de 60 s). Les fichiers archivés sont ceux de ce dernier passage.</li><li>Le script d'audit a été renforcé : délai maximal par appel du navigateur, captures non bloquantes.</li><li>Quelques captures du parcours n'ont pas pu être produites pour la même raison (aucune ne concerne UX-02, sauf la capture « Inviter » : celle d'avant la correction n'est pas archivée).</li></ul>
+<h2>Dette et limites</h2>
+<ul><li><strong>D50</strong> libellés des modules, ressources et actions dupliqués dans l'interface (test de complétude contre le serveur) ; <strong>D51</strong> familles de rôles codées dans l'interface ; <strong>D52</strong> aperçu calculé côté interface (cohérence testée sur 1 024 combinaisons) ; <strong>D49</strong> prototype de design à mettre à jour (version 0.5.0, avec les composants de S3.7).</li><li>L'écoute avec un vrai lecteur d'écran (D31) doit couvrir ces fenêtres (familles, compteur annoncé, aperçu en accordéons, état « Sera ajouté / retiré »).</li><li>Non testé : mobile réel et tablette (la mise en page passe sur une colonne sous 1 024 px).</li></ul>
+<h2>À valider</h2>
+<ol><li>Les textes (familles, avertissement d'accès complet, message sur ses propres rôles) : modifiables en un endroit (<code>lib/roles.ts</code>, <code>components/admin/</code>).</li><li>« Je valide S3.8 » → fusion avec commit de fusion et étiquette <code>s3-8-validated</code>.</li></ol></main></body></html>
