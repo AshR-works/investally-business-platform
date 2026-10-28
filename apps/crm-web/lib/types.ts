@@ -58,8 +58,38 @@ export interface Company {
   status: string;
   sector: string | null;
   country: string | null;
+  email: string | null;
+  phone: string | null;
   /** Date de création (ISO 8601). */
   createdAt: string;
+  /** Présente dans le détail seulement. `null` : aucun facilitateur. */
+  facilitation?: Facilitation | null;
+}
+
+/** Facilitateur : personne qui met en relation avec une entreprise. */
+export interface Facilitator {
+  id: string;
+  lastName: string;
+  firstName: string;
+  phone: string;
+  comment: string | null;
+  createdAt: string;
+}
+
+export interface Commission {
+  type: 'PERCENT' | 'FIXED' | string;
+  /** Texte décimal (« 7.50 ») : jamais converti en nombre avant l'affichage. */
+  value: string;
+  currency: string | null;
+}
+
+/** Lien entreprise ↔ facilitateur. `facilitator` est nul si l'utilisateur n'a pas le droit de le voir ; `commission` est absente sans la permission « Commissions ». */
+export interface Facilitation {
+  facilitatorId: string;
+  contactMethod: string;
+  isCompanyEmployee: boolean;
+  facilitator: Facilitator | null;
+  commission?: Commission | null;
 }
 
 /** Une connexion de l'historique (réussie ou échouée) : étape de l'échec, adresse IP et appareil. */

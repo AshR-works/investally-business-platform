@@ -155,6 +155,10 @@ Cellule : **O**, **É**, **T** = portée accordée ; vide = non accordée.
 | `bd.ambassador.read` | T | T | T | O | T |  |  |  |  |  |
 | `bd.ambassador.create` | T |  | E | O |  |  |  |  |  |  |
 | `bd.ambassador.update` | T |  | E |  |  |  |  |  |  |  |
+| `bd.facilitator.read` | T | T | E | O |  |  |  | T |  |  |
+| `bd.facilitator.create` | T |  | E | O |  |  |  |  |  |  |
+| `bd.commission.read` | T | T | E |  |  |  |  | T |  |  |
+| `bd.commission.manage` | T |  | E |  |  |  |  |  |  |  |
 
 ### Investudy (`training`)
 

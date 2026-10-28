@@ -17,6 +17,8 @@ Le design 0.4.1 est installé dans l'application réelle (`apps/crm-web`) : jeto
 
 **S3.8 (2026-10-28), sans changement de version** : sélecteur de rôles par familles et aperçu des droits effectifs réalisés dans l'application d'après le retour de tests UX-02 (option B+C, DDR-0011, EXD-14) : composants `RolePicker` et `RightsPreview`, fenêtres larges (`Modal size="wide"`). **Prototype 0.4.1 non encore mis à jour** : ces composants seront ajoutés à la version 0.5.0 avec ceux de S3.7.
 
+**S4.0 (2026-10-28), sans changement de version** : fiche de création d'entreprise complétée d'après la demande de la direction produit (coordonnées, mise en relation par un facilitateur, méthode de contact, commission) et bloc « Mise en relation » dans la fiche entreprise (DDR-0012). Composants `CreateCompanyDialog` et `FacilitationPanel`. **Prototype 0.4.1 non encore mis à jour** : à ajouter à la version 0.5.0.
+
 ## 0.4.1 — 2026-10-21 — *Validée*
 - **EXD-10 / DEC-007 / DDR-0007** : panneau principal **centré sur la fenêtre** (option B) ; repli automatique en centrage dans l'espace restant quand la fenêtre est étroite ; largeur du panneau 1 440 px au plus ; la largeur maximale du contenu (1 320 px) est supprimée.
 - **EXD-11** : bouton de dépliage en **pictogramme seul** (44 px, nom accessible, info-bulle, état annoncé) ; pictogramme provisoire à confirmer.

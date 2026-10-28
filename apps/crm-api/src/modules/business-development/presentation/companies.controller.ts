@@ -28,7 +28,7 @@ export class CompaniesController {
   @HttpCode(201)
   @Protected('bd.company.create')
   register(@Body() dto: RegisterCompanyDto, @Access() access: AccessContext, @CurrentActor() actor: AuthenticatedActor, @Req() req: Request) {
-    return this.registerCompany.execute({ ...dto, ownerUserId: access.actorId, actor: actorContextFrom(req, actor) });
+    return this.registerCompany.execute({ ...dto, ownerUserId: access.actorId, access, actor: actorContextFrom(req, actor) });
   }
 
   @Get()

@@ -25,7 +25,7 @@
 | Code de test | ≈ 4 500 lignes (API) + 220 (interface) |
 | Tests automatiques | **380 unitaires + 141 d'intégration (API), 24 (interface)** — tous verts |
 | Routes HTTP | 32 (dont 2 sondes de santé), **toutes** protégées ou explicitement publiques (vérifié par un test qui les parcourt) |
-| Permissions / rôles | 95 permissions · 10 rôles · 3 portées (Propre, Équipe, Tous) |
+| Permissions / rôles | 99 permissions · 10 rôles · 3 portées (Propre, Équipe, Tous) |
 | Base de données | 6 migrations, 24 modèles et énumérations, 3 schémas (`iam`, `audit`, `bd`) + `docs` |
 | Documents | plus de 25 documents d'architecture, de sécurité et de recette, dont 6 décisions d'architecture (ADR) |
 

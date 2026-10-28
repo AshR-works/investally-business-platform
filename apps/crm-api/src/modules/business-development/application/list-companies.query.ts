@@ -36,6 +36,6 @@ export class ListCompaniesHandler {
       search: query.search?.trim() || undefined,
       ownerIds: query.visibility.unrestricted ? undefined : query.visibility.ownerIds,
     });
-    return { ...result, items: result.items.map(toCompanyView) };
+    return { ...result, items: result.items.map((company) => toCompanyView(company)) };
   }
 }

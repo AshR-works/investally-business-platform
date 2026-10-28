@@ -199,6 +199,7 @@ Le même mot recouvre des concepts différents selon le contexte : **on ne les u
 | Présence | Participation d'un apprenant à une séance | `training.Attendance` |
 | Certification / Attestation | Certificat (réussite) / attestation (suivi) | `training.Certification` / `training.Attestation` |
 | Ambassadeur | Client ou apprenant converti en relais commercial. **Création par décision manuelle** du chargé de compte, suggérée après une certification | `bd.Ambassador` |
+| Facilitateur | Personne qui met en relation avec une entreprise cible (parfois un de ses employés) ; fiche réutilisable, **distincte de l'ambassadeur**. Le lien entreprise ↔ facilitateur porte la méthode de contact et une commission éventuelle (S4.0, DDR-0012) | `bd.Facilitator`, `bd.CompanyFacilitation` |
 | Caisse / Banque | Comptes de trésorerie | `finance.CashAccount` / `BankAccount` |
 | Échéance fiscale | Date limite de déclaration (TVA, CNPS…) | `tax.FilingDeadline` |
 

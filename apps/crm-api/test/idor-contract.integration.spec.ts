@@ -13,7 +13,7 @@ const pdf = () => Buffer.from('%PDF-1.7\ncontrat idor\n%%EOF');
 
 interface As { token: string; ip: string }
 /** Identifiants visés par une sonde : les vrais (objet de Marie) ou inexistants (tous `NIL`). */
-interface Ids { company: string; doc: string; session: string }
+interface Ids { company: string; doc: string; session: string; facilitator: string }
 
 /**
  * Une sonde par route « objet » : elle appelle la route avec les identifiants donnés, en tant que `as`.
@@ -21,6 +21,7 @@ interface Ids { company: string; doc: string; session: string }
  */
 const PROBES: Record<string, (api: Api, as: As, ids: Ids) => Promise<ApiResponse>> = {
   'GET /companies/:id': (api, as, ids) => api.call('GET', `/api/v1/companies/${ids.company}`, as),
+  'GET /facilitators/:id': (api, as, ids) => api.call('GET', `/api/v1/facilitators/${ids.facilitator}`, as),
   'GET /documents': (api, as, ids) => api.call('GET', `/api/v1/documents?ownerType=company&ownerId=${ids.company}`, as),
   'POST /documents': (api, as, ids) =>
     api.call('POST', `/api/v1/documents?ownerType=company&ownerId=${ids.company}&title=Test&category=DECHARGE&fileName=a.pdf`, { ...as, raw: { type: 'application/octet-stream', data: pdf() } }),
@@ -72,6 +73,8 @@ describeDb('Contrat anti-IDOR : un acteur sans portée reçoit la réponse d\'un
     const chefSession = await login(chef);
     const company = await api.call('POST', '/api/v1/companies', { ...m, body: { name: `Société IDOR ${Math.random().toString(36).slice(2, 8)}` } });
     expect(company.status).toBe(201);
+    const facilitator = await api.call('POST', '/api/v1/facilitators', { ...m, body: { lastName: 'Mbarga', firstName: 'Paul', phone: '+237 699 00 11 22', comment: 'Secret-IDOR' } });
+    expect(facilitator.status).toBe(201);
     const doc = await api.call('POST', `/api/v1/documents?ownerType=company&ownerId=${company.body.id}&title=Pi%C3%A8ce&category=DECHARGE&fileName=piece.pdf`, {
       ...m, raw: { type: 'application/octet-stream', data: pdf() },
     });
@@ -81,8 +84,8 @@ describeDb('Contrat anti-IDOR : un acteur sans portée reçoit la réponse d\'un
       marie: m,
       chef: chefSession,
       attackers: { paul: await login(paul), autreChef: await login(autreChef) },
-      real: { company: company.body.id as string, doc: doc.body.id as string, session: second.sessionId } satisfies Ids,
-      nil: { company: NIL, doc: NIL, session: NIL } satisfies Ids,
+      real: { company: company.body.id as string, doc: doc.body.id as string, session: second.sessionId, facilitator: facilitator.body.id as string } satisfies Ids,
+      nil: { company: NIL, doc: NIL, session: NIL, facilitator: NIL } satisfies Ids,
       secondSession: second,
     };
   }
@@ -99,6 +102,7 @@ describeDb('Contrat anti-IDOR : un acteur sans portée reçoit la réponse d\'un
       // Aucune donnée de l'objet ne fuit.
       expect(onForeign.bytes.toString('utf8')).not.toContain('piece.pdf');
       expect(onForeign.bytes.toString('utf8')).not.toContain(w.real.company);
+      expect(onForeign.bytes.toString('utf8')).not.toContain('Secret-IDOR');
     }
     // Contrôle positif : le propriétaire, lui, réussit (le test n'est pas vide), puis les dégâts éventuels sont vérifiés.
     // L'archivage exige le droit de suppression, que Marie n'a pas : c'est son chef (même équipe) qui l'exerce.
@@ -123,6 +127,26 @@ describeDb('Contrat anti-IDOR : un acteur sans portée reçoit la réponse d\'un
     expect(list.body).toHaveLength(1);
     const revoked = await t.prisma.db.userSession.findUnique({ where: { id: w.real.session } });
     expect(revoked?.revokedAt).toBeNull();
+  }, 60_000);
+
+  it("lier une entreprise au facilitateur d'un collègue : même réponse que pour un facilitateur inexistant, et rien n'est créé", async () => {
+    const w = await world();
+    const attempt = (facilitatorId: string, name: string) =>
+      api.call('POST', '/api/v1/companies', { ...w.attackers.paul, body: { name, facilitation: { facilitatorId, contactMethod: 'EMAIL' } } });
+    const foreign = await attempt(w.real.facilitator, 'Piège A');
+    const missing = await attempt(NIL, 'Piège B');
+    expect(foreign.status).toBe(404);
+    expect([foreign.status, foreign.body.message]).toEqual([missing.status, missing.body.message]);
+    expect(foreign.bytes.toString('utf8')).not.toContain('Secret-IDOR');
+    const list = await api.call('GET', '/api/v1/companies?pageSize=100&search=Pi%C3%A8ge', w.attackers.paul);
+    expect(list.body.total).toBe(0);
+  }, 60_000);
+
+  it('la liste des facilitateurs ne montre à chacun que les siens', async () => {
+    const w = await world();
+    const list = await api.call('GET', '/api/v1/facilitators?pageSize=100', w.attackers.paul);
+    expect(list.status).toBe(200);
+    expect(JSON.stringify(list.body)).not.toContain(w.real.facilitator);
   }, 60_000);
 
   it('la liste des entreprises ne montre à chaque chargé de compte que les siennes', async () => {

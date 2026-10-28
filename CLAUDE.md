@@ -33,9 +33,9 @@ Monolithe modulaire, Clean Architecture ; règles testées par `pnpm arch` (doma
 ## Modules (état au 2026-10-22)
 | Module | Rôle | État |
 |---|---|---|
-| `iam` | connexion, MFA, rôles (10), permissions (95), sessions, invitations | livré (S3.1–S3.5, H2) |
+| `iam` | connexion, MFA, rôles (10), permissions (99), sessions, invitations | livré (S3.1–S3.5, H2) |
 | `audit` | journal transactionnel, historique des connexions | livré |
-| `business-development` | entreprises | livré (S1) ; contacts, offres, opportunités : S4 |
+| `business-development` | entreprises, coordonnées, facilitateurs et commissions | livré (S1, S4.0) ; contacts, offres, opportunités : S4.1+ |
 | `documents` | pièces jointes versionnées, stockage derrière un port | livré (S3.6) |
 | Investudy, Stocks, Reporting, ERP | | à venir (S5, S6, S7) |
 
