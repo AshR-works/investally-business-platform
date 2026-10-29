@@ -293,7 +293,7 @@ function HistoryDialog({ document, canDownload, onClose, onError }: { document: 
   }, [document.id, onError]);
 
   return (
-    <Modal title={`Versions de « ${document.title} »`} onClose={onClose}>
+    <Modal title={`Versions de « ${document.title} »`} onClose={onClose} size="wide">
       {!detail ? (
         <p role="status">Chargement…</p>
       ) : (

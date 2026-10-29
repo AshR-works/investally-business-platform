@@ -26,7 +26,7 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <h2>Ce qui est livré</h2>
 <div class="table-wrap"><table><thead><tr><th>Observation</th><th>Réponse</th></tr></thead><tbody>
 <tr><td>Croix en haut à droite des fenêtres</td><td>Croix nommée « Fermer la fenêtre » dans l'en-tête de <strong>toutes</strong> les fenêtres ; le bouton « Fermer » du bas est supprimé (fenêtre « Versions d'un document ») ; Échap ferme toujours</td></tr>
-<tr><td>Largeur minimale</td><td>26 rem (fenêtre normale), 46 rem (fenêtre large), toute la largeur sur un écran plus étroit</td></tr>
+<tr><td>Largeur minimale</td><td>26 rem (fenêtre normale), 46 rem (fenêtre large), toute la largeur sur un écran plus étroit ; <strong>la fenêtre « Versions d'un document » est désormais large</strong> (plus de défilement horizontal : constaté sur capture, le bouton « Télécharger » était coupé)</td></tr>
 <tr><td>Champs non conformes</td><td>Bordure, fond et liseré d'erreur, message écrit sous le champ avec pictogramme, <code>aria-invalid</code>/<code>aria-describedby</code>, focus sur le premier champ en erreur, récapitulatif annoncé ; la surbrillance disparaît dès la correction</td></tr>
 <tr><td>Zones de commentaire ajustables</td><td>Taille fixe (<code>resize: none</code>), défilement interne, limite de 2 000 caractères avec compteur annoncé</td></tr>
 <tr><td>Pays de l'entreprise</td><td>Champ « Pays d'affiliation » (facultatif, saisie libre avec suggestions), affiché dans la fiche</td></tr>
@@ -36,7 +36,7 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <h2>Preuves</h2>
 <div class="table-wrap"><table><thead><tr><th>Contrôle</th><th>Résultat</th></tr></thead><tbody>
 <tr><td>Types (<code>tsc</code>)</td><td>0 erreur</td></tr>
-<tr><td>Tests de l'interface</td><td><strong>159 / 159</strong> (19 nouveaux dans <code>s41.test.ts</code>) : croix et son emplacement, aucun bouton « Fermer » restant, largeurs minimales, <code>resize: none</code>, compteur, pays envoyé ou omis, règles champ par champ identiques aux messages, style de surbrillance (bordure + fond + liseré), liaison <code>aria-*</code>, focus du premier champ en erreur</td></tr>
+<tr><td>Tests de l'interface</td><td><strong>161 / 161</strong> (21 nouveaux dans <code>s41.test.ts</code>) : croix et son emplacement, aucun bouton « Fermer » restant, largeurs minimales, <code>resize: none</code>, compteur, pays envoyé ou omis, règles champ par champ identiques aux messages, style de surbrillance (bordure + fond + liseré), liaison <code>aria-*</code>, focus du premier champ en erreur</td></tr>
 <tr><td>API</td><td>Non modifiée (le pays était déjà accepté)</td></tr>
 </tbody></table></div>
 <h2>Défaut évité en cours de route</h2>

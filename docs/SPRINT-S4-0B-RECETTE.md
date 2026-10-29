@@ -6,7 +6,7 @@
 | Observation | Réponse |
 |---|---|
 | Croix en haut à droite des fenêtres | Croix nommée « Fermer la fenêtre » dans l'en-tête de **toutes** les fenêtres ; le bouton « Fermer » du bas est supprimé (fenêtre « Versions d'un document ») ; Échap ferme toujours |
-| Largeur minimale | 26 rem (fenêtre normale), 46 rem (fenêtre large), toute la largeur sur un écran plus étroit |
+| Largeur minimale | 26 rem (fenêtre normale), 46 rem (fenêtre large), toute la largeur sur un écran plus étroit ; **la fenêtre « Versions d'un document » est désormais large** (plus de défilement horizontal : constaté sur capture, le bouton « Télécharger » était coupé) |
 | Champs non conformes | Bordure, fond et liseré d'erreur, message écrit sous le champ avec pictogramme, `aria-invalid`/`aria-describedby`, focus sur le premier champ en erreur, récapitulatif annoncé ; la surbrillance disparaît dès la correction |
 | Zones de commentaire ajustables | Taille fixe (`resize: none`), défilement interne, limite de 2 000 caractères avec compteur annoncé |
 | Pays de l'entreprise | Champ « Pays d'affiliation » (facultatif, saisie libre avec suggestions), affiché dans la fiche |
@@ -18,7 +18,7 @@
 | Contrôle | Résultat |
 |---|---|
 | Types (`tsc`) | 0 erreur |
-| Tests de l'interface | **159 / 159** (19 nouveaux dans `s41.test.ts`) : croix et son emplacement, aucun bouton « Fermer » restant, largeurs minimales, `resize: none`, compteur, pays envoyé ou omis, règles champ par champ identiques aux messages, style de surbrillance (bordure + fond + liseré), liaison `aria-*`, focus du premier champ en erreur |
+| Tests de l'interface | **161 / 161** (21 nouveaux dans `s41.test.ts`) : croix et son emplacement, aucun bouton « Fermer » restant, largeurs minimales, `resize: none`, compteur, pays envoyé ou omis, règles champ par champ identiques aux messages, style de surbrillance (bordure + fond + liseré), liaison `aria-*`, focus du premier champ en erreur |
 | API | Non modifiée (le pays était déjà accepté) |
 
 ## Défaut évité en cours de route
