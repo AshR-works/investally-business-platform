@@ -315,9 +315,6 @@ function HistoryDialog({ document, canDownload, onClose, onError }: { document: 
           </table>
         </div>
       )}
-      <div className="row end" style={{ marginTop: '1rem' }}>
-        <button type="button" className="secondary" onClick={onClose}>Fermer</button>
-      </div>
     </Modal>
   );
 }
