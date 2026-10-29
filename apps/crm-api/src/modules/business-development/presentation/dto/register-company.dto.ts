@@ -27,7 +27,7 @@ export class CommissionDto {
   @ApiProperty({ example: '1500.00' }) @IsString() @IsNotEmpty() @MaxLength(16)
   value!: string;
 
-  @ApiPropertyOptional({ example: 'XAF' }) @IsOptional() @IsString() @MaxLength(3)
+  @ApiPropertyOptional({ example: 'XAF', description: 'Trois lettres (ISO 4217) ; absente ou « FCFA » = XAF' }) @IsOptional() @IsString() @MaxLength(4)
   currency?: string;
 }
 

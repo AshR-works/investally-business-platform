@@ -37,12 +37,15 @@ export interface CompanyForm {
   commissionCurrency: string;
 }
 
+/** Devise par défaut : franc CFA d'Afrique centrale (le serveur applique la même). */
+export const DEFAULT_CURRENCY = 'XAF';
+
 export const EMPTY_COMPANY_FORM: CompanyForm = {
   name: '', sector: '', email: '', phone: '',
   facilitatorMode: 'none', facilitatorId: '',
   facilitatorLastName: '', facilitatorFirstName: '', facilitatorPhone: '', facilitatorComment: '',
   contactMethod: 'WHATSAPP_MESSAGE', isCompanyEmployee: false,
-  commissionType: '', commissionValue: '', commissionCurrency: '',
+  commissionType: '', commissionValue: '', commissionCurrency: DEFAULT_CURRENCY,
 };
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -66,8 +69,8 @@ export function validateCompanyForm(form: CompanyForm): string[] {
     const value = Number(form.commissionValue.trim().replace(',', '.'));
     if (!Number.isFinite(value) || value <= 0) errors.push('La commission doit être un nombre positif.');
     else if (form.commissionType === 'PERCENT' && value > 100) errors.push('Un pourcentage de commission ne peut dépasser 100.');
-    if (form.commissionType === 'FIXED' && !/^[A-Za-z]{3}$/.test(form.commissionCurrency.trim())) {
-      errors.push('Indiquez la devise du montant sur trois lettres (par exemple XAF ou EUR).');
+    if (form.commissionType === 'FIXED' && !/^([A-Za-z]{3}|FCFA|fcfa)?$/.test(form.commissionCurrency.trim())) {
+      errors.push('La devise doit comporter trois lettres (par exemple XAF ou EUR), ou FCFA.');
     }
   }
   return errors;
@@ -96,15 +99,22 @@ export function buildCompanyBody(form: CompanyForm): Record<string, unknown> {
     facilitation.commission = {
       type: form.commissionType,
       value: form.commissionValue.trim().replace(',', '.'),
-      ...(form.commissionType === 'FIXED' ? { currency: form.commissionCurrency.trim().toUpperCase() } : {}),
+      ...(form.commissionType === 'FIXED' ? { currency: normalizeCurrency(form.commissionCurrency) } : {}),
     };
   }
   body.facilitation = facilitation;
   return body;
 }
 
+/** Devise saisie → code : vide ou « FCFA » = XAF (franc CFA d'Afrique centrale), sinon les trois lettres en majuscules. */
+export function normalizeCurrency(raw: string): string {
+  const value = raw.trim().toUpperCase();
+  return value === '' || value === 'FCFA' ? DEFAULT_CURRENCY : value;
+}
+
 /** « 7,50 % » ou « 1 500,00 XAF » (format français). */
 export function formatCommission(commission: Commission): string {
   const number = new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Number(commission.value));
-  return commission.type === 'PERCENT' ? `${number} %` : `${number} ${commission.currency ?? ''}`.trim();
+  if (commission.type === 'PERCENT') return `${number} %`;
+  return `${number} ${commission.currency === DEFAULT_CURRENCY ? 'FCFA' : (commission.currency ?? '')}`.trim();
 }
