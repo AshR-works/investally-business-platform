@@ -1,0 +1,57 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>S4.0 — Fiche d&#x27;entreprise : facilitateur et commission : recette</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="INDEX.html">Index</a> · <a href="GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="ARCHITECTURE.html">Architecture</a> · <a href="SECURITY.html">Sécurité</a> · <a href="METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="TECH-DEBT.html">Dette</a> · <a href="design/README.html">Design</a> · <a href="livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>S4.0 — Fiche d'entreprise : facilitateur et commission : recette</h1>
+<p><em>Branche <code>sprint/s4-0-facilitateurs</code> · 2026-10-28 · demande de la direction produit du 2026-10-28 ; décision D24 (option B) ; DDR-0012.</em></p>
+<h2>Ce qui est livré</h2>
+<div class="table-wrap"><table><thead><tr><th>Élément</th><th>Livré</th></tr></thead><tbody>
+<tr><td><strong>Fiche de création d'entreprise</strong></td><td>Nom (obligatoire), secteur d'activité, <strong>e-mail</strong> et <strong>téléphone</strong> de l'entreprise (contrôlés s'ils sont saisis ; e-mail enregistré en minuscules)</td></tr>
+<tr><td><strong>Mise en relation</strong></td><td>Un <strong>facilitateur</strong> (existant, réutilisable, ou nouveau) avec nom, prénom, téléphone, <strong>commentaire</strong> ; case « employé de l'entreprise » ; <strong>méthode de prise de contact</strong> (message WhatsApp, appel téléphonique, e-mail, rencontre, autre)</td></tr>
+<tr><td><strong>Commission</strong></td><td>Montant <strong>fixe</strong> (devise sur trois lettres obligatoire) ou <strong>pourcentage</strong> (de 0 exclu à 100), propre à chaque entreprise</td></tr>
+<tr><td><strong>Droits</strong> (corrigés le 2026-10-29)</td><td>4 permissions nouvelles (99 au total) : <code>bd.facilitator.read/create</code>, <code>bd.commission.read/manage</code>. Le <strong>chargé de compte voit la commission de ses entreprises</strong> (c'est lui qui la verse) mais ne la définit pas ; la Finance et la Direction la lisent ; le Responsable commercial (équipe) la lit et la définit ; le Support ne voit ni facilitateur ni commission</td></tr>
+<tr><td><strong>Fiche entreprise</strong></td><td>E-mail, téléphone et bloc « Mise en relation » (facilitateur, téléphone, méthode, appartenance, commentaire, commission formatée « 7,50 % » ou « 1 500,00 XAF »)</td></tr>
+<tr><td><strong>API</strong></td><td><code>POST /facilitators</code>, <code>GET /facilitators</code>, <code>GET /facilitators/:id</code> ; <code>POST /companies</code> accepte les coordonnées et la facilitation ; le propriétaire vient toujours de la session</td></tr>
+</tbody></table></div>
+<h2>Preuves</h2>
+<div class="table-wrap"><table><thead><tr><th>Contrôle</th><th>Résultat</th></tr></thead><tbody>
+<tr><td>Types (<code>tsc</code>), architecture (<code>pnpm arch</code>)</td><td>0 erreur · aucune violation (161 modules)</td></tr>
+<tr><td>Tests unitaires de l'API</td><td><strong>476 / 476</strong> (1 ignoré, antérieur)</td></tr>
+<tr><td><strong>Tests d'intégration (PostgreSQL jetable, 7 migrations)</strong></td><td><strong>183 / 183</strong> (13 suites), dont les 9 nouveaux de <code>facilitators-http</code></td></tr>
+<tr><td>Tests de l'interface</td><td><strong>140 / 140</strong> (38 nouveaux)</td></tr>
+<tr><td><strong>IDOR</strong></td><td>Le contrat anti-IDOR est étendu : <code>GET /facilitators/:id</code> est classé et sondé (même réponse pour le facilitateur d'un collègue et pour un identifiant inexistant, aucune fuite) ; lier une entreprise au facilitateur d'un collègue répond <strong>404 identique</strong> à un identifiant inexistant et ne crée rien ; la liste des facilitateurs ne montre que les siens</td></tr>
+<tr><td><strong>Droits de bout en bout (HTTP)</strong></td><td>Le chargé de compte reçoit 403 s'il fixe une commission (rien n'est créé) et la lit sur ses entreprises ; la réponse du Support ne contient ni le nom, ni le montant, ni le mot « commission » ; la Finance voit la commission ; le Support reçoit 403 sur la liste et la création ; un propriétaire dans le corps est refusé (400)</td></tr>
+<tr><td><strong>Base de données</strong></td><td>Contrainte <code>CHECK</code> testée directement (valeur &gt; 100, devise sur un pourcentage, type absent, type sans cohérence : toutes refusées)</td></tr>
+<tr><td><strong>Audit métier</strong></td><td>La création de l'entreprise <strong>et</strong> celle du facilitateur sont tracées, commission comprise</td></tr>
+<tr><td><strong>Mutants</strong></td><td><strong>15 / 15 tués</strong> (dont : chargé de compte sans lecture de commission, pas de devise par défaut, « FCFA » non reconnu) : commission sans droit, facilitateur étranger accepté, pourcentage &gt; 100, méthode inconnue, devise non exigée, création sans droit, e-mail non contrôlé, commission toujours rendue, commission rendue à tous en lecture, portée ignorée sur le facilitateur (lecture, fiche, liste)</td></tr>
+<tr><td><strong>Navigateur réel (Edge)</strong></td><td>Parcours complet joué avec le Super administrateur : fenêtre à deux groupes de champs (fieldset/légende), aucun champ de facilitateur tant qu'on n'en choisit pas, <strong>saisie invalide refusée avant l'envoi</strong> avec message annoncé (<code>role="alert"</code>), création réelle, fiche affichant facilitateur, téléphone, méthode, appartenance, commentaire, commission « 7,50 % », e-mail en minuscules</td></tr>
+<tr><td>Audit d'accessibilité (axe-core + arbre)</td><td>Passage complet : <strong>91 vérifications ✔ / 0 ✘</strong>, <strong>49 états, 0 violation</strong> ; les 3 nouveaux états (création avec facilitateur, erreurs de saisie, fiche avec mise en relation) : <strong>0 violation</strong></td></tr>
+<tr><td>Captures</td><td><code>docs/accessibilite/s40-captures/</code> · résultats : <code>docs/accessibilite/resultats/axe-2026-10-28-s40.json</code></td></tr>
+</tbody></table></div>
+<h2>Défauts trouvés par les tests et corrigés</h2>
+<ol><li><strong>Contrainte de la base trop permissive</strong> : une commission dont le type était absent mais la valeur présente était <strong>acceptée</strong> (en SQL, un <code>CHECK</code> laisse passer le résultat « inconnu »). Corrigé (<code>COALESCE</code>), avec un test de la base.</li><li><strong>Ordre des opérations</strong> : une méthode de contact inconnue n'était refusée qu'après la création du facilitateur (la transaction l'aurait annulée, mais autant refuser avant). Corrigé : validation avant toute écriture.</li><li><strong>Libellés</strong> : le test de complétude des libellés de S3.8 a échoué dès l'ajout des nouvelles permissions : l'aperçu des droits aurait affiché des codes bruts. Libellés ajoutés.</li></ol>
+<h2>Réserves sur la recette</h2>
+<ul><li><strong>Deuxième passage d'audit avec captures</strong> : il s'est arrêté plus loin (nouveaux codes de secours, écran du compte non modifié) car la machine manquait de mémoire (captures sans réponse après 60 s). Les captures S4.0 archivées viennent de ce passage ; les résultats archivés viennent du passage <strong>complet</strong> (49 états, 0 violation).</li><li><strong>Droits vérifiés par l'API, pas dans le navigateur</strong> : le navigateur a été joué avec le Super administrateur, <strong>avant</strong> la correction du 2026-10-29 (devise par défaut, lecture de la commission par le chargé de compte) : cette correction est couverte par les tests, pas par un nouveau passage dans le navigateur. Les restrictions (Support sans facilitateur ni commission) sont prouvées en HTTP, pas à l'écran.</li><li><strong>Écoute avec un vrai lecteur d'écran (D31)</strong> à étendre à ces écrans ; <strong>mobile et tablette</strong> non testés.</li></ul>
+<h2>Dette et points à confirmer</h2>
+<ul><li><strong>D53</strong> facilitateur sans modification ni suppression, un seul par entreprise ; <strong>D54</strong> pas de suivi des versements de commission, <strong>devenu un besoin réel</strong> (le chargé de compte verse la commission après déblocage des fonds par la direction administrative et financière) ; <strong>D55</strong> base légale et conservation des données du facilitateur (tiers) à faire valider ; <strong>D49</strong> prototype de design à mettre à jour (0.5.0).</li><li><strong>Décidé le 2026-10-29</strong> : le chargé de compte voit la commission ; le Responsable commercial et le Super administrateur la définissent ; devise par défaut XAF (FCFA). <strong>À confirmer</strong> : un facilitateur par entreprise, e-mail et téléphone facultatifs, et le suivi des versements (D54).</li><li>Le <strong>pays</strong> n'est pas dans la fiche (non demandé) : l'API l'accepte toujours.</li></ul>
+<h2>À valider</h2>
+<ol><li>Le contenu de la fiche et les droits sur la commission ci-dessus.</li><li>« Je valide S4.0 » → fusion avec commit de fusion et étiquette <code>s4-0-validated</code>.</li></ol></main></body></html>

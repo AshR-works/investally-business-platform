@@ -1,0 +1,45 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>DDR-0007 — Panneau principal centré (option B) et bouton de dépliage en pictogramme</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — design · <a href="../README.html">Mode d&#8217;emploi</a> · <a href="../01-DESIGN-SYSTEM.html">Design system</a> · <a href="../02-SPECIFICATIONS-FRONTEND.html">Spécifications frontend</a> · <a href="../exigences/REGISTRE-EXD.html">Exigences</a> · <a href="../04-ANALYSE-D-IMPACT.html">Analyse d&#8217;impact</a> · <a href="../05-AIDE-A-LA-DECISION.html">Aide à la décision</a> · <a href="../decisions/REGISTRE-DDR.html">Décisions (DDR)</a> · <a href="../CHANGELOG-DESIGN.html">Journal</a> · <a href="../prototype/index.html">Prototype</a></nav><h1>DDR-0007 — Panneau principal centré (option B) et bouton de dépliage en pictogramme</h1>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td><strong>Statut</strong></td><td>Acceptée (centrage) · pictogramme <strong>à confirmer</strong></td></tr>
+<tr><td><strong>Date</strong></td><td>2026-10-21</td></tr>
+<tr><td><strong>Version du design</strong></td><td>0.4.1</td></tr>
+<tr><td><strong>Lié à</strong></td><td>EXD-10, EXD-11 ; DEC-007 ; précise DDR-0004 (DEC-002)</td></tr>
+</tbody></table></div>
+<h2>Contexte</h2>
+<p>Le panneau principal occupait tout l'espace à droite de la navigation et restait collé à elle sur grand écran. La direction produit demande qu'il soit <strong>centré à tout moment</strong>, et que le bouton de dépliage soit un <strong>pictogramme</strong> représentant l'action, toujours utilisable.</p>
+<h2>Options examinées (centrage)</h2>
+<p>A centré dans l'espace à droite de la navigation · <strong>B centré sur la fenêtre, repli automatique en A quand la fenêtre est trop étroite</strong> · C toujours centré avec marges symétriques, navigation dépliée en surimpression · D statu quo. Notes pondérées (fidélité 35, stabilité 15, petits écrans 20, 6 cartes 15, coût 15) : A 3,85 · <strong>B 4,00</strong> · C 3,50 · D 3,25.</p>
+<h2>Décision</h2>
+<p><strong>Option B</strong>, choisie par la direction produit le 2026-10-21.</p>
+<ul><li>Grille à trois colonnes : marge gauche (au moins la largeur de la navigation), panneau (1 440 px au plus), marge droite libre. Quand la fenêtre est assez large, les deux marges sont égales : le panneau est <strong>centré sur la fenêtre</strong> et <strong>ne bouge pas</strong> quand on déplie la navigation. Quand elle est trop étroite, la marge droite tombe à zéro et le panneau occupe l'espace restant : repli en A, <strong>sans requête média</strong>.</li><li>Le contenu des pages remplit le panneau (la largeur maximale de 1 320 px du contenu est supprimée, elle le décentrait).</li><li>Bouton de dépliage : <strong>pictogramme seul</strong> (44 × 44 px), nom accessible et info-bulle « Déplier / Replier la navigation », état <code>aria-expanded</code>, pictogramme qui change selon l'état.</li></ul>
+<h2>Mesures (navigateur réel, panneau 1 440 px)</h2>
+<p>Fenêtre 2 200 px : marges gauche et droite égales (à la barre de défilement près), rail comme navigation dépliée. Fenêtre 1 700 px : centré avec le rail, repli avec la navigation dépliée. 1 360 px : repli. Aucun chevauchement navigation / panneau.</p>
+<h2>Points ouverts</h2>
+<ol><li><strong>Pictogramme</strong> : panneau latéral avec chevron (proposé, appliqué à titre provisoire) ou chevron double — à confirmer.</li><li><strong>Hub (Vue d'ensemble)</strong> : le bouton y reste masqué, la navigation y étant toujours complète (DEC-002). À confirmer.</li><li><strong>Défilement horizontal</strong> entre 901 et 1 100 px avec la navigation dépliée : <strong>déjà présent</strong> avant cette version (tableaux), à traiter à part.</li></ol>
+<h2>Conséquences</h2>
+<p>Réversible (un fichier de styles). Le libellé texte « Déplier » disparaît visuellement (il reste lu par les lecteurs d'écran). Dette : tester chaque nouvel écran à la largeur de repli.</p>
+<h2>Réalisation (H1, 2026-10-21)</h2>
+<p>Implémenté dans <code>apps/crm-web</code> (<code>components/app-shell.tsx</code>) avec les mêmes règles : grille à trois colonnes, repli automatique. Mesuré dans un navigateur réel : à 2 200 px marges de 373 px de chaque côté, à 1 280 px repli sans chevauchement. Le bouton est un <code>button</code> nommé « Navigation complète » (<code>aria-expanded</code>), info-bulle « Déplier / Replier la navigation ».</p></main></body></html>
