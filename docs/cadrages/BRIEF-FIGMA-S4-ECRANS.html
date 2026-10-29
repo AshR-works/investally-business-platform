@@ -1,0 +1,87 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Brief de design Figma — écrans de S4 (cadrage UX)</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — cadrages · <a href="README.html">Index des cadrages</a> · <a href="../INDEX.html">Documentation</a> · <a href="../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../design/05-AIDE-A-LA-DECISION.html">Aide à la décision</a></nav><h1>Brief de design Figma — écrans de S4 (cadrage UX)</h1>
+<p><strong>Date</strong> : 2026-10-29 · <strong>Statut</strong> : <strong>proposition à valider</strong> · <strong>Suite de</strong> : <a href="CADRAGE-UX-5-ECRANS-CLES.html">CADRAGE-UX-5-ECRANS-CLES.md</a> (atelier d'environ 90 minutes décidé le 2026-10-21)</p>
+<blockquote><p>Objet : donner au graphiste, qui produit les <strong>maquettes haute fidélité et le prototypage sur Figma</strong>, et à l'atelier de cadrage, ce que chaque écran doit contenir, quels <strong>droits</strong> changent ce que l'on voit, et ce qui reste à trancher. Aucune décision n'est prise ici : les points marqués <strong>« à trancher »</strong> sont ceux de la direction produit.</p></blockquote>
+<h2>1. Règles communes à tous les écrans</h2>
+<ul><li><strong>Style validé</strong> : design v0.4.1 (taupe, contrastes, polices hébergées, thèmes clair et sombre). On ne redessine pas : on décline. Les composants déjà réalisés dans l'application sont à <strong>réutiliser</strong> : coque et navigation (hub, rail), page d'en-tête, carte, tableau de données (recherche, pagination, sélection persistante), badge d'état, fenêtre (normale ou large), confirmation d'action irréversible.</li><li><strong>Exigences à respecter</strong> (<code>docs/design/exigences/REGISTRE-EXD.md</code>) : EXD-01 profondeur de la zone principale, EXD-02 sélection persistante, EXD-04 opportunités en cartes par 6, EXD-10 panneau centré, EXD-11 bouton de dépliage, EXD-12 mot de passe affichable, EXD-13 actions irréversibles confirmées, EXD-14 droits visibles.</li><li><strong>Accessibilité (WCAG 2.2 AA)</strong> : tout se fait au <strong>clavier</strong> ; l'état n'est jamais porté par la couleur seule (texte ou pictogramme en plus) ; les erreurs sont annoncées et listées ; contrastes mesurés. Pour chaque écran, <strong>toute interaction à la souris (glisser-déposer, survol) a une alternative clavier</strong> (dette D30).</li><li><strong>Chaque écran est livré dans tous ses états</strong> : chargement, vide, erreur, résultat, <strong>droits réduits</strong> (ce que voit un profil qui n'a que « ses propres » données), thème clair et sombre, largeur 1280 px et en dessous de 1024 px.</li><li><strong>Les droits décident de l'affichage</strong> : l'interface masque ce qui n'est pas accordé, mais le serveur reste le seul juge. Trois portées : <strong>Propre</strong> (ses objets), <strong>Équipe</strong> (lui et ses subordonnés directs), <strong>Tous</strong>.</li><li><strong>Libellés en français métier</strong>, ceux que les équipes emploient réellement (à confirmer en atelier).</li></ul>
+<h2>2. Les cinq écrans</h2>
+<h3>Écran 1 — Fiche entreprise (vue 360°)</h3>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td><strong>Rôle</strong></td><td>Voir d'un coup d'œil où en est une entreprise et agir sans quitter la fiche</td></tr>
+<tr><td><strong>Déjà livré</strong></td><td>Identité (statut, secteur, pays, e-mail, téléphone), bloc « Mise en relation » (facilitateur, méthode de contact, commission selon les droits), documents versionnés</td></tr>
+<tr><td><strong>À ajouter (S4.1 et suivants)</strong></td><td>Contacts, offres et décharges, rendez-vous, opportunités, historique des actions</td></tr>
+<tr><td><strong>Statuts de l'entreprise</strong></td><td>Cible, Contactée, Qualifiée, Cliente, Archivée</td></tr>
+<tr><td><strong>Premier regard</strong></td><td>Nom, statut, propriétaire, prochaine action, opportunités en cours</td></tr>
+<tr><td><strong>Droits</strong></td><td>Entreprise : <code>bd.company.read</code> (Propre, Équipe ou Tous). <strong>Commission : visible seulement avec <code>bd.commission.read</code></strong> (chargé de compte sur ses entreprises, Responsable commercial sur son équipe, Direction, Finance). Un facilitateur hors portée n'est pas affiché</td></tr>
+<tr><td><strong>À trancher</strong></td><td>Organisation de la page (onglets, sections continues ou colonnes) ; ce qui est « premier regard » et ce qui est secondaire</td></tr>
+</tbody></table></div>
+<h3>Écran 2 — Création et modification d'une entreprise et d'un contact</h3>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td><strong>Déjà livré</strong></td><td>Création d'entreprise : nom (obligatoire), secteur, e-mail, téléphone, puis « Mise en relation » (nouveau facilitateur ou facilitateur enregistré, méthode de contact, « employé de l'entreprise », commission en montant fixe ou pourcentage, devise XAF/FCFA par défaut). Contrôles avant envoi, messages annoncés</td></tr>
+<tr><td><strong>À concevoir</strong></td><td><strong>Modification</strong> d'une entreprise ; <strong>création et modification d'un contact</strong> (interlocuteur : DAF, décideur…) ; gestion des <strong>doublons</strong> (le nom d'entreprise est déjà unique, sans tenir compte de la casse)</td></tr>
+<tr><td><strong>Données d'un contact (hypothèse)</strong></td><td>Nom, prénom, fonction ou type (DAF, décideur, autre), e-mail, téléphone, entreprise liée</td></tr>
+<tr><td><strong>Droits</strong></td><td><code>bd.company.create/update</code>, <code>bd.contact.create/update</code> ; commission : <code>bd.commission.manage</code> (Responsable commercial et Super administrateur seulement)</td></tr>
+<tr><td><strong>À trancher</strong></td><td>Fenêtre ou page pour chaque formulaire ; champs d'un contact ; que faire à la détection d'un doublon (bloquer, proposer la fiche existante)</td></tr>
+</tbody></table></div>
+<h3>Écran 3 — Offres, décharges et relances</h3>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td><strong>Rôle</strong></td><td>Suivre une offre déposée, sa décharge signée et les relances planifiées</td></tr>
+<tr><td><strong>Règles métier</strong></td><td>Une seule décharge valide par offre ; pas de relance après une décharge refusée ou une offre retirée ; seules les transitions d'état permises sont proposées</td></tr>
+<tr><td><strong>Droits</strong></td><td><code>bd.offer.<em></code>, <code>bd.receipt.</em></code>, <code>bd.followup.*</code> (Propre pour le chargé de compte, Équipe pour le Responsable commercial)</td></tr>
+<tr><td><strong>À trancher</strong></td><td>États exacts d'une offre ; relances : liste, calendrier ou les deux ; alerte sur une relance en retard</td></tr>
+</tbody></table></div>
+<h3>Écran 4 — Opportunités</h3>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td><strong>Déjà décidé (DEC-003)</strong></td><td>Hybride : <strong>cartes par lignes de 6</strong> par défaut, bandeau d'étapes, bascule « Par étape » ; prototype v0.4.0</td></tr>
+<tr><td><strong>Règle métier</strong></td><td>Pas d'« accord de principe » sans au moins un rendez-vous décideur tenu ; <strong>dérogation possible du Responsable commercial, avec justification obligatoire et auditée</strong> (à concevoir : la fenêtre de dérogation). Une entreprise peut avoir plusieurs opportunités ; une opportunité clôturée n'est plus modifiable</td></tr>
+<tr><td><strong>Droits</strong></td><td><code>bd.opportunity.*</code> ; lecture élargie pour le Responsable commercial et la Direction</td></tr>
+<tr><td><strong>À concevoir</strong></td><td><strong>Alternative clavier</strong> de la bascule « Par étape » (dette D30) ; sélection persistante</td></tr>
+<tr><td><strong>À trancher</strong></td><td>Informations sur la carte ; filtres ; mesure d'usage prévue après deux semaines</td></tr>
+</tbody></table></div>
+<h3>Écran 5 — Agenda</h3>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td><strong>Rôle</strong></td><td>Voir et créer rendez-vous, relances, formations et échéances</td></tr>
+<tr><td><strong>Prévu (S4.2b)</strong></td><td>Vues semaine, mois et jour ; rappels ; création liée à une entreprise ou une opportunité ; droits Propre, Équipe, Tous</td></tr>
+<tr><td><strong>Droits</strong></td><td>Ce que l'on voit dépend de la portée : le chargé de compte voit son agenda, le Responsable commercial celui de son équipe</td></tr>
+<tr><td><strong>À trancher</strong></td><td>Vue par défaut ; affichage d'un agenda d'équipe ; conflits d'horaire</td></tr>
+</tbody></table></div>
+<h2>3. Écran ajouté à l'ordre du jour : versement des commissions</h2>
+<p>Le <strong>chargé de compte verse la commission</strong> après que la direction administrative et financière a débloqué les fonds (décision du 2026-10-29, dette D54). Cela appelle un écran de suivi, absent du plan initial :</p>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td><strong>États envisagés (hypothèse)</strong></td><td>À verser → fonds débloqués → versée (avec date)</td></tr>
+<tr><td><strong>Qui voit quoi</strong></td><td>Chargé de compte : les commissions de ses entreprises ; Finance : toutes ; Responsable commercial : son équipe</td></tr>
+<tr><td><strong>À trancher</strong></td><td>Où se trouve ce suivi (fiche entreprise, liste dédiée, tableau de bord) ; qui change quel état ; justificatif de versement ; <strong>lot à planifier après S4.1</strong></td></tr>
+</tbody></table></div>
+<h2>4. Livrables attendus</h2>
+<div class="table-wrap"><table><thead><tr><th>Du graphiste (Figma)</th><th>De moi (développement)</th></tr></thead><tbody>
+<tr><td>Maquettes haute fidélité des écrans ci-dessus, <strong>clair et sombre</strong>, dans tous leurs états</td><td>Les données et les droits réels de chaque écran (ce document, tenu à jour)</td></tr>
+<tr><td>Prototype navigable du parcours de chaque écran</td><td>Les jetons et composants de l'application (pour réemploi)</td></tr>
+<tr><td>Composants Figma nommés comme ceux de l'application, annotations d'accessibilité (ordre du clavier, noms accessibles)</td><td>Un retour écrit sur la faisabilité avant la validation d'un écran</td></tr>
+<tr><td>Une version datée par écran validé</td><td>Une fiche de décision (DDR) par sujet tranché et la mise à jour du document de design</td></tr>
+</tbody></table></div>
+<p><strong>Règle de travail.</strong> Un écran n'est codé qu'une fois sa maquette validée par la direction produit ; tout écart constaté ensuite est consigné (écart maquette ↔ réalisé) plutôt que corrigé en silence.</p>
+<h2>5. Ordre du jour proposé pour l'atelier (≈ 90 min, avec le graphiste)</h2>
+<ol><li>Confirmer les 5 écrans et l'ajout du suivi des commissions (10 min).</li><li>Pour chaque écran : premier regard, actions fréquentes, états, droits, libellés (15 min × 5).</li><li>Ce qui reste hors séance et l'ordre de livraison des maquettes (5 min).</li></ol>
+<p>Les décisions sont consignées dans <code>docs/QUESTIONS-ET-DECISIONS.md</code> ; chaque sujet de design tranché donne une fiche DDR.</p></main></body></html>
