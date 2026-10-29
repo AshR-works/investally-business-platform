@@ -54,6 +54,10 @@
 | D50 | **Libellés des modules, ressources et actions dupliqués dans l'interface** (`lib/roles.ts`) : un test de complétude les compare au catalogue du serveur, mais l'idéal est de les exposer par l'API | S3.8 | Claude | À l'ajout d'un module (S4) |
 | D51 | **Familles de rôles codées dans l'interface** : un nouveau rôle apparaît dans « Autres rôles » jusqu'à son rangement ; une métadonnée de famille côté API supprimerait la duplication | S3.8 | Claude | À l'ajout d'un rôle |
 | D52 | **Aperçu des droits calculé côté interface** (règle de cumul reprise du serveur) : sa cohérence est testée sur les 1 024 combinaisons, mais toute évolution de la règle serveur impose de mettre à jour l'interface | S3.8 | Claude | Permanent (test de cohérence) |
+| D53 | **Facilitateur : ni modification ni suppression**, un seul facilitateur par entreprise, lien non modifiable après la création (seule la création est livrée) | S4.0 | Claude | S4.1 (fiche entreprise 360°) |
+| D54 | **Commission : aucun suivi des versements** (due, déblocage des fonds par la direction administrative et financière, versée par le chargé de compte, date) : *devenu un besoin réel le 2026-10-29* puisque le chargé de compte verse la commission ; seul le principe convenu est enregistré. À cadrer avec la Finance | S4.0 | Claude | Prochain lot après S4.1, à confirmer |
+| D55 | **Données personnelles du facilitateur (tiers)** : base légale, information de la personne, durée de conservation et droit d'effacement à faire valider ; en attendant, mêmes protections que les autres données (portée, audit des créations) | S4.0 | Direction produit | Avis juridique S7 |
+| D56 | ~~Devise de la commission saisie à chaque fois~~ **Réglée le 2026-10-29** : devise par défaut le FCFA d'Afrique centrale (XAF) ; une liste fermée de devises reste possible | S4.0 | Direction produit | Fait |
 | D5 | Hypothèses de charge et de périmètre non confirmées | Phase 3 | Revue à la fin de S1 avec les chiffres réels | Ouverte |
 
 ## Adopted Conventions

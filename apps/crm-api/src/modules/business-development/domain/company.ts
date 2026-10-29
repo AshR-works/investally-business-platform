@@ -1,6 +1,8 @@
 import { AggregateRoot, DomainError } from '../../../shared-kernel';
 import { CompanyName } from './company-name';
 import { CompanyStatus } from './company-status';
+import { normalizeEmail, normalizePhone } from './contact-info';
+import { Facilitation } from './facilitation';
 import { CompanyRegistered } from './events/company-registered';
 
 /** État interne d'une entreprise (identité, nom, statut, propriétaire, horodatages). */
@@ -12,6 +14,10 @@ export interface CompanyProps {
   ownerUserId: string | null;
   sector: string | null;
   country: string | null;
+  email: string | null;
+  phone: string | null;
+  /** Facilitateur par qui l'entreprise a été approchée (au plus un). */
+  facilitation: Facilitation | null;
   createdAt: Date;
   version: number;
 }
@@ -28,6 +34,9 @@ export class Company extends AggregateRoot {
     ownerUserId: string;
     sector?: string | null;
     country?: string | null;
+    email?: string | null;
+    phone?: string | null;
+    facilitation?: Facilitation | null;
     now: Date;
   }): Company {
     if (!input.ownerUserId) throw new DomainError('VALIDATION', "Une entreprise doit avoir un propriétaire");
@@ -38,6 +47,9 @@ export class Company extends AggregateRoot {
       ownerUserId: input.ownerUserId,
       sector: input.sector?.trim() || null,
       country: input.country?.trim() || null,
+      email: normalizeEmail(input.email),
+      phone: normalizePhone(input.phone, { required: false }),
+      facilitation: input.facilitation ?? null,
       createdAt: input.now,
       version: 1,
     });
@@ -64,6 +76,9 @@ export class Company extends AggregateRoot {
   get ownerUserId(): string | null { return this.props.ownerUserId; }
   get sector(): string | null { return this.props.sector; }
   get country(): string | null { return this.props.country; }
+  get email(): string | null { return this.props.email; }
+  get phone(): string | null { return this.props.phone; }
+  get facilitation(): Facilitation | null { return this.props.facilitation; }
   get createdAt(): Date { return this.props.createdAt; }
   get version(): number { return this.props.version; }
 }

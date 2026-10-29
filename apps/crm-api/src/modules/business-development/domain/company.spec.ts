@@ -43,6 +43,9 @@ describe('Company', () => {
       ownerUserId: 'u1',
       sector: null,
       country: null,
+      email: null,
+      phone: null,
+      facilitation: null,
       createdAt: now,
       version: 1,
     });

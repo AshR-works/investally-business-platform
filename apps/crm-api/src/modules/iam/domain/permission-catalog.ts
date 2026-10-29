@@ -31,6 +31,8 @@ export const RESOURCES: readonly ResourceDefinition[] = [
   { module: 'bd', resource: 'visit', label: 'Visites Investally', actions: [...CRUD] },
   { module: 'bd', resource: 'opportunity', label: 'Opportunités', actions: [...CRUD, 'advance', 'close', 'export'] },
   { module: 'bd', resource: 'ambassador', label: 'Ambassadeurs', actions: [...CRUD] },
+  { module: 'bd', resource: 'facilitator', label: 'Facilitateurs', actions: ['read', 'create'] },
+  { module: 'bd', resource: 'commission', label: 'Commissions des facilitateurs', actions: ['read', 'manage'] },
   // Training / Investudy
   { module: 'training', resource: 'program', label: 'Programmes', actions: [...CRUD, 'archive'] },
   { module: 'training', resource: 'training', label: 'Formations', actions: [...CRUD] },
