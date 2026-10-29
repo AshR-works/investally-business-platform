@@ -120,3 +120,20 @@ describe('retours de tests S4.0 — champs non conformes en surbrillance', () =>
 function withBadCommission(): CompanyForm {
   return form({ facilitatorMode: 'new', facilitatorLastName: 'A', facilitatorFirstName: 'B', facilitatorPhone: '+237 600 00 00 01', commissionType: 'PERCENT', commissionValue: '150' });
 }
+
+describe('retours de tests S4.0 — une fenêtre qui contient un tableau est large (pas de défilement horizontal)', () => {
+  it("la fenêtre des versions d'un document est large", () => {
+    expect(read('components/documents/documents-panel.tsx')).toMatch(/<Modal title=\{`Versions de[^>]*size="wide"/);
+  });
+  it('toute fenêtre dont le contenu comporte un tableau est large', () => {
+    for (const file of ['components/documents/documents-panel.tsx', 'app/(app)/admin/users/page.tsx', 'app/(app)/account/sessions/page.tsx', 'components/confirm-dialog.tsx']) {
+      const source = read(file);
+      // Chaque <Modal ...> ... </Modal> qui contient « <table » doit porter size="wide".
+      for (const block of source.split('<Modal ').slice(1)) {
+        const body = block.slice(0, block.indexOf('</Modal>'));
+        if (body.includes('<table')) expect(block.slice(0, block.indexOf('>')), `${file} : ${body.slice(0, 40)}`).toContain('size="wide"');
+      }
+    }
+  });
+});
+
