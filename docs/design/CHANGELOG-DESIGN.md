@@ -19,6 +19,8 @@ Le design 0.4.1 est installé dans l'application réelle (`apps/crm-web`) : jeto
 
 **S4.0 (2026-10-28), sans changement de version** : fiche de création d'entreprise complétée d'après la demande de la direction produit (coordonnées, mise en relation par un facilitateur, méthode de contact, commission) et bloc « Mise en relation » dans la fiche entreprise (DDR-0012). Composants `CreateCompanyDialog` et `FacilitationPanel`. Correction du 2026-10-29 : devise de la commission préremplie « XAF » (FCFA). **Prototype 0.4.1 non encore mis à jour** : à ajouter à la version 0.5.0.
 
+**S4.0, retours de tests (2026-10-29), sans changement de version** : croix de fermeture en haut à droite de chaque fenêtre (le bouton « Fermer » du bas disparaît), largeur minimale des fenêtres, champs non conformes en surbrillance avec message écrit, zones de texte à taille fixe, champ « Pays » (DDR-0013, EXD-15 et EXD-16). **Prototype 0.4.1 non encore mis à jour** : à ajouter à la version 0.5.0.
+
 ## 0.4.1 — 2026-10-21 — *Validée*
 - **EXD-10 / DEC-007 / DDR-0007** : panneau principal **centré sur la fenêtre** (option B) ; repli automatique en centrage dans l'espace restant quand la fenêtre est étroite ; largeur du panneau 1 440 px au plus ; la largeur maximale du contenu (1 320 px) est supprimée.
 - **EXD-11** : bouton de dépliage en **pictogramme seul** (44 px, nom accessible, info-bulle, état annoncé) ; pictogramme provisoire à confirmer.
