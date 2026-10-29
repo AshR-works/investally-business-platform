@@ -3,11 +3,14 @@ import { AuditModule } from '../audit/audit.module';
 import { DocumentsModule } from '../documents/documents.module';
 import { IamModule } from '../iam/iam.module';
 import { CompanyDocumentOwnerResolver } from './application/company-document-owner';
+import { ExportCompanySheetHandler } from './application/export-company-sheet.query';
+import { FacilitationResolver } from './application/facilitation-resolver';
 import { GetFacilitatorHandler, ListFacilitatorsHandler } from './application/facilitator-queries';
 import { GetCompanyHandler } from './application/get-company.query';
 import { ListCompaniesHandler } from './application/list-companies.query';
 import { RegisterCompanyUseCase } from './application/register-company.use-case';
 import { RegisterFacilitatorUseCase } from './application/register-facilitator.use-case';
+import { UpdateCompanyUseCase } from './application/update-company.use-case';
 import { COMPANY_REPOSITORY } from './domain/company-repository';
 import { FACILITATOR_REPOSITORY } from './domain/facilitator-repository';
 import { PrismaCompanyRepository } from './infrastructure/prisma-company.repository';
@@ -22,6 +25,9 @@ import { FacilitatorsController } from './presentation/facilitators.controller';
   providers: [
     RegisterCompanyUseCase,
     RegisterFacilitatorUseCase,
+    FacilitationResolver,
+    UpdateCompanyUseCase,
+    ExportCompanySheetHandler,
     ListCompaniesHandler,
     GetCompanyHandler,
     ListFacilitatorsHandler,

@@ -1,0 +1,50 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>S4.0 (suite) — modifier et exporter une fiche d&#x27;entreprise : recette</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="INDEX.html">Index</a> · <a href="GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="ARCHITECTURE.html">Architecture</a> · <a href="SECURITY.html">Sécurité</a> · <a href="METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="TECH-DEBT.html">Dette</a> · <a href="design/README.html">Design</a> · <a href="livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>S4.0 (suite) — modifier et exporter une fiche d'entreprise : recette</h1>
+<p><em>Branche <code>sprint/s4-0c-modifier-exporter-fiche</code> · 2026-10-30 · demande de la direction produit ; DDR-0014 ; D26.</em></p>
+<h2>Ce qui est livré</h2>
+<div class="table-wrap"><table><thead><tr><th>Demande</th><th>Réponse</th></tr></thead><tbody>
+<tr><td><strong>Bouton « Modifier »</strong></td><td>Sur la fiche, pour qui détient <code>bd.company.update</code> : la fenêtre de création, préremplie. Nom, secteur, pays, e-mail, téléphone, facilitateur, méthode, appartenance, commission. Jamais le propriétaire, le statut ni l'identifiant (400). Entreprise archivée : non modifiable</td></tr>
+<tr><td><strong>Verrou optimiste</strong></td><td>Modification sur une version périmée : 409, rien n'est écrasé</td></tr>
+<tr><td><strong>Commission</strong></td><td>Seul le gestionnaire (Responsable commercial, Super administrateur) la définit, la change ou la retire ; la modification d'un chargé de compte la <strong>conserve</strong></td></tr>
+<tr><td><strong>Export de la fiche</strong></td><td>Bouton « Exporter la fiche » pour qui voit l'entreprise ; document HTML imprimable (enregistrable en PDF par le navigateur) ; <strong>chaque export est tracé</strong> (session, adresse, appareil) avant la remise ; hors portée = « introuvable » sans trace</td></tr>
+<tr><td><strong>Contenu du document</strong></td><td>Seulement ce que l'utilisateur voit : le Support n'a ni facilitateur ni commission</td></tr>
+</tbody></table></div>
+<h2>Preuves</h2>
+<div class="table-wrap"><table><thead><tr><th>Contrôle</th><th>Résultat</th></tr></thead><tbody>
+<tr><td>Types (<code>tsc</code>), architecture (<code>pnpm arch</code>)</td><td>0 erreur · aucune violation (166 modules)</td></tr>
+<tr><td>Tests unitaires de l'API</td><td><strong>504 / 504</strong> (1 ignoré, antérieur) ; 28 nouveaux (modifier : 18 ; export et document : 10)</td></tr>
+<tr><td><strong>Tests d'intégration (PostgreSQL jetable)</strong></td><td><strong>196 / 196</strong> (14 suites) ; 13 nouveaux (<code>company-edit-export</code>), dont portée, version, audit avant/après, persistance du retrait et du remplacement du lien</td></tr>
+<tr><td><strong>IDOR</strong></td><td><code>PUT /companies/:id</code> et <code>GET /companies/:id/export</code> classées « objet » et sondées : même réponse pour la fiche d'un collègue et un identifiant inexistant, aucune écriture, aucune trace d'export</td></tr>
+<tr><td>Sécurité du document</td><td>Échappement testé (nom et commentaire piégés), aucun script ni lien ni ressource externe, politique de contenu <code>default-src 'none'</code>, <code>nosniff</code>, pas de cache</td></tr>
+<tr><td>Tests de l'interface</td><td><strong>183 / 183</strong> (22 nouveaux) : préremplissage, droits d'édition, corps de la requête (conservation de la commission, retrait, verrouillage), boutons, ouverture de la fenêtre avant l'attente</td></tr>
+<tr><td><strong>Mutants</strong></td><td><strong>14 / 14 tués</strong> (version non contrôlée, portée ignorée, commission perdue ou non protégée, retrait sans droit, export sans trace ou hors portée ou avec commission, échappement incomplet, archivée modifiable, facilitateur étranger accepté, doublon de nom, retrait et remplacement du lien non persistés)</td></tr>
+<tr><td>Node 22</td><td>Non rejoué pour ce lot (testé sous Node 26.7 ; les 183 tests d'intégration d'avant avaient passé sous Node 22)</td></tr>
+</tbody></table></div>
+<h2>Réserves sur la recette</h2>
+<ul><li><strong>Aucun passage dans le navigateur réel pour ce lot</strong> (mémoire insuffisante, application locale de la direction produit sur les ports de test). L'ouverture de la fenêtre d'impression, la boîte « Enregistrer au format PDF » et la mise en page du document ne sont <strong>pas vérifiées visuellement</strong>.</li><li><strong>L'impression dépend du navigateur</strong> : un bloqueur de fenêtres contextuelles peut empêcher l'ouverture (un message l'explique). Le rendu du PDF n'est pas identique d'un navigateur à l'autre (D61).</li><li>Le gabarit est <strong>provisoire</strong> : en-tête texte, pas de logo ni de mentions légales (en attente de la charte et des informations du DAF).</li><li><strong>Modifier</strong> : le sélecteur de facilitateurs liste ceux de la portée de l'utilisateur ; un facilitateur créé par un collègue hors portée n'est pas proposé.</li></ul>
+<h2>Dette et à confirmer</h2>
+<ul><li><strong>D58</strong> réglée (provisoire) ; <strong>D59</strong> export de listes ; <strong>D60</strong> vues partagées ; <strong>D61</strong> PDF côté serveur.</li><li><strong>À confirmer</strong> : l'option C pour les exports de listes, le modèle des vues partagées, et que le DG et la DGA reçoivent le rôle Super administrateur (qui inclut l'administration) plutôt que Direction (qui voit et exporte tout).</li></ul>
+<h2>À valider</h2>
+<ol><li>Les boutons et leur emplacement ; la conservation de la commission par un chargé de compte.</li><li>« Je valide S4.0c » → fusion avec commit de fusion et étiquette <code>s4-0c-validated</code> (après la fusion de <code>fix/retours-s4-0</code>, dont cette branche dépend).</li></ol></main></body></html>

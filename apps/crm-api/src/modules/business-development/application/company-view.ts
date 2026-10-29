@@ -29,6 +29,8 @@ export interface CompanyView {
   email: string | null;
   phone: string | null;
   createdAt: string;
+  /** Numéro de version (verrou optimiste) : à renvoyer tel quel pour modifier l'entreprise. */
+  version: number;
   /** Présente seulement dans le détail d'une entreprise et dans la réponse de création. */
   facilitation?: FacilitationView | null;
 }
@@ -51,6 +53,7 @@ export function toCompanyView(company: Company, facilitation?: FacilitationVisib
     email: company.email,
     phone: company.phone,
     createdAt: company.createdAt.toISOString(),
+    version: company.version,
   };
   if (facilitation) {
     const link = company.facilitation;

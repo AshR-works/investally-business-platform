@@ -59,7 +59,10 @@
 | D55 | **Données personnelles du facilitateur (tiers)** : base légale, information de la personne, durée de conservation et droit d'effacement à faire valider ; en attendant, mêmes protections que les autres données (portée, audit des créations) | S4.0 | Direction produit | Avis juridique S7 |
 | D56 | ~~Devise de la commission saisie à chaque fois~~ **Réglée le 2026-10-29** : devise par défaut le FCFA d'Afrique centrale (XAF) ; une liste fermée de devises reste possible | S4.0 | Direction produit | Fait |
 | D57 | **Pays de l'entreprise en saisie libre** (avec suggestions) : des fautes de frappe fausseraient les rapports par pays ; une liste fermée de pays (ou un code ISO) serait plus fiable | S4.0 | Direction produit | Avant S6 (tableaux de bord) |
-| D58 | **Fiche entreprise non téléchargeable** : décision à prendre (format, droit d'export, audit) ; à relier à la charte des documents et aux informations légales demandées au DAF | S4.0 | Direction produit | Après réponse du DAF |
+| D58 | ~~Fiche entreprise non téléchargeable~~ **Réglée le 2026-10-30** : export de la fiche (qui voit exporte, trace d'audit) au format HTML imprimable ; gabarit provisoire à remplacer par la charte des documents | S4.0 | Claude | Charte des documents |
+| D59 | **Export d'une liste entière non réalisé** : règle retenue (option C) = lecture donne l'export, avec confirmation récente de la double authentification et alerte dans l'audit ; à construire avec les listes exportables | S4.0 | Claude | Premier export de liste |
+| D60 | **Vues partagées** (rapports des employés, agendas partagés) : elles suivent une audience (tous, service, équipe) et non une portée par propriétaire ; concept d'audience à modéliser, et contenu sensible (performances des employés) à valider avec le juridique et les RH | S4.0 | Direction produit | Agenda (S4.2b) et rapports (S6.3) |
+| D61 | **PDF réel côté serveur** : aujourd'hui le navigateur imprime la fiche en PDF ; un PDF produit par le serveur (même rendu pour tous, un seul clic) demande d'ajouter une bibliothèque au projet, à décider | S4.0 | Direction produit | Charte des documents |
 | D5 | Hypothèses de charge et de périmètre non confirmées | Phase 3 | Revue à la fin de S1 avec les chiffres réels | Ouverte |
 
 ## Adopted Conventions
