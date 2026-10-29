@@ -5,10 +5,11 @@ import { api, ApiError } from '../../lib/api';
 import { useAuth } from '../../lib/auth-context';
 import { COUNTRY_SUGGESTIONS } from '../../lib/countries';
 import {
-  buildCompanyBody, COMMISSION_TYPES, CONTACT_METHODS, type CompanyForm, EMPTY_COMPANY_FORM, type FieldName, validateCompanyFields,
+  buildCompanyBody, buildCompanyUpdateBody, COMMISSION_TYPES, CONTACT_METHODS, type CompanyForm, editCapabilities, EMPTY_COMPANY_FORM, type FieldName,
+  formFromCompany, validateCompanyFields,
 } from '../../lib/facilitation';
 import { can } from '../../lib/permissions';
-import type { Facilitator, Page } from '../../lib/types';
+import type { Company, Facilitator, Page } from '../../lib/types';
 import { Icon } from '../icon';
 import { Modal } from '../modal';
 
@@ -26,19 +27,21 @@ function Field({ name, label, error, children }: { name: FieldName; label: strin
 }
 
 /**
- * Fenêtre de création d'une entreprise : coordonnées, puis « mise en relation » (facilitateur existant ou nouveau,
- * méthode de contact, commission). Le propriétaire est l'utilisateur connecté, décidé côté serveur. La commission
- * n'apparaît que pour qui peut la définir ; le serveur re-contrôle chaque droit.
+ * Fenêtre de création OU de modification d'une entreprise (`company` fourni = modification, préremplie) : coordonnées, puis
+ * « mise en relation » (facilitateur existant ou nouveau, méthode de contact, commission). Le propriétaire est l'utilisateur
+ * connecté à la création et ne change jamais. La commission n'apparaît que pour qui peut la définir ; si le facilitateur de la
+ * fiche n'est pas visible avec les droits de l'utilisateur, la mise en relation reste inchangée. Le serveur re-contrôle chaque droit.
  *
  * Après une première tentative d'envoi, chaque champ non conforme est mis en évidence (bordure, fond, message écrit sous le
  * champ, `aria-invalid`) et le premier reçoit le focus ; la mise en évidence disparaît dès que la saisie est corrigée.
  */
-export function CreateCompanyDialog({ onClose, onCreated }: { onClose: () => void; onCreated: () => Promise<void> }) {
+export function CompanyDialog({ company, onClose, onDone }: { company?: Company; onClose: () => void; onDone: () => Promise<void> }) {
   const { profile } = useAuth();
   const canPickFacilitator = can(profile, 'bd.facilitator.read');
   const canCreateFacilitator = can(profile, 'bd.facilitator.create');
-  const canSetCommission = can(profile, 'bd.commission.manage');
-  const [form, setForm] = useState<CompanyForm>(EMPTY_COMPANY_FORM);
+  const caps = company ? editCapabilities(company, can(profile, 'bd.commission.manage')) : { facilitationLocked: false, canSetCommission: can(profile, 'bd.commission.manage') };
+  const canSetCommission = caps.canSetCommission;
+  const [form, setForm] = useState<CompanyForm>(() => (company ? formFromCompany(company) : EMPTY_COMPANY_FORM));
   const [facilitators, setFacilitators] = useState<Facilitator[]>([]);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -68,8 +71,9 @@ export function CreateCompanyDialog({ onClose, onCreated }: { onClose: () => voi
     }
     setBusy(true);
     try {
-      await api('/companies', { method: 'POST', body: buildCompanyBody(form) });
-      await onCreated();
+      if (company) await api(`/companies/${company.id}`, { method: 'PUT', body: buildCompanyUpdateBody(form, company, caps) });
+      else await api('/companies', { method: 'POST', body: buildCompanyBody(form) });
+      await onDone();
     } catch (e) {
       setError(e instanceof ApiError ? e.message : "Échec de l'enregistrement");
       setBusy(false);
@@ -78,7 +82,7 @@ export function CreateCompanyDialog({ onClose, onCreated }: { onClose: () => voi
 
   const facilitated = form.facilitatorMode !== 'none';
   return (
-    <Modal title="Nouvelle entreprise" onClose={onClose} size="wide">
+    <Modal title={company ? 'Modifier l’entreprise' : 'Nouvelle entreprise'} onClose={onClose} size="wide">
       <form onSubmit={submit} noValidate>
         <fieldset>
           <legend>L’entreprise</legend>
@@ -101,7 +105,13 @@ export function CreateCompanyDialog({ onClose, onCreated }: { onClose: () => voi
           </div>
         </fieldset>
 
-        {(canPickFacilitator || canCreateFacilitator) && (
+        {caps.facilitationLocked && (
+          <fieldset>
+            <legend>Mise en relation</legend>
+            <p role="note" className="m-0 text-ink-2">Cette entreprise a un facilitateur que vous n’avez pas le droit de voir : la mise en relation ne peut pas être modifiée avec vos droits.</p>
+          </fieldset>
+        )}
+        {!caps.facilitationLocked && (canPickFacilitator || canCreateFacilitator) && (
           <fieldset>
             <legend>Mise en relation</legend>
             <p className="m-0 mb-3 text-ink-2">Personne qui a présenté l’entreprise ou facilité le premier contact (elle peut en être un employé).</p>

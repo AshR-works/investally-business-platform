@@ -15,6 +15,8 @@ export type IdorClass = 'objet' | 'admin' | 'portee-tous';
 export const IDOR_ROUTES: Record<string, IdorClass> = {
   'GET /companies/:id': 'objet',
   'GET /facilitators/:id': 'objet',
+  'GET /companies/:id/export': 'objet',
+  'PUT /companies/:id': 'objet',
   'GET /documents': 'objet',
   'POST /documents': 'objet',
   'GET /documents/:id': 'objet',

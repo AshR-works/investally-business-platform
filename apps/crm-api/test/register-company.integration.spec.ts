@@ -5,6 +5,7 @@ import { UuidV7Generator } from '../src/platform/uuid-v7-generator';
 import { DefaultAuditRecorder } from '../src/modules/audit/application/audit-recorder';
 import { PrismaAuditRepository } from '../src/modules/audit/infrastructure/prisma-audit.repository';
 import { RegisterCompanyUseCase } from '../src/modules/business-development/application/register-company.use-case';
+import { FacilitationResolver } from '../src/modules/business-development/application/facilitation-resolver';
 import { RegisterFacilitatorUseCase } from '../src/modules/business-development/application/register-facilitator.use-case';
 import { PrismaCompanyRepository } from '../src/modules/business-development/infrastructure/prisma-company.repository';
 import { PrismaFacilitatorRepository } from '../src/modules/business-development/infrastructure/prisma-facilitator.repository';
@@ -23,7 +24,8 @@ describeDb('RegisterCompany (PostgreSQL)', () => {
   const audit = new DefaultAuditRecorder(auditRepo, clock, ids);
   const facilitators = new PrismaFacilitatorRepository(prisma);
   const registerFacilitator = new RegisterFacilitatorUseCase(facilitators, audit, prisma, clock, ids);
-  const useCase = new RegisterCompanyUseCase(new PrismaCompanyRepository(prisma), facilitators, registerFacilitator, audit, prisma, clock, ids);
+  const resolver = new FacilitationResolver(facilitators, registerFacilitator);
+  const useCase = new RegisterCompanyUseCase(new PrismaCompanyRepository(prisma), resolver, audit, prisma, clock, ids);
   const actor = { userId: null, sessionId: null, ipAddress: '127.0.0.1', device: 'integration-test' };
   const unique = `Acme-${Date.now()}`;
   const OWNER = '00000000-0000-7000-8000-000000000001'; // référence inter-contextes : aucune clé étrangère
@@ -48,8 +50,7 @@ describeDb('RegisterCompany (PostgreSQL)', () => {
   it('annule l\'entreprise si l\'audit échoue (atomicité)', async () => {
     const failing = new RegisterCompanyUseCase(
       new PrismaCompanyRepository(prisma),
-      facilitators,
-      registerFacilitator,
+      resolver,
       { record: async () => { throw new Error('audit indisponible'); } },
       prisma,
       clock,

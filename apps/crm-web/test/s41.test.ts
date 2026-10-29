@@ -26,12 +26,12 @@ describe('retours de tests S4.0 — fenêtres : une croix en haut à droite, plu
     expect(modal).toMatch(/button:not\(\.dialog-close\)/);
   });
   it('aucune fenêtre ne garde un bouton « Fermer » en bas', () => {
-    for (const file of ['components/documents/documents-panel.tsx', 'app/(app)/admin/users/page.tsx', 'components/companies/create-company-dialog.tsx', 'components/step-up-dialog.tsx', 'components/confirm-dialog.tsx', 'app/(app)/account/sessions/page.tsx']) {
+    for (const file of ['components/documents/documents-panel.tsx', 'app/(app)/admin/users/page.tsx', 'components/companies/company-dialog.tsx', 'components/step-up-dialog.tsx', 'components/confirm-dialog.tsx', 'app/(app)/account/sessions/page.tsx']) {
       expect(read(file), file).not.toMatch(/>\s*Fermer\s*<\/button>/);
     }
   });
   it('« Annuler » reste à côté de l\'action principale des formulaires (choix explicite, pas une simple fermeture)', () => {
-    expect(read('components/companies/create-company-dialog.tsx')).toContain('>Annuler</button>');
+    expect(read('components/companies/company-dialog.tsx')).toContain('>Annuler</button>');
   });
   it('largeur minimale : la fenêtre ne se tasse pas, et prend toute la largeur d\'un écran étroit', () => {
     expect(rule('.dialog { min-width')).toMatch(/min-width:\s*min\(26rem,\s*100%\)/);
@@ -50,7 +50,7 @@ describe('retours de tests S4.0 — zones de commentaire à taille fixe', () => 
     expect(css).toMatch(/textarea:focus-visible/);
   });
   it('le commentaire du facilitateur est borné à 2 000 caractères, avec compteur annoncé', () => {
-    const dialog = read('components/companies/create-company-dialog.tsx');
+    const dialog = read('components/companies/company-dialog.tsx');
     expect(dialog).toContain('maxLength={COMMENT_MAX}');
     expect(dialog).toContain('const COMMENT_MAX = 2000');
     expect(dialog).toContain('aria-describedby="company-facilitator-comment-count"');
@@ -69,7 +69,7 @@ describe('retours de tests S4.0 — pays d\'affiliation', () => {
   it('des suggestions sont proposées sans doublon, la saisie libre reste possible', () => {
     expect(new Set(COUNTRY_SUGGESTIONS).size).toBe(COUNTRY_SUGGESTIONS.length);
     expect(COUNTRY_SUGGESTIONS).toEqual(expect.arrayContaining(['Cameroun', 'Gabon', 'Côte d’Ivoire']));
-    expect(read('components/companies/create-company-dialog.tsx')).toContain('list="company-country-suggestions"');
+    expect(read('components/companies/company-dialog.tsx')).toContain('list="company-country-suggestions"');
   });
 });
 
@@ -95,7 +95,7 @@ describe('retours de tests S4.0 — champs non conformes en surbrillance', () =>
     expect(invalid).toMatch(/box-shadow/);
   });
   it('à l\'écran : état annoncé (aria-invalid), message relié (aria-describedby) et écrit sous le champ, avec pictogramme', () => {
-    const dialog = read('components/companies/create-company-dialog.tsx');
+    const dialog = read('components/companies/company-dialog.tsx');
     expect(dialog).toContain("'aria-invalid'");
     expect(dialog).toContain("'aria-describedby'");
     expect(dialog).toContain('className="field-error"');
@@ -103,15 +103,15 @@ describe('retours de tests S4.0 — champs non conformes en surbrillance', () =>
     expect(dialog).toContain('Corrigez les champs en surbrillance');
   });
   it('le premier champ en erreur reçoit le focus à l\'envoi', () => {
-    expect(read('components/companies/create-company-dialog.tsx')).toMatch(/getElementById\(`company-\$\{first\}`\)\?\.focus\(\)/);
+    expect(read('components/companies/company-dialog.tsx')).toMatch(/getElementById\(`company-\$\{first\}`\)\?\.focus\(\)/);
   });
   it('le composant de champ est défini hors du rendu : sinon les champs seraient recréés (focus perdu) à chaque frappe', () => {
-    const dialog = read('components/companies/create-company-dialog.tsx');
-    expect(dialog.indexOf('function Field(')).toBeLessThan(dialog.indexOf('export function CreateCompanyDialog'));
+    const dialog = read('components/companies/company-dialog.tsx');
+    expect(dialog.indexOf('function Field(')).toBeLessThan(dialog.indexOf('export function CompanyDialog'));
     expect(dialog).not.toMatch(/const Field = /);
   });
   it('chaque champ en erreur possible a un identifiant correspondant à son libellé', () => {
-    const dialog = read('components/companies/create-company-dialog.tsx');
+    const dialog = read('components/companies/company-dialog.tsx');
     expect(dialog).toContain('htmlFor={`company-${name}`}');
     expect(dialog).toContain('id: `company-${key}`');
   });

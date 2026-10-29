@@ -49,6 +49,24 @@ export class FacilitationDto {
   commission?: CommissionDto;
 }
 
+/** Modification du lien avec le facilitateur : tout est facultatif (absent = inchangé), `commission: null` la retire. */
+export class UpdateFacilitationDto {
+  @ApiPropertyOptional({ format: 'uuid' }) @IsOptional() @IsUUID()
+  facilitatorId?: string;
+
+  @ApiPropertyOptional({ type: NewFacilitatorDto }) @IsOptional() @ValidateNested() @Type(() => NewFacilitatorDto)
+  newFacilitator?: NewFacilitatorDto;
+
+  @ApiPropertyOptional({ enum: CONTACT_METHODS }) @IsOptional() @IsIn(CONTACT_METHODS)
+  contactMethod?: string;
+
+  @ApiPropertyOptional() @IsOptional() @IsBoolean()
+  isCompanyEmployee?: boolean;
+
+  @ApiPropertyOptional({ type: CommissionDto, nullable: true }) @IsOptional() @ValidateNested() @Type(() => CommissionDto)
+  commission?: CommissionDto | null;
+}
+
 /**
  * Corps de la requête d'enregistrement : nom obligatoire, le reste facultatif, longueurs bornées ; tout autre champ
  * (notamment le propriétaire) est refusé.

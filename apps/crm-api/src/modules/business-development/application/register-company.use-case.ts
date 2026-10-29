@@ -5,24 +5,11 @@ import {
 import { AUDIT_RECORDER, AuditAction, AuditRecorder } from '../../audit';
 import { decideFor } from '../../iam';
 import type { AccessContext } from '../../iam';
-import { Commission } from '../domain/commission';
 import { Company } from '../domain/company';
 import { CompanyName } from '../domain/company-name';
 import { COMPANY_REPOSITORY, CompanyRepository } from '../domain/company-repository';
-import { Facilitation } from '../domain/facilitation';
-import { FACILITATOR_REPOSITORY, FacilitatorRepository } from '../domain/facilitator-repository';
 import { CompanyView, toCompanyView } from './company-view';
-import { toFacilitatorView } from './facilitator-view';
-import { RegisterFacilitatorUseCase } from './register-facilitator.use-case';
-
-/** Facilitateur à lier : un facilitateur existant (par identifiant) OU un nouveau, jamais les deux. */
-export interface FacilitationInput {
-  facilitatorId?: string;
-  newFacilitator?: { lastName: string; firstName: string; phone: string; comment?: string | null };
-  contactMethod: string;
-  isCompanyEmployee?: boolean;
-  commission?: { type: string; value: string | number; currency?: string | null };
-}
+import { FacilitationInput, FacilitationResolver } from './facilitation-resolver';
 
 /**
  * Données d'enregistrement d'une entreprise cible ; le propriétaire vient de l'identité de l'appelant, jamais du
@@ -47,8 +34,7 @@ export interface RegisterCompanyCommand {
 export class RegisterCompanyUseCase {
   constructor(
     @Inject(COMPANY_REPOSITORY) private readonly companies: CompanyRepository,
-    @Inject(FACILITATOR_REPOSITORY) private readonly facilitators: FacilitatorRepository,
-    private readonly registerFacilitator: RegisterFacilitatorUseCase,
+    private readonly facilitations: FacilitationResolver,
     @Inject(AUDIT_RECORDER) private readonly audit: AuditRecorder,
     @Inject(UNIT_OF_WORK) private readonly unitOfWork: UnitOfWork,
     @Inject(CLOCK) private readonly clock: Clock,
@@ -67,7 +53,14 @@ export class RegisterCompanyUseCase {
         throw new DomainError('CONFLICT', `Une entreprise nommée « ${name.value} » existe déjà`);
       }
 
-      const facilitation = command.facilitation ? await this.resolveFacilitation(command, command.facilitation) : null;
+      let facilitation = null;
+      if (command.facilitation) {
+        if (!command.access) throw new DomainError('FORBIDDEN', "Droits de l'appelant manquants");
+        facilitation = await this.facilitations.resolve(
+          { access: command.access, actor: command.actor, companyOwnerId: command.ownerUserId, existing: null },
+          command.facilitation,
+        );
+      }
       const company = Company.register({
         id: this.ids.next(),
         name: name.value,
@@ -95,48 +88,5 @@ export class RegisterCompanyUseCase {
       const canReadCommission = command.access ? decideFor(command.access, 'bd.commission.read', command.ownerUserId).allowed : false;
       return toCompanyView(company, { facilitator: facilitation?.facilitator ?? null, canReadCommission });
     });
-  }
-
-  /** Vérifie les droits de l'appelant, retrouve ou crée le facilitateur, construit le lien. */
-  private async resolveFacilitation(command: RegisterCompanyCommand, input: FacilitationInput) {
-    const access = command.access;
-    if (!access) throw new DomainError('FORBIDDEN', "Droits de l'appelant manquants");
-    if (Boolean(input.facilitatorId) === Boolean(input.newFacilitator)) {
-      throw new DomainError('VALIDATION', 'Indiquez soit un facilitateur existant, soit un nouveau facilitateur');
-    }
-    Facilitation.assertMethod(input.contactMethod); // avant toute écriture : pas de facilitateur créé pour rien
-    if (input.commission && !decideFor(access, 'bd.commission.manage', command.ownerUserId).allowed) {
-      throw new DomainError('FORBIDDEN', "Vous n'avez pas le droit de définir une commission");
-    }
-    const commission = input.commission ? Commission.of(input.commission) : null;
-
-    let facilitatorId: string;
-    let facilitator;
-    if (input.facilitatorId) {
-      const existing = await this.facilitators.findById(input.facilitatorId);
-      // Hors portée = introuvable (même réponse que pour un identifiant inexistant : prévention d'IDOR).
-      if (!existing || !decideFor(access, 'bd.facilitator.read', existing.ownerUserId).allowed) {
-        throw new DomainError('NOT_FOUND', 'Facilitateur introuvable');
-      }
-      facilitatorId = existing.id;
-      facilitator = toFacilitatorView(existing);
-    } else {
-      if (!decideFor(access, 'bd.facilitator.create', command.ownerUserId).allowed) {
-        throw new DomainError('FORBIDDEN', "Vous n'avez pas le droit de créer un facilitateur");
-      }
-      facilitator = await this.registerFacilitator.executeInTransaction({
-        ...input.newFacilitator!,
-        ownerUserId: command.ownerUserId,
-        actor: command.actor,
-      });
-      facilitatorId = facilitator.id;
-    }
-    const link = Facilitation.of({
-      facilitatorId,
-      contactMethod: input.contactMethod,
-      isCompanyEmployee: input.isCompanyEmployee,
-      commission,
-    });
-    return { link, facilitator };
   }
 }
