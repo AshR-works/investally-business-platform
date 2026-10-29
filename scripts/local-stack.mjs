@@ -200,6 +200,45 @@ if (flag('demo')) {
       [owners.rows[0].id, owners.rows[1].id],
     );
   }
+  // Facilitateurs fictifs (S4.0), liés aux entreprises de démonstration de chaque chargé de compte, avec des commissions variées
+  // (idempotent : un facilitateur déjà présent n'est pas recréé, un lien déjà présent n'est pas écrasé).
+  if (owners.rowCount === 2) {
+    const people = [
+      ['Mbarga', 'Paul', '+237 600 00 00 01'], ['Ndzana', 'Claire', '+237 600 00 00 02'], ['Etoundi', 'Marc', '+237 600 00 00 03'],
+      ['Fotso', 'Aline', '+237 600 00 00 04'], ['Kamga', 'Joseph', '+237 600 00 00 05'], ['Njoya', 'Sandrine', '+237 600 00 00 06'],
+    ];
+    const methods = ['WHATSAPP_MESSAGE', 'PHONE_CALL', 'EMAIL', 'MEETING'];
+    const commissions = [['PERCENT', '5.00', null], ['PERCENT', '7.50', null], ['FIXED', '250000.00', 'XAF'], ['FIXED', '500000.00', 'XAF'], [null, null, null]];
+    let linked = 0;
+    for (let o = 0; o < owners.rows.length; o++) {
+      const ownerId = owners.rows[o].id;
+      const facilitatorIds = [];
+      for (const [last, first, phone] of people.slice(o * 3, o * 3 + 3)) {
+        const found = await db.query('SELECT id FROM bd.facilitators WHERE last_name = $1 AND first_name = $2 AND owner_user_id = $3 AND deleted_at IS NULL', [last, first, ownerId]);
+        let id = found.rows[0]?.id;
+        if (!id) {
+          const inserted = await db.query(
+            `INSERT INTO bd.facilitators (id, last_name, first_name, phone, comment, owner_user_id, updated_at)
+             VALUES (gen_random_uuid(), $1, $2, $3, 'Donnée de démonstration', $4, now()) RETURNING id`,
+            [last, first, phone, ownerId],
+          );
+          id = inserted.rows[0].id;
+        }
+        facilitatorIds.push(id);
+      }
+      const mine = await db.query("SELECT id FROM bd.companies WHERE owner_user_id = $1 AND name LIKE 'Démo Entreprise%' AND deleted_at IS NULL ORDER BY name LIMIT 8", [ownerId]);
+      for (let c = 0; c < mine.rows.length; c++) {
+        const [type, value, currency] = commissions[(c + o) % commissions.length];
+        const r = await db.query(
+          `INSERT INTO bd.company_facilitations (company_id, facilitator_id, contact_method, is_company_employee, commission_type, commission_value, commission_currency)
+           VALUES ($1, $2, $3, $4, $5, $6, $7) ON CONFLICT DO NOTHING`,
+          [mine.rows[c].id, facilitatorIds[c % facilitatorIds.length], methods[c % methods.length], c % 3 === 0, type, value, currency],
+        );
+        linked += r.rowCount;
+      }
+    }
+    say(`✔ Facilitateurs de démonstration : ${linked} entreprise(s) liée(s) à un facilitateur`);
+  }
   if (accounts.length > before) {
     say('\n┌ Comptes de démonstration (un par rôle ; MFA à enrôler à la première connexion)');
     for (const a of accounts) say(`│ ${a.role.padEnd(16)} ${a.email.padEnd(36)} ${a.password}`);
