@@ -2,10 +2,10 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 // Cohérence interface ↔ serveur : les méthodes de contact et les validations viennent du domaine RÉEL du serveur.
-import { Commission } from '../../crm-api/src/modules/business-development/domain/commission';
+import { Commission, DEFAULT_CURRENCY as ServerDefaultCurrency } from '../../crm-api/src/modules/business-development/domain/commission';
 import { ContactMethod } from '../../crm-api/src/modules/business-development/domain/facilitation';
 import { normalizeEmail, normalizePhone } from '../../crm-api/src/modules/business-development/domain/contact-info';
-import { buildCompanyBody, COMMISSION_TYPES, CONTACT_METHODS, contactMethodLabel, EMPTY_COMPANY_FORM, formatCommission, validateCompanyForm, type CompanyForm } from '../lib/facilitation';
+import { buildCompanyBody, COMMISSION_TYPES, CONTACT_METHODS, contactMethodLabel, DEFAULT_CURRENCY, EMPTY_COMPANY_FORM, formatCommission, normalizeCurrency, validateCompanyForm, type CompanyForm } from '../lib/facilitation';
 
 const root = join(__dirname, '..');
 const read = (path: string) => readFileSync(join(root, path), 'utf8');
@@ -57,7 +57,9 @@ describe('validation de la fiche : refuse ce que le serveur refuserait', () => {
   it.each([
     [{ commissionType: 'PERCENT', commissionValue: '0' }, false], [{ commissionType: 'PERCENT', commissionValue: '100.01' }, false],
     [{ commissionType: 'PERCENT', commissionValue: '100' }, true], [{ commissionType: 'PERCENT', commissionValue: '7,5' }, true],
-    [{ commissionType: 'FIXED', commissionValue: '100' }, false], [{ commissionType: 'FIXED', commissionValue: '100', commissionCurrency: 'FCFA' }, false],
+    [{ commissionType: 'FIXED', commissionValue: '100' }, true], [{ commissionType: 'FIXED', commissionValue: '100', commissionCurrency: 'FCFA' }, true],
+    [{ commissionType: 'FIXED', commissionValue: '100', commissionCurrency: '' }, true], [{ commissionType: 'FIXED', commissionValue: '100', commissionCurrency: 'FRANCS' }, false],
+    [{ commissionType: 'FIXED', commissionValue: '100', commissionCurrency: 'X1' }, false],
     [{ commissionType: 'FIXED', commissionValue: '100', commissionCurrency: 'xaf' }, true], [{ commissionType: 'FIXED', commissionValue: '-5', commissionCurrency: 'XAF' }, false],
     [{ commissionType: 'FIXED', commissionValue: 'abc', commissionCurrency: 'XAF' }, false],
   ] as const)('commission %j → valide : %s', (patch, valid) => {
@@ -99,10 +101,24 @@ describe('corps de la requête de création', () => {
   });
 });
 
+describe('devise par défaut : le FCFA (XAF)', () => {
+  it('la fiche vierge propose XAF ; vide ou « FCFA » donnent XAF, une autre devise reste telle quelle', () => {
+    expect(EMPTY_COMPANY_FORM.commissionCurrency).toBe('XAF');
+    expect(DEFAULT_CURRENCY).toBe(ServerDefaultCurrency);
+    expect([normalizeCurrency(''), normalizeCurrency(' fcfa '), normalizeCurrency('xaf'), normalizeCurrency('eur')]).toEqual(['XAF', 'XAF', 'XAF', 'EUR']);
+  });
+  it('le serveur applique la même règle (même résultat pour les mêmes saisies)', () => {
+    for (const typed of ['', 'FCFA', 'fcfa', 'xaf', 'eur']) {
+      expect(Commission.of({ type: 'FIXED', value: '10', currency: typed }).currency).toBe(normalizeCurrency(typed));
+    }
+  });
+});
+
 describe('affichage de la commission', () => {
   it('pourcentage et montant fixe, format français', () => {
     expect(formatCommission({ type: 'PERCENT', value: '7.50', currency: null }).replace(/\s/g, ' ')).toBe('7,50 %');
-    expect(formatCommission({ type: 'FIXED', value: '1500.00', currency: 'XAF' }).replace(/\s/g, ' ')).toBe('1 500,00 XAF');
+    expect(formatCommission({ type: 'FIXED', value: '1500.00', currency: 'XAF' }).replace(/\s/g, ' ')).toBe('1 500,00 FCFA');
+    expect(formatCommission({ type: 'FIXED', value: '20.00', currency: 'EUR' }).replace(/\s/g, ' ')).toBe('20,00 EUR');
   });
 });
 

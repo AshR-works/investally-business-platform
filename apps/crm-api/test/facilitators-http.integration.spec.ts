@@ -94,7 +94,22 @@ describeDb('Facilitateurs et commissions (HTTP + PostgreSQL)', () => {
     const ok = await api.call('POST', '/api/v1/companies', { ...am, body: withoutCommission });
     expect(ok.status).toBe(201);
     expect(ok.body.facilitation.facilitator.firstName).toBe('Paul');
-    expect(ok.body.facilitation).not.toHaveProperty('commission');
+    // Le chargé de compte verse la commission : il la voit sur ses entreprises (ici, aucune n'est définie).
+    expect(ok.body.facilitation).toHaveProperty('commission', null);
+  }, 60_000);
+
+  it('montant fixe sans devise : le FCFA (XAF) par défaut ; « FCFA » saisi est reconnu', async () => {
+    const chef = await login(await createUserWithRoles(t, [RoleCode.HeadOfSales]));
+    const fixed = (currency?: string) => body({ name: `Société ${unique()}`, facilitation: {
+      newFacilitator: { lastName: 'Eto', firstName: 'Anne', phone: '+237 677 00 11 22' }, contactMethod: 'EMAIL',
+      commission: { type: 'FIXED', value: '250000', ...(currency ? { currency } : {}) },
+    } });
+    const byDefault = await api.call('POST', '/api/v1/companies', { ...chef, body: fixed() });
+    expect(byDefault.status).toBe(201);
+    expect(byDefault.body.facilitation.commission).toEqual({ type: 'FIXED', value: '250000.00', currency: 'XAF' });
+    const typed = await api.call('POST', '/api/v1/companies', { ...chef, body: fixed('FCFA') });
+    expect(typed.status).toBe(201);
+    expect(typed.body.facilitation.commission.currency).toBe('XAF');
   }, 60_000);
 
   it('les rôles sans droit sur les facilitateurs (Support, RH) reçoivent 403 sur leur liste et leur création', async () => {
@@ -120,7 +135,7 @@ describeDb('Facilitateurs et commissions (HTTP + PostgreSQL)', () => {
     expect(await bad({ email: 'pas-un-mail' })).toBe(400);
     expect(await bad({ phone: 'abc' })).toBe(400);
     expect(await bad({}, { contactMethod: 'PIGEON' })).toBe(400);
-    expect(await bad({}, { commission: { type: 'FIXED', value: '100' } })).toBe(400); // devise manquante
+    expect(await bad({}, { commission: { type: 'FIXED', value: '100', currency: 'X1' } })).toBe(400); // devise invalide
     expect(await bad({}, { commission: { type: 'PERCENT', value: '150' } })).toBe(400);
   }, 60_000);
 

@@ -15,9 +15,9 @@ Le facilitateur est un concept **nouveau** (différent de l'« ambassadeur » du
 ## Décision (option B de l'arbitrage, retenue le 2026-10-28)
 Le facilitateur est une **fiche séparée et réutilisable**, liée à l'entreprise par un **lien** qui porte la méthode de contact, l'indicateur « employé de l'entreprise » et la commission (propre à chaque affaire).
 
-Valeurs par défaut appliquées (recommandations de l'arbitrage, à confirmer ou corriger par la direction produit) :
-1. **Commission** : montant fixe **avec devise obligatoire** (aucune devise par défaut), ou pourcentage de 0 (exclu) à 100. Pas de suivi des versements dans ce lot.
-2. **Qui voit et définit la commission** : deux permissions nouvelles. `bd.commission.read` : Direction et Finance (tout), Responsable commercial (son équipe), Super administrateur. `bd.commission.manage` : Responsable commercial (son équipe) et Super administrateur. **Le chargé de compte voit le facilitateur mais ni la commission ni même son existence** (la clé est absente de la réponse).
+Valeurs par défaut appliquées d'abord (recommandations de l'arbitrage), **puis corrigées par la direction produit le 2026-10-29** (points 1 et 2 ci-dessous) :
+1. **Commission** : montant fixe ou pourcentage de 0 (exclu) à 100. **Devise par défaut : le FCFA d'Afrique centrale (XAF)** ; « FCFA » saisi est reconnu comme XAF, une autre devise sur trois lettres reste possible. Affichage « FCFA ». Pas de suivi des versements dans ce lot.
+2. **Qui voit et définit la commission** : deux permissions nouvelles. `bd.commission.read` : Direction et Finance (tout), Responsable commercial (son équipe), **chargé de compte (ses propres entreprises : c'est lui qui verse la commission après déblocage des fonds par la direction administrative et financière)**, Super administrateur. `bd.commission.manage` : Responsable commercial (son équipe) et Super administrateur, rôles attribués par le premier administrateur (Super administrateur). **Sans la permission de lecture (Support), la clé « commission » est absente de la réponse**, sans même révéler son existence.
 3. **Facilitateur** : `bd.facilitator.read` / `create`. Le créateur en est le propriétaire (portée Propre, Équipe, Tous comme les entreprises). Un facilitateur hors portée est **introuvable** (même réponse qu'un identifiant inexistant : prévention d'IDOR).
 4. **Méthode de contact** : liste fermée côté serveur — message WhatsApp, appel téléphonique, e-mail, rencontre, autre.
 5. **Obligations** : seul le nom de l'entreprise est obligatoire (e-mail et téléphone facultatifs, contrôlés s'ils sont saisis). Le facilitateur est facultatif ; s'il est saisi, son nom, son prénom et son téléphone sont obligatoires. Un seul facilitateur par entreprise.
@@ -32,4 +32,4 @@ Valeurs par défaut appliquées (recommandations de l'arbitrage, à confirmer ou
 ## Conséquences
 - Réversible : une migration (deux tables, deux colonnes sur `companies`), 4 permissions.
 - **Données personnelles de tiers** (facilitateur) : base légale et durée de conservation à faire valider (D55, avis juridique prévu en S7).
-- **Dette** : D53 à D56 (`docs/TECH-DEBT.md`) ; prototype à mettre à jour (D49).
+- **Dette** : D53 à D55 (D56 réglée par la devise par défaut) (`docs/TECH-DEBT.md`) ; prototype à mettre à jour (D49).

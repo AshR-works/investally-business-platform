@@ -147,7 +147,7 @@ export function CreateCompanyDialog({ onClose, onCreated }: { onClose: () => voi
                         </label>
                         {form.commissionType === 'FIXED' && (
                           <label>
-                            Devise (trois lettres, par exemple XAF ou EUR)
+                            Devise (XAF = FCFA par défaut ; ou trois lettres, par exemple EUR)
                             <input value={form.commissionCurrency} onChange={(e) => set('commissionCurrency', e.target.value)} maxLength={3} autoCapitalize="characters" />
                           </label>
                         )}

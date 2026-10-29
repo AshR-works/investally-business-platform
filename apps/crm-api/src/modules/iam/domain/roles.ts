@@ -112,7 +112,7 @@ export const ROLE_GRANTS: Record<RoleCode, readonly Grant[]> = {
     g('bd.visit.read', Own), g('bd.visit.create', Own), g('bd.visit.update', Own),
     g('bd.opportunity.read', Own), g('bd.opportunity.create', Own), g('bd.opportunity.update', Own), g('bd.opportunity.advance', Own),
     g('bd.ambassador.read', Own), g('bd.ambassador.create', Own),
-    g('bd.facilitator.read', Own), g('bd.facilitator.create', Own),
+    g('bd.facilitator.read', Own), g('bd.facilitator.create', Own), g('bd.commission.read', Own),
     g('training.program.read', All), g('training.session.read', All),
     g('training.learner.read', Own), g('training.learner.create', Own), g('training.learner.update', Own),
     g('training.enrollment.read', Own), g('training.enrollment.create', Own),

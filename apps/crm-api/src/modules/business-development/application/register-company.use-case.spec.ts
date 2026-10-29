@@ -181,13 +181,18 @@ describe('RegisterCompanyUseCase', () => {
         const view = await withCommission({ type: 'FIXED', value: '1500,5', currency: 'xaf' });
         expect(view.facilitation?.commission).toEqual({ type: 'FIXED', value: '1500.50', currency: 'XAF' });
       });
+      it("devise par défaut : le FCFA d'Afrique centrale (XAF) quand elle n'est pas précisée, « FCFA » saisi est reconnu comme XAF", async () => {
+        expect((await withCommission({ type: 'FIXED', value: 1500 })).facilitation?.commission).toEqual({ type: 'FIXED', value: '1500.00', currency: 'XAF' });
+        expect((await withCommission({ type: 'FIXED', value: 1500, currency: 'fcfa' })).facilitation?.commission?.currency).toBe('XAF');
+        expect((await withCommission({ type: 'FIXED', value: 20, currency: 'eur' })).facilitation?.commission?.currency).toBe('EUR');
+      });
       it('pourcentage sans devise', async () => {
         const view = await withCommission({ type: 'PERCENT', value: 7.5 });
         expect(view.facilitation?.commission).toEqual({ type: 'PERCENT', value: '7.50', currency: null });
       });
       it.each([
         [{ type: 'PERCENT', value: 0 }], [{ type: 'PERCENT', value: 100.01 }], [{ type: 'PERCENT', value: 5, currency: 'XAF' }],
-        [{ type: 'FIXED', value: 100 }], [{ type: 'FIXED', value: 100, currency: 'FCFA' }], [{ type: 'FIXED', value: -5, currency: 'XAF' }],
+        [{ type: 'FIXED', value: 100, currency: 'FRANCS' }], [{ type: 'FIXED', value: 100, currency: 'X1' }], [{ type: 'FIXED', value: -5, currency: 'XAF' }],
         [{ type: 'FIXED', value: 'abc', currency: 'XAF' }], [{ type: 'FIXED', value: '1.234', currency: 'XAF' }], [{ type: 'AUTRE', value: 5, currency: 'XAF' }],
       ])('refuse la commission invalide %j', async (commission) => {
         await expect(withCommission(commission)).rejects.toMatchObject({ code: 'VALIDATION' });
@@ -195,10 +200,19 @@ describe('RegisterCompanyUseCase', () => {
       it('le chargé de compte ne peut PAS définir une commission (il voit le facilitateur, pas le montant)', async () => {
         await expect(withCommission({ type: 'PERCENT', value: 5 }, RoleCode.AccountManager)).rejects.toMatchObject({ code: 'FORBIDDEN' });
       });
-      it("sans la permission « Commissions », la réponse ne contient aucune commission (pas même une clé vide)", async () => {
+      it("le chargé de compte, qui verse la commission, la voit sur ses entreprises", async () => {
         const { useCase } = build();
         const view = await useCase.execute({
           name: 'Acme', ownerUserId: 'u1', access: as(RoleCode.AccountManager), actor,
+          facilitation: { newFacilitator, contactMethod: 'EMAIL' },
+        });
+        expect(view.facilitation).toHaveProperty('commission', null);
+      });
+      it("sans la permission « Commissions », la réponse ne contient aucune commission (pas même une clé vide)", async () => {
+        const { useCase } = build();
+        const withoutCommissionRight: AccessContext = { ...as(RoleCode.AccountManager), grants: as(RoleCode.AccountManager).grants.filter((g) => !g.permission.startsWith('bd.commission.')) };
+        const view = await useCase.execute({
+          name: 'Acme', ownerUserId: 'u1', access: withoutCommissionRight, actor,
           facilitation: { newFacilitator, contactMethod: 'EMAIL' },
         });
         expect(view.facilitation).not.toHaveProperty('commission');

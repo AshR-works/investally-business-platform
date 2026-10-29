@@ -1,5 +1,8 @@
 import { DomainError } from '../../../shared-kernel';
 
+/** Devise par défaut d'un montant fixe : franc CFA d'Afrique centrale (décision du 2026-10-29). */
+export const DEFAULT_CURRENCY = 'XAF';
+
 export enum CommissionType {
   Fixed = 'FIXED',
   Percent = 'PERCENT',
@@ -31,9 +34,11 @@ export class Commission {
       if (input.currency) throw new DomainError('VALIDATION', "Un pourcentage n'a pas de devise");
       return new Commission(type, value, null);
     }
-    const currency = (input.currency ?? '').trim().toUpperCase();
+    // Devise par défaut : le FCFA d'Afrique centrale (XAF) ; « FCFA » saisi tel quel est reconnu comme XAF.
+    const typed = (input.currency ?? '').trim().toUpperCase();
+    const currency = typed === '' || typed === 'FCFA' ? DEFAULT_CURRENCY : typed;
     if (!/^[A-Z]{3}$/.test(currency)) {
-      throw new DomainError('VALIDATION', 'Un montant fixe exige une devise sur trois lettres (ex. XAF, EUR)');
+      throw new DomainError('VALIDATION', 'La devise doit comporter trois lettres (ex. XAF, EUR)');
     }
     return new Commission(type, value, currency);
   }
