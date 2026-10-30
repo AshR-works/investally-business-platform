@@ -10,6 +10,15 @@ export interface Column<T> {
   cell: (row: T) => ReactNode;
   align?: 'left' | 'right';
   srOnlyHeader?: boolean;
+  /** Champ de tri côté serveur : l'en-tête devient un bouton qui trie (et annonce le sens avec `aria-sort`). */
+  sortField?: string;
+}
+
+/** Tri courant d'un tableau et son gestionnaire (le tri est fait par le serveur, sur toutes les pages). */
+export interface TableSort {
+  field: string;
+  direction: 'asc' | 'desc';
+  onSort: (field: string) => void;
 }
 
 /** Sélection persistante d'un tableau : l'ensemble des identifiants et son gestionnaire. */
@@ -27,7 +36,7 @@ const INTERACTIVE = 'button, a, input, label, select, textarea, summary, [role="
  * de page. L'en-tête a sa propre case « tout sélectionner (page) », indéterminée si la sélection est partielle.
  */
 export function DataTable<T>({
-  caption, columns, rows, rowId, rowLabel, selection, empty = 'Aucun résultat.', busy = false,
+  caption, columns, rows, rowId, rowLabel, selection, sort, empty = 'Aucun résultat.', busy = false,
 }: {
   /** Nom du tableau pour les lecteurs d'écran (non affiché). */
   caption: string;
@@ -37,6 +46,7 @@ export function DataTable<T>({
   /** Nom de la ligne, repris dans « Sélectionner … » (ex. le nom de l'entreprise). */
   rowLabel: (row: T) => string;
   selection?: TableSelection;
+  sort?: TableSort;
   empty?: ReactNode;
   busy?: boolean;
 }) {
@@ -68,11 +78,28 @@ export function DataTable<T>({
                 />
               </th>
             )}
-            {columns.map((column) => (
-              <th key={column.id} scope="col" className={`border-b border-line bg-surface-2 px-4 py-3 text-xs font-semibold text-ink-2 ${column.align === 'right' ? 'text-right' : 'text-left'}`}>
-                {column.srOnlyHeader ? <span className="sr-only">{column.header}</span> : column.header}
-              </th>
-            ))}
+            {columns.map((column) => {
+              const sorted = sort && column.sortField === sort.field ? sort.direction : null;
+              return (
+                <th
+                  key={column.id}
+                  scope="col"
+                  aria-sort={sort && column.sortField ? (sorted === 'asc' ? 'ascending' : sorted === 'desc' ? 'descending' : 'none') : undefined}
+                  className={`border-b border-line bg-surface-2 px-4 py-3 text-xs font-semibold text-ink-2 ${column.align === 'right' ? 'text-right' : 'text-left'}`}
+                >
+                  {column.srOnlyHeader ? (
+                    <span className="sr-only">{column.header}</span>
+                  ) : sort && column.sortField ? (
+                    <button type="button" onClick={() => sort.onSort(column.sortField as string)} className="inline-flex cursor-pointer items-center gap-1 border-0 bg-transparent p-0 font-[inherit] text-[length:inherit] text-inherit">
+                      {column.header}
+                      <span aria-hidden="true">{sorted === 'asc' ? '▲' : sorted === 'desc' ? '▼' : '↕'}</span>
+                    </button>
+                  ) : (
+                    column.header
+                  )}
+                </th>
+              );
+            })}
           </tr>
         </thead>
         <tbody>

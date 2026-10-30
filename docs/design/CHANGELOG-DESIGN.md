@@ -27,6 +27,8 @@ Le design 0.4.1 est installé dans l'application réelle (`apps/crm-web`) : jeto
 
 **S4.1a (2026-10-30), sans changement de version** : panneau « Contacts » dans la fiche entreprise, page « Contacts » et fenêtre de contact (création, modification, doublon probable) ; composant de champ de formulaire réutilisable (DDR-0015). **Prototype 0.4.1 non encore mis à jour** : à ajouter à la version 0.5.0.
 
+**S4.1b (2026-10-30), sans changement de version** : **tableau des entreprises** complété dans l'application (DDR-0016) : filtre par statut avec **effectifs** (boutons à bascule), filtres **Pays** et **Secteur** (valeurs réellement présentes dans la portée), **tri par colonne** (en-têtes-boutons, sens annoncé par `aria-sort`), menu **Colonnes** (e-mail et téléphone proposés, choix mémorisé dans le navigateur), bouton « Réinitialiser les filtres », compteur annoncé. Le tableau reste un tableau ; les **cartes** (EXD-04, DEC-003) concernent les Opportunités (S4.3). Prototype à mettre à jour (D49).
+
 ## 0.4.1 — 2026-10-21 — *Validée*
 - **EXD-10 / DEC-007 / DDR-0007** : panneau principal **centré sur la fenêtre** (option B) ; repli automatique en centrage dans l'espace restant quand la fenêtre est étroite ; largeur du panneau 1 440 px au plus ; la largeur maximale du contenu (1 320 px) est supprimée.
 - **EXD-11** : bouton de dépliage en **pictogramme seul** (44 px, nom accessible, info-bulle, état annoncé) ; pictogramme provisoire à confirmer.
