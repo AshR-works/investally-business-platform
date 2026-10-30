@@ -46,10 +46,44 @@ model Company {
   updatedAt DateTime      @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt DateTime?     @map("deleted_at") @db.Timestamptz(6)
   facilitation CompanyFacilitation?
+  contacts  Contact[]
 
   @@index([status])
   @@index([ownerUserId])
   @@map("companies")
+  @@schema("bd")
+}
+
+enum ContactRole {
+  FINANCE_DIRECTOR
+  DECISION_MAKER
+  OTHER
+
+  @@schema("bd")
+}
+
+/// Contact : interlocuteur d'une entreprise (DAF, décideur…). Sa visibilité suit celle de son entreprise.
+model Contact {
+  id        String      @id @db.Uuid
+  companyId String      @map("company_id") @db.Uuid
+  lastName  String      @map("last_name") @db.VarChar(100)
+  firstName String      @map("first_name") @db.VarChar(100)
+  /// Nom normalisé (minuscules) pour la détection de doublons.
+  nameKey   String      @map("name_key") @db.VarChar(210)
+  role      ContactRole @default(OTHER)
+  email     String?     @db.VarChar(200)
+  emailKey  String?     @map("email_key") @db.VarChar(200)
+  phone     String?     @db.VarChar(40)
+  version   Int         @default(1)
+  createdAt DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime    @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt DateTime?   @map("deleted_at") @db.Timestamptz(6)
+  company   Company     @relation(fields: [companyId], references: [id])
+
+  @@index([companyId])
+  @@index([companyId, nameKey])
+  @@index([companyId, emailKey])
+  @@map("contacts")
   @@schema("bd")
 }
 
