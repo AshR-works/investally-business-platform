@@ -1,0 +1,38 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>DDR-0016 — Tableau des entreprises : filtres, tri, effectifs, colonnes</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — design · <a href="../README.html">Mode d&#8217;emploi</a> · <a href="../01-DESIGN-SYSTEM.html">Design system</a> · <a href="../02-SPECIFICATIONS-FRONTEND.html">Spécifications frontend</a> · <a href="../exigences/REGISTRE-EXD.html">Exigences</a> · <a href="../04-ANALYSE-D-IMPACT.html">Analyse d&#8217;impact</a> · <a href="../05-AIDE-A-LA-DECISION.html">Aide à la décision</a> · <a href="../decisions/REGISTRE-DDR.html">Décisions (DDR)</a> · <a href="../CHANGELOG-DESIGN.html">Journal</a> · <a href="../prototype/index.html">Prototype</a></nav><h1>DDR-0016 — Tableau des entreprises : filtres, tri, effectifs, colonnes</h1>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td><strong>Statut</strong></td><td>Acceptée (réalisée dans l'application) ; prototype à mettre à jour</td></tr>
+<tr><td><strong>Date</strong></td><td>2026-10-30</td></tr>
+<tr><td><strong>Version du design</strong></td><td>0.4.1 (le prototype n'est pas encore à jour : version 0.5.0 à décider)</td></tr>
+<tr><td><strong>Lié à</strong></td><td>Lot S4.1b ; ARB-API-1 option C ; D38 ; EXD-02, EXD-04 ; décision D30</td></tr>
+</tbody></table></div>
+<h2>Contexte</h2>
+<p>Le tableau des entreprises ne proposait que la recherche par nom et la pagination. La direction produit a demandé le lot « tableaux » (ARB-API-1 C) et s'est interrogée sur l'affichage « en bulles » choisi au début.</p>
+<h2>Décisions</h2>
+<ol><li><strong>Filtre par statut avec effectifs</strong> : boutons à bascule « Toutes · Cible · Contactée · Qualifiée · Cliente · Archivée », chacun avec son nombre. Les effectifs tiennent compte de la recherche, du pays et du secteur, <strong>pas du statut</strong> (sinon les autres boutons afficheraient 0).</li><li><strong>Filtres Pays et Secteur</strong> : listes des valeurs réellement présentes <strong>dans la portée de l'utilisateur</strong> (aucune valeur d'une entreprise hors portée n'est révélée). Comparaison sans tenir compte de la casse.</li><li><strong>Tri par colonne</strong> (nom, secteur, pays, statut, date de création) : en-tête = bouton, sens annoncé par <code>aria-sort</code>. Fait par le serveur sur <strong>toutes</strong> les pages ; les valeurs absentes passent toujours en dernier ; un second critère (identifiant) rend la pagination stable. Un champ de tri inconnu est refusé (400), jamais passé à la base.</li><li><strong>Colonnes au choix</strong> : menu « Colonnes » (cases à cocher) ; <strong>e-mail</strong> et <strong>téléphone</strong> proposés, masqués par défaut ; la colonne du nom est toujours affichée ; le choix est mémorisé dans le navigateur, et une valeur mémorisée abîmée retombe sur le défaut.</li><li><strong>Réinitialiser les filtres</strong> (bouton visible seulement si un filtre est actif) et compteur annoncé aux lecteurs d'écran (« n entreprises correspondantes »).</li><li><strong>Affichage en bulles (cartes)</strong> : la décision d'origine (DEC-003, EXD-04) concerne les <strong>Opportunités</strong> (S4.3). Les entreprises restent un <strong>tableau</strong> ; une bascule « Cartes » est possible plus tard sans changer l'API (D30, à confirmer).</li></ol>
+<h2>Mesures de rigueur</h2>
+<ul><li>Nouvelle route <code>GET /companies/overview</code> (effectifs + valeurs de filtre) : même permission que la liste, portée appliquée côté serveur, jamais depuis la requête.</li><li>Tests : portée de la synthèse (le collègue n'est pas révélé), casse, valeurs absentes en dernier, pagination qui garde tri et filtres, refus de <code>sort=passwordHash</code> et de <code>sort=name;drop</code>.</li></ul>
+<h2>Conséquences</h2>
+<ul><li>Réversible : aucune migration, une route, un port de lecture, deux composants.</li><li><strong>Dette</strong> : D66 à D69 (<code>docs/TECH-DEBT.md</code>).</li></ul></main></body></html>
