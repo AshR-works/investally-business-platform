@@ -1,6 +1,6 @@
 # Wireframes de l'application
 
-**45 écrans** : 10 déjà réalisés (repris pour référence) et **35 proposés** pour les interfaces qui ne sont pas encore prêtes. Ouvrir [`index.html`](index.html) pour la galerie (filtre par module) ou lire le [catalogue](CATALOGUE.md).
+**45 écrans** : 12 déjà réalisés (repris pour référence) et **33 proposés** pour les interfaces qui ne sont pas encore prêtes. Ouvrir [`index.html`](index.html) pour la galerie (filtre par module) ou lire le [catalogue](CATALOGUE.md).
 
 > Statut : **propositions à valider** par la direction produit. Aucun écran proposé n'est une décision : chaque écran liste ses points à trancher dans ses annotations.
 

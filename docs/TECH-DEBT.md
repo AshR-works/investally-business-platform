@@ -63,6 +63,10 @@
 | D59 | **Export d'une liste entière non réalisé** : règle retenue (option C) = lecture donne l'export, avec confirmation récente de la double authentification et alerte dans l'audit ; à construire avec les listes exportables | S4.0 | Claude | Premier export de liste |
 | D60 | **Vues partagées** (rapports des employés, agendas partagés) : elles suivent une audience (tous, service, équipe) et non une portée par propriétaire ; concept d'audience à modéliser, et contenu sensible (performances des employés) à valider avec le juridique et les RH | S4.0 | Direction produit | Agenda (S4.2b) et rapports (S6.3) |
 | D61 | **PDF réel côté serveur** : aujourd'hui le navigateur imprime la fiche en PDF ; un PDF produit par le serveur (même rendu pour tous, un seul clic) demande d'ajouter une bibliothèque au projet, à décider | S4.0 | Direction produit | Charte des documents |
+| D62 | **Un contact appartient à une seule entreprise** et ne peut pas en changer (la fenêtre de modification ne propose pas de déplacement) ; un contact présent dans plusieurs entreprises est à décider | S4.1a | Direction produit | À la demande |
+| D63 | **Fonctions d'un contact en liste fermée** (DAF, Décideur, Autre) ; une fonction libre ou une liste étendue est à décider (le choix reste dans le code du serveur et de l'interface) | S4.1a | Direction produit | À la demande |
+| D64 | **Page « Contacts » minimale** : recherche, filtre par fonction, pagination ; le tri, le choix des colonnes et les filtres par entreprise relèvent du lot « tableaux » (S4.1b) | S4.1a | Claude | S4.1b |
+| D65 | **Contacts supprimés logiquement, sans purge** : base légale, information de la personne et durée de conservation des données personnelles de tiers à faire valider (même sujet que D55) | S4.1a | Direction produit | Avis juridique S7 |
 | D5 | Hypothèses de charge et de périmètre non confirmées | Phase 3 | Revue à la fin de S1 avec les chiffres réels | Ouverte |
 
 ## Adopted Conventions
