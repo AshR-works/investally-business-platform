@@ -71,6 +71,12 @@
 | D67 | **Colonnes « Responsable », « Valeur » et « Dernière activité » absentes** : le responsable demande de relire les utilisateurs d'un autre module (jointure inter-contextes), la valeur et l'activité dépendent des opportunités | S4.1b | Claude | S4.3 |
 | D68 | **Tri sur les statuts par ordre alphabétique des codes** (pas par avancement du cycle) ; un ordre métier (Cible, Contactée, Qualifiée, Cliente, Archivée) est possible, à décider avec les transitions de statut (CU-C-05) | S4.1b | Direction produit | S4.3 |
 | D69 | **Pas de tri ni de filtre sur la page « Contacts »** (le lot ne couvre que les entreprises) ; mêmes composants réutilisables | S4.1b | Claude | À la demande |
+| D70 | **États d'une offre proposés, à confirmer** : brouillon, déposée, décharge reçue, acceptée, refusée, retirée ; « décharge reçue » n'est pas encore atteignable (lot des décharges, S4.2b) | S4.2a | Direction produit | S4.2b |
+| D71 | **Offre non liée à une opportunité ni à un contact destinataire** : le lien arrive avec les opportunités (S4.3) ; aujourd'hui l'offre ne tient qu'à l'entreprise | S4.2a | Claude | S4.3 |
+| D72 | **Pas de fichier de l'offre elle-même** (le PDF envoyé au client) : le module Documents sait rattacher un fichier à un objet, l'offre doit être déclarée comme objet propriétaire | S4.2a | Claude | S4.2b |
+| D73 | **Montant unique, sans lignes, remise ni TVA** : une offre est un objet et un montant ; un détail par ligne relève du modèle de facturation (Finance) | S4.2a | Direction produit | Avec la facturation |
+| D74 | **Numérotation des offres sérialisée** : le compteur par année verrouille une ligne à chaque création ; suffisant pour une vingtaine d'utilisateurs, à revoir si le volume change | S4.2a | Claude | À la demande |
+| D75 | **Acceptation et refus déclaratifs** : le chargé de compte l'enregistre sans preuve jointe ; l'acceptation ne crée pas encore l'accord de principe ni l'agrément (flux F1, S4.3 et S4.4) | S4.2a | Direction produit | S4.3 |
 | D5 | Hypothèses de charge et de périmètre non confirmées | Phase 3 | Revue à la fin de S1 avec les chiffres réels | Ouverte |
 
 ## Adopted Conventions
