@@ -15,6 +15,7 @@
 | Document | Contenu |
 |---|---|
 | [Méthode d'arbitrage](METHODE-D-ARBITRAGE.md) | Comment les décisions structurantes sont présentées |
+| [Cas d'usage des flux transverses](CAS-D-USAGE-FLUX-TRANSVERSES.md) | 7 flux, 29 cas d'usage, schémas par acteur ([workflows](workflows/index.html)) ; propositions à valider |
 | [Questions et décisions](QUESTIONS-ET-DECISIONS.md) | Registre des questions ouvertes et des décisions prises |
 | [Dette technique](TECH-DEBT.md) | Dettes connues et leur échéance |
 | [Risques](RISKS.md) | Registre des risques |
