@@ -47,6 +47,7 @@ model Company {
   deletedAt DateTime?     @map("deleted_at") @db.Timestamptz(6)
   facilitation CompanyFacilitation?
   contacts  Contact[]
+  offers    Offer[]
 
   @@index([status])
   @@index([ownerUserId])
@@ -84,6 +85,51 @@ model Contact {
   @@index([companyId, nameKey])
   @@index([companyId, emailKey])
   @@map("contacts")
+  @@schema("bd")
+}
+
+enum OfferStatus {
+  DRAFT
+  SUBMITTED
+  RECEIPT_RECEIVED
+  ACCEPTED
+  REFUSED
+  WITHDRAWN
+
+  @@schema("bd")
+}
+
+/// Offre faite à une entreprise. Sa visibilité suit celle de l'entreprise ; jamais supprimée (on la retire, avec un motif).
+model Offer {
+  id              String      @id @db.Uuid
+  /// Référence lisible « OFF-2026-0001 » (compteur par année).
+  reference       String      @unique @db.VarChar(20)
+  companyId       String      @map("company_id") @db.Uuid
+  subject         String      @db.VarChar(200)
+  amount          Decimal     @db.Decimal(14, 2)
+  currency        String      @db.Char(3)
+  status          OfferStatus @default(DRAFT)
+  note            String?     @db.VarChar(1000)
+  submittedAt     DateTime?   @map("submitted_at") @db.Timestamptz(6)
+  decidedAt       DateTime?   @map("decided_at") @db.Timestamptz(6)
+  withdrawnReason String?     @map("withdrawn_reason") @db.VarChar(500)
+  version         Int         @default(1)
+  createdAt       DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime    @updatedAt @map("updated_at") @db.Timestamptz(6)
+  company         Company     @relation(fields: [companyId], references: [id])
+
+  @@index([companyId])
+  @@index([status])
+  @@map("offers")
+  @@schema("bd")
+}
+
+/// Compteur des références d'offres, une ligne par année (incrémenté dans la transaction de création).
+model OfferCounter {
+  year Int @id
+  last Int
+
+  @@map("offer_counters")
   @@schema("bd")
 }
 

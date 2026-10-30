@@ -15,6 +15,16 @@ export const COMPANY_STATUS: Record<string, StatusStyle> = {
   ARCHIVED: { label: 'Archivée', tone: 'neutral' },
 };
 
+/** États d'une offre, tels que l'API les fournit. */
+export const OFFER_STATUS: Record<string, StatusStyle> = {
+  DRAFT: { label: 'Brouillon', tone: 'neutral' },
+  SUBMITTED: { label: 'Déposée', tone: 'info' },
+  RECEIPT_RECEIVED: { label: 'Décharge reçue', tone: 'warn' },
+  ACCEPTED: { label: 'Acceptée', tone: 'ok' },
+  REFUSED: { label: 'Refusée', tone: 'bad' },
+  WITHDRAWN: { label: 'Retirée', tone: 'neutral' },
+};
+
 /** Statuts d'un compte utilisateur. */
 export const USER_STATUS: Record<string, StatusStyle> = {
   ACTIVE: { label: 'Actif', tone: 'ok' },

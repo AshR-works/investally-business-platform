@@ -13,7 +13,7 @@ const pdf = () => Buffer.from('%PDF-1.7\ncontrat idor\n%%EOF');
 
 interface As { token: string; ip: string }
 /** Identifiants visés par une sonde : les vrais (objet de Marie) ou inexistants (tous `NIL`). */
-interface Ids { company: string; doc: string; session: string; facilitator: string; contact: string }
+interface Ids { company: string; doc: string; session: string; facilitator: string; contact: string; offer: string; offerSent: string }
 
 /**
  * Une sonde par route « objet » : elle appelle la route avec les identifiants donnés, en tant que `as`.
@@ -28,6 +28,14 @@ const PROBES: Record<string, (api: Api, as: As, ids: Ids) => Promise<ApiResponse
   'GET /contacts/:id': (api, as, ids) => api.call('GET', `/api/v1/contacts/${ids.contact}`, as),
   'PUT /contacts/:id': (api, as, ids) => api.call('PUT', `/api/v1/contacts/${ids.contact}`, { ...as, body: { version: 1, phone: '+237 600 00 00 00' } }),
   'DELETE /contacts/:id': (api, as, ids) => api.call('DELETE', `/api/v1/contacts/${ids.contact}`, as),
+  'GET /offers': (api, as, ids) => api.call('GET', `/api/v1/offers?companyId=${ids.company}`, as),
+  'POST /offers': (api, as, ids) => api.call('POST', '/api/v1/offers', { ...as, body: { companyId: ids.company, subject: 'Offre piège', amount: '1000' } }),
+  'GET /offers/:id': (api, as, ids) => api.call('GET', `/api/v1/offers/${ids.offer}`, as),
+  'PUT /offers/:id': (api, as, ids) => api.call('PUT', `/api/v1/offers/${ids.offer}`, { ...as, body: { version: 1, subject: 'Offre piratée' } }),
+  'POST /offers/:id/submit': (api, as, ids) => api.call('POST', `/api/v1/offers/${ids.offer}/submit`, { ...as, body: { version: 1 } }),
+  'POST /offers/:id/accept': (api, as, ids) => api.call('POST', `/api/v1/offers/${ids.offerSent}/accept`, { ...as, body: { version: 2 } }),
+  'POST /offers/:id/refuse': (api, as, ids) => api.call('POST', `/api/v1/offers/${ids.offerSent}/refuse`, { ...as, body: { version: 2 } }),
+  'POST /offers/:id/withdraw': (api, as, ids) => api.call('POST', `/api/v1/offers/${ids.offerSent}/withdraw`, { ...as, body: { version: 2, reason: 'Retrait piraté' } }),
   'GET /facilitators/:id': (api, as, ids) => api.call('GET', `/api/v1/facilitators/${ids.facilitator}`, as),
   'GET /documents': (api, as, ids) => api.call('GET', `/api/v1/documents?ownerType=company&ownerId=${ids.company}`, as),
   'POST /documents': (api, as, ids) =>
@@ -84,6 +92,11 @@ describeDb('Contrat anti-IDOR : un acteur sans portée reçoit la réponse d\'un
     expect(facilitator.status).toBe(201);
     const contact = await api.call('POST', '/api/v1/contacts', { ...m, body: { companyId: company.body.id, lastName: 'ContactIdor', firstName: 'Alain', email: 'alain.idor@exemple.cm' } });
     expect(contact.status).toBe(201);
+    const offer = await api.call('POST', '/api/v1/offers', { ...m, body: { companyId: company.body.id, subject: 'Secret-OFFRE-IDOR', amount: '4500000' } });
+    expect(offer.status).toBe(201);
+    const offerSent = await api.call('POST', '/api/v1/offers', { ...m, body: { companyId: company.body.id, subject: 'Offre déposée IDOR', amount: '2000000' } });
+    expect(offerSent.status).toBe(201);
+    expect((await api.call('POST', `/api/v1/offers/${offerSent.body.id}/submit`, { ...m, body: { version: 1 } })).status).toBe(200);
     const doc = await api.call('POST', `/api/v1/documents?ownerType=company&ownerId=${company.body.id}&title=Pi%C3%A8ce&category=DECHARGE&fileName=piece.pdf`, {
       ...m, raw: { type: 'application/octet-stream', data: pdf() },
     });
@@ -93,8 +106,8 @@ describeDb('Contrat anti-IDOR : un acteur sans portée reçoit la réponse d\'un
       marie: m,
       chef: chefSession,
       attackers: { paul: await login(paul), autreChef: await login(autreChef) },
-      real: { company: company.body.id as string, doc: doc.body.id as string, session: second.sessionId, facilitator: facilitator.body.id as string, contact: contact.body.id as string } satisfies Ids,
-      nil: { company: NIL, doc: NIL, session: NIL, facilitator: NIL, contact: NIL } satisfies Ids,
+      real: { company: company.body.id as string, doc: doc.body.id as string, session: second.sessionId, facilitator: facilitator.body.id as string, contact: contact.body.id as string, offer: offer.body.id as string, offerSent: offerSent.body.id as string } satisfies Ids,
+      nil: { company: NIL, doc: NIL, session: NIL, facilitator: NIL, contact: NIL, offer: NIL, offerSent: NIL } satisfies Ids,
       secondSession: second,
     };
   }
@@ -114,6 +127,8 @@ describeDb('Contrat anti-IDOR : un acteur sans portée reçoit la réponse d\'un
       expect(onForeign.bytes.toString('utf8')).not.toContain('Secret-IDOR');
       expect(onForeign.bytes.toString('utf8')).not.toContain('ContactIdor');
       expect(onForeign.bytes.toString('utf8')).not.toContain('alain.idor');
+      expect(onForeign.bytes.toString('utf8')).not.toContain('Secret-OFFRE-IDOR');
+      expect(onForeign.bytes.toString('utf8')).not.toContain('Offre déposée IDOR');
     }
     // Contrôle positif : le propriétaire, lui, réussit (le test n'est pas vide), puis les dégâts éventuels sont vérifiés.
     // L'archivage exige le droit de suppression, que Marie n'a pas : c'est son chef (même équipe) qui l'exerce.
@@ -135,6 +150,15 @@ describeDb('Contrat anti-IDOR : un acteur sans portée reçoit la réponse d\'un
     // Le contact de Marie n'a été ni modifié, ni supprimé, et aucun contact piège n'a été créé.
     const contacts = await api.call('GET', `/api/v1/contacts?companyId=${w.real.company}`, w.marie);
     expect(contacts.body.items.map((c: { lastName: string; phone: string | null }) => [c.lastName, c.phone])).toEqual([['ContactIdor', null]]);
+    // Les offres de Marie n'ont pas bougé : même sujet, même état, version inchangée, et aucune offre piège n'a été créée.
+    const offers = await api.call('GET', `/api/v1/offers?companyId=${w.real.company}`, w.marie);
+    for (const attacker of Object.values(w.attackers)) {
+      for (const key of ['PUT /offers/:id', 'POST /offers/:id/submit', 'POST /offers/:id/accept', 'POST /offers/:id/refuse', 'POST /offers/:id/withdraw', 'POST /offers']) await PROBES[key](api, attacker, w.real);
+    }
+    const offersAfter = await api.call('GET', `/api/v1/offers?companyId=${w.real.company}`, w.marie);
+    expect(offersAfter.body.items.map((o: { subject: string; status: string; version: number }) => [o.subject, o.status, o.version]).sort())
+      .toEqual(offers.body.items.map((o: { subject: string; status: string; version: number }) => [o.subject, o.status, o.version]).sort());
+    expect(offersAfter.body.total).toBe(2);
     const detail = await api.call('GET', `/api/v1/documents/${w.real.doc}`, w.marie);
     expect(detail.status).toBe(200);
     expect(detail.body.versions).toHaveLength(1);

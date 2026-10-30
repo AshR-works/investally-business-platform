@@ -1,0 +1,38 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>DDR-0017 — Offres faites aux entreprises : fiche, liste, cycle d&#x27;états</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — design · <a href="../README.html">Mode d&#8217;emploi</a> · <a href="../01-DESIGN-SYSTEM.html">Design system</a> · <a href="../02-SPECIFICATIONS-FRONTEND.html">Spécifications frontend</a> · <a href="../exigences/REGISTRE-EXD.html">Exigences</a> · <a href="../04-ANALYSE-D-IMPACT.html">Analyse d&#8217;impact</a> · <a href="../05-AIDE-A-LA-DECISION.html">Aide à la décision</a> · <a href="../decisions/REGISTRE-DDR.html">Décisions (DDR)</a> · <a href="../CHANGELOG-DESIGN.html">Journal</a> · <a href="../prototype/index.html">Prototype</a></nav><h1>DDR-0017 — Offres faites aux entreprises : fiche, liste, cycle d'états</h1>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td><strong>Statut</strong></td><td>Acceptée (réalisée dans l'application) ; prototype à mettre à jour</td></tr>
+<tr><td><strong>Date</strong></td><td>2026-10-30</td></tr>
+<tr><td><strong>Version du design</strong></td><td>0.4.1 (le prototype n'est pas encore à jour : version 0.5.0 à décider)</td></tr>
+<tr><td><strong>Lié à</strong></td><td>Lot S4.2a ; wireframes 13 et 14 ; cas d'usage CU-C-20 et CU-C-23 ; flux C2 ; décision D32</td></tr>
+</tbody></table></div>
+<h2>Contexte</h2>
+<p>Le module commercial n'avait pas d'offres. Le sprint S4.2 est découpé en trois lots : <strong>S4.2a les offres</strong> (ce lot), S4.2b les décharges signées, S4.2c les relances. Les états exacts d'une offre étaient « à confirmer » dans les cas d'usage : ce lot les réalise avec des <strong>valeurs par défaut</strong>, à confirmer par la direction produit (D32).</p>
+<h2>Décisions</h2>
+<ol><li><strong>Où</strong> : un panneau « Offres » dans la fiche entreprise (liste, création, modification d'un brouillon, changements d'état) et une page « Offres » (nouveau module de la navigation) avec recherche, filtre par état, pagination, sélection persistante et création (l'entreprise se choisit parmi celles de sa portée).</li><li><strong>Champs</strong> : entreprise (obligatoire, non modifiable ensuite), objet, montant, devise (FCFA = XAF par défaut), note facultative. Référence <strong>OFF-AAAA-NNNN</strong> attribuée à la création (compteur par année, sans trou, transactionnel).</li><li><strong>Cycle d'états</strong> : <em>Brouillon → Déposée → (Décharge reçue) → Acceptée ou Refusée</em> ; <em>Retirée</em> possible tant que le client n'a pas répondu. Acceptée, refusée et retirée sont <strong>définitives</strong>. « Décharge reçue » est prévu dans le modèle et sera branché avec S4.2b.</li><li><strong>Modification</strong> : seulement en brouillon. Une offre déposée ne change plus (pour changer un montant, on retire l'offre et on en crée une autre) ; c'est ce qui garde l'historique fidèle à ce que le client a reçu.</li><li><strong>Confirmations</strong> : déposer, enregistrer l'acceptation ou le refus et retirer sont confirmés à l'écran (EXD-13) ; <strong>le retrait exige un motif</strong>.</li><li><strong>Visibilité</strong> : une offre <strong>suit son entreprise</strong> (pas de propriétaire propre) ; hors portée, l'offre ou son entreprise est « introuvable ».</li><li><strong>Droits</strong> : lire, créer, modifier (chargé de compte Propre, Responsable commercial Équipe) ; retirer : droit <code>bd.offer.withdraw</code> (mêmes rôles) ; lire seulement : Direction. Déposer, accepter et refuser relèvent de la modification.</li><li><strong>Entreprise archivée</strong> : plus de création ni de changement ; les offres restent lisibles.</li><li><strong>Modification concurrente</strong> : verrou optimiste (version lue), y compris pour chaque changement d'état.</li><li><strong>Audit</strong> : création, modification et chaque changement d'état tracés (ancienne et nouvelle valeur) avec la session.</li></ol>
+<h2>Mesures de rigueur</h2>
+<ul><li>Les mêmes règles de saisie sont comparées entre l'interface et le <strong>domaine réel</strong> du serveur par des tests.</li><li>Le contrat anti-IDOR est étendu aux huit nouvelles routes : même réponse pour l'offre d'un collègue et pour un identifiant inexistant, aucune écriture, aucune fuite.</li><li>La base garantit, quoi que fasse l'application : clé étrangère vers l'entreprise, version positive, <strong>montant positif</strong>, <strong>date de dépôt cohérente avec l'état</strong>, <strong>motif présent pour une offre retirée</strong>, <strong>référence unique</strong>.</li><li>Une saisie refusée <strong>ne consomme pas de numéro</strong> : pas de trou dans la numérotation.</li></ul>
+<h2>Conséquences</h2>
+<ul><li>Réversible : une migration (deux tables), un module, cinq composants.</li><li><strong>Dette</strong> : D70 à D75 (<code>docs/TECH-DEBT.md</code>). Le wireframe 13 montre une colonne « Prochaine relance » qui arrivera avec S4.2c.</li></ul></main></body></html>
