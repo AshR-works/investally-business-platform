@@ -51,7 +51,10 @@ if (args[0] === 'reset') {
 
 // --- vérifications -----------------------------------------------------------------------------------------------
 const major = Number(process.versions.node.split('.')[0]);
-if (major !== 22) say(`⚠ Node ${process.versions.node} détecté ; le projet vise Node 22 LTS (.nvmrc). Prisma 7 ne supporte pas officiellement les autres versions.`);
+if (major !== 22) {
+  say(`⚠ Node ${process.versions.node} détecté ; le projet vise Node 22 LTS (.nvmrc) et Prisma 7 ne supporte pas officiellement les autres versions.`);
+  say('  Pour utiliser Node 22 sans toucher aux autres projets : fnm exec --using=22 node scripts/local-stack.mjs   (installation : docs/GUIDE-EXECUTION-LOCALE.md, « Node 22 »).');
+}
 if (!existsSync(join(repo, 'node_modules')) || !existsSync(join(apiDir, 'node_modules'))) fail('Dépendances absentes : lancez `pnpm install` à la racine du dépôt.');
 
 mkdirSync(join(home, 'documents'), { recursive: true });
