@@ -1,0 +1,116 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Cas d&#x27;usage et workflows — module commercial (Business Development)</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="INDEX.html">Index</a> · <a href="GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="ARCHITECTURE.html">Architecture</a> · <a href="SECURITY.html">Sécurité</a> · <a href="METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="TECH-DEBT.html">Dette</a> · <a href="design/README.html">Design</a> · <a href="livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>Cas d'usage et workflows — module commercial (Business Development)</h1>
+<p><strong>Date</strong> : 2026-10-30 · <strong>Statut</strong> : <strong>proposition à valider</strong> · <strong>Suite de</strong> : <a href="CAS-D-USAGE-FLUX-TRANSVERSES.html">CAS-D-USAGE-FLUX-TRANSVERSES.md</a> · <strong>Schémas</strong> : <a href="workflows/index.html">workflows/index.html</a> (flux C1 à C5) · <strong>Écrans</strong> : <a href="design/wireframe/index.html">wireframes</a></p>
+<blockquote><p>Le module commercial couvre l'entreprise cible jusqu'à l'accord de principe : entreprises, contacts, offres, décharges, relances, rendez-vous, visites, opportunités. Les flux qui le traversent vers Investudy et la Finance sont dans le document des flux transverses (F1 à F7). <strong>Rien n'est décidé ici</strong> : les points « à trancher » sont ceux de la direction produit. Les étapes déjà réalisées sont signalées.</p></blockquote>
+<h2>1. Droits actuels du module (rappel de la matrice)</h2>
+<div class="table-wrap"><table><thead><tr><th>Objet</th><th>Chargé de compte</th><th>Responsable commercial</th><th>Direction, Support, Finance</th></tr></thead><tbody>
+<tr><td>Entreprise</td><td>lire, créer, modifier (Propre) ; <strong>demande l'archivage</strong></td><td>+ <strong>archiver</strong>, exporter (Équipe)</td><td>lecture (Tous) ; Direction exporte</td></tr>
+<tr><td>Contact</td><td>lire, créer, modifier (Propre)</td><td>tout, supprimer compris (Équipe)</td><td>Direction et Support : lecture</td></tr>
+<tr><td>Offre, décharge, relance, rendez-vous, visite</td><td>lire, créer, modifier, retirer ou annuler ou terminer (Propre)</td><td>tout (Équipe)</td><td>—</td></tr>
+<tr><td>Opportunité</td><td>lire, créer, modifier, avancer, <strong>clore « perdue »</strong> (Propre)</td><td>lecture Tous ; créer, modifier, avancer, <strong>clore « perdue » ou « gagnée »</strong>, exporter (Équipe)</td><td>Direction : lecture, export</td></tr>
+<tr><td>Ambassadeur</td><td>lire, créer (Propre)</td><td>lire Tous ; créer, modifier (Équipe)</td><td>Direction : lecture</td></tr>
+<tr><td>Facilitateur, commission</td><td>facilitateur : lire, créer ; commission : <strong>lire</strong> (Propre)</td><td>facilitateur et commission : lire, créer ou définir (Équipe)</td><td>Direction et Finance : lecture (Tous)</td></tr>
+</tbody></table></div>
+<p><strong>Décision D28 (option C, 2026-10-30)</strong> : le chargé de compte clôt lui-même ses opportunités « perdues » ; seul le Responsable commercial clôt une opportunité « gagnée » (elle déclenche l'accord de principe, l'agrément et la commission) et archive une entreprise. La matrice actuelle du code <strong>n'est pas encore modifiée</strong> : elle le sera avec S4.3, en remplaçant <code>bd.opportunity.close</code> par <code>bd.opportunity.close_lost</code> et <code>bd.opportunity.close_won</code>. Par ailleurs, le droit d'export existe encore à part (<code>bd.company.export</code>) alors que la règle retenue est « qui voit exporte » (à réaligner, D26).</p>
+<h2>2. Les cinq flux du module</h2>
+<p>Chaque schéma est dans <code>workflows/svg/</code>.</p>
+<p><img src="workflows/svg/C1-prospection.svg" alt="C1 — Prospection" loading="lazy" style="max-width:100%;border:1px solid var(--border);border-radius:10px;display:block"></p>
+<p><img src="workflows/svg/C2-offre-decharge-relances.svg" alt="C2 — Offre, décharge et relances" loading="lazy" style="max-width:100%;border:1px solid var(--border);border-radius:10px;display:block"></p>
+<p><img src="workflows/svg/C3-rendez-vous-agenda.svg" alt="C3 — Rendez-vous, visite et agenda" loading="lazy" style="max-width:100%;border:1px solid var(--border);border-radius:10px;display:block"></p>
+<p><img src="workflows/svg/C4-opportunite-pipeline.svg" alt="C4 — Opportunité : du pipeline à la clôture" loading="lazy" style="max-width:100%;border:1px solid var(--border);border-radius:10px;display:block"></p>
+<p><img src="workflows/svg/C5-cycle-de-vie-entreprise.svg" alt="C5 — Cycle de vie d'une entreprise" loading="lazy" style="max-width:100%;border:1px solid var(--border);border-radius:10px;display:block"></p>
+<hr>
+<h2>3. Entreprises</h2>
+<h3>CU-C-01 — Créer une entreprise cible <em>(réalisé)</em></h3>
+<ul><li><strong>Acteur</strong> : chargé de compte, Responsable commercial. <strong>Écran</strong> : 6. <strong>Flux</strong> : C1.</li><li><strong>Scénario</strong> : 1. « Nouvelle entreprise ». 2. Nom (obligatoire), pays, secteur, e-mail, téléphone. 3. Facilitateur facultatif (existant ou nouveau), méthode de contact, commission si le droit existe. 4. Enregistrer.</li><li><strong>Variantes</strong> : nom déjà pris (sans tenir compte de la casse) → conflit ; champs non conformes en surbrillance avec message ; facilitateur d'un collègue → « introuvable ».</li><li><strong>Résultat</strong> : statut « Cible », propriétaire = le créateur, audit. <strong>Droits</strong> : <code>bd.company.create</code>. </li></ul>
+<h3>CU-C-02 — Rechercher, filtrer et sélectionner des entreprises <em>(partiellement réalisé)</em></h3>
+<ul><li><strong>Acteur</strong> : tout rôle qui lit les entreprises. <strong>Écran</strong> : 4.</li><li><strong>Scénario</strong> : recherche par nom ; sélection persistante de plusieurs lignes ; pagination. <strong>Réalisé</strong> : recherche, pagination, sélection. <strong>À venir (lot « tableaux » de S4.1)</strong> : filtres (statut, pays), tri, compteurs, colonnes au choix.</li><li><strong>Droits</strong> : la liste ne montre que la portée de l'utilisateur.</li></ul>
+<h3>CU-C-03 — Consulter la fiche d'une entreprise <em>(réalisé, 360° à venir)</em></h3>
+<ul><li><strong>Écrans</strong> : 5 (actuel), 10 (cible). <strong>Réalisé</strong> : identité, mise en relation, documents. <strong>À venir</strong> : contacts, offres, rendez-vous, opportunités, historique, par onglets visibles selon les droits.</li><li><strong>Variantes</strong> : entreprise hors portée → « introuvable », même message qu'un identifiant inexistant.</li></ul>
+<h3>CU-C-04 — Modifier une entreprise <em>(réalisé)</em></h3>
+<ul><li><strong>Scénario</strong> : « Modifier » ; fenêtre préremplie ; enregistrement avec la version lue (refus si quelqu'un a modifié entre-temps). Le propriétaire et le statut ne se modifient pas ici ; une entreprise archivée est en lecture seule.</li><li><strong>Droits</strong> : <code>bd.company.update</code> ; la commission : <code>bd.commission.manage</code> seulement (une modification par un chargé de compte la conserve).</li></ul>
+<h3>CU-C-05 — Changer le statut d'une entreprise <em>(à venir)</em></h3>
+<ul><li><strong>Acteur</strong> : chargé de compte (Contactée, Qualifiée), système (Cliente à l'agrément). <strong>Flux</strong> : C5.</li><li><strong>Statuts</strong> : Cible, Contactée, Qualifiée, Cliente, Archivée. <strong>À trancher</strong> : transitions manuelles ou automatiques, critères de « Qualifiée », retour en arrière.</li></ul>
+<h3>CU-C-06 — Archiver une entreprise <em>(à venir)</em></h3>
+<ul><li><strong>Acteur</strong> : Responsable commercial (décision D28). Le chargé de compte lui en <strong>fait la demande</strong> (message ou tâche). <strong>Scénario</strong> : « Archiver », motif, confirmation ; l'entreprise passe en lecture seule.</li><li><strong>À trancher</strong> : motif obligatoire ? restauration d'une entreprise archivée ? <strong>Droits</strong> : <code>bd.company.archive</code> (Équipe).</li></ul>
+<h3>CU-C-07 — Exporter la fiche d'une entreprise <em>(réalisé)</em></h3>
+<ul><li>Voir le flux F5 : qui voit exporte, chaque export est tracé, le document ne contient que ce que l'utilisateur voit.</li></ul>
+<hr>
+<h2>4. Contacts</h2>
+<h3>CU-C-10 — Créer un contact <em>(à venir, S4.1)</em></h3>
+<ul><li><strong>Acteur</strong> : chargé de compte. <strong>Écran</strong> : 12. <strong>Scénario</strong> : 1. Depuis la fiche entreprise ou la liste, « Nouveau contact ». 2. Entreprise, nom, prénom, fonction (DAF, décideur, autre), téléphone, e-mail. 3. Enregistrer.</li><li><strong>Variantes</strong> : <strong>doublon probable</strong> (même entreprise et même nom ou e-mail) → la fiche existante est proposée ; e-mail ou téléphone invalide → champ en surbrillance.</li><li><strong>Règle</strong> : un contact appartient à une entreprise. <strong>À trancher</strong> : champs exacts, fonctions possibles. <strong>Droits</strong> : <code>bd.contact.create</code> (Propre).</li></ul>
+<h3>CU-C-11 — Modifier un contact <em>(à venir)</em></h3>
+<ul><li>Mêmes champs ; version lue contrôlée ; audit avant/après. <strong>Droits</strong> : <code>bd.contact.update</code>.</li></ul>
+<h3>CU-C-12 — Rattacher ou détacher un contact d'une entreprise <em>(à venir)</em></h3>
+<ul><li><strong>Scénario</strong> : déplacer un contact vers une autre entreprise de sa portée. <strong>Règles</strong> : les rendez-vous liés restent attachés à l'ancienne entreprise (à confirmer). <strong>À trancher</strong> : un contact peut-il appartenir à plusieurs entreprises ?</li></ul>
+<h3>CU-C-13 — Rechercher et consulter les contacts <em>(à venir)</em></h3>
+<ul><li><strong>Écran</strong> : 11. Liste filtrable par fonction et entreprise ; fiche du contact avec son historique d'actions. <strong>Droits</strong> : la portée de l'entreprise liée.</li></ul>
+<h3>CU-C-14 — Supprimer un contact <em>(à venir)</em></h3>
+<ul><li><strong>Acteur</strong> : Responsable commercial seulement (le chargé de compte n'a pas <code>bd.contact.delete</code>). Suppression logique avec confirmation ; refusée si le contact est lié à un rendez-vous ou un apprenant (à trancher).</li></ul>
+<hr>
+<h2>5. Offres, décharges et relances <em>(flux C2, S4.2)</em></h2>
+<h3>CU-C-20 — Préparer puis déposer une offre</h3>
+<ul><li><strong>Acteur</strong> : chargé de compte. <strong>Écrans</strong> : 13, 14. <strong>Scénario</strong> : 1. « Nouvelle offre » liée à l'entreprise (et à une opportunité). 2. Montant, objet, pièces jointes. 3. « Déposer » : l'offre passe à « Déposée » et la date est enregistrée.</li><li><strong>Variantes</strong> : entreprise archivée → refus ; modification concurrente → refus (version).</li><li><strong>Droits</strong> : <code>bd.offer.create / update</code> (Propre). <strong>À trancher</strong> : états exacts (brouillon, déposée, décharge reçue, acceptée, refusée, retirée).</li></ul>
+<h3>CU-C-21 — Enregistrer la décharge signée</h3>
+<ul><li><strong>Scénario</strong> : 1. Depuis l'offre, « Déposer la décharge » (écran 15). 2. Date de réception, reçue par, fichier signé (contrôle du contenu). 3. L'offre passe à « Décharge reçue ».</li><li><strong>Règles</strong> : <strong>une seule décharge valide par offre</strong> ; pas de décharge sur une offre retirée. <strong>Droits</strong> : <code>bd.receipt.create</code>. <strong>État</strong> : à venir.</li></ul>
+<h3>CU-C-22 — Planifier et effectuer une relance</h3>
+<ul><li><strong>Écran</strong> : 16. <strong>Scénario</strong> : 1. Planification (automatique après le dépôt, ou manuelle) avec échéance et canal. 2. À l'échéance, la relance apparaît dans « À faire » et l'agenda. 3. Le chargé de compte la réalise (appel, e-mail, WhatsApp) et note le résultat : « Terminer ».</li><li><strong>Règles</strong> : <strong>plus de relance après une décharge refusée ou une offre retirée</strong> ; une relance en retard est signalée. <strong>Droits</strong> : <code>bd.followup.create / complete</code>. <strong>À trancher</strong> : délai par défaut, nombre maximum de relances.</li></ul>
+<h3>CU-C-23 — Retirer une offre</h3>
+<ul><li><strong>Scénario</strong> : « Retirer l'offre » avec motif, confirmation ; les relances à venir sont annulées. <strong>Droits</strong> : <code>bd.offer.withdraw</code> (Propre). <strong>Variantes</strong> : offre déjà acceptée → refus.</li></ul>
+<hr>
+<h2>6. Rendez-vous, visites et agenda <em>(flux C3, S4.2b et S4.3)</em></h2>
+<h3>CU-C-30 — Planifier un rendez-vous</h3>
+<ul><li><strong>Écran</strong> : 18. <strong>Types</strong> : RDV DAF, RDV décideur, visite chez Investally. <strong>Scénario</strong> : 1. Type, entreprise, contact, date, heure, lieu ou lien, opportunité liée. 2. Contrôle du conflit d'horaire. 3. Enregistrement dans l'agenda, rappel programmé.</li><li><strong>Variantes</strong> : conflit d'horaire (bloque ou avertit : à trancher) ; contact non rattaché à l'entreprise → refus. <strong>Droits</strong> : <code>bd.appointment.create</code>, <code>bd.visit.create</code> (Propre).</li></ul>
+<h3>CU-C-31 — Tenir, annuler ou reporter un rendez-vous</h3>
+<ul><li><strong>Scénario</strong> : après le rendez-vous, le chargé de compte le marque « tenu » avec une note, ou « annulé » / « reporté » avec motif. <strong>Règle</strong> : un rendez-vous <strong>décideur tenu</strong> débloque l'accord de principe (flux F1). <strong>Droits</strong> : <code>bd.appointment.update / cancel</code>.</li></ul>
+<h3>CU-C-32 — Consulter l'agenda</h3>
+<ul><li><strong>Écran</strong> : 17. Vues jour, semaine, mois ; filtre par type. <strong>Droits</strong> : le chargé de compte voit le sien ; le Responsable commercial celui de son équipe ; <strong>les agendas partagés suivent une règle d'audience à définir (D60)</strong>.</li></ul>
+<h3>CU-C-33 — Créer un événement depuis un objet</h3>
+<ul><li><strong>Scénario</strong> : depuis une entreprise, une offre ou une opportunité, « Planifier » préremplit le lien. <strong>État</strong> : à venir (S4.2b).</li></ul>
+<hr>
+<h2>7. Opportunités <em>(flux C4, S4.3)</em></h2>
+<h3>CU-C-40 — Créer une opportunité</h3>
+<ul><li><strong>Acteur</strong> : chargé de compte. <strong>Écran</strong> : 19. <strong>Scénario</strong> : entreprise, intitulé, montant estimé, source ; l'opportunité apparaît en « Qualification ». <strong>Règle</strong> : plusieurs opportunités simultanées par entreprise. <strong>Droits</strong> : <code>bd.opportunity.create</code> (Propre).</li></ul>
+<h3>CU-C-41 — Faire avancer une opportunité</h3>
+<ul><li><strong>Écrans</strong> : 19 (cartes), 20 (par étape), 21 (fiche). <strong>Scénario</strong> : « Passer à l'étape suivante » ; en vue par étape, la carte se déplace ; <strong>alternative clavier</strong> par un menu « Déplacer vers… ».</li><li><strong>Règles</strong> : étapes dans l'ordre ; chaque passage tracé ; version contrôlée. Le passage à « Accord de principe » est soumis à la règle du rendez-vous décideur (F1). <strong>Étapes du prototype</strong> (à valider) : Qualification, Proposition, Négociation, Accord de principe, Agrément. <strong>Droits</strong> : <code>bd.opportunity.advance</code> (Propre).</li></ul>
+<h3>CU-C-42 — Clore une opportunité (perdue ou gagnée)</h3>
+<ul><li><strong>Acteur</strong> : chargé de compte pour une opportunité <strong>perdue</strong> ; Responsable commercial pour une opportunité <strong>gagnée</strong> (décision D28). <strong>Scénario</strong> : « Clore », issue, motif (obligatoire pour une perte), confirmation. <strong>Règle</strong> : une opportunité clôturée est <strong>immuable</strong> et la clôture est tracée.</li><li><strong>Droits</strong> : <code>bd.opportunity.close_lost</code> (chargé de compte Propre, Responsable commercial Équipe) et <code>bd.opportunity.close_won</code> (Responsable commercial Équipe) : à créer avec S4.3.</li><li><strong>À trancher</strong> : motifs de perte (liste fermée ou texte libre) ; réouverture exceptionnelle.</li></ul>
+<h3>CU-C-43 — Suivre le pipeline</h3>
+<ul><li><strong>Acteur</strong> : Responsable commercial, Direction. Vue de toutes les opportunités de l'équipe (écrans 20 et tableaux de bord 33 à 35) ; export tracé. <strong>Droits</strong> : lecture Tous pour le Responsable commercial et la Direction.</li></ul>
+<hr>
+<h2>8. Facilitateurs et commissions (rappel)</h2>
+<ul><li><strong>Réutiliser un facilitateur existant</strong> : choisi dans la liste de sa portée à la création ou à la modification d'une entreprise <em>(réalisé)</em>. </li><li><strong>Définir ou modifier une commission</strong> : Responsable commercial <em>(réalisé)</em>. <strong>Voir sa commission</strong> : chargé de compte, sur ses entreprises <em>(réalisé)</em>. Le versement et son suivi sont dans le flux F3 <em>(à venir)</em>.</li></ul>
+<h2>9. Permissions et données à prévoir</h2>
+<div class="table-wrap"><table><thead><tr><th>Besoin</th><th>Proposition</th></tr></thead><tbody>
+<tr><td>Statut d'entreprise : changer le statut</td><td>utiliser <code>bd.company.update</code> ; à confirmer si un droit dédié est nécessaire</td></tr>
+<tr><td>Doublons de contacts</td><td>règle de détection côté serveur (entreprise + nom ou e-mail)</td></tr>
+<tr><td>Dérogation, agrément</td><td>voir le document des flux transverses (§ 3)</td></tr>
+<tr><td>Export d'une liste d'entreprises ou d'opportunités</td><td>lecture + confirmation récente du second facteur (option C, à confirmer)</td></tr>
+</tbody></table></div>
+<h2>10. Points à trancher, par ordre d'impact</h2>
+<ol><li><strong>Statuts d'une entreprise</strong> : transitions manuelles ou automatiques, critères de « Qualifiée » (C5, CU-C-05).</li><li><strong>Offre</strong> : états exacts, délai et nombre de relances (C2).</li><li><strong>Rendez-vous</strong> : un conflit d'horaire bloque-t-il ? rappels et canal (C3).</li><li><strong>Contact</strong> : champs, fonctions possibles, appartenance à plusieurs entreprises (CU-C-10 et CU-C-12).</li><li><strong>Étapes d'opportunité</strong> : noms, ordre, retour en arrière (C4).</li><li><strong>Agendas partagés</strong> : audience (D60).</li></ol>
+<p><em>Réglé le 2026-10-30 (D28) : qui archive et qui clôt.</em></p>
+<h2>11. Suite proposée</h2>
+<p>Après validation : le module <strong>Investudy</strong> (catalogue, sessions, inscriptions, présences, certifications) en cas d'usage détaillés, puis <strong>Reporting</strong>, <strong>Stocks</strong>, <strong>Finance</strong>, <strong>RH et fiscalité</strong>.</p></main></body></html>
