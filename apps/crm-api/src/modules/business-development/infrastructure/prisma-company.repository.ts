@@ -5,7 +5,7 @@ import { DomainError, Page } from '../../../shared-kernel';
 import { Commission } from '../domain/commission';
 import { Company } from '../domain/company';
 import { CompanyName } from '../domain/company-name';
-import { CompanyRepository } from '../domain/company-repository';
+import { CompanyListQuery, CompanyRepository, CompanySortField } from '../domain/company-repository';
 import { CompanyStatus } from '../domain/company-status';
 import { Facilitation } from '../domain/facilitation';
 
@@ -136,17 +136,14 @@ export class PrismaCompanyRepository implements CompanyRepository {
    * Liste paginée, la plus récente d'abord ; `ownerIds` restreint aux propriétaires autorisés (liste vide = aucune
    * entreprise), absent = aucune restriction.
    */
-  async list(query: { page: number; pageSize: number; search?: string; ownerIds?: readonly string[] }): Promise<Page<Company>> {
-    const where: Prisma.CompanyWhereInput = {
-      deletedAt: null,
-      ...(query.ownerIds ? { ownerUserId: { in: [...query.ownerIds] } } : {}),
-      ...(query.search ? { name: { contains: query.search, mode: 'insensitive' } } : {}),
-    };
+  async list(query: CompanyListQuery): Promise<Page<Company>> {
+    const where = companyWhere(query);
+    const direction = query.direction ?? 'desc';
     const [rows, total] = await Promise.all([
       this.prisma.db.company.findMany({
         where,
         include: withFacilitation,
-        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+        orderBy: [...orderFor(query.sort ?? 'createdAt', direction), { id: direction }],
         skip: (query.page - 1) * query.pageSize,
         take: query.pageSize,
       }),
@@ -154,4 +151,22 @@ export class PrismaCompanyRepository implements CompanyRepository {
     ]);
     return { items: rows.map(toDomain), total, page: query.page, pageSize: query.pageSize };
   }
+}
+
+/** Filtre commun à la liste et à la synthèse : suppression logique, portée, recherche, pays et secteur (statut en plus pour la liste). */
+export function companyWhere(query: { ownerIds?: readonly string[]; search?: string; status?: CompanyStatus; country?: string; sector?: string }): Prisma.CompanyWhereInput {
+  return {
+    deletedAt: null,
+    ...(query.ownerIds ? { ownerUserId: { in: [...query.ownerIds] } } : {}),
+    ...(query.search ? { name: { contains: query.search, mode: 'insensitive' } } : {}),
+    ...(query.status ? { status: query.status } : {}),
+    ...(query.country ? { country: { equals: query.country, mode: 'insensitive' } } : {}),
+    ...(query.sector ? { sector: { equals: query.sector, mode: 'insensitive' } } : {}),
+  };
+}
+
+/** Tri demandé ; les valeurs absentes (pays, secteur) passent toujours en dernier. */
+function orderFor(field: CompanySortField, direction: 'asc' | 'desc'): Prisma.CompanyOrderByWithRelationInput[] {
+  if (field === 'country' || field === 'sector') return [{ [field]: { sort: direction, nulls: 'last' } }];
+  return [{ [field]: direction }];
 }

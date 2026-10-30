@@ -1,0 +1,49 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>S4.1b — tableau des entreprises (filtres, tri, effectifs, colonnes) : recette</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="INDEX.html">Index</a> · <a href="GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="ARCHITECTURE.html">Architecture</a> · <a href="SECURITY.html">Sécurité</a> · <a href="METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="TECH-DEBT.html">Dette</a> · <a href="design/README.html">Design</a> · <a href="livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>S4.1b — tableau des entreprises (filtres, tri, effectifs, colonnes) : recette</h1>
+<p><em>Branche <code>sprint/s4-1b-tableaux-entreprises</code> · 2026-10-30 · lot « tableaux » (ARB-API-1 C) ; D38 ; DDR-0016 ; décision D30.</em></p>
+<h2>Ce qui est livré</h2>
+<div class="table-wrap"><table><thead><tr><th>Demande</th><th>Réponse</th></tr></thead><tbody>
+<tr><td><strong>Filtre par statut avec effectifs</strong></td><td>« Toutes · Cible · Contactée · Qualifiée · Cliente · Archivée », chacun avec son nombre ; les effectifs suivent la recherche, le pays et le secteur (pas le statut)</td></tr>
+<tr><td><strong>Filtres Pays et Secteur</strong></td><td>Valeurs réellement présentes dans la portée de l'utilisateur ; casse ignorée</td></tr>
+<tr><td><strong>Tri par colonne</strong></td><td>Nom, secteur, pays, statut, date ; fait par le serveur sur toutes les pages ; valeurs absentes en dernier ; sens annoncé (<code>aria-sort</code>)</td></tr>
+<tr><td><strong>Colonnes au choix</strong></td><td>Menu « Colonnes » ; e-mail et téléphone proposés ; nom toujours affiché ; choix mémorisé dans le navigateur</td></tr>
+<tr><td><strong>Réinitialiser, compteur</strong></td><td>Bouton visible seulement si un filtre est actif ; « n entreprises correspondantes » annoncé</td></tr>
+<tr><td><strong>Affichage « en bulles »</strong></td><td>La décision d'origine (cartes par lignes de 6) concerne les <strong>Opportunités</strong> (S4.3) ; les entreprises restent un tableau. Bascule « Cartes » possible plus tard : <strong>à confirmer (D30)</strong></td></tr>
+</tbody></table></div>
+<h2>Preuves</h2>
+<div class="table-wrap"><table><thead><tr><th>Contrôle</th><th>Résultat</th></tr></thead><tbody>
+<tr><td>Types (<code>tsc</code>), architecture (<code>pnpm arch</code>)</td><td>0 erreur · aucune violation (176 modules) ; l'architecture a d'abord refusé que le DTO importe le domaine : vocabulaire passé par la couche application</td></tr>
+<tr><td>Tests unitaires de l'API</td><td><strong>531 / 531</strong> (1 ignoré, antérieur)</td></tr>
+<tr><td><strong>Tests d'intégration (PostgreSQL jetable)</strong></td><td><strong>219 / 219</strong> (16 suites) ; 8 nouveaux : filtres pays/secteur/statut, tri (deux sens, absents en dernier), pagination qui garde tri et filtres, refus de <code>sort=passwordHash</code> et <code>sort=name;drop</code>, synthèse et son absence de fuite hors portée, droit de lecture</td></tr>
+<tr><td>Tests de l'interface</td><td><strong>223 / 223</strong> (15 nouveaux) : tri, paramètres envoyés (encodage), effectifs, colonnes et lecture d'un choix mémorisé abîmé</td></tr>
+<tr><td><strong>Mutants</strong></td><td><strong>6 / 7 tués</strong> : portée de la synthèse (2), casse du pays, absents en dernier, filtre de statut, filtre de secteur. <strong>Survivant : second critère de tri par identifiant</strong> (stabilité de la pagination en cas d'égalité) ; non testable de façon déterministe, conservé par prudence</td></tr>
+<tr><td><strong>Navigateur réel (Edge + axe-core)</strong></td><td><strong>122 contrôles, 0 échec, 0 avertissement</strong> : effectifs, tri croissant/décroissant et ordre réel des noms, filtre sans résultat et réinitialisation, filtre par pays (toutes les lignes concernées), menu « Colonnes », ajout de la colonne e-mail et <strong>mémorisation après rechargement</strong> ; résultats <code>docs/accessibilite/resultats/axe-2026-10-30-s41b.json</code>, captures <code>docs/accessibilite/s41b-captures/</code></td></tr>
+</tbody></table></div>
+<h2>Réserves sur la recette</h2>
+<ul><li>Un premier passage de mes mutants n'était pas fiable (sortie mal lue, puis base de test occupée) ; la série finale est stricte (un passage sans résultat de test interrompt le script).</li><li>Pas de passage au lecteur d'écran réel ; testé sous Node 26.7 seulement.</li><li><strong>Responsable, valeur et dernière activité</strong> ne sont pas livrés (D67, S4.3) ; le tri sur le statut suit l'ordre alphabétique des codes (D68).</li><li>Les <strong>changements de statut</strong> d'une entreprise (manuels ou automatiques, CU-C-05) ne sont pas traités ici : décision encore à prendre avec S4.3.</li><li>Le prototype et le wireframe 04 ne montrent pas encore ces filtres (D49).</li></ul>
+<h2>Dette et à confirmer</h2>
+<ul><li><strong>D66 à D69</strong> (<code>docs/TECH-DEBT.md</code>) ; <strong>D38</strong> partiellement soldée.</li><li><strong>D30 à confirmer</strong> : tableau pour les entreprises, cartes pour les opportunités ; ou vue « Cartes » dès maintenant pour les entreprises.</li></ul>
+<h2>À valider</h2>
+<ol><li>Les écrans (barre de statut avec effectifs, filtres, menu « Colonnes ») et la réponse sur l'affichage en cartes.</li><li>« Je valide S4.1b » → fusion avec commit de fusion et étiquette <code>s4-1b-validated</code>.</li></ol></main></body></html>
