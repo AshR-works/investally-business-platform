@@ -6,10 +6,11 @@ import { Access, CurrentActor, Protected, visibilityFor } from '../../iam';
 import type { AccessContext, AuthenticatedActor } from '../../iam';
 import { ExportCompanySheetHandler } from '../application/export-company-sheet.query';
 import { GetCompanyHandler } from '../application/get-company.query';
+import { GetCompanyOverviewHandler } from '../application/get-company-overview.query';
 import { ListCompaniesHandler } from '../application/list-companies.query';
 import { RegisterCompanyUseCase } from '../application/register-company.use-case';
 import { UpdateCompanyUseCase } from '../application/update-company.use-case';
-import { ListCompaniesDto } from './dto/list-companies.dto';
+import { CompanyOverviewDto, ListCompaniesDto } from './dto/list-companies.dto';
 import { RegisterCompanyDto } from './dto/register-company.dto';
 import { UpdateCompanyDto } from './dto/update-company.dto';
 
@@ -24,6 +25,7 @@ export class CompaniesController {
     private readonly registerCompany: RegisterCompanyUseCase,
     private readonly updateCompany: UpdateCompanyUseCase,
     private readonly listCompanies: ListCompaniesHandler,
+    private readonly companyOverview: GetCompanyOverviewHandler,
     private readonly getCompany: GetCompanyHandler,
     private readonly exportCompanySheet: ExportCompanySheetHandler,
   ) {}
@@ -40,6 +42,13 @@ export class CompaniesController {
   @Protected('bd.company.read')
   list(@Query() query: ListCompaniesDto, @Access() access: AccessContext) {
     return this.listCompanies.execute({ ...query, visibility: visibilityFor(access, 'bd.company.read') });
+  }
+
+  /** Compteurs par statut et valeurs des filtres (pays, secteurs), dans la portée de l'appelant. Déclarée avant `:id`. */
+  @Get('overview')
+  @Protected('bd.company.read')
+  overview(@Query() query: CompanyOverviewDto, @Access() access: AccessContext) {
+    return this.companyOverview.execute({ ...query, visibility: visibilityFor(access, 'bd.company.read') });
   }
 
   /**

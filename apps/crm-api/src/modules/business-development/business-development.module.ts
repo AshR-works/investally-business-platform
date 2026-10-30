@@ -8,13 +8,16 @@ import { ExportCompanySheetHandler } from './application/export-company-sheet.qu
 import { FacilitationResolver } from './application/facilitation-resolver';
 import { GetFacilitatorHandler, ListFacilitatorsHandler } from './application/facilitator-queries';
 import { GetCompanyHandler } from './application/get-company.query';
+import { GetCompanyOverviewHandler } from './application/get-company-overview.query';
 import { ListCompaniesHandler } from './application/list-companies.query';
 import { RegisterCompanyUseCase } from './application/register-company.use-case';
 import { RegisterFacilitatorUseCase } from './application/register-facilitator.use-case';
 import { UpdateCompanyUseCase } from './application/update-company.use-case';
+import { COMPANY_OVERVIEW_READER } from './domain/company-overview-reader';
 import { COMPANY_REPOSITORY } from './domain/company-repository';
 import { CONTACT_REPOSITORY } from './domain/contact-repository';
 import { FACILITATOR_REPOSITORY } from './domain/facilitator-repository';
+import { PrismaCompanyOverviewReader } from './infrastructure/prisma-company-overview.reader';
 import { PrismaCompanyRepository } from './infrastructure/prisma-company.repository';
 import { PrismaContactRepository } from './infrastructure/prisma-contact.repository';
 import { PrismaFacilitatorRepository } from './infrastructure/prisma-facilitator.repository';
@@ -33,6 +36,7 @@ import { FacilitatorsController } from './presentation/facilitators.controller';
     UpdateCompanyUseCase,
     ExportCompanySheetHandler,
     ListCompaniesHandler,
+    GetCompanyOverviewHandler,
     GetCompanyHandler,
     ListFacilitatorsHandler,
     GetFacilitatorHandler,
@@ -43,6 +47,7 @@ import { FacilitatorsController } from './presentation/facilitators.controller';
     GetContactHandler,
     ListContactsHandler,
     { provide: COMPANY_REPOSITORY, useClass: PrismaCompanyRepository },
+    { provide: COMPANY_OVERVIEW_READER, useClass: PrismaCompanyOverviewReader },
     { provide: FACILITATOR_REPOSITORY, useClass: PrismaFacilitatorRepository },
     { provide: CONTACT_REPOSITORY, useClass: PrismaContactRepository },
   ],
