@@ -21,6 +21,8 @@ interface Ids { company: string; doc: string; session: string; facilitator: stri
  */
 const PROBES: Record<string, (api: Api, as: As, ids: Ids) => Promise<ApiResponse>> = {
   'GET /companies/:id': (api, as, ids) => api.call('GET', `/api/v1/companies/${ids.company}`, as),
+  'GET /companies/:id/export': (api, as, ids) => api.call('GET', `/api/v1/companies/${ids.company}/export`, as),
+  'PUT /companies/:id': (api, as, ids) => api.call('PUT', `/api/v1/companies/${ids.company}`, { ...as, body: { version: 1, sector: 'Piège' } }),
   'GET /facilitators/:id': (api, as, ids) => api.call('GET', `/api/v1/facilitators/${ids.facilitator}`, as),
   'GET /documents': (api, as, ids) => api.call('GET', `/api/v1/documents?ownerType=company&ownerId=${ids.company}`, as),
   'POST /documents': (api, as, ids) =>
@@ -119,6 +121,8 @@ describeDb('Contrat anti-IDOR : un acteur sans portée reçoit la réponse d\'un
       await PROBES['DELETE /auth/sessions/:id'](api, attacker, w.real);
       await PROBES['POST /documents'](api, attacker, w.real);
     }
+    // La fiche de Marie n'a pas été modifiée non plus par les tentatives de modification.
+    expect((await api.call('GET', `/api/v1/companies/${w.real.company}`, w.marie)).body.sector).toBeNull();
     const detail = await api.call('GET', `/api/v1/documents/${w.real.doc}`, w.marie);
     expect(detail.status).toBe(200);
     expect(detail.body.versions).toHaveLength(1);

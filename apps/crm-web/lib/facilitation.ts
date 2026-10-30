@@ -1,4 +1,4 @@
-import type { Commission } from './types';
+import type { Commission, Company } from './types';
 
 /** Façons de prendre contact via le facilitateur (codes de l'API → libellés). */
 export const CONTACT_METHODS = [
@@ -136,3 +136,92 @@ export function formatCommission(commission: Commission): string {
   if (commission.type === 'PERCENT') return `${number} %`;
   return `${number} ${commission.currency === DEFAULT_CURRENCY ? 'FCFA' : (commission.currency ?? '')}`.trim();
 }
+
+/** Ce que l'utilisateur a le droit de modifier dans la mise en relation (le serveur re-contrôle chaque droit). */
+export interface EditCapabilities {
+  /** `true` : la fiche a un facilitateur que l'utilisateur ne voit pas : la mise en relation reste inchangée. */
+  facilitationLocked: boolean;
+  /** Droit `bd.commission.manage`, et commission lisible dans la fiche. */
+  canSetCommission: boolean;
+}
+
+/** Capacités d'édition d'une fiche existante, d'après ce que l'API a fourni (les clés absentes disent ce qu'on ne voit pas). */
+export function editCapabilities(company: Company, canManageCommission: boolean): EditCapabilities {
+  const link = company.facilitation;
+  return {
+    facilitationLocked: Boolean(link && !link.facilitator),
+    canSetCommission: canManageCommission && (!link || link.commission !== undefined),
+  };
+}
+
+/** Formulaire prérempli avec la fiche à modifier. */
+export function formFromCompany(company: Company): CompanyForm {
+  const link = company.facilitation;
+  const form: CompanyForm = {
+    ...EMPTY_COMPANY_FORM,
+    name: company.name,
+    sector: company.sector ?? '',
+    country: company.country ?? '',
+    email: company.email ?? '',
+    phone: company.phone ?? '',
+  };
+  if (!link || !link.facilitator) return form;
+  const commission = link.commission;
+  return {
+    ...form,
+    facilitatorMode: 'existing',
+    facilitatorId: link.facilitatorId,
+    contactMethod: link.contactMethod,
+    isCompanyEmployee: link.isCompanyEmployee,
+    commissionType: commission && (commission.type === 'PERCENT' || commission.type === 'FIXED') ? commission.type : '',
+    commissionValue: commission ? commission.value : '',
+    commissionCurrency: commission?.currency ?? DEFAULT_CURRENCY,
+  };
+}
+
+/**
+ * Corps de la modification : la version lue (verrou optimiste) et les champs de la fiche (une zone vidée est envoyée vide,
+ * pour être effacée). Pour la mise en relation : omise si elle n'est pas modifiable ; `null` si on a choisi « Aucun
+ * facilitateur » ; le facilitateur n'est renvoyé que s'il a changé ; la commission n'est envoyée que par qui peut la définir.
+ */
+export function buildCompanyUpdateBody(form: CompanyForm, company: Company, caps: EditCapabilities): Record<string, unknown> {
+  const body: Record<string, unknown> = {
+    version: company.version,
+    name: form.name.trim(),
+    sector: form.sector.trim(),
+    country: form.country.trim(),
+    email: form.email.trim(),
+    phone: form.phone.trim(),
+  };
+  if (caps.facilitationLocked) return body;
+  const link = company.facilitation;
+  if (form.facilitatorMode === 'none') {
+    if (link) body.facilitation = null;
+    return body;
+  }
+  const facilitation: Record<string, unknown> = { contactMethod: form.contactMethod, isCompanyEmployee: form.isCompanyEmployee };
+  if (form.facilitatorMode === 'existing') {
+    if (form.facilitatorId !== link?.facilitatorId) facilitation.facilitatorId = form.facilitatorId;
+  } else {
+    facilitation.newFacilitator = {
+      lastName: form.facilitatorLastName.trim(),
+      firstName: form.facilitatorFirstName.trim(),
+      phone: form.facilitatorPhone.trim(),
+      ...(form.facilitatorComment.trim() ? { comment: form.facilitatorComment.trim() } : {}),
+    };
+  }
+  if (caps.canSetCommission) {
+    if (form.commissionType) {
+      facilitation.commission = {
+        type: form.commissionType,
+        value: form.commissionValue.trim().replace(',', '.'),
+        ...(form.commissionType === 'FIXED' ? { currency: normalizeCurrency(form.commissionCurrency) } : {}),
+      };
+    } else if (link?.commission) {
+      facilitation.commission = null;
+    }
+  }
+  body.facilitation = facilitation;
+  return body;
+}
+

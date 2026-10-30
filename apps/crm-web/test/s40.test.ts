@@ -123,7 +123,7 @@ describe('affichage de la commission', () => {
 });
 
 describe('interface : la commission et le facilitateur ne se montrent que si les droits les accordent', () => {
-  const dialog = read('components/companies/create-company-dialog.tsx');
+  const dialog = read('components/companies/company-dialog.tsx');
   const panel = read('components/companies/facilitation-panel.tsx');
   const detail = read('app/(app)/companies/[id]/page.tsx');
   const list = read('app/(app)/companies/page.tsx');
@@ -146,7 +146,7 @@ describe('interface : la commission et le facilitateur ne se montrent que si les
   });
   it('la fiche et la liste utilisent les nouveaux composants', () => {
     expect(detail).toContain('<FacilitationPanel facilitation={company.facilitation} />');
-    expect(list).toContain('<CreateCompanyDialog');
-    expect(list).not.toContain('function CreateCompanyDialog');
+    expect(list).toContain('<CompanyDialog');
+    expect(list).not.toContain('function CompanyDialog');
   });
 });

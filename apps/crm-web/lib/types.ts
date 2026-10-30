@@ -62,6 +62,8 @@ export interface Company {
   phone: string | null;
   /** Date de création (ISO 8601). */
   createdAt: string;
+  /** Numéro de version (verrou optimiste) : renvoyé tel quel pour modifier la fiche. */
+  version: number;
   /** Présente dans le détail seulement. `null` : aucun facilitateur. */
   facilitation?: Facilitation | null;
 }
