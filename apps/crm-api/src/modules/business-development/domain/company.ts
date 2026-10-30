@@ -62,6 +62,31 @@ export class Company extends AggregateRoot {
     return new Company(props);
   }
 
+  /**
+   * Modifie les informations de la fiche. Un champ absent (`undefined`) reste inchangé ; une chaîne vide efface un champ
+   * facultatif ; `facilitation: null` retire le lien avec le facilitateur. Une entreprise archivée ne se modifie plus.
+   */
+  update(changes: {
+    name?: string;
+    sector?: string | null;
+    country?: string | null;
+    email?: string | null;
+    phone?: string | null;
+    facilitation?: Facilitation | null;
+  }): void {
+    if (this.props.status === CompanyStatus.Archived) {
+      throw new DomainError('INVARIANT_VIOLATION', "L'entreprise est archivée : elle n'est plus modifiable");
+    }
+    const next = { ...this.props };
+    if (changes.name !== undefined) next.name = CompanyName.of(changes.name);
+    if (changes.sector !== undefined) next.sector = changes.sector?.trim() || null;
+    if (changes.country !== undefined) next.country = changes.country?.trim() || null;
+    if (changes.email !== undefined) next.email = normalizeEmail(changes.email);
+    if (changes.phone !== undefined) next.phone = normalizePhone(changes.phone, { required: false });
+    if (changes.facilitation !== undefined) next.facilitation = changes.facilitation;
+    this.props = next; // tout ou rien : une validation qui échoue ne laisse aucune modification partielle
+  }
+
   /** Archive l'entreprise ; refuse de l'archiver deux fois (règle métier). */
   archive(): void {
     if (this.props.status === CompanyStatus.Archived) {

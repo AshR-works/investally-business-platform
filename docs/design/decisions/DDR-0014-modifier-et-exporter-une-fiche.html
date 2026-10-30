@@ -1,0 +1,38 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>DDR-0014 — Modifier une fiche d&#x27;entreprise ; exporter une fiche (qui voit exporte, chaque export est tracé)</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — design · <a href="../README.html">Mode d&#8217;emploi</a> · <a href="../01-DESIGN-SYSTEM.html">Design system</a> · <a href="../02-SPECIFICATIONS-FRONTEND.html">Spécifications frontend</a> · <a href="../exigences/REGISTRE-EXD.html">Exigences</a> · <a href="../04-ANALYSE-D-IMPACT.html">Analyse d&#8217;impact</a> · <a href="../05-AIDE-A-LA-DECISION.html">Aide à la décision</a> · <a href="../decisions/REGISTRE-DDR.html">Décisions (DDR)</a> · <a href="../CHANGELOG-DESIGN.html">Journal</a> · <a href="../prototype/index.html">Prototype</a></nav><h1>DDR-0014 — Modifier une fiche d'entreprise ; exporter une fiche (qui voit exporte, chaque export est tracé)</h1>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td><strong>Statut</strong></td><td>Acceptée (réalisée dans l'application) ; prototype à mettre à jour</td></tr>
+<tr><td><strong>Date</strong></td><td>2026-10-30</td></tr>
+<tr><td><strong>Version du design</strong></td><td>0.4.1 (le prototype n'est pas encore à jour : version 0.5.0 à décider)</td></tr>
+<tr><td><strong>Lié à</strong></td><td>Demande de la direction produit du 2026-10-30 ; règle d'export énoncée le 2026-10-29 ; décision D26</td></tr>
+</tbody></table></div>
+<h2>Contexte</h2>
+<p>La fiche d'entreprise n'avait ni bouton « Modifier » ni export. La direction produit a posé la règle : <strong>qui peut voir une vue peut en exporter les données, dans sa portée, et chaque export est tracé</strong> ; le DG et la DGA (accès Super administrateur) exportent sur toutes les vues ; le chargé de compte sur son interface dédiée ; les vues partagées (rapports des employés, agendas) suivent une règle d'audience, à traiter avec leurs écrans.</p>
+<h2>Décisions</h2>
+<ol><li><strong>Bouton « Modifier »</strong> sur la fiche, pour qui détient <code>bd.company.update</code> ; il rouvre la fenêtre de création, préremplie. Modifiables : nom, secteur, pays, e-mail, téléphone, mise en relation (facilitateur, méthode, appartenance, commission). <strong>Jamais</strong> le propriétaire, le statut ni l'identifiant (refusés par la validation). Une entreprise archivée ne se modifie plus.</li><li><strong>Verrou optimiste</strong> : la fiche porte son numéro de version ; une modification faite sur une version périmée est refusée (409) au lieu d'écraser le travail d'un autre.</li><li><strong>Commission</strong> : seul le détenteur de <code>bd.commission.manage</code> la définit, la change ou la retire (ainsi que le lien qui la porte). Une modification faite par quelqu'un d'autre (chargé de compte) <strong>conserve</strong> la commission existante : une clé absente veut dire « inchangé », jamais « effacé ». Si le facilitateur de la fiche n'est pas visible avec les droits de l'utilisateur, la mise en relation est verrouillée (note à l'écran).</li><li><strong>Audit</strong> : la modification trace l'ancienne et la nouvelle valeur (commission comprise, lisible des seuls détenteurs de <code>audit.log.read</code>).</li><li><strong>Bouton « Exporter la fiche »</strong> pour qui peut voir l'entreprise (règle : lecture = export, dans la portée). Hors portée : « introuvable », sans trace. Le document <strong>ne contient que ce que l'utilisateur voit</strong> (facilitateur et commission selon ses droits). Chaque export écrit une trace (EXPORT, session, adresse, appareil) <strong>avant</strong> la remise du document ; la trace décrit ce qui a été remis, sans recopier les données.</li><li><strong>Format provisoire</strong> : document HTML autonome et mis en page (gabarit aux couleurs de l'application), ouvert dans une nouvelle fenêtre pour impression ou enregistrement en PDF par le navigateur. Aucune dépendance ajoutée. Le gabarit sera remplacé par celui de la charte des documents sans toucher aux droits, à l'audit ni aux données.</li><li><strong>Sécurité du document</strong> : tout texte saisi est échappé ; le document n'a ni script, ni ressource externe, ni lien ; il est servi avec une politique de contenu restrictive (<code>default-src 'none'</code>), <code>nosniff</code> et sans mise en cache.</li></ol>
+<h2>Ce qui n'est pas décidé ici</h2>
+<ul><li><strong>Export d'une liste entière</strong> (option C de l'arbitrage : lecture = export, avec confirmation récente de la double authentification) : non réalisé (D59).</li><li><strong>Vues partagées</strong> (audience plutôt que portée) : à traiter avec l'agenda et les rapports (D60).</li><li><strong>PDF produit par le serveur</strong> : demande d'ajouter une bibliothèque, à décider (D61).</li></ul>
+<h2>Conséquences</h2>
+<ul><li>Réversible : une route, un cas d'usage, un gabarit, une fenêtre réutilisée. Aucune migration, aucune permission nouvelle.</li><li><strong>Dette</strong> : D58 à D61 (<code>docs/TECH-DEBT.md</code>) ; prototype à mettre à jour (D49).</li></ul></main></body></html>
