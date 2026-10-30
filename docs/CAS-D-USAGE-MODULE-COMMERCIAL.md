@@ -7,14 +7,14 @@
 ## 1. Droits actuels du module (rappel de la matrice)
 | Objet | Chargé de compte | Responsable commercial | Direction, Support, Finance |
 |---|---|---|---|
-| Entreprise | lire, créer, modifier (Propre) | + archiver, exporter (Équipe) | lecture (Tous) ; Direction exporte |
+| Entreprise | lire, créer, modifier (Propre) ; **demande l'archivage** | + **archiver**, exporter (Équipe) | lecture (Tous) ; Direction exporte |
 | Contact | lire, créer, modifier (Propre) | tout, supprimer compris (Équipe) | Direction et Support : lecture |
 | Offre, décharge, relance, rendez-vous, visite | lire, créer, modifier, retirer ou annuler ou terminer (Propre) | tout (Équipe) | — |
-| Opportunité | lire, créer, modifier, **avancer** (Propre) | lecture Tous ; créer, modifier, avancer, **clore**, exporter (Équipe) | Direction : lecture, export |
+| Opportunité | lire, créer, modifier, avancer, **clore « perdue »** (Propre) | lecture Tous ; créer, modifier, avancer, **clore « perdue » ou « gagnée »**, exporter (Équipe) | Direction : lecture, export |
 | Ambassadeur | lire, créer (Propre) | lire Tous ; créer, modifier (Équipe) | Direction : lecture |
 | Facilitateur, commission | facilitateur : lire, créer ; commission : **lire** (Propre) | facilitateur et commission : lire, créer ou définir (Équipe) | Direction et Finance : lecture (Tous) |
 
-**Deux écarts à noter** : le chargé de compte **ne peut ni archiver une entreprise ni clore une opportunité** (réservé au Responsable commercial) ; et le droit d'export existe encore à part (`bd.company.export`) alors que la règle retenue est « qui voit exporte » (à réaligner, D26).
+**Décision D28 (option C, 2026-10-30)** : le chargé de compte clôt lui-même ses opportunités « perdues » ; seul le Responsable commercial clôt une opportunité « gagnée » (elle déclenche l'accord de principe, l'agrément et la commission) et archive une entreprise. La matrice actuelle du code **n'est pas encore modifiée** : elle le sera avec S4.3, en remplaçant `bd.opportunity.close` par `bd.opportunity.close_lost` et `bd.opportunity.close_won`. Par ailleurs, le droit d'export existe encore à part (`bd.company.export`) alors que la règle retenue est « qui voit exporte » (à réaligner, D26).
 
 ## 2. Les cinq flux du module
 Chaque schéma est dans `workflows/svg/`.
@@ -57,8 +57,8 @@ Chaque schéma est dans `workflows/svg/`.
 - **Statuts** : Cible, Contactée, Qualifiée, Cliente, Archivée. **À trancher** : transitions manuelles ou automatiques, critères de « Qualifiée », retour en arrière.
 
 ### CU-C-06 — Archiver une entreprise *(à venir)*
-- **Acteur** : Responsable commercial (le chargé de compte n'a pas ce droit). **Scénario** : « Archiver », motif, confirmation ; l'entreprise passe en lecture seule.
-- **À trancher** : le chargé de compte peut-il archiver ses entreprises ? motif obligatoire ? restauration ? **Droits** : `bd.company.archive`.
+- **Acteur** : Responsable commercial (décision D28). Le chargé de compte lui en **fait la demande** (message ou tâche). **Scénario** : « Archiver », motif, confirmation ; l'entreprise passe en lecture seule.
+- **À trancher** : motif obligatoire ? restauration d'une entreprise archivée ? **Droits** : `bd.company.archive` (Équipe).
 
 ### CU-C-07 — Exporter la fiche d'une entreprise *(réalisé)*
 - Voir le flux F5 : qui voit exporte, chaque export est tracé, le document ne contient que ce que l'utilisateur voit.
@@ -132,9 +132,10 @@ Chaque schéma est dans `workflows/svg/`.
 - **Écrans** : 19 (cartes), 20 (par étape), 21 (fiche). **Scénario** : « Passer à l'étape suivante » ; en vue par étape, la carte se déplace ; **alternative clavier** par un menu « Déplacer vers… ».
 - **Règles** : étapes dans l'ordre ; chaque passage tracé ; version contrôlée. Le passage à « Accord de principe » est soumis à la règle du rendez-vous décideur (F1). **Étapes du prototype** (à valider) : Qualification, Proposition, Négociation, Accord de principe, Agrément. **Droits** : `bd.opportunity.advance` (Propre).
 
-### CU-C-42 — Clore une opportunité (gagnée ou perdue)
-- **Acteur** : Responsable commercial (le chargé de compte n'a pas `bd.opportunity.close`). **Scénario** : « Clore », issue, motif, confirmation. **Règle** : une opportunité clôturée est **immuable**.
-- **À trancher** : le chargé de compte clôt-il lui-même ? motifs de perte (liste fermée ou texte libre) ? réouverture exceptionnelle ?
+### CU-C-42 — Clore une opportunité (perdue ou gagnée)
+- **Acteur** : chargé de compte pour une opportunité **perdue** ; Responsable commercial pour une opportunité **gagnée** (décision D28). **Scénario** : « Clore », issue, motif (obligatoire pour une perte), confirmation. **Règle** : une opportunité clôturée est **immuable** et la clôture est tracée.
+- **Droits** : `bd.opportunity.close_lost` (chargé de compte Propre, Responsable commercial Équipe) et `bd.opportunity.close_won` (Responsable commercial Équipe) : à créer avec S4.3.
+- **À trancher** : motifs de perte (liste fermée ou texte libre) ; réouverture exceptionnelle.
 
 ### CU-C-43 — Suivre le pipeline
 - **Acteur** : Responsable commercial, Direction. Vue de toutes les opportunités de l'équipe (écrans 20 et tableaux de bord 33 à 35) ; export tracé. **Droits** : lecture Tous pour le Responsable commercial et la Direction.
@@ -155,12 +156,13 @@ Chaque schéma est dans `workflows/svg/`.
 
 ## 10. Points à trancher, par ordre d'impact
 1. **Statuts d'une entreprise** : transitions manuelles ou automatiques, critères de « Qualifiée » (C5, CU-C-05).
-2. **Qui archive et qui clôt** : le chargé de compte, ou seulement le Responsable commercial (CU-C-06, CU-C-42).
-3. **Offre** : états exacts, délai et nombre de relances (C2).
-4. **Rendez-vous** : un conflit d'horaire bloque-t-il ? rappels et canal (C3).
-5. **Contact** : champs, fonctions possibles, appartenance à plusieurs entreprises (CU-C-10 et CU-C-12).
-6. **Étapes d'opportunité** : noms, ordre, retour en arrière (C4).
-7. **Agendas partagés** : audience (D60).
+2. **Offre** : états exacts, délai et nombre de relances (C2).
+3. **Rendez-vous** : un conflit d'horaire bloque-t-il ? rappels et canal (C3).
+4. **Contact** : champs, fonctions possibles, appartenance à plusieurs entreprises (CU-C-10 et CU-C-12).
+5. **Étapes d'opportunité** : noms, ordre, retour en arrière (C4).
+6. **Agendas partagés** : audience (D60).
+
+*Réglé le 2026-10-30 (D28) : qui archive et qui clôt.*
 
 ## 11. Suite proposée
 Après validation : le module **Investudy** (catalogue, sessions, inscriptions, présences, certifications) en cas d'usage détaillés, puis **Reporting**, **Stocks**, **Finance**, **RH et fiscalité**.
