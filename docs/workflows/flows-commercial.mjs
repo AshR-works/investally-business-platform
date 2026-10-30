@@ -5,11 +5,11 @@ export const FLOWS_COMMERCIAL = [
   {
     id: 'C1', slug: 'prospection', title: 'Prospection : de l’entreprise cible au premier contact', status: 'Partiel',
     sub: 'Enregistrer l’entreprise (avec son facilitateur) → prendre contact → contact créé → entreprise « Contactée » ou archivée.',
-    lanes: ['Chargé de compte', 'Système', 'Facilitateur (externe)', 'Entreprise (externe)'],
+    lanes: ['Chargé de compte', 'Responsable commercial', 'Système', 'Facilitateur (externe)', 'Entreprise (externe)'],
     steps: [
       { id: 's0', lane: 'Chargé de compte', col: 0, kind: 'start', next: [{ to: 's1' }] },
       { id: 's1', lane: 'Chargé de compte', col: 1, built: true, label: 'Enregistrer l’entreprise cible (coordonnées, pays, facilitateur)', next: [{ to: 'd1', exit: 'bottom' }] },
-      { id: 'd1', lane: 'Système', col: 2, built: true, kind: 'decision', label: 'Nom déjà pris ?', note: 'Unicité du nom sans tenir compte de la casse ni des espaces ; le chargé de compte est invité à ouvrir la fiche existante.', next: [{ to: 'x', label: 'Oui' }, { to: 'e1', label: 'Non', exit: 'bottom' }] },
+      { id: 'd1', lane: 'Système', col: 2, built: true, kind: 'decision', label: 'Nom déjà pris ?', note: 'Unicité du nom sans tenir compte de la casse ni des espaces ; le chargé de compte est invité à ouvrir la fiche existante.', next: [{ to: 'x', label: 'Oui', exit: 'bottom' }, { to: 'e1', label: 'Non' }] },
       { id: 'x', lane: 'Chargé de compte', col: 3, built: true, kind: 'end', label: 'Conflit : fiche existante proposée' },
       { id: 'e1', lane: 'Système', col: 3, built: true, kind: 'event', label: 'Entreprise créée au statut « Cible »', next: [{ to: 's2', exit: 'bottom' }] },
       { id: 's2', lane: 'Facilitateur (externe)', col: 4, kind: 'external', label: 'Met en relation avec l’entreprise', next: [{ to: 's3', exit: 'bottom' }] },
@@ -17,9 +17,9 @@ export const FLOWS_COMMERCIAL = [
       { id: 's4', lane: 'Entreprise (externe)', col: 5, kind: 'external', label: 'Répond', next: [{ to: 'd2', exit: 'bottom' }] },
       { id: 'd2', lane: 'Chargé de compte', col: 6, kind: 'decision', label: 'Intérêt exprimé ?', next: [{ to: 's5', label: 'Oui' }, { to: 's6', label: 'Non', exit: 'bottom' }] },
       { id: 's5', lane: 'Chargé de compte', col: 7, label: 'Créer le contact, passer l’entreprise en « Contactée »', note: 'Le passage de statut est-il manuel ou automatique à la création du premier contact ? À trancher.', next: [{ to: 'z' }] },
-      { id: 's6', lane: 'Système', col: 7, label: 'Archiver avec motif (confirmation)', note: 'Seul le Responsable commercial archive aujourd’hui : le chargé de compte n’a pas ce droit.', next: [{ to: 'z2' }] },
+      { id: 's6', lane: 'Responsable commercial', col: 7, label: 'Archiver avec motif, sur demande (confirmation)', note: 'Décision D28 : seul le Responsable commercial archive une entreprise ; le chargé de compte lui en fait la demande.', next: [{ to: 'z2' }] },
       { id: 'z', lane: 'Chargé de compte', col: 8, kind: 'end' },
-      { id: 'z2', lane: 'Système', col: 8, kind: 'end' },
+      { id: 'z2', lane: 'Responsable commercial', col: 8, kind: 'end' },
     ],
     rules: [
       'Une entreprise appartient à son créateur ; le propriétaire ne change pas en modifiant la fiche.',
@@ -28,7 +28,6 @@ export const FLOWS_COMMERCIAL = [
     ],
     questions: [
       'Statut : le passage « Cible → Contactée » est-il manuel ou déclenché par la création d’un contact ou d’une première action ?',
-      'Le chargé de compte peut-il archiver ses propres entreprises, ou seulement le Responsable commercial ?',
       'Un motif d’archivage obligatoire, et une restauration possible ?',
     ],
   },
@@ -91,11 +90,10 @@ export const FLOWS_COMMERCIAL = [
       { id: 's1', lane: 'Chargé de compte', col: 1, label: 'Créer l’opportunité (« Qualification »)', next: [{ to: 's2' }] },
       { id: 's2', lane: 'Chargé de compte', col: 2, label: 'Passer en « Proposition » (offre déposée)', note: 'Les noms et l’ordre des étapes sont ceux du prototype ; à valider.', next: [{ to: 's3' }] },
       { id: 's3', lane: 'Chargé de compte', col: 3, label: 'Passer en « Négociation » (RDV, visite)', next: [{ to: 'd1' }] },
-      { id: 'd1', lane: 'Chargé de compte', col: 4, kind: 'decision', label: 'Issue ?', next: [{ to: 's4', label: 'Accord', exit: 'bottom' }, { to: 's5', label: 'Perdue' }] },
-      { id: 's4', lane: 'Responsable commercial', col: 5, label: 'Accord de principe puis agrément (voir flux F1)', next: [] },
-      { id: 's5', lane: 'Chargé de compte', col: 6, label: 'Demander la clôture « perdue » avec motif', note: 'Le chargé de compte ne clôture pas : seul le Responsable commercial a le droit de clôture aujourd’hui. À confirmer.', next: [{ to: 's6', exit: 'bottom' }] },
-      { id: 's6', lane: 'Responsable commercial', col: 6, label: 'Clore l’opportunité (confirmation)', next: [{ to: 'e1', exit: 'bottom' }] },
-      { id: 'e1', lane: 'Système', col: 7, kind: 'event', label: 'Opportunité clôturée : immuable', next: [{ to: 'z' }] },
+      { id: 'd1', lane: 'Chargé de compte', col: 4, kind: 'decision', label: 'Issue ?', next: [{ to: 's4', label: 'Gagnée', exit: 'bottom' }, { to: 's5', label: 'Perdue' }] },
+      { id: 's4', lane: 'Responsable commercial', col: 5, label: 'Clore « gagnée » ; accord de principe et agrément (voir flux F1)', note: 'Décision D28 : seul le Responsable commercial clôt une opportunité gagnée, car elle déclenche l’agrément et la commission.', next: [] },
+      { id: 's5', lane: 'Chargé de compte', col: 6, label: 'Clore « perdue » avec motif (confirmation)', note: 'Décision D28 : le chargé de compte clôt lui-même ses opportunités perdues (permission à créer : bd.opportunity.close_lost).', next: [{ to: 'e1', exit: 'bottom' }] },
+      { id: 'e1', lane: 'Système', col: 7, kind: 'event', label: 'Opportunité clôturée : immuable, tracée', next: [{ to: 'z' }] },
       { id: 'z', lane: 'Système', col: 8, kind: 'end' },
     ],
     rules: [
@@ -104,7 +102,6 @@ export const FLOWS_COMMERCIAL = [
       'La vue « Par étape » a une alternative clavier ; la sélection est persistante.',
     ],
     questions: [
-      'Le chargé de compte clôt-il lui-même ses opportunités, ou passe-t-il par le Responsable commercial ?',
       'Motifs de perte : liste fermée ou texte libre ? Une opportunité clôturée peut-elle être rouverte (exception auditée) ?',
       'Retour en arrière d’une étape : permis, avec justification ?',
     ],
