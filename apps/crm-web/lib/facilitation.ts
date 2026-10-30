@@ -20,6 +20,8 @@ export const COMMISSION_TYPES = [
 export interface CompanyForm {
   name: string;
   sector: string;
+  /** Pays auquel l'entreprise est affiliée (saisie libre avec suggestions). */
+  country: string;
   email: string;
   phone: string;
   /** `none` : sans facilitateur ; `existing` : un facilitateur déjà enregistré ; `new` : à créer maintenant. */
@@ -41,7 +43,7 @@ export interface CompanyForm {
 export const DEFAULT_CURRENCY = 'XAF';
 
 export const EMPTY_COMPANY_FORM: CompanyForm = {
-  name: '', sector: '', email: '', phone: '',
+  name: '', sector: '', country: '', email: '', phone: '',
   facilitatorMode: 'none', facilitatorId: '',
   facilitatorLastName: '', facilitatorFirstName: '', facilitatorPhone: '', facilitatorComment: '',
   contactMethod: 'WHATSAPP_MESSAGE', isCompanyEmployee: false,
@@ -52,34 +54,50 @@ const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE = /^[0-9+().\- ]+$/;
 const phoneOk = (value: string): boolean => PHONE.test(value) && value.replace(/\D/g, '').length >= 6;
 
-/** Contrôles de saisie rapides (le serveur refait tous les contrôles) ; renvoie un message par problème, dans l'ordre de la fiche. */
-export function validateCompanyForm(form: CompanyForm): string[] {
-  const errors: string[] = [];
-  if (!form.name.trim()) errors.push("Le nom de l'entreprise est obligatoire.");
-  if (form.email.trim() && !EMAIL.test(form.email.trim())) errors.push("L'adresse e-mail de l'entreprise n'est pas valide.");
-  if (form.phone.trim() && !phoneOk(form.phone.trim())) errors.push("Le numéro de téléphone de l'entreprise n'est pas valide.");
-  if (form.facilitatorMode === 'existing' && !form.facilitatorId) errors.push('Choisissez un facilitateur dans la liste.');
+/** Champs de la fiche qui peuvent porter une erreur, dans l'ordre de la page. */
+export type FieldName =
+  | 'name' | 'country' | 'email' | 'phone' | 'facilitatorId' | 'facilitatorLastName' | 'facilitatorFirstName'
+  | 'facilitatorPhone' | 'commissionValue' | 'commissionCurrency';
+export type FieldErrors = Partial<Record<FieldName, string>>;
+
+/**
+ * Contrôles de saisie rapides, champ par champ, pour mettre en évidence ce qui n'est pas conforme (le serveur refait tous
+ * les contrôles). L'ordre des clés est celui de la page : le premier champ en erreur reçoit le focus.
+ */
+export function validateCompanyFields(form: CompanyForm): FieldErrors {
+  const errors: FieldErrors = {};
+  if (!form.name.trim()) errors.name = "Le nom de l'entreprise est obligatoire.";
+  if (form.country.trim().length > 100) errors.country = 'Le pays ne peut dépasser 100 caractères.';
+  if (form.email.trim() && !EMAIL.test(form.email.trim())) errors.email = "L'adresse e-mail de l'entreprise n'est pas valide.";
+  if (form.phone.trim() && !phoneOk(form.phone.trim())) errors.phone = "Le numéro de téléphone de l'entreprise n'est pas valide.";
+  if (form.facilitatorMode === 'existing' && !form.facilitatorId) errors.facilitatorId = 'Choisissez un facilitateur dans la liste.';
   if (form.facilitatorMode === 'new') {
-    if (!form.facilitatorLastName.trim()) errors.push('Le nom du facilitateur est obligatoire.');
-    if (!form.facilitatorFirstName.trim()) errors.push('Le prénom du facilitateur est obligatoire.');
-    if (!form.facilitatorPhone.trim()) errors.push('Le téléphone du facilitateur est obligatoire.');
-    else if (!phoneOk(form.facilitatorPhone.trim())) errors.push('Le téléphone du facilitateur n’est pas valide.');
+    if (!form.facilitatorLastName.trim()) errors.facilitatorLastName = 'Le nom du facilitateur est obligatoire.';
+    if (!form.facilitatorFirstName.trim()) errors.facilitatorFirstName = 'Le prénom du facilitateur est obligatoire.';
+    if (!form.facilitatorPhone.trim()) errors.facilitatorPhone = 'Le téléphone du facilitateur est obligatoire.';
+    else if (!phoneOk(form.facilitatorPhone.trim())) errors.facilitatorPhone = 'Le téléphone du facilitateur n’est pas valide.';
   }
   if (form.facilitatorMode !== 'none' && form.commissionType) {
     const value = Number(form.commissionValue.trim().replace(',', '.'));
-    if (!Number.isFinite(value) || value <= 0) errors.push('La commission doit être un nombre positif.');
-    else if (form.commissionType === 'PERCENT' && value > 100) errors.push('Un pourcentage de commission ne peut dépasser 100.');
+    if (!Number.isFinite(value) || value <= 0) errors.commissionValue = 'La commission doit être un nombre positif.';
+    else if (form.commissionType === 'PERCENT' && value > 100) errors.commissionValue = 'Un pourcentage de commission ne peut dépasser 100.';
     if (form.commissionType === 'FIXED' && !/^([A-Za-z]{3}|FCFA|fcfa)?$/.test(form.commissionCurrency.trim())) {
-      errors.push('La devise doit comporter trois lettres (par exemple XAF ou EUR), ou FCFA.');
+      errors.commissionCurrency = 'La devise doit comporter trois lettres (par exemple XAF ou EUR), ou FCFA.';
     }
   }
   return errors;
+}
+
+/** Les mêmes contrôles sous forme de liste de messages (récapitulatif annoncé avant l'envoi). */
+export function validateCompanyForm(form: CompanyForm): string[] {
+  return Object.values(validateCompanyFields(form));
 }
 
 /** Corps de la requête de création : les champs vides sont omis ; sans facilitateur, aucune facilitation ni commission n'est envoyée. */
 export function buildCompanyBody(form: CompanyForm): Record<string, unknown> {
   const body: Record<string, unknown> = { name: form.name.trim() };
   if (form.sector.trim()) body.sector = form.sector.trim();
+  if (form.country.trim()) body.country = form.country.trim();
   if (form.email.trim()) body.email = form.email.trim();
   if (form.phone.trim()) body.phone = form.phone.trim();
   if (form.facilitatorMode === 'none') return body;

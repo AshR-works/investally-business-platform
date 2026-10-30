@@ -40,12 +40,22 @@ a { color: var(--brand-strong); text-decoration: underline; text-underline-offse
 .panel { background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1.25rem; }
 label { display: block; font-weight: 600; margin-bottom: .9rem; }
 label.inline { display: flex; gap: .5rem; align-items: center; font-weight: 400; }
-input, select {
+input, select, textarea {
   display: block; width: 100%; margin-top: .3rem; padding: .55rem .7rem; font: inherit; color: inherit;
   background: var(--surface); border: 1px solid var(--field-border); border-radius: var(--radius-sm);
 }
 input[type='checkbox'] { display: inline-block; width: auto; margin: 0; }
-input:focus-visible, select:focus-visible, button:focus-visible, a:focus-visible, summary:focus-visible {
+/* Zone de texte à taille fixe : on ne la redimensionne pas à la main (mise en page stable, pas de saisie démesurée) ; elle défile au-delà. */
+textarea { resize: none; min-height: 6rem; line-height: 1.45; overflow-y: auto; }
+/* Champ non conforme : surbrillance (bordure, fond et liseré), jamais la couleur seule : le message est écrit juste dessous. */
+input[aria-invalid='true'], select[aria-invalid='true'], textarea[aria-invalid='true'] {
+  border-color: var(--bad); background: var(--bad-bg); box-shadow: 0 0 0 1px var(--bad);
+}
+.field { margin-bottom: .9rem; }
+.field > label { margin-bottom: .25rem; }
+.field-error { display: flex; gap: .35rem; align-items: flex-start; margin: .25rem 0 0; color: var(--bad); font-size: var(--text-sm); font-weight: 600; }
+.field-count { margin: .25rem 0 0; color: var(--ink-2); font-size: var(--text-xs); text-align: right; }
+input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible, a:focus-visible, summary:focus-visible {
   outline: none; box-shadow: var(--focus);
 }
 button {
@@ -77,6 +87,13 @@ td .row { min-width: 15rem; }
 .overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, .55); display: grid; place-items: center; padding: 1rem; z-index: 50; }
 .dialog { background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--radius); box-shadow: var(--shadow-3); padding: 1.5rem; width: 100%; max-width: 480px; max-height: 90vh; overflow: auto; }
 .dialog.wide { max-width: 1040px; }
+/* Largeur minimale : les champs et les groupes ne se tassent pas (sur un écran plus étroit, la fenêtre prend toute la largeur). */
+.dialog { min-width: min(26rem, 100%); }
+.dialog.wide { min-width: min(46rem, 100%); }
+.dialog-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: .75rem; }
+.dialog-head h2 { margin: 0; }
+.dialog-close { flex-shrink: 0; display: inline-grid; place-items: center; padding: .4rem; margin: -.2rem -.3rem 0 0; background: transparent; color: var(--ink); border-color: transparent; border-radius: var(--radius-pill); }
+.dialog-close:hover:not(:disabled) { background: var(--surface-2); }
 .qr { display: block; margin: .5rem auto 1rem; width: 220px; height: 220px; background: #fff; padding: 8px; border-radius: var(--radius-xs); }
 .secret { font-family: ui-monospace, Consolas, monospace; letter-spacing: .08em; overflow-wrap: anywhere; }
 .codes { display: grid; grid-template-columns: repeat(2, 1fr); gap: .4rem; font-family: ui-monospace, Consolas, monospace; margin: 1rem 0; }

@@ -293,7 +293,7 @@ function HistoryDialog({ document, canDownload, onClose, onError }: { document: 
   }, [document.id, onError]);
 
   return (
-    <Modal title={`Versions de « ${document.title} »`} onClose={onClose}>
+    <Modal title={`Versions de « ${document.title} »`} onClose={onClose} size="wide">
       {!detail ? (
         <p role="status">Chargement…</p>
       ) : (
@@ -315,9 +315,6 @@ function HistoryDialog({ document, canDownload, onClose, onError }: { document: 
           </table>
         </div>
       )}
-      <div className="row end" style={{ marginTop: '1rem' }}>
-        <button type="button" className="secondary" onClick={onClose}>Fermer</button>
-      </div>
     </Modal>
   );
 }
