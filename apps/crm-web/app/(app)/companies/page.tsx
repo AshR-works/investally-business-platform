@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
-import { CreateCompanyDialog } from '../../../components/companies/create-company-dialog';
+import { CompanyDialog } from '../../../components/companies/company-dialog';
 import { Badge } from '../../../components/data/badge';
 import { Card } from '../../../components/data/card';
 import { DataTable, type Column } from '../../../components/data/data-table';
@@ -118,9 +118,9 @@ export default function CompaniesPage() {
       </Card>
 
       {creating && (
-        <CreateCompanyDialog
+        <CompanyDialog
           onClose={() => setCreating(false)}
-          onCreated={async () => {
+          onDone={async () => {
             setCreating(false);
             setPage(1);
             setQuery('');
