@@ -64,7 +64,10 @@ export class PrismaCompanyRepository implements CompanyRepository {
         where: { id: company.id, version: company.version, deletedAt: null },
         data: { ...data, version: { increment: 1 } },
       });
-      if (updated.count === 1) return;
+      if (updated.count === 1) {
+        await this.syncFacilitation(company);
+        return;
+      }
 
       if ((await this.prisma.db.company.count({ where: { id: company.id } })) > 0) {
         throw new DomainError('CONFLICT', "L'entreprise a été modifiée par un autre utilisateur");
@@ -98,6 +101,24 @@ export class PrismaCompanyRepository implements CompanyRepository {
       }
       throw error;
     }
+  }
+
+  /** Aligne le lien avec le facilitateur sur l'entreprise : créé, remplacé ou retiré (modification d'une fiche existante). */
+  private async syncFacilitation(company: Company): Promise<void> {
+    const link = company.facilitation;
+    if (!link) {
+      await this.prisma.db.companyFacilitation.deleteMany({ where: { companyId: company.id } });
+      return;
+    }
+    const data = {
+      facilitatorId: link.facilitatorId,
+      contactMethod: link.contactMethod,
+      isCompanyEmployee: link.isCompanyEmployee,
+      commissionType: link.commission?.type ?? null,
+      commissionValue: link.commission?.value ?? null,
+      commissionCurrency: link.commission?.currency ?? null,
+    };
+    await this.prisma.db.companyFacilitation.upsert({ where: { companyId: company.id }, create: { companyId: company.id, ...data }, update: data });
   }
 
   /** Retrouve une entreprise non supprimée, ou `null`. */

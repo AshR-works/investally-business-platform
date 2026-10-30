@@ -65,5 +65,29 @@ node apps/crm-api/scripts/test-db.mjs     # intégration, base jetable
 
 ## Limites connues
 - Modules livrés : identité et accès, entreprises, documents. Le reste arrive avec S4 à S6.
-- Non testé : enrôlement MFA dans un navigateur, Node 22, `--dev`.
+- Non testé : enrôlement MFA dans un navigateur, `--dev`. Node 22 : testé le 2026-10-29 (183 tests d'intégration et 159 tests de l'interface réussis, voir « Node 22 » ci-dessous).
 - Docker : prévu en S7 (voir la stratégie).
+
+## Node 22 (sans toucher aux autres projets)
+Le projet vise **Node 22 LTS** (`.nvmrc`, intégration continue). Si votre machine a une autre version (l'application affiche alors un avertissement), installez **fnm**, un gestionnaire de versions qui garde plusieurs Node côte à côte :
+
+```bash
+winget install --id Schniz.fnm -e
+```
+
+Rouvrez ensuite le terminal, puis :
+
+```bash
+fnm install 22
+```
+
+Lancer l'application avec Node 22, depuis la racine du dépôt (sans rien modifier d'autre) :
+
+```bash
+fnm exec --using=22 node scripts/local-stack.mjs
+```
+
+Les dépendances déjà installées restent valables (aucune réinstallation). Les autres projets continuent d'utiliser votre Node habituel : la version 22 ne s'applique qu'à la commande ci-dessus. Pour changer de version dans tout un terminal : `fnm use 22` (lit `.nvmrc`).
+
+**Vérifié le 2026-10-29** sous Node 22.23 : 183 tests d'intégration (base PostgreSQL réelle, hachage des mots de passe compris) et 159 tests de l'interface réussis.
+

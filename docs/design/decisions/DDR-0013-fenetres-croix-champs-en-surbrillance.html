@@ -1,0 +1,38 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>DDR-0013 — Fenêtres : croix de fermeture, largeur minimale ; champs non conformes en surbrillance ; zones de texte à taille fixe</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — design · <a href="../README.html">Mode d&#8217;emploi</a> · <a href="../01-DESIGN-SYSTEM.html">Design system</a> · <a href="../02-SPECIFICATIONS-FRONTEND.html">Spécifications frontend</a> · <a href="../exigences/REGISTRE-EXD.html">Exigences</a> · <a href="../04-ANALYSE-D-IMPACT.html">Analyse d&#8217;impact</a> · <a href="../05-AIDE-A-LA-DECISION.html">Aide à la décision</a> · <a href="../decisions/REGISTRE-DDR.html">Décisions (DDR)</a> · <a href="../CHANGELOG-DESIGN.html">Journal</a> · <a href="../prototype/index.html">Prototype</a></nav><h1>DDR-0013 — Fenêtres : croix de fermeture, largeur minimale ; champs non conformes en surbrillance ; zones de texte à taille fixe</h1>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td><strong>Statut</strong></td><td>Acceptée (réalisée dans l'application) ; prototype à mettre à jour</td></tr>
+<tr><td><strong>Date</strong></td><td>2026-10-29</td></tr>
+<tr><td><strong>Version du design</strong></td><td>0.4.1 (le prototype n'est pas encore à jour : version 0.5.0 à décider)</td></tr>
+<tr><td><strong>Lié à</strong></td><td>EXD-15, EXD-16 ; retours de tests de la direction produit du 2026-10-29 sur la fiche d'entreprise (S4.0)</td></tr>
+</tbody></table></div>
+<h2>Contexte</h2>
+<p>Les premiers essais de la fiche d'entreprise ont montré cinq défauts d'usage : fermeture des fenêtres peu intuitive, fenêtres trop étroites pour disposer correctement les champs, champs non conformes peu visibles, zones de commentaire que l'on peut étirer à la main, et pays de l'entreprise absent.</p>
+<h2>Décisions</h2>
+<ol><li><strong>Croix de fermeture en haut à droite de chaque fenêtre</strong> (nom accessible « Fermer la fenêtre », pictogramme de croix, même jeu de pictogrammes que le reste de l'application). Le bouton « Fermer » du bas est <strong>supprimé</strong>. Échap continue de fermer. Le focus entre dans le premier champ (jamais sur la croix quand il y a un champ).</li><li><strong>« Annuler » est conservé</strong> à côté de l'action principale des formulaires et des confirmations : c'est un <strong>choix explicite</strong> (renoncer à l'action), pas une simple fermeture de la fenêtre.</li><li><strong>Largeur minimale</strong> : 26 rem pour une fenêtre normale, 46 rem pour une fenêtre large, ramenée à la largeur de l'écran sur un écran plus étroit. <strong>Toute fenêtre qui contient un tableau est une fenêtre large</strong> (retour du même jour sur la fenêtre « Versions d'un document », où le bouton « Télécharger » était coupé et obligeait à faire défiler) ; un test le vérifie pour chaque fenêtre.</li><li><strong>Champs non conformes en surbrillance</strong> : après une première tentative d'envoi, chaque champ erroné reçoit une bordure, un fond et un liseré de la couleur d'erreur, <strong>un message écrit juste dessous avec un pictogramme</strong> (la couleur seule ne porte jamais l'état), <code>aria-invalid</code> et <code>aria-describedby</code> ; le premier champ en erreur reçoit le focus ; la surbrillance disparaît dès que la saisie est corrigée. Un récapitulatif annoncé (<code>role="alert"</code>) liste les corrections.</li><li><strong>Zones de texte à taille fixe</strong> : plus de redimensionnement à la main (<code>resize: none</code>), défilement interne au-delà, limite de 2 000 caractères avec compteur annoncé. Cela évite des mises en page déformées et des saisies démesurées.</li><li><strong>Pays d'affiliation de l'entreprise</strong> : champ facultatif de la fiche, saisie libre avec suggestions (Afrique centrale et de l'Ouest d'abord) ; affiché dans la fiche.</li></ol>
+<h2>Mesures de rigueur</h2>
+<ul><li>Les règles de surbrillance sont <strong>les mêmes</strong> que les contrôles de saisie existants (un test vérifie que la liste de messages et le contrôle champ par champ restent identiques).</li><li>Une erreur de conception évitée : le composant de champ est défini <strong>hors du rendu</strong>, sinon les champs seraient recréés (focus perdu) à chaque frappe ; un test le vérifie.</li></ul>
+<h2>Conséquences</h2>
+<ul><li>Réversible : styles globaux, composant <code>Modal</code>, fenêtre de création d'entreprise.</li><li><strong>Dette</strong> : D57 (pays en saisie libre) ; prototype à mettre à jour (D49).</li></ul></main></body></html>

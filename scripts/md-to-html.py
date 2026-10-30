@@ -44,7 +44,7 @@ def inline(text):
     text = re.sub(r'(?<![\w*])\*(?!\s)(.+?)(?<!\s)\*(?![\w*])', r'<em>\1</em>', text)
     text = re.sub(r'~~(.+?)~~', r'<del>\1</del>', text)
 
-    text = re.sub(r'!\[([^\]]*)\]\(([^)]+)\)', r'<img src="" alt="" loading="lazy" style="max-width:100%;border:1px solid var(--border);border-radius:10px;display:block">', text)
+    text = re.sub(r'!\[([^\]]*)\]\(([^)]+)\)', r'<img src="\2" alt="\1" loading="lazy" style="max-width:100%;border:1px solid var(--border);border-radius:10px;display:block">', text)
 
     def link(m):
         target = m.group(2)

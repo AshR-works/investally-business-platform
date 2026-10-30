@@ -6,6 +6,7 @@ import { Company } from '../domain/company';
 import { CompanyName } from '../domain/company-name';
 import { CompanyRepository } from '../domain/company-repository';
 import { InMemoryFacilitators } from '../../../../test/support/in-memory-facilitators';
+import { FacilitationResolver } from './facilitation-resolver';
 import { RegisterCompanyUseCase } from './register-company.use-case';
 import { RegisterFacilitatorUseCase } from './register-facilitator.use-case';
 
@@ -43,7 +44,8 @@ function build() {
   };
   const unitOfWork = { run: <T>(work: () => Promise<T>) => work() };
   const registerFacilitator = new RegisterFacilitatorUseCase(facilitators, auditRecorder, unitOfWork, clock, ids);
-  const useCase = new RegisterCompanyUseCase(companies, facilitators, registerFacilitator, auditRecorder, unitOfWork, clock, ids);
+  const resolver = new FacilitationResolver(facilitators, registerFacilitator);
+  const useCase = new RegisterCompanyUseCase(companies, resolver, auditRecorder, unitOfWork, clock, ids);
   return { useCase, companies, facilitators, audit };
 }
 

@@ -19,6 +19,10 @@ Le design 0.4.1 est installé dans l'application réelle (`apps/crm-web`) : jeto
 
 **S4.0 (2026-10-28), sans changement de version** : fiche de création d'entreprise complétée d'après la demande de la direction produit (coordonnées, mise en relation par un facilitateur, méthode de contact, commission) et bloc « Mise en relation » dans la fiche entreprise (DDR-0012). Composants `CreateCompanyDialog` et `FacilitationPanel`. Correction du 2026-10-29 : devise de la commission préremplie « XAF » (FCFA). **Prototype 0.4.1 non encore mis à jour** : à ajouter à la version 0.5.0.
 
+**S4.0, retours de tests (2026-10-29), sans changement de version** : croix de fermeture en haut à droite de chaque fenêtre (le bouton « Fermer » du bas disparaît), largeur minimale des fenêtres, champs non conformes en surbrillance avec message écrit, zones de texte à taille fixe, champ « Pays » (DDR-0013, EXD-15 et EXD-16). **Prototype 0.4.1 non encore mis à jour** : à ajouter à la version 0.5.0.
+
+**S4.0 (2026-10-30), sans changement de version** : boutons « Modifier » et « Exporter la fiche » sur la fiche d'entreprise ; la fenêtre de création sert aussi à la modification (DDR-0014). **Prototype 0.4.1 non encore mis à jour** : à ajouter à la version 0.5.0.
+
 **Wireframes (2026-10-30), sans changement de version** : dossier `docs/design/wireframe/` avec 45 écrans (10 réalisés repris pour référence, 35 proposés), galerie et catalogue ; générés par `build.mjs`. Propositions à valider ; base de travail pour les maquettes haute fidélité (Figma) et pour les cas d'usage et les workflows.
 
 ## 0.4.1 — 2026-10-21 — *Validée*
