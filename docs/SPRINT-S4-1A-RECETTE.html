@@ -1,0 +1,52 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>S4.1a — contacts des entreprises : recette</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="INDEX.html">Index</a> · <a href="GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="ARCHITECTURE.html">Architecture</a> · <a href="SECURITY.html">Sécurité</a> · <a href="METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="TECH-DEBT.html">Dette</a> · <a href="design/README.html">Design</a> · <a href="livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>S4.1a — contacts des entreprises : recette</h1>
+<p><em>Branche <code>sprint/s4-1a-contacts</code> · 2026-10-30 · cas d'usage CU-C-10 à CU-C-14 ; wireframes 11 et 12 ; DDR-0015 ; D29.</em></p>
+<h2>Ce qui est livré</h2>
+<div class="table-wrap"><table><thead><tr><th>Demande</th><th>Réponse</th></tr></thead><tbody>
+<tr><td><strong>Contacts d'une entreprise</strong></td><td>Panneau « Contacts » dans la fiche : liste, création, modification, suppression (confirmée)</td></tr>
+<tr><td><strong>Page « Contacts »</strong></td><td>Nouveau module de la navigation : recherche, filtre par fonction, pagination, sélection persistante, création (entreprise choisie parmi celles de la portée)</td></tr>
+<tr><td><strong>Champs</strong></td><td>Entreprise, nom, prénom (obligatoires), fonction (DAF, Décideur, Autre), e-mail et téléphone facultatifs mais contrôlés. Champs non conformes en surbrillance (EXD-15, EXD-16)</td></tr>
+<tr><td><strong>Doublons</strong></td><td>Même entreprise et même nom, ou même e-mail : « Doublon probable », avec le choix « Créer quand même » / « Enregistrer quand même »</td></tr>
+<tr><td><strong>Visibilité</strong></td><td>Un contact suit son entreprise ; hors portée = « introuvable »</td></tr>
+<tr><td><strong>Droits</strong></td><td>Créer/modifier : chargé de compte (propre), Responsable commercial (équipe) ; supprimer : Responsable commercial ; lire : aussi Direction et Support</td></tr>
+<tr><td><strong>Entreprise archivée</strong></td><td>Plus de création, modification ni suppression ; contacts lisibles</td></tr>
+<tr><td><strong>Concurrence et audit</strong></td><td>Verrou optimiste ; création, modification (ancienne et nouvelle valeur) et suppression tracées</td></tr>
+</tbody></table></div>
+<h2>Preuves</h2>
+<div class="table-wrap"><table><thead><tr><th>Contrôle</th><th>Résultat</th></tr></thead><tbody>
+<tr><td>Types (<code>tsc</code>), architecture (<code>pnpm arch</code>)</td><td>0 erreur · aucune violation (173 modules)</td></tr>
+<tr><td>Tests unitaires de l'API</td><td><strong>531 / 531</strong> (1 ignoré, antérieur) ; 27 nouveaux (contacts)</td></tr>
+<tr><td><strong>Tests d'intégration (PostgreSQL jetable)</strong></td><td><strong>211 / 211</strong> (15 suites), dont doublons, version perdue au niveau de la base, suppression logique</td></tr>
+<tr><td><strong>IDOR</strong></td><td>Cinq routes de contacts classées et sondées : même réponse pour l'objet d'un collègue et pour un identifiant inexistant, aucune écriture, aucune fuite</td></tr>
+<tr><td>Tests de l'interface</td><td><strong>208 / 208</strong> (25 nouveaux) : validation alignée sur le domaine, corps des requêtes, doublon, droits, champs sans perte de focus</td></tr>
+<tr><td><strong>Mutants</strong></td><td><strong>14 / 14 tués</strong> (10 unitaires, 4 sur la base) ; un survivant initial (verrou optimiste non vérifié en base) a conduit à un test de concurrence au niveau du dépôt</td></tr>
+<tr><td><strong>Navigateur réel (Edge + axe-core)</strong></td><td><strong>109 contrôles, 0 échec, 0 avertissement</strong> : création refusée avec surbrillance et focus, création, doublon avec avertissement annoncé, modification, suppression confirmée, page « Contacts » ; résultats <code>docs/accessibilite/resultats/axe-2026-10-30-s41a.json</code>, captures <code>docs/accessibilite/s41a-captures/</code></td></tr>
+</tbody></table></div>
+<h2>Réserves sur la recette</h2>
+<ul><li>Passage au lecteur d'écran réel non fait (protocole existant, hors de ce lot).</li><li>Testé sous Node 26.7, pas rejoué sous Node 22.</li><li>Les valeurs par défaut ci-dessous restent à confirmer par la direction produit (D29).</li><li>Le prototype n'est pas mis à jour (version 0.5.0 à décider, D49).</li></ul>
+<h2>Dette et à confirmer</h2>
+<ul><li><strong>D62 à D65</strong> (<code>docs/TECH-DEBT.md</code>).</li><li><strong>D29 — à confirmer</strong> : liste des fonctions (DAF, Décideur, Autre), suppression réservée au Responsable commercial, un contact rattaché à une seule entreprise.</li></ul>
+<h2>À valider</h2>
+<ol><li>Les écrans (panneau de la fiche, page Contacts) et les valeurs par défaut de D29.</li><li>« Je valide S4.1a » → fusion avec commit de fusion et étiquette <code>s4-1a-validated</code>.</li></ol></main></body></html>

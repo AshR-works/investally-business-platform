@@ -68,6 +68,21 @@ export interface Company {
   facilitation?: Facilitation | null;
 }
 
+/** Contact : interlocuteur d'une entreprise. */
+export interface Contact {
+  id: string;
+  companyId: string;
+  companyName: string;
+  lastName: string;
+  firstName: string;
+  role: string;
+  email: string | null;
+  phone: string | null;
+  createdAt: string;
+  /** Verrou optimiste : renvoyé tel quel pour modifier le contact. */
+  version: number;
+}
+
 /** Facilitateur : personne qui met en relation avec une entreprise. */
 export interface Facilitator {
   id: string;

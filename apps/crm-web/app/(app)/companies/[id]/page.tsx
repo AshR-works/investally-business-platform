@@ -3,6 +3,7 @@
 import { useParams } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { CompanyDialog } from '../../../../components/companies/company-dialog';
+import { ContactsPanel } from '../../../../components/contacts/contacts-panel';
 import { FacilitationPanel } from '../../../../components/companies/facilitation-panel';
 import { Badge } from '../../../../components/data/badge';
 import { Card } from '../../../../components/data/card';
@@ -100,6 +101,7 @@ export default function CompanyPage() {
         </dl>
       </Card>
       <FacilitationPanel facilitation={company.facilitation} />
+      {can(profile, 'bd.contact.read') && <ContactsPanel company={{ id: company.id, name: company.name }} />}
       {can(profile, 'docs.document.read') && <DocumentsPanel ownerType="company" ownerId={company.id} />}
     </>
   );
