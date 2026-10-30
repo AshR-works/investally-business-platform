@@ -17,6 +17,7 @@
 | [Méthode d'arbitrage](METHODE-D-ARBITRAGE.md) | Comment les décisions structurantes sont présentées |
 | [Cas d'usage des flux transverses](CAS-D-USAGE-FLUX-TRANSVERSES.md) | 7 flux, 29 cas d'usage, schémas par acteur ([workflows](workflows/index.html)) ; propositions à valider |
 | [Cas d'usage du module commercial](CAS-D-USAGE-MODULE-COMMERCIAL.md) | 5 flux (C1 à C5), 24 cas d'usage, droits actuels, points à trancher ; propositions à valider |
+| [Cas d'usage du module Investudy](CAS-D-USAGE-MODULE-INVESTUDY.md) | 5 flux (I1 à I5), 36 cas d'usage (catalogue, sessions, apprenants, inscriptions, présences, certifications), droits, événements, points à trancher ; propositions à valider |
 | [Questions et décisions](QUESTIONS-ET-DECISIONS.md) | Registre des questions ouvertes et des décisions prises |
 | [Dette technique](TECH-DEBT.md) | Dettes connues et leur échéance |
 | [Risques](RISKS.md) | Registre des risques |
