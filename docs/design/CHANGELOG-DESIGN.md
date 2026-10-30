@@ -23,6 +23,8 @@ Le design 0.4.1 est installé dans l'application réelle (`apps/crm-web`) : jeto
 
 **S4.0 (2026-10-30), sans changement de version** : boutons « Modifier » et « Exporter la fiche » sur la fiche d'entreprise ; la fenêtre de création sert aussi à la modification (DDR-0014). **Prototype 0.4.1 non encore mis à jour** : à ajouter à la version 0.5.0.
 
+**Wireframes (2026-10-30), sans changement de version** : dossier `docs/design/wireframe/` avec 45 écrans (10 réalisés repris pour référence, 35 proposés), galerie et catalogue ; générés par `build.mjs`. Propositions à valider ; base de travail pour les maquettes haute fidélité (Figma) et pour les cas d'usage et les workflows.
+
 ## 0.4.1 — 2026-10-21 — *Validée*
 - **EXD-10 / DEC-007 / DDR-0007** : panneau principal **centré sur la fenêtre** (option B) ; repli automatique en centrage dans l'espace restant quand la fenêtre est étroite ; largeur du panneau 1 440 px au plus ; la largeur maximale du contenu (1 320 px) est supprimée.
 - **EXD-11** : bouton de dépliage en **pictogramme seul** (44 px, nom accessible, info-bulle, état annoncé) ; pictogramme provisoire à confirmer.
