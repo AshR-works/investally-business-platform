@@ -8,7 +8,10 @@
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { FLOWS } from './flows.mjs';
+import { FLOWS as TRANSVERSES } from './flows.mjs';
+import { FLOWS_COMMERCIAL } from './flows-commercial.mjs';
+
+const FLOWS = [...TRANSVERSES, ...FLOWS_COMMERCIAL];
 
 const here = dirname(fileURLToPath(import.meta.url));
 const OUT = join(here, 'svg');
@@ -161,7 +164,7 @@ section{background:#fff;border:1px solid var(--line);border-radius:12px;padding:
 h2{margin:0 0 4px;font-size:18px}.tag{display:inline-block;margin-left:8px;padding:1px 10px;border-radius:999px;border:1px solid;font-size:11px;font-weight:700}
 .tag.r{color:#2e7d32}.tag.p{color:#b3541e}img{display:block;max-width:none;margin-top:10px}
 </style></head><body>
-<header><h1>Workflows transverses</h1><p>${rows.length} flux. Un couloir par acteur, le temps de gauche à droite. Voir aussi les cas d'usage : <a href="../CAS-D-USAGE-FLUX-TRANSVERSES.html">cas d'usage des flux transverses</a>.</p></header>
+<header><h1>Workflows</h1><p>${rows.length} flux : transverses (F) et module commercial (C). Un couloir par acteur, le temps de gauche à droite. Cas d'usage : <a href="../CAS-D-USAGE-FLUX-TRANSVERSES.html">flux transverses</a> et <a href="../CAS-D-USAGE-MODULE-COMMERCIAL.html">module commercial</a>.</p></header>
 <main>${rows.map((r) => `<section><h2>${esc(r.id)} · ${esc(r.title)}<span class="tag ${r.status === 'Réalisé' ? 'r' : 'p'}">${esc(r.status.toUpperCase())}</span></h2><p>${esc(r.sub)}</p><img src="svg/${r.file}" alt="Workflow : ${esc(r.title)}"></section>`).join('')}</main>
 </body></html>`);
 
