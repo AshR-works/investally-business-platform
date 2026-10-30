@@ -147,7 +147,7 @@ export const SCREENS = [
     states: ['Onglet vide avec action « Ajouter »', 'Onglet sans droit : masqué', ...COMMON_STATES],
   },
   {
-    id: 'contacts-liste', title: 'Contacts : liste', module: 'Business Development', status: 'Proposé', sprint: 'S4.1', nav: 'BD', role: AM, user: 'Marie Nkoulou', rights: 'bd.contact.read ; portée selon l’entreprise liée.',
+    id: 'contacts-liste', title: 'Contacts : liste', module: 'Business Development', status: 'Livré', sprint: 'S4.1a', nav: 'BD', role: AM, user: 'Marie Nkoulou', rights: 'bd.contact.read ; portée selon l’entreprise liée.',
     blocks: [
       title('Contacts', 'Interlocuteurs des entreprises de votre périmètre', ['Nouveau contact']),
       table(['Contact', 'Fonction', 'Entreprise', 'E-mail', 'Téléphone'], [['Alain Fotso', 'DAF', 'Atlas Négoce', 'a.fotso@…', '+237 6…'], ['Claire Ndzana', 'Décideur', 'Atlas Négoce', 'c.ndzana@…', '+237 6…'], ['Marc Eto', 'DAF', 'Sodexim', 'm.eto@…', '+237 6…'], ['Sandrine Njoya', 'Autre', 'Banque Horizon', 's.njoya@…', '+241 0…']], { filters: ['Fonction', 'Entreprise'], count: '38 contacts', note: 'Fonction : DAF, décideur ou autre (liste à confirmer) ; un contact appartient à une entreprise.' }),
@@ -155,7 +155,7 @@ export const SCREENS = [
     states: ['Vide : « Aucun contact » + action', ...COMMON_STATES],
   },
   {
-    id: 'contact-modal', title: 'Création d’un contact (avec détection de doublon)', module: 'Business Development', status: 'Proposé', sprint: 'S4.1', nav: 'BD', role: AM, user: 'Marie Nkoulou', rights: 'bd.contact.create / update.',
+    id: 'contact-modal', title: 'Création d’un contact (avec détection de doublon)', module: 'Business Development', status: 'Livré', sprint: 'S4.1a', nav: 'BD', role: AM, user: 'Marie Nkoulou', rights: 'bd.contact.create / update.',
     blocks: [title('Contacts', 'Interlocuteurs des entreprises de votre périmètre', ['Nouveau contact']), table(['Contact', 'Fonction', 'Entreprise'], [['Alain Fotso', 'DAF', 'Atlas Négoce']], { toolbar: false })],
     modal: {
       title: 'Nouveau contact', w: 700, actions: ['Annuler', 'Enregistrer'],

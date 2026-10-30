@@ -22,6 +22,7 @@ export interface AppModule {
 export const MODULES: readonly AppModule[] = [
   { id: 'agenda', label: 'Agenda', description: 'Rendez-vous, relances et échéances', icon: 'cal', group: 'Espace de travail' },
   { id: 'companies', label: 'Entreprises', description: 'Entreprises cibles et clientes', icon: 'building', group: 'Espace de travail', href: '/companies', permission: 'bd.company.read' },
+  { id: 'contacts', label: 'Contacts', description: 'Interlocuteurs des entreprises', icon: 'user', group: 'Espace de travail', href: '/contacts', permission: 'bd.contact.read' },
   { id: 'opportunities', label: 'Opportunités', description: 'Pipeline commercial', icon: 'target', group: 'Espace de travail' },
   { id: 'training', label: 'Formation', description: 'Catalogue, sessions et inscriptions Investudy', icon: 'cap', group: 'Espace de travail' },
   { id: 'finance', label: 'Finance', description: 'Facturation et suivi des paiements', icon: 'card', group: 'Opérations' },

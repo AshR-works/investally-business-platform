@@ -14,8 +14,8 @@
 | 08 | [Rôles d’un utilisateur : sélecteur et aperçu des droits](svg/08-roles-modal.svg) | Administration | Livré | S3.8 | Super administrateur | iam.user.assign_role ; on ne modifie pas ses propres rôles. |
 | 09 | [Mon compte : sécurité et sessions](svg/09-mon-compte.svg) | Accès | Livré | H2 | Tout utilisateur | iam.session.read / revoke (Propre). |
 | 10 | [Fiche entreprise 360° (cible)](svg/10-entreprise-360.svg) | Business Development | Proposé | S4.1 à S4.3 | Chargé de compte | Chaque onglet suit ses propres permissions (contacts, offres, opportunités, documents). |
-| 11 | [Contacts : liste](svg/11-contacts-liste.svg) | Business Development | Proposé | S4.1 | Chargé de compte | bd.contact.read ; portée selon l’entreprise liée. |
-| 12 | [Création d’un contact (avec détection de doublon)](svg/12-contact-modal.svg) | Business Development | Proposé | S4.1 | Chargé de compte | bd.contact.create / update. |
+| 11 | [Contacts : liste](svg/11-contacts-liste.svg) | Business Development | Livré | S4.1a | Chargé de compte | bd.contact.read ; portée selon l’entreprise liée. |
+| 12 | [Création d’un contact (avec détection de doublon)](svg/12-contact-modal.svg) | Business Development | Livré | S4.1a | Chargé de compte | bd.contact.create / update. |
 | 13 | [Offres : liste et état](svg/13-offres-liste.svg) | Business Development | Proposé | S4.2 | Chargé de compte | bd.offer.read ; création : bd.offer.create. |
 | 14 | [Offre : décharge et relances](svg/14-offre-fiche.svg) | Business Development | Proposé | S4.2 | Chargé de compte | bd.offer.*, bd.receipt.*, bd.followup.*. |
 | 15 | [Dépôt de la décharge signée](svg/15-decharge-modal.svg) | Business Development | Proposé | S4.2 | Chargé de compte | bd.receipt.create. |
