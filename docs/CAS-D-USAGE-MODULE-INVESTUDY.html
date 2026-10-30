@@ -1,0 +1,173 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Cas d&#x27;usage et workflows — module Investudy (formation)</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="INDEX.html">Index</a> · <a href="GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="ARCHITECTURE.html">Architecture</a> · <a href="SECURITY.html">Sécurité</a> · <a href="METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="TECH-DEBT.html">Dette</a> · <a href="design/README.html">Design</a> · <a href="livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>Cas d'usage et workflows — module Investudy (formation)</h1>
+<p><strong>Date</strong> : 2026-10-30 · <strong>Statut</strong> : <strong>proposition à valider</strong> · <strong>Suite de</strong> : <a href="CAS-D-USAGE-MODULE-COMMERCIAL.html">CAS-D-USAGE-MODULE-COMMERCIAL.md</a> et <a href="CAS-D-USAGE-FLUX-TRANSVERSES.html">CAS-D-USAGE-FLUX-TRANSVERSES.md</a> (flux F2) · <strong>Schémas</strong> : <a href="workflows/index.html">workflows/index.html</a> (flux I1 à I5) · <strong>Écrans</strong> : <a href="design/wireframe/index.html">wireframes 26 à 32 et 36</a></p>
+<blockquote><p>Le module Investudy commence là où le module commercial s'arrête : un <strong>agrément</strong> reçu. Il couvre le catalogue, les ressources (salles, formateurs), les sessions, les apprenants, les inscriptions, les présences, les évaluations et les certifications. <strong>Rien n'est décidé ici</strong> : les points « à trancher » sont ceux de la direction produit, et chaque valeur proposée est une hypothèse de travail. <strong>Aucun écran n'est réalisé</strong> : tout le module est à venir (sprints S5.1 à S5.3, tableau de bord en S6.2).</p></blockquote>
+<h2>0. Vocabulaire</h2>
+<div class="table-wrap"><table><thead><tr><th>Terme</th><th>Sens retenu</th></tr></thead><tbody>
+<tr><td><strong>Programme</strong></td><td>Famille de formations (ex. « Analyse financière »). Peut être archivé.</td></tr>
+<tr><td><strong>Formation</strong></td><td>Contenu précis d'un programme (durée, objectifs, tarif de référence).</td></tr>
+<tr><td><strong>Session</strong></td><td>Occurrence datée d'une formation, avec une salle, un formateur et une capacité.</td></tr>
+<tr><td><strong>Apprenant</strong></td><td>Personne qui suit une formation. <strong>N'a ni compte ni accès à l'application</strong> : sa fiche est saisie par le personnel. Entité distincte du contact d'une entreprise, avec un lien facultatif (décision D7 à confirmer).</td></tr>
+<tr><td><strong>Inscription</strong></td><td>Lien entre un apprenant, une session et un agrément.</td></tr>
+<tr><td><strong>Agrément</strong></td><td>Promesse de paiement donnée par le client (module commercial). Investudy en garde une <strong>copie locale</strong> reçue par événement et refuse toute inscription sans agrément valide.</td></tr>
+<tr><td><strong>Certificat / attestation</strong></td><td>Certificat de réussite, ou attestation de suivi. Le document suit la charte graphique.</td></tr>
+</tbody></table></div>
+<h2>1. Droits actuels du module (rappel de la matrice RBAC)</h2>
+<div class="table-wrap"><table><thead><tr><th>Objet</th><th>Chargé de compte</th><th>Responsable commercial</th><th>Responsable Investudy</th><th>Formateur</th><th>Direction, Support, Finance</th></tr></thead><tbody>
+<tr><td>Programme</td><td>lire</td><td>lire</td><td><strong>lire, créer, modifier, archiver</strong></td><td>lire</td><td>Direction : lire</td></tr>
+<tr><td>Formation</td><td>—</td><td>—</td><td><strong>lire, créer, modifier</strong></td><td>—</td><td>Direction : lire</td></tr>
+<tr><td>Session</td><td>lire</td><td>lire</td><td><strong>tout</strong> (créer, modifier, annuler, clôturer)</td><td>lire <strong>ses sessions</strong></td><td>Direction, Support, Finance : lire</td></tr>
+<tr><td>Salle, formateur (ressources)</td><td>—</td><td>—</td><td><strong>gérer</strong></td><td>lire les salles</td><td>—</td></tr>
+<tr><td>Apprenant</td><td>lire, créer, modifier <strong>(Propre : ses entreprises)</strong></td><td>lire (Équipe)</td><td><strong>tout</strong>, supprimer compris</td><td>lire (ses sessions)</td><td>Direction, Support : lire</td></tr>
+<tr><td>Inscription</td><td>lire, <strong>créer</strong> (Propre)</td><td>lire (Équipe)</td><td><strong>tout</strong> (créer, modifier, annuler)</td><td>—</td><td>Direction, Support, Finance : lire</td></tr>
+<tr><td>Présence, évaluation</td><td>—</td><td>—</td><td><strong>lire, saisir</strong></td><td><strong>lire, saisir (ses sessions)</strong></td><td>Direction : lire</td></tr>
+<tr><td>Certification</td><td><strong>— (aucun droit)</strong></td><td>lire (Équipe)</td><td><strong>lire, délivrer, révoquer</strong></td><td>lire (ses sessions)</td><td>Direction : lire</td></tr>
+</tbody></table></div>
+<p>Le Super administrateur détient tous ces droits. Les détails sont dans <a href="RBAC.html">RBAC.md</a>.</p>
+<h2>2. Les cinq flux du module</h2>
+<p>Chaque schéma est dans <code>workflows/svg/</code>.</p>
+<p><img src="workflows/svg/I1-catalogue-planification.svg" alt="I1 — Du catalogue à la session ouverte" loading="lazy" style="max-width:100%;border:1px solid var(--border);border-radius:10px;display:block"></p>
+<p><img src="workflows/svg/I2-inscription.svg" alt="I2 — Inscription d'un apprenant à une session" loading="lazy" style="max-width:100%;border:1px solid var(--border);border-radius:10px;display:block"></p>
+<p><img src="workflows/svg/I3-deroulement-session.svg" alt="I3 — Déroulement d'une session" loading="lazy" style="max-width:100%;border:1px solid var(--border);border-radius:10px;display:block"></p>
+<p><img src="workflows/svg/I4-certification.svg" alt="I4 — Certificat, attestation et suggestion d'ambassadeur" loading="lazy" style="max-width:100%;border:1px solid var(--border);border-radius:10px;display:block"></p>
+<p><img src="workflows/svg/I5-annulation-session.svg" alt="I5 — Annulation ou report d'une session" loading="lazy" style="max-width:100%;border:1px solid var(--border);border-radius:10px;display:block"></p>
+<hr>
+<h2>3. Catalogue : programmes et formations <em>(flux I1, S5.1, écran 26)</em></h2>
+<h3>CU-I-01 — Créer un programme</h3>
+<ul><li><strong>Acteur</strong> : Responsable Investudy. <strong>Scénario</strong> : 1. « Nouveau programme ». 2. Nom (obligatoire, unique), description, public visé. 3. Enregistrer : le programme est « Actif ».</li><li><strong>Variantes</strong> : nom déjà pris → conflit ; champs non conformes en surbrillance avec message. <strong>Droits</strong> : <code>training.program.create</code>. <strong>État</strong> : à venir.</li></ul>
+<h3>CU-I-02 — Ajouter une formation à un programme</h3>
+<ul><li><strong>Scénario</strong> : dans le programme, « Nouvelle formation » : intitulé, durée en jours, objectifs, prérequis (texte), tarif de référence (FCFA par défaut), documents (support de cours). <strong>Règle</strong> : une formation appartient à un seul programme. <strong>Droits</strong> : <code>training.training.create / update</code>.</li><li><strong>À trancher</strong> : les prérequis sont-ils un simple texte ou une règle contrôlée à l'inscription ?</li></ul>
+<h3>CU-I-03 — Modifier ou archiver un programme</h3>
+<ul><li><strong>Scénario</strong> : modification avec version lue contrôlée ; archivage avec confirmation. <strong>Règle</strong> : un programme archivé n'accepte plus de nouvelle session ; les sessions existantes se poursuivent. <strong>Droits</strong> : <code>training.program.update / archive</code>.</li></ul>
+<h3>CU-I-04 — Consulter le catalogue</h3>
+<ul><li><strong>Acteur</strong> : Responsable Investudy, Formateur, Chargé de compte, Responsable commercial, Direction. <strong>Scénario</strong> : cartes ou liste des programmes, recherche, filtre actif ou archivé ; détail d'une formation avec ses prochaines sessions. <strong>Droits</strong> : <code>training.program.read</code>.</li><li><strong>Note</strong> : l'affichage en <strong>cartes</strong> de l'écran 26 est prévu pour le catalogue ; le choix cartes ou tableau pour les entreprises est traité à part (décision D30).</li></ul>
+<hr>
+<h2>4. Ressources : salles et formateurs <em>(S5.1, écran 26)</em></h2>
+<h3>CU-I-10 — Gérer les salles</h3>
+<ul><li><strong>Acteur</strong> : Responsable Investudy. <strong>Scénario</strong> : liste des salles (nom, capacité, équipements, active ou non) ; création, modification, désactivation. <strong>Règle</strong> : une salle désactivée n'est plus proposée à la planification mais reste visible sur les sessions passées. <strong>Droits</strong> : <code>training.room.manage</code> ; lecture : <code>training.room.read</code> (le formateur aussi).</li></ul>
+<h3>CU-I-11 — Gérer les formateurs</h3>
+<ul><li><strong>Acteur</strong> : Responsable Investudy. <strong>Scénario</strong> : fiche formateur (nom, spécialités, coordonnées, <strong>lien vers son compte utilisateur s'il en a un</strong>). <strong>Règle</strong> : pour qu'un formateur voie « ses sessions » et saisisse ses présences, sa fiche doit être <strong>rattachée à un compte au rôle Formateur</strong>. <strong>Droits</strong> : <code>training.trainer.manage / read</code>.</li><li><strong>À trancher</strong> : un formateur externe sans compte est-il autorisé (la saisie est alors faite par le Responsable Investudy) ?</li></ul>
+<h3>CU-I-12 — Vérifier la disponibilité</h3>
+<ul><li><strong>Scénario</strong> : à la planification, le système indique les salles et formateurs libres sur les dates choisies. <strong>Règle</strong> : voir CU-I-20. <strong>État</strong> : à venir.</li></ul>
+<hr>
+<h2>5. Sessions <em>(flux I1 et I5, S5.2, écrans 27 et 28)</em></h2>
+<h3>CU-I-20 — Planifier une session</h3>
+<ul><li><strong>Acteur</strong> : Responsable Investudy. <strong>Écran</strong> : 27. <strong>Scénario</strong> : 1. « Nouvelle session ». 2. Formation, dates de début et de fin, salle, formateur, capacité. 3. Le système contrôle le chevauchement. 4. La session est créée « Planifiée ».</li><li><strong>Variantes</strong> : salle ou formateur déjà pris sur ces dates → <strong>refus</strong>, avec la session en conflit ; capacité supérieure à celle de la salle → avertissement (à trancher : bloquant ?) ; dates dans le passé → refus. <strong>Droits</strong> : <code>training.session.create</code>.</li></ul>
+<h3>CU-I-21 — Ouvrir les inscriptions</h3>
+<ul><li><strong>Scénario</strong> : « Ouvrir » : la session passe « Ouverte » et devient visible des chargés de compte, avec les places restantes. <strong>Règle</strong> : ouverte seulement si salle, formateur et capacité sont renseignés. <strong>Droits</strong> : <code>training.session.update</code>.</li></ul>
+<h3>CU-I-22 — Modifier une session</h3>
+<ul><li><strong>Règles</strong> : version lue contrôlée ; une session <strong>commencée</strong> ne change plus de salle ni de formateur sans confirmation et trace ; une <strong>réduction de capacité</strong> en dessous du nombre d'inscrits confirmés est refusée.</li></ul>
+<h3>CU-I-23 — Annuler ou reporter une session <em>(flux I5)</em></h3>
+<ul><li><strong>Acteur</strong> : Responsable Investudy. <strong>Scénario</strong> : 1. « Annuler » ou « Modifier les dates », motif obligatoire. 2. Confirmation à l'écran. 3. Les inscriptions passent à « À replacer » ; les chargés de compte concernés sont notifiés. 4. Chaque chargé de compte replace l'inscrit sur une autre session (nouveau contrôle, flux I2) ou l'annule ; la Finance est prévenue pour ajuster la demande de paiement.</li><li><strong>Règles</strong> : une session clôturée ne s'annule pas ; l'annulation <strong>ne supprime</strong> aucune inscription ; l'agrément n'est pas consommé par une inscription annulée. <strong>Droits</strong> : <code>training.session.cancel</code>.</li><li><strong>À trancher</strong> : le report est-il une annulation suivie d'une nouvelle session, ou une modification de dates qui conserve les inscrits ? Délai minimal et conséquences financières (décision de la Finance).</li></ul>
+<h3>CU-I-24 — Consulter le calendrier et la liste des sessions</h3>
+<ul><li><strong>Écran</strong> : 27. <strong>Scénario</strong> : liste filtrable (état, salle, formateur, période) et vue calendrier ; compteur « inscrits / capacité ». <strong>Droits</strong> : <code>training.session.read</code> (le formateur ne voit que les siennes, <strong>Propre</strong>).</li></ul>
+<h3>CU-I-25 — Consulter le détail d'une session</h3>
+<ul><li><strong>Écran</strong> : 28. <strong>Scénario</strong> : indicateurs (inscrits, présence moyenne, évaluations saisies, agrément) et onglets Inscrits, Présences, Évaluations, Documents. <strong>Droits</strong> : selon l'onglet (voir § 1).</li></ul>
+<h3>CU-I-26 — Clôturer une session <em>(flux I3)</em></h3>
+<ul><li><strong>Acteur</strong> : Responsable Investudy. <strong>Scénario</strong> : vérifier les présences et évaluations saisies, puis « Clôturer » (confirmation). <strong>Résultat</strong> : les présences et évaluations sont <strong>figées</strong> ; la session ouvre droit aux certifications ; événement « session clôturée ». <strong>Droits</strong> : <code>training.session.close</code>.</li><li><strong>À trancher</strong> : réouverture exceptionnelle (qui, motif, trace).</li></ul>
+<hr>
+<h2>6. Apprenants <em>(S5.2, écran 29)</em></h2>
+<h3>CU-I-30 — Créer la fiche d'un apprenant</h3>
+<ul><li><strong>Acteur</strong> : chargé de compte (pour ses entreprises), Responsable Investudy. <strong>Scénario</strong> : nom, prénom, entreprise, e-mail et téléphone (facultatifs, contrôlés), <strong>lien facultatif vers un contact</strong> de l'entreprise. <strong>Variantes</strong> : <strong>doublon probable</strong> (même entreprise et même nom ou e-mail) signalé avec « Créer quand même », comme pour les contacts. <strong>Droits</strong> : <code>training.learner.create</code> (Propre pour le chargé de compte).</li></ul>
+<h3>CU-I-31 — Modifier un apprenant</h3>
+<ul><li><strong>Règles</strong> : version lue contrôlée, audit avant/après ; l'entreprise ne change pas (ou seulement par le Responsable Investudy, à trancher). <strong>Droits</strong> : <code>training.learner.update</code>.</li></ul>
+<h3>CU-I-32 — Consulter les apprenants et leur parcours</h3>
+<ul><li><strong>Scénario</strong> : liste filtrable par entreprise ; fiche avec formations suivies, présences, certifications. <strong>Droits</strong> : portée de l'entreprise pour le chargé de compte (Propre), Équipe pour le Responsable commercial, <strong>Tous</strong> pour Investudy, Direction et Support ; le formateur ne voit que les apprenants de ses sessions.</li></ul>
+<h3>CU-I-33 — Supprimer un apprenant</h3>
+<ul><li><strong>Acteur</strong> : Responsable Investudy seulement (<code>training.learner.delete</code>). Suppression logique avec confirmation ; <strong>refusée</strong> si l'apprenant a une inscription confirmée ou une certification. <strong>Point sensible</strong> : durée de conservation des données personnelles des apprenants (D11, même sujet que D55 et D65).</li></ul>
+<hr>
+<h2>7. Inscriptions <em>(flux I2, S5.2, écrans 28 et 30)</em></h2>
+<h3>CU-I-40 — Inscrire un apprenant à une session</h3>
+<ul><li><strong>Acteur</strong> : chargé de compte. <strong>Écran</strong> : 30. <strong>Préconditions</strong> : session « Ouverte » ; agrément valide pour l'entreprise.</li><li><strong>Scénario</strong> : 1. Session, apprenant (créé au besoin), agrément, prise en charge, commentaire. 2. Le système vérifie : agrément valide, <strong>cumul des inscriptions dans le montant ou le nombre de places de l'agrément</strong>, place libre, apprenant non déjà inscrit. 3. L'inscription est créée « En attente de confirmation ».</li><li><strong>Variantes</strong> : sans agrément valide → refus ; cumul supérieur → refus ; session complète → refus (liste d'attente à trancher). <strong>Droits</strong> : <code>training.enrollment.create</code> (Propre).</li></ul>
+<h3>CU-I-41 — Confirmer une inscription</h3>
+<ul><li><strong>Acteur</strong> : Responsable Investudy. <strong>Scénario</strong> : file des inscriptions en attente (écran 28), « Confirmer » ; la place est décomptée ; événement « inscription confirmée » vers la Finance (demande de paiement, flux F3). <strong>Droits</strong> : <code>training.enrollment.update</code>.</li><li><strong>À trancher</strong> : le chargé de compte peut-il confirmer lui-même ? (proposition : non, pour garder un contrôle de capacité).</li></ul>
+<h3>CU-I-42 — Annuler une inscription</h3>
+<ul><li><strong>Scénario</strong> : « Annuler » avec motif et confirmation ; la place est libérée, l'agrément n'est plus consommé, la Finance est prévenue. <strong>Règle</strong> : une inscription d'une session <strong>clôturée</strong> ne s'annule pas. <strong>Droits</strong> : <code>training.enrollment.cancel</code>.</li></ul>
+<h3>CU-I-43 — Replacer un inscrit sur une autre session</h3>
+<ul><li><strong>Scénario</strong> : depuis une inscription « À replacer » (flux I5) ou à la demande ; mêmes contrôles qu'à CU-I-40 ; l'ancienne inscription est annulée avec le lien vers la nouvelle. <strong>À trancher</strong> : transfert direct sans nouvelle inscription ?</li></ul>
+<h3>CU-I-44 — Gérer la liste d'attente <em>(si retenue)</em></h3>
+<ul><li><strong>Scénario</strong> : à session complète, l'inscription est mise « En liste d'attente » avec un rang ; quand une place se libère, le Responsable Investudy (ou le système) promeut le premier rang. <strong>À trancher</strong> : liste d'attente oui ou non, promotion manuelle ou automatique.</li></ul>
+<h3>CU-I-45 — Suivre l'état de paiement</h3>
+<ul><li><strong>Scénario</strong> : l'état « réglé » d'une inscription <strong>arrive de la Finance par événement</strong> et s'affiche en lecture seule dans la session et la fiche entreprise. <strong>Règle</strong> : jamais saisi dans le CRM.</li></ul>
+<hr>
+<h2>8. Présences et évaluations <em>(flux I3, S5.3, écran 31)</em></h2>
+<h3>CU-I-50 — Enregistrer les présences du jour</h3>
+<ul><li><strong>Acteur</strong> : formateur (ses sessions), Responsable Investudy. <strong>Scénario</strong> : 1. Feuille du jour (écran 31). 2. Pour chaque inscrit confirmé : matin, après-midi, retard, observation. 3. Enregistrer.</li><li><strong>Règles</strong> : session clôturée → <strong>saisie refusée</strong> ; seuls les inscrits <strong>confirmés</strong> apparaissent ; chaque saisie garde auteur, date et ancienne valeur. <strong>Droits</strong> : <code>training.attendance.record</code> (Propre pour le formateur).</li></ul>
+<h3>CU-I-51 — Imprimer la feuille d'émargement</h3>
+<ul><li><strong>Scénario</strong> : « Imprimer » produit un document de la charte, signé à la main par les participants, puis <strong>numérisé et joint à la session</strong> (module Documents). <strong>État</strong> : à venir ; dépend de la charte et du rendu PDF (D61).</li></ul>
+<h3>CU-I-52 — Saisir les évaluations</h3>
+<ul><li><strong>Acteur</strong> : formateur, Responsable Investudy. <strong>Scénario</strong> : à la fin de la formation, une évaluation par apprenant (note ou résultat) et un commentaire. <strong>Règle</strong> : figée à la clôture. <strong>Droits</strong> : <code>training.evaluation.record</code>. <strong>À trancher</strong> : barème.</li></ul>
+<h3>CU-I-53 — Consulter présences et évaluations</h3>
+<ul><li><strong>Droits</strong> : <code>training.attendance.read</code>, <code>training.evaluation.read</code> (Direction : tous ; formateur : ses sessions).</li></ul>
+<h3>CU-I-54 — Corriger une saisie</h3>
+<ul><li><strong>Avant la clôture</strong> : le Responsable Investudy ou le formateur corrige, avec trace. <strong>Après la clôture</strong> : réouverture exceptionnelle tracée (à trancher).</li></ul>
+<hr>
+<h2>9. Certifications et attestations <em>(flux I4, S5.3, écran 32)</em></h2>
+<h3>CU-I-60 — Délivrer un certificat ou une attestation</h3>
+<ul><li><strong>Acteur</strong> : Responsable Investudy. <strong>Préconditions</strong> : session clôturée. <strong>Scénario</strong> : 1. Onglet « À délivrer ». 2. Pour chaque apprenant : <strong>certificat de réussite</strong> (seuils atteints), <strong>attestation de suivi</strong>, ou rien. 3. Le document est généré selon la charte. 4. Événement « certification délivrée ».</li><li><strong>Règle</strong> : seuils proposés pour démarrer (<strong>à valider</strong>) : présence d'au moins 80 % et note d'au moins 10 sur 20 pour un certificat ; présence d'au moins 80 % seulement pour une attestation. <strong>Droits</strong> : <code>training.certification.issue</code>.</li></ul>
+<h3>CU-I-61 — Révoquer une certification</h3>
+<ul><li><strong>Scénario</strong> : « Révoquer » avec <strong>justification obligatoire</strong> et confirmation. <strong>Règle</strong> : le document reste consultable, marqué « révoqué » ; événement « certification révoquée ». <strong>Droits</strong> : <code>training.certification.revoke</code>.</li></ul>
+<h3>CU-I-62 — Recevoir la suggestion d'ambassadeur</h3>
+<ul><li><strong>Acteur</strong> : chargé de compte. <strong>Scénario</strong> : après une certification délivrée, il reçoit une suggestion (écran 24) ; il décide <strong>manuellement</strong> de créer l'ambassadeur (origine : apprenant). <strong>Règle</strong> : jamais automatique.</li><li><strong>Constat</strong> : le chargé de compte <strong>n'a aucun droit de lecture sur les certifications</strong> dans la matrice actuelle. Il lui faut soit un droit de lecture limité aux apprenants de ses entreprises (<code>training.certification.read</code>, Propre), soit une suggestion portée par l'événement seul, sans accès à la certification. À trancher.</li></ul>
+<h3>CU-I-63 — Consulter les certifications</h3>
+<ul><li><strong>Droits</strong> : Responsable Investudy, Direction : tous ; Responsable commercial : son équipe ; formateur : ses sessions.</li></ul>
+<h3>CU-I-64 — Vérifier un certificat</h3>
+<ul><li><strong>À trancher</strong> : numéro unique, code de vérification et page publique de contrôle (hors périmètre actuel : l'application n'a aucun accès externe).</li></ul>
+<hr>
+<h2>10. Pilotage <em>(S6.2, écran 36)</em></h2>
+<h3>CU-I-70 — Tableau de bord Investudy</h3>
+<ul><li><strong>Acteur</strong> : Responsable Investudy, Direction (<code>reporting.dashboard.training</code>). <strong>Contenu proposé</strong> : taux de remplissage des sessions à venir, inscriptions en attente, taux de présence, certificats délivrés par mois, inscriptions par entreprise. <strong>État</strong> : à venir (S6.2) ; les chiffres viennent des mêmes données que les écrans.</li></ul>
+<h3>CU-I-71 — Exporter une liste</h3>
+<ul><li><strong>Scénario</strong> : export des inscrits d'une session ou de la liste des apprenants, <strong>tracé</strong> comme tout export, limité à la portée de l'utilisateur ; confirmation récente du second facteur (option C, à confirmer). <strong>Droits</strong> : à créer (<code>training.*.export</code>).</li></ul>
+<hr>
+<h2>11. Événements échangés</h2>
+<div class="table-wrap"><table><thead><tr><th>Sens</th><th>Événement</th><th>Effet</th></tr></thead><tbody>
+<tr><td><strong>Reçu</strong> du module commercial</td><td>Agrément accordé, expiré, annulé</td><td>Copie locale de l'agrément ; les inscriptions non réglées d'un agrément expiré ou annulé sont <strong>signalées</strong></td></tr>
+<tr><td><strong>Émis</strong> vers la Finance</td><td>Inscription confirmée / annulée</td><td>Demande de paiement préparée / ajustée (flux F3)</td></tr>
+<tr><td><strong>Émis</strong> vers la Finance</td><td>Session annulée</td><td>Ajustement des demandes de paiement</td></tr>
+<tr><td><strong>Émis</strong> vers le module commercial</td><td>Certification délivrée / révoquée</td><td>Suggestion d'ambassadeur au chargé de compte</td></tr>
+<tr><td><strong>Émis</strong> vers le reporting</td><td>Session clôturée</td><td>Mise à jour des indicateurs</td></tr>
+</tbody></table></div>
+<h2>12. Permissions et données à prévoir</h2>
+<div class="table-wrap"><table><thead><tr><th>Besoin</th><th>Proposition</th></tr></thead><tbody>
+<tr><td>Lecture des suggestions d'ambassadeur par le chargé de compte</td><td><code>training.certification.read</code> limité aux apprenants de ses entreprises, ou notification seule</td></tr>
+<tr><td>Réouverture d'une session clôturée</td><td>permission dédiée <code>training.session.reopen</code> (Responsable Investudy), avec justification</td></tr>
+<tr><td>Liste d'attente</td><td>statut d'inscription supplémentaire ; pas de permission nouvelle</td></tr>
+<tr><td>Rattacher un formateur à un compte</td><td>champ « compte utilisateur » sur la fiche formateur</td></tr>
+<tr><td>Export des listes</td><td>permission d'export par ressource, comme pour les entreprises</td></tr>
+<tr><td>Documents (émargement, certificats)</td><td>module Documents existant, rattaché à la session ou à la certification</td></tr>
+<tr><td>Entités de données</td><td>programme, formation, session, salle, formateur, apprenant, inscription, présence, évaluation, certification (à modéliser en S5.1)</td></tr>
+</tbody></table></div>
+<h2>13. Points à trancher, par ordre d'impact</h2>
+<ol><li><strong>Confirmation des inscriptions</strong> : le Responsable Investudy seul ? (I2)</li><li><strong>Liste d'attente</strong> quand la session est complète : oui ou non, promotion manuelle ou automatique (I2).</li><li><strong>Seuils de certification</strong> : présence, note, et différence certificat ou attestation (I4).</li><li><strong>Apprenant et contact</strong> : entité distincte avec lien facultatif ? (D7)</li><li><strong>Agrément</strong> : places ou somme globale, expiration et effet sur les inscriptions (D1, F1).</li><li><strong>Barème des évaluations</strong> : note sur 20, acquis ou non, compétences (I3).</li><li><strong>Annulation et report</strong> : modifier les dates ou annuler puis recréer ; délais et conséquences financières (I5).</li><li><strong>Réouverture</strong> d'une session clôturée (I3).</li><li><strong>Visibilité des certifications pour le chargé de compte</strong> (I4, CU-I-62).</li><li><strong>Conservation des données des apprenants</strong> : durée et base légale (D11, D65).</li><li><strong>Numérotation et vérification</strong> des certificats (CU-I-64).</li></ol>
+<h2>14. Découpage proposé</h2>
+<div class="table-wrap"><table><thead><tr><th>Sprint</th><th>Contenu</th></tr></thead><tbody>
+<tr><td><strong>S5.1</strong></td><td>Catalogue (programmes, formations), salles, formateurs ; modèle de données Investudy</td></tr>
+<tr><td><strong>S5.2</strong></td><td>Sessions, apprenants, inscriptions (avec les contrôles d'agrément et de capacité), annulation et report ; réception des événements d'agrément</td></tr>
+<tr><td><strong>S5.3</strong></td><td>Présences, évaluations, clôture, certifications et attestations ; émission des événements</td></tr>
+<tr><td><strong>S6.2</strong></td><td>Tableau de bord Investudy</td></tr>
+</tbody></table></div>
+<h2>15. Suite proposée</h2>
+<p>Après validation : retour au <strong>module commercial</strong> pour S4.2 (offres, décharges, relances), puis S4.3 (opportunités) qui produit l'agrément attendu par Investudy ; ensuite Reporting, Stocks, Finance, RH et fiscalité.</p></main></body></html>

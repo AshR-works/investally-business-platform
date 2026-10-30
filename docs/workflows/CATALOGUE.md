@@ -16,3 +16,8 @@
 | C3 | [Rendez-vous, visite et agenda](svg/C3-rendez-vous-agenda.svg) | À venir | Chargé de compte, Système, Contact (externe) |
 | C4 | [Opportunité : du pipeline à la clôture](svg/C4-opportunite-pipeline.svg) | À venir | Chargé de compte, Responsable commercial, Système |
 | C5 | [Cycle de vie d’une entreprise (statuts)](svg/C5-cycle-de-vie-entreprise.svg) | Partiel | Chargé de compte, Responsable commercial, Système |
+| I1 | [Du catalogue à la session ouverte](svg/I1-catalogue-planification.svg) | À venir | Responsable Investudy, Système, Formateur, Chargé de compte |
+| I2 | [Inscription d’un apprenant à une session](svg/I2-inscription.svg) | À venir | Chargé de compte, Système, Responsable Investudy, Finance (ERP) |
+| I3 | [Déroulement d’une session : présences, évaluations, clôture](svg/I3-deroulement-session.svg) | À venir | Formateur, Système, Responsable Investudy |
+| I4 | [Certificat, attestation et suggestion d’ambassadeur](svg/I4-certification.svg) | À venir | Responsable Investudy, Système, Chargé de compte, Apprenant (externe) |
+| I5 | [Annulation ou report d’une session](svg/I5-annulation-session.svg) | À venir | Responsable Investudy, Système, Chargé de compte, Finance (ERP) |
