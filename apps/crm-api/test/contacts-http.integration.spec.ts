@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { RoleCode } from '../src/modules/iam/domain/roles';
 import { Api, createUserWithRoles, mfaSession, startRbacApp } from './support/rbac-http';
+import { PrismaContactRepository } from '../src/modules/business-development/infrastructure/prisma-contact.repository';
 import { TestApp } from './support/test-app';
 
 const describeDb = process.env.DATABASE_URL && process.env.RUN_DB_TESTS === '1' ? describe : describe.skip;
@@ -61,6 +62,19 @@ describeDb('Contacts (HTTP + PostgreSQL)', () => {
     expect(updated.body).toMatchObject({ role: 'DECISION_MAKER', phone: null, version: 2 });
   }, 90_000);
 
+  it('verrou optimiste AU NIVEAU DE LA BASE : deux écritures simultanées sur la même version, la seconde est refusée', async () => {
+    const { am, companyId } = await team();
+    const created = (await api.call('POST', '/api/v1/contacts', { ...am, body: payload(companyId) })).body;
+    const repository = new PrismaContactRepository(t.prisma);
+    const first = (await repository.findById(created.id))!;
+    const second = (await repository.findById(created.id))!;
+    first.update({ role: 'OTHER' });
+    await repository.save(first);
+    second.update({ role: 'DECISION_MAKER' });
+    await expect(repository.save(second)).rejects.toMatchObject({ code: 'CONFLICT' });
+    expect((await repository.findById(created.id))?.role).toBe('OTHER');
+  }, 90_000);
+
   it('verrou optimiste : une version périmée est refusée (409)', async () => {
     const { am, companyId } = await team();
     const c = (await api.call('POST', '/api/v1/contacts', { ...am, body: payload(companyId) })).body;
@@ -74,6 +88,8 @@ describeDb('Contacts (HTTP + PostgreSQL)', () => {
     expect((await api.call('POST', '/api/v1/contacts', { ...am, body })).status).toBe(201);
     const dup = await api.call('POST', '/api/v1/contacts', { ...am, body: { ...body, email: undefined } });
     expect(dup.status).toBe(409);
+    const sameEmail = await api.call('POST', '/api/v1/contacts', { ...am, body: payload(companyId, { email: body.email }) });
+    expect(sameEmail.status).toBe(409); // même e-mail, autre nom : doublon aussi
     expect((await api.call('POST', '/api/v1/contacts', { ...am, body: { ...body, allowDuplicate: true } })).status).toBe(201);
     const other = await api.call('POST', '/api/v1/companies', { ...am, body: { name: `Autre ${unique()}` } });
     expect((await api.call('POST', '/api/v1/contacts', { ...am, body: { ...body, companyId: other.body.id } })).status).toBe(201);

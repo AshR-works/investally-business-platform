@@ -19,3 +19,4 @@ Les arbitrages structurants suivent la [méthode d'arbitrage](../../METHODE-D-AR
 | [DDR-0012](DDR-0012-fiche-entreprise-mise-en-relation-facilitateur.md) | Fiche de création d'entreprise : coordonnées et mise en relation par un facilitateur | Acceptée (prototype à mettre à jour) | 0.4.1 | — |
 | [DDR-0013](DDR-0013-fenetres-croix-champs-en-surbrillance.md) | Fenêtres : croix de fermeture, largeur minimale ; champs non conformes en surbrillance ; zones de texte à taille fixe | Acceptée (prototype à mettre à jour) | 0.4.1 | EXD-15, EXD-16 |
 | [DDR-0014](DDR-0014-modifier-et-exporter-une-fiche.md) | Modifier une fiche d'entreprise ; exporter une fiche (qui voit exporte, chaque export est tracé) | Acceptée (prototype à mettre à jour) | 0.4.1 | — |
+| [DDR-0015](DDR-0015-contacts-des-entreprises.md) | Contacts des entreprises : fiche, liste, doublons | Acceptée (prototype à mettre à jour) | 0.4.1 | — |
