@@ -1,17 +1,37 @@
 'use client';
 
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, ReactNode, useEffect, useState } from 'react';
 import { api, ApiError } from '../../lib/api';
 import { useAuth } from '../../lib/auth-context';
-import { buildCompanyBody, COMMISSION_TYPES, CONTACT_METHODS, type CompanyForm, EMPTY_COMPANY_FORM, validateCompanyForm } from '../../lib/facilitation';
+import { COUNTRY_SUGGESTIONS } from '../../lib/countries';
+import {
+  buildCompanyBody, COMMISSION_TYPES, CONTACT_METHODS, type CompanyForm, EMPTY_COMPANY_FORM, type FieldName, validateCompanyFields,
+} from '../../lib/facilitation';
 import { can } from '../../lib/permissions';
 import type { Facilitator, Page } from '../../lib/types';
+import { Icon } from '../icon';
 import { Modal } from '../modal';
+
+const COMMENT_MAX = 2000;
+
+/** Champ de formulaire : libellé relié, puis le contrôle, puis le message d'erreur écrit sous le champ. Composant de premier niveau (défini hors du rendu) pour ne pas recréer les champs, donc perdre le focus, à chaque frappe. */
+function Field({ name, label, error, children }: { name: FieldName; label: string; error?: string; children: ReactNode }) {
+  return (
+    <div className="field">
+      <label htmlFor={`company-${name}`}>{label}</label>
+      {children}
+      {error && <p id={`company-${name}-error`} className="field-error"><Icon name="alert" className="size-4" />{error}</p>}
+    </div>
+  );
+}
 
 /**
  * Fenêtre de création d'une entreprise : coordonnées, puis « mise en relation » (facilitateur existant ou nouveau,
  * méthode de contact, commission). Le propriétaire est l'utilisateur connecté, décidé côté serveur. La commission
  * n'apparaît que pour qui peut la définir ; le serveur re-contrôle chaque droit.
+ *
+ * Après une première tentative d'envoi, chaque champ non conforme est mis en évidence (bordure, fond, message écrit sous le
+ * champ, `aria-invalid`) et le premier reçoit le focus ; la mise en évidence disparaît dès que la saisie est corrigée.
  */
 export function CreateCompanyDialog({ onClose, onCreated }: { onClose: () => void; onCreated: () => Promise<void> }) {
   const { profile } = useAuth();
@@ -20,23 +40,32 @@ export function CreateCompanyDialog({ onClose, onCreated }: { onClose: () => voi
   const canSetCommission = can(profile, 'bd.commission.manage');
   const [form, setForm] = useState<CompanyForm>(EMPTY_COMPANY_FORM);
   const [facilitators, setFacilitators] = useState<Facilitator[]>([]);
-  const [problems, setProblems] = useState<string[]>([]);
+  const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const set = <K extends keyof CompanyForm>(key: K, value: CompanyForm[K]) => setForm((f) => ({ ...f, [key]: value }));
+  const errors = submitted ? validateCompanyFields(form) : {};
+  const problems = Object.values(errors);
 
   useEffect(() => {
     if (form.facilitatorMode !== 'existing' || facilitators.length > 0) return;
     api<Page<Facilitator>>('/facilitators?pageSize=100').then((page) => setFacilitators(page.items)).catch(() => setError('La liste des facilitateurs est indisponible.'));
   }, [form.facilitatorMode, facilitators.length]);
 
+  /** Attributs d'un champ : état non conforme annoncé et relié à son message. */
+  const field = (key: FieldName) => ({ id: `company-${key}`, 'aria-invalid': errors[key] ? (true as const) : undefined, 'aria-describedby': errors[key] ? `company-${key}-error` : undefined });
+
   /** Enregistre l'entreprise saisie ; en cas d'échec le message de l'API s'affiche dans la fenêtre. */
   async function submit(event: FormEvent) {
     event.preventDefault();
     setError(null);
-    const found = validateCompanyForm(form);
-    setProblems(found);
-    if (found.length > 0) return;
+    setSubmitted(true);
+    const first = Object.keys(validateCompanyFields(form))[0];
+    if (first) {
+      // Le premier champ non conforme reçoit le focus une fois la mise en évidence affichée.
+      setTimeout(() => document.getElementById(`company-${first}`)?.focus(), 0);
+      return;
+    }
     setBusy(true);
     try {
       await api('/companies', { method: 'POST', body: buildCompanyBody(form) });
@@ -53,78 +82,76 @@ export function CreateCompanyDialog({ onClose, onCreated }: { onClose: () => voi
       <form onSubmit={submit} noValidate>
         <fieldset>
           <legend>L’entreprise</legend>
-          <label>
-            Nom de l’entreprise
-            <input value={form.name} onChange={(e) => set('name', e.target.value)} maxLength={200} required aria-required="true" />
-          </label>
-          <label>
-            Secteur d’activité
-            <input value={form.sector} onChange={(e) => set('sector', e.target.value)} maxLength={100} />
-          </label>
-          <label>
-            E-mail de l’entreprise
-            <input type="email" value={form.email} onChange={(e) => set('email', e.target.value)} maxLength={200} autoComplete="off" />
-          </label>
-          <label>
-            Téléphone de l’entreprise
-            <input type="tel" value={form.phone} onChange={(e) => set('phone', e.target.value)} maxLength={40} autoComplete="off" />
-          </label>
+          <Field name="name" error={errors.name} label="Nom de l’entreprise">
+            <input {...field('name')} value={form.name} onChange={(e) => set('name', e.target.value)} maxLength={200} required aria-required="true" />
+          </Field>
+          <Field name="country" error={errors.country} label="Pays d’affiliation de l’entreprise">
+            <input {...field('country')} value={form.country} onChange={(e) => set('country', e.target.value)} maxLength={100} list="company-country-suggestions" autoComplete="off" />
+            <datalist id="company-country-suggestions">{COUNTRY_SUGGESTIONS.map((c) => <option key={c} value={c} />)}</datalist>
+          </Field>
+          <Field name="email" error={errors.email} label="E-mail de l’entreprise">
+            <input {...field('email')} type="email" value={form.email} onChange={(e) => set('email', e.target.value)} maxLength={200} autoComplete="off" />
+          </Field>
+          <Field name="phone" error={errors.phone} label="Téléphone de l’entreprise">
+            <input {...field('phone')} type="tel" value={form.phone} onChange={(e) => set('phone', e.target.value)} maxLength={40} autoComplete="off" />
+          </Field>
+          <div className="field">
+            <label htmlFor="company-sector">Secteur d’activité</label>
+            <input id="company-sector" value={form.sector} onChange={(e) => set('sector', e.target.value)} maxLength={100} />
+          </div>
         </fieldset>
 
         {(canPickFacilitator || canCreateFacilitator) && (
           <fieldset>
             <legend>Mise en relation</legend>
             <p className="m-0 mb-3 text-ink-2">Personne qui a présenté l’entreprise ou facilité le premier contact (elle peut en être un employé).</p>
-            <label>
-              Facilitateur
-              <select value={form.facilitatorMode} onChange={(e) => set('facilitatorMode', e.target.value as CompanyForm['facilitatorMode'])}>
+            <div className="field">
+              <label htmlFor="company-facilitator-mode">Facilitateur</label>
+              <select id="company-facilitator-mode" value={form.facilitatorMode} onChange={(e) => set('facilitatorMode', e.target.value as CompanyForm['facilitatorMode'])}>
                 <option value="none">Aucun facilitateur</option>
                 {canPickFacilitator && <option value="existing">Un facilitateur déjà enregistré</option>}
                 {canCreateFacilitator && <option value="new">Un nouveau facilitateur</option>}
               </select>
-            </label>
+            </div>
 
             {form.facilitatorMode === 'existing' && (
-              <label>
-                Facilitateur enregistré
-                <select value={form.facilitatorId} onChange={(e) => set('facilitatorId', e.target.value)}>
+              <Field name="facilitatorId" error={errors.facilitatorId} label="Facilitateur enregistré">
+                <select {...field('facilitatorId')} value={form.facilitatorId} onChange={(e) => set('facilitatorId', e.target.value)}>
                   <option value="">— Choisir —</option>
                   {facilitators.map((f) => (
                     <option key={f.id} value={f.id}>{f.firstName} {f.lastName} · {f.phone}</option>
                   ))}
                 </select>
-              </label>
+              </Field>
             )}
 
             {form.facilitatorMode === 'new' && (
               <>
-                <label>
-                  Nom du facilitateur
-                  <input value={form.facilitatorLastName} onChange={(e) => set('facilitatorLastName', e.target.value)} maxLength={100} required aria-required="true" />
-                </label>
-                <label>
-                  Prénom du facilitateur
-                  <input value={form.facilitatorFirstName} onChange={(e) => set('facilitatorFirstName', e.target.value)} maxLength={100} required aria-required="true" />
-                </label>
-                <label>
-                  Téléphone du facilitateur
-                  <input type="tel" value={form.facilitatorPhone} onChange={(e) => set('facilitatorPhone', e.target.value)} maxLength={40} required aria-required="true" autoComplete="off" />
-                </label>
-                <label>
-                  Commentaire sur le facilitateur
-                  <textarea value={form.facilitatorComment} onChange={(e) => set('facilitatorComment', e.target.value)} maxLength={2000} rows={3} />
-                </label>
+                <Field name="facilitatorLastName" error={errors.facilitatorLastName} label="Nom du facilitateur">
+                  <input {...field('facilitatorLastName')} value={form.facilitatorLastName} onChange={(e) => set('facilitatorLastName', e.target.value)} maxLength={100} required aria-required="true" />
+                </Field>
+                <Field name="facilitatorFirstName" error={errors.facilitatorFirstName} label="Prénom du facilitateur">
+                  <input {...field('facilitatorFirstName')} value={form.facilitatorFirstName} onChange={(e) => set('facilitatorFirstName', e.target.value)} maxLength={100} required aria-required="true" />
+                </Field>
+                <Field name="facilitatorPhone" error={errors.facilitatorPhone} label="Téléphone du facilitateur">
+                  <input {...field('facilitatorPhone')} type="tel" value={form.facilitatorPhone} onChange={(e) => set('facilitatorPhone', e.target.value)} maxLength={40} required aria-required="true" autoComplete="off" />
+                </Field>
+                <div className="field">
+                  <label htmlFor="company-facilitator-comment">Commentaire sur le facilitateur</label>
+                  <textarea id="company-facilitator-comment" aria-describedby="company-facilitator-comment-count" value={form.facilitatorComment} onChange={(e) => set('facilitatorComment', e.target.value)} maxLength={COMMENT_MAX} rows={4} />
+                  <p id="company-facilitator-comment-count" className="field-count">{form.facilitatorComment.length} / {COMMENT_MAX} caractères</p>
+                </div>
               </>
             )}
 
             {facilitated && (
               <>
-                <label>
-                  Méthode de prise de contact avec l’entreprise
-                  <select value={form.contactMethod} onChange={(e) => set('contactMethod', e.target.value)}>
+                <div className="field">
+                  <label htmlFor="company-contact-method">Méthode de prise de contact avec l’entreprise</label>
+                  <select id="company-contact-method" value={form.contactMethod} onChange={(e) => set('contactMethod', e.target.value)}>
                     {CONTACT_METHODS.map((m) => <option key={m.value} value={m.value}>{m.label}</option>)}
                   </select>
-                </label>
+                </div>
                 <label className="inline">
                   <input type="checkbox" checked={form.isCompanyEmployee} onChange={(e) => set('isCompanyEmployee', e.target.checked)} />
                   Le facilitateur est un employé de l’entreprise
@@ -132,24 +159,22 @@ export function CreateCompanyDialog({ onClose, onCreated }: { onClose: () => voi
 
                 {canSetCommission ? (
                   <>
-                    <label>
-                      Commission du facilitateur
-                      <select value={form.commissionType} onChange={(e) => set('commissionType', e.target.value as CompanyForm['commissionType'])}>
+                    <div className="field">
+                      <label htmlFor="company-commission-type">Commission du facilitateur</label>
+                      <select id="company-commission-type" value={form.commissionType} onChange={(e) => set('commissionType', e.target.value as CompanyForm['commissionType'])}>
                         <option value="">Aucune commission</option>
                         {COMMISSION_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
                       </select>
-                    </label>
+                    </div>
                     {form.commissionType && (
                       <>
-                        <label>
-                          {form.commissionType === 'PERCENT' ? 'Pourcentage (de 0 à 100)' : 'Montant'}
-                          <input value={form.commissionValue} onChange={(e) => set('commissionValue', e.target.value)} inputMode="decimal" maxLength={16} />
-                        </label>
+                        <Field name="commissionValue" error={errors.commissionValue} label={form.commissionType === 'PERCENT' ? 'Pourcentage (de 0 à 100)' : 'Montant'}>
+                          <input {...field('commissionValue')} value={form.commissionValue} onChange={(e) => set('commissionValue', e.target.value)} inputMode="decimal" maxLength={16} />
+                        </Field>
                         {form.commissionType === 'FIXED' && (
-                          <label>
-                            Devise (XAF = FCFA par défaut ; ou trois lettres, par exemple EUR)
-                            <input value={form.commissionCurrency} onChange={(e) => set('commissionCurrency', e.target.value)} maxLength={3} autoCapitalize="characters" />
-                          </label>
+                          <Field name="commissionCurrency" error={errors.commissionCurrency} label="Devise (XAF = FCFA par défaut ; ou trois lettres, par exemple EUR)">
+                            <input {...field('commissionCurrency')} value={form.commissionCurrency} onChange={(e) => set('commissionCurrency', e.target.value)} maxLength={4} autoCapitalize="characters" />
+                          </Field>
                         )}
                       </>
                     )}
@@ -164,7 +189,7 @@ export function CreateCompanyDialog({ onClose, onCreated }: { onClose: () => voi
 
         {problems.length > 0 && (
           <div role="alert" className="error">
-            <p className="m-0 font-semibold">Corrigez avant d’enregistrer :</p>
+            <p className="m-0 font-semibold">Corrigez les champs en surbrillance avant d’enregistrer :</p>
             <ul className="m-0 pl-5">{problems.map((p) => <li key={p}>{p}</li>)}</ul>
           </div>
         )}

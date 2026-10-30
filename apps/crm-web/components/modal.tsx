@@ -1,6 +1,7 @@
 'use client';
 
 import { ReactNode, useEffect, useRef } from 'react';
+import { Icon } from './icon';
 
 /** Fenêtre modale accessible : Échap ferme, le focus entre dans la fenêtre, le fond est rendu inerte (`inert`), Tab reste dans la fenêtre et le focus revient à l'élément d'origine à la fermeture. */
 export function Modal({ title, onClose, children, size = 'default' }: { title: string; onClose: () => void; children: ReactNode; size?: 'default' | 'wide' }) {
@@ -11,7 +12,8 @@ export function Modal({ title, onClose, children, size = 'default' }: { title: s
   useEffect(() => {
     const previous = document.activeElement as HTMLElement | null;
     const dialog = ref.current;
-    dialog?.querySelector<HTMLElement>('input, select, button')?.focus();
+    // Le focus va au premier champ ; sans champ, au premier bouton d'action ; en dernier recours, à la croix.
+    (dialog?.querySelector<HTMLElement>('input, select, textarea') ?? dialog?.querySelector<HTMLElement>('button:not(.dialog-close)') ?? dialog?.querySelector<HTMLElement>('.dialog-close'))?.focus();
 
     // Le reste de la page devient inerte : ni lecture, ni focus, ni clic derrière la fenêtre (en plus d'aria-modal,
     // que tous les lecteurs d'écran ne respectent pas).
@@ -52,7 +54,10 @@ export function Modal({ title, onClose, children, size = 'default' }: { title: s
   return (
     <div className="overlay" role="presentation">
       <div className={size === 'wide' ? 'dialog wide' : 'dialog'} role="dialog" aria-modal="true" aria-label={title} ref={ref}>
-        <h2>{title}</h2>
+        <div className="dialog-head">
+          <h2>{title}</h2>
+          <button type="button" className="dialog-close" onClick={onClose} aria-label="Fermer la fenêtre" title="Fermer"><Icon name="close" className="size-5" /></button>
+        </div>
         {children}
       </div>
     </div>

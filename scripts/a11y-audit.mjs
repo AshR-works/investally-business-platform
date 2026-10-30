@@ -293,7 +293,7 @@ try {
   const fillField = (labelStart, value) => js(`(() => {
     const label = [...document.querySelectorAll('[role=dialog] label')].find((l) => l.textContent.trim().startsWith(${JSON.stringify(labelStart)}));
     if (!label) throw new Error('Champ introuvable : ${labelStart}');
-    const el = label.querySelector('input, select, textarea');
+    const el = label.control; // contrôle relié par l'attribut for (ou imbriqué)
     const proto = el instanceof HTMLSelectElement ? HTMLSelectElement.prototype : el instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
     Object.getOwnPropertyDescriptor(proto, 'value').set.call(el, ${JSON.stringify(value)});
     el.dispatchEvent(new Event('input', { bubbles: true }));
@@ -306,6 +306,7 @@ try {
   await expectThat('sans facilitateur choisi, aucun champ de facilitateur ni de commission n’est affiché', `![...document.querySelectorAll('[role=dialog] label')].some((l) => /^(Nom du facilitateur|Commission|Méthode de prise de contact)/.test(l.textContent.trim()))`);
   await fillField('Nom de l’entreprise', facilitatedName);
   await fillField('Secteur', 'Banque');
+  await fillField('Pays d’affiliation', 'Cameroun');
   await fillField('E-mail de l’entreprise', 'pas-un-mail');
   await fillField('Téléphone de l’entreprise', '+237 222 33 44 55');
   await fillField('Facilitateur', 'new');
@@ -319,11 +320,17 @@ try {
   await fillField('Commission du facilitateur', 'PERCENT');
   await waitFor("[...document.querySelectorAll('[role=dialog] label')].some((l) => l.textContent.trim().startsWith('Pourcentage'))", 'champ du pourcentage');
   await fillField('Pourcentage', '7,5');
+  await expectThat('la fenêtre a une croix en haut à droite nommée « Fermer la fenêtre » et aucun bouton « Fermer » en bas', `(() => { const d = document.querySelector('[role=dialog]'); const x = d.querySelector('.dialog-close'); const r = x.getBoundingClientRect(); const dr = d.getBoundingClientRect(); return x.getAttribute('aria-label') === 'Fermer la fenêtre' && r.right > dr.right - 60 && r.top < dr.top + 60 && ![...d.querySelectorAll('button')].some((b) => b.textContent.trim() === 'Fermer'); })()`);
+  await expectThat('la fenêtre large respecte sa largeur minimale (736 px)', `document.querySelector('[role=dialog]').getBoundingClientRect().width >= 736`);
+  await expectThat('la zone de commentaire du facilitateur n’est pas redimensionnable et affiche son compteur', `(() => { const t = document.querySelector('#company-facilitator-comment'); return getComputedStyle(t).resize === 'none' && /\\d+ \\/ 2000/.test(document.querySelector('#company-facilitator-comment-count').textContent); })()`);
   await shot('entreprise-creation-facilitateur');
   await audit('Entreprises — création avec facilitateur et commission', 'groupes de champs, champs obligatoires annoncés');
   await clickText('Enregistrer', "document.querySelector('[role=dialog]')");
   await waitFor("document.querySelector('[role=dialog] [role=alert]')", 'contrôle de saisie');
   await expectThat('une saisie invalide est refusée AVANT l’envoi, avec un message précis annoncé (role=alert) et la fenêtre reste ouverte', `document.querySelector('[role=dialog] [role=alert]').textContent.includes('e-mail') && !!document.querySelector('[role=dialog]')`);
+  await expectThat('le champ e-mail non conforme est en surbrillance, annoncé invalide, relié à son message, et reçoit le focus', `(() => { const e = document.querySelector('#company-email'); const m = document.getElementById(e.getAttribute('aria-describedby') ?? ''); return e.getAttribute('aria-invalid') === 'true' && !!m && m.textContent.includes('e-mail') && getComputedStyle(e).boxShadow !== 'none' && document.activeElement === e; })()`);
+  await expectThat('les champs conformes ne sont pas en surbrillance', `!document.querySelector('#company-name').hasAttribute('aria-invalid') && !document.querySelector('#company-phone').hasAttribute('aria-invalid')`);
+  await shot('entreprise-champ-non-conforme');
   await audit('Entreprises — création : erreurs de saisie', 'liste des corrections annoncée');
   await fillField('E-mail de l’entreprise', 'Contact@Relais.CM');
   await clickText('Enregistrer', "document.querySelector('[role=dialog]')");
@@ -333,7 +340,7 @@ try {
   await waitFor("location.pathname.startsWith('/companies/') && document.querySelector('#facilitation-title')", 'bloc Mise en relation', 20000);
   await sleep(600);
   await expectThat('la fiche affiche le facilitateur, son téléphone, la méthode, l’appartenance et la commission formatée', `(() => { const t = document.querySelector('main').textContent; return t.includes('Paul Mbarga') && t.includes('+237 699 00 11 22') && t.includes('Appel téléphonique') && t.includes('Employé de l’entreprise') && t.includes('7,50') && t.includes('Ancien collègue du directeur financier'); })()`);
-  await expectThat('l’e-mail est enregistré en minuscules et le téléphone de l’entreprise affiché', `(() => { const t = document.querySelector('main').textContent; return t.includes('contact@relais.cm') && t.includes('+237 222 33 44 55'); })()`);
+  await expectThat('l’e-mail est enregistré en minuscules, le téléphone et le pays de l’entreprise affichés', `(() => { const t = document.querySelector('main').textContent; return t.includes('contact@relais.cm') && t.includes('+237 222 33 44 55') && t.includes('Cameroun'); })()`);
   await audit('Fiche entreprise — mise en relation (facilitateur, commission)');
   await shot('fiche-entreprise-facilitateur');
   await go('/companies');
@@ -404,7 +411,7 @@ try {
   await waitFor("document.querySelector('[role=dialog] tbody tr')", 'historique des versions', 15000);
   await audit('Documents — historique des versions (SHA-256)');
   await shot('documents-historique');
-  await clickText('Fermer', dialog);
+  await js(`${dialog}.querySelector('.dialog-close').click()`); // la croix en haut à droite remplace le bouton « Fermer » du bas
   await sleep(300);
   await openRowMenu();
   await clickText('Archiver');

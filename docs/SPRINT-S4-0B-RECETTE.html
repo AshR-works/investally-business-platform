@@ -1,0 +1,47 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>S4.0 (retours de tests) — fenêtres, champs en surbrillance, pays : recette</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="INDEX.html">Index</a> · <a href="GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="ARCHITECTURE.html">Architecture</a> · <a href="SECURITY.html">Sécurité</a> · <a href="METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="TECH-DEBT.html">Dette</a> · <a href="design/README.html">Design</a> · <a href="livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>S4.0 (retours de tests) — fenêtres, champs en surbrillance, pays : recette</h1>
+<p><em>Branche <code>fix/retours-s4-0</code> · 2026-10-29 · retours de la direction produit sur la fiche d'entreprise ; DDR-0013 ; EXD-15 et EXD-16.</em></p>
+<h2>Ce qui est livré</h2>
+<div class="table-wrap"><table><thead><tr><th>Observation</th><th>Réponse</th></tr></thead><tbody>
+<tr><td>Croix en haut à droite des fenêtres</td><td>Croix nommée « Fermer la fenêtre » dans l'en-tête de <strong>toutes</strong> les fenêtres ; le bouton « Fermer » du bas est supprimé (fenêtre « Versions d'un document ») ; Échap ferme toujours</td></tr>
+<tr><td>Largeur minimale</td><td>26 rem (fenêtre normale), 46 rem (fenêtre large), toute la largeur sur un écran plus étroit ; <strong>la fenêtre « Versions d'un document » est désormais large</strong> (plus de défilement horizontal : constaté sur capture, le bouton « Télécharger » était coupé)</td></tr>
+<tr><td>Champs non conformes</td><td>Bordure, fond et liseré d'erreur, message écrit sous le champ avec pictogramme, <code>aria-invalid</code>/<code>aria-describedby</code>, focus sur le premier champ en erreur, récapitulatif annoncé ; la surbrillance disparaît dès la correction</td></tr>
+<tr><td>Zones de commentaire ajustables</td><td>Taille fixe (<code>resize: none</code>), défilement interne, limite de 2 000 caractères avec compteur annoncé</td></tr>
+<tr><td>Pays de l'entreprise</td><td>Champ « Pays d'affiliation » (facultatif, saisie libre avec suggestions), affiché dans la fiche</td></tr>
+<tr><td>Téléchargement de la fiche</td><td><strong>Non fait : décision à prendre</strong> (D58)</td></tr>
+</tbody></table></div>
+<p><strong>Choix à confirmer</strong> : « Annuler » est <strong>conservé</strong> à côté de l'action principale des formulaires : c'est un choix explicite (renoncer), distinct de la fermeture de la fenêtre. Seul le bouton « Fermer » est remplacé par la croix.</p>
+<h2>Preuves</h2>
+<div class="table-wrap"><table><thead><tr><th>Contrôle</th><th>Résultat</th></tr></thead><tbody>
+<tr><td>Types (<code>tsc</code>)</td><td>0 erreur</td></tr>
+<tr><td>Tests de l'interface</td><td><strong>161 / 161</strong> (21 nouveaux dans <code>s41.test.ts</code>) : croix et son emplacement, aucun bouton « Fermer » restant, largeurs minimales, <code>resize: none</code>, compteur, pays envoyé ou omis, règles champ par champ identiques aux messages, style de surbrillance (bordure + fond + liseré), liaison <code>aria-*</code>, focus du premier champ en erreur</td></tr>
+<tr><td>API</td><td>Non modifiée (le pays était déjà accepté)</td></tr>
+</tbody></table></div>
+<h2>Défaut évité en cours de route</h2>
+<p>Une première version définissait le composant de champ <strong>à l'intérieur</strong> du rendu de la fenêtre : chaque frappe aurait recréé le champ et fait perdre le focus. Corrigé avant tout essai, avec un test qui l'interdit.</p>
+<h2>Réserves sur la recette</h2>
+<ul><li><strong>Aucun passage dans le navigateur réel pour ce lot</strong> : la machine n'avait que 27 Mo de mémoire libre et la pile locale de la direction produit occupait les ports de test. Les contrôles ci-dessus sont des tests de contrat sur le code et les styles, <strong>pas</strong> une vérification visuelle. Le script d'audit du navigateur a été étendu (croix, largeur minimale, zone non redimensionnable, surbrillance et focus, pays) et reste à jouer.</li><li><strong>Mise en page des petits écrans</strong> non vérifiée visuellement.</li></ul>
+<h2>À valider</h2>
+<ol><li>L'emplacement de la croix et la conservation d'« Annuler ».</li><li>Le pays en saisie libre avec suggestions (ou une liste fermée : D57).</li><li>La décision sur le téléchargement de la fiche (D58).</li></ol></main></body></html>
