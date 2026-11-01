@@ -10,6 +10,7 @@
 | [Vision](VISION.md) | Produit, périmètre, priorités |
 | [État d'avancement](livrables/05-ETAT-D-AVANCEMENT.md) | Où en est le projet |
 | [Suivi des sessions](livrables/04-SUIVI-DES-SESSIONS.md) | Sessions livrées et validées |
+| [Reste à faire sur le développement](RESTE-A-FAIRE-DEVELOPPEMENT.md) | Feuille de route restante, décisions en attente par lot, actions hors code, dette avant mise en production |
 
 ## Décider
 | Document | Contenu |

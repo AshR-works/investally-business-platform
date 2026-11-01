@@ -1,0 +1,108 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Reste à faire sur le développement</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="INDEX.html">Index</a> · <a href="GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="ARCHITECTURE.html">Architecture</a> · <a href="SECURITY.html">Sécurité</a> · <a href="METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="TECH-DEBT.html">Dette</a> · <a href="design/README.html">Design</a> · <a href="livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>Reste à faire sur le développement</h1>
+<p><strong>Date</strong> : 2026-11-01 · <strong>Statut</strong> : <strong>état des lieux, à valider</strong> · <strong>Sources</strong> : <a href="DESIGN-CODE-ARCHITECTURE-PLAN.html">plan de conception</a>, <a href="TECH-DEBT.html">dette technique</a>, <a href="QUESTIONS-ET-DECISIONS.html">questions et décisions</a>, cas d'usage (<a href="CAS-D-USAGE-FLUX-TRANSVERSES.html">flux transverses</a>, <a href="CAS-D-USAGE-MODULE-COMMERCIAL.html">module commercial</a>, <a href="CAS-D-USAGE-MODULE-INVESTUDY.html">module Investudy</a>)</p>
+<blockquote><p>Ce document répond à une question : <strong>que reste-t-il à construire, dans quel ordre, et qu'est-ce qui bloque quoi ?</strong> Les tailles sont des <strong>ordres de grandeur</strong> (un sprint = une semaine au plus, décision du 2026-10-20), pas des engagements. Rien n'est décidé ici : les décisions en attente sont celles de la direction produit.</p></blockquote>
+<h2>1. Où nous en sommes</h2>
+<div class="table-wrap"><table><thead><tr><th>Bloc</th><th>État</th></tr></thead><tbody>
+<tr><td><strong>Fondations</strong> (S1 à S3.8) : architecture, identité, authentification, MFA, droits et portées, administration, mot de passe oublié, documents</td><td><strong>Validé</strong></td></tr>
+<tr><td><strong>Habillage et accès</strong> (H1, H2) : design, navigation, écrans d'accès, sessions et historique</td><td><strong>Validé</strong></td></tr>
+<tr><td><strong>Module commercial livré</strong> : entreprises (S4.0), modifier et exporter une fiche, contacts (S4.1a), tableau des entreprises avec filtres, tri et colonnes (S4.1b)</td><td><strong>Validé</strong> (étiquettes <code>s4-0</code> à <code>s4-1b</code>)</td></tr>
+<tr><td><strong>Offres</strong> (S4.2a)</td><td><strong>Terminé, en attente de validation</strong> : branche <code>sprint/s4-2a-offres-decharges</code>, recette <code>SPRINT-S4-2A-RECETTE.md</code>, pas encore poussé</td></tr>
+<tr><td><strong>Cadrage fonctionnel</strong> : 45 écrans de référence (wireframes), flux transverses F1 à F7, module commercial C1 à C5, module Investudy I1 à I5</td><td><strong>Validé</strong> (propositions à confirmer, voir § 4)</td></tr>
+<tr><td><strong>Reste de l'application</strong></td><td>À construire (voir § 2)</td></tr>
+</tbody></table></div>
+<p>Chiffres au 2026-11-01 : 582 tests unitaires, 238 tests d'intégration sur base jetable, 259 tests de l'interface, audit d'accessibilité automatique sur le navigateur réel, test d'architecture sans violation.</p>
+<h2>2. Feuille de route restante</h2>
+<p>Ordre retenu le 2026-10-21 (DEC-005) : module commercial, puis Investudy, puis pilotage, puis Stocks, puis durcissement et mise en production, puis l'ERP.</p>
+<div class="table-wrap"><table><thead><tr><th>Lot</th><th>Contenu</th><th>Taille indicative</th><th>Dépend de</th></tr></thead><tbody>
+<tr><td><strong>S4.2a</strong> Offres</td><td><em>Terminé</em> : référence, états, dépôt, réponse du client, retrait avec motif</td><td>—</td><td>Votre « Je valide »</td></tr>
+<tr><td><strong>S4.2b</strong> Décharges</td><td>Décharge signée rattachée à l'offre avec son fichier ; une seule décharge valide par offre ; l'offre passe à « Décharge reçue » ; fichier de l'offre elle-même (D72)</td><td>1 session</td><td>S4.2a</td></tr>
+<tr><td><strong>S4.2c</strong> Relances</td><td>Relances planifiées et liste « À faire » ; plus de relance après un refus ou un retrait ; colonne « Prochaine relance »</td><td>1 session</td><td>S4.2b ; délai et nombre de relances (§ 3)</td></tr>
+<tr><td><strong>S4.2d</strong> Agenda</td><td>Rendez-vous, visites, rappels, vues semaine et mois, droits Propre, Équipe, Tous. <em>Nommé « S4.2b » dans l'ancien plan ; renommé pour éviter la confusion avec les décharges</em></td><td>1 à 1,5 session</td><td>S4.2c ; audience des agendas (D60)</td></tr>
+<tr><td><strong>S4.3</strong> Opportunités</td><td>Pipeline en cartes de 6 avec bascule « Par étape » (DEC-003), règle du rendez-vous décideur avec dérogation, clôture perdue ou gagnée (D28), statuts d'une entreprise, colonnes Responsable, Valeur, Dernière activité</td><td>1,5 session</td><td>S4.2d ; étapes et transitions (§ 3)</td></tr>
+<tr><td><strong>S4.4</strong> Agrément et ambassadeurs</td><td>Agrément (promesse de paiement), ambassadeurs, événements vers Investudy, suivi des commissions à verser (flux F3)</td><td>1 à 1,5 session</td><td>S4.3 ; <strong>détails de l'agrément (D1 à D5)</strong></td></tr>
+<tr><td><strong>S5.1</strong> Catalogue Investudy</td><td>Programmes, formations, salles, formateurs ; modèle de données du module</td><td>1 session</td><td>S4.4 ; cas d'usage validés</td></tr>
+<tr><td><strong>S5.2</strong> Sessions et inscriptions</td><td>Sessions, apprenants, inscriptions liées à l'agrément, annulation et report</td><td>1,5 session</td><td>S5.1 ; D31 (confirmation, liste d'attente)</td></tr>
+<tr><td><strong>S5.3</strong> Suivi pédagogique</td><td>Présences, évaluations, clôture, certificats et attestations, suggestion d'ambassadeur</td><td>1 à 1,5 session</td><td>S5.2 ; seuils de certification</td></tr>
+<tr><td><strong>S6.1</strong> Tableaux de bord commerciaux</td><td>Indicateurs du chargé de compte et du Responsable commercial</td><td>1 session</td><td>S4.3 ; liste fermée des pays (D57)</td></tr>
+<tr><td><strong>S6.2</strong> Tableaux de bord Investudy, Administration, Sécurité</td><td>Indicateurs, alertes sur les rafales de réinitialisation (D25)</td><td>1 session</td><td>S5.3</td></tr>
+<tr><td><strong>S6.3</strong> Reporting et incidents</td><td>Incidents d'abord, puis rapports périodiques ; <strong>suivi des performances seulement après avis juridique et RH</strong> (DEC-006)</td><td>1,5 session</td><td>D60 (vues partagées) ; avis juridique</td></tr>
+<tr><td><strong>ST</strong> Stocks</td><td>Articles, fournisseurs, mouvements immuables, inventaire, seuils, tableau de bord</td><td>2 sessions</td><td><strong>Cas d'usage non rédigés</strong></td></tr>
+<tr><td><strong>S7.1</strong> Durcissement</td><td>Rôle SQL applicatif, partitions planifiées, sauvegardes, supervision, stockage objet des documents (D41), clés tournantes (D10, D12), CSP à nonce (D20), liste de mots de passe étendue (D7)</td><td>1,5 session</td><td>—</td></tr>
+<tr><td><strong>S7.2</strong> Mise en production</td><td>Docker et CI exécutés pour de vrai, <strong>analyse antivirus (D42, bloquante)</strong>, e-mail Microsoft 365 réel, revue de sécurité, tests de bout en bout automatisés (D22)</td><td>1,5 session</td><td><strong>Accès Microsoft 365 (D9)</strong>, avis juridique</td></tr>
+<tr><td><strong>ERP</strong> Finance, RH, Fiscalité, reporting de direction</td><td>Hors CRM : facturation et paiements (flux F3, F4), RH, fiscalité, extraction de l'identité vers une connexion unique</td><td>À chiffrer</td><td><strong>Cas d'usage non rédigés</strong> ; décision de démarrage de l'ERP</td></tr>
+</tbody></table></div>
+<p><strong>Total indicatif du CRM jusqu'à la mise en production : environ 16 à 20 sessions.</strong> L'ERP s'y ajoute et n'est pas chiffré.</p>
+<h3>Lots transversaux sans sprint attribué</h3>
+<div class="table-wrap"><table><thead><tr><th>Besoin</th><th>Origine</th><th>Proposition</th></tr></thead><tbody>
+<tr><td><strong>Réattribuer le propriétaire d'une entreprise</strong></td><td>D17</td><td>Avec S4.3 (fiche 360°), permission dédiée, confirmation du second facteur, audit</td></tr>
+<tr><td><strong>Export de listes et actions groupées</strong></td><td>D37, D59</td><td>Cadrage de sécurité (option C : lire donne exporter, avec second facteur récent), puis un premier export</td></tr>
+<tr><td><strong>Facilitateur modifiable, plusieurs facilitateurs</strong></td><td>D53</td><td>Avec la fiche entreprise 360°</td></tr>
+<tr><td><strong>Vues partagées</strong> (rapports des employés, agendas)</td><td>D60</td><td>Modèle d'audience à décider avant l'agenda</td></tr>
+<tr><td><strong>PDF produit par le serveur</strong></td><td>D61</td><td>Avec la charte des documents (fiche, offre, certificat, émargement)</td></tr>
+<tr><td><strong>Prototype de design 0.5.0</strong></td><td>D49</td><td>Ajouter contacts, offres, tableaux, fenêtres, œil du mot de passe</td></tr>
+</tbody></table></div>
+<h2>3. Décisions en attente, par lot qu'elles bloquent</h2>
+<div class="table-wrap"><table><thead><tr><th>Pour…</th><th>Décision à prendre</th><th>Ma proposition de départ</th></tr></thead><tbody>
+<tr><td><strong>S4.2b</strong></td><td>Une décharge sans fichier est-elle acceptée ? Annulation d'une décharge ?</td><td>Fichier obligatoire ; annulation possible par le Responsable commercial</td></tr>
+<tr><td><strong>S4.2c</strong></td><td>Délai par défaut et nombre maximum de relances</td><td>7 jours ; trois relances</td></tr>
+<tr><td><strong>S4.2d</strong></td><td>Un conflit d'horaire bloque-t-il ? Canal des rappels ? Audience d'un agenda partagé (D60, D16)</td><td>Avertir sans bloquer ; rappel dans l'application seulement</td></tr>
+<tr><td><strong>S4.3</strong></td><td>Transitions du statut d'une entreprise (CU-C-05) ; étapes et ordre des opportunités ; motifs de perte</td><td>Statut manuel ; étapes du prototype ; liste fermée de motifs</td></tr>
+<tr><td><strong>S4.4</strong></td><td><strong>Agrément</strong> : places ou somme globale (D1), payeur tiers (D2), expiration (D3), effet sur les inscriptions (D4), déclencheur de la commission « due » et de la demande de paiement</td><td>Valeurs du registre ; à préciser avec la direction commerciale</td></tr>
+<tr><td><strong>S5</strong></td><td>Confirmation des inscriptions, liste d'attente, seuils de certification, apprenant distinct du contact (D7), barème, annulation ou report, réouverture, lecture des certifications par le chargé de compte (D31)</td><td>Voir <code>CAS-D-USAGE-MODULE-INVESTUDY.md</code> § 13</td></tr>
+<tr><td><strong>S6</strong></td><td>Pays en liste fermée (D57) ; définition de chaque indicateur ; suivi des performances</td><td>Liste fermée ; définitions à rédiger avec vous</td></tr>
+<tr><td><strong>S7</strong></td><td>Durée de conservation de l'audit et des données personnelles (D11, D55, D65) ; conservation des documents archivés (D45)</td><td>Avis juridique</td></tr>
+<tr><td><strong>À confirmer, déjà appliqué</strong></td><td>Contacts (D29), cartes ou tableau pour les entreprises (D30), offres (D32)</td><td>Valeurs par défaut en place</td></tr>
+</tbody></table></div>
+<h2>4. Actions qui ne dépendent pas du code</h2>
+<div class="table-wrap"><table><thead><tr><th>Action</th><th>Qui</th><th>Pourquoi</th></tr></thead><tbody>
+<tr><td><strong>Accès Microsoft 365</strong> (locataire, application, boîte d'envoi, SPF, DKIM, DMARC)</td><td>Administrateur M365</td><td>Aucun e-mail réel tant qu'il manque ; <strong>bloque la mise en production</strong> (D9)</td></tr>
+<tr><td><strong>Deuxième SuperAdmin nominatif</strong></td><td>Direction</td><td>Un seul compte au départ : risque de blocage (D10, R13)</td></tr>
+<tr><td><strong>Avis juridique</strong> : audit 10 ans, lecture par la Direction, données des apprenants, contacts, facilitateurs, suivi des performances</td><td>Juridique</td><td>Avant la mise en production (D11)</td></tr>
+<tr><td><strong>Exiger la vérification dans les règles de la branche <code>main</code></strong></td><td>Vous (GitHub)</td><td>Aujourd'hui la CI n'est pas obligatoire pour fusionner</td></tr>
+<tr><td><strong>Logos au format SVG et variante sombre</strong> ; charte graphique des documents</td><td>Graphiste</td><td>Fiche, offre, certificat, émargement, facture (D35, D61)</td></tr>
+<tr><td><strong>Mentions légales et numérotation des documents</strong></td><td>DAF</td><td>Gabarits provisoires en attendant</td></tr>
+<tr><td><strong>Réponses sur la commission</strong> : déclencheur de « due », qui la débloque</td><td>Direction administrative et financière</td><td>Flux F3, lot S4.4</td></tr>
+<tr><td><strong>Confirmer les valeurs par défaut</strong> (D29, D30, D32)</td><td>Direction produit</td><td>Elles sont appliquées mais non validées</td></tr>
+</tbody></table></div>
+<h2>5. Dette technique à solder avant la mise en production</h2>
+<div class="table-wrap"><table><thead><tr><th>Thème</th><th>Éléments</th><th>Lot</th></tr></thead><tbody>
+<tr><td><strong>Sécurité</strong></td><td>Antivirus (D42, bloquant), rotation des clés JWT et MFA (D10, D12), CSP à nonce (D20), liste de mots de passe courants (D7), limitation de débit partagée (D8), IP réelle derrière le proxy (D40)</td><td>S7.1, S7.2</td></tr>
+<tr><td><strong>Exploitation</strong></td><td>Documents sur disque local → stockage objet (D41), sauvegardes, e-mails sans file durable (D11, D26), rafraîchissement du jeton (D24)</td><td>S7.1</td></tr>
+<tr><td><strong>Qualité</strong></td><td>Écoute réelle avec lecteurs d'écran (D31), tests de bout en bout automatisés (D22), audit navigateur instable sur la machine de développement</td><td>S7.2</td></tr>
+<tr><td><strong>Interface</strong></td><td>Styles hérités à retirer (D32), thème appliqué après le premier rendu (D33), recherche globale à deux requêtes (D34), libellés dupliqués (D50, D51)</td><td>Au fil de S4 à S6</td></tr>
+<tr><td><strong>Données</strong></td><td>Objets propriétaires de documents à déclarer pour chaque nouveau module (D43), numérotation des offres sérialisée (D74)</td><td>Au fil de S4 à S6</td></tr>
+</tbody></table></div>
+<h2>6. Documentation encore à produire</h2>
+<div class="table-wrap"><table><thead><tr><th>Document</th><th>Pour</th><th>Quand</th></tr></thead><tbody>
+<tr><td>Cas d'usage <strong>Reporting</strong> (rapports, incidents)</td><td>S6.3</td><td>Avant S6</td></tr>
+<tr><td>Cas d'usage <strong>Stocks</strong></td><td>ST</td><td>Avant ST</td></tr>
+<tr><td>Cas d'usage <strong>Finance</strong> (facturation, paiements, commissions)</td><td>ERP, flux F3 et F4</td><td>Avant l'ERP</td></tr>
+<tr><td>Cas d'usage <strong>RH et fiscalité</strong></td><td>ERP</td><td>Avant l'ERP</td></tr>
+<tr><td>Mises à jour de la matrice de droits : <code>bd.opportunity.close_lost</code> et <code>close_won</code>, dérogation, agrément, commissions, exports</td><td>S4.3, S4.4</td><td>Avec chaque lot</td></tr>
+</tbody></table></div>
+<h2>7. Prochaine session proposée</h2>
+<p><strong>S4.2b — Décharges.</strong> Rattacher à une offre déposée la décharge signée (date de réception, reçue par, fichier contrôlé par son contenu), refuser une seconde décharge valide, faire passer l'offre à « Décharge reçue », et déclarer l'offre comme objet propriétaire des documents. Elle prépare les relances (S4.2c) et ferme les points D70 et D72.</p>
+<p>Avant de commencer, il me faut <strong>votre « Je valide S4.2a »</strong> (ou vos corrections), puis la poussée de la branche.</p></main></body></html>
