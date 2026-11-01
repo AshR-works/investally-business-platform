@@ -99,3 +99,15 @@ describe('Offre — transitions', () => {
     expect(o).toMatchObject({ status: OfferStatus.Draft, withdrawnReason: null });
   });
 });
+
+describe('Offre — annulation de la décharge', () => {
+  it('décharge reçue → déposée, et seulement depuis « décharge reçue »', () => {
+    const o = draft();
+    o.submit(now);
+    expect(() => o.receiptCancelled()).toThrow(expect.objectContaining({ code: 'INVARIANT_VIOLATION' }));
+    o.receiptReceived();
+    o.receiptCancelled();
+    expect(o.status).toBe(OfferStatus.Submitted);
+    expect(() => draft().receiptCancelled()).toThrow(expect.objectContaining({ code: 'INVARIANT_VIOLATION' }));
+  });
+});

@@ -13,7 +13,7 @@ const pdf = () => Buffer.from('%PDF-1.7\ncontrat idor\n%%EOF');
 
 interface As { token: string; ip: string }
 /** Identifiants visés par une sonde : les vrais (objet de Marie) ou inexistants (tous `NIL`). */
-interface Ids { company: string; doc: string; session: string; facilitator: string; contact: string; offer: string; offerSent: string }
+interface Ids { company: string; doc: string; session: string; facilitator: string; contact: string; offer: string; offerSent: string; offerPending: string; receipt: string }
 
 /**
  * Une sonde par route « objet » : elle appelle la route avec les identifiants donnés, en tant que `as`.
@@ -35,6 +35,10 @@ const PROBES: Record<string, (api: Api, as: As, ids: Ids) => Promise<ApiResponse
   'POST /offers/:id/submit': (api, as, ids) => api.call('POST', `/api/v1/offers/${ids.offer}/submit`, { ...as, body: { version: 1 } }),
   'POST /offers/:id/accept': (api, as, ids) => api.call('POST', `/api/v1/offers/${ids.offerSent}/accept`, { ...as, body: { version: 2 } }),
   'POST /offers/:id/refuse': (api, as, ids) => api.call('POST', `/api/v1/offers/${ids.offerSent}/refuse`, { ...as, body: { version: 2 } }),
+  'GET /receipts': (api, as, ids) => api.call('GET', `/api/v1/receipts?offerId=${ids.offer}`, as),
+  'POST /receipts': (api, as, ids) => api.call('POST', '/api/v1/receipts', { ...as, body: { offerId: ids.offerPending, receivedOn: new Date().toISOString().slice(0, 10), receivedBy: 'Piege Recepisse' } }),
+  'GET /receipts/:id': (api, as, ids) => api.call('GET', `/api/v1/receipts/${ids.receipt}`, as),
+  'POST /receipts/:id/cancel': (api, as, ids) => api.call('POST', `/api/v1/receipts/${ids.receipt}/cancel`, { ...as, body: { version: 1, reason: 'Annulation piratée' } }),
   'POST /offers/:id/withdraw': (api, as, ids) => api.call('POST', `/api/v1/offers/${ids.offerSent}/withdraw`, { ...as, body: { version: 2, reason: 'Retrait piraté' } }),
   'GET /facilitators/:id': (api, as, ids) => api.call('GET', `/api/v1/facilitators/${ids.facilitator}`, as),
   'GET /documents': (api, as, ids) => api.call('GET', `/api/v1/documents?ownerType=company&ownerId=${ids.company}`, as),
@@ -97,6 +101,14 @@ describeDb('Contrat anti-IDOR : un acteur sans portée reçoit la réponse d\'un
     const offerSent = await api.call('POST', '/api/v1/offers', { ...m, body: { companyId: company.body.id, subject: 'Offre déposée IDOR', amount: '2000000' } });
     expect(offerSent.status).toBe(201);
     expect((await api.call('POST', `/api/v1/offers/${offerSent.body.id}/submit`, { ...m, body: { version: 1 } })).status).toBe(200);
+    const offerPending = await api.call('POST', '/api/v1/offers', { ...m, body: { companyId: company.body.id, subject: 'Offre en attente de décharge', amount: '3000000' } });
+    expect(offerPending.status).toBe(201);
+    expect((await api.call('POST', `/api/v1/offers/${offerPending.body.id}/submit`, { ...m, body: { version: 1 } })).status).toBe(200);
+    const offerReceipt = await api.call('POST', '/api/v1/offers', { ...m, body: { companyId: company.body.id, subject: 'Offre avec décharge', amount: '1000000' } });
+    expect(offerReceipt.status).toBe(201);
+    expect((await api.call('POST', `/api/v1/offers/${offerReceipt.body.id}/submit`, { ...m, body: { version: 1 } })).status).toBe(200);
+    const receipt = await api.call('POST', '/api/v1/receipts', { ...m, body: { offerId: offerReceipt.body.id, receivedOn: new Date().toISOString().slice(0, 10), receivedBy: 'Secret-RECEPISSE-IDOR' } });
+    expect(receipt.status).toBe(201);
     const doc = await api.call('POST', `/api/v1/documents?ownerType=company&ownerId=${company.body.id}&title=Pi%C3%A8ce&category=DECHARGE&fileName=piece.pdf`, {
       ...m, raw: { type: 'application/octet-stream', data: pdf() },
     });
@@ -106,8 +118,8 @@ describeDb('Contrat anti-IDOR : un acteur sans portée reçoit la réponse d\'un
       marie: m,
       chef: chefSession,
       attackers: { paul: await login(paul), autreChef: await login(autreChef) },
-      real: { company: company.body.id as string, doc: doc.body.id as string, session: second.sessionId, facilitator: facilitator.body.id as string, contact: contact.body.id as string, offer: offer.body.id as string, offerSent: offerSent.body.id as string } satisfies Ids,
-      nil: { company: NIL, doc: NIL, session: NIL, facilitator: NIL, contact: NIL, offer: NIL, offerSent: NIL } satisfies Ids,
+      real: { company: company.body.id as string, doc: doc.body.id as string, session: second.sessionId, facilitator: facilitator.body.id as string, contact: contact.body.id as string, offer: offer.body.id as string, offerSent: offerSent.body.id as string, offerPending: offerPending.body.id as string, receipt: receipt.body.id as string } satisfies Ids,
+      nil: { company: NIL, doc: NIL, session: NIL, facilitator: NIL, contact: NIL, offer: NIL, offerSent: NIL, offerPending: NIL, receipt: NIL } satisfies Ids,
       secondSession: second,
     };
   }
@@ -129,6 +141,8 @@ describeDb('Contrat anti-IDOR : un acteur sans portée reçoit la réponse d\'un
       expect(onForeign.bytes.toString('utf8')).not.toContain('alain.idor');
       expect(onForeign.bytes.toString('utf8')).not.toContain('Secret-OFFRE-IDOR');
       expect(onForeign.bytes.toString('utf8')).not.toContain('Offre déposée IDOR');
+      expect(onForeign.bytes.toString('utf8')).not.toContain('Secret-RECEPISSE-IDOR');
+      expect(onForeign.bytes.toString('utf8')).not.toContain('Offre en attente de décharge');
     }
     // Contrôle positif : le propriétaire, lui, réussit (le test n'est pas vide), puis les dégâts éventuels sont vérifiés.
     // L'archivage exige le droit de suppression, que Marie n'a pas : c'est son chef (même équipe) qui l'exerce.
@@ -158,7 +172,16 @@ describeDb('Contrat anti-IDOR : un acteur sans portée reçoit la réponse d\'un
     const offersAfter = await api.call('GET', `/api/v1/offers?companyId=${w.real.company}`, w.marie);
     expect(offersAfter.body.items.map((o: { subject: string; status: string; version: number }) => [o.subject, o.status, o.version]).sort())
       .toEqual(offers.body.items.map((o: { subject: string; status: string; version: number }) => [o.subject, o.status, o.version]).sort());
-    expect(offersAfter.body.total).toBe(2);
+    expect(offersAfter.body.total).toBe(4);
+    // La décharge de Marie est intacte (valide, version 1) et l'offre en attente n'a reçu aucune décharge piège.
+    for (const attacker of Object.values(w.attackers)) {
+      for (const key of ['POST /receipts', 'POST /receipts/:id/cancel']) await PROBES[key](api, attacker, w.real);
+    }
+    const receipts = await api.call('GET', `/api/v1/receipts?offerId=${w.real.offerPending}`, w.marie);
+    expect(receipts.body).toEqual([]);
+    const kept = await api.call('GET', `/api/v1/receipts/${w.real.receipt}`, w.marie);
+    expect(kept.body).toMatchObject({ status: 'VALID', version: 1 });
+    expect((await api.call('GET', `/api/v1/offers/${w.real.offerPending}`, w.marie)).body.status).toBe('SUBMITTED');
     const detail = await api.call('GET', `/api/v1/documents/${w.real.doc}`, w.marie);
     expect(detail.status).toBe(200);
     expect(detail.body.versions).toHaveLength(1);

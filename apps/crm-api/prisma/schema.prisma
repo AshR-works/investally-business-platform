@@ -117,10 +117,37 @@ model Offer {
   createdAt       DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt       DateTime    @updatedAt @map("updated_at") @db.Timestamptz(6)
   company         Company     @relation(fields: [companyId], references: [id])
+  receipts        Receipt[]
 
   @@index([companyId])
   @@index([status])
   @@map("offers")
+  @@schema("bd")
+}
+
+enum ReceiptStatus {
+  VALID
+  CANCELLED
+
+  @@schema("bd")
+}
+
+/// Décharge signée d'une offre déposée. Une offre n'a qu'UNE décharge valide (index unique partiel posé en SQL, que Prisma ne sait pas décrire).
+model Receipt {
+  id              String        @id @db.Uuid
+  offerId         String        @map("offer_id") @db.Uuid
+  receivedOn      DateTime      @map("received_on") @db.Date
+  receivedBy      String        @map("received_by") @db.VarChar(150)
+  status          ReceiptStatus @default(VALID)
+  cancelledReason String?       @map("cancelled_reason") @db.VarChar(500)
+  cancelledAt     DateTime?     @map("cancelled_at") @db.Timestamptz(6)
+  version         Int           @default(1)
+  createdAt       DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime      @updatedAt @map("updated_at") @db.Timestamptz(6)
+  offer           Offer         @relation(fields: [offerId], references: [id])
+
+  @@index([offerId])
+  @@map("receipts")
   @@schema("bd")
 }
 

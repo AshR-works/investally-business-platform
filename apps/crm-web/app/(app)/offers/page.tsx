@@ -114,7 +114,7 @@ export default function OffersPage() {
         />
         <Pagination page={page} pageSize={PAGE_SIZE} total={data.total} onPage={setPage} />
       </Card>
-      <OfferDialogs dialog={dialog} onClose={() => setDialog(null)} onDone={async () => { setDialog(null); setPage(1); await load(); }} />
+      <OfferDialogs dialog={dialog} onClose={() => setDialog(null)} onDone={async () => { setDialog(null); setPage(1); await load(); }} onRefresh={load} />
     </>
   );
 }

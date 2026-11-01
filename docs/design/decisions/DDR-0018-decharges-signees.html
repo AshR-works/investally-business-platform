@@ -1,0 +1,38 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>DDR-0018 — Décharges signées des offres</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — design · <a href="../README.html">Mode d&#8217;emploi</a> · <a href="../01-DESIGN-SYSTEM.html">Design system</a> · <a href="../02-SPECIFICATIONS-FRONTEND.html">Spécifications frontend</a> · <a href="../exigences/REGISTRE-EXD.html">Exigences</a> · <a href="../04-ANALYSE-D-IMPACT.html">Analyse d&#8217;impact</a> · <a href="../05-AIDE-A-LA-DECISION.html">Aide à la décision</a> · <a href="../decisions/REGISTRE-DDR.html">Décisions (DDR)</a> · <a href="../CHANGELOG-DESIGN.html">Journal</a> · <a href="../prototype/index.html">Prototype</a></nav><h1>DDR-0018 — Décharges signées des offres</h1>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td><strong>Statut</strong></td><td>Acceptée (réalisée dans l'application) ; prototype à mettre à jour</td></tr>
+<tr><td><strong>Date</strong></td><td>2026-11-02</td></tr>
+<tr><td><strong>Version du design</strong></td><td>0.4.1 (le prototype n'est pas encore à jour : version 0.5.0 à décider)</td></tr>
+<tr><td><strong>Lié à</strong></td><td>Lot S4.2b ; wireframes 14 et 15 ; cas d'usage CU-C-21 ; flux C2 ; décision D33</td></tr>
+</tbody></table></div>
+<h2>Contexte</h2>
+<p>Une offre déposée chez une entreprise doit pouvoir prouver qu'elle a été reçue : l'entreprise signe une <strong>décharge</strong>. Ce lot l'enregistre avec son fichier signé, fait passer l'offre à « Décharge reçue » et prépare les relances (S4.2c). Il rattache aussi les <strong>documents à l'offre</strong> (le fichier envoyé au client, D72).</p>
+<h2>Décisions</h2>
+<ol><li><strong>Où</strong> : action « Décharge signée » dans le menu d'une offre déposée (fiche entreprise et page « Offres »), qui ouvre une fenêtre : enregistrer, consulter, annuler.</li><li><strong>Champs</strong> : date de réception, personne qui a remis la décharge, <strong>fichier signé obligatoire</strong> (PDF, image, document ; contrôlé par son contenu comme tout document).</li><li><strong>Règles</strong> : seulement pour une offre <strong>déposée</strong> ; <strong>une seule décharge valide par offre</strong> ; la date ne peut être ni dans le futur ni antérieure au dépôt de l'offre.</li><li><strong>Effet sur l'offre</strong> : l'enregistrement la fait passer à « Décharge reçue » ; l'annulation de la décharge la ramène à « Déposée ». Impossible d'annuler une fois que le client a répondu ou que l'offre est retirée.</li><li><strong>Annulation</strong> : motif obligatoire ; la décharge annulée reste visible dans l'historique (jamais supprimée) et une nouvelle décharge peut être enregistrée.</li><li><strong>Fichiers</strong> : le fichier signé est un document rattaché à la décharge, visible et téléchargeable comme n'importe quel document, et <strong>jamais plus accessible que l'offre</strong>. L'offre elle-même peut recevoir des documents (action « Documents de l'offre »).</li><li><strong>Droits</strong> : lire, créer, modifier (annuler) : chargé de compte (Propre), Responsable commercial (Équipe) ; lecture seule pour la Direction ; hors portée, « introuvable ».</li><li><strong>Entreprise archivée</strong> : plus d'enregistrement ni d'annulation ; la décharge reste lisible.</li><li><strong>Audit</strong> : l'enregistrement et l'annulation de la décharge sont tracés <strong>avec</strong> le changement d'état de l'offre, dans la même transaction.</li></ol>
+<h2>Mesures de rigueur</h2>
+<ul><li>La base garantit, quoi que fasse l'application : <strong>une seule décharge valide par offre</strong> (index unique partiel : deux enregistrements simultanés, le second est refusé), annulation cohérente (motif et date présents ou absents ensemble), version positive.</li><li>L'unicité est testée <strong>sans l'aide de l'application</strong> (écritures directes refusées) et en course (deux enregistrements simultanés : un succès, un conflit).</li><li>Les mêmes règles de saisie sont comparées entre l'interface et le <strong>domaine réel</strong> du serveur par des tests.</li><li>Le contrat anti-IDOR est étendu aux quatre nouvelles routes ; les fichiers d'une décharge ou d'une offre ne sont ni lisibles ni déposables par un collègue (même réponse que pour un objet inexistant).</li></ul>
+<h2>Conséquences</h2>
+<ul><li>Réversible : une migration (une table), un module, trois composants.</li><li><strong>Dette</strong> : D76 à D79 (<code>docs/TECH-DEBT.md</code>) ; D70 et D72 sont soldées.</li></ul></main></body></html>

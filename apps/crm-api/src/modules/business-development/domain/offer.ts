@@ -125,9 +125,14 @@ export class Offer extends AggregateRoot {
     this.props = { ...this.props, submittedAt: now };
   }
 
-  /** La décharge signée est enregistrée : déposée → décharge reçue (branchée avec le lot des décharges). */
+  /** La décharge signée est enregistrée : déposée → décharge reçue. */
   receiptReceived(): void {
     this.move([OfferStatus.Submitted], OfferStatus.ReceiptReceived, 'marquée « décharge reçue »');
+  }
+
+  /** La décharge est annulée : décharge reçue → déposée (l'offre attend de nouveau sa décharge). */
+  receiptCancelled(): void {
+    this.move([OfferStatus.ReceiptReceived], OfferStatus.Submitted, 'ramenée à « déposée »');
   }
 
   /** Le client accepte. */

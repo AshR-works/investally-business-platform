@@ -438,6 +438,49 @@ try {
   await waitFor("!document.querySelector('[role=dialog]')", 'offre déposée', 15000);
   await sleep(800);
   await expectThat('l’offre passe à « Déposée » avec sa date de dépôt, et ne propose plus « Modifier »', `(() => { const t = ${offersSection}.textContent; return t.includes('Déposée') && /\\d{2}\\/\\d{2}\\/\\d{4}/.test(t); })()`);
+  // S4.2b : décharge signée de l'offre déposée : champs refusés, enregistrement avec son fichier, consultation, annulation avec motif.
+  const receiptDir = mkdtempSync(join(tmpdir(), 'a11y-receipt-'));
+  const receiptPdf = join(receiptDir, 'Decharge-signee.pdf');
+  writeFileSync(receiptPdf, '%PDF-1.7\ndécharge signée\n%%EOF');
+  const pickReceiptFile = async () => {
+    const { root } = await send('DOM.getDocument', { depth: -1 });
+    const { nodeId } = await send('DOM.querySelector', { nodeId: root.nodeId, selector: '#receipt-file' });
+    await send('DOM.setFileInputFiles', { files: [receiptPdf], nodeId });
+    await sleep(400);
+  };
+  await openOfferMenu();
+  await sleep(300);
+  await clickText('Décharge signée', offersSection);
+  await waitFor("document.querySelector('[role=dialog] #receipt-receivedBy')", 'fenêtre de décharge', 15000);
+  await sleep(500);
+  await clickText('Enregistrer la décharge', "document.querySelector('[role=dialog]')");
+  await waitFor("document.querySelector('[role=dialog] #receipt-receivedBy[aria-invalid=true]')", 'nom obligatoire en surbrillance');
+  await expectThat('la décharge incomplète est refusée avant l’envoi : nom en surbrillance, fichier exigé, focus sur le premier champ', `(() => { const e = document.querySelector('#receipt-receivedBy'); const m = document.getElementById(e.getAttribute('aria-describedby') ?? ''); const alert = document.querySelector('[role=dialog] [role=alert]'); return !!m && m.textContent.includes('obligatoire') && !!alert && alert.textContent.includes('Joignez la décharge') && document.activeElement === e; })()`);
+  await audit('Offres — décharge : champs non conformes', 'surbrillance, message écrit et fichier exigé');
+  await shot('decharge-champs-non-conformes');
+  await fillField('Remise par', 'Alain Fotso');
+  await pickReceiptFile();
+  await clickText('Enregistrer la décharge', "document.querySelector('[role=dialog]')");
+  await waitFor("document.querySelector('[role=dialog] #receipt-valid-title')", 'décharge enregistrée', 20000).catch(async (e) => {
+    throw new Error(`${e.message} — contenu de la fenêtre : ${String(await js("document.querySelector('[role=dialog]')?.textContent ?? '(aucune fenêtre)'")).slice(0, 400)}`);
+  });
+  await waitFor("document.querySelector('[role=dialog] tbody tr td strong')", 'fichier signé joint à la décharge', 20000);
+  await expectThat('la décharge reçue affiche sa date, la personne et son fichier signé', `(() => { const t = document.querySelector('[role=dialog]').textContent; return t.includes('Alain Fotso') && t.includes('Valide') && t.includes('Décharge OFF-'); })()`);
+  await audit('Offres — décharge enregistrée avec son fichier', 'décharge valide, fichier joint, annulation possible');
+  await shot('decharge-enregistree');
+  await clickText('Annuler la décharge', "document.querySelector('[role=dialog]')");
+  await waitFor("document.querySelector('[role=dialog] #receipt-cancel-reason')", 'motif d’annulation');
+  await clickText('Annuler la décharge', "document.querySelector('[role=dialog]')");
+  await waitFor("document.querySelector('[role=dialog] #receipt-cancel-reason[aria-invalid=true]')", 'motif obligatoire signalé');
+  await fillField('Motif de l’annulation', 'Mauvais fichier');
+  await clickText('Annuler la décharge', "document.querySelector('[role=dialog]')");
+  await waitFor("document.querySelector('[role=dialog]').textContent.includes('Décharges annulées')", 'décharge annulée et historique rechargé', 20000);
+  await expectThat('la décharge annulée reste dans l’historique avec son motif, et l’offre attend de nouveau sa décharge', `(() => { const t = document.querySelector('[role=dialog]').textContent; return t.includes('Décharges annulées') && t.includes('Mauvais fichier') && !!document.querySelector('[role=dialog] #receipt-file'); })()`);
+  await audit('Offres — décharge annulée', 'historique et nouveau formulaire');
+  await js("document.querySelector('[role=dialog] .dialog-close').click()");
+  await waitFor("!document.querySelector('[role=dialog]')", 'fenêtre de décharge fermée', 15000);
+  await sleep(800);
+  await expectThat('l’offre est de nouveau « Déposée » après l’annulation de la décharge', `${offersSection}.textContent.includes('Déposée')`);
   await openOfferMenu();
   await sleep(300);
   await expectThat('le menu d’une offre déposée propose l’acceptation, le refus et le retrait, pas la modification', `(() => { const t = [...${offersSection}.querySelectorAll('details button')].map((b) => b.textContent.trim()); return t.some((x) => x.includes('acceptation')) && t.some((x) => x.includes('refus')) && t.some((x) => x.startsWith('Retirer')) && !t.includes('Modifier'); })()`);
@@ -451,12 +494,16 @@ try {
   await clickText('Retirer l’offre', "document.querySelector('[role=dialog]')");
   await waitFor("!document.querySelector('[role=dialog]')", 'offre retirée', 15000);
   await sleep(800);
-  await expectThat('l’offre passe à « Retirée », son motif s’affiche, et plus aucune action n’est proposée', `(() => { const t = ${offersSection}.textContent; return t.includes('Retirée') && t.includes('Client indisponible') && !${offersSection}.querySelector('summary[aria-label^="Actions pour l’offre"]'); })()`);
+  await openOfferMenu();
+  await sleep(300);
+  await expectThat('l’offre passe à « Retirée », son motif s’affiche, et seules la décharge et les documents restent consultables', `(() => { const t = ${offersSection}.textContent; const items = [...${offersSection}.querySelectorAll('details button')].map((b) => b.textContent.trim()); return t.includes('Retirée') && t.includes('Client indisponible') && items.length > 0 && items.every((x) => x === 'Décharge signée' || x.startsWith('Documents')); })()`);
   await go('/offers');
   await waitFor("document.querySelector('main h1') && document.querySelector('main').textContent.includes('OFF-')", 'page Offres chargée avec l’offre', 20000);
   await expectThat('la page « Offres » liste l’offre avec son entreprise et propose le filtre par état', `(() => { const g = document.querySelector('[role=group][aria-label="Filtrer par état"]'); return !!g && g.querySelectorAll('button').length === 7 && document.querySelector('main').textContent.includes('Retirée'); })()`);
   await audit('Offres — liste', 'tableau, recherche, filtre par état');
   await shot('offres-liste');
+  // Option de mise au point : limite le parcours au bloc des offres (la suite de l'audit n'est alors pas exécutée).
+  if (process.env.AUDIT_STOP_AFTER_OFFERS) throw new Error('Arrêt volontaire (AUDIT_STOP_AFTER_OFFERS) : parcours limité aux offres');
   await go('/contacts');
   await waitFor("document.querySelector('main h1') && document.querySelector('main').textContent.toLowerCase().includes('fotso')", 'page Contacts chargée avec le contact', 20000);
   await expectThat('la page « Contacts » liste le contact avec son entreprise et propose le filtre par fonction', `(() => { const t = document.querySelector('main').textContent; return t.toLowerCase().includes('fotso') && t.includes('Relais') && !!document.querySelector('select option[value=FINANCE_DIRECTOR]'); })()`);

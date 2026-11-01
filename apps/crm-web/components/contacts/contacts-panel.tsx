@@ -8,7 +8,7 @@ import { can } from '../../lib/permissions';
 import type { Contact, Page } from '../../lib/types';
 import { Badge } from '../data/badge';
 import { Card } from '../data/card';
-import { RowActions } from '../data/row-actions';
+import { RowAction, RowActions } from '../data/row-actions';
 import { ConfirmDialog } from '../confirm-dialog';
 import { ContactDialog } from './contact-dialog';
 
@@ -78,8 +78,8 @@ export function ContactsPanel({ company }: { company: { id: string; name: string
                     {(canUpdate || canDelete) && (
                       <td>
                         <RowActions label={`Actions pour ${c.firstName} ${c.lastName}`}>
-                          {canUpdate && <button type="button" onClick={() => setDialog({ kind: 'edit', contact: c })}>Modifier</button>}
-                          {canDelete && <button type="button" onClick={() => setDialog({ kind: 'delete', contact: c })}>Supprimer</button>}
+                          {canUpdate && <RowAction onClick={() => setDialog({ kind: 'edit', contact: c })}>Modifier</RowAction>}
+                          {canDelete && <RowAction danger onClick={() => setDialog({ kind: 'delete', contact: c })}>Supprimer</RowAction>}
                         </RowActions>
                       </td>
                     )}
