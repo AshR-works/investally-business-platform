@@ -102,6 +102,22 @@ export interface Offer {
   version: number;
 }
 
+/** Décharge signée d'une offre déposée (le fichier signé est un document rattaché à la décharge). */
+export interface Receipt {
+  id: string;
+  offerId: string;
+  offerReference: string;
+  /** Date de réception, « AAAA-MM-JJ ». */
+  receivedOn: string;
+  receivedBy: string;
+  status: string;
+  cancelledReason: string | null;
+  cancelledAt: string | null;
+  createdAt: string;
+  /** Verrou optimiste : renvoyé tel quel pour annuler la décharge. */
+  version: number;
+}
+
 /** Facilitateur : personne qui met en relation avec une entreprise. */
 export interface Facilitator {
   id: string;

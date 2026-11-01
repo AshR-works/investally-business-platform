@@ -17,14 +17,14 @@ const NOT_FOUND_OFFER = 'Offre introuvable';
 const STALE = "L'offre a été modifiée par un autre utilisateur : rechargez-la avant de la modifier";
 
 /** Entreprise visible de l'appelant pour cette permission, sinon « introuvable » (même réponse qu'un identifiant inexistant). */
-async function companyInScope(companies: CompanyRepository, id: string, access: AccessContext, permission: string): Promise<Company> {
+export async function companyInScope(companies: CompanyRepository, id: string, access: AccessContext, permission: string): Promise<Company> {
   const company = await companies.findById(id);
   if (!company || !decideFor(access, permission, company.ownerUserId).allowed) throw new DomainError('NOT_FOUND', NOT_FOUND_COMPANY);
   return company;
 }
 
 /** Offre et entreprise visibles de l'appelant (la visibilité d'une offre suit celle de son entreprise). */
-async function offerInScope(
+export async function offerInScope(
   offers: OfferRepository, companies: CompanyRepository, id: string, access: AccessContext, permission: string,
 ): Promise<{ offer: Offer; company: Company }> {
   const offer = await offers.findById(id);

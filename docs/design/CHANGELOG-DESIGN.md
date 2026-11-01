@@ -31,6 +31,8 @@ Le design 0.4.1 est installé dans l'application réelle (`apps/crm-web`) : jeto
 
 **S4.2a (2026-10-30), sans changement de version** : **offres** réalisées dans l'application (DDR-0017) : panneau « Offres » dans la fiche entreprise et page « Offres » (nouveau module, filtre par état, recherche, sélection persistante) ; fenêtre de création et de modification d'un brouillon avec champs non conformes en surbrillance (EXD-16) ; menu d'actions selon l'état et les droits ; fenêtres de confirmation pour déposer, enregistrer l'acceptation ou le refus, et retirer (motif obligatoire, EXD-13). Prototype à mettre à jour (D49).
 
+**S4.2b (2026-11-02), sans changement de version** : **décharges signées** réalisées dans l'application (DDR-0018) : action « Décharge signée » dans le menu d'une offre, fenêtre large pour enregistrer (date, personne, fichier signé obligatoire), consulter (avec les documents joints) et annuler (motif obligatoire, historique conservé) ; action « Documents de l'offre ». Prototype à mettre à jour (D49).
+
 ## 0.4.1 — 2026-10-21 — *Validée*
 - **EXD-10 / DEC-007 / DDR-0007** : panneau principal **centré sur la fenêtre** (option B) ; repli automatique en centrage dans l'espace restant quand la fenêtre est étroite ; largeur du panneau 1 440 px au plus ; la largeur maximale du contenu (1 320 px) est supprimée.
 - **EXD-11** : bouton de dépliage en **pictogramme seul** (44 px, nom accessible, info-bulle, état annoncé) ; pictogramme provisoire à confirmer.

@@ -1,30 +1,39 @@
 import type { Offer } from './types';
 
 /** Actions possibles sur une offre ; la disponibilité dépend de son état ET des droits (le serveur re-contrôle tout). */
-export type OfferAction = 'edit' | 'submit' | 'accept' | 'refuse' | 'withdraw';
+export type OfferAction = 'edit' | 'submit' | 'receipt' | 'accept' | 'refuse' | 'withdraw' | 'documents';
 
 export const OFFER_ACTION_LABEL: Record<OfferAction, string> = {
   edit: 'Modifier',
   submit: 'Déposer chez l’entreprise',
+  receipt: 'Décharge signée',
   accept: 'Enregistrer l’acceptation',
   refuse: 'Enregistrer le refus',
   withdraw: 'Retirer l’offre',
+  documents: 'Documents de l’offre',
 };
+
+/** Droits de l'utilisateur sur les offres, leurs décharges et leurs documents. */
+export interface OfferRights {
+  update: boolean;
+  withdraw: boolean;
+  receiptRead?: boolean;
+  documentsRead?: boolean;
+}
 
 /**
  * Actions proposées pour un état donné : un brouillon se modifie, se dépose ou se retire ; une offre déposée (ou dont la décharge
- * est reçue) attend la réponse du client ou se retire ; acceptée, refusée et retirée sont définitives (aucune action).
+ * est reçue) attend la réponse du client ou se retire, et sa décharge se consulte, s'enregistre ou s'annule ; acceptée, refusée et
+ * retirée sont définitives (on ne peut plus que consulter la décharge et les documents).
  */
-export function availableActions(status: string, rights: { update: boolean; withdraw: boolean }): OfferAction[] {
+export function availableActions(status: string, rights: OfferRights): OfferAction[] {
   const actions: OfferAction[] = [];
-  if (status === 'DRAFT') {
-    if (rights.update) actions.push('edit', 'submit');
-  } else if (status === 'SUBMITTED' || status === 'RECEIPT_RECEIVED') {
-    if (rights.update) actions.push('accept', 'refuse');
-  } else {
-    return [];
-  }
-  if (rights.withdraw) actions.push('withdraw');
+  const open = status === 'SUBMITTED' || status === 'RECEIPT_RECEIVED';
+  if (status === 'DRAFT' && rights.update) actions.push('edit', 'submit');
+  if (['SUBMITTED', 'RECEIPT_RECEIVED', 'ACCEPTED', 'REFUSED', 'WITHDRAWN'].includes(status) && rights.receiptRead) actions.push('receipt');
+  if (open && rights.update) actions.push('accept', 'refuse');
+  if ((status === 'DRAFT' || open) && rights.withdraw) actions.push('withdraw');
+  if (rights.documentsRead) actions.push('documents');
   return actions;
 }
 
