@@ -21,3 +21,4 @@ Les arbitrages structurants suivent la [méthode d'arbitrage](../../METHODE-D-AR
 | [DDR-0014](DDR-0014-modifier-et-exporter-une-fiche.md) | Modifier une fiche d'entreprise ; exporter une fiche (qui voit exporte, chaque export est tracé) | Acceptée (prototype à mettre à jour) | 0.4.1 | — |
 | [DDR-0015](DDR-0015-contacts-des-entreprises.md) | Contacts des entreprises : fiche, liste, doublons | Acceptée (prototype à mettre à jour) | 0.4.1 | — |
 | [DDR-0016](DDR-0016-tableau-des-entreprises.md) | Tableau des entreprises : filtres, tri, effectifs par statut, colonnes au choix ; cartes réservées aux Opportunités | Acceptée (prototype à mettre à jour) | 0.4.1 | EXD-02, EXD-04 |
+| [DDR-0017](DDR-0017-offres-aux-entreprises.md) | Offres faites aux entreprises : fiche, liste, cycle d'états (brouillon, déposée, acceptée, refusée, retirée) | Acceptée (prototype à mettre à jour) | 0.4.1 | EXD-13, EXD-16 |

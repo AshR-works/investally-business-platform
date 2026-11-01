@@ -10,6 +10,7 @@ import { GetFacilitatorHandler, ListFacilitatorsHandler } from './application/fa
 import { GetCompanyHandler } from './application/get-company.query';
 import { GetCompanyOverviewHandler } from './application/get-company-overview.query';
 import { ListCompaniesHandler } from './application/list-companies.query';
+import { ChangeOfferStatusUseCase, GetOfferHandler, ListOffersHandler, RegisterOfferUseCase, UpdateOfferUseCase } from './application/offer-use-cases';
 import { RegisterCompanyUseCase } from './application/register-company.use-case';
 import { RegisterFacilitatorUseCase } from './application/register-facilitator.use-case';
 import { UpdateCompanyUseCase } from './application/update-company.use-case';
@@ -17,18 +18,21 @@ import { COMPANY_OVERVIEW_READER } from './domain/company-overview-reader';
 import { COMPANY_REPOSITORY } from './domain/company-repository';
 import { CONTACT_REPOSITORY } from './domain/contact-repository';
 import { FACILITATOR_REPOSITORY } from './domain/facilitator-repository';
+import { OFFER_REPOSITORY } from './domain/offer-repository';
 import { PrismaCompanyOverviewReader } from './infrastructure/prisma-company-overview.reader';
 import { PrismaCompanyRepository } from './infrastructure/prisma-company.repository';
 import { PrismaContactRepository } from './infrastructure/prisma-contact.repository';
 import { PrismaFacilitatorRepository } from './infrastructure/prisma-facilitator.repository';
+import { PrismaOfferRepository } from './infrastructure/prisma-offer.repository';
 import { CompaniesController } from './presentation/companies.controller';
 import { ContactsController } from './presentation/contacts.controller';
 import { FacilitatorsController } from './presentation/facilitators.controller';
+import { OffersController } from './presentation/offers.controller';
 
 /** Composition root du module Business Development. */
 @Module({
   imports: [AuditModule, IamModule, DocumentsModule],
-  controllers: [CompaniesController, FacilitatorsController, ContactsController],
+  controllers: [CompaniesController, FacilitatorsController, ContactsController, OffersController],
   providers: [
     RegisterCompanyUseCase,
     RegisterFacilitatorUseCase,
@@ -46,10 +50,16 @@ import { FacilitatorsController } from './presentation/facilitators.controller';
     DeleteContactUseCase,
     GetContactHandler,
     ListContactsHandler,
+    RegisterOfferUseCase,
+    UpdateOfferUseCase,
+    ChangeOfferStatusUseCase,
+    GetOfferHandler,
+    ListOffersHandler,
     { provide: COMPANY_REPOSITORY, useClass: PrismaCompanyRepository },
     { provide: COMPANY_OVERVIEW_READER, useClass: PrismaCompanyOverviewReader },
     { provide: FACILITATOR_REPOSITORY, useClass: PrismaFacilitatorRepository },
     { provide: CONTACT_REPOSITORY, useClass: PrismaContactRepository },
+    { provide: OFFER_REPOSITORY, useClass: PrismaOfferRepository },
   ],
 })
 /** Module « Développement commercial » : entreprises cibles et facilitateurs (premières briques du pipeline commercial). */

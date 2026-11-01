@@ -83,6 +83,25 @@ export interface Contact {
   version: number;
 }
 
+/** Offre faite à une entreprise (le montant est un texte décimal : jamais converti en nombre avant l'affichage). */
+export interface Offer {
+  id: string;
+  reference: string;
+  companyId: string;
+  companyName: string;
+  subject: string;
+  amount: string;
+  currency: string;
+  status: string;
+  note: string | null;
+  submittedAt: string | null;
+  decidedAt: string | null;
+  withdrawnReason: string | null;
+  createdAt: string;
+  /** Verrou optimiste : renvoyé tel quel pour modifier l'offre ou changer son état. */
+  version: number;
+}
+
 /** Facilitateur : personne qui met en relation avec une entreprise. */
 export interface Facilitator {
   id: string;
