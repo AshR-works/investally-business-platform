@@ -81,13 +81,13 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <ul><li><strong>Scénario</strong> : « Retirer l'offre » avec motif, confirmation ; les relances à venir sont annulées. <strong>Droits</strong> : <code>bd.offer.withdraw</code> (Propre). <strong>Variantes</strong> : offre déjà acceptée → refus.</li></ul>
 <hr>
 <h2>6. Rendez-vous, visites et agenda <em>(flux C3, S4.2b et S4.3)</em></h2>
-<h3>CU-C-30 — Planifier un rendez-vous</h3>
+<h3>CU-C-30 — Planifier un rendez-vous <em>(réalisé, S4.2d ; conflit d'horaire en avertissement, rappel non envoyé : D85, D86)</em></h3>
 <ul><li><strong>Écran</strong> : 18. <strong>Types</strong> : RDV DAF, RDV décideur, visite chez Investally. <strong>Scénario</strong> : 1. Type, entreprise, contact, date, heure, lieu ou lien, opportunité liée. 2. Contrôle du conflit d'horaire. 3. Enregistrement dans l'agenda, rappel programmé.</li><li><strong>Variantes</strong> : conflit d'horaire (bloque ou avertit : à trancher) ; contact non rattaché à l'entreprise → refus. <strong>Droits</strong> : <code>bd.appointment.create</code>, <code>bd.visit.create</code> (Propre).</li></ul>
-<h3>CU-C-31 — Tenir, annuler ou reporter un rendez-vous</h3>
+<h3>CU-C-31 — Tenir, annuler ou reporter un rendez-vous <em>(réalisé, S4.2d ; le déblocage de l'accord de principe viendra avec S4.4 : D90)</em></h3>
 <ul><li><strong>Scénario</strong> : après le rendez-vous, le chargé de compte le marque « tenu » avec une note, ou « annulé » / « reporté » avec motif. <strong>Règle</strong> : un rendez-vous <strong>décideur tenu</strong> débloque l'accord de principe (flux F1). <strong>Droits</strong> : <code>bd.appointment.update / cancel</code>.</li></ul>
-<h3>CU-C-32 — Consulter l'agenda</h3>
+<h3>CU-C-32 — Consulter l'agenda <em>(réalisé, S4.2d ; audience = portée de l'entreprise : D89)</em></h3>
 <ul><li><strong>Écran</strong> : 17. Vues jour, semaine, mois ; filtre par type. <strong>Droits</strong> : le chargé de compte voit le sien ; le Responsable commercial celui de son équipe ; <strong>les agendas partagés suivent une règle d'audience à définir (D60)</strong>.</li></ul>
-<h3>CU-C-33 — Créer un événement depuis un objet</h3>
+<h3>CU-C-33 — Créer un événement depuis un objet <em>(réalisé, S4.2d, depuis une entreprise ou une offre ; opportunité avec S4.3)</em></h3>
 <ul><li><strong>Scénario</strong> : depuis une entreprise, une offre ou une opportunité, « Planifier » préremplit le lien. <strong>État</strong> : à venir (S4.2b).</li></ul>
 <hr>
 <h2>7. Opportunités <em>(flux C4, S4.3)</em></h2>

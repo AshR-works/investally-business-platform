@@ -12,9 +12,9 @@
 | **Lancement** (Sprint 0) | 20/10/2026 |
 | Premier jalon de code validé (S1 à S3.3) | 20/10/2026 (le même jour) |
 | Fin de la fondation et du design | 22/10/2026 |
-| Module commercial : dernier lot validé (S4.1b) | 30/10/2026 |
-| Lots réalisés et validés au 01/11/2026 | 32 (dont 23 étiquetés) |
-| **Prochaine session** | Validation de S4.2a prévue le 02/11/2026, puis S4.2b (décharges) du 03/11 au 04/11/2026 |
+| Module commercial : dernier lot validé (S4.2d) | 01/11/2026 |
+| Lots réalisés et validés au 01/11/2026 | 36 (dont 27 étiquetés) |
+| **Prochaine session** | S4.3 (opportunités, pipeline, statuts), prévue du 12/11 au 16/11/2026 |
 | Fin du module commercial (prévision) | 19/11/2026 |
 | Fin d'Investudy (prévision) | 30/11/2026 |
 | **Mise en production du CRM, prévision prudente** | **23/12/2026** |
@@ -76,10 +76,10 @@
 | S4.1a — contacts des entreprises | 30/10/2026 | 30/10/2026 | Validé | `s4-1a-validated` |
 | S4.1b — tableau des entreprises (filtres, tri, colonnes) | 30/10/2026 | 30/10/2026 | Validé | `s4-1b-validated` |
 | Cas d’usage : module Investudy I1 à I5 | 30/10/2026 | 30/10/2026 | Validé | — |
-| S4.2a — offres (terminé, validation en attente) | 30/10/2026 | 02/11/2026 | Terminé, validation en attente | — |
-| S4.2b — décharges signées | 03/11/2026 | 04/11/2026 | Prévu | — |
-| S4.2c — relances | 05/11/2026 | 06/11/2026 | Prévu | — |
-| S4.2d — agenda, rendez-vous, visites | 09/11/2026 | 11/11/2026 | Prévu | — |
+| S4.2a — offres | 30/10/2026 | 01/11/2026 | Validé | `s4-2a-validated` |
+| S4.2b — décharges signées | 01/11/2026 | 01/11/2026 | Validé | `s4-2b-validated` |
+| S4.2c — relances | 01/11/2026 | 01/11/2026 | Validé | `s4-2c-validated` |
+| S4.2d — agenda, rendez-vous, visites | 01/11/2026 | 01/11/2026 | Validé | `s4-2d-validated` |
 | S4.3 — opportunités, pipeline, statuts | 12/11/2026 | 16/11/2026 | Prévu | — |
 | S4.4 — agrément et ambassadeurs | 17/11/2026 | 19/11/2026 | Prévu | — |
 
@@ -104,7 +104,7 @@
 ### Décisions et prérequis (échéance au plus tard)
 | Lot | Début | Fin | État | Étiquette |
 |---|---|---|---|---|
-| Valider S4.2a et les valeurs par défaut D29, D30, D32 | 02/11/2026 | 02/11/2026 | Échéance | — |
+| Confirmer les valeurs par défaut D29 à D35 | 09/11/2026 | 09/11/2026 | Échéance | — |
 | Détails de l’agrément (D1 à D5) et déclencheur de la commission | 16/11/2026 | 16/11/2026 | Échéance | — |
 | Règles d’inscription et de certification (D31) | 23/11/2026 | 23/11/2026 | Échéance | — |
 | Pays en liste fermée (D57) et définition des indicateurs | 30/11/2026 | 30/11/2026 | Échéance | — |

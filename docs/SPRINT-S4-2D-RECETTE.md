@@ -1,0 +1,48 @@
+# S4.2d — agenda : rendez-vous et visites : recette
+
+*Branche `sprint/s4-2d-agenda` (partie de `main`) · 2026-11-04 · cas d'usage CU-C-30 à CU-C-33 ; flux C3 ; DDR-0020 ; décision D35. Dernier lot de la session S4.2 (offres, décharges, relances, agenda).*
+
+## Ce qui est livré
+| Demande | Réponse |
+|---|---|
+| **Page « Agenda »** | Le module « Agenda » du hub est livré : vues **Jour**, **Semaine** (lundi au dimanche, par défaut) et **Mois** (grille de semaines entières), navigation précédent / aujourd'hui / suivant, filtre par type, nombre de rendez-vous annoncé |
+| **Trois types** | Rendez-vous **DAF**, rendez-vous **décideur**, **visite** chez Investally (la visite relève du droit « visite ») |
+| **Planifier** | Entreprise, contact et offre de **la même entreprise** (sinon refus), date et heure de début, durée (60 minutes proposées, de 15 minutes à 8 heures), lieu ou lien, note ; **jamais dans le passé** |
+| **Conflit d'horaire** | **Avertissement, jamais un blocage** : si l'organisateur a déjà un rendez-vous à venir sur le créneau, la fenêtre « Rendez-vous enregistré » cite les rendez-vous en conflit ; deux rendez-vous bout à bout ne sont pas en conflit |
+| **Reporter** | Nouvelle heure (à venir et différente) et **motif obligatoire** ; le rendez-vous reste « à venir », le nombre de reports et le dernier motif sont gardés |
+| **Tenu** | **Compte rendu obligatoire**, seulement une fois l'heure de début venue ; un rendez-vous à venir dont l'heure est passée est signalé « Compte rendu attendu » |
+| **Annuler** | **Motif obligatoire**, à tout moment ; tenu et annulé sont définitifs et restent lisibles |
+| **Depuis un objet** | « Planifier un rendez-vous » dans le menu d'une offre en cours et sur la fiche de l'entreprise : l'entreprise (et l'offre) arrivent préremplies |
+| **Droits et audit** | Chargé de compte (Propre), Responsable commercial (Équipe), Direction en lecture ; la visibilité suit celle de l'entreprise ; planification, modification, report, tenue et annulation tracées avec la session |
+
+## Preuves
+| Contrôle | Résultat |
+|---|---|
+| Types (`tsc`), architecture (`pnpm arch`) | 0 erreur · aucune violation |
+| Tests unitaires de l'API | **729 / 729** (1 ignoré, antérieur) ; 50 nouveaux (rendez-vous : 29 ; cas d'usage : 21) |
+| **Tests d'intégration (PostgreSQL jetable)** | **286 / 286** (20 suites) ; 18 nouveaux : 11 de bout en bout (cycle, contact et offre rattachés, refus, conflit d'horaire, tenue, fenêtre et tri, portée et droits, règles de la base, verrou optimiste au niveau de la base, entreprise archivée, audit) et 7 sondes IDOR |
+| **IDOR** | Les sept routes de l'agenda sont classées « objet » et sondées : même réponse pour le rendez-vous d'un collègue et pour un identifiant inexistant, aucune écriture, aucune fuite ; les deux rendez-vous de Marie restent « à venir », version 1, après les tentatives |
+| Règles garanties par la base | Durée de 15 à 480 minutes ; un rendez-vous à venir n'est pas clos ; un rendez-vous clos a sa date **et** son compte rendu ou motif ; version et compteur de reports positifs ; contact inexistant refusé : vérifiés par des écritures directes refusées |
+| Tests de l'interface | **357 / 357** (49 nouveaux) : dates et heures locales, saisie, corps des requêtes, actions selon l'état et les droits, fenêtres jour / semaine / mois (bornes, 63 jours), navigation, titres ; **cohérence avec le domaine réel du serveur** sur 15 saisies |
+| **Mutants** | **24 / 24 tués** (heure passée, bout à bout, report sans motif, tenu avant l'heure, report vers la même heure, report non compté, compte rendu attendu, durée, contact et offre d'une autre entreprise, visites sans le droit, fenêtre de 63 jours, droits de visite, entreprise archivée, conflit avec des rendez-vous clos, conflit avec un autre organisateur, portée de l'agenda, fin de fenêtre, droit de la route d'annulation, cohérence de la base, verrou optimiste, tri, durée en base) |
+| **Navigateur réel (Edge + axe-core)** | Parcours limité aux offres, aux relances et à l'agenda : **91 contrôles réussis, aucun échec**, dont les six écrans de l'agenda (semaine, champ non conforme, avertissement de conflit, fiche, report sans motif, mois) ; résultats `docs/accessibilite/resultats/axe-2026-11-04-s42d.json`, captures `docs/accessibilite/s42d-captures/` |
+
+## Défauts trouvés par la recette et corrigés
+- **Date proposée dans le passé** : le bouton « Nouveau rendez-vous » préremplissait la date du jour avec 9 h, souvent déjà passée. Il propose maintenant demain (ou le jour affiché s'il est à venir).
+- **Réponse périmée de l'agenda** : en changeant de semaine pendant un chargement, une réponse plus ancienne pouvait remplacer la semaine affichée. Seule la dernière demande est désormais prise en compte.
+- **Mesures d'audit fragiles** (hors application) : un contrôle des contacts s'appuyait sur une pause fixe de 0,8 s ; remplacé par une attente de la condition. Deux exécutions ont échoué quand un second audit tournait en parallèle sur les mêmes ports.
+
+## Réserves sur la recette
+- **Le parcours navigateur complet n'a pas été mené à son terme** : le navigateur sans fenêtre de la machine reste instable (voir D31 des lots précédents) ; l'audit a été limité aux offres, aux relances et à l'agenda. Les écrans des lots précédents situés après l'agenda ne sont **pas** revérifiés par ce lot.
+- **Capture manquante** : celle de l'écran « champ non conforme » de la planification (le contrôle a réussi, la capture n'a pas été produite par le navigateur) ; quatre captures sont fournies sur cinq prévues.
+- Le **report** n'a été vérifié dans le navigateur que jusqu'au motif obligatoire (le report abouti est couvert par les tests d'intégration et les mutants) ; l'**annulation avec motif** a, elle, été menée jusqu'au bout.
+- **Pas de rappel envoyé** (D85) ; conflit d'horaire pour l'organisateur seul (D86) ; heures dans le fuseau du navigateur (D87) ; pas de synchronisation Outlook (D88) ; audience = portée de l'entreprise (D89).
+- Pas de passage au lecteur d'écran réel ; testé sous Node 26.7, pas rejoué sous Node 22. Le prototype et les wireframes 17 et 18 ne sont pas à jour (D49).
+
+## Dette et à confirmer
+- **D85 à D92** (`docs/TECH-DEBT.md`).
+- **D35 — à confirmer** : conflit bloquant ou non, durée par défaut, audience (D60), canal des rappels.
+
+## À valider
+1. Les écrans (agenda en vues jour, semaine et mois, fenêtres de planification, de report, de tenue et d'annulation, avertissement de conflit) et les valeurs par défaut de D35.
+2. « Je valide S4.2d » → fusion avec commit de fusion et étiquette `s4-2d-validated`.

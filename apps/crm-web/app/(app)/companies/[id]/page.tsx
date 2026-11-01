@@ -1,6 +1,6 @@
 'use client';
 
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { CompanyDialog } from '../../../../components/companies/company-dialog';
 import { ContactsPanel } from '../../../../components/contacts/contacts-panel';
@@ -27,6 +27,7 @@ import type { Company } from '../../../../lib/types';
 export default function CompanyPage() {
   const { id } = useParams<{ id: string }>();
   const { profile } = useAuth();
+  const router = useRouter();
   const [company, setCompany] = useState<Company | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
@@ -66,12 +67,17 @@ export default function CompanyPage() {
       <PageHeader
         eyebrow="Business Development"
         title={company.name}
-        description="Fiche de l’entreprise. Contacts, offres et rendez-vous arrivent avec les prochaines sessions."
+        description="Fiche de l’entreprise : contacts, offres et documents. Ses rendez-vous se planifient depuis l’agenda."
         actions={
           <div className="flex flex-wrap items-center gap-2">
             <button type="button" className="secondary inline-flex items-center gap-2" onClick={() => void exportSheet()}>
               <Icon name="doc" className="size-4" />Exporter la fiche
             </button>
+            {can(profile, 'bd.appointment.create') && company.status !== 'ARCHIVED' && (
+              <button type="button" className="secondary inline-flex items-center gap-2" onClick={() => router.push(`/agenda?plan=1&companyId=${company.id}`)}>
+                <Icon name="cal" className="size-4" />Planifier un rendez-vous
+              </button>
+            )}
             {can(profile, 'bd.company.update') && (
               <button type="button" className="inline-flex items-center gap-2" onClick={() => setEditing(true)}>
                 <Icon name="gear" className="size-4" />Modifier

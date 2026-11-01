@@ -48,6 +48,7 @@ model Company {
   facilitation CompanyFacilitation?
   contacts  Contact[]
   offers    Offer[]
+  appointments Appointment[]
 
   @@index([status])
   @@index([ownerUserId])
@@ -80,6 +81,7 @@ model Contact {
   updatedAt DateTime    @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt DateTime?   @map("deleted_at") @db.Timestamptz(6)
   company   Company     @relation(fields: [companyId], references: [id])
+  appointments Appointment[]
 
   @@index([companyId])
   @@index([companyId, nameKey])
@@ -119,6 +121,7 @@ model Offer {
   company         Company     @relation(fields: [companyId], references: [id])
   receipts        Receipt[]
   followups       Followup[]
+  appointments    Appointment[]
 
   @@index([companyId])
   @@index([status])
@@ -652,4 +655,51 @@ model DocumentVersion {
   @@unique([documentId, versionNumber])
   @@map("document_versions")
   @@schema("docs")
+}
+
+enum AppointmentType {
+  FINANCE_DIRECTOR
+  DECISION_MAKER
+  VISIT
+
+  @@schema("bd")
+}
+
+enum AppointmentStatus {
+  PLANNED
+  HELD
+  CANCELLED
+
+  @@schema("bd")
+}
+
+/// Rendez-vous ou visite d'une entreprise, dans l'agenda de son organisateur (référence inter-contextes vers iam.users, SANS clé étrangère).
+model Appointment {
+  id                 String            @id @db.Uuid
+  type               AppointmentType
+  companyId          String            @map("company_id") @db.Uuid
+  contactId          String?           @map("contact_id") @db.Uuid
+  offerId            String?           @map("offer_id") @db.Uuid
+  organizerUserId    String            @map("organizer_user_id") @db.Uuid
+  startsAt           DateTime          @map("starts_at") @db.Timestamptz(6)
+  durationMinutes    Int               @map("duration_minutes")
+  location           String?           @db.VarChar(200)
+  note               String?           @db.VarChar(500)
+  status             AppointmentStatus @default(PLANNED)
+  /// Compte rendu (tenu) ou motif d'annulation (annulé) ; absent tant que le rendez-vous est à venir.
+  outcomeNote        String?           @map("outcome_note") @db.VarChar(1000)
+  closedAt           DateTime?         @map("closed_at") @db.Timestamptz(6)
+  postponements      Int               @default(0)
+  lastPostponeReason String?           @map("last_postpone_reason") @db.VarChar(500)
+  version            Int               @default(1)
+  createdAt          DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime          @updatedAt @map("updated_at") @db.Timestamptz(6)
+  company            Company           @relation(fields: [companyId], references: [id])
+  contact            Contact?          @relation(fields: [contactId], references: [id])
+  offer              Offer?            @relation(fields: [offerId], references: [id])
+
+  @@index([companyId])
+  @@index([startsAt])
+  @@map("appointments")
+  @@schema("bd")
 }

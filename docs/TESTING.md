@@ -28,3 +28,17 @@ Preuve de câblage de bout en bout : créer une `Company` (BD) via Next.js → c
 - Tests écrits avec le code ; un bug = un test qui échoue d'abord.
 - CI : lint, types, tests unitaires, tests d'architecture, intégration, build Docker, audit des dépendances.
 - Aucun merge si la CI est rouge.
+
+## Journal des tests par lot
+Mis à jour **à chaque lot**, en même temps que le code (règle posée le 2026-11-01) : chiffres relevés avant la demande de validation ; le détail se trouve dans la recette du lot (`SPRINT-*-RECETTE.md`).
+
+| Lot | Tests unitaires API | Intégration (PostgreSQL jetable) | Interface | Mutants tués | Navigateur réel (Edge + axe) |
+|---|---|---|---|---|---|
+| S4.2c — relances | 679 / 679 | 268 / 268 | 308 / 308 | 15 / 15 | 77 contrôles, 0 échec (parcours limité) |
+| S4.2d — agenda | 729 / 729 | 286 / 286 (20 suites) | 357 / 357 | 24 / 24 | 91 contrôles, 0 échec (parcours limité) |
+
+Pour les lots antérieurs, les chiffres sont dans leurs recettes. Les sondes IDOR s'ajoutent avec chaque route « objet » (voir le contrat ci-dessus) ; les mutants sont des fautes injectées une à une (un test doit échouer à chaque fois) ; l'audit navigateur est `scripts/a11y-audit.mjs` (résultats dans `docs/accessibilite/resultats/`).
+
+## Copie Excel du Gantt
+`docs/GANTT-PROJET.xlsx` est régénérée avec le Gantt : `node docs/gantt/build.mjs && python docs/gantt/build-xlsx.py`.
+

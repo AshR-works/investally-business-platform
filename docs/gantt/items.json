@@ -1,0 +1,394 @@
+{
+  "today": "2026-11-01",
+  "first": "2026-10-19",
+  "last": "2027-01-15",
+  "items": [
+    {
+      "phase": "Cadrage et fondations",
+      "rows": [
+        {
+          "name": "Sprint 0 — vision, architecture, ADR, risques",
+          "start": "2026-10-20",
+          "end": "2026-10-20",
+          "state": "done"
+        },
+        {
+          "name": "S1 — squelette du CRM, garde-fous d’architecture",
+          "start": "2026-10-20",
+          "end": "2026-10-20",
+          "state": "done",
+          "tag": "s1-validated"
+        },
+        {
+          "name": "S2 — sécurité et données du noyau (droits, audit)",
+          "start": "2026-10-20",
+          "end": "2026-10-20",
+          "state": "done",
+          "tag": "s2-validated"
+        },
+        {
+          "name": "S3.1 — authentification",
+          "start": "2026-10-20",
+          "end": "2026-10-20",
+          "state": "done",
+          "tag": "s3-1-validated"
+        },
+        {
+          "name": "S3.2 — second facteur, premier SuperAdmin",
+          "start": "2026-10-20",
+          "end": "2026-10-20",
+          "state": "done",
+          "tag": "s3-2-validated"
+        },
+        {
+          "name": "S3.3 — autorisation et administration",
+          "start": "2026-10-20",
+          "end": "2026-10-20",
+          "state": "done",
+          "tag": "s3-3-validated"
+        },
+        {
+          "name": "S3.4 — interface de base",
+          "start": "2026-10-20",
+          "end": "2026-10-21",
+          "state": "done",
+          "tag": "s3-4-validated"
+        },
+        {
+          "name": "S3.5 — mot de passe oublié, livrables",
+          "start": "2026-10-21",
+          "end": "2026-10-21",
+          "state": "done",
+          "tag": "s3-5-validated"
+        }
+      ]
+    },
+    {
+      "phase": "Design, accessibilité, habillage",
+      "rows": [
+        {
+          "name": "Design v0.4.1 et cadrages H1, H2, S3.6, UX",
+          "start": "2026-10-21",
+          "end": "2026-10-21",
+          "state": "done",
+          "tag": "design-v0.4.1, cadrages-validated"
+        },
+        {
+          "name": "A11Y-1 — accessibilité (audit automatique)",
+          "start": "2026-10-21",
+          "end": "2026-10-21",
+          "state": "done",
+          "tag": "a11y-1-validated"
+        },
+        {
+          "name": "H1 — habillage minimal et hub",
+          "start": "2026-10-21",
+          "end": "2026-10-21",
+          "state": "done",
+          "tag": "h1-validated"
+        },
+        {
+          "name": "H1b — composants de données",
+          "start": "2026-10-21",
+          "end": "2026-10-21",
+          "state": "done",
+          "tag": "h1b-validated"
+        },
+        {
+          "name": "Arbitrage D21 — données de l’API des entreprises",
+          "start": "2026-10-21",
+          "end": "2026-10-22",
+          "state": "done",
+          "tag": "d21-validated"
+        },
+        {
+          "name": "H2a — écrans d’accès au nouveau style",
+          "start": "2026-10-22",
+          "end": "2026-10-22",
+          "state": "done",
+          "tag": "h2a-validated"
+        },
+        {
+          "name": "H2b — sessions et historique des connexions",
+          "start": "2026-10-22",
+          "end": "2026-10-22",
+          "state": "done",
+          "tag": "h2b-validated"
+        },
+        {
+          "name": "S3.6 — documents",
+          "start": "2026-10-22",
+          "end": "2026-10-22",
+          "state": "done",
+          "tag": "s3-6-validated"
+        },
+        {
+          "name": "Contrat anti-IDOR et correctif CI",
+          "start": "2026-10-22",
+          "end": "2026-10-22",
+          "state": "done",
+          "tag": "idor-validated"
+        }
+      ]
+    },
+    {
+      "phase": "Retours de tests et hygiène",
+      "rows": [
+        {
+          "name": "S3.7 — UX de l’authentification",
+          "start": "2026-10-22",
+          "end": "2026-10-27",
+          "state": "done",
+          "tag": "s3-7-validated"
+        },
+        {
+          "name": "Cadrage des retours de tests UX-01 à UX-04",
+          "start": "2026-10-22",
+          "end": "2026-10-27",
+          "state": "done"
+        },
+        {
+          "name": "Hygiène du dépôt public, dépendances, CLAUDE.md",
+          "start": "2026-10-22",
+          "end": "2026-10-27",
+          "state": "done"
+        },
+        {
+          "name": "Rapports journaliers et exécution locale",
+          "start": "2026-10-22",
+          "end": "2026-10-27",
+          "state": "done"
+        },
+        {
+          "name": "S3.8 — rôles : sélection par familles",
+          "start": "2026-10-28",
+          "end": "2026-10-28",
+          "state": "done",
+          "tag": "s3-8-validated"
+        }
+      ]
+    },
+    {
+      "phase": "Module commercial (Business Development)",
+      "rows": [
+        {
+          "name": "S4.0 — fiche d’entreprise, facilitateurs, commission",
+          "start": "2026-10-28",
+          "end": "2026-10-29",
+          "state": "done",
+          "tag": "s4-0-validated"
+        },
+        {
+          "name": "S4.0b — retours de tests de la fiche",
+          "start": "2026-10-29",
+          "end": "2026-10-30",
+          "state": "done",
+          "tag": "s4-0b-validated"
+        },
+        {
+          "name": "S4.0c — modifier et exporter une fiche",
+          "start": "2026-10-29",
+          "end": "2026-10-30",
+          "state": "done",
+          "tag": "s4-0c-validated"
+        },
+        {
+          "name": "Node 22 : environnement de développement",
+          "start": "2026-10-29",
+          "end": "2026-10-30",
+          "state": "done"
+        },
+        {
+          "name": "Wireframes (45 écrans de référence)",
+          "start": "2026-10-29",
+          "end": "2026-10-30",
+          "state": "done"
+        },
+        {
+          "name": "Cas d’usage : flux transverses F1 à F7",
+          "start": "2026-10-29",
+          "end": "2026-10-30",
+          "state": "done"
+        },
+        {
+          "name": "Cas d’usage : module commercial C1 à C5",
+          "start": "2026-10-30",
+          "end": "2026-10-30",
+          "state": "done"
+        },
+        {
+          "name": "S4.1a — contacts des entreprises",
+          "start": "2026-10-30",
+          "end": "2026-10-30",
+          "state": "done",
+          "tag": "s4-1a-validated"
+        },
+        {
+          "name": "S4.1b — tableau des entreprises (filtres, tri, colonnes)",
+          "start": "2026-10-30",
+          "end": "2026-10-30",
+          "state": "done",
+          "tag": "s4-1b-validated"
+        },
+        {
+          "name": "Cas d’usage : module Investudy I1 à I5",
+          "start": "2026-10-30",
+          "end": "2026-10-30",
+          "state": "done"
+        },
+        {
+          "name": "S4.2a — offres",
+          "start": "2026-10-30",
+          "end": "2026-11-01",
+          "state": "done",
+          "tag": "s4-2a-validated"
+        },
+        {
+          "name": "S4.2b — décharges signées",
+          "start": "2026-11-01",
+          "end": "2026-11-01",
+          "state": "done",
+          "tag": "s4-2b-validated"
+        },
+        {
+          "name": "S4.2c — relances",
+          "start": "2026-11-01",
+          "end": "2026-11-01",
+          "state": "done",
+          "tag": "s4-2c-validated"
+        },
+        {
+          "name": "S4.2d — agenda, rendez-vous, visites",
+          "start": "2026-11-01",
+          "end": "2026-11-01",
+          "state": "done",
+          "tag": "s4-2d-validated"
+        },
+        {
+          "name": "S4.3 — opportunités, pipeline, statuts",
+          "start": "2026-11-12",
+          "end": "2026-11-16",
+          "state": "plan"
+        },
+        {
+          "name": "S4.4 — agrément et ambassadeurs",
+          "start": "2026-11-17",
+          "end": "2026-11-19",
+          "state": "plan"
+        }
+      ]
+    },
+    {
+      "phase": "Module Investudy (formation)",
+      "rows": [
+        {
+          "name": "S5.1 — catalogue, salles, formateurs",
+          "start": "2026-11-20",
+          "end": "2026-11-23",
+          "state": "plan"
+        },
+        {
+          "name": "S5.2 — sessions, apprenants, inscriptions",
+          "start": "2026-11-24",
+          "end": "2026-11-26",
+          "state": "plan"
+        },
+        {
+          "name": "S5.3 — présences, évaluations, certifications",
+          "start": "2026-11-27",
+          "end": "2026-11-30",
+          "state": "plan"
+        }
+      ]
+    },
+    {
+      "phase": "Pilotage, stocks, production",
+      "rows": [
+        {
+          "name": "S6.1 — tableaux de bord commerciaux",
+          "start": "2026-12-01",
+          "end": "2026-12-02",
+          "state": "plan"
+        },
+        {
+          "name": "S6.2 — tableaux de bord Investudy, Admin, Sécurité",
+          "start": "2026-12-03",
+          "end": "2026-12-04",
+          "state": "plan"
+        },
+        {
+          "name": "S6.3 — reporting et incidents",
+          "start": "2026-12-07",
+          "end": "2026-12-09",
+          "state": "plan"
+        },
+        {
+          "name": "ST — module Stocks",
+          "start": "2026-12-10",
+          "end": "2026-12-15",
+          "state": "plan"
+        },
+        {
+          "name": "S7.1 — durcissement",
+          "start": "2026-12-16",
+          "end": "2026-12-18",
+          "state": "plan"
+        },
+        {
+          "name": "S7.2 — mise en production du CRM",
+          "start": "2026-12-21",
+          "end": "2026-12-23",
+          "state": "plan"
+        },
+        {
+          "name": "ERP — finance, RH, fiscalité (démarrage à décider)",
+          "start": "2026-12-24",
+          "end": "2026-12-31",
+          "state": "plan",
+          "open": true
+        }
+      ]
+    },
+    {
+      "phase": "Décisions et prérequis (échéance au plus tard)",
+      "rows": [
+        {
+          "name": "Confirmer les valeurs par défaut D29 à D35",
+          "start": "2026-11-09",
+          "end": "2026-11-09",
+          "state": "ext"
+        },
+        {
+          "name": "Détails de l’agrément (D1 à D5) et déclencheur de la commission",
+          "start": "2026-11-16",
+          "end": "2026-11-16",
+          "state": "ext"
+        },
+        {
+          "name": "Règles d’inscription et de certification (D31)",
+          "start": "2026-11-23",
+          "end": "2026-11-23",
+          "state": "ext"
+        },
+        {
+          "name": "Pays en liste fermée (D57) et définition des indicateurs",
+          "start": "2026-11-30",
+          "end": "2026-11-30",
+          "state": "ext"
+        },
+        {
+          "name": "Cas d’usage Reporting et Stocks à valider",
+          "start": "2026-12-04",
+          "end": "2026-12-04",
+          "state": "ext"
+        },
+        {
+          "name": "Accès Microsoft 365 et avis juridique (D9, D11)",
+          "start": "2026-12-18",
+          "end": "2026-12-18",
+          "state": "ext"
+        }
+      ]
+    }
+  ]
+}

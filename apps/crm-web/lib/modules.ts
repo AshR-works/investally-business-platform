@@ -20,7 +20,7 @@ export interface AppModule {
  * et nulle part ailleurs. Livrer un module = lui donner un `href` ici (CAD-H1-3).
  */
 export const MODULES: readonly AppModule[] = [
-  { id: 'agenda', label: 'Agenda', description: 'Rendez-vous, relances et échéances', icon: 'cal', group: 'Espace de travail' },
+  { id: 'agenda', label: 'Agenda', description: 'Rendez-vous et visites', icon: 'cal', group: 'Espace de travail', href: '/agenda', permission: 'bd.appointment.read' },
   { id: 'companies', label: 'Entreprises', description: 'Entreprises cibles et clientes', icon: 'building', group: 'Espace de travail', href: '/companies', permission: 'bd.company.read' },
   { id: 'contacts', label: 'Contacts', description: 'Interlocuteurs des entreprises', icon: 'user', group: 'Espace de travail', href: '/contacts', permission: 'bd.contact.read' },
   { id: 'followups', label: 'Relances', description: 'Relances à faire sur les offres', icon: 'cal', group: 'Espace de travail', href: '/followups', permission: 'bd.followup.read' },

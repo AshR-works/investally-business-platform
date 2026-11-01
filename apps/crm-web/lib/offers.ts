@@ -1,13 +1,14 @@
 import type { Offer } from './types';
 
 /** Actions possibles sur une offre ; la disponibilité dépend de son état ET des droits (le serveur re-contrôle tout). */
-export type OfferAction = 'edit' | 'submit' | 'receipt' | 'followups' | 'accept' | 'refuse' | 'withdraw' | 'documents';
+export type OfferAction = 'edit' | 'submit' | 'receipt' | 'followups' | 'appointment' | 'accept' | 'refuse' | 'withdraw' | 'documents';
 
 export const OFFER_ACTION_LABEL: Record<OfferAction, string> = {
   edit: 'Modifier',
   submit: 'Déposer chez l’entreprise',
   receipt: 'Décharge signée',
   followups: 'Relances',
+  appointment: 'Planifier un rendez-vous',
   accept: 'Enregistrer l’acceptation',
   refuse: 'Enregistrer le refus',
   withdraw: 'Retirer l’offre',
@@ -20,6 +21,7 @@ export interface OfferRights {
   withdraw: boolean;
   receiptRead?: boolean;
   followupRead?: boolean;
+  appointmentCreate?: boolean;
   documentsRead?: boolean;
 }
 
@@ -34,6 +36,7 @@ export function availableActions(status: string, rights: OfferRights): OfferActi
   if (status === 'DRAFT' && rights.update) actions.push('edit', 'submit');
   if (['SUBMITTED', 'RECEIPT_RECEIVED', 'ACCEPTED', 'REFUSED', 'WITHDRAWN'].includes(status) && rights.receiptRead) actions.push('receipt');
   if (['SUBMITTED', 'RECEIPT_RECEIVED', 'ACCEPTED', 'REFUSED', 'WITHDRAWN'].includes(status) && rights.followupRead) actions.push('followups');
+  if (open && rights.appointmentCreate) actions.push('appointment');
   if (open && rights.update) actions.push('accept', 'refuse');
   if ((status === 'DRAFT' || open) && rights.withdraw) actions.push('withdraw');
   if (rights.documentsRead) actions.push('documents');
