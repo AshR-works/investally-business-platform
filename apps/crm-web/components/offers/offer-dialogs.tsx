@@ -7,13 +7,15 @@ import type { Offer } from '../../lib/types';
 import { ConfirmDialog } from '../confirm-dialog';
 import { Modal } from '../modal';
 import { OfferDialog } from './offer-dialog';
+import { ReceiptDialog } from './receipt-dialog';
+import { DocumentsPanel } from '../documents/documents-panel';
 
 /** Fenêtre ouverte sur une offre ou pour en créer une. */
 export type OfferDialogState =
   | { kind: 'create'; company?: { id: string; name: string } }
   | { kind: OfferAction; offer: Offer };
 
-const SENTENCE: Record<Exclude<OfferAction, 'edit' | 'withdraw'>, { title: string; confirm: string; text: string; path: string }> = {
+const SENTENCE: Record<Exclude<OfferAction, 'edit' | 'withdraw' | 'receipt' | 'documents'>, { title: string; confirm: string; text: string; path: string }> = {
   submit: { title: 'Déposer l’offre', confirm: 'Déposer', text: 'sera déposée chez l’entreprise : elle ne pourra plus être modifiée.', path: 'submit' },
   accept: { title: 'Enregistrer l’acceptation', confirm: 'Enregistrer l’acceptation', text: 'sera marquée comme acceptée par l’entreprise. Cet état est définitif.', path: 'accept' },
   refuse: { title: 'Enregistrer le refus', confirm: 'Enregistrer le refus', text: 'sera marquée comme refusée par l’entreprise. Cet état est définitif.', path: 'refuse' },
@@ -24,15 +26,24 @@ const SENTENCE: Record<Exclude<OfferAction, 'edit' | 'withdraw'>, { title: strin
  * hôte, hors des lignes d'un tableau (un clic dans une fenêtre ne doit pas basculer la sélection d'une ligne). Les changements
  * d'état sont confirmés à l'écran ; le retrait demande un motif.
  */
-export function OfferDialogs({ dialog, onClose, onDone }: { dialog: OfferDialogState | null; onClose: () => void; onDone: () => Promise<void> }) {
+export function OfferDialogs({ dialog, onClose, onDone, onRefresh }: {
+  dialog: OfferDialogState | null;
+  onClose: () => void;
+  /** Après une action terminée : l'écran hôte ferme la fenêtre et recharge. */
+  onDone: () => Promise<void>;
+  /** Recharge la liste SANS fermer la fenêtre (la fenêtre de décharge reste ouverte pour montrer le résultat). */
+  onRefresh?: () => Promise<void>;
+}) {
   if (!dialog) return null;
   if (dialog.kind === 'create') return <OfferDialog company={dialog.company} onClose={onClose} onDone={onDone} />;
   if (dialog.kind === 'edit') return <OfferDialog offer={dialog.offer} onClose={onClose} onDone={onDone} />;
   if (dialog.kind === 'withdraw') return <WithdrawDialog offer={dialog.offer} onClose={onClose} onDone={onDone} />;
+  if (dialog.kind === 'receipt') return <ReceiptDialog offer={dialog.offer} onClose={onClose} onChanged={onRefresh ?? (async () => {})} />;
+  if (dialog.kind === 'documents') return <OfferDocumentsDialog offer={dialog.offer} onClose={onClose} />;
   return <TransitionDialog offer={dialog.offer} action={dialog.kind} onClose={onClose} onDone={onDone} />;
 }
 
-function TransitionDialog({ offer, action, onClose, onDone }: { offer: Offer; action: Exclude<OfferAction, 'edit' | 'withdraw'>; onClose: () => void; onDone: () => Promise<void> }) {
+function TransitionDialog({ offer, action, onClose, onDone }: { offer: Offer; action: Exclude<OfferAction, 'edit' | 'withdraw' | 'receipt' | 'documents'>; onClose: () => void; onDone: () => Promise<void> }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const sentence = SENTENCE[action];
@@ -101,6 +112,17 @@ function WithdrawDialog({ offer, onClose, onDone }: { offer: Offer; onClose: () 
         <button type="button" className="secondary" onClick={onClose}>Annuler</button>
         <button type="button" className="danger" disabled={busy} onClick={() => void confirm()}>Retirer l’offre</button>
       </div>
+    </Modal>
+  );
+}
+
+/** Documents d'une offre (par exemple le fichier envoyé au client) : le panneau des documents, dans une fenêtre. */
+function OfferDocumentsDialog({ offer, onClose }: { offer: Offer; onClose: () => void }) {
+  return (
+    <Modal title={`Documents de l’offre ${offer.reference}`} onClose={onClose} size="wide">
+      <p className="m-0 mb-3 text-ink-2">{offer.companyName} · {offer.subject}</p>
+      <DocumentsPanel ownerType="offer" ownerId={offer.id} />
+      <div className="row end"><button type="button" className="secondary" onClick={onClose}>Fermer</button></div>
     </Modal>
   );
 }

@@ -36,7 +36,9 @@ export function OffersPanel({ company, archived }: { company: { id: string; name
   }, [load]);
 
   const canCreate = rights.create && !archived;
-  const showActions = !archived && (rights.update || rights.withdraw);
+  // Une entreprise archivée fige ses offres : on ne propose plus que la consultation de la décharge et des documents.
+  const actionRights = archived ? { ...rights, update: false, withdraw: false } : rights;
+  const showActions = actionRights.update || actionRights.withdraw || !!actionRights.receiptRead || !!actionRights.documentsRead;
   return (
     <Card className="mb-8">
       <section aria-labelledby="offers-title" className="p-5">
@@ -62,7 +64,7 @@ export function OffersPanel({ company, archived }: { company: { id: string; name
                       <td>{formatAmount(o.amount, o.currency)}</td>
                       <td><Badge tone={style.tone}>{style.label}</Badge></td>
                       <td>{formatDate(o.submittedAt)}</td>
-                      {showActions && <td><OfferRowActions offer={o} rights={rights} onAction={(kind, offer) => setDialog({ kind, offer })} /></td>}
+                      {showActions && <td><OfferRowActions offer={o} rights={actionRights} onAction={(kind, offer) => setDialog({ kind, offer })} /></td>}
                     </tr>
                   );
                 })}
@@ -71,7 +73,7 @@ export function OffersPanel({ company, archived }: { company: { id: string; name
           </div>
         )}
       </section>
-      <OfferDialogs dialog={dialog} onClose={() => setDialog(null)} onDone={async () => { setDialog(null); await load(); }} />
+      <OfferDialogs dialog={dialog} onClose={() => setDialog(null)} onDone={async () => { setDialog(null); await load(); }} onRefresh={load} />
     </Card>
   );
 }
