@@ -1,6 +1,6 @@
 # Reste à faire sur le développement
 
-**Date** : 2026-11-01 · **Statut** : **état des lieux, à valider** · **Sources** : [plan de conception](DESIGN-CODE-ARCHITECTURE-PLAN.md), [dette technique](TECH-DEBT.md), [questions et décisions](QUESTIONS-ET-DECISIONS.md), cas d'usage ([flux transverses](CAS-D-USAGE-FLUX-TRANSVERSES.md), [module commercial](CAS-D-USAGE-MODULE-COMMERCIAL.md), [module Investudy](CAS-D-USAGE-MODULE-INVESTUDY.md))
+**Date** : 2026-11-01 · **Statut** : **état des lieux, à valider** · **Calendrier** : [diagramme de Gantt](GANTT-PROJET.md) · **Sources** : [plan de conception](DESIGN-CODE-ARCHITECTURE-PLAN.md), [dette technique](TECH-DEBT.md), [questions et décisions](QUESTIONS-ET-DECISIONS.md), cas d'usage ([flux transverses](CAS-D-USAGE-FLUX-TRANSVERSES.md), [module commercial](CAS-D-USAGE-MODULE-COMMERCIAL.md), [module Investudy](CAS-D-USAGE-MODULE-INVESTUDY.md))
 
 > Ce document répond à une question : **que reste-t-il à construire, dans quel ordre, et qu'est-ce qui bloque quoi ?** Les tailles sont des **ordres de grandeur** (un sprint = une semaine au plus, décision du 2026-10-20), pas des engagements. Rien n'est décidé ici : les décisions en attente sont celles de la direction produit.
 
