@@ -81,6 +81,11 @@
 | D77 | **Annulation d'une décharge ouverte au chargé de compte** (droit de modification) ; la réserver au Responsable commercial demande un droit dédié `bd.receipt.cancel` | S4.2b | Direction produit | À confirmer (D33) |
 | D78 | **Signataire en texte libre** : la personne qui a remis la décharge n'est pas liée à un contact de l'entreprise | S4.2b | Claude | À la demande |
 | D79 | **Date de réception comparée à la date UTC** : un enregistrement passé minuit UTC mais avant minuit locale peut être vu « dans le futur » ; l'interface limite la date au jour UTC | S4.2b | Claude | Si le fuseau des utilisateurs pose problème |
+| D80 | **Pas de planification automatique après le dépôt** : le cas d'usage la prévoyait ; l'interface propose seulement une échéance à sept jours dans le formulaire | S4.2c | Direction produit | À confirmer (D34) |
+| D81 | **Délai de sept jours et limite de trois relances par offre** : valeurs proposées, codées dans le serveur et l'interface | S4.2c | Direction produit | À confirmer (D34) |
+| D82 | **Aucun rappel envoyé à l'échéance** (ni e-mail ni notification) : la liste « À faire » et l'agenda (S4.2d) sont le seul signal ; les rappels dépendent de l'envoi d'e-mails réel (D9) | S4.2c | Claude | S4.2d et S7.2 |
+| D83 | **Relance liée à l'offre seulement** : ni contact destinataire, ni rendez-vous ; le lien arrive avec l'agenda et les opportunités | S4.2c | Claude | S4.2d, S4.3 |
+| D84 | **Retard comparé à la date UTC** (comme D79) : une relance du soir peut être vue « en retard » ou « du jour » à quelques heures près | S4.2c | Claude | Si le fuseau pose problème |
 | D5 | Hypothèses de charge et de périmètre non confirmées | Phase 3 | Revue à la fin de S1 avec les chiffres réels | Ouverte |
 
 ## Adopted Conventions

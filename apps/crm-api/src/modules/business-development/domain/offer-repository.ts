@@ -5,6 +5,8 @@ import { Offer, OfferStatus } from './offer';
 export interface OfferListItem {
   offer: Offer;
   companyName: string;
+  /** Échéance de la prochaine relance à faire (« AAAA-MM-JJ »), `null` si aucune. */
+  nextFollowupOn: string | null;
 }
 
 /**

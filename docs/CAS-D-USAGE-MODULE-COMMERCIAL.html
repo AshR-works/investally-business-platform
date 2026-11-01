@@ -71,13 +71,13 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <ul><li><strong>Acteur</strong> : Responsable commercial seulement (le chargé de compte n'a pas <code>bd.contact.delete</code>). Suppression logique avec confirmation ; refusée si le contact est lié à un rendez-vous ou un apprenant (à trancher).</li></ul>
 <hr>
 <h2>5. Offres, décharges et relances <em>(flux C2, S4.2)</em></h2>
-<h3>CU-C-20 — Préparer puis déposer une offre</h3>
+<h3>CU-C-20 — Préparer puis déposer une offre <em>(réalisé, S4.2a)</em></h3>
 <ul><li><strong>Acteur</strong> : chargé de compte. <strong>Écrans</strong> : 13, 14. <strong>Scénario</strong> : 1. « Nouvelle offre » liée à l'entreprise (et à une opportunité). 2. Montant, objet, pièces jointes. 3. « Déposer » : l'offre passe à « Déposée » et la date est enregistrée.</li><li><strong>Variantes</strong> : entreprise archivée → refus ; modification concurrente → refus (version).</li><li><strong>Droits</strong> : <code>bd.offer.create / update</code> (Propre). <strong>À trancher</strong> : états exacts (brouillon, déposée, décharge reçue, acceptée, refusée, retirée).</li></ul>
-<h3>CU-C-21 — Enregistrer la décharge signée</h3>
+<h3>CU-C-21 — Enregistrer la décharge signée <em>(réalisé, S4.2b)</em></h3>
 <ul><li><strong>Scénario</strong> : 1. Depuis l'offre, « Déposer la décharge » (écran 15). 2. Date de réception, reçue par, fichier signé (contrôle du contenu). 3. L'offre passe à « Décharge reçue ».</li><li><strong>Règles</strong> : <strong>une seule décharge valide par offre</strong> ; pas de décharge sur une offre retirée. <strong>Droits</strong> : <code>bd.receipt.create</code>. <strong>État</strong> : à venir.</li></ul>
-<h3>CU-C-22 — Planifier et effectuer une relance</h3>
+<h3>CU-C-22 — Planifier et effectuer une relance <em>(réalisé, S4.2c ; planification automatique non retenue, D80)</em></h3>
 <ul><li><strong>Écran</strong> : 16. <strong>Scénario</strong> : 1. Planification (automatique après le dépôt, ou manuelle) avec échéance et canal. 2. À l'échéance, la relance apparaît dans « À faire » et l'agenda. 3. Le chargé de compte la réalise (appel, e-mail, WhatsApp) et note le résultat : « Terminer ».</li><li><strong>Règles</strong> : <strong>plus de relance après une décharge refusée ou une offre retirée</strong> ; une relance en retard est signalée. <strong>Droits</strong> : <code>bd.followup.create / complete</code>. <strong>À trancher</strong> : délai par défaut, nombre maximum de relances.</li></ul>
-<h3>CU-C-23 — Retirer une offre</h3>
+<h3>CU-C-23 — Retirer une offre <em>(réalisé, S4.2a ; les relances à faire sont annulées avec l'offre, S4.2c)</em></h3>
 <ul><li><strong>Scénario</strong> : « Retirer l'offre » avec motif, confirmation ; les relances à venir sont annulées. <strong>Droits</strong> : <code>bd.offer.withdraw</code> (Propre). <strong>Variantes</strong> : offre déjà acceptée → refus.</li></ul>
 <hr>
 <h2>6. Rendez-vous, visites et agenda <em>(flux C3, S4.2b et S4.3)</em></h2>

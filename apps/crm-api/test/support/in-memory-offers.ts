@@ -27,7 +27,7 @@ export class InMemoryOffers implements OfferRepository {
       .filter((r) => !q.companyId || r.offer.companyId === q.companyId)
       .filter((r) => !q.status || r.offer.status === q.status)
       .filter((r) => !q.search || `${r.offer.reference} ${r.offer.subject}`.toLowerCase().includes(q.search.toLowerCase()));
-    const items = rows.slice((q.page - 1) * q.pageSize, q.page * q.pageSize).map((r) => ({ offer: r.offer, companyName: r.company.name.value }));
+    const items = rows.slice((q.page - 1) * q.pageSize, q.page * q.pageSize).map((r) => ({ offer: r.offer, companyName: r.company.name.value, nextFollowupOn: null }));
     return { items, total: rows.length, page: q.page, pageSize: q.pageSize };
   }
 }

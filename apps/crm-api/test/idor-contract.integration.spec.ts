@@ -13,7 +13,7 @@ const pdf = () => Buffer.from('%PDF-1.7\ncontrat idor\n%%EOF');
 
 interface As { token: string; ip: string }
 /** Identifiants visés par une sonde : les vrais (objet de Marie) ou inexistants (tous `NIL`). */
-interface Ids { company: string; doc: string; session: string; facilitator: string; contact: string; offer: string; offerSent: string; offerPending: string; receipt: string }
+interface Ids { company: string; doc: string; session: string; facilitator: string; contact: string; offer: string; offerSent: string; offerPending: string; offerReceipt: string; receipt: string; followup: string }
 
 /**
  * Une sonde par route « objet » : elle appelle la route avec les identifiants donnés, en tant que `as`.
@@ -39,6 +39,12 @@ const PROBES: Record<string, (api: Api, as: As, ids: Ids) => Promise<ApiResponse
   'POST /receipts': (api, as, ids) => api.call('POST', '/api/v1/receipts', { ...as, body: { offerId: ids.offerPending, receivedOn: new Date().toISOString().slice(0, 10), receivedBy: 'Piege Recepisse' } }),
   'GET /receipts/:id': (api, as, ids) => api.call('GET', `/api/v1/receipts/${ids.receipt}`, as),
   'POST /receipts/:id/cancel': (api, as, ids) => api.call('POST', `/api/v1/receipts/${ids.receipt}/cancel`, { ...as, body: { version: 1, reason: 'Annulation piratée' } }),
+  'GET /followups': (api, as, ids) => api.call('GET', `/api/v1/followups?offerId=${ids.offerReceipt}`, as),
+  'POST /followups': (api, as, ids) => api.call('POST', '/api/v1/followups', { ...as, body: { offerId: ids.offerReceipt, dueOn: new Date(Date.now() + 4 * 86400000).toISOString().slice(0, 10), channel: 'CALL', note: 'Relance piégée' } }),
+  'GET /followups/:id': (api, as, ids) => api.call('GET', `/api/v1/followups/${ids.followup}`, as),
+  'PUT /followups/:id': (api, as, ids) => api.call('PUT', `/api/v1/followups/${ids.followup}`, { ...as, body: { version: 1, note: 'Relance piratée' } }),
+  'POST /followups/:id/complete': (api, as, ids) => api.call('POST', `/api/v1/followups/${ids.followup}/complete`, { ...as, body: { version: 1, text: 'Terminée par un pirate' } }),
+  'POST /followups/:id/cancel': (api, as, ids) => api.call('POST', `/api/v1/followups/${ids.followup}/cancel`, { ...as, body: { version: 1, text: 'Annulée par un pirate' } }),
   'POST /offers/:id/withdraw': (api, as, ids) => api.call('POST', `/api/v1/offers/${ids.offerSent}/withdraw`, { ...as, body: { version: 2, reason: 'Retrait piraté' } }),
   'GET /facilitators/:id': (api, as, ids) => api.call('GET', `/api/v1/facilitators/${ids.facilitator}`, as),
   'GET /documents': (api, as, ids) => api.call('GET', `/api/v1/documents?ownerType=company&ownerId=${ids.company}`, as),
@@ -109,6 +115,8 @@ describeDb('Contrat anti-IDOR : un acteur sans portée reçoit la réponse d\'un
     expect((await api.call('POST', `/api/v1/offers/${offerReceipt.body.id}/submit`, { ...m, body: { version: 1 } })).status).toBe(200);
     const receipt = await api.call('POST', '/api/v1/receipts', { ...m, body: { offerId: offerReceipt.body.id, receivedOn: new Date().toISOString().slice(0, 10), receivedBy: 'Secret-RECEPISSE-IDOR' } });
     expect(receipt.status).toBe(201);
+    const followup = await api.call('POST', '/api/v1/followups', { ...m, body: { offerId: offerReceipt.body.id, dueOn: new Date(Date.now() + 5 * 86400000).toISOString().slice(0, 10), channel: 'EMAIL', note: 'Secret-RELANCE-IDOR' } });
+    expect(followup.status).toBe(201);
     const doc = await api.call('POST', `/api/v1/documents?ownerType=company&ownerId=${company.body.id}&title=Pi%C3%A8ce&category=DECHARGE&fileName=piece.pdf`, {
       ...m, raw: { type: 'application/octet-stream', data: pdf() },
     });
@@ -118,8 +126,8 @@ describeDb('Contrat anti-IDOR : un acteur sans portée reçoit la réponse d\'un
       marie: m,
       chef: chefSession,
       attackers: { paul: await login(paul), autreChef: await login(autreChef) },
-      real: { company: company.body.id as string, doc: doc.body.id as string, session: second.sessionId, facilitator: facilitator.body.id as string, contact: contact.body.id as string, offer: offer.body.id as string, offerSent: offerSent.body.id as string, offerPending: offerPending.body.id as string, receipt: receipt.body.id as string } satisfies Ids,
-      nil: { company: NIL, doc: NIL, session: NIL, facilitator: NIL, contact: NIL, offer: NIL, offerSent: NIL, offerPending: NIL, receipt: NIL } satisfies Ids,
+      real: { company: company.body.id as string, doc: doc.body.id as string, session: second.sessionId, facilitator: facilitator.body.id as string, contact: contact.body.id as string, offer: offer.body.id as string, offerSent: offerSent.body.id as string, offerPending: offerPending.body.id as string, offerReceipt: offerReceipt.body.id as string, receipt: receipt.body.id as string, followup: followup.body.id as string } satisfies Ids,
+      nil: { company: NIL, doc: NIL, session: NIL, facilitator: NIL, contact: NIL, offer: NIL, offerSent: NIL, offerPending: NIL, offerReceipt: NIL, receipt: NIL, followup: NIL } satisfies Ids,
       secondSession: second,
     };
   }
@@ -142,6 +150,7 @@ describeDb('Contrat anti-IDOR : un acteur sans portée reçoit la réponse d\'un
       expect(onForeign.bytes.toString('utf8')).not.toContain('Secret-OFFRE-IDOR');
       expect(onForeign.bytes.toString('utf8')).not.toContain('Offre déposée IDOR');
       expect(onForeign.bytes.toString('utf8')).not.toContain('Secret-RECEPISSE-IDOR');
+      expect(onForeign.bytes.toString('utf8')).not.toContain('Secret-RELANCE-IDOR');
       expect(onForeign.bytes.toString('utf8')).not.toContain('Offre en attente de décharge');
     }
     // Contrôle positif : le propriétaire, lui, réussit (le test n'est pas vide), puis les dégâts éventuels sont vérifiés.
@@ -182,6 +191,13 @@ describeDb('Contrat anti-IDOR : un acteur sans portée reçoit la réponse d\'un
     const kept = await api.call('GET', `/api/v1/receipts/${w.real.receipt}`, w.marie);
     expect(kept.body).toMatchObject({ status: 'VALID', version: 1 });
     expect((await api.call('GET', `/api/v1/offers/${w.real.offerPending}`, w.marie)).body.status).toBe('SUBMITTED');
+    // La relance de Marie est intacte (à faire, version 1, même note) et aucune relance piège n'a été planifiée.
+    for (const attacker of Object.values(w.attackers)) {
+      for (const key of ['POST /followups', 'PUT /followups/:id', 'POST /followups/:id/complete', 'POST /followups/:id/cancel']) await PROBES[key](api, attacker, w.real);
+    }
+    const followups = await api.call('GET', `/api/v1/followups?offerId=${w.real.offerReceipt}`, w.marie);
+    expect(followups.body.items).toHaveLength(1);
+    expect(followups.body.items[0]).toMatchObject({ status: 'PLANNED', version: 1, note: 'Secret-RELANCE-IDOR' });
     const detail = await api.call('GET', `/api/v1/documents/${w.real.doc}`, w.marie);
     expect(detail.status).toBe(200);
     expect(detail.body.versions).toHaveLength(1);

@@ -15,6 +15,8 @@ export interface OfferView {
   decidedAt: string | null;
   withdrawnReason: string | null;
   createdAt: string;
+  /** Échéance de la prochaine relance à faire (présente dans les listes seulement) ; `null` si aucune. */
+  nextFollowupOn?: string | null;
   /** Verrou optimiste : à renvoyer tel quel pour modifier l'offre ou changer son état. */
   version: number;
 }

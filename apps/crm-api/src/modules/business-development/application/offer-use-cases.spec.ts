@@ -2,10 +2,12 @@ import { ActorContext, Page } from '../../../shared-kernel';
 import { AuditAction, AuditRecord } from '../../audit';
 import type { AccessContext } from '../../iam';
 import { RoleCode, resolveGrants, visibilityFor } from '../../iam';
+import { InMemoryFollowups } from '../../../../test/support/in-memory-followups';
 import { InMemoryOffers } from '../../../../test/support/in-memory-offers';
 import { Company } from '../domain/company';
 import { CompanyName } from '../domain/company-name';
 import { CompanyRepository } from '../domain/company-repository';
+import { PlannedFollowupsCloser } from './followup-closer';
 import { ChangeOfferStatusUseCase, GetOfferHandler, ListOffersHandler, OfferAction, RegisterOfferUseCase, UpdateOfferUseCase } from './offer-use-cases';
 
 class InMemoryCompanies implements CompanyRepository {
@@ -23,6 +25,7 @@ const now = new Date('2026-10-30T10:00:00Z');
 function build() {
   const companies = new InMemoryCompanies();
   const offers = new InMemoryOffers(companies);
+  const followups = new InMemoryFollowups(offers, companies);
   const audit: AuditRecord[] = [];
   let seq = 0;
   const recorder = { record: async (r: AuditRecord) => { audit.push(r); } };
@@ -35,10 +38,10 @@ function build() {
     return c;
   };
   return {
-    companies, offers, audit, company,
+    companies, offers, followups, audit, company,
     register: new RegisterOfferUseCase(offers, companies, recorder, unitOfWork, clock, ids),
     update: new UpdateOfferUseCase(offers, companies, recorder, unitOfWork),
-    change: new ChangeOfferStatusUseCase(offers, companies, recorder, unitOfWork, clock),
+    change: new ChangeOfferStatusUseCase(offers, companies, recorder, unitOfWork, clock, new PlannedFollowupsCloser(followups, recorder)),
     get: new GetOfferHandler(offers, companies),
     list: new ListOffersHandler(offers, companies),
   };

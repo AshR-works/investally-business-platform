@@ -68,6 +68,7 @@ export default function OffersPage() {
     { id: 'amount', header: 'Montant', align: 'right', cell: (o) => formatAmount(o.amount, o.currency) },
     { id: 'status', header: 'État', cell: (o) => { const style = statusStyle(OFFER_STATUS, o.status); return <Badge tone={style.tone}>{style.label}</Badge>; } },
     { id: 'submitted', header: 'Déposée le', cell: (o) => formatDate(o.submittedAt) },
+    { id: 'next', header: 'Prochaine relance', cell: (o) => (o.nextFollowupOn ? formatDate(`${o.nextFollowupOn}T00:00:00Z`) : <span className="text-ink-2">—</span>) },
     { id: 'actions', header: 'Actions', srOnlyHeader: true, align: 'right', cell: (o) => <OfferRowActions offer={o} rights={rights} onAction={(kind, offer) => setDialog({ kind, offer })} /> },
   ], [rights]);
 
