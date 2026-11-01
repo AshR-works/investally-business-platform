@@ -39,4 +39,13 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <h2>Tranche verticale (Sprint 1)</h2>
 <p>Preuve de câblage de bout en bout : créer une <code>Company</code> (BD) via Next.js → contrôleur → use case → agrégat → repository Prisma → PostgreSQL → ligne d'audit. Elle valide les frontières avant d'empiler les modules.</p>
 <h2>Habitudes</h2>
-<ul><li>Tests écrits avec le code ; un bug = un test qui échoue d'abord.</li><li>CI : lint, types, tests unitaires, tests d'architecture, intégration, build Docker, audit des dépendances.</li><li>Aucun merge si la CI est rouge.</li></ul></main></body></html>
+<ul><li>Tests écrits avec le code ; un bug = un test qui échoue d'abord.</li><li>CI : lint, types, tests unitaires, tests d'architecture, intégration, build Docker, audit des dépendances.</li><li>Aucun merge si la CI est rouge.</li></ul>
+<h2>Journal des tests par lot</h2>
+<p>Mis à jour <strong>à chaque lot</strong>, en même temps que le code (règle posée le 2026-11-01) : chiffres relevés avant la demande de validation ; le détail se trouve dans la recette du lot (<code>SPRINT-*-RECETTE.md</code>).</p>
+<div class="table-wrap"><table><thead><tr><th>Lot</th><th>Tests unitaires API</th><th>Intégration (PostgreSQL jetable)</th><th>Interface</th><th>Mutants tués</th><th>Navigateur réel (Edge + axe)</th></tr></thead><tbody>
+<tr><td>S4.2c — relances</td><td>679 / 679</td><td>268 / 268</td><td>308 / 308</td><td>15 / 15</td><td>77 contrôles, 0 échec (parcours limité)</td></tr>
+<tr><td>S4.2d — agenda</td><td>729 / 729</td><td>286 / 286 (20 suites)</td><td>357 / 357</td><td>24 / 24</td><td>91 contrôles, 0 échec (parcours limité)</td></tr>
+</tbody></table></div>
+<p>Pour les lots antérieurs, les chiffres sont dans leurs recettes. Les sondes IDOR s'ajoutent avec chaque route « objet » (voir le contrat ci-dessus) ; les mutants sont des fautes injectées une à une (un test doit échouer à chaque fois) ; l'audit navigateur est <code>scripts/a11y-audit.mjs</code> (résultats dans <code>docs/accessibilite/resultats/</code>).</p>
+<h2>Copie Excel du Gantt</h2>
+<p><code>docs/GANTT-PROJET.xlsx</code> est régénérée avec le Gantt : <code>node docs/gantt/build.mjs &amp;&amp; python docs/gantt/build-xlsx.py</code>.</p></main></body></html>

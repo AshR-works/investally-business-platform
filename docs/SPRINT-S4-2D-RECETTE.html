@@ -1,0 +1,56 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>S4.2d — agenda : rendez-vous et visites : recette</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="INDEX.html">Index</a> · <a href="GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="ARCHITECTURE.html">Architecture</a> · <a href="SECURITY.html">Sécurité</a> · <a href="METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="TECH-DEBT.html">Dette</a> · <a href="design/README.html">Design</a> · <a href="livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>S4.2d — agenda : rendez-vous et visites : recette</h1>
+<p><em>Branche <code>sprint/s4-2d-agenda</code> (partie de <code>main</code>) · 2026-11-04 · cas d'usage CU-C-30 à CU-C-33 ; flux C3 ; DDR-0020 ; décision D35. Dernier lot de la session S4.2 (offres, décharges, relances, agenda).</em></p>
+<h2>Ce qui est livré</h2>
+<div class="table-wrap"><table><thead><tr><th>Demande</th><th>Réponse</th></tr></thead><tbody>
+<tr><td><strong>Page « Agenda »</strong></td><td>Le module « Agenda » du hub est livré : vues <strong>Jour</strong>, <strong>Semaine</strong> (lundi au dimanche, par défaut) et <strong>Mois</strong> (grille de semaines entières), navigation précédent / aujourd'hui / suivant, filtre par type, nombre de rendez-vous annoncé</td></tr>
+<tr><td><strong>Trois types</strong></td><td>Rendez-vous <strong>DAF</strong>, rendez-vous <strong>décideur</strong>, <strong>visite</strong> chez Investally (la visite relève du droit « visite »)</td></tr>
+<tr><td><strong>Planifier</strong></td><td>Entreprise, contact et offre de <strong>la même entreprise</strong> (sinon refus), date et heure de début, durée (60 minutes proposées, de 15 minutes à 8 heures), lieu ou lien, note ; <strong>jamais dans le passé</strong></td></tr>
+<tr><td><strong>Conflit d'horaire</strong></td><td><strong>Avertissement, jamais un blocage</strong> : si l'organisateur a déjà un rendez-vous à venir sur le créneau, la fenêtre « Rendez-vous enregistré » cite les rendez-vous en conflit ; deux rendez-vous bout à bout ne sont pas en conflit</td></tr>
+<tr><td><strong>Reporter</strong></td><td>Nouvelle heure (à venir et différente) et <strong>motif obligatoire</strong> ; le rendez-vous reste « à venir », le nombre de reports et le dernier motif sont gardés</td></tr>
+<tr><td><strong>Tenu</strong></td><td><strong>Compte rendu obligatoire</strong>, seulement une fois l'heure de début venue ; un rendez-vous à venir dont l'heure est passée est signalé « Compte rendu attendu »</td></tr>
+<tr><td><strong>Annuler</strong></td><td><strong>Motif obligatoire</strong>, à tout moment ; tenu et annulé sont définitifs et restent lisibles</td></tr>
+<tr><td><strong>Depuis un objet</strong></td><td>« Planifier un rendez-vous » dans le menu d'une offre en cours et sur la fiche de l'entreprise : l'entreprise (et l'offre) arrivent préremplies</td></tr>
+<tr><td><strong>Droits et audit</strong></td><td>Chargé de compte (Propre), Responsable commercial (Équipe), Direction en lecture ; la visibilité suit celle de l'entreprise ; planification, modification, report, tenue et annulation tracées avec la session</td></tr>
+</tbody></table></div>
+<h2>Preuves</h2>
+<div class="table-wrap"><table><thead><tr><th>Contrôle</th><th>Résultat</th></tr></thead><tbody>
+<tr><td>Types (<code>tsc</code>), architecture (<code>pnpm arch</code>)</td><td>0 erreur · aucune violation</td></tr>
+<tr><td>Tests unitaires de l'API</td><td><strong>729 / 729</strong> (1 ignoré, antérieur) ; 50 nouveaux (rendez-vous : 29 ; cas d'usage : 21)</td></tr>
+<tr><td><strong>Tests d'intégration (PostgreSQL jetable)</strong></td><td><strong>286 / 286</strong> (20 suites) ; 18 nouveaux : 11 de bout en bout (cycle, contact et offre rattachés, refus, conflit d'horaire, tenue, fenêtre et tri, portée et droits, règles de la base, verrou optimiste au niveau de la base, entreprise archivée, audit) et 7 sondes IDOR</td></tr>
+<tr><td><strong>IDOR</strong></td><td>Les sept routes de l'agenda sont classées « objet » et sondées : même réponse pour le rendez-vous d'un collègue et pour un identifiant inexistant, aucune écriture, aucune fuite ; les deux rendez-vous de Marie restent « à venir », version 1, après les tentatives</td></tr>
+<tr><td>Règles garanties par la base</td><td>Durée de 15 à 480 minutes ; un rendez-vous à venir n'est pas clos ; un rendez-vous clos a sa date <strong>et</strong> son compte rendu ou motif ; version et compteur de reports positifs ; contact inexistant refusé : vérifiés par des écritures directes refusées</td></tr>
+<tr><td>Tests de l'interface</td><td><strong>357 / 357</strong> (49 nouveaux) : dates et heures locales, saisie, corps des requêtes, actions selon l'état et les droits, fenêtres jour / semaine / mois (bornes, 63 jours), navigation, titres ; <strong>cohérence avec le domaine réel du serveur</strong> sur 15 saisies</td></tr>
+<tr><td><strong>Mutants</strong></td><td><strong>24 / 24 tués</strong> (heure passée, bout à bout, report sans motif, tenu avant l'heure, report vers la même heure, report non compté, compte rendu attendu, durée, contact et offre d'une autre entreprise, visites sans le droit, fenêtre de 63 jours, droits de visite, entreprise archivée, conflit avec des rendez-vous clos, conflit avec un autre organisateur, portée de l'agenda, fin de fenêtre, droit de la route d'annulation, cohérence de la base, verrou optimiste, tri, durée en base)</td></tr>
+<tr><td><strong>Navigateur réel (Edge + axe-core)</strong></td><td>Parcours limité aux offres, aux relances et à l'agenda : <strong>91 contrôles réussis, aucun échec</strong>, dont les six écrans de l'agenda (semaine, champ non conforme, avertissement de conflit, fiche, report sans motif, mois) ; résultats <code>docs/accessibilite/resultats/axe-2026-11-04-s42d.json</code>, captures <code>docs/accessibilite/s42d-captures/</code></td></tr>
+</tbody></table></div>
+<h2>Défauts trouvés par la recette et corrigés</h2>
+<ul><li><strong>Date proposée dans le passé</strong> : le bouton « Nouveau rendez-vous » préremplissait la date du jour avec 9 h, souvent déjà passée. Il propose maintenant demain (ou le jour affiché s'il est à venir).</li><li><strong>Réponse périmée de l'agenda</strong> : en changeant de semaine pendant un chargement, une réponse plus ancienne pouvait remplacer la semaine affichée. Seule la dernière demande est désormais prise en compte.</li><li><strong>Mesures d'audit fragiles</strong> (hors application) : un contrôle des contacts s'appuyait sur une pause fixe de 0,8 s ; remplacé par une attente de la condition. Deux exécutions ont échoué quand un second audit tournait en parallèle sur les mêmes ports.</li></ul>
+<h2>Réserves sur la recette</h2>
+<ul><li><strong>Le parcours navigateur complet n'a pas été mené à son terme</strong> : le navigateur sans fenêtre de la machine reste instable (voir D31 des lots précédents) ; l'audit a été limité aux offres, aux relances et à l'agenda. Les écrans des lots précédents situés après l'agenda ne sont <strong>pas</strong> revérifiés par ce lot.</li><li><strong>Capture manquante</strong> : celle de l'écran « champ non conforme » de la planification (le contrôle a réussi, la capture n'a pas été produite par le navigateur) ; quatre captures sont fournies sur cinq prévues.</li><li>Le <strong>report</strong> n'a été vérifié dans le navigateur que jusqu'au motif obligatoire (le report abouti est couvert par les tests d'intégration et les mutants) ; l'<strong>annulation avec motif</strong> a, elle, été menée jusqu'au bout.</li><li><strong>Pas de rappel envoyé</strong> (D85) ; conflit d'horaire pour l'organisateur seul (D86) ; heures dans le fuseau du navigateur (D87) ; pas de synchronisation Outlook (D88) ; audience = portée de l'entreprise (D89).</li><li>Pas de passage au lecteur d'écran réel ; testé sous Node 26.7, pas rejoué sous Node 22. Le prototype et les wireframes 17 et 18 ne sont pas à jour (D49).</li></ul>
+<h2>Dette et à confirmer</h2>
+<ul><li><strong>D85 à D92</strong> (<code>docs/TECH-DEBT.md</code>).</li><li><strong>D35 — à confirmer</strong> : conflit bloquant ou non, durée par défaut, audience (D60), canal des rappels.</li></ul>
+<h2>À valider</h2>
+<ol><li>Les écrans (agenda en vues jour, semaine et mois, fenêtres de planification, de report, de tenue et d'annulation, avertissement de conflit) et les valeurs par défaut de D35.</li><li>« Je valide S4.2d » → fusion avec commit de fusion et étiquette <code>s4-2d-validated</code>.</li></ol></main></body></html>

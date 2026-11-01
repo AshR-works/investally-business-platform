@@ -108,17 +108,17 @@ Chaque schéma est dans `workflows/svg/`.
 
 ## 6. Rendez-vous, visites et agenda *(flux C3, S4.2b et S4.3)*
 
-### CU-C-30 — Planifier un rendez-vous
+### CU-C-30 — Planifier un rendez-vous *(réalisé, S4.2d ; conflit d'horaire en avertissement, rappel non envoyé : D85, D86)*
 - **Écran** : 18. **Types** : RDV DAF, RDV décideur, visite chez Investally. **Scénario** : 1. Type, entreprise, contact, date, heure, lieu ou lien, opportunité liée. 2. Contrôle du conflit d'horaire. 3. Enregistrement dans l'agenda, rappel programmé.
 - **Variantes** : conflit d'horaire (bloque ou avertit : à trancher) ; contact non rattaché à l'entreprise → refus. **Droits** : `bd.appointment.create`, `bd.visit.create` (Propre).
 
-### CU-C-31 — Tenir, annuler ou reporter un rendez-vous
+### CU-C-31 — Tenir, annuler ou reporter un rendez-vous *(réalisé, S4.2d ; le déblocage de l'accord de principe viendra avec S4.4 : D90)*
 - **Scénario** : après le rendez-vous, le chargé de compte le marque « tenu » avec une note, ou « annulé » / « reporté » avec motif. **Règle** : un rendez-vous **décideur tenu** débloque l'accord de principe (flux F1). **Droits** : `bd.appointment.update / cancel`.
 
-### CU-C-32 — Consulter l'agenda
+### CU-C-32 — Consulter l'agenda *(réalisé, S4.2d ; audience = portée de l'entreprise : D89)*
 - **Écran** : 17. Vues jour, semaine, mois ; filtre par type. **Droits** : le chargé de compte voit le sien ; le Responsable commercial celui de son équipe ; **les agendas partagés suivent une règle d'audience à définir (D60)**.
 
-### CU-C-33 — Créer un événement depuis un objet
+### CU-C-33 — Créer un événement depuis un objet *(réalisé, S4.2d, depuis une entreprise ou une offre ; opportunité avec S4.3)*
 - **Scénario** : depuis une entreprise, une offre ou une opportunité, « Planifier » préremplit le lien. **État** : à venir (S4.2b).
 
 ---

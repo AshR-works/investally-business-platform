@@ -53,10 +53,10 @@ const ITEMS = [
     { name: 'S4.1a — contacts des entreprises', start: '2026-10-30', end: '2026-10-30', state: 'done', tag: 's4-1a-validated' },
     { name: 'S4.1b — tableau des entreprises (filtres, tri, colonnes)', start: '2026-10-30', end: '2026-10-30', state: 'done', tag: 's4-1b-validated' },
     { name: 'Cas d’usage : module Investudy I1 à I5', start: '2026-10-30', end: '2026-10-30', state: 'done' },
-    { name: 'S4.2a — offres (terminé, validation en attente)', start: '2026-10-30', end: '2026-11-02', state: 'wait' },
-    { name: 'S4.2b — décharges signées', start: '2026-11-03', end: '2026-11-04', state: 'plan' },
-    { name: 'S4.2c — relances', start: '2026-11-05', end: '2026-11-06', state: 'plan' },
-    { name: 'S4.2d — agenda, rendez-vous, visites', start: '2026-11-09', end: '2026-11-11', state: 'plan' },
+    { name: 'S4.2a — offres', start: '2026-10-30', end: '2026-11-01', state: 'done', tag: 's4-2a-validated' },
+    { name: 'S4.2b — décharges signées', start: '2026-11-01', end: '2026-11-01', state: 'done', tag: 's4-2b-validated' },
+    { name: 'S4.2c — relances', start: '2026-11-01', end: '2026-11-01', state: 'done', tag: 's4-2c-validated' },
+    { name: 'S4.2d — agenda, rendez-vous, visites', start: '2026-11-01', end: '2026-11-01', state: 'done', tag: 's4-2d-validated' },
     { name: 'S4.3 — opportunités, pipeline, statuts', start: '2026-11-12', end: '2026-11-16', state: 'plan' },
     { name: 'S4.4 — agrément et ambassadeurs', start: '2026-11-17', end: '2026-11-19', state: 'plan' },
   ] },
@@ -75,7 +75,7 @@ const ITEMS = [
     { name: 'ERP — finance, RH, fiscalité (démarrage à décider)', start: '2026-12-24', end: '2026-12-31', state: 'plan', open: true },
   ] },
   { phase: 'Décisions et prérequis (échéance au plus tard)', rows: [
-    { name: 'Valider S4.2a et les valeurs par défaut D29, D30, D32', start: '2026-11-02', end: '2026-11-02', state: 'ext' },
+    { name: 'Confirmer les valeurs par défaut D29 à D35', start: '2026-11-09', end: '2026-11-09', state: 'ext' },
     { name: 'Détails de l’agrément (D1 à D5) et déclencheur de la commission', start: '2026-11-16', end: '2026-11-16', state: 'ext' },
     { name: 'Règles d’inscription et de certification (D31)', start: '2026-11-23', end: '2026-11-23', state: 'ext' },
     { name: 'Pays en liste fermée (D57) et définition des indicateurs', start: '2026-11-30', end: '2026-11-30', state: 'ext' },
@@ -175,6 +175,7 @@ const out = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" wid
 ${svg}
 </svg>`;
 writeFileSync(join(here, 'gantt.svg'), out);
+writeFileSync(join(here, 'items.json'), JSON.stringify({ today: TODAY, first: FIRST, last: LAST, items: ITEMS }, null, 2));
 
 // Page Markdown (convertie en HTML par scripts/md-to-html.py).
 const STATE = { done: 'Validé', wait: 'Terminé, validation en attente', plan: 'Prévu', ext: 'Échéance' };
@@ -194,9 +195,9 @@ const md = `# Diagramme de Gantt du projet
 | **Lancement** (Sprint 0) | 20/10/2026 |
 | Premier jalon de code validé (S1 à S3.3) | 20/10/2026 (le même jour) |
 | Fin de la fondation et du design | 22/10/2026 |
-| Module commercial : dernier lot validé (S4.1b) | 30/10/2026 |
+| Module commercial : dernier lot validé (S4.2d) | 01/11/2026 |
 | Lots réalisés et validés au ${frFull(TODAY)} | ${done.length} (dont ${done.filter((r) => r.tag).length} étiquetés) |
-| **Prochaine session** | Validation de S4.2a prévue le 02/11/2026, puis S4.2b (décharges) du 03/11 au 04/11/2026 |
+| **Prochaine session** | S4.3 (opportunités, pipeline, statuts), prévue du 12/11 au 16/11/2026 |
 | Fin du module commercial (prévision) | 19/11/2026 |
 | Fin d'Investudy (prévision) | 30/11/2026 |
 | **Mise en production du CRM, prévision prudente** | **23/12/2026** |

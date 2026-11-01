@@ -16,13 +16,14 @@ export function useOfferRights(): OfferRights & { create: boolean } {
     create: can(profile, 'bd.offer.create'),
     receiptRead: can(profile, 'bd.receipt.read'),
     followupRead: can(profile, 'bd.followup.read'),
+    appointmentCreate: can(profile, 'bd.appointment.create'),
     documentsRead: can(profile, 'docs.document.read'),
   };
 }
 
 /** Menu d'actions d'une offre : seulement celles que son état et les droits de l'utilisateur permettent ; rien si aucune. */
-/** Actions qui ouvrent une fenêtre (toutes sauf « Relances », qui ouvre la page des relances de l'offre). */
-export type OfferDialogAction = Exclude<OfferAction, 'followups'>;
+/** Actions qui ouvrent une fenêtre (toutes sauf « Relances » et « Planifier un rendez-vous », qui ouvrent une autre page). */
+export type OfferDialogAction = Exclude<OfferAction, 'followups' | 'appointment'>;
 
 export function OfferRowActions({ offer, rights, onAction }: { offer: Offer; rights: OfferRights; onAction: (action: OfferDialogAction, offer: Offer) => void }) {
   const router = useRouter();
@@ -30,7 +31,7 @@ export function OfferRowActions({ offer, rights, onAction }: { offer: Offer; rig
   if (actions.length === 0) return <span className="sr-only">Aucune action</span>;
   return (
     <RowActions label={`Actions pour l’offre ${offer.reference}`}>
-      {actions.map((action) => <RowAction key={action} danger={action === 'withdraw'} onClick={() => (action === 'followups' ? router.push(`/followups?offerId=${offer.id}`) : onAction(action, offer))}>{OFFER_ACTION_LABEL[action]}</RowAction>)}
+      {actions.map((action) => <RowAction key={action} danger={action === 'withdraw'} onClick={() => (action === 'followups' ? router.push(`/followups?offerId=${offer.id}`) : action === 'appointment' ? router.push(`/agenda?plan=1&companyId=${offer.companyId}&offerId=${offer.id}`) : onAction(action, offer))}>{OFFER_ACTION_LABEL[action]}</RowAction>)}
     </RowActions>
   );
 }

@@ -142,6 +142,38 @@ export interface Followup {
   version: number;
 }
 
+/** Rendez-vous ou visite d'une entreprise, dans l'agenda de son organisateur. */
+export interface Appointment {
+  id: string;
+  type: string;
+  companyId: string;
+  companyName: string;
+  contactId: string | null;
+  contactName: string | null;
+  offerId: string | null;
+  offerReference: string | null;
+  organizerUserId: string;
+  /** Instants ISO (UTC) de début et de fin. */
+  startsAt: string;
+  endsAt: string;
+  durationMinutes: number;
+  location: string | null;
+  note: string | null;
+  status: string;
+  /** Compte rendu (tenu) ou motif d'annulation (annulé). */
+  outcomeNote: string | null;
+  closedAt: string | null;
+  postponements: number;
+  lastPostponeReason: string | null;
+  /** Calculé par le serveur : à venir et heure de début passée (un compte rendu est attendu). */
+  reportDue: boolean;
+  createdAt: string;
+  /** Verrou optimiste : renvoyé tel quel pour modifier, reporter, tenir ou annuler le rendez-vous. */
+  version: number;
+  /** Présent à la planification, à la modification et au report : autres rendez-vous du même organisateur sur le même créneau. */
+  conflicts?: { id: string; type: string; startsAt: string; endsAt: string; companyName: string }[];
+}
+
 /** Facilitateur : personne qui met en relation avec une entreprise. */
 export interface Facilitator {
   id: string;

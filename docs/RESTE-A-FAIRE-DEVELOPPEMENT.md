@@ -1,6 +1,6 @@
 # Reste à faire sur le développement
 
-**Date** : 2026-11-01 · **Statut** : **état des lieux, à valider** · **Calendrier** : [diagramme de Gantt](GANTT-PROJET.md) · **Sources** : [plan de conception](DESIGN-CODE-ARCHITECTURE-PLAN.md), [dette technique](TECH-DEBT.md), [questions et décisions](QUESTIONS-ET-DECISIONS.md), cas d'usage ([flux transverses](CAS-D-USAGE-FLUX-TRANSVERSES.md), [module commercial](CAS-D-USAGE-MODULE-COMMERCIAL.md), [module Investudy](CAS-D-USAGE-MODULE-INVESTUDY.md))
+**Date** : 2026-11-04 · **Statut** : **état des lieux, à valider** · **Calendrier** : [diagramme de Gantt](GANTT-PROJET.md) · **Sources** : [plan de conception](DESIGN-CODE-ARCHITECTURE-PLAN.md), [dette technique](TECH-DEBT.md), [questions et décisions](QUESTIONS-ET-DECISIONS.md), cas d'usage ([flux transverses](CAS-D-USAGE-FLUX-TRANSVERSES.md), [module commercial](CAS-D-USAGE-MODULE-COMMERCIAL.md), [module Investudy](CAS-D-USAGE-MODULE-INVESTUDY.md))
 
 > Ce document répond à une question : **que reste-t-il à construire, dans quel ordre, et qu'est-ce qui bloque quoi ?** Les tailles sont des **ordres de grandeur** (un sprint = une semaine au plus, décision du 2026-10-20), pas des engagements. Rien n'est décidé ici : les décisions en attente sont celles de la direction produit.
 
@@ -9,22 +9,22 @@
 |---|---|
 | **Fondations** (S1 à S3.8) : architecture, identité, authentification, MFA, droits et portées, administration, mot de passe oublié, documents | **Validé** |
 | **Habillage et accès** (H1, H2) : design, navigation, écrans d'accès, sessions et historique | **Validé** |
-| **Module commercial livré** : entreprises (S4.0), modifier et exporter une fiche, contacts (S4.1a), tableau des entreprises avec filtres, tri et colonnes (S4.1b) | **Validé** (étiquettes `s4-0` à `s4-1b`) |
-| **Offres** (S4.2a) | **Terminé, en attente de validation** : branche `sprint/s4-2a-offres-decharges`, recette `SPRINT-S4-2A-RECETTE.md`, pas encore poussé |
+| **Module commercial livré** : entreprises (S4.0), modifier et exporter une fiche, contacts (S4.1a), tableau des entreprises (S4.1b), offres (S4.2a), décharges signées (S4.2b), relances (S4.2c), agenda : rendez-vous et visites (S4.2d) | **Validé** (étiquettes `s4-0` à `s4-2d`) |
+| **Valeurs par défaut à confirmer** | D29 à D35 (contacts, cartes ou tableau, offres, décharges, relances, agenda) : appliquées, signalées « à confirmer » |
 | **Cadrage fonctionnel** : 45 écrans de référence (wireframes), flux transverses F1 à F7, module commercial C1 à C5, module Investudy I1 à I5 | **Validé** (propositions à confirmer, voir § 4) |
 | **Reste de l'application** | À construire (voir § 2) |
 
-Chiffres au 2026-11-01 : 582 tests unitaires, 238 tests d'intégration sur base jetable, 259 tests de l'interface, audit d'accessibilité automatique sur le navigateur réel, test d'architecture sans violation.
+Chiffres au 2026-11-04 : 729 tests unitaires, 286 tests d'intégration sur base jetable, 357 tests de l'interface, 24 mutants sur 24 tués au dernier lot, audit d'accessibilité automatique sur le navigateur réel, test d'architecture sans violation.
 
 ## 2. Feuille de route restante
 Ordre retenu le 2026-10-21 (DEC-005) : module commercial, puis Investudy, puis pilotage, puis Stocks, puis durcissement et mise en production, puis l'ERP.
 
 | Lot | Contenu | Taille indicative | Dépend de |
 |---|---|---|---|
-| **S4.2a** Offres | *Terminé* : référence, états, dépôt, réponse du client, retrait avec motif | — | Votre « Je valide » |
-| **S4.2b** Décharges | Décharge signée rattachée à l'offre avec son fichier ; une seule décharge valide par offre ; l'offre passe à « Décharge reçue » ; fichier de l'offre elle-même (D72) | 1 session | S4.2a |
-| **S4.2c** Relances | Relances planifiées et liste « À faire » ; plus de relance après un refus ou un retrait ; colonne « Prochaine relance » | 1 session | S4.2b ; délai et nombre de relances (§ 3) |
-| **S4.2d** Agenda | Rendez-vous, visites, rappels, vues semaine et mois, droits Propre, Équipe, Tous. *Nommé « S4.2b » dans l'ancien plan ; renommé pour éviter la confusion avec les décharges* | 1 à 1,5 session | S4.2c ; audience des agendas (D60) |
+| **S4.2a** Offres | *Validé* : référence, états, dépôt, réponse du client, retrait avec motif | — | — |
+| **S4.2b** Décharges | *Validé* : décharge signée avec son fichier, une seule décharge valide par offre, documents de l'offre | — | — |
+| **S4.2c** Relances | *Validé* : relances planifiées, liste « À faire », annulation avec l'offre, colonne « Prochaine relance » | — | — |
+| **S4.2d** Agenda | *Validé* : rendez-vous (DAF, décideur) et visites, vues jour, semaine et mois, conflit d'horaire en avertissement, report, tenue et annulation. Reste : rappels envoyés (D85), synchronisation Outlook (D88) | — | — |
 | **S4.3** Opportunités | Pipeline en cartes de 6 avec bascule « Par étape » (DEC-003), règle du rendez-vous décideur avec dérogation, clôture perdue ou gagnée (D28), statuts d'une entreprise, colonnes Responsable, Valeur, Dernière activité | 1,5 session | S4.2d ; étapes et transitions (§ 3) |
 | **S4.4** Agrément et ambassadeurs | Agrément (promesse de paiement), ambassadeurs, événements vers Investudy, suivi des commissions à verser (flux F3) | 1 à 1,5 session | S4.3 ; **détails de l'agrément (D1 à D5)** |
 | **S5.1** Catalogue Investudy | Programmes, formations, salles, formateurs ; modèle de données du module | 1 session | S4.4 ; cas d'usage validés |
@@ -94,6 +94,6 @@ Ordre retenu le 2026-10-21 (DEC-005) : module commercial, puis Investudy, puis p
 | Mises à jour de la matrice de droits : `bd.opportunity.close_lost` et `close_won`, dérogation, agrément, commissions, exports | S4.3, S4.4 | Avec chaque lot |
 
 ## 7. Prochaine session proposée
-**S4.2b — Décharges.** Rattacher à une offre déposée la décharge signée (date de réception, reçue par, fichier contrôlé par son contenu), refuser une seconde décharge valide, faire passer l'offre à « Décharge reçue », et déclarer l'offre comme objet propriétaire des documents. Elle prépare les relances (S4.2c) et ferme les points D70 et D72.
+**S4.3 — Opportunités.** Pipeline commercial en cartes de six avec bascule « Par étape » (DEC-003), règle du rendez-vous décideur (l'agenda de S4.2d fournit désormais les rendez-vous tenus, D90), clôture perdue ou gagnée (D28), statuts d'une entreprise, colonnes Responsable, Valeur et Dernière activité.
 
-Avant de commencer, il me faut **votre « Je valide S4.2a »** (ou vos corrections), puis la poussée de la branche.
+Avant de commencer, il me faut **vos décisions sur les étapes et les transitions du pipeline** (§ 3), sinon j'applique mes propositions par défaut en les signalant « à confirmer ».

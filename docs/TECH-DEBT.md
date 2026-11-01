@@ -86,6 +86,14 @@
 | D82 | **Aucun rappel envoyé à l'échéance** (ni e-mail ni notification) : la liste « À faire » et l'agenda (S4.2d) sont le seul signal ; les rappels dépendent de l'envoi d'e-mails réel (D9) | S4.2c | Claude | S4.2d et S7.2 |
 | D83 | **Relance liée à l'offre seulement** : ni contact destinataire, ni rendez-vous ; le lien arrive avec l'agenda et les opportunités | S4.2c | Claude | S4.2d, S4.3 |
 | D84 | **Retard comparé à la date UTC** (comme D79) : une relance du soir peut être vue « en retard » ou « du jour » à quelques heures près | S4.2c | Claude | Si le fuseau pose problème |
+| D85 | **Aucun rappel envoyé avant un rendez-vous** (ni e-mail ni notification) : le cas d'usage prévoyait un rappel programmé ; seuls la vue du jour et le signal « Compte rendu attendu » existent. Les rappels dépendent de l'envoi d'e-mails réel (D9) | S4.2d | Claude | S7.2 |
+| D86 | **Conflit d'horaire : avertissement seulement, et pour l'organisateur seul** : ni blocage, ni salle, ni participants multiples (le Responsable commercial qui accompagne un rendez-vous n'est pas pris en compte) | S4.2d | Direction produit | À confirmer (D35) |
+| D87 | **Heures affichées dans le fuseau du navigateur** : pas de fuseau d'agenda par utilisateur ; les fenêtres de l'agenda sont calculées en minuit local, les instants stockés en UTC. Un utilisateur qui voyage voit ses heures glisser | S4.2d | Claude | Si le fuseau pose problème |
+| D88 | **Pas de synchronisation Outlook / Microsoft 365 ni d'invitation au contact (.ics)** : l'agenda est interne au CRM (D16, D9) | S4.2d | Direction produit | Après D9 |
+| D89 | **Audience de l'agenda (D60) = portée de l'entreprise** : le nom de l'organisateur n'est pas affiché et un salarié ne voit pas les disponibilités d'un collègue ; pas de vue « agenda de Paul » pour le Responsable commercial | S4.2d | Direction produit | À confirmer (D35, D60) |
+| D90 | **Un rendez-vous décideur tenu ne débloque pas encore l'accord de principe** (flux F1) : le lien arrive avec les opportunités et l'agrément | S4.2d | Claude | S4.3, S4.4 |
+| D91 | **Pas de récurrence, de glisser-déposer ni d'impression de l'agenda** ; la vue du mois montre trois rendez-vous par jour puis « + N autres » | S4.2d | Claude | Selon les retours de tests |
+| D92 | **Les relances n'apparaissent pas dans l'agenda** : le hub annonçait « rendez-vous, relances et échéances » ; les relances restent dans leur page. Contact et opportunité liés au rendez-vous : le lien d'opportunité arrive avec S4.3 | S4.2d | Direction produit | S4.3 |
 | D5 | Hypothèses de charge et de périmètre non confirmées | Phase 3 | Revue à la fin de S1 avec les chiffres réels | Ouverte |
 
 ## Adopted Conventions
