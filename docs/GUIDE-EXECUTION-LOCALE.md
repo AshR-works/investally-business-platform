@@ -4,15 +4,16 @@
 
 ## Démarrer
 ```bash
-cd C:\dev\investally-platform
-git checkout sprint/execution-locale      # jusqu'à la fusion dans main
-pnpm install                              # une seule fois
-node scripts/local-stack.mjs --demo       # ou : pnpm local --demo
+cd C:\dev\investally\investally-platform
+git checkout main && git pull             # la branche d'exécution locale est fusionnée
+pnpm install                              # une seule fois, puis après chaque mise à jour des dépendances
+node scripts/local-stack.mjs --demo --rebuild   # ou : pnpm local --demo --rebuild
 ```
+`--rebuild` est nécessaire après chaque mise à jour du code : il recompile l'API et l'interface, et les nouvelles migrations sont appliquées au démarrage.
 Prérequis : Node 22 LTS, pnpm 12, une application TOTP (téléphone ou extension navigateur).
 
 ## Ce que fait la commande
-1. Génère les secrets locaux (une fois) dans `C:\dev\investally-local\secrets.json`.
+1. Génère les secrets locaux (une fois) dans `C:\dev\investally\investally-local\secrets.json`.
 2. Compile l'API et l'interface (long la première fois seulement).
 3. Démarre PostgreSQL (données dans `..\investally-local\pgdata`), applique les migrations, crée rôles et permissions.
 4. Crée `admin@investally.test` si aucun utilisateur n'existe : mot de passe aléatoire **affiché une seule fois**.
@@ -52,19 +53,24 @@ Mots de passe : `..\investally-local\demo-accounts.json` (local, hors dépôt, a
 ## Valider la qualité sans la pile
 ```bash
 pnpm ci                                   # types, architecture, tests unitaires
-node apps/crm-api/scripts/test-db.mjs     # intégration, base jetable
+node apps/crm-api/scripts/test-db.mjs     # intégration, base jetable (TEST_DB_PORT=54340 si le port 54329 est occupé)
 ```
 
 ## Scénarios à parcourir
 1. Premier administrateur : connexion, enrôlement MFA, déconnexion, reconnexion.
 2. Invitation d'un collaborateur (lien dans `api.log`), activation, droits selon le rôle.
 3. Entreprises : liste ; `compte1` ne voit que les siennes, `compte2` les autres.
-4. Documents d'une entreprise : envoi, nouvelle version, téléchargement, archivage.
-5. Sessions actives : historique et révocation des autres sessions.
-6. Refus d'accès hors périmètre : toujours « introuvable ».
+4. Contacts et offres : ajouter un contact à une entreprise de `compte1`, créer une offre, la déposer, enregistrer la décharge signée (PDF, PNG ou JPG), puis accepter, refuser ou retirer l'offre (motif obligatoire pour le retrait).
+5. Relances : depuis le menu d'une offre déposée, planifier une relance (jamais dans le passé, trois au plus par offre), la terminer avec un résultat ; retirer l'offre annule les relances à faire.
+6. Agenda : « Planifier un rendez-vous » depuis une offre ou une fiche d'entreprise ; planifier deux rendez-vous qui se chevauchent (un avertissement s'affiche, sans blocage) ; essayer les vues Jour, Semaine et Mois ; reporter, marquer tenu (une fois l'heure venue) et annuler, en laissant le texte obligatoire vide pour voir le refus.
+7. Documents d'une entreprise ou d'une offre : envoi, nouvelle version, téléchargement, archivage.
+8. Sessions actives : historique et révocation des autres sessions.
+9. Portée et droits : `compte2` ne voit rien de `compte1`, `commercial@` voit son équipe, `direction@` lit sans écrire ; tout accès hors périmètre répond « introuvable ».
 
 ## Limites connues
-- Modules livrés : identité et accès, entreprises, documents. Le reste arrive avec S4 à S6.
+- Modules livrés : identité et accès, entreprises, contacts, offres, décharges signées, relances, agenda (rendez-vous et visites), documents. Les opportunités, l'agrément, Investudy, le pilotage et les stocks arrivent avec S4.3 à S7.
+- La démonstration (`--demo`) crée des entreprises et des comptes, mais **aucune offre, relance ni rendez-vous** : on les crée soi-même (scénarios 4 à 7).
+- Rappels de rendez-vous : aucun envoi (ni e-mail ni notification) ; synchronisation Outlook absente.
 - Non testé : enrôlement MFA dans un navigateur, `--dev`. Node 22 : testé le 2026-10-29 (183 tests d'intégration et 159 tests de l'interface réussis, voir « Node 22 » ci-dessous).
 - Docker : prévu en S7 (voir la stratégie).
 
