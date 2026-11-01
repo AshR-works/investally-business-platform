@@ -125,19 +125,19 @@ Chaque schéma est dans `workflows/svg/`.
 
 ## 7. Opportunités *(flux C4, S4.3)*
 
-### CU-C-40 — Créer une opportunité
+### CU-C-40 — Créer une opportunité *(réalisé, S4.3a)*
 - **Acteur** : chargé de compte. **Écran** : 19. **Scénario** : entreprise, intitulé, montant estimé, source ; l'opportunité apparaît en « Qualification ». **Règle** : plusieurs opportunités simultanées par entreprise. **Droits** : `bd.opportunity.create` (Propre).
 
-### CU-C-41 — Faire avancer une opportunité
+### CU-C-41 — Faire avancer une opportunité *(réalisé, S4.3a ; alternative clavier : « Déplacer vers… » ; glisser-déposer non fait : D97)*
 - **Écrans** : 19 (cartes), 20 (par étape), 21 (fiche). **Scénario** : « Passer à l'étape suivante » ; en vue par étape, la carte se déplace ; **alternative clavier** par un menu « Déplacer vers… ».
 - **Règles** : étapes dans l'ordre ; chaque passage tracé ; version contrôlée. Le passage à « Accord de principe » est soumis à la règle du rendez-vous décideur (F1). **Étapes du prototype** (à valider) : Qualification, Proposition, Négociation, Accord de principe, Agrément. **Droits** : `bd.opportunity.advance` (Propre).
 
-### CU-C-42 — Clore une opportunité (perdue ou gagnée)
+### CU-C-42 — Clore une opportunité (perdue ou gagnée) *(réalisé, S4.3a ; motifs en liste fermée, sans réouverture : D94, D95)*
 - **Acteur** : chargé de compte pour une opportunité **perdue** ; Responsable commercial pour une opportunité **gagnée** (décision D28). **Scénario** : « Clore », issue, motif (obligatoire pour une perte), confirmation. **Règle** : une opportunité clôturée est **immuable** et la clôture est tracée.
 - **Droits** : `bd.opportunity.close_lost` (chargé de compte Propre, Responsable commercial Équipe) et `bd.opportunity.close_won` (Responsable commercial Équipe) : à créer avec S4.3.
 - **À trancher** : motifs de perte (liste fermée ou texte libre) ; réouverture exceptionnelle.
 
-### CU-C-43 — Suivre le pipeline
+### CU-C-43 — Suivre le pipeline *(réalisé en lecture, S4.3a ; export et filtre par responsable non faits : D97)*
 - **Acteur** : Responsable commercial, Direction. Vue de toutes les opportunités de l'équipe (écrans 20 et tableaux de bord 33 à 35) ; export tracé. **Droits** : lecture Tous pour le Responsable commercial et la Direction.
 
 ---

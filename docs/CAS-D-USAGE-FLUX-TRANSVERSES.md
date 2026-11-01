@@ -42,13 +42,13 @@
 - **Variantes** : rendez-vous annulé ou reporté ; contact non rattaché à l'entreprise : refusé.
 - **Règle** : un rendez-vous « décideur » tenu conditionne l'accord de principe (CU-F1-03). **Droits** : `bd.appointment.*` (Propre). **État** : à venir.
 
-### CU-F1-03 — Demander l'accord de principe
+### CU-F1-03 — Demander l'accord de principe *(réalisé, S4.3a)*
 - **Acteur** : chargé de compte. **Préconditions** : opportunité en « Négociation ».
 - **Scénario** : 1. Il passe l'opportunité à « Accord de principe » (écran 21). 2. Le système vérifie qu'un rendez-vous décideur a été tenu. 3. Le passage est enregistré.
 - **Variantes** : **aucun rendez-vous décideur tenu** → le passage est refusé, avec renvoi vers la dérogation (CU-F1-04) ; opportunité clôturée → immuable.
 - **Règles** : étapes franchies dans l'ordre ; chaque passage tracé. **Droits** : `bd.opportunity.advance` (Propre). **État** : à venir.
 
-### CU-F1-04 — Accorder une dérogation à la règle du rendez-vous décideur
+### CU-F1-04 — Accorder une dérogation à la règle du rendez-vous décideur *(réalisé, S4.3a ; permission `bd.opportunity.override`)*
 - **Acteur** : Responsable commercial. **Déclencheur** : le chargé de compte demande une exception.
 - **Scénario** : 1. Il ouvre l'opportunité (équipe). 2. Il choisit « Accorder une dérogation » (écran 22). 3. Il saisit une **justification obligatoire** et confirme. 4. L'accord de principe devient possible ; l'action est inscrite dans l'audit.
 - **Variantes** : justification vide → bouton désactivé ; sans le rôle → action absente.

@@ -37,6 +37,8 @@ Le design 0.4.1 est installé dans l'application réelle (`apps/crm-web`) : jeto
 
 **S4.2d (2026-11-04), sans changement de version** : **agenda** réalisé dans l'application (DDR-0020) : page « Agenda » (module du hub livré) en vues Jour, Semaine et Mois avec navigation et filtre par type ; fenêtres de planification et de modification (champs non conformes en surbrillance, EXD-16), de report (nouvelle heure + motif obligatoire), de tenue (compte rendu obligatoire) et d'annulation (motif obligatoire) ; fiche du rendez-vous ; avertissement de conflit d'horaire ; signal « Compte rendu attendu » ; action « Planifier un rendez-vous » dans le menu d'une offre et sur la fiche de l'entreprise. Prototype à mettre à jour (D49).
 
+**S4.3a (2026-11-05), sans changement de version** : **opportunités** réalisées dans l'application (DDR-0021) : page « Opportunités » (module du hub livré) en cartes par lignes de six ou par étape (bascule), filtres d'état, recherche, totaux ; fenêtres de saisie (champs non conformes en surbrillance, EXD-16), de passage d'étape (menu « Déplacer vers… »), de dérogation (justification obligatoire), de clôture perdue (motif de liste fermée) et gagnée ; bouton « Nouvelle opportunité » sur la fiche d'une entreprise. Prototype à mettre à jour (D49).
+
 ## 0.4.1 — 2026-10-21 — *Validée*
 - **EXD-10 / DEC-007 / DDR-0007** : panneau principal **centré sur la fenêtre** (option B) ; repli automatique en centrage dans l'espace restant quand la fenêtre est étroite ; largeur du panneau 1 440 px au plus ; la largeur maximale du contenu (1 320 px) est supprimée.
 - **EXD-11** : bouton de dépliage en **pictogramme seul** (44 px, nom accessible, info-bulle, état annoncé) ; pictogramme provisoire à confirmer.

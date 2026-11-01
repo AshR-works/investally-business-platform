@@ -49,6 +49,7 @@ model Company {
   contacts  Contact[]
   offers    Offer[]
   appointments Appointment[]
+  opportunities Opportunity[]
 
   @@index([status])
   @@index([ownerUserId])
@@ -701,5 +702,72 @@ model Appointment {
   @@index([companyId])
   @@index([startsAt])
   @@map("appointments")
+  @@schema("bd")
+}
+
+enum OpportunityStage {
+  QUALIFICATION
+  PROPOSAL
+  NEGOTIATION
+  AGREEMENT_IN_PRINCIPLE
+  ACCREDITATION
+
+  @@schema("bd")
+}
+
+enum OpportunityStatus {
+  OPEN
+  WON
+  LOST
+
+  @@schema("bd")
+}
+
+enum OpportunitySource {
+  PROSPECTING
+  REFERRAL
+  EVENT
+  INBOUND
+  OTHER
+
+  @@schema("bd")
+}
+
+enum LossReason {
+  PRICE
+  COMPETITOR
+  NO_BUDGET
+  NO_RESPONSE
+  NOT_INTERESTED
+  OTHER
+
+  @@schema("bd")
+}
+
+/// Opportunité commerciale d'une entreprise. Sa visibilité suit celle de l'entreprise ; jamais supprimée (on la clôt, gagnée ou perdue).
+model Opportunity {
+  id             String            @id @db.Uuid
+  companyId      String            @map("company_id") @db.Uuid
+  title          String            @db.VarChar(200)
+  amount         Decimal           @db.Decimal(14, 2)
+  currency       String            @db.Char(3)
+  source         OpportunitySource
+  stage          OpportunityStage  @default(QUALIFICATION)
+  status         OpportunityStatus @default(OPEN)
+  lossReason     LossReason?       @map("loss_reason")
+  closingNote    String?           @map("closing_note") @db.VarChar(500)
+  closedAt       DateTime?         @map("closed_at") @db.Timestamptz(6)
+  /// Dérogation à la règle du rendez-vous décideur : justification et date vont ensemble.
+  waiverReason   String?           @map("waiver_reason") @db.VarChar(500)
+  waivedAt       DateTime?         @map("waived_at") @db.Timestamptz(6)
+  stageChangedAt DateTime          @default(now()) @map("stage_changed_at") @db.Timestamptz(6)
+  version        Int               @default(1)
+  createdAt      DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime          @updatedAt @map("updated_at") @db.Timestamptz(6)
+  company        Company           @relation(fields: [companyId], references: [id])
+
+  @@index([companyId])
+  @@index([status, stage])
+  @@map("opportunities")
   @@schema("bd")
 }

@@ -94,6 +94,13 @@
 | D90 | **Un rendez-vous décideur tenu ne débloque pas encore l'accord de principe** (flux F1) : le lien arrive avec les opportunités et l'agrément | S4.2d | Claude | S4.3, S4.4 |
 | D91 | **Pas de récurrence, de glisser-déposer ni d'impression de l'agenda** ; la vue du mois montre trois rendez-vous par jour puis « + N autres » | S4.2d | Claude | Selon les retours de tests |
 | D92 | **Les relances n'apparaissent pas dans l'agenda** : le hub annonçait « rendez-vous, relances et échéances » ; les relances restent dans leur page. Contact et opportunité liés au rendez-vous : le lien d'opportunité arrive avec S4.3 | S4.2d | Direction produit | S4.3 |
+| D93 | **Rendez-vous décideur compté au niveau de l'entreprise**, pas de l'opportunité : un rendez-vous tenu pour une autre opportunité de la même entreprise débloque aussi l'accord de principe. Le lien rendez-vous ↔ opportunité (CU-C-30) reste à faire | S4.3a | Claude | S4.3b |
+| D94 | **Étapes, ordre et absence de retour en arrière** : noms du prototype, avancement d'une étape à la fois, jamais en arrière ; pas de réouverture d'une opportunité clôturée | S4.3a | Direction produit | À confirmer (D36) |
+| D95 | **Motifs de perte en liste fermée de six valeurs** (prix, concurrent, budget, réponse, intérêt, autre à préciser) et **sources en liste fermée** de cinq valeurs | S4.3a | Direction produit | À confirmer (D36) |
+| D96 | **Clôture gagnée sans effet en aval** : l'agrément, l'événement vers Investudy et la commission « due » ne sont pas déclenchés (D28) ; la clôture gagnée exige seulement l'accord de principe | S4.3a | Claude | S4.4 |
+| D97 | **Pas de nom de responsable ni de filtre par responsable** sur le pipeline (le serveur ne rend que l'entreprise) ; pas d'export du pipeline (CU-C-43) ; pas de glisser-déposer, seulement le menu « Déplacer vers… » | S4.3a | Claude | S4.3b, S6.1 |
+| D98 | **Pipeline limité à 200 opportunités affichées** (le total est annoncé) : pas de pagination ni de défilement dans cette version | S4.3a | Claude | Si le volume l'exige |
+| D99 | **Reste de S4.3 non livré** : transitions du statut d'une entreprise (CU-C-05), réattribution du propriétaire (D17), fiche 360°, colonnes Responsable et Valeur au tableau des entreprises | S4.3a | Claude | S4.3b |
 | D5 | Hypothèses de charge et de périmètre non confirmées | Phase 3 | Revue à la fin de S1 avec les chiffres réels | Ouverte |
 
 ## Adopted Conventions

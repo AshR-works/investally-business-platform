@@ -150,7 +150,9 @@ Cellule : **O**, **É**, **T** = portée accordée ; vide = non accordée.
 | `bd.opportunity.create` | T |  | E | O |  |  |  |  |  |  |
 | `bd.opportunity.update` | T |  | E | O |  |  |  |  |  |  |
 | `bd.opportunity.advance` | T |  | E | O |  |  |  |  |  |  |
-| `bd.opportunity.close` | T |  | E |  |  |  |  |  |  |  |
+| `bd.opportunity.close_lost` | T |  | E | O |  |  |  |  |  |  |
+| `bd.opportunity.close_won` | T |  | E |  |  |  |  |  |  |  |
+| `bd.opportunity.override` | T |  | E |  |  |  |  |  |  |  |
 | `bd.opportunity.export` | T | T | E |  |  |  |  |  |  |  |
 | `bd.ambassador.read` | T | T | T | O | T |  |  |  |  |  |
 | `bd.ambassador.create` | T |  | E | O |  |  |  |  |  |  |

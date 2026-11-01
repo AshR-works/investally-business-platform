@@ -13,12 +13,15 @@ const pdf = () => Buffer.from('%PDF-1.7\ncontrat idor\n%%EOF');
 
 interface As { token: string; ip: string }
 /** Identifiants visés par une sonde : les vrais (objet de Marie) ou inexistants (tous `NIL`). */
-interface Ids { company: string; doc: string; session: string; facilitator: string; contact: string; offer: string; offerSent: string; offerPending: string; offerReceipt: string; receipt: string; followup: string; appointment: string; appointmentDue: string }
+interface Ids { company: string; doc: string; session: string; facilitator: string; contact: string; offer: string; offerSent: string; offerPending: string; offerReceipt: string; receipt: string; followup: string; appointment: string; appointmentDue: string; opportunity: string; opportunityAgreed: string }
 
 /**
  * Une sonde par route « objet » : elle appelle la route avec les identifiants donnés, en tant que `as`.
  * Ajouter une route « objet » au registre sans écrire sa sonde fait échouer le premier test (qui ne dépend pas de la base).
  */
+/** Routes de lecture des opportunités : le Responsable commercial (même sans lien d'équipe) les lit légitimement. */
+const READ_ALL_FOR_HEAD_OF_SALES = ['GET /opportunities', 'GET /opportunities/:id'];
+
 const PROBES: Record<string, (api: Api, as: As, ids: Ids) => Promise<ApiResponse>> = {
   'GET /companies/:id': (api, as, ids) => api.call('GET', `/api/v1/companies/${ids.company}`, as),
   'GET /companies/:id/export': (api, as, ids) => api.call('GET', `/api/v1/companies/${ids.company}/export`, as),
@@ -52,6 +55,14 @@ const PROBES: Record<string, (api: Api, as: As, ids: Ids) => Promise<ApiResponse
   'POST /appointments/:id/postpone': (api, as, ids) => api.call('POST', `/api/v1/appointments/${ids.appointment}/postpone`, { ...as, body: { version: 1, startsAt: new Date(Date.now() + 8 * 86400000).toISOString(), text: 'Reporté par un pirate' } }),
   'POST /appointments/:id/hold': (api, as, ids) => api.call('POST', `/api/v1/appointments/${ids.appointmentDue}/hold`, { ...as, body: { version: 1, text: 'Tenu par un pirate' } }),
   'POST /appointments/:id/cancel': (api, as, ids) => api.call('POST', `/api/v1/appointments/${ids.appointment}/cancel`, { ...as, body: { version: 1, text: 'Annulé par un pirate' } }),
+  'GET /opportunities': (api, as, ids) => api.call('GET', `/api/v1/opportunities?companyId=${ids.company}`, as),
+  'POST /opportunities': (api, as, ids) => api.call('POST', '/api/v1/opportunities', { ...as, body: { companyId: ids.company, title: 'Opportunité piégée', amount: '1000', source: 'OTHER' } }),
+  'GET /opportunities/:id': (api, as, ids) => api.call('GET', `/api/v1/opportunities/${ids.opportunity}`, as),
+  'PUT /opportunities/:id': (api, as, ids) => api.call('PUT', `/api/v1/opportunities/${ids.opportunity}`, { ...as, body: { version: 1, title: 'Opportunité piratée' } }),
+  'POST /opportunities/:id/advance': (api, as, ids) => api.call('POST', `/api/v1/opportunities/${ids.opportunity}/advance`, { ...as, body: { version: 1 } }),
+  'POST /opportunities/:id/waiver': (api, as, ids) => api.call('POST', `/api/v1/opportunities/${ids.opportunity}/waiver`, { ...as, body: { version: 1, reason: 'Dérogation piratée' } }),
+  'POST /opportunities/:id/close-lost': (api, as, ids) => api.call('POST', `/api/v1/opportunities/${ids.opportunity}/close-lost`, { ...as, body: { version: 1, reason: 'PRICE', note: 'Perdue par un pirate' } }),
+  'POST /opportunities/:id/close-won': (api, as, ids) => api.call('POST', `/api/v1/opportunities/${ids.opportunityAgreed}/close-won`, { ...as, body: { version: 1 } }),
   'POST /offers/:id/withdraw': (api, as, ids) => api.call('POST', `/api/v1/offers/${ids.offerSent}/withdraw`, { ...as, body: { version: 2, reason: 'Retrait piraté' } }),
   'GET /facilitators/:id': (api, as, ids) => api.call('GET', `/api/v1/facilitators/${ids.facilitator}`, as),
   'GET /documents': (api, as, ids) => api.call('GET', `/api/v1/documents?ownerType=company&ownerId=${ids.company}`, as),
@@ -133,13 +144,18 @@ describeDb('Contrat anti-IDOR : un acteur sans portée reçoit la réponse d\'un
       ...m, raw: { type: 'application/octet-stream', data: pdf() },
     });
     expect(doc.status).toBe(201);
+    const opportunity = await api.call('POST', '/api/v1/opportunities', { ...m, body: { companyId: company.body.id, title: 'Secret-OPPORTUNITE-IDOR', amount: '9000000', source: 'REFERRAL' } });
+    expect(opportunity.status).toBe(201);
+    const opportunityAgreed = await api.call('POST', '/api/v1/opportunities', { ...m, body: { companyId: company.body.id, title: 'Secret-OPPORTUNITE-IDOR gagnable', amount: '3000000', source: 'EVENT' } });
+    expect(opportunityAgreed.status).toBe(201);
+    await t.prisma.db.opportunity.update({ where: { id: opportunityAgreed.body.id }, data: { stage: 'AGREEMENT_IN_PRINCIPLE' } });
     const second = await login(marie);
     return {
       marie: m,
       chef: chefSession,
       attackers: { paul: await login(paul), autreChef: await login(autreChef) },
-      real: { company: company.body.id as string, doc: doc.body.id as string, session: second.sessionId, facilitator: facilitator.body.id as string, contact: contact.body.id as string, offer: offer.body.id as string, offerSent: offerSent.body.id as string, offerPending: offerPending.body.id as string, offerReceipt: offerReceipt.body.id as string, receipt: receipt.body.id as string, followup: followup.body.id as string, appointment: appointment.body.id as string, appointmentDue: appointmentDue.body.id as string } satisfies Ids,
-      nil: { company: NIL, doc: NIL, session: NIL, facilitator: NIL, contact: NIL, offer: NIL, offerSent: NIL, offerPending: NIL, offerReceipt: NIL, receipt: NIL, followup: NIL, appointment: NIL, appointmentDue: NIL } satisfies Ids,
+      real: { company: company.body.id as string, doc: doc.body.id as string, session: second.sessionId, facilitator: facilitator.body.id as string, contact: contact.body.id as string, offer: offer.body.id as string, offerSent: offerSent.body.id as string, offerPending: offerPending.body.id as string, offerReceipt: offerReceipt.body.id as string, receipt: receipt.body.id as string, followup: followup.body.id as string, appointment: appointment.body.id as string, appointmentDue: appointmentDue.body.id as string, opportunity: opportunity.body.id as string, opportunityAgreed: opportunityAgreed.body.id as string } satisfies Ids,
+      nil: { company: NIL, doc: NIL, session: NIL, facilitator: NIL, contact: NIL, offer: NIL, offerSent: NIL, offerPending: NIL, offerReceipt: NIL, receipt: NIL, followup: NIL, appointment: NIL, appointmentDue: NIL, opportunity: NIL, opportunityAgreed: NIL } satisfies Ids,
       secondSession: second,
     };
   }
@@ -148,6 +164,8 @@ describeDb('Contrat anti-IDOR : un acteur sans portée reçoit la réponse d\'un
     const w = await world();
     const probe = PROBES[key];
     for (const [name, attacker] of Object.entries(w.attackers)) {
+      // Exception documentée (matrice RBAC) : le Responsable commercial a la lecture « Tous » sur les opportunités ; seule l'écriture suit la portée.
+      if (name === 'autreChef' && READ_ALL_FOR_HEAD_OF_SALES.includes(key)) continue;
       const onForeign = await probe(api, attacker, w.real);
       const onMissing = await probe(api, attacker, w.nil);
       // Même statut ET même corps : aucun indice sur l'existence de l'objet.
@@ -164,11 +182,13 @@ describeDb('Contrat anti-IDOR : un acteur sans portée reçoit la réponse d\'un
       expect(onForeign.bytes.toString('utf8')).not.toContain('Secret-RECEPISSE-IDOR');
       expect(onForeign.bytes.toString('utf8')).not.toContain('Secret-RELANCE-IDOR');
       expect(onForeign.bytes.toString('utf8')).not.toContain('Secret-RDV-IDOR');
+      expect(onForeign.bytes.toString('utf8')).not.toContain('Secret-OPPORTUNITE-IDOR');
       expect(onForeign.bytes.toString('utf8')).not.toContain('Offre en attente de décharge');
     }
     // Contrôle positif : le propriétaire, lui, réussit (le test n'est pas vide), puis les dégâts éventuels sont vérifiés.
     // L'archivage exige le droit de suppression, que Marie n'a pas : c'est son chef (même équipe) qui l'exerce.
-    const owner = key === 'POST /documents/:id/archive' || key === 'DELETE /contacts/:id' ? w.chef : w.marie;
+    // La dérogation et la clôture « gagnée » (D28) relèvent du Responsable commercial.
+    const owner = ['POST /documents/:id/archive', 'DELETE /contacts/:id', 'POST /opportunities/:id/waiver', 'POST /opportunities/:id/close-won'].includes(key) ? w.chef : w.marie;
     const ok = await probe(api, owner, w.real);
     expect([key, ok.status < 300]).toEqual([key, true]);
   }, 60_000);
@@ -218,6 +238,14 @@ describeDb('Contrat anti-IDOR : un acteur sans portée reçoit la réponse d\'un
     const agenda = await PROBES['GET /appointments'](api, w.marie, w.real);
     expect(agenda.body.items).toHaveLength(2);
     for (const item of agenda.body.items) expect(item).toMatchObject({ status: 'PLANNED', version: 1, note: 'Secret-RDV-IDOR' });
+    // Les opportunités de Marie sont intactes (ouvertes, version 1, même étape) et aucune opportunité piège n'a été créée.
+    for (const attacker of Object.values(w.attackers)) {
+      for (const key of ['POST /opportunities', 'PUT /opportunities/:id', 'POST /opportunities/:id/advance', 'POST /opportunities/:id/waiver', 'POST /opportunities/:id/close-lost', 'POST /opportunities/:id/close-won']) await PROBES[key](api, attacker, w.real);
+    }
+    const pipeline = await PROBES['GET /opportunities'](api, w.marie, w.real);
+    expect(pipeline.body.items).toHaveLength(2);
+    for (const item of pipeline.body.items) expect(item).toMatchObject({ status: 'OPEN', version: 1, waiverReason: null });
+    expect(pipeline.body.items.map((i: { stage: string }) => i.stage).sort()).toEqual(['AGREEMENT_IN_PRINCIPLE', 'QUALIFICATION']);
     const detail = await api.call('GET', `/api/v1/documents/${w.real.doc}`, w.marie);
     expect(detail.status).toBe(200);
     expect(detail.body.versions).toHaveLength(1);
