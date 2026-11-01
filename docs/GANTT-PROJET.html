@@ -1,0 +1,119 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Diagramme de Gantt du projet</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="INDEX.html">Index</a> · <a href="GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="ARCHITECTURE.html">Architecture</a> · <a href="SECURITY.html">Sécurité</a> · <a href="METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="TECH-DEBT.html">Dette</a> · <a href="design/README.html">Design</a> · <a href="livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>Diagramme de Gantt du projet</h1>
+<p><strong>Date</strong> : 01/11/2026 · <strong>Statut</strong> : <strong>état réel jusqu'à aujourd'hui, prévisions au-delà (à valider)</strong> · <strong>Lié à</strong> : <a href="RESTE-A-FAIRE-DEVELOPPEMENT.html">reste à faire sur le développement</a> · <strong>Généré par</strong> <code>docs/gantt/build.mjs</code></p>
+<blockquote><p>Le passé vient de l'historique Git : le début d'un lot est son premier commit, la fin est sa fusion dans la branche principale. L'avenir est une <strong>prévision</strong>, pas un engagement : elle dépend de vos validations, des décisions listées en bas du schéma et des prérequis externes (Microsoft 365, avis juridique).</p></blockquote>
+<p><img src="gantt/gantt.svg" alt="Diagramme de Gantt du projet" loading="lazy" style="max-width:100%;border:1px solid var(--border);border-radius:10px;display:block"></p>
+<h2>Résumé</h2>
+<div class="table-wrap"><table><thead><tr><th>Repère</th><th>Date</th></tr></thead><tbody>
+<tr><td><strong>Lancement</strong> (Sprint 0)</td><td>20/10/2026</td></tr>
+<tr><td>Premier jalon de code validé (S1 à S3.3)</td><td>20/10/2026 (le même jour)</td></tr>
+<tr><td>Fin de la fondation et du design</td><td>22/10/2026</td></tr>
+<tr><td>Module commercial : dernier lot validé (S4.1b)</td><td>30/10/2026</td></tr>
+<tr><td>Lots réalisés et validés au 01/11/2026</td><td>32 (dont 23 étiquetés)</td></tr>
+<tr><td><strong>Prochaine session</strong></td><td>Validation de S4.2a prévue le 02/11/2026, puis S4.2b (décharges) du 03/11 au 04/11/2026</td></tr>
+<tr><td>Fin du module commercial (prévision)</td><td>19/11/2026</td></tr>
+<tr><td>Fin d'Investudy (prévision)</td><td>30/11/2026</td></tr>
+<tr><td><strong>Mise en production du CRM, prévision prudente</strong></td><td><strong>23/12/2026</strong></td></tr>
+<tr><td>Mise en production du CRM au rythme observé la semaine du 28/10 (un lot par jour ouvré)</td><td>vers le 26/11/2026</td></tr>
+<tr><td>ERP (finance, RH, fiscalité)</td><td>Démarrage à décider, non chiffré</td></tr>
+</tbody></table></div>
+<h2>Hypothèses de la prévision</h2>
+<ol><li><strong>Une session = deux jours ouvrés</strong>, soit le double du rythme observé : elle tient compte des validations, des retours de tests (S4.0 en a demandé deux : S4.0b et S4.0c) et des décisions à obtenir.</li><li>Départ le <strong>lundi 02/11/2026</strong> ; aucun jour férié ni congé n'est retiré (les fêtes de fin d'année pourraient décaler S7.1 et S7.2).</li><li>Les tailles par lot sont celles de <a href="RESTE-A-FAIRE-DEVELOPPEMENT.html">reste à faire</a> : ordres de grandeur.</li><li>Les <strong>échéances de décision</strong> (losanges orange) sont les dates <strong>au plus tard</strong> : une réponse tardive décale le lot qu'elle bloque.</li><li>S7.2 exige l'accès Microsoft 365, l'avis juridique et l'analyse antivirus des documents ; <strong>sans eux, la mise en production ne peut pas avoir lieu</strong>, quelle que soit l'avancée du code.</li></ol>
+<h2>Détail par phase</h2>
+<h3>Cadrage et fondations</h3>
+<div class="table-wrap"><table><thead><tr><th>Lot</th><th>Début</th><th>Fin</th><th>État</th><th>Étiquette</th></tr></thead><tbody>
+<tr><td>Sprint 0 — vision, architecture, ADR, risques</td><td>20/10/2026</td><td>20/10/2026</td><td>Validé</td><td>—</td></tr>
+<tr><td>S1 — squelette du CRM, garde-fous d’architecture</td><td>20/10/2026</td><td>20/10/2026</td><td>Validé</td><td><code>s1-validated</code></td></tr>
+<tr><td>S2 — sécurité et données du noyau (droits, audit)</td><td>20/10/2026</td><td>20/10/2026</td><td>Validé</td><td><code>s2-validated</code></td></tr>
+<tr><td>S3.1 — authentification</td><td>20/10/2026</td><td>20/10/2026</td><td>Validé</td><td><code>s3-1-validated</code></td></tr>
+<tr><td>S3.2 — second facteur, premier SuperAdmin</td><td>20/10/2026</td><td>20/10/2026</td><td>Validé</td><td><code>s3-2-validated</code></td></tr>
+<tr><td>S3.3 — autorisation et administration</td><td>20/10/2026</td><td>20/10/2026</td><td>Validé</td><td><code>s3-3-validated</code></td></tr>
+<tr><td>S3.4 — interface de base</td><td>20/10/2026</td><td>21/10/2026</td><td>Validé</td><td><code>s3-4-validated</code></td></tr>
+<tr><td>S3.5 — mot de passe oublié, livrables</td><td>21/10/2026</td><td>21/10/2026</td><td>Validé</td><td><code>s3-5-validated</code></td></tr>
+</tbody></table></div>
+<h3>Design, accessibilité, habillage</h3>
+<div class="table-wrap"><table><thead><tr><th>Lot</th><th>Début</th><th>Fin</th><th>État</th><th>Étiquette</th></tr></thead><tbody>
+<tr><td>Design v0.4.1 et cadrages H1, H2, S3.6, UX</td><td>21/10/2026</td><td>21/10/2026</td><td>Validé</td><td><code>design-v0.4.1, cadrages-validated</code></td></tr>
+<tr><td>A11Y-1 — accessibilité (audit automatique)</td><td>21/10/2026</td><td>21/10/2026</td><td>Validé</td><td><code>a11y-1-validated</code></td></tr>
+<tr><td>H1 — habillage minimal et hub</td><td>21/10/2026</td><td>21/10/2026</td><td>Validé</td><td><code>h1-validated</code></td></tr>
+<tr><td>H1b — composants de données</td><td>21/10/2026</td><td>21/10/2026</td><td>Validé</td><td><code>h1b-validated</code></td></tr>
+<tr><td>Arbitrage D21 — données de l’API des entreprises</td><td>21/10/2026</td><td>22/10/2026</td><td>Validé</td><td><code>d21-validated</code></td></tr>
+<tr><td>H2a — écrans d’accès au nouveau style</td><td>22/10/2026</td><td>22/10/2026</td><td>Validé</td><td><code>h2a-validated</code></td></tr>
+<tr><td>H2b — sessions et historique des connexions</td><td>22/10/2026</td><td>22/10/2026</td><td>Validé</td><td><code>h2b-validated</code></td></tr>
+<tr><td>S3.6 — documents</td><td>22/10/2026</td><td>22/10/2026</td><td>Validé</td><td><code>s3-6-validated</code></td></tr>
+<tr><td>Contrat anti-IDOR et correctif CI</td><td>22/10/2026</td><td>22/10/2026</td><td>Validé</td><td><code>idor-validated</code></td></tr>
+</tbody></table></div>
+<h3>Retours de tests et hygiène</h3>
+<div class="table-wrap"><table><thead><tr><th>Lot</th><th>Début</th><th>Fin</th><th>État</th><th>Étiquette</th></tr></thead><tbody>
+<tr><td>S3.7 — UX de l’authentification</td><td>22/10/2026</td><td>27/10/2026</td><td>Validé</td><td><code>s3-7-validated</code></td></tr>
+<tr><td>Cadrage des retours de tests UX-01 à UX-04</td><td>22/10/2026</td><td>27/10/2026</td><td>Validé</td><td>—</td></tr>
+<tr><td>Hygiène du dépôt public, dépendances, CLAUDE.md</td><td>22/10/2026</td><td>27/10/2026</td><td>Validé</td><td>—</td></tr>
+<tr><td>Rapports journaliers et exécution locale</td><td>22/10/2026</td><td>27/10/2026</td><td>Validé</td><td>—</td></tr>
+<tr><td>S3.8 — rôles : sélection par familles</td><td>28/10/2026</td><td>28/10/2026</td><td>Validé</td><td><code>s3-8-validated</code></td></tr>
+</tbody></table></div>
+<h3>Module commercial (Business Development)</h3>
+<div class="table-wrap"><table><thead><tr><th>Lot</th><th>Début</th><th>Fin</th><th>État</th><th>Étiquette</th></tr></thead><tbody>
+<tr><td>S4.0 — fiche d’entreprise, facilitateurs, commission</td><td>28/10/2026</td><td>29/10/2026</td><td>Validé</td><td><code>s4-0-validated</code></td></tr>
+<tr><td>S4.0b — retours de tests de la fiche</td><td>29/10/2026</td><td>30/10/2026</td><td>Validé</td><td><code>s4-0b-validated</code></td></tr>
+<tr><td>S4.0c — modifier et exporter une fiche</td><td>29/10/2026</td><td>30/10/2026</td><td>Validé</td><td><code>s4-0c-validated</code></td></tr>
+<tr><td>Node 22 : environnement de développement</td><td>29/10/2026</td><td>30/10/2026</td><td>Validé</td><td>—</td></tr>
+<tr><td>Wireframes (45 écrans de référence)</td><td>29/10/2026</td><td>30/10/2026</td><td>Validé</td><td>—</td></tr>
+<tr><td>Cas d’usage : flux transverses F1 à F7</td><td>29/10/2026</td><td>30/10/2026</td><td>Validé</td><td>—</td></tr>
+<tr><td>Cas d’usage : module commercial C1 à C5</td><td>30/10/2026</td><td>30/10/2026</td><td>Validé</td><td>—</td></tr>
+<tr><td>S4.1a — contacts des entreprises</td><td>30/10/2026</td><td>30/10/2026</td><td>Validé</td><td><code>s4-1a-validated</code></td></tr>
+<tr><td>S4.1b — tableau des entreprises (filtres, tri, colonnes)</td><td>30/10/2026</td><td>30/10/2026</td><td>Validé</td><td><code>s4-1b-validated</code></td></tr>
+<tr><td>Cas d’usage : module Investudy I1 à I5</td><td>30/10/2026</td><td>30/10/2026</td><td>Validé</td><td>—</td></tr>
+<tr><td>S4.2a — offres (terminé, validation en attente)</td><td>30/10/2026</td><td>02/11/2026</td><td>Terminé, validation en attente</td><td>—</td></tr>
+<tr><td>S4.2b — décharges signées</td><td>03/11/2026</td><td>04/11/2026</td><td>Prévu</td><td>—</td></tr>
+<tr><td>S4.2c — relances</td><td>05/11/2026</td><td>06/11/2026</td><td>Prévu</td><td>—</td></tr>
+<tr><td>S4.2d — agenda, rendez-vous, visites</td><td>09/11/2026</td><td>11/11/2026</td><td>Prévu</td><td>—</td></tr>
+<tr><td>S4.3 — opportunités, pipeline, statuts</td><td>12/11/2026</td><td>16/11/2026</td><td>Prévu</td><td>—</td></tr>
+<tr><td>S4.4 — agrément et ambassadeurs</td><td>17/11/2026</td><td>19/11/2026</td><td>Prévu</td><td>—</td></tr>
+</tbody></table></div>
+<h3>Module Investudy (formation)</h3>
+<div class="table-wrap"><table><thead><tr><th>Lot</th><th>Début</th><th>Fin</th><th>État</th><th>Étiquette</th></tr></thead><tbody>
+<tr><td>S5.1 — catalogue, salles, formateurs</td><td>20/11/2026</td><td>23/11/2026</td><td>Prévu</td><td>—</td></tr>
+<tr><td>S5.2 — sessions, apprenants, inscriptions</td><td>24/11/2026</td><td>26/11/2026</td><td>Prévu</td><td>—</td></tr>
+<tr><td>S5.3 — présences, évaluations, certifications</td><td>27/11/2026</td><td>30/11/2026</td><td>Prévu</td><td>—</td></tr>
+</tbody></table></div>
+<h3>Pilotage, stocks, production</h3>
+<div class="table-wrap"><table><thead><tr><th>Lot</th><th>Début</th><th>Fin</th><th>État</th><th>Étiquette</th></tr></thead><tbody>
+<tr><td>S6.1 — tableaux de bord commerciaux</td><td>01/12/2026</td><td>02/12/2026</td><td>Prévu</td><td>—</td></tr>
+<tr><td>S6.2 — tableaux de bord Investudy, Admin, Sécurité</td><td>03/12/2026</td><td>04/12/2026</td><td>Prévu</td><td>—</td></tr>
+<tr><td>S6.3 — reporting et incidents</td><td>07/12/2026</td><td>09/12/2026</td><td>Prévu</td><td>—</td></tr>
+<tr><td>ST — module Stocks</td><td>10/12/2026</td><td>15/12/2026</td><td>Prévu</td><td>—</td></tr>
+<tr><td>S7.1 — durcissement</td><td>16/12/2026</td><td>18/12/2026</td><td>Prévu</td><td>—</td></tr>
+<tr><td>S7.2 — mise en production du CRM</td><td>21/12/2026</td><td>23/12/2026</td><td>Prévu</td><td>—</td></tr>
+<tr><td>ERP — finance, RH, fiscalité (démarrage à décider)</td><td>24/12/2026</td><td>à décider</td><td>Prévu</td><td>—</td></tr>
+</tbody></table></div>
+<h3>Décisions et prérequis (échéance au plus tard)</h3>
+<div class="table-wrap"><table><thead><tr><th>Lot</th><th>Début</th><th>Fin</th><th>État</th><th>Étiquette</th></tr></thead><tbody>
+<tr><td>Valider S4.2a et les valeurs par défaut D29, D30, D32</td><td>02/11/2026</td><td>02/11/2026</td><td>Échéance</td><td>—</td></tr>
+<tr><td>Détails de l’agrément (D1 à D5) et déclencheur de la commission</td><td>16/11/2026</td><td>16/11/2026</td><td>Échéance</td><td>—</td></tr>
+<tr><td>Règles d’inscription et de certification (D31)</td><td>23/11/2026</td><td>23/11/2026</td><td>Échéance</td><td>—</td></tr>
+<tr><td>Pays en liste fermée (D57) et définition des indicateurs</td><td>30/11/2026</td><td>30/11/2026</td><td>Échéance</td><td>—</td></tr>
+<tr><td>Cas d’usage Reporting et Stocks à valider</td><td>04/12/2026</td><td>04/12/2026</td><td>Échéance</td><td>—</td></tr>
+<tr><td>Accès Microsoft 365 et avis juridique (D9, D11)</td><td>18/12/2026</td><td>18/12/2026</td><td>Échéance</td><td>—</td></tr>
+</tbody></table></div></main></body></html>
