@@ -45,6 +45,7 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <div class="table-wrap"><table><thead><tr><th>Lot</th><th>Tests unitaires API</th><th>Intégration (PostgreSQL jetable)</th><th>Interface</th><th>Mutants tués</th><th>Navigateur réel (Edge + axe)</th></tr></thead><tbody>
 <tr><td>S4.2c — relances</td><td>679 / 679</td><td>268 / 268</td><td>308 / 308</td><td>15 / 15</td><td>77 contrôles, 0 échec (parcours limité)</td></tr>
 <tr><td>S4.2d — agenda</td><td>729 / 729</td><td>286 / 286 (20 suites)</td><td>357 / 357</td><td>24 / 24</td><td>91 contrôles, 0 échec (parcours limité)</td></tr>
+<tr><td>S4.3a — opportunités</td><td>780 réussis</td><td>306 / 306 (21 suites)</td><td>390 / 390</td><td>24 / 24</td><td>105 contrôles, 0 échec (parcours limité)</td></tr>
 </tbody></table></div>
 <p>Pour les lots antérieurs, les chiffres sont dans leurs recettes. Les sondes IDOR s'ajoutent avec chaque route « objet » (voir le contrat ci-dessus) ; les mutants sont des fautes injectées une à une (un test doit échouer à chaque fois) ; l'audit navigateur est <code>scripts/a11y-audit.mjs</code> (résultats dans <code>docs/accessibilite/resultats/</code>).</p>
 <h2>Copie Excel du Gantt</h2>

@@ -14,7 +14,7 @@
 | Fin de la fondation et du design | 22/10/2026 |
 | Module commercial : dernier lot validé (S4.2d) | 01/11/2026 |
 | Lots réalisés et validés au 01/11/2026 | 36 (dont 27 étiquetés) |
-| **Prochaine session** | S4.3 (opportunités, pipeline, statuts), prévue du 12/11 au 16/11/2026 |
+| **Prochaine session** | Validation de S4.3a, puis S4.3b (statuts d'entreprise, propriétaire, fiche 360°) prévue du 12/11 au 16/11/2026 |
 | Fin du module commercial (prévision) | 19/11/2026 |
 | Fin d'Investudy (prévision) | 30/11/2026 |
 | **Mise en production du CRM, prévision prudente** | **23/12/2026** |
@@ -80,7 +80,8 @@
 | S4.2b — décharges signées | 01/11/2026 | 01/11/2026 | Validé | `s4-2b-validated` |
 | S4.2c — relances | 01/11/2026 | 01/11/2026 | Validé | `s4-2c-validated` |
 | S4.2d — agenda, rendez-vous, visites | 01/11/2026 | 01/11/2026 | Validé | `s4-2d-validated` |
-| S4.3 — opportunités, pipeline, statuts | 12/11/2026 | 16/11/2026 | Prévu | — |
+| S4.3a — opportunités, pipeline (terminé, validation en attente) | 01/11/2026 | 01/11/2026 | Terminé, validation en attente | — |
+| S4.3b — statuts d’entreprise, propriétaire, fiche 360° | 12/11/2026 | 16/11/2026 | Prévu | — |
 | S4.4 — agrément et ambassadeurs | 17/11/2026 | 19/11/2026 | Prévu | — |
 
 ### Module Investudy (formation)

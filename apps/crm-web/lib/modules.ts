@@ -25,7 +25,7 @@ export const MODULES: readonly AppModule[] = [
   { id: 'contacts', label: 'Contacts', description: 'Interlocuteurs des entreprises', icon: 'user', group: 'Espace de travail', href: '/contacts', permission: 'bd.contact.read' },
   { id: 'followups', label: 'Relances', description: 'Relances à faire sur les offres', icon: 'cal', group: 'Espace de travail', href: '/followups', permission: 'bd.followup.read' },
   { id: 'offers', label: 'Offres', description: 'Offres faites aux entreprises', icon: 'doc', group: 'Espace de travail', href: '/offers', permission: 'bd.offer.read' },
-  { id: 'opportunities', label: 'Opportunités', description: 'Pipeline commercial', icon: 'target', group: 'Espace de travail' },
+  { id: 'opportunities', label: 'Opportunités', description: 'Pipeline commercial', icon: 'target', group: 'Espace de travail', href: '/opportunities', permission: 'bd.opportunity.read' },
   { id: 'training', label: 'Formation', description: 'Catalogue, sessions et inscriptions Investudy', icon: 'cap', group: 'Espace de travail' },
   { id: 'finance', label: 'Finance', description: 'Facturation et suivi des paiements', icon: 'card', group: 'Opérations' },
   { id: 'hr', label: 'Ressources humaines', description: 'Personnel et organisation', icon: 'brief', group: 'Opérations' },

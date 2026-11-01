@@ -57,7 +57,8 @@ const ITEMS = [
     { name: 'S4.2b — décharges signées', start: '2026-11-01', end: '2026-11-01', state: 'done', tag: 's4-2b-validated' },
     { name: 'S4.2c — relances', start: '2026-11-01', end: '2026-11-01', state: 'done', tag: 's4-2c-validated' },
     { name: 'S4.2d — agenda, rendez-vous, visites', start: '2026-11-01', end: '2026-11-01', state: 'done', tag: 's4-2d-validated' },
-    { name: 'S4.3 — opportunités, pipeline, statuts', start: '2026-11-12', end: '2026-11-16', state: 'plan' },
+    { name: 'S4.3a — opportunités, pipeline (terminé, validation en attente)', start: '2026-11-01', end: '2026-11-01', state: 'wait' },
+    { name: 'S4.3b — statuts d’entreprise, propriétaire, fiche 360°', start: '2026-11-12', end: '2026-11-16', state: 'plan' },
     { name: 'S4.4 — agrément et ambassadeurs', start: '2026-11-17', end: '2026-11-19', state: 'plan' },
   ] },
   { phase: 'Module Investudy (formation)', rows: [
@@ -197,7 +198,7 @@ const md = `# Diagramme de Gantt du projet
 | Fin de la fondation et du design | 22/10/2026 |
 | Module commercial : dernier lot validé (S4.2d) | 01/11/2026 |
 | Lots réalisés et validés au ${frFull(TODAY)} | ${done.length} (dont ${done.filter((r) => r.tag).length} étiquetés) |
-| **Prochaine session** | S4.3 (opportunités, pipeline, statuts), prévue du 12/11 au 16/11/2026 |
+| **Prochaine session** | Validation de S4.3a, puis S4.3b (statuts d'entreprise, propriétaire, fiche 360°) prévue du 12/11 au 16/11/2026 |
 | Fin du module commercial (prévision) | 19/11/2026 |
 | Fin d'Investudy (prévision) | 30/11/2026 |
 | **Mise en production du CRM, prévision prudente** | **23/12/2026** |

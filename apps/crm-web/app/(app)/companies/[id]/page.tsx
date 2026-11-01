@@ -78,6 +78,11 @@ export default function CompanyPage() {
                 <Icon name="cal" className="size-4" />Planifier un rendez-vous
               </button>
             )}
+            {can(profile, 'bd.opportunity.create') && company.status !== 'ARCHIVED' && (
+              <button type="button" className="secondary inline-flex items-center gap-2" onClick={() => router.push(`/opportunities?new=1&companyId=${company.id}`)}>
+                <Icon name="target" className="size-4" />Nouvelle opportunité
+              </button>
+            )}
             {can(profile, 'bd.company.update') && (
               <button type="button" className="inline-flex items-center gap-2" onClick={() => setEditing(true)}>
                 <Icon name="gear" className="size-4" />Modifier

@@ -36,6 +36,7 @@ Mis à jour **à chaque lot**, en même temps que le code (règle posée le 2026
 |---|---|---|---|---|---|
 | S4.2c — relances | 679 / 679 | 268 / 268 | 308 / 308 | 15 / 15 | 77 contrôles, 0 échec (parcours limité) |
 | S4.2d — agenda | 729 / 729 | 286 / 286 (20 suites) | 357 / 357 | 24 / 24 | 91 contrôles, 0 échec (parcours limité) |
+| S4.3a — opportunités | 780 réussis | 306 / 306 (21 suites) | 390 / 390 | 24 / 24 | 105 contrôles, 0 échec (parcours limité) |
 
 Pour les lots antérieurs, les chiffres sont dans leurs recettes. Les sondes IDOR s'ajoutent avec chaque route « objet » (voir le contrat ci-dessus) ; les mutants sont des fautes injectées une à une (un test doit échouer à chaque fois) ; l'audit navigateur est `scripts/a11y-audit.mjs` (résultats dans `docs/accessibilite/resultats/`).
 

@@ -4,6 +4,9 @@ import { DocumentsModule } from '../documents/documents.module';
 import { IamModule } from '../iam/iam.module';
 import { CompanyDocumentOwnerResolver } from './application/company-document-owner';
 import { GetAppointmentHandler, ListAppointmentsHandler, PlanAppointmentUseCase, TransitionAppointmentUseCase, UpdateAppointmentUseCase } from './application/appointment-use-cases';
+import {
+  AdvanceOpportunityUseCase, CloseOpportunityUseCase, CreateOpportunityUseCase, GetOpportunityHandler, GrantWaiverUseCase, ListOpportunitiesHandler, UpdateOpportunityUseCase,
+} from './application/opportunity-use-cases';
 import { PlannedFollowupsCloser } from './application/followup-closer';
 import { CloseFollowupUseCase, GetFollowupHandler, ListFollowupsHandler, PlanFollowupUseCase, UpdateFollowupUseCase } from './application/followup-use-cases';
 import { OfferDocumentOwnerResolver, ReceiptDocumentOwnerResolver } from './application/offer-document-owners';
@@ -26,6 +29,7 @@ import { CONTACT_REPOSITORY } from './domain/contact-repository';
 import { FACILITATOR_REPOSITORY } from './domain/facilitator-repository';
 import { FOLLOWUP_REPOSITORY } from './domain/followup-repository';
 import { OFFER_REPOSITORY } from './domain/offer-repository';
+import { DECISION_MAKER_MEETINGS, OPPORTUNITY_REPOSITORY } from './domain/opportunity-repository';
 import { RECEIPT_REPOSITORY } from './domain/receipt-repository';
 import { PrismaAppointmentRepository } from './infrastructure/prisma-appointment.repository';
 import { PrismaCompanyOverviewReader } from './infrastructure/prisma-company-overview.reader';
@@ -34,6 +38,7 @@ import { PrismaContactRepository } from './infrastructure/prisma-contact.reposit
 import { PrismaFacilitatorRepository } from './infrastructure/prisma-facilitator.repository';
 import { PrismaFollowupRepository } from './infrastructure/prisma-followup.repository';
 import { PrismaOfferRepository } from './infrastructure/prisma-offer.repository';
+import { PrismaDecisionMakerMeetings, PrismaOpportunityRepository } from './infrastructure/prisma-opportunity.repository';
 import { PrismaReceiptRepository } from './infrastructure/prisma-receipt.repository';
 import { AppointmentsController } from './presentation/appointments.controller';
 import { CompaniesController } from './presentation/companies.controller';
@@ -41,12 +46,13 @@ import { ContactsController } from './presentation/contacts.controller';
 import { FacilitatorsController } from './presentation/facilitators.controller';
 import { FollowupsController } from './presentation/followups.controller';
 import { OffersController } from './presentation/offers.controller';
+import { OpportunitiesController } from './presentation/opportunities.controller';
 import { ReceiptsController } from './presentation/receipts.controller';
 
 /** Composition root du module Business Development. */
 @Module({
   imports: [AuditModule, IamModule, DocumentsModule],
-  controllers: [CompaniesController, FacilitatorsController, ContactsController, OffersController, ReceiptsController, FollowupsController, AppointmentsController],
+  controllers: [CompaniesController, FacilitatorsController, ContactsController, OffersController, ReceiptsController, FollowupsController, AppointmentsController, OpportunitiesController],
   providers: [
     RegisterCompanyUseCase,
     RegisterFacilitatorUseCase,
@@ -86,6 +92,13 @@ import { ReceiptsController } from './presentation/receipts.controller';
     TransitionAppointmentUseCase,
     GetAppointmentHandler,
     ListAppointmentsHandler,
+    CreateOpportunityUseCase,
+    UpdateOpportunityUseCase,
+    AdvanceOpportunityUseCase,
+    GrantWaiverUseCase,
+    CloseOpportunityUseCase,
+    GetOpportunityHandler,
+    ListOpportunitiesHandler,
     { provide: COMPANY_REPOSITORY, useClass: PrismaCompanyRepository },
     { provide: COMPANY_OVERVIEW_READER, useClass: PrismaCompanyOverviewReader },
     { provide: FACILITATOR_REPOSITORY, useClass: PrismaFacilitatorRepository },
@@ -94,6 +107,8 @@ import { ReceiptsController } from './presentation/receipts.controller';
     { provide: RECEIPT_REPOSITORY, useClass: PrismaReceiptRepository },
     { provide: FOLLOWUP_REPOSITORY, useClass: PrismaFollowupRepository },
     { provide: APPOINTMENT_REPOSITORY, useClass: PrismaAppointmentRepository },
+    { provide: OPPORTUNITY_REPOSITORY, useClass: PrismaOpportunityRepository },
+    { provide: DECISION_MAKER_MEETINGS, useClass: PrismaDecisionMakerMeetings },
   ],
 })
 /** Module « Développement commercial » : entreprises cibles et facilitateurs (premières briques du pipeline commercial). */

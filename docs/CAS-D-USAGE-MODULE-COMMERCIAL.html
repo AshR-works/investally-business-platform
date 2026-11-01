@@ -91,13 +91,13 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <ul><li><strong>Scénario</strong> : depuis une entreprise, une offre ou une opportunité, « Planifier » préremplit le lien. <strong>État</strong> : à venir (S4.2b).</li></ul>
 <hr>
 <h2>7. Opportunités <em>(flux C4, S4.3)</em></h2>
-<h3>CU-C-40 — Créer une opportunité</h3>
+<h3>CU-C-40 — Créer une opportunité <em>(réalisé, S4.3a)</em></h3>
 <ul><li><strong>Acteur</strong> : chargé de compte. <strong>Écran</strong> : 19. <strong>Scénario</strong> : entreprise, intitulé, montant estimé, source ; l'opportunité apparaît en « Qualification ». <strong>Règle</strong> : plusieurs opportunités simultanées par entreprise. <strong>Droits</strong> : <code>bd.opportunity.create</code> (Propre).</li></ul>
-<h3>CU-C-41 — Faire avancer une opportunité</h3>
+<h3>CU-C-41 — Faire avancer une opportunité <em>(réalisé, S4.3a ; alternative clavier : « Déplacer vers… » ; glisser-déposer non fait : D97)</em></h3>
 <ul><li><strong>Écrans</strong> : 19 (cartes), 20 (par étape), 21 (fiche). <strong>Scénario</strong> : « Passer à l'étape suivante » ; en vue par étape, la carte se déplace ; <strong>alternative clavier</strong> par un menu « Déplacer vers… ».</li><li><strong>Règles</strong> : étapes dans l'ordre ; chaque passage tracé ; version contrôlée. Le passage à « Accord de principe » est soumis à la règle du rendez-vous décideur (F1). <strong>Étapes du prototype</strong> (à valider) : Qualification, Proposition, Négociation, Accord de principe, Agrément. <strong>Droits</strong> : <code>bd.opportunity.advance</code> (Propre).</li></ul>
-<h3>CU-C-42 — Clore une opportunité (perdue ou gagnée)</h3>
+<h3>CU-C-42 — Clore une opportunité (perdue ou gagnée) <em>(réalisé, S4.3a ; motifs en liste fermée, sans réouverture : D94, D95)</em></h3>
 <ul><li><strong>Acteur</strong> : chargé de compte pour une opportunité <strong>perdue</strong> ; Responsable commercial pour une opportunité <strong>gagnée</strong> (décision D28). <strong>Scénario</strong> : « Clore », issue, motif (obligatoire pour une perte), confirmation. <strong>Règle</strong> : une opportunité clôturée est <strong>immuable</strong> et la clôture est tracée.</li><li><strong>Droits</strong> : <code>bd.opportunity.close_lost</code> (chargé de compte Propre, Responsable commercial Équipe) et <code>bd.opportunity.close_won</code> (Responsable commercial Équipe) : à créer avec S4.3.</li><li><strong>À trancher</strong> : motifs de perte (liste fermée ou texte libre) ; réouverture exceptionnelle.</li></ul>
-<h3>CU-C-43 — Suivre le pipeline</h3>
+<h3>CU-C-43 — Suivre le pipeline <em>(réalisé en lecture, S4.3a ; export et filtre par responsable non faits : D97)</em></h3>
 <ul><li><strong>Acteur</strong> : Responsable commercial, Direction. Vue de toutes les opportunités de l'équipe (écrans 20 et tableaux de bord 33 à 35) ; export tracé. <strong>Droits</strong> : lecture Tous pour le Responsable commercial et la Direction.</li></ul>
 <hr>
 <h2>8. Facilitateurs et commissions (rappel)</h2>

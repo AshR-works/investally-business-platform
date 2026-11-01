@@ -265,7 +265,13 @@
           "tag": "s4-2d-validated"
         },
         {
-          "name": "S4.3 — opportunités, pipeline, statuts",
+          "name": "S4.3a — opportunités, pipeline (terminé, validation en attente)",
+          "start": "2026-11-01",
+          "end": "2026-11-01",
+          "state": "wait"
+        },
+        {
+          "name": "S4.3b — statuts d’entreprise, propriétaire, fiche 360°",
           "start": "2026-11-12",
           "end": "2026-11-16",
           "state": "plan"

@@ -174,6 +174,32 @@ export interface Appointment {
   conflicts?: { id: string; type: string; startsAt: string; endsAt: string; companyName: string }[];
 }
 
+/** Opportunité commerciale d'une entreprise (pipeline). */
+export interface Opportunity {
+  id: string;
+  companyId: string;
+  companyName: string;
+  title: string;
+  /** Montant estimé, texte décimal à deux décimales. */
+  amount: string;
+  currency: string;
+  source: string;
+  stage: string;
+  /** Étape suivante ; `null` à la dernière ou si l'opportunité est clôturée. */
+  nextStage: string | null;
+  status: string;
+  lossReason: string | null;
+  closingNote: string | null;
+  closedAt: string | null;
+  waiverReason: string | null;
+  waivedAt: string | null;
+  stageChangedAt: string;
+  lastActivityAt: string;
+  createdAt: string;
+  /** Verrou optimiste : renvoyé tel quel pour modifier, avancer, déroger ou clore l'opportunité. */
+  version: number;
+}
+
 /** Facilitateur : personne qui met en relation avec une entreprise. */
 export interface Facilitator {
   id: string;

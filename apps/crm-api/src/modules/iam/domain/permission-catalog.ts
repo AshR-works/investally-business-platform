@@ -29,7 +29,7 @@ export const RESOURCES: readonly ResourceDefinition[] = [
   { module: 'bd', resource: 'followup', label: 'Relances', actions: [...CRUD, 'complete'] },
   { module: 'bd', resource: 'appointment', label: 'Rendez-vous', actions: [...CRUD, 'cancel'] },
   { module: 'bd', resource: 'visit', label: 'Visites Investally', actions: [...CRUD] },
-  { module: 'bd', resource: 'opportunity', label: 'Opportunités', actions: [...CRUD, 'advance', 'close', 'export'] },
+  { module: 'bd', resource: 'opportunity', label: 'Opportunités', actions: [...CRUD, 'advance', 'close_lost', 'close_won', 'override', 'export'] },
   { module: 'bd', resource: 'ambassador', label: 'Ambassadeurs', actions: [...CRUD] },
   { module: 'bd', resource: 'facilitator', label: 'Facilitateurs', actions: ['read', 'create'] },
   { module: 'bd', resource: 'commission', label: 'Commissions des facilitateurs', actions: ['read', 'manage'] },

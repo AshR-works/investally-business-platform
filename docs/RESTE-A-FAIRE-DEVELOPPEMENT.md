@@ -1,6 +1,6 @@
 # Reste à faire sur le développement
 
-**Date** : 2026-11-04 · **Statut** : **état des lieux, à valider** · **Calendrier** : [diagramme de Gantt](GANTT-PROJET.md) · **Sources** : [plan de conception](DESIGN-CODE-ARCHITECTURE-PLAN.md), [dette technique](TECH-DEBT.md), [questions et décisions](QUESTIONS-ET-DECISIONS.md), cas d'usage ([flux transverses](CAS-D-USAGE-FLUX-TRANSVERSES.md), [module commercial](CAS-D-USAGE-MODULE-COMMERCIAL.md), [module Investudy](CAS-D-USAGE-MODULE-INVESTUDY.md))
+**Date** : 2026-11-05 · **Statut** : **état des lieux, à valider** · **Calendrier** : [diagramme de Gantt](GANTT-PROJET.md) · **Sources** : [plan de conception](DESIGN-CODE-ARCHITECTURE-PLAN.md), [dette technique](TECH-DEBT.md), [questions et décisions](QUESTIONS-ET-DECISIONS.md), cas d'usage ([flux transverses](CAS-D-USAGE-FLUX-TRANSVERSES.md), [module commercial](CAS-D-USAGE-MODULE-COMMERCIAL.md), [module Investudy](CAS-D-USAGE-MODULE-INVESTUDY.md))
 
 > Ce document répond à une question : **que reste-t-il à construire, dans quel ordre, et qu'est-ce qui bloque quoi ?** Les tailles sont des **ordres de grandeur** (un sprint = une semaine au plus, décision du 2026-10-20), pas des engagements. Rien n'est décidé ici : les décisions en attente sont celles de la direction produit.
 
@@ -25,7 +25,8 @@ Ordre retenu le 2026-10-21 (DEC-005) : module commercial, puis Investudy, puis p
 | **S4.2b** Décharges | *Validé* : décharge signée avec son fichier, une seule décharge valide par offre, documents de l'offre | — | — |
 | **S4.2c** Relances | *Validé* : relances planifiées, liste « À faire », annulation avec l'offre, colonne « Prochaine relance » | — | — |
 | **S4.2d** Agenda | *Validé* : rendez-vous (DAF, décideur) et visites, vues jour, semaine et mois, conflit d'horaire en avertissement, report, tenue et annulation. Reste : rappels envoyés (D85), synchronisation Outlook (D88) | — | — |
-| **S4.3** Opportunités | Pipeline en cartes de 6 avec bascule « Par étape » (DEC-003), règle du rendez-vous décideur avec dérogation, clôture perdue ou gagnée (D28), statuts d'une entreprise, colonnes Responsable, Valeur, Dernière activité | 1,5 session | S4.2d ; étapes et transitions (§ 3) |
+| **S4.3a** Opportunités | *Terminé, validation en attente* : pipeline en cartes ou par étape, règle du rendez-vous décideur, dérogation, clôture perdue ou gagnée (D28) | — | Votre « Je valide » |
+| **S4.3b** Entreprises : statuts et propriétaire | Transitions du statut d'une entreprise (CU-C-05), réattribution du propriétaire (D17), fiche 360° avec ses opportunités, colonnes Responsable et Valeur ; lien rendez-vous ↔ opportunité (D93) | 1 à 1,5 session | S4.3a ; transitions du statut (§ 3) |
 | **S4.4** Agrément et ambassadeurs | Agrément (promesse de paiement), ambassadeurs, événements vers Investudy, suivi des commissions à verser (flux F3) | 1 à 1,5 session | S4.3 ; **détails de l'agrément (D1 à D5)** |
 | **S5.1** Catalogue Investudy | Programmes, formations, salles, formateurs ; modèle de données du module | 1 session | S4.4 ; cas d'usage validés |
 | **S5.2** Sessions et inscriptions | Sessions, apprenants, inscriptions liées à l'agrément, annulation et report | 1,5 session | S5.1 ; D31 (confirmation, liste d'attente) |
@@ -94,6 +95,6 @@ Ordre retenu le 2026-10-21 (DEC-005) : module commercial, puis Investudy, puis p
 | Mises à jour de la matrice de droits : `bd.opportunity.close_lost` et `close_won`, dérogation, agrément, commissions, exports | S4.3, S4.4 | Avec chaque lot |
 
 ## 7. Prochaine session proposée
-**S4.3 — Opportunités.** Pipeline commercial en cartes de six avec bascule « Par étape » (DEC-003), règle du rendez-vous décideur (l'agenda de S4.2d fournit désormais les rendez-vous tenus, D90), clôture perdue ou gagnée (D28), statuts d'une entreprise, colonnes Responsable, Valeur et Dernière activité.
+**S4.3b — Statuts d'entreprise, propriétaire, fiche 360°.** Transitions du statut d'une entreprise (CU-C-05), réattribution du propriétaire (D17, permission dédiée avec confirmation), fiche de l'entreprise avec ses opportunités, offres et rendez-vous, colonnes Responsable et Valeur du tableau, lien d'un rendez-vous à une opportunité (D93).
 
-Avant de commencer, il me faut **vos décisions sur les étapes et les transitions du pipeline** (§ 3), sinon j'applique mes propositions par défaut en les signalant « à confirmer ».
+Avant de commencer, il me faut **votre « Je valide S4.3a »** (ou vos corrections), puis la poussée de la branche. Les valeurs par défaut D36 (étapes, retour en arrière, motifs de perte) sont à confirmer.
