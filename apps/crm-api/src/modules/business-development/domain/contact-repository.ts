@@ -16,6 +16,8 @@ export interface ContactRepository {
   findById(id: string): Promise<Contact | null>;
   /** Suppression logique : le contact disparaît partout. */
   remove(id: string): Promise<void>;
+  /** Nombre de contacts non supprimés de l'entreprise. */
+  countByCompany(companyId: string): Promise<number>;
   /** Contacts non supprimés de la même entreprise portant le même nom OU le même e-mail (hors `excludeId`). */
   findDuplicates(query: { companyId: string; nameKey: string; emailKey: string | null; excludeId?: string }): Promise<Contact[]>;
   list(query: { page: number; pageSize: number; search?: string; companyId?: string; role?: ContactRole; ownerIds?: readonly string[] }): Promise<Page<ContactListItem>>;

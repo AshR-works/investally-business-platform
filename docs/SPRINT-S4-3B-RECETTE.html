@@ -1,0 +1,54 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>S4.3b — statuts d&#x27;entreprise, responsable, fiche 360° : recette</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="INDEX.html">Index</a> · <a href="GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="ARCHITECTURE.html">Architecture</a> · <a href="SECURITY.html">Sécurité</a> · <a href="METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="TECH-DEBT.html">Dette</a> · <a href="design/README.html">Design</a> · <a href="livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>S4.3b — statuts d'entreprise, responsable, fiche 360° : recette</h1>
+<p><em>Branche <code>sprint/s4-3b-statuts-fiche-360</code> (partie de <code>main</code>, après S4.3a) · 2026-11-06 · cas d'usage CU-C-05 et CU-C-08 ; flux C5 ; DDR-0022 ; décisions D17 et D37. Deuxième moitié de la session S4.3 ; la colonne « Valeur » et le lien rendez-vous ↔ opportunité (D93) sont reportés à S4.3c (D104).</em></p>
+<h2>Ce qui est livré</h2>
+<div class="table-wrap"><table><thead><tr><th>Demande</th><th>Réponse</th></tr></thead><tbody>
+<tr><td><strong>Statut à la main</strong></td><td>Sur la fiche, à côté du statut : « Marquer comme contactée », « Qualifier l'entreprise », « Revenir à… » ; <strong>un cran à la fois</strong>, avec retour ; confirmation avant enregistrement</td></tr>
+<tr><td><strong>Critère « Qualifiée »</strong></td><td>Au moins <strong>un contact</strong> (non supprimé) ; sinon refus clair (422)</td></tr>
+<tr><td><strong>Statuts réservés</strong></td><td>« Cliente » (agrément, S4.4) et « Archivée » (archivage) ne se posent <strong>jamais</strong> à la main ; refusés dès la validation de la requête (400)</td></tr>
+<tr><td><strong>Changer de responsable (D17)</strong></td><td>Bouton « Changer de responsable » : liste des personnes <strong>actives au rôle commercial dans votre périmètre</strong> (nom seulement, jamais d'e-mail), <strong>case de confirmation</strong> obligatoire ; droit dédié <code>bd.company.reassign</code> (Responsable commercial, Équipe ; administrateur)</td></tr>
+<tr><td><strong>Ce qui suit</strong></td><td>La portée de visibilité suit l'entreprise : l'ancien responsable la perd aussitôt (introuvable), le nouveau la gagne, avec ses opportunités</td></tr>
+<tr><td><strong>Responsable visible</strong></td><td>Nommé sur la fiche ; <strong>colonne « Responsable »</strong> du tableau des entreprises, visible par défaut</td></tr>
+<tr><td><strong>Fiche 360°</strong></td><td>Panneaux <strong>Opportunités</strong> (étape, montant, état, dérogation) et <strong>Rendez-vous</strong> (60 derniers et 60 prochains jours) en lecture ; les actions restent dans les modules</td></tr>
+<tr><td><strong>Audit</strong></td><td>Changement de statut et de responsable tracés (ancienne et nouvelle valeur, session)</td></tr>
+</tbody></table></div>
+<h2>Preuves</h2>
+<div class="table-wrap"><table><thead><tr><th>Contrôle</th><th>Résultat</th></tr></thead><tbody>
+<tr><td>Types (<code>tsc</code>, API et web), architecture (<code>pnpm arch</code>)</td><td>0 erreur · aucune violation (217 modules)</td></tr>
+<tr><td>Tests unitaires de l'API</td><td><strong>797 réussis</strong>, 0 échec (les suites d'intégration, qui exigent la base, sont ignorées dans cette passe) ; 17 nouveaux (domaine : 8 ; cas d'usage : 9)</td></tr>
+<tr><td><strong>Tests d'intégration (PostgreSQL jetable)</strong></td><td><strong>319 / 319</strong> (22 suites) ; 11 nouveaux de bout en bout : cycle de statut, refus (saut, même statut, « Cliente », version périmée, champ inconnu), nom du responsable, portée et droits, réattribution et effet sur la visibilité, refus de réattribution, liste des destinataires (équipe seulement, sans e-mail, comptes désactivés et rôles sans portefeuille écartés), contact supprimé non compté, entreprise archivée, audit</td></tr>
+<tr><td><strong>IDOR</strong></td><td>Les deux routes <code>POST /companies/:id/status</code> et <code>/owner</code> sont classées « objet » et sondées : même réponse pour l'entreprise d'un collègue et pour un identifiant inexistant, aucune écriture</td></tr>
+<tr><td>Tests de l'interface</td><td><strong>400 / 400</strong> (10 nouveaux) : actions de statut proposées, <strong>transitions comparées au domaine réel du serveur</strong>, destinataires, colonne « Responsable »</td></tr>
+<tr><td><strong>Mutants</strong></td><td><strong>21 / 21 tués</strong> (qualifiée sans contact, étape sautée, même statut, « Cliente » à la main, retour impossible, même propriétaire, propriétaire vide, droit de réattribution, destinataires hors portée, verrou optimiste, contacts non comptés, destinataire non contrôlé, nom du responsable, ancien statut non tracé, droits des deux routes, statuts acceptés par la route, comptes désactivés, rôles sans portefeuille, nom en liste, contacts supprimés)</td></tr>
+<tr><td><strong>Navigateur réel (Edge + axe-core)</strong></td><td><strong>Parcours ciblé</strong> (connexion, création d'une entreprise, puis le bloc de ce lot) : <strong>38 contrôles réussis, aucun échec</strong> ; fiche 360° (<strong>0 violation</strong>, 60 éléments annoncés), fenêtre de changement de statut, fenêtre de changement de responsable ; colonne « Responsable » et nom du responsable vérifiés. Le seul ✘ est l'arrêt volontaire de fin de parcours. Un parcours plus long (jusqu'aux opportunités) a, lors d'un essai, validé aussi la colonne et la fiche (107 contrôles). Résultats <code>docs/accessibilite/resultats/axe-2026-11-06-s43b.json</code>, captures <code>docs/accessibilite/s43b-captures/</code></td></tr>
+</tbody></table></div>
+<h2>Défauts trouvés par la recette et corrigés</h2>
+<ul><li><strong>Audit : processus orphelins</strong> (outil, pas l'application) : à chaque exécution, le script laissait des processus du navigateur (jusqu'à 184, 0,9 Go de mémoire libre sur 15,8) ; l'arrêt du navigateur ferme maintenant tout son arbre de processus.</li><li><strong>Audit : parcours trop long pour une seule passe</strong> : le navigateur sans fenêtre décrochait au même endroit (agenda, vue « mois ») ; un mode <code>AUDIT_COMPANY_ONLY</code> permet de contrôler ce lot seul.</li><li>Aucun défaut de l'application n'a été trouvé par l'audit sur ce lot.</li></ul>
+<h2>Réserves sur la recette</h2>
+<ul><li><strong>Parcours navigateur ciblé</strong> : les écrans des lots antérieurs ne sont pas revérifiés par ce lot. Le parcours complet a décroché six fois sur dix essais, systématiquement dans l'agenda (écran antérieur, hors de ce lot).</li><li><strong>Deux captures manquantes</strong> : « changement de statut » et « changement de responsable » (le contrôle a réussi, le navigateur n'a pas répondu à la capture) ; la capture de la fiche 360° est fournie.</li><li><strong>Choix du responsable non exercé dans le navigateur</strong> : l'audit n'avait qu'un seul utilisateur commercial, donc la fenêtre affichait « Personne d'autre n'est disponible » ; le choix, la confirmation et le changement sont couverts par les tests d'intégration et les mutants, pas par le navigateur.</li><li><strong>Statut « Cliente » jamais posé</strong> tant que l'agrément n'existe pas (D105) ; confirmation par case à cocher, <strong>sans second facteur récent</strong> (D102, D17 le prévoyait) ; pas de notification (D101) ; pas d'historique lisible (D100) ; fiche 360° limitée (D103).</li><li>Pas de passage au lecteur d'écran réel ; testé sous Node 26.7, pas rejoué sous Node 22. Le prototype n'est pas à jour (D49).</li></ul>
+<h2>Dette et à confirmer</h2>
+<ul><li><strong>D100 à D105</strong> (<code>docs/TECH-DEBT.md</code>) ; D99 soldée, sauf la colonne « Valeur » (D104).</li><li><strong>D37 — à confirmer</strong> : statut manuel d'un cran avec retour, critère « Qualifiée » (un contact), droit de modification pour le statut, droit dédié et confirmation par case pour le responsable, colonne « Responsable » par défaut.</li></ul>
+<h2>À valider</h2>
+<ol><li>Les écrans (fiche avec statut, responsable et panneaux 360°, fenêtres de changement de statut et de responsable, colonne « Responsable ») et les valeurs par défaut de D37.</li><li>« Je valide S4.3b » → fusion avec commit de fusion et étiquette <code>s4-3b-validated</code>.</li></ol></main></body></html>

@@ -3,6 +3,7 @@ import { Page } from '../../../shared-kernel';
 import type { Visibility } from '../../iam';
 import { COMPANY_REPOSITORY, CompanyRepository, CompanySortField } from '../domain/company-repository';
 import { CompanyStatus } from '../domain/company-status';
+import { OWNER_DIRECTORY, OwnerDirectory } from '../domain/owner-directory';
 
 // Vocabulaire de la liste, ré-exporté pour la couche de présentation (qui n'importe jamais le domaine).
 export { COMPANY_SORT_FIELDS } from '../domain/company-repository';
@@ -32,7 +33,10 @@ const MAX_PAGE_SIZE = 100;
 /** Requête de lecture : liste paginée des entreprises visibles par l'appelant. */
 @Injectable()
 export class ListCompaniesHandler {
-  constructor(@Inject(COMPANY_REPOSITORY) private readonly companies: CompanyRepository) {}
+  constructor(
+    @Inject(COMPANY_REPOSITORY) private readonly companies: CompanyRepository,
+    @Inject(OWNER_DIRECTORY) private readonly owners: OwnerDirectory,
+  ) {}
 
   /**
    * Borne la page et la taille de page, puis ne renvoie que les entreprises de la portée de l'appelant (propriétaires
@@ -52,6 +56,7 @@ export class ListCompaniesHandler {
       direction: query.direction,
       ownerIds: query.visibility.unrestricted ? undefined : query.visibility.ownerIds,
     });
-    return { ...result, items: result.items.map((company) => toCompanyView(company)) };
+    const names = await this.owners.names(result.items.flatMap((c) => (c.ownerUserId ? [c.ownerUserId] : [])));
+    return { ...result, items: result.items.map((company) => toCompanyView(company, undefined, company.ownerUserId ? (names.get(company.ownerUserId) ?? null) : null)) };
   }
 }

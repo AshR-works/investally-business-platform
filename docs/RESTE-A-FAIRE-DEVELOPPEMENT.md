@@ -25,8 +25,9 @@ Ordre retenu le 2026-10-21 (DEC-005) : module commercial, puis Investudy, puis p
 | **S4.2b** Décharges | *Validé* : décharge signée avec son fichier, une seule décharge valide par offre, documents de l'offre | — | — |
 | **S4.2c** Relances | *Validé* : relances planifiées, liste « À faire », annulation avec l'offre, colonne « Prochaine relance » | — | — |
 | **S4.2d** Agenda | *Validé* : rendez-vous (DAF, décideur) et visites, vues jour, semaine et mois, conflit d'horaire en avertissement, report, tenue et annulation. Reste : rappels envoyés (D85), synchronisation Outlook (D88) | — | — |
-| **S4.3a** Opportunités | *Terminé, validation en attente* : pipeline en cartes ou par étape, règle du rendez-vous décideur, dérogation, clôture perdue ou gagnée (D28) | — | Votre « Je valide » |
-| **S4.3b** Entreprises : statuts et propriétaire | Transitions du statut d'une entreprise (CU-C-05), réattribution du propriétaire (D17), fiche 360° avec ses opportunités, colonnes Responsable et Valeur ; lien rendez-vous ↔ opportunité (D93) | 1 à 1,5 session | S4.3a ; transitions du statut (§ 3) |
+| **S4.3a** Opportunités | *Validé* : pipeline en cartes ou par étape, règle du rendez-vous décideur, dérogation, clôture perdue ou gagnée (D28) | — | — |
+| **S4.3b** Entreprises : statuts et responsable | *Terminé, validation en attente* : statut manuel d'un cran (CU-C-05), changement de responsable (D17), fiche 360° (opportunités, rendez-vous), colonne Responsable | — | Votre « Je valide » ; défauts D37 |
+| **S4.3c** Valeur et lien rendez-vous | Colonne « Valeur » du tableau des entreprises ; lien d'un rendez-vous à une opportunité (D93, D104) | 0,5 session | S4.3b |
 | **S4.4** Agrément et ambassadeurs | Agrément (promesse de paiement), ambassadeurs, événements vers Investudy, suivi des commissions à verser (flux F3) | 1 à 1,5 session | S4.3 ; **détails de l'agrément (D1 à D5)** |
 | **S5.1** Catalogue Investudy | Programmes, formations, salles, formateurs ; modèle de données du module | 1 session | S4.4 ; cas d'usage validés |
 | **S5.2** Sessions et inscriptions | Sessions, apprenants, inscriptions liées à l'agrément, annulation et report | 1,5 session | S5.1 ; D31 (confirmation, liste d'attente) |
@@ -44,7 +45,7 @@ Ordre retenu le 2026-10-21 (DEC-005) : module commercial, puis Investudy, puis p
 ### Lots transversaux sans sprint attribué
 | Besoin | Origine | Proposition |
 |---|---|---|
-| **Réattribuer le propriétaire d'une entreprise** | D17 | Avec S4.3 (fiche 360°), permission dédiée, confirmation du second facteur, audit |
+| **Réattribuer le propriétaire d'une entreprise** | D17 | *Réalisé (S4.3b)* : permission dédiée, confirmation par case à cocher, audit ; second facteur récent non exigé (D102) |
 | **Export de listes et actions groupées** | D37, D59 | Cadrage de sécurité (option C : lire donne exporter, avec second facteur récent), puis un premier export |
 | **Facilitateur modifiable, plusieurs facilitateurs** | D53 | Avec la fiche entreprise 360° |
 | **Vues partagées** (rapports des employés, agendas) | D60 | Modèle d'audience à décider avant l'agenda |
@@ -95,6 +96,6 @@ Ordre retenu le 2026-10-21 (DEC-005) : module commercial, puis Investudy, puis p
 | Mises à jour de la matrice de droits : `bd.opportunity.close_lost` et `close_won`, dérogation, agrément, commissions, exports | S4.3, S4.4 | Avec chaque lot |
 
 ## 7. Prochaine session proposée
-**S4.3b — Statuts d'entreprise, propriétaire, fiche 360°.** Transitions du statut d'une entreprise (CU-C-05), réattribution du propriétaire (D17, permission dédiée avec confirmation), fiche de l'entreprise avec ses opportunités, offres et rendez-vous, colonnes Responsable et Valeur du tableau, lien d'un rendez-vous à une opportunité (D93).
+**S4.3c — Valeur et lien rendez-vous.** Colonne « Valeur » du tableau des entreprises (somme des opportunités ouvertes) et lien d'un rendez-vous à une opportunité (D93, D104).
 
-Avant de commencer, il me faut **votre « Je valide S4.3a »** (ou vos corrections), puis la poussée de la branche. Les valeurs par défaut D36 (étapes, retour en arrière, motifs de perte) sont à confirmer.
+Avant de commencer, il me faut **votre « Je valide S4.3b »** (ou vos corrections). Les valeurs par défaut D36 et D37 (statuts, critère « Qualifiée », droit de réattribution, confirmation) sont à confirmer.

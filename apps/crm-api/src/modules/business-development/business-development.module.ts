@@ -25,6 +25,9 @@ import { UpdateCompanyUseCase } from './application/update-company.use-case';
 import { APPOINTMENT_REPOSITORY } from './domain/appointment-repository';
 import { COMPANY_OVERVIEW_READER } from './domain/company-overview-reader';
 import { COMPANY_REPOSITORY } from './domain/company-repository';
+import { OWNER_DIRECTORY } from './domain/owner-directory';
+import { PrismaOwnerDirectory } from './infrastructure/prisma-owner-directory';
+import { ChangeCompanyStatusUseCase, ListOwnerCandidatesHandler, ReassignCompanyUseCase } from './application/company-lifecycle-use-cases';
 import { CONTACT_REPOSITORY } from './domain/contact-repository';
 import { FACILITATOR_REPOSITORY } from './domain/facilitator-repository';
 import { FOLLOWUP_REPOSITORY } from './domain/followup-repository';
@@ -58,6 +61,9 @@ import { ReceiptsController } from './presentation/receipts.controller';
     RegisterFacilitatorUseCase,
     FacilitationResolver,
     UpdateCompanyUseCase,
+    ChangeCompanyStatusUseCase,
+    ReassignCompanyUseCase,
+    ListOwnerCandidatesHandler,
     ExportCompanySheetHandler,
     ListCompaniesHandler,
     GetCompanyOverviewHandler,
@@ -100,6 +106,7 @@ import { ReceiptsController } from './presentation/receipts.controller';
     GetOpportunityHandler,
     ListOpportunitiesHandler,
     { provide: COMPANY_REPOSITORY, useClass: PrismaCompanyRepository },
+    { provide: OWNER_DIRECTORY, useClass: PrismaOwnerDirectory },
     { provide: COMPANY_OVERVIEW_READER, useClass: PrismaCompanyOverviewReader },
     { provide: FACILITATOR_REPOSITORY, useClass: PrismaFacilitatorRepository },
     { provide: CONTACT_REPOSITORY, useClass: PrismaContactRepository },

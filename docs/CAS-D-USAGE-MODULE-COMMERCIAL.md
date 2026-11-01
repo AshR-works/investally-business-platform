@@ -52,9 +52,13 @@ Chaque schéma est dans `workflows/svg/`.
 - **Scénario** : « Modifier » ; fenêtre préremplie ; enregistrement avec la version lue (refus si quelqu'un a modifié entre-temps). Le propriétaire et le statut ne se modifient pas ici ; une entreprise archivée est en lecture seule.
 - **Droits** : `bd.company.update` ; la commission : `bd.commission.manage` seulement (une modification par un chargé de compte la conserve).
 
-### CU-C-05 — Changer le statut d'une entreprise *(à venir)*
-- **Acteur** : chargé de compte (Contactée, Qualifiée), système (Cliente à l'agrément). **Flux** : C5.
-- **Statuts** : Cible, Contactée, Qualifiée, Cliente, Archivée. **À trancher** : transitions manuelles ou automatiques, critères de « Qualifiée », retour en arrière.
+### CU-C-05 — Changer le statut d'une entreprise *(réalisé, S4.3b ; défauts à confirmer, D37)*
+- **Acteur** : chargé de compte (Propre) ou Responsable commercial (Équipe), sous le droit de modification ; système (Cliente à l'agrément, S4.4). **Flux** : C5.
+- **Scénario** : sur la fiche, bouton à côté du statut (« Marquer comme contactée », « Qualifier l'entreprise », « Revenir à… ») ; confirmation ; enregistrement tracé.
+- **Règles** : un cran à la fois, avec retour ; « Qualifiée » exige au moins un contact ; « Cliente » et « Archivée » ne se posent pas à la main.
+
+### CU-C-08 — Changer de responsable *(réalisé, S4.3b ; D17, à confirmer D37)*
+- **Acteur** : Responsable commercial (Équipe), droit `bd.company.reassign`. **Scénario** : « Changer de responsable » sur la fiche ; choix parmi les personnes actives au rôle commercial de sa portée ; case de confirmation ; la visibilité de l'entreprise, de ses contacts, offres, opportunités et rendez-vous suit.
 
 ### CU-C-06 — Archiver une entreprise *(à venir)*
 - **Acteur** : Responsable commercial (décision D28). Le chargé de compte lui en **fait la demande** (message ou tâche). **Scénario** : « Archiver », motif, confirmation ; l'entreprise passe en lecture seule.

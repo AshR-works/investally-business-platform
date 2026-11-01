@@ -56,6 +56,9 @@ export interface Company {
   id: string;
   name: string;
   status: string;
+  /** Responsable de l'entreprise (portée des droits) et son nom, quand le serveur les donne. */
+  ownerUserId?: string | null;
+  ownerName?: string | null;
   sector: string | null;
   country: string | null;
   email: string | null;

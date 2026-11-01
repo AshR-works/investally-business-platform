@@ -74,13 +74,14 @@ export const COMPANY_COLUMNS = [
   { id: 'country', label: 'Pays', locked: false },
   { id: 'email', label: 'E-mail', locked: false },
   { id: 'phone', label: 'Téléphone', locked: false },
+  { id: 'owner', label: 'Responsable', locked: false },
   { id: 'status', label: 'Statut', locked: false },
   { id: 'created', label: 'Créée le', locked: false },
 ] as const;
 export type CompanyColumnId = (typeof COMPANY_COLUMNS)[number]['id'];
 
 /** Colonnes visibles par défaut (e-mail et téléphone sont proposés mais masqués). */
-export const DEFAULT_COLUMNS: CompanyColumnId[] = ['name', 'sector', 'country', 'status', 'created'];
+export const DEFAULT_COLUMNS: CompanyColumnId[] = ['name', 'sector', 'country', 'owner', 'status', 'created'];
 
 const KNOWN: readonly string[] = COMPANY_COLUMNS.map((c) => c.id);
 

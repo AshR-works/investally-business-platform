@@ -22,7 +22,7 @@ export const RESOURCES: readonly ResourceDefinition[] = [
   // Documents
   { module: 'docs', resource: 'document', label: 'Documents', actions: ['read', 'create', 'update', 'delete', 'download', 'export'] },
   // Business Development
-  { module: 'bd', resource: 'company', label: 'Entreprises', actions: [...CRUD, 'archive', 'export'] },
+  { module: 'bd', resource: 'company', label: 'Entreprises', actions: [...CRUD, 'archive', 'reassign', 'export'] },
   { module: 'bd', resource: 'contact', label: 'Contacts', actions: [...CRUD, 'delete'] },
   { module: 'bd', resource: 'offer', label: 'Offres', actions: [...CRUD, 'withdraw'] },
   { module: 'bd', resource: 'receipt', label: 'Décharges', actions: [...CRUD] },

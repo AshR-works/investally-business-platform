@@ -58,6 +58,10 @@ export class PrismaContactRepository implements ContactRepository {
     await this.prisma.db.contact.updateMany({ where: { id, deletedAt: null }, data: { deletedAt: new Date() } });
   }
 
+  async countByCompany(companyId: string): Promise<number> {
+    return this.prisma.db.contact.count({ where: { companyId, deletedAt: null } });
+  }
+
   async findDuplicates(query: { companyId: string; nameKey: string; emailKey: string | null; excludeId?: string }): Promise<Contact[]> {
     const rows = await this.prisma.db.contact.findMany({
       where: {

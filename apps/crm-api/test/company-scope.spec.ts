@@ -9,6 +9,7 @@ import { RoleCode } from '../src/modules/iam/domain/roles';
 import { Page } from '../src/shared-kernel';
 import { buildIamWorld } from './support/iam-world';
 import { InMemoryFacilitators } from './support/in-memory-facilitators';
+import { InMemoryOwnerDirectory } from './support/in-memory-owner-directory';
 
 class InMemoryCompanies implements CompanyRepository {
   readonly items: Company[] = [];
@@ -45,8 +46,8 @@ async function scenario() {
   const repo = new InMemoryCompanies();
   for (const [id, owner] of [['hos', hos.id], ['am1', am1.id], ['am2', am2.id], ['intern', intern.id], ['legacy', null]] as const) repo.items.push(company(id, owner));
 
-  const list = new ListCompaniesHandler(repo);
-  const get = new GetCompanyHandler(repo, new InMemoryFacilitators());
+  const list = new ListCompaniesHandler(repo, new InMemoryOwnerDirectory());
+  const get = new GetCompanyHandler(repo, new InMemoryFacilitators(), new InMemoryOwnerDirectory());
   const ctx = (userId: string) => w.authorization.contextFor(userId);
   const visible = async (userId: string) => {
     const access = await ctx(userId);

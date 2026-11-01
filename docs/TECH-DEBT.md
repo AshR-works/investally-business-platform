@@ -100,7 +100,13 @@
 | D96 | **Clôture gagnée sans effet en aval** : l'agrément, l'événement vers Investudy et la commission « due » ne sont pas déclenchés (D28) ; la clôture gagnée exige seulement l'accord de principe | S4.3a | Claude | S4.4 |
 | D97 | **Pas de nom de responsable ni de filtre par responsable** sur le pipeline (le serveur ne rend que l'entreprise) ; pas d'export du pipeline (CU-C-43) ; pas de glisser-déposer, seulement le menu « Déplacer vers… » | S4.3a | Claude | S4.3b, S6.1 |
 | D98 | **Pipeline limité à 200 opportunités affichées** (le total est annoncé) : pas de pagination ni de défilement dans cette version | S4.3a | Claude | Si le volume l'exige |
-| D99 | **Reste de S4.3 non livré** : transitions du statut d'une entreprise (CU-C-05), réattribution du propriétaire (D17), fiche 360°, colonnes Responsable et Valeur au tableau des entreprises | S4.3a | Claude | S4.3b |
+| D99 | **Reste de S4.3 non livré** : transitions du statut d'une entreprise (CU-C-05), réattribution du propriétaire (D17), fiche 360°, colonnes Responsable et Valeur au tableau des entreprises | S4.3a | Claude | *Soldée par S4.3b, sauf la colonne « Valeur » (D104)* |
+| D100 | **Changement de statut et de responsable sans motif ni historique lisible** : seule la trace d'audit garde l'ancienne et la nouvelle valeur ; la fiche n'affiche pas d'historique des changements | S4.3b | Claude | Fiche 360° enrichie (S6.x) |
+| D101 | **Aucune notification** au nouveau responsable ni à l'ancien lors d'un changement de responsable ; pas de réattribution en lot (une entreprise à la fois) | S4.3b | Claude | Notifications (hors lot) |
+| D102 | **Confirmation par case à cocher, sans second facteur récent** : D17 prévoyait une confirmation du second facteur pour réattribuer ; la session déjà authentifiée par MFA est jugée suffisante dans cette version | S4.3b | Claude | À confirmer (D37) |
+| D103 | **Fiche 360° limitée** : opportunités et rendez-vous en lecture seule (rendez-vous des 60 derniers et 60 prochains jours, deux appels), sans relances, décharges ni chronologie des événements | S4.3b | Claude | S6.x |
+| D104 | **Reporté à S4.3c** : colonne « Valeur » du tableau des entreprises (somme des opportunités ouvertes) et lien rendez-vous ↔ opportunité (D93) | S4.3b | Claude | S4.3c |
+| D105 | **Le statut « Cliente » n'est posé par rien** tant que l'agrément n'existe pas ; une entreprise ne peut donc pas encore devenir cliente | S4.3b | Claude | S4.4 |
 | D5 | Hypothèses de charge et de périmètre non confirmées | Phase 3 | Revue à la fin de S1 avec les chiffres réels | Ouverte |
 
 ## Adopted Conventions

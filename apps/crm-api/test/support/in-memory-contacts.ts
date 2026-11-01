@@ -21,6 +21,9 @@ export class InMemoryContacts implements ContactRepository {
   private alive() {
     return this.items.filter((c) => !this.removed.has(c.id));
   }
+  async countByCompany(companyId: string) {
+    return this.alive().filter((c) => c.companyId === companyId).length;
+  }
   async findDuplicates(q: { companyId: string; nameKey: string; emailKey: string | null; excludeId?: string }) {
     return this.alive().filter((c) => c.companyId === q.companyId && c.id !== q.excludeId && (c.nameKey === q.nameKey || (q.emailKey !== null && c.emailKey === q.emailKey)));
   }
