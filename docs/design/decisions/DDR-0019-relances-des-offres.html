@@ -1,0 +1,38 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>DDR-0019 — Relances des offres</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — design · <a href="../README.html">Mode d&#8217;emploi</a> · <a href="../01-DESIGN-SYSTEM.html">Design system</a> · <a href="../02-SPECIFICATIONS-FRONTEND.html">Spécifications frontend</a> · <a href="../exigences/REGISTRE-EXD.html">Exigences</a> · <a href="../04-ANALYSE-D-IMPACT.html">Analyse d&#8217;impact</a> · <a href="../05-AIDE-A-LA-DECISION.html">Aide à la décision</a> · <a href="../decisions/REGISTRE-DDR.html">Décisions (DDR)</a> · <a href="../CHANGELOG-DESIGN.html">Journal</a> · <a href="../prototype/index.html">Prototype</a></nav><h1>DDR-0019 — Relances des offres</h1>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td><strong>Statut</strong></td><td>Acceptée (réalisée dans l'application) ; prototype à mettre à jour</td></tr>
+<tr><td><strong>Date</strong></td><td>2026-11-03</td></tr>
+<tr><td><strong>Version du design</strong></td><td>0.4.1 (le prototype n'est pas encore à jour : version 0.5.0 à décider)</td></tr>
+<tr><td><strong>Lié à</strong></td><td>Lot S4.2c ; wireframes 13 et 16 ; cas d'usage CU-C-22 ; flux C2 ; décision D34</td></tr>
+</tbody></table></div>
+<h2>Contexte</h2>
+<p>Une offre déposée attend la réponse du client. Sans rappel, elle s'oublie. Ce lot permet de <strong>planifier des relances</strong>, de les retrouver dans une liste « À faire » triée par échéance, de les terminer avec leur résultat, et de ne plus en avoir quand l'offre a reçu une réponse. Les valeurs proposées (délai de 7 jours, trois relances au plus) étaient « à trancher » : elles sont appliquées par défaut, à confirmer (D34).</p>
+<h2>Décisions</h2>
+<ol><li><strong>Où</strong> : une page « Relances » (nouveau module de la navigation) ; l'action « Relances » du menu d'une offre y mène, déjà filtrée sur l'offre ; une colonne « Prochaine relance » dans la liste des offres et le panneau de la fiche entreprise.</li><li><strong>Champs</strong> : offre (obligatoire, non modifiable), échéance, canal (Appel, E-mail, WhatsApp, Rencontre, Autre), note facultative. L'échéance est proposée à <strong>sept jours</strong>.</li><li><strong>Seulement sur une offre en cours</strong> : déposée ou décharge reçue. Plus de relance sur un brouillon, ni après la réponse du client ou le retrait de l'offre.</li><li><strong>Au plus trois relances par offre</strong> (à faire ou terminées ; une relance annulée libère une place).</li><li><strong>Échéance</strong> : jamais dans le passé à la planification. Une relance dont l'échéance est dépassée est signalée « <strong>En retard</strong> » (calculé à la lecture, jamais stocké) ; elle peut rester telle quelle à la modification, mais une nouvelle échéance ne peut pas être passée.</li><li><strong>Terminer</strong> : le <strong>résultat est obligatoire</strong> (ce qui s'est dit ou décidé). <strong>Annuler</strong> : le <strong>motif est obligatoire</strong>. Terminée et annulée sont <strong>définitives</strong> ; l'historique reste visible dans les filtres « Terminées » et « Annulées ».</li><li><strong>Avec l'offre</strong> : quand l'offre est <strong>acceptée, refusée ou retirée</strong>, ses relances encore à faire sont <strong>annulées automatiquement</strong>, avec un motif écrit et une trace d'audit par relance, dans la même transaction.</li><li><strong>Droits</strong> : lire, planifier, modifier, terminer : chargé de compte (Propre), Responsable commercial (Équipe) ; lecture seule pour la Direction ; terminer exige le droit « terminer », annuler le droit de modifier ; hors portée, « introuvable ».</li><li><strong>Entreprise archivée</strong> : plus de planification, de modification ni de clôture ; les relances restent lisibles.</li><li><strong>Planification non automatique</strong> : le cas d'usage évoquait une planification automatique après le dépôt ; elle n'est <strong>pas</strong> retenue pour ne pas créer de données que l'utilisateur n'a pas demandées. Le délai de sept jours est proposé dans le formulaire (D80, à confirmer).</li></ol>
+<h2>Mesures de rigueur</h2>
+<ul><li>La base garantit : une relance à faire n'est pas close, une relance close a sa date et son texte (résultat ou motif) <strong>ensemble</strong>, version positive ; vérifié par des écritures directes refusées.</li><li>La limite de trois, le retard, l'annulation automatique et la portée sont couverts par des tests unitaires et d'intégration ; 15 fautes injectées sont toutes détectées.</li><li>Les mêmes règles de saisie sont comparées entre l'interface et le <strong>domaine réel</strong> du serveur.</li><li>Le contrat anti-IDOR est étendu aux six nouvelles routes ; la relance d'un collègue n'est ni lisible, ni modifiable, ni terminable, ni annulable (même réponse que pour un objet inexistant).</li></ul>
+<h2>Conséquences</h2>
+<ul><li>Réversible : une migration (une table), un module, trois composants et une page.</li><li><strong>Dette</strong> : D80 à D84 (<code>docs/TECH-DEBT.md</code>).</li></ul></main></body></html>

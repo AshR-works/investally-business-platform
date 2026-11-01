@@ -98,6 +98,8 @@ export interface Offer {
   decidedAt: string | null;
   withdrawnReason: string | null;
   createdAt: string;
+  /** Échéance de la prochaine relance à faire (dans les listes seulement) ; `null` si aucune. */
+  nextFollowupOn?: string | null;
   /** Verrou optimiste : renvoyé tel quel pour modifier l'offre ou changer son état. */
   version: number;
 }
@@ -115,6 +117,28 @@ export interface Receipt {
   cancelledAt: string | null;
   createdAt: string;
   /** Verrou optimiste : renvoyé tel quel pour annuler la décharge. */
+  version: number;
+}
+
+/** Relance d'une offre en cours : à faire à une échéance, terminée (avec son résultat) ou annulée (avec son motif). */
+export interface Followup {
+  id: string;
+  offerId: string;
+  offerReference: string;
+  companyId: string;
+  companyName: string;
+  /** Échéance, « AAAA-MM-JJ ». */
+  dueOn: string;
+  channel: string;
+  note: string | null;
+  status: string;
+  /** Résultat (terminée) ou motif d'annulation (annulée). */
+  resultNote: string | null;
+  closedAt: string | null;
+  /** Calculé par le serveur : à faire et échéance dépassée. */
+  overdue: boolean;
+  createdAt: string;
+  /** Verrou optimiste : renvoyé tel quel pour modifier, terminer ou annuler la relance. */
   version: number;
 }
 

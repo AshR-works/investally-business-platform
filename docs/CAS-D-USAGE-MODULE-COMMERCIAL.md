@@ -88,20 +88,20 @@ Chaque schéma est dans `workflows/svg/`.
 
 ## 5. Offres, décharges et relances *(flux C2, S4.2)*
 
-### CU-C-20 — Préparer puis déposer une offre
+### CU-C-20 — Préparer puis déposer une offre *(réalisé, S4.2a)*
 - **Acteur** : chargé de compte. **Écrans** : 13, 14. **Scénario** : 1. « Nouvelle offre » liée à l'entreprise (et à une opportunité). 2. Montant, objet, pièces jointes. 3. « Déposer » : l'offre passe à « Déposée » et la date est enregistrée.
 - **Variantes** : entreprise archivée → refus ; modification concurrente → refus (version).
 - **Droits** : `bd.offer.create / update` (Propre). **À trancher** : états exacts (brouillon, déposée, décharge reçue, acceptée, refusée, retirée).
 
-### CU-C-21 — Enregistrer la décharge signée
+### CU-C-21 — Enregistrer la décharge signée *(réalisé, S4.2b)*
 - **Scénario** : 1. Depuis l'offre, « Déposer la décharge » (écran 15). 2. Date de réception, reçue par, fichier signé (contrôle du contenu). 3. L'offre passe à « Décharge reçue ».
 - **Règles** : **une seule décharge valide par offre** ; pas de décharge sur une offre retirée. **Droits** : `bd.receipt.create`. **État** : à venir.
 
-### CU-C-22 — Planifier et effectuer une relance
+### CU-C-22 — Planifier et effectuer une relance *(réalisé, S4.2c ; planification automatique non retenue, D80)*
 - **Écran** : 16. **Scénario** : 1. Planification (automatique après le dépôt, ou manuelle) avec échéance et canal. 2. À l'échéance, la relance apparaît dans « À faire » et l'agenda. 3. Le chargé de compte la réalise (appel, e-mail, WhatsApp) et note le résultat : « Terminer ».
 - **Règles** : **plus de relance après une décharge refusée ou une offre retirée** ; une relance en retard est signalée. **Droits** : `bd.followup.create / complete`. **À trancher** : délai par défaut, nombre maximum de relances.
 
-### CU-C-23 — Retirer une offre
+### CU-C-23 — Retirer une offre *(réalisé, S4.2a ; les relances à faire sont annulées avec l'offre, S4.2c)*
 - **Scénario** : « Retirer l'offre » avec motif, confirmation ; les relances à venir sont annulées. **Droits** : `bd.offer.withdraw` (Propre). **Variantes** : offre déjà acceptée → refus.
 
 ---
