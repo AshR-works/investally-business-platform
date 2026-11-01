@@ -118,6 +118,7 @@ model Offer {
   updatedAt       DateTime    @updatedAt @map("updated_at") @db.Timestamptz(6)
   company         Company     @relation(fields: [companyId], references: [id])
   receipts        Receipt[]
+  followups       Followup[]
 
   @@index([companyId])
   @@index([status])
@@ -148,6 +149,45 @@ model Receipt {
 
   @@index([offerId])
   @@map("receipts")
+  @@schema("bd")
+}
+
+enum FollowupChannel {
+  CALL
+  EMAIL
+  WHATSAPP
+  MEETING
+  OTHER
+
+  @@schema("bd")
+}
+
+enum FollowupStatus {
+  PLANNED
+  DONE
+  CANCELLED
+
+  @@schema("bd")
+}
+
+/// Relance d'une offre en cours : à faire à une échéance, par un canal ; terminée (avec son résultat) ou annulée (avec son motif).
+model Followup {
+  id         String         @id @db.Uuid
+  offerId    String         @map("offer_id") @db.Uuid
+  dueOn      DateTime       @map("due_on") @db.Date
+  channel    FollowupChannel
+  note       String?        @db.VarChar(500)
+  status     FollowupStatus @default(PLANNED)
+  /// Résultat de la relance (terminée) ou motif d'annulation (annulée) ; absent tant qu'elle est à faire.
+  resultNote String?        @map("result_note") @db.VarChar(1000)
+  closedAt   DateTime?      @map("closed_at") @db.Timestamptz(6)
+  version    Int            @default(1)
+  createdAt  DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt  DateTime       @updatedAt @map("updated_at") @db.Timestamptz(6)
+  offer      Offer          @relation(fields: [offerId], references: [id])
+
+  @@index([offerId])
+  @@map("followups")
   @@schema("bd")
 }
 

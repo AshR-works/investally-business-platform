@@ -13,9 +13,9 @@ import { DocumentsPanel } from '../documents/documents-panel';
 /** Fenêtre ouverte sur une offre ou pour en créer une. */
 export type OfferDialogState =
   | { kind: 'create'; company?: { id: string; name: string } }
-  | { kind: OfferAction; offer: Offer };
+  | { kind: Exclude<OfferAction, 'followups'>; offer: Offer };
 
-const SENTENCE: Record<Exclude<OfferAction, 'edit' | 'withdraw' | 'receipt' | 'documents'>, { title: string; confirm: string; text: string; path: string }> = {
+const SENTENCE: Record<Exclude<OfferAction, 'edit' | 'withdraw' | 'receipt' | 'documents' | 'followups'>, { title: string; confirm: string; text: string; path: string }> = {
   submit: { title: 'Déposer l’offre', confirm: 'Déposer', text: 'sera déposée chez l’entreprise : elle ne pourra plus être modifiée.', path: 'submit' },
   accept: { title: 'Enregistrer l’acceptation', confirm: 'Enregistrer l’acceptation', text: 'sera marquée comme acceptée par l’entreprise. Cet état est définitif.', path: 'accept' },
   refuse: { title: 'Enregistrer le refus', confirm: 'Enregistrer le refus', text: 'sera marquée comme refusée par l’entreprise. Cet état est définitif.', path: 'refuse' },
@@ -43,7 +43,7 @@ export function OfferDialogs({ dialog, onClose, onDone, onRefresh }: {
   return <TransitionDialog offer={dialog.offer} action={dialog.kind} onClose={onClose} onDone={onDone} />;
 }
 
-function TransitionDialog({ offer, action, onClose, onDone }: { offer: Offer; action: Exclude<OfferAction, 'edit' | 'withdraw' | 'receipt' | 'documents'>; onClose: () => void; onDone: () => Promise<void> }) {
+function TransitionDialog({ offer, action, onClose, onDone }: { offer: Offer; action: Exclude<OfferAction, 'edit' | 'withdraw' | 'receipt' | 'documents' | 'followups'>; onClose: () => void; onDone: () => Promise<void> }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const sentence = SENTENCE[action];

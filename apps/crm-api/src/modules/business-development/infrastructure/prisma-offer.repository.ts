@@ -81,13 +81,13 @@ export class PrismaOfferRepository implements OfferRepository {
     const [rows, total] = await Promise.all([
       this.prisma.db.offer.findMany({
         where,
-        include: { company: { select: { name: true } } },
+        include: { company: { select: { name: true } }, followups: { where: { status: 'PLANNED' }, orderBy: { dueOn: 'asc' }, take: 1, select: { dueOn: true } } },
         orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
         skip: (query.page - 1) * query.pageSize,
         take: query.pageSize,
       }),
       this.prisma.db.offer.count({ where }),
     ]);
-    return { items: rows.map((r) => ({ offer: toDomain(r), companyName: r.company.name })), total, page: query.page, pageSize: query.pageSize };
+    return { items: rows.map((r) => ({ offer: toDomain(r), companyName: r.company.name, nextFollowupOn: r.followups[0]?.dueOn.toISOString().slice(0, 10) ?? null })), total, page: query.page, pageSize: query.pageSize };
   }
 }

@@ -10,6 +10,7 @@ import { COMPANY_REPOSITORY, CompanyRepository } from '../domain/company-reposit
 import { CompanyStatus } from '../domain/company-status';
 import { Offer, OfferStatus } from '../domain/offer';
 import { OFFER_REPOSITORY, OfferRepository } from '../domain/offer-repository';
+import { PlannedFollowupsCloser } from './followup-closer';
 import { OfferView, toOfferView } from './offer-view';
 
 const NOT_FOUND_COMPANY = 'Entreprise introuvable';
@@ -121,6 +122,13 @@ export const OFFER_ACTION_PERMISSION: Record<OfferAction, string> = {
   withdraw: 'bd.offer.withdraw',
 };
 
+/** Motif de l'annulation automatique des relances à faire, selon l'action qui ferme l'offre. */
+const CLOSING_REASON: Partial<Record<OfferAction, string>> = {
+  accept: "Offre acceptée par l'entreprise",
+  refuse: "Offre refusée par l'entreprise",
+  withdraw: 'Offre retirée',
+};
+
 export interface ChangeOfferStatusCommand {
   id: string;
   version: number;
@@ -140,6 +148,7 @@ export class ChangeOfferStatusUseCase {
     @Inject(AUDIT_RECORDER) private readonly audit: AuditRecorder,
     @Inject(UNIT_OF_WORK) private readonly unitOfWork: UnitOfWork,
     @Inject(CLOCK) private readonly clock: Clock,
+    private readonly followups: PlannedFollowupsCloser,
   ) {}
 
   async execute(command: ChangeOfferStatusCommand): Promise<OfferView> {
@@ -156,6 +165,9 @@ export class ChangeOfferStatusUseCase {
       await this.offers.save(offer);
       const after = toOfferView((await this.offers.findById(offer.id)) ?? offer, company.name.value);
       await this.audit.record({ actor: command.actor, module: 'business-development', entityType: 'Offer', entityId: offer.id, action: AuditAction.Update, oldValue: { ...before }, newValue: { ...after } });
+      // Plus de relance une fois que le client a répondu ou que l'offre est retirée : les relances à faire sont annulées.
+      const closing = CLOSING_REASON[command.action];
+      if (closing) await this.followups.cancelPlanned(offer, company.name.value, closing, command.actor, now);
       return after;
     });
   }
@@ -196,6 +208,6 @@ export class ListOffersHandler {
       status,
       ownerIds: query.visibility.unrestricted ? undefined : query.visibility.ownerIds,
     });
-    return { ...result, items: result.items.map((i) => toOfferView(i.offer, i.companyName)) };
+    return { ...result, items: result.items.map((i) => ({ ...toOfferView(i.offer, i.companyName), nextFollowupOn: i.nextFollowupOn })) };
   }
 }

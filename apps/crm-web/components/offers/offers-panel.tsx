@@ -53,7 +53,7 @@ export function OffersPanel({ company, archived }: { company: { id: string; name
           <div className="table-wrap">
             <table>
               <caption className="sr-only">Offres faites à {company.name}</caption>
-              <thead><tr><th scope="col">Référence</th><th scope="col">Objet</th><th scope="col">Montant</th><th scope="col">État</th><th scope="col">Déposée le</th>{showActions && <th scope="col"><span className="sr-only">Actions</span></th>}</tr></thead>
+              <thead><tr><th scope="col">Référence</th><th scope="col">Objet</th><th scope="col">Montant</th><th scope="col">État</th><th scope="col">Déposée le</th><th scope="col">Prochaine relance</th>{showActions && <th scope="col"><span className="sr-only">Actions</span></th>}</tr></thead>
               <tbody>
                 {offers.map((o) => {
                   const style = statusStyle(OFFER_STATUS, o.status);
@@ -64,6 +64,7 @@ export function OffersPanel({ company, archived }: { company: { id: string; name
                       <td>{formatAmount(o.amount, o.currency)}</td>
                       <td><Badge tone={style.tone}>{style.label}</Badge></td>
                       <td>{formatDate(o.submittedAt)}</td>
+                      <td>{o.nextFollowupOn ? formatDate(`${o.nextFollowupOn}T00:00:00Z`) : '—'}</td>
                       {showActions && <td><OfferRowActions offer={o} rights={actionRights} onAction={(kind, offer) => setDialog({ kind, offer })} /></td>}
                     </tr>
                   );
