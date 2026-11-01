@@ -76,8 +76,8 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <p>Pas de <code>packages/</code> tant qu'un second consommateur (ERP) n'existe pas (ADR-0005). Un dossier <code>docker/</code> n'est utile qu'en S7.</p>
 <h2>4. Mise en place locale (option B)</h2>
 <p><strong>Prérequis</strong> : Windows 10/11, Git, Node 22 LTS (via <code>nvm-windows</code> ou <code>fnm</code>), pnpm 12 (<code>corepack enable</code>), une application TOTP (téléphone, ou extension navigateur).</p>
-<pre><code>git clone &lt;dépôt&gt; C:\dev\investally-platform
-cd C:\dev\investally-platform
+<pre><code>git clone &lt;dépôt&gt; C:\dev\investally\investally-platform
+cd C:\dev\investally\investally-platform
 git checkout main            # ou l&#x27;étiquette s3-6-validated
 pnpm install
 node scripts/local-stack.mjs --demo</code></pre>

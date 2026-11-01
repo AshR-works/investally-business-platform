@@ -76,8 +76,8 @@ Pas de `packages/` tant qu'un second consommateur (ERP) n'existe pas (ADR-0005).
 **Prérequis** : Windows 10/11, Git, Node 22 LTS (via `nvm-windows` ou `fnm`), pnpm 12 (`corepack enable`), une application TOTP (téléphone, ou extension navigateur).
 
 ```bash
-git clone <dépôt> C:\dev\investally-platform
-cd C:\dev\investally-platform
+git clone <dépôt> C:\dev\investally\investally-platform
+cd C:\dev\investally\investally-platform
 git checkout main            # ou l'étiquette s3-6-validated
 pnpm install
 node scripts/local-stack.mjs --demo

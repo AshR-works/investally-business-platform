@@ -4,7 +4,7 @@
 
 ## Démarrer
 ```bash
-cd C:\dev\investally-platform
+cd C:\dev\investally\investally-platform
 git checkout sprint/execution-locale      # jusqu'à la fusion dans main
 pnpm install                              # une seule fois
 node scripts/local-stack.mjs --demo       # ou : pnpm local --demo
@@ -12,7 +12,7 @@ node scripts/local-stack.mjs --demo       # ou : pnpm local --demo
 Prérequis : Node 22 LTS, pnpm 12, une application TOTP (téléphone ou extension navigateur).
 
 ## Ce que fait la commande
-1. Génère les secrets locaux (une fois) dans `C:\dev\investally-local\secrets.json`.
+1. Génère les secrets locaux (une fois) dans `C:\dev\investally\investally-local\secrets.json`.
 2. Compile l'API et l'interface (long la première fois seulement).
 3. Démarre PostgreSQL (données dans `..\investally-local\pgdata`), applique les migrations, crée rôles et permissions.
 4. Crée `admin@investally.test` si aucun utilisateur n'existe : mot de passe aléatoire **affiché une seule fois**.
