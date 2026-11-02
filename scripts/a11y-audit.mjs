@@ -743,6 +743,33 @@ try {
   } else {
     await clickText('Retour', "document.querySelector('[role=dialog]')");
   }
+  // ---- S4.3c : colonne « Valeur » du tableau, rendez-vous lié à une opportunité.
+  await go('/companies');
+  await waitFor("document.querySelector('tbody a')", 'liste des entreprises', 20000);
+  await expectThat('le tableau des entreprises a une colonne « Valeur » visible par défaut', `[...document.querySelectorAll('thead th')].some((h) => h.textContent.trim().startsWith('Valeur'))`);
+  await js("document.querySelector('tbody a').click()");
+  await waitFor("location.pathname.startsWith('/companies/') && document.querySelector('main h1')", 'fiche entreprise (S4.3c)', 20000);
+  const valueCompanyId = (await js('location.pathname')).split('/').pop();
+  await clickText('Nouvelle opportunité');
+  await waitFor("document.querySelector('[role=dialog]') && document.querySelector('[role=dialog]').textContent.includes('Intitulé')", 'création d’une opportunité depuis la fiche', 20000);
+  await fillField('Intitulé', 'Formation liée au rendez-vous');
+  await fillField('Montant estimé', '4 000 000');
+  await clickText('Enregistrer', "document.querySelector('[role=dialog]')");
+  await waitFor("!document.querySelector('[role=dialog]')", 'opportunité créée (S4.3c)', 20000);
+  await go('/companies');
+  await waitFor("document.querySelector('tbody a')", 'liste des entreprises après création', 20000);
+  await expectThat('la colonne « Valeur » annonce le nombre et la valeur des opportunités ouvertes', `[...document.querySelectorAll('tbody tr')].some((r) => r.textContent.replace(/[  ]/g, ' ').includes('1 · 4 000 000'))`);
+  await audit('Entreprises — colonne Valeur', 'tableau avec responsable et valeur');
+  await shot('entreprises-valeur');
+  await go(`/agenda?plan=1&companyId=${valueCompanyId}`);
+  await waitFor("document.querySelector('[role=dialog] #appointment-opportunityId')", 'choix de l’opportunité liée', 25000);
+  await expectThat('la planification propose l’opportunité ouverte de l’entreprise, avec son aide écrite', `(() => { const s = document.querySelector('#appointment-opportunityId'); const h = document.getElementById(s.getAttribute('aria-describedby')); return [...s.options].some((o) => o.textContent.includes('Formation liée au rendez-vous')) && Boolean(h) && h.textContent.includes('ne compte que pour cette opportunité'); })()`);
+  await audit('Agenda — rendez-vous lié à une opportunité', 'choix de l’opportunité, aide');
+  await shot('agenda-opportunite-liee');
+  await fillField('Type', 'DECISION_MAKER');
+  await fillField('Opportunité liée', await js("document.querySelector('#appointment-opportunityId option:not([value=\"\"])').value"));
+  await clickText('Enregistrer', "document.querySelector('[role=dialog]')");
+  await waitFor("!document.querySelector('[role=dialog]') || document.querySelector('[role=dialog] [role=alert]')", 'rendez-vous lié planifié', 20000);
   // Option de mise au point : limite le parcours au bloc des offres (la suite de l'audit n'est alors pas exécutée).
   if (process.env.AUDIT_STOP_AFTER_OFFERS) throw new Error('Arrêt volontaire (AUDIT_STOP_AFTER_OFFERS) : parcours limité aux offres');
   await go('/contacts');

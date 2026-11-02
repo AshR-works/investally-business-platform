@@ -4,6 +4,7 @@ import { AppointmentListItem, AppointmentListQuery, AppointmentRepository } from
 import { Company } from '../../src/modules/business-development/domain/company';
 import { Contact } from '../../src/modules/business-development/domain/contact';
 import { Offer } from '../../src/modules/business-development/domain/offer';
+import { Opportunity } from '../../src/modules/business-development/domain/opportunity';
 
 /** Dépôt de rendez-vous en mémoire ; il lit entreprises, contacts et offres pour appliquer la portée comme le fait la base. */
 export class InMemoryAppointments implements AppointmentRepository {
@@ -12,6 +13,7 @@ export class InMemoryAppointments implements AppointmentRepository {
     private readonly companies: { items: Company[] },
     private readonly contacts: { items: Contact[] } = { items: [] },
     private readonly offers: { items: Offer[] } = { items: [] },
+    private readonly opportunities: { items: Opportunity[] } = { items: [] },
   ) {}
 
   async save(appointment: Appointment) {
@@ -27,6 +29,7 @@ export class InMemoryAppointments implements AppointmentRepository {
       companyName: this.companies.items.find((c) => c.id === appointment.companyId)!.name.value,
       contactName: contact ? `${contact.firstName} ${contact.lastName}` : null,
       offerReference: this.offers.items.find((o) => o.id === appointment.offerId)?.reference ?? null,
+      opportunityTitle: this.opportunities.items.find((o) => o.id === appointment.opportunityId)?.title ?? null,
     };
   }
   async findConflicts(q: { organizerUserId: string; startsAt: Date; endsAt: Date; excludeId?: string }) {

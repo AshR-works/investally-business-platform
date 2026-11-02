@@ -11,6 +11,8 @@ import { CompanyStatus } from '../domain/company-status';
 import { Contact } from '../domain/contact';
 import { CONTACT_REPOSITORY, ContactRepository } from '../domain/contact-repository';
 import { OFFER_REPOSITORY, OfferRepository } from '../domain/offer-repository';
+import { OpportunityStatus } from '../domain/opportunity';
+import { OPPORTUNITY_REPOSITORY, OpportunityRepository } from '../domain/opportunity-repository';
 import { AppointmentView, toAppointmentView, toConflict } from './appointment-view';
 import { companyInScope } from './offer-use-cases';
 
@@ -44,11 +46,12 @@ interface Loaded {
   company: Company;
   contact: Contact | null;
   offerReference: string | null;
+  opportunityTitle: string | null;
 }
 
 /** Charge le rendez-vous et vérifie qu'il est dans la portée de son entreprise avec le droit demandé ; sinon « introuvable ». */
 async function appointmentInScope(
-  repos: { appointments: AppointmentRepository; companies: CompanyRepository; contacts: ContactRepository; offers: OfferRepository },
+  repos: { appointments: AppointmentRepository; companies: CompanyRepository; contacts: ContactRepository; offers: OfferRepository; opportunities: OpportunityRepository },
   id: string, access: AccessContext, action: 'read' | 'update' | 'cancel',
 ): Promise<Loaded> {
   const appointment = await repos.appointments.findById(id);
@@ -56,10 +59,11 @@ async function appointmentInScope(
   if (!appointment || !company || !decideFor(access, permissionFor(appointment.type, action), company.ownerUserId).allowed) throw new DomainError('NOT_FOUND', NOT_FOUND);
   const contact = appointment.contactId ? await repos.contacts.findById(appointment.contactId) : null;
   const offer = appointment.offerId ? await repos.offers.findById(appointment.offerId) : null;
-  return { appointment, company, contact, offerReference: offer?.reference ?? null };
+  const opportunity = appointment.opportunityId ? await repos.opportunities.findById(appointment.opportunityId) : null;
+  return { appointment, company, contact, offerReference: offer?.reference ?? null, opportunityTitle: opportunity?.title ?? null };
 }
 
-const contextOf = (loaded: Loaded) => ({ companyName: loaded.company.name.value, contactName: contactName(loaded.contact), offerReference: loaded.offerReference });
+const contextOf = (loaded: Loaded) => ({ companyName: loaded.company.name.value, contactName: contactName(loaded.contact), offerReference: loaded.offerReference, opportunityTitle: loaded.opportunityTitle });
 
 /** Avertit des rendez-vous à venir du même organisateur qui chevauchent le créneau ; ne bloque jamais (règle proposée, D35). */
 async function withConflicts(appointments: AppointmentRepository, appointment: Appointment, view: AppointmentView): Promise<AppointmentView> {
@@ -72,6 +76,7 @@ export interface PlanAppointmentCommand {
   companyId: string;
   contactId?: string | null;
   offerId?: string | null;
+  opportunityId?: string | null;
   startsAt: string;
   durationMinutes?: number;
   location?: string | null;
@@ -91,6 +96,7 @@ export class PlanAppointmentUseCase {
     @Inject(COMPANY_REPOSITORY) private readonly companies: CompanyRepository,
     @Inject(CONTACT_REPOSITORY) private readonly contacts: ContactRepository,
     @Inject(OFFER_REPOSITORY) private readonly offers: OfferRepository,
+    @Inject(OPPORTUNITY_REPOSITORY) private readonly opportunities: OpportunityRepository,
     @Inject(AUDIT_RECORDER) private readonly audit: AuditRecorder,
     @Inject(UNIT_OF_WORK) private readonly unitOfWork: UnitOfWork,
     @Inject(CLOCK) private readonly clock: Clock,
@@ -106,13 +112,16 @@ export class PlanAppointmentUseCase {
       const contact = await contactOf(this.contacts, command.contactId, company.id);
       const offer = command.offerId ? await this.offers.findById(command.offerId) : null;
       if (command.offerId && (!offer || offer.companyId !== company.id)) throw new DomainError('VALIDATION', "L'offre n'appartient pas à cette entreprise");
+      const opportunity = command.opportunityId ? await this.opportunities.findById(command.opportunityId) : null;
+      if (command.opportunityId && (!opportunity || opportunity.companyId !== company.id)) throw new DomainError('VALIDATION', "L'opportunité n'appartient pas à cette entreprise");
+      if (opportunity && opportunity.status !== OpportunityStatus.Open) throw new DomainError('VALIDATION', "L'opportunité est clôturée : on ne planifie plus de rendez-vous pour elle");
       const now = this.clock.now();
       const appointment = Appointment.plan({
-        id: this.ids.next(), type, companyId: company.id, contactId: contact?.id ?? null, offerId: offer?.id ?? null, organizerUserId: command.access.actorId,
+        id: this.ids.next(), type, companyId: company.id, contactId: contact?.id ?? null, offerId: offer?.id ?? null, opportunityId: opportunity?.id ?? null, organizerUserId: command.access.actorId,
         startsAt: command.startsAt, durationMinutes: command.durationMinutes, location: command.location, note: command.note, now,
       });
       await this.appointments.save(appointment);
-      const view = toAppointmentView(appointment, { companyName: company.name.value, contactName: contactName(contact), offerReference: offer?.reference ?? null }, now);
+      const view = toAppointmentView(appointment, { companyName: company.name.value, contactName: contactName(contact), offerReference: offer?.reference ?? null, opportunityTitle: opportunity?.title ?? null }, now);
       await this.audit.record({ actor: command.actor, module: 'business-development', entityType: 'Appointment', entityId: appointment.id, action: AuditAction.Create, newValue: { ...view } });
       return withConflicts(this.appointments, appointment, view);
     });
@@ -138,6 +147,7 @@ export class UpdateAppointmentUseCase {
     @Inject(COMPANY_REPOSITORY) private readonly companies: CompanyRepository,
     @Inject(CONTACT_REPOSITORY) private readonly contacts: ContactRepository,
     @Inject(OFFER_REPOSITORY) private readonly offers: OfferRepository,
+    @Inject(OPPORTUNITY_REPOSITORY) private readonly opportunities: OpportunityRepository,
     @Inject(AUDIT_RECORDER) private readonly audit: AuditRecorder,
     @Inject(UNIT_OF_WORK) private readonly unitOfWork: UnitOfWork,
     @Inject(CLOCK) private readonly clock: Clock,
@@ -145,7 +155,7 @@ export class UpdateAppointmentUseCase {
 
   async execute(command: UpdateAppointmentCommand): Promise<AppointmentView> {
     return this.unitOfWork.run(async () => {
-      const loaded = await appointmentInScope({ appointments: this.appointments, companies: this.companies, contacts: this.contacts, offers: this.offers }, command.id, command.access, 'update');
+      const loaded = await appointmentInScope({ appointments: this.appointments, companies: this.companies, contacts: this.contacts, offers: this.offers, opportunities: this.opportunities }, command.id, command.access, 'update');
       assertWritable(loaded.company);
       if (loaded.appointment.version !== command.version) throw new DomainError('CONFLICT', STALE);
       const now = this.clock.now();
@@ -186,6 +196,7 @@ export class TransitionAppointmentUseCase {
     @Inject(COMPANY_REPOSITORY) private readonly companies: CompanyRepository,
     @Inject(CONTACT_REPOSITORY) private readonly contacts: ContactRepository,
     @Inject(OFFER_REPOSITORY) private readonly offers: OfferRepository,
+    @Inject(OPPORTUNITY_REPOSITORY) private readonly opportunities: OpportunityRepository,
     @Inject(AUDIT_RECORDER) private readonly audit: AuditRecorder,
     @Inject(UNIT_OF_WORK) private readonly unitOfWork: UnitOfWork,
     @Inject(CLOCK) private readonly clock: Clock,
@@ -193,7 +204,7 @@ export class TransitionAppointmentUseCase {
 
   async execute(command: TransitionAppointmentCommand): Promise<AppointmentView> {
     return this.unitOfWork.run(async () => {
-      const loaded = await appointmentInScope({ appointments: this.appointments, companies: this.companies, contacts: this.contacts, offers: this.offers }, command.id, command.access, command.transition === 'cancel' ? 'cancel' : 'update');
+      const loaded = await appointmentInScope({ appointments: this.appointments, companies: this.companies, contacts: this.contacts, offers: this.offers, opportunities: this.opportunities }, command.id, command.access, command.transition === 'cancel' ? 'cancel' : 'update');
       assertWritable(loaded.company);
       if (loaded.appointment.version !== command.version) throw new DomainError('CONFLICT', STALE);
       const now = this.clock.now();
@@ -218,11 +229,12 @@ export class GetAppointmentHandler {
     @Inject(COMPANY_REPOSITORY) private readonly companies: CompanyRepository,
     @Inject(CONTACT_REPOSITORY) private readonly contacts: ContactRepository,
     @Inject(OFFER_REPOSITORY) private readonly offers: OfferRepository,
+    @Inject(OPPORTUNITY_REPOSITORY) private readonly opportunities: OpportunityRepository,
     @Inject(CLOCK) private readonly clock: Clock,
   ) {}
 
   async execute(query: { id: string; access: AccessContext }): Promise<AppointmentView> {
-    const loaded = await appointmentInScope({ appointments: this.appointments, companies: this.companies, contacts: this.contacts, offers: this.offers }, query.id, query.access, 'read');
+    const loaded = await appointmentInScope({ appointments: this.appointments, companies: this.companies, contacts: this.contacts, offers: this.offers, opportunities: this.opportunities }, query.id, query.access, 'read');
     return toAppointmentView(loaded.appointment, contextOf(loaded), this.clock.now());
   }
 }
@@ -284,6 +296,6 @@ export class ListAppointmentsHandler {
       from, to, types, status, companyId: query.companyId, offerId: query.offerId,
       ownerIds: visibility.unrestricted ? undefined : visibility.ownerIds,
     });
-    return { ...result, items: result.items.map((i) => toAppointmentView(i.appointment, { companyName: i.companyName, contactName: i.contactName, offerReference: i.offerReference }, now)) };
+    return { ...result, items: result.items.map((i) => toAppointmentView(i.appointment, { companyName: i.companyName, contactName: i.contactName, offerReference: i.offerReference, opportunityTitle: i.opportunityTitle }, now)) };
   }
 }

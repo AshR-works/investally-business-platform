@@ -59,6 +59,8 @@ export interface Company {
   /** Responsable de l'entreprise (portée des droits) et son nom, quand le serveur les donne. */
   ownerUserId?: string | null;
   ownerName?: string | null;
+  /** Opportunités ouvertes (nombre, valeur par devise) : dans la liste, et seulement si l'utilisateur peut lire les opportunités. */
+  openOpportunities?: { count: number; totals: { currency: string; amount: string }[] };
   sector: string | null;
   country: string | null;
   email: string | null;
@@ -155,6 +157,9 @@ export interface Appointment {
   contactName: string | null;
   offerId: string | null;
   offerReference: string | null;
+  /** Opportunité servie par le rendez-vous (facultative). */
+  opportunityId: string | null;
+  opportunityTitle: string | null;
   organizerUserId: string;
   /** Instants ISO (UTC) de début et de fin. */
   startsAt: string;

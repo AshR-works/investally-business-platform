@@ -26,8 +26,8 @@ Ordre retenu le 2026-10-21 (DEC-005) : module commercial, puis Investudy, puis p
 | **S4.2c** Relances | *Validé* : relances planifiées, liste « À faire », annulation avec l'offre, colonne « Prochaine relance » | — | — |
 | **S4.2d** Agenda | *Validé* : rendez-vous (DAF, décideur) et visites, vues jour, semaine et mois, conflit d'horaire en avertissement, report, tenue et annulation. Reste : rappels envoyés (D85), synchronisation Outlook (D88) | — | — |
 | **S4.3a** Opportunités | *Validé* : pipeline en cartes ou par étape, règle du rendez-vous décideur, dérogation, clôture perdue ou gagnée (D28) | — | — |
-| **S4.3b** Entreprises : statuts et responsable | *Terminé, validation en attente* : statut manuel d'un cran (CU-C-05), changement de responsable (D17), fiche 360° (opportunités, rendez-vous), colonne Responsable | — | Votre « Je valide » ; défauts D37 |
-| **S4.3c** Valeur et lien rendez-vous | Colonne « Valeur » du tableau des entreprises ; lien d'un rendez-vous à une opportunité (D93, D104) | 0,5 session | S4.3b |
+| **S4.3b** Entreprises : statuts et responsable | *Validé* : statut manuel d'un cran (CU-C-05), changement de responsable (D17), fiche 360° (opportunités, rendez-vous), colonne Responsable | — | Votre « Je valide » ; défauts D37 |
+| **S4.3c** Valeur et lien rendez-vous | *Terminé, validation en attente* : colonne « Valeur » du tableau des entreprises ; lien d'un rendez-vous à une opportunité (D93, D104) | — | Votre « Je valide » ; défauts D38 |
 | **S4.4** Agrément et ambassadeurs | Agrément (promesse de paiement), ambassadeurs, événements vers Investudy, suivi des commissions à verser (flux F3) | 1 à 1,5 session | S4.3 ; **détails de l'agrément (D1 à D5)** |
 | **S5.1** Catalogue Investudy | Programmes, formations, salles, formateurs ; modèle de données du module | 1 session | S4.4 ; cas d'usage validés |
 | **S5.2** Sessions et inscriptions | Sessions, apprenants, inscriptions liées à l'agrément, annulation et report | 1,5 session | S5.1 ; D31 (confirmation, liste d'attente) |
@@ -96,6 +96,6 @@ Ordre retenu le 2026-10-21 (DEC-005) : module commercial, puis Investudy, puis p
 | Mises à jour de la matrice de droits : `bd.opportunity.close_lost` et `close_won`, dérogation, agrément, commissions, exports | S4.3, S4.4 | Avec chaque lot |
 
 ## 7. Prochaine session proposée
-**S4.3c — Valeur et lien rendez-vous.** Colonne « Valeur » du tableau des entreprises (somme des opportunités ouvertes) et lien d'un rendez-vous à une opportunité (D93, D104).
+**S4.4 — Agrément et ambassadeurs.** Agrément (promesse de paiement), ambassadeurs, événements vers Investudy, suivi des commissions à verser (flux F3) ; il poserait aussi le statut « Cliente » (D105).
 
-Avant de commencer, il me faut **votre « Je valide S4.3b »** (ou vos corrections). Les valeurs par défaut D36 et D37 (statuts, critère « Qualifiée », droit de réattribution, confirmation) sont à confirmer.
+Avant de commencer, il me faut **votre « Je valide S4.3c »** (ou vos corrections). Les valeurs par défaut D36, D37 et D38 sont à confirmer ; l'agrément attend aussi vos décisions D1 à D5.

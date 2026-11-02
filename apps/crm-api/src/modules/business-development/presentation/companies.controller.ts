@@ -46,7 +46,7 @@ export class CompaniesController {
   @Get()
   @Protected('bd.company.read')
   list(@Query() query: ListCompaniesDto, @Access() access: AccessContext) {
-    return this.listCompanies.execute({ ...query, visibility: visibilityFor(access, 'bd.company.read') });
+    return this.listCompanies.execute({ ...query, visibility: visibilityFor(access, 'bd.company.read'), opportunityVisibility: visibilityFor(access, 'bd.opportunity.read') });
   }
 
   /** Compteurs par statut et valeurs des filtres (pays, secteurs), dans la portée de l'appelant. Déclarée avant `:id`. */

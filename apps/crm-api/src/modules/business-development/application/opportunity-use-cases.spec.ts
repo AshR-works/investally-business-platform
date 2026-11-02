@@ -131,6 +131,16 @@ describe('Opportunités — étapes et règle du rendez-vous décideur', () => {
     for (let i = 0; i < 2; i++) v = await w.advance.execute({ id: v.id, version: v.version, access: am1, actor });
     await expect(w.advance.execute({ id: v.id, version: v.version, access: am1, actor })).rejects.toMatchObject({ code: 'INVARIANT_VIOLATION' });
   });
+  it('D93 : un rendez-vous lié à CETTE opportunité compte ; lié à une AUTRE opportunité de l’entreprise, il ne compte pas', async () => {
+    const w = build(); w.company('c1', 'am1');
+    const a = await w.create.execute({ ...base, companyId: 'c1', access: am1, actor });
+    const b = await w.create.execute({ ...base, title: 'Autre formation', companyId: 'c1', access: am1, actor });
+    w.meetings.heldFor.add(`c1|${a.id}`);
+    let va = a; let vb = b;
+    for (let i = 0; i < 2; i++) { va = await w.advance.execute({ id: va.id, version: va.version, access: am1, actor }); vb = await w.advance.execute({ id: vb.id, version: vb.version, access: am1, actor }); }
+    expect((await w.advance.execute({ id: va.id, version: va.version, access: am1, actor })).stage).toBe('AGREEMENT_IN_PRINCIPLE');
+    await expect(w.advance.execute({ id: vb.id, version: vb.version, access: am1, actor })).rejects.toMatchObject({ code: 'INVARIANT_VIOLATION', message: expect.stringContaining('rendez-vous décideur') });
+  });
   it('dérogation du Responsable commercial : l’accord de principe devient possible ; justification obligatoire ; tracée', async () => {
     const w = build(); w.company('c1', 'am1');
     let v = await w.create.execute({ ...base, companyId: 'c1', access: am1, actor });

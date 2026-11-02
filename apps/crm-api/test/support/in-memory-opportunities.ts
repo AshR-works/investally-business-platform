@@ -30,8 +30,11 @@ export class InMemoryOpportunities implements OpportunityRepository {
 
 /** Rendez-vous décideur tenus, réglables par le test : les entreprises listées en ont un. */
 export class FakeDecisionMakerMeetings implements DecisionMakerMeetings {
+  /** Entreprises ayant un rendez-vous décideur tenu non lié à une opportunité. */
   readonly held = new Set<string>();
-  async hasHeld(companyId: string) {
-    return this.held.has(companyId);
+  /** Rendez-vous décideur tenus liés à une opportunité : « entreprise|opportunité ». */
+  readonly heldFor = new Set<string>();
+  async hasHeld(companyId: string, opportunityId: string) {
+    return this.held.has(companyId) || this.heldFor.has(`${companyId}|${opportunityId}`);
   }
 }

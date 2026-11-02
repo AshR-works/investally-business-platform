@@ -8,7 +8,7 @@ import {
 } from '../../lib/appointments';
 import { validateClosingText } from '../../lib/followups';
 import { statusStyle } from '../../lib/status';
-import type { Appointment, Company, Contact, Offer, Page } from '../../lib/types';
+import type { Appointment, Company, Contact, Offer, Opportunity, Page } from '../../lib/types';
 import { Badge } from '../data/badge';
 import { FormField, fieldProps } from '../form-field';
 import { Modal } from '../modal';
@@ -87,6 +87,7 @@ function DetailDialog({ appointment: a, rights, onOpen, onClose }: { appointment
     ['Entreprise', a.companyName],
     ['Contact', a.contactName],
     ['Offre', a.offerReference],
+    ['Opportunité', a.opportunityTitle],
     ['Quand', `${dateLong(a.startsAt)}, ${timeRange(a)} (${a.durationMinutes} min)`],
     ['Lieu ou lien', a.location],
     ['Note', a.note],
@@ -131,6 +132,7 @@ function AppointmentFormDialog({ appointment, defaults, rights, onClose, onDone 
   const [companies, setCompanies] = useState<Company[]>([]);
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [offers, setOffers] = useState<Offer[]>([]);
+  const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -149,10 +151,12 @@ function AppointmentFormDialog({ appointment, defaults, rights, onClose, onDone 
     if (!form.companyId) {
       setContacts([]);
       setOffers([]);
+      setOpportunities([]);
       return;
     }
     api<Page<Contact>>(`/contacts?companyId=${form.companyId}&pageSize=100`).then((r) => setContacts(r.items)).catch(() => setContacts([]));
     if (!editing) api<Page<Offer>>(`/offers?companyId=${form.companyId}&pageSize=100`).then((r) => setOffers(r.items)).catch(() => setOffers([]));
+    if (!editing) api<Page<Opportunity>>(`/opportunities?companyId=${form.companyId}&status=OPEN&pageSize=100`).then((r) => setOpportunities(r.items)).catch(() => setOpportunities([]));
   }, [form.companyId, editing]);
 
   async function submit(event: FormEvent) {
@@ -196,7 +200,7 @@ function AppointmentFormDialog({ appointment, defaults, rights, onClose, onDone 
             <p className="m-0 mb-3 text-ink-2">Entreprise : <strong>{companyName}</strong>{defaults?.offerReference ? <> · offre <strong>{defaults.offerReference}</strong></> : null}</p>
           ) : (
             <FormField prefix={PREFIX} name="companyId" label="Entreprise" error={errors.companyId}>
-              <select {...props('companyId')} value={form.companyId} onChange={(e) => setForm((f) => ({ ...f, companyId: e.target.value, contactId: '', offerId: '' }))} required aria-required="true">
+              <select {...props('companyId')} value={form.companyId} onChange={(e) => setForm((f) => ({ ...f, companyId: e.target.value, contactId: '', offerId: '', opportunityId: '' }))} required aria-required="true">
                 <option value="">— Choisir —</option>
                 {companies.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
@@ -214,6 +218,15 @@ function AppointmentFormDialog({ appointment, defaults, rights, onClose, onDone 
                 <option value="">— Aucune —</option>
                 {offers.map((o) => <option key={o.id} value={o.id}>{o.reference} · {o.subject}</option>)}
               </select>
+            </FormField>
+          )}
+          {!editing && opportunities.length > 0 && (
+            <FormField prefix={PREFIX} name="opportunityId" label="Opportunité liée (facultatif)" error={errors.opportunityId}>
+              <select {...props('opportunityId')} value={form.opportunityId} onChange={(e) => set('opportunityId', e.target.value)} disabled={!form.companyId} aria-describedby={`${PREFIX}-opportunityId-help`}>
+                <option value="">— Aucune —</option>
+                {opportunities.map((o) => <option key={o.id} value={o.id}>{o.title}</option>)}
+              </select>
+              <p id={`${PREFIX}-opportunityId-help`} className="m-0 mt-1 text-[length:var(--text-sm)] text-ink-2">Un rendez-vous décideur lié ne compte que pour cette opportunité.</p>
             </FormField>
           )}
           {!editing && (

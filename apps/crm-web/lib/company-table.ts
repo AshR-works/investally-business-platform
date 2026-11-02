@@ -1,4 +1,6 @@
+import { formatAmount } from './offers';
 import { COMPANY_STATUS } from './status';
+import type { Company } from './types';
 
 /** Champs sur lesquels l'API sait trier les entreprises. */
 export type CompanySortField = 'createdAt' | 'name' | 'country' | 'sector' | 'status';
@@ -75,13 +77,14 @@ export const COMPANY_COLUMNS = [
   { id: 'email', label: 'E-mail', locked: false },
   { id: 'phone', label: 'Téléphone', locked: false },
   { id: 'owner', label: 'Responsable', locked: false },
+  { id: 'value', label: 'Valeur', locked: false },
   { id: 'status', label: 'Statut', locked: false },
   { id: 'created', label: 'Créée le', locked: false },
 ] as const;
 export type CompanyColumnId = (typeof COMPANY_COLUMNS)[number]['id'];
 
 /** Colonnes visibles par défaut (e-mail et téléphone sont proposés mais masqués). */
-export const DEFAULT_COLUMNS: CompanyColumnId[] = ['name', 'sector', 'country', 'owner', 'status', 'created'];
+export const DEFAULT_COLUMNS: CompanyColumnId[] = ['name', 'sector', 'country', 'owner', 'value', 'status', 'created'];
 
 const KNOWN: readonly string[] = COMPANY_COLUMNS.map((c) => c.id);
 
@@ -124,4 +127,14 @@ export function saveColumns(columns: readonly CompanyColumnId[]): void {
   } catch {
     // Stockage indisponible (navigation privée, politique du navigateur) : le choix vaut pour la session seulement.
   }
+}
+
+/**
+ * Valeur des opportunités ouvertes d'une entreprise pour la colonne « Valeur » : « 3 · 3 000 000,50 FCFA ». Plusieurs devises
+ * s'écrivent l'une après l'autre (on n'additionne jamais deux devises) ; `null` quand le serveur ne donne rien (droit absent) ou
+ * qu'aucune opportunité n'est ouverte.
+ */
+export function openValueText(open: Company['openOpportunities']): string | null {
+  if (!open || open.count === 0) return null;
+  return `${open.count} · ${open.totals.map((t) => formatAmount(t.amount, t.currency)).join(' + ')}`;
 }

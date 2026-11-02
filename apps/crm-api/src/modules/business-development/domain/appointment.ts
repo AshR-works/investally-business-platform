@@ -25,6 +25,8 @@ export interface AppointmentProps {
   companyId: string;
   contactId: string | null;
   offerId: string | null;
+  /** Opportunité servie par le rendez-vous (facultatif, non modifiable) : un rendez-vous décideur lié ne compte que pour elle (D93). */
+  opportunityId: string | null;
   /** Organisateur : l'utilisateur dont l'agenda porte le rendez-vous (sert à repérer les conflits d'horaire). */
   organizerUserId: string;
   startsAt: Date;
@@ -92,7 +94,7 @@ export class Appointment extends AggregateRoot {
 
   /** Planifie un rendez-vous ; l'heure de début ne peut pas être dans le passé. */
   static plan(input: {
-    id: string; type: string; companyId: string; contactId?: string | null; offerId?: string | null; organizerUserId: string;
+    id: string; type: string; companyId: string; contactId?: string | null; offerId?: string | null; opportunityId?: string | null; organizerUserId: string;
     startsAt: Date | string; durationMinutes?: number; location?: string | null; note?: string | null; now: Date;
   }): Appointment {
     if (!input.companyId) throw new DomainError('VALIDATION', 'Un rendez-vous porte sur une entreprise');
@@ -100,7 +102,7 @@ export class Appointment extends AggregateRoot {
     const startsAt = instant(input.startsAt, "L'heure de début");
     futureOnly(startsAt, input.now);
     return new Appointment({
-      id: input.id, type: typeOf(input.type), companyId: input.companyId, contactId: input.contactId ?? null, offerId: input.offerId ?? null,
+      id: input.id, type: typeOf(input.type), companyId: input.companyId, contactId: input.contactId ?? null, offerId: input.offerId ?? null, opportunityId: input.opportunityId ?? null,
       organizerUserId: input.organizerUserId, startsAt, durationMinutes: minutesOf(input.durationMinutes),
       location: optionalText(input.location, 'Le lieu', 200), note: optionalText(input.note, 'La note', 500),
       status: AppointmentStatus.Planned, outcomeNote: null, closedAt: null, postponements: 0, lastPostponeReason: null, createdAt: input.now, version: 1,
@@ -171,6 +173,7 @@ export class Appointment extends AggregateRoot {
   get companyId(): string { return this.props.companyId; }
   get contactId(): string | null { return this.props.contactId; }
   get offerId(): string | null { return this.props.offerId; }
+  get opportunityId(): string | null { return this.props.opportunityId; }
   get organizerUserId(): string { return this.props.organizerUserId; }
   get startsAt(): Date { return this.props.startsAt; }
   get durationMinutes(): number { return this.props.durationMinutes; }

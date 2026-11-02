@@ -144,7 +144,7 @@ export class AdvanceOpportunityUseCase extends OpportunityChange<AdvanceOpportun
   protected permission = () => 'bd.opportunity.advance';
   protected async apply(opportunity: Opportunity): Promise<void> {
     const needsMeeting = opportunity.nextStage === OpportunityStage.AgreementInPrinciple;
-    const held = needsMeeting ? await this.meetings.hasHeld(opportunity.companyId) : false;
+    const held = needsMeeting ? await this.meetings.hasHeld(opportunity.companyId, opportunity.id) : false;
     opportunity.advance({ decisionMakerMeetingHeld: held }, this.clock.now());
   }
 }

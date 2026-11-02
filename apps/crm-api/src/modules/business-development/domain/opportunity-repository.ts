@@ -31,9 +31,13 @@ export interface OpportunityRepository {
 
 export const OPPORTUNITY_REPOSITORY = Symbol('OpportunityRepository');
 
-/** Lecture des rendez-vous décideur tenus d'une entreprise (règle de l'accord de principe, flux F1). */
+/**
+ * Lecture des rendez-vous décideur tenus (règle de l'accord de principe, flux F1). Pour une opportunité, comptent les rendez-vous
+ * qui lui sont liés ET ceux qui ne sont liés à aucune opportunité de l'entreprise ; un rendez-vous lié à une AUTRE opportunité ne
+ * compte pas (D93).
+ */
 export interface DecisionMakerMeetings {
-  hasHeld(companyId: string): Promise<boolean>;
+  hasHeld(companyId: string, opportunityId: string): Promise<boolean>;
 }
 
 export const DECISION_MAKER_MEETINGS = Symbol('DecisionMakerMeetings');

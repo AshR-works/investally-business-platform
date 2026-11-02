@@ -62,12 +62,12 @@ describe('tableau des entreprises : filtres par statut', () => {
 
 describe('tableau des entreprises : colonnes au choix', () => {
   it('par défaut : nom, secteur, pays, statut, date ; e-mail et téléphone proposés mais masqués', () => {
-    expect(DEFAULT_COLUMNS).toEqual(['name', 'sector', 'country', 'owner', 'status', 'created']);
+    expect(DEFAULT_COLUMNS).toEqual(['name', 'sector', 'country', 'owner', 'value', 'status', 'created']);
     expect(COMPANY_COLUMNS.map((c) => c.id)).toEqual(expect.arrayContaining(['email', 'phone']));
   });
   it('active et masque une colonne en gardant l’ordre du tableau', () => {
-    expect(toggleColumn(DEFAULT_COLUMNS, 'email')).toEqual(['name', 'sector', 'country', 'email', 'owner', 'status', 'created']);
-    expect(toggleColumn(DEFAULT_COLUMNS, 'sector')).toEqual(['name', 'country', 'owner', 'status', 'created']);
+    expect(toggleColumn(DEFAULT_COLUMNS, 'email')).toEqual(['name', 'sector', 'country', 'email', 'owner', 'value', 'status', 'created']);
+    expect(toggleColumn(DEFAULT_COLUMNS, 'sector')).toEqual(['name', 'country', 'owner', 'value', 'status', 'created']);
   });
   it('la colonne du nom ne se masque pas', () => {
     expect(toggleColumn(DEFAULT_COLUMNS, 'name')).toEqual(DEFAULT_COLUMNS);
