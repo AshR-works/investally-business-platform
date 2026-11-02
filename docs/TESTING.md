@@ -29,6 +29,9 @@ Preuve de câblage de bout en bout : créer une `Company` (BD) via Next.js → c
 - CI : lint, types, tests unitaires, tests d'architecture, intégration, build Docker, audit des dépendances.
 - Aucun merge si la CI est rouge.
 
+## Tests de mutation (scripts versionnés)
+Un mutant est une faute injectée volontairement : on relance les tests, il doit échouer. Les scripts de chaque lot sont dans [`scripts/mutants/`](../scripts/mutants/README.md) (un script par lot, de S3.8 à S4.4a) et se rejouent à la demande ; leurs résultats sont consignés dans la recette du lot et dans le journal ci-dessous. Ils modifient temporairement le code source : à lancer sur un arbre de travail propre, un seul à la fois.
+
 ## Journal des tests par lot
 Mis à jour **à chaque lot**, en même temps que le code (règle posée le 2026-11-01) : chiffres relevés avant la demande de validation ; le détail se trouve dans la recette du lot (`SPRINT-*-RECETTE.md`).
 
