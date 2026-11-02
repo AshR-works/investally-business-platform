@@ -25,7 +25,7 @@ export interface ApprovalRepository {
   /** Crée ou met à jour ; une version périmée est un conflit ; un second agrément actif pour la même opportunité aussi. */
   save(approval: Approval): Promise<void>;
   findById(id: string): Promise<Approval | null>;
-  /** L'agrément actif (reçu ou honoré) de l'opportunité, s'il existe. */
+  /** L'agrément actif (demandé, reçu ou honoré) de l'opportunité, s'il existe. */
   findActiveByOpportunity(opportunityId: string): Promise<Approval | null>;
   /** Tri : le plus récent d'abord. */
   list(query: ApprovalListQuery): Promise<Page<ApprovalListItem>>;

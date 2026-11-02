@@ -13,7 +13,7 @@ const pdf = () => Buffer.from('%PDF-1.7\ncontrat idor\n%%EOF');
 
 interface As { token: string; ip: string }
 /** Identifiants visés par une sonde : les vrais (objet de Marie) ou inexistants (tous `NIL`). */
-interface Ids { company: string; doc: string; session: string; facilitator: string; contact: string; offer: string; offerSent: string; offerPending: string; offerReceipt: string; receipt: string; followup: string; appointment: string; appointmentDue: string; opportunity: string; opportunityAgreed: string; teammate: string; opportunityReady: string; approval: string; ambassador: string }
+interface Ids { company: string; doc: string; session: string; facilitator: string; contact: string; offer: string; offerSent: string; offerPending: string; offerReceipt: string; receipt: string; followup: string; appointment: string; appointmentDue: string; opportunity: string; opportunityAgreed: string; teammate: string; opportunityReady: string; approval: string; approvalRequested: string; ambassador: string }
 
 /**
  * Une sonde par route « objet » : elle appelle la route avec les identifiants donnés, en tant que `as`.
@@ -68,6 +68,7 @@ const PROBES: Record<string, (api: Api, as: As, ids: Ids) => Promise<ApiResponse
   'GET /approvals': (api, as, ids) => api.call('GET', `/api/v1/approvals?companyId=${ids.company}`, as),
   'POST /approvals': (api, as, ids) => api.call('POST', '/api/v1/approvals', { ...as, body: { opportunityId: ids.opportunityReady, amount: '1000', receivedOn: new Date().toISOString().slice(0, 10) } }),
   'GET /approvals/:id': (api, as, ids) => api.call('GET', `/api/v1/approvals/${ids.approval}`, as),
+  'POST /approvals/:id/receive': (api, as, ids) => api.call('POST', `/api/v1/approvals/${ids.approvalRequested}/receive`, { ...as, body: { version: 1, receivedOn: new Date().toISOString().slice(0, 10) } }),
   'POST /approvals/:id/honor': (api, as, ids) => api.call('POST', `/api/v1/approvals/${ids.approval}/honor`, { ...as, body: { version: 1 } }),
   'POST /approvals/:id/expire': (api, as, ids) => api.call('POST', `/api/v1/approvals/${ids.approval}/expire`, { ...as, body: { version: 1, reason: 'Expiré par un pirate' } }),
   'POST /approvals/:id/cancel': (api, as, ids) => api.call('POST', `/api/v1/approvals/${ids.approval}/cancel`, { ...as, body: { version: 1, reason: 'Annulé par un pirate' } }),
@@ -171,15 +172,23 @@ describeDb('Contrat anti-IDOR : un acteur sans portée reçoit la réponse d\'un
     await t.prisma.db.opportunity.update({ where: { id: opportunityApproved.body.id }, data: { stage: 'AGREEMENT_IN_PRINCIPLE' } });
     const approval = await api.call('POST', '/api/v1/approvals', { ...m, body: { opportunityId: opportunityApproved.body.id, amount: '2500000', receivedOn: new Date().toISOString().slice(0, 10) } });
     expect(approval.status).toBe(201);
+    // Un agrément seulement demandé (D41) : la sonde de réception le déclare reçu.
+    const opportunityAsked = await api.call('POST', '/api/v1/opportunities', { ...m, body: { companyId: company2.body.id, title: 'Secret-OPPORTUNITE-IDOR demandée', amount: '2600000', source: 'EVENT' } });
+    expect(opportunityAsked.status).toBe(201);
+    await t.prisma.db.opportunity.update({ where: { id: opportunityAsked.body.id }, data: { stage: 'AGREEMENT_IN_PRINCIPLE' } });
+    const approvalRequested = await api.call('POST', '/api/v1/approvals', { ...m, body: { opportunityId: opportunityAsked.body.id, amount: '2600000', requested: true } });
+    expect(approvalRequested.status).toBe(201);
+    expect(approvalRequested.body.status).toBe('REQUESTED');
     const ambassador = await api.call('POST', '/api/v1/ambassadors', { ...m, body: { lastName: 'Secret-AMBASSADEUR-IDOR', firstName: 'Alain', origin: 'LEARNER', appointedOn: new Date().toISOString().slice(0, 10) } });
     expect(ambassador.status).toBe(201);
     const second = await login(marie);
     return {
       marie: m,
       chef: chefSession,
+      finance: await login(await createUserWithRoles(t, [RoleCode.Finance])),
       attackers: { paul: await login(paul), autreChef: await login(autreChef) },
-      real: { company: company.body.id as string, doc: doc.body.id as string, session: second.sessionId, facilitator: facilitator.body.id as string, contact: contact.body.id as string, offer: offer.body.id as string, offerSent: offerSent.body.id as string, offerPending: offerPending.body.id as string, offerReceipt: offerReceipt.body.id as string, receipt: receipt.body.id as string, followup: followup.body.id as string, appointment: appointment.body.id as string, appointmentDue: appointmentDue.body.id as string, opportunity: opportunity.body.id as string, opportunityAgreed: opportunityAgreed.body.id as string, teammate: anne.id, opportunityReady: opportunityReady.body.id as string, approval: approval.body.id as string, ambassador: ambassador.body.id as string } satisfies Ids,
-      nil: { company: NIL, doc: NIL, session: NIL, facilitator: NIL, contact: NIL, offer: NIL, offerSent: NIL, offerPending: NIL, offerReceipt: NIL, receipt: NIL, followup: NIL, appointment: NIL, appointmentDue: NIL, opportunity: NIL, opportunityAgreed: NIL, teammate: NIL, opportunityReady: NIL, approval: NIL, ambassador: NIL } satisfies Ids,
+      real: { company: company.body.id as string, doc: doc.body.id as string, session: second.sessionId, facilitator: facilitator.body.id as string, contact: contact.body.id as string, offer: offer.body.id as string, offerSent: offerSent.body.id as string, offerPending: offerPending.body.id as string, offerReceipt: offerReceipt.body.id as string, receipt: receipt.body.id as string, followup: followup.body.id as string, appointment: appointment.body.id as string, appointmentDue: appointmentDue.body.id as string, opportunity: opportunity.body.id as string, opportunityAgreed: opportunityAgreed.body.id as string, teammate: anne.id, opportunityReady: opportunityReady.body.id as string, approval: approval.body.id as string, approvalRequested: approvalRequested.body.id as string, ambassador: ambassador.body.id as string } satisfies Ids,
+      nil: { company: NIL, doc: NIL, session: NIL, facilitator: NIL, contact: NIL, offer: NIL, offerSent: NIL, offerPending: NIL, offerReceipt: NIL, receipt: NIL, followup: NIL, appointment: NIL, appointmentDue: NIL, opportunity: NIL, opportunityAgreed: NIL, teammate: NIL, opportunityReady: NIL, approval: NIL, approvalRequested: NIL, ambassador: NIL } satisfies Ids,
       secondSession: second,
     };
   }
@@ -214,7 +223,8 @@ describeDb('Contrat anti-IDOR : un acteur sans portée reçoit la réponse d\'un
     // Contrôle positif : le propriétaire, lui, réussit (le test n'est pas vide), puis les dégâts éventuels sont vérifiés.
     // L'archivage exige le droit de suppression, que Marie n'a pas : c'est son chef (même équipe) qui l'exerce.
     // La dérogation et la clôture « gagnée » (D28) relèvent du Responsable commercial.
-    const owner = ['POST /documents/:id/archive', 'DELETE /contacts/:id', 'POST /opportunities/:id/waiver', 'POST /opportunities/:id/close-won', 'POST /companies/:id/owner', 'PUT /ambassadors/:id', 'POST /approvals/:id/honor', 'POST /approvals/:id/expire', 'POST /approvals/:id/cancel'].includes(key) ? w.chef : w.marie;
+    // Constater le paiement relève de la Finance (D41, FD-4), pas du Responsable commercial.
+    const owner = key === 'POST /approvals/:id/honor' ? w.finance : ['POST /documents/:id/archive', 'DELETE /contacts/:id', 'POST /opportunities/:id/waiver', 'POST /opportunities/:id/close-won', 'POST /companies/:id/owner', 'PUT /ambassadors/:id', 'POST /approvals/:id/expire', 'POST /approvals/:id/cancel'].includes(key) ? w.chef : w.marie;
     const ok = await probe(api, owner, w.real);
     expect([key, ok.status < 300]).toEqual([key, true]);
   }, 60_000);

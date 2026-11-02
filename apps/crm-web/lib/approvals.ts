@@ -4,11 +4,19 @@ import type { Approval, Opportunity } from './types';
 
 /** États d'un agrément, tels que l'API les fournit. */
 export const APPROVAL_STATUS: Record<string, { label: string; tone: 'neutral' | 'info' | 'ok' | 'warn' | 'bad' }> = {
+  REQUESTED: { label: 'Demandé', tone: 'warn' },
   RECEIVED: { label: 'Reçu', tone: 'info' },
   HONORED: { label: 'Honoré', tone: 'ok' },
   EXPIRED: { label: 'Expiré', tone: 'neutral' },
   CANCELLED: { label: 'Annulé', tone: 'neutral' },
 };
+
+/** Types de payeur tiers. */
+export const PAYER_TYPES: Record<string, string> = { EMPLOYER: 'Employeur', ORGANISM: 'Organisme', LANDLORD: 'Bailleur' };
+
+/** Qui paie : le client par défaut, ou le tiers renseigné avec son type. */
+export const payerText = (a: Pick<Approval, 'payerName' | 'payerType'>): string =>
+  a.payerName ? `${a.payerName} (${PAYER_TYPES[a.payerType ?? ''] ?? a.payerType})` : 'Le client';
 
 /** Étapes à partir desquelles un agrément peut être enregistré (l'accord de principe a été obtenu). */
 const APPROVABLE_STAGES = ['AGREEMENT_IN_PRINCIPLE', 'ACCREDITATION'];
@@ -25,13 +33,18 @@ export interface ApprovalForm {
   currency: string;
   receivedOn: string;
   validUntil: string;
+  /** Vrai : la promesse n'est pas encore signée, l'agrément est seulement demandé. */
+  requested: boolean;
+  /** Payeur tiers : nom et type vont ensemble ; vides, le client paie. */
+  payerName: string;
+  payerType: string;
 }
 
 export type ApprovalField = keyof ApprovalForm;
 export type ApprovalErrors = Partial<Record<ApprovalField, string>>;
 
 export const EMPTY_APPROVAL_FORM = (defaults: Partial<ApprovalForm> = {}, now: Date = new Date()): ApprovalForm => ({
-  opportunityId: '', amount: '', places: '', currency: 'XAF', receivedOn: todayIso(now), validUntil: '', ...defaults,
+  opportunityId: '', amount: '', places: '', currency: 'XAF', receivedOn: todayIso(now), validUntil: '', requested: false, payerName: '', payerType: '', ...defaults,
 });
 
 /**
@@ -52,20 +65,34 @@ export function validateApprovalFields(form: ApprovalForm, context: { today: str
   const currency = form.currency.trim().toUpperCase();
   if (currency && currency !== 'FCFA' && !/^[A-Z]{3}$/.test(currency)) errors.currency = 'La devise comporte trois lettres (ex. XAF, EUR).';
   const received = form.receivedOn.trim();
-  if (!received) errors.receivedOn = 'La date de réception est obligatoire.';
-  else if (!isRealDate(received)) errors.receivedOn = 'La date de réception n’est pas valide.';
-  else if (received > context.today) errors.receivedOn = 'La date de réception ne peut pas être dans le futur.';
+  if (!form.requested) {
+    const problem = validateReceivedOn(received, { today: context.today });
+    if (problem) errors.receivedOn = problem;
+  }
   const until = form.validUntil.trim();
   if (until) {
     if (!isRealDate(until)) errors.validUntil = 'La fin de validité n’est pas valide.';
-    else if (isRealDate(received) && until < received) errors.validUntil = 'La fin de validité ne peut pas précéder la réception.';
+    else if (!form.requested && isRealDate(received) && until < received) errors.validUntil = 'La fin de validité ne peut pas précéder la réception.';
   }
+  const payerName = form.payerName.trim();
+  if (Boolean(payerName) !== Boolean(form.payerType)) errors.payerName = 'Renseignez le nom et le type du payeur, ou aucun si le client paie.';
+  else if (payerName.length > 200) errors.payerName = 'Le nom du payeur ne peut dépasser 200 caractères.';
+  else if (form.payerType && !(form.payerType in PAYER_TYPES)) errors.payerName = 'Le type de payeur doit être employeur, organisme ou bailleur.';
   return errors;
+}
+
+/** Date de réception de la promesse signée : obligatoire, réelle, pas dans le futur (le serveur refait ce contrôle). */
+export function validateReceivedOn(received: string, context: { today: string; validUntil?: string | null }): string | null {
+  if (!received) return 'La date de réception est obligatoire.';
+  if (!isRealDate(received)) return 'La date de réception n’est pas valide.';
+  if (received > context.today) return 'La date de réception ne peut pas être dans le futur.';
+  if (context.validUntil && context.validUntil < received) return 'La date de réception ne peut pas suivre la fin de validité.';
+  return null;
 }
 
 /** Corps de l'enregistrement d'un agrément : seuls les champs renseignés partent. */
 export function buildApprovalBody(form: ApprovalForm): Record<string, unknown> {
-  const body: Record<string, unknown> = { opportunityId: form.opportunityId, receivedOn: form.receivedOn.trim() };
+  const body: Record<string, unknown> = form.requested ? { opportunityId: form.opportunityId, requested: true } : { opportunityId: form.opportunityId, receivedOn: form.receivedOn.trim() };
   const amount = form.amount.trim();
   if (amount) body.amount = amount;
   const places = form.places.trim();
@@ -74,6 +101,11 @@ export function buildApprovalBody(form: ApprovalForm): Record<string, unknown> {
   if (currency) body.currency = currency;
   const until = form.validUntil.trim();
   if (until) body.validUntil = until;
+  const payerName = form.payerName.trim();
+  if (payerName) {
+    body.payerName = payerName;
+    body.payerType = form.payerType;
+  }
   return body;
 }
 
@@ -86,17 +118,30 @@ export function coverageText(a: Pick<Approval, 'amount' | 'currency' | 'places'>
 }
 
 export type ApprovalAction = 'honor' | 'expire' | 'cancel';
-export const APPROVAL_ACTION_LABEL: Record<ApprovalAction, string> = { honor: 'Honorer', expire: 'Déclarer expiré', cancel: 'Annuler l’agrément' };
+/** Les actions du panneau : clôturer un agrément, ou déclarer reçu un agrément demandé. */
+export type ApprovalPanelAction = ApprovalAction | 'receive';
+export const APPROVAL_ACTION_LABEL: Record<ApprovalPanelAction, string> = { receive: 'Déclarer reçu', honor: 'Honorer', expire: 'Déclarer expiré', cancel: 'Annuler l’agrément' };
 
 export interface ApprovalRights {
   honor: boolean;
   cancel: boolean;
+  /** Déclarer reçu un agrément demandé (droit de création). */
+  receive?: boolean;
 }
 
-/** Les actions proposées sur un agrément : seul un agrément « reçu » se clôt ; honorer et annuler ont chacun leur droit. */
-export function approvalActions(approval: Pick<Approval, 'status'>, rights: ApprovalRights): ApprovalAction[] {
+/**
+ * Les actions proposées sur un agrément : un agrément « demandé » se déclare reçu ou s'annule ; seul un agrément « reçu » se
+ * constate honoré ou se déclare expiré. Honorer (la finance) et annuler ont chacun leur droit.
+ */
+export function approvalActions(approval: Pick<Approval, 'status'>, rights: ApprovalRights): ApprovalPanelAction[] {
+  if (approval.status === 'REQUESTED') {
+    const requested: ApprovalPanelAction[] = [];
+    if (rights.receive) requested.push('receive');
+    if (rights.cancel) requested.push('cancel');
+    return requested;
+  }
   if (approval.status !== 'RECEIVED') return [];
-  const actions: ApprovalAction[] = [];
+  const actions: ApprovalPanelAction[] = [];
   if (rights.honor) actions.push('honor');
   if (rights.cancel) actions.push('expire', 'cancel');
   return actions;

@@ -1,0 +1,38 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>DDR-0026 — Agrément : état « demandé », payeur tiers, constat du paiement par la Finance, second facteur à la réattribution</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — design · <a href="../README.html">Mode d&#8217;emploi</a> · <a href="../01-DESIGN-SYSTEM.html">Design system</a> · <a href="../02-SPECIFICATIONS-FRONTEND.html">Spécifications frontend</a> · <a href="../exigences/REGISTRE-EXD.html">Exigences</a> · <a href="../04-ANALYSE-D-IMPACT.html">Analyse d&#8217;impact</a> · <a href="../05-AIDE-A-LA-DECISION.html">Aide à la décision</a> · <a href="../decisions/REGISTRE-DDR.html">Décisions (DDR)</a> · <a href="../CHANGELOG-DESIGN.html">Journal</a> · <a href="../prototype/index.html">Prototype</a></nav><h1>DDR-0026 — Agrément : état « demandé », payeur tiers, constat du paiement par la Finance, second facteur à la réattribution</h1>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td><strong>Statut</strong></td><td>Acceptée (réalisée dans l'application) ; prototype à mettre à jour</td></tr>
+<tr><td><strong>Date</strong></td><td>2026-11-09</td></tr>
+<tr><td><strong>Version du design</strong></td><td>0.4.1 (le prototype n'est pas encore à jour : version 0.5.0 à décider)</td></tr>
+<tr><td><strong>Lié à</strong></td><td>Lot S4.4a-bis ; décisions D41 (réponses FD-3, FD-4, FD-6) et D42 (valeurs par défaut) ; DDR-0024 (agréments) ; DDR-0022 (statuts et responsable)</td></tr>
+</tbody></table></div>
+<h2>Contexte</h2>
+<p>Les réponses de la Direction produit à la feuille de décision (D41) corrigent trois points de lots déjà validés : <strong>FD-3 B</strong> (un tiers peut payer l'agrément), <strong>FD-4 B</strong> (le DAF constate le paiement ; un agrément peut d'abord n'être que « demandé »), <strong>FD-6 B</strong> (changer le responsable d'une entreprise exige un second facteur récent). Ces corrections précèdent S4.4c (commissions à verser), qui s'appuie sur l'agrément « honoré » par le DAF.</p>
+<h2>Décisions</h2>
+<ol><li><strong>État « demandé »</strong> : premier état d'un agrément, avant « reçu ». Une demande <strong>n'a ni date de réception ni document signé obligatoire</strong> et <strong>ne rend pas l'entreprise « Cliente »</strong>. Elle <strong>occupe l'opportunité</strong> (un seul agrément actif par opportunité). Elle <strong>se déclare reçue</strong> (date de la signature, non future et antérieure à la fin de validité) : l'entreprise devient alors « Cliente » et l'événement « agrément accordé » est émis ; ou elle <strong>s'annule</strong> avec un motif. Elle ne s'honore ni ne s'expire.</li><li><strong>Enregistrer directement « reçu »</strong> reste possible (parcours de S4.4a inchangé) : la case « la promesse n'est pas encore signée » choisit la demande.</li><li><strong>Payeur</strong> : le client par défaut ; un <strong>tiers</strong> se renseigne par son <strong>nom</strong> et son <strong>type</strong> (employeur, organisme, bailleur), <strong>les deux ensemble</strong>. Ils se fixent à la création ; pas de fiche du tiers.</li><li><strong>Constat du paiement par la Finance</strong> : le droit <code>bd.approval.honor</code> passe du Responsable commercial à la <strong>Finance (le DAF)</strong>, qui reçoit aussi la <strong>lecture</strong> des agréments (portée Tous). Le Responsable commercial garde créer et annuler ; <strong>créer et déclarer reçu</strong> relèvent du même droit de création.</li><li><strong>Réattribution d'une entreprise</strong> : la route exige un <strong>second facteur récent</strong> (moins de 10 minutes, comme les autres actions sensibles), en plus de la confirmation par case à cocher ; l'interface redemande un code et rejoue la requête.</li></ol>
+<h2>Mesures de rigueur</h2>
+<ul><li>La base garantit : nom et type de payeur ensemble, nom non vide ; date de réception absente seulement pour une demande ou un agrément annulé avant réception ; clôture cohérente avec les quatre états ; un seul agrément actif (demandé, reçu ou honoré) par opportunité ; fin de validité jamais avant la réception.</li><li>La valeur d'état « demandé » est ajoutée dans une migration à part : elle ne peut servir qu'après validation de la transaction qui l'ajoute.</li><li>23 fautes injectées (domaine, cas d'usage, droits, routes, dépôt, migration) sont toutes détectées ; le contrat anti-IDOR couvre la nouvelle route « objet » (réception) et le constat par la Finance.</li><li>Les mêmes règles de saisie sont comparées entre l'interface et le <strong>domaine réel</strong> du serveur (y compris le payeur).</li></ul>
+<h2>Conséquences</h2>
+<ul><li>Réversible : deux migrations, un cas d'usage, une route, trois composants modifiés.</li><li><strong>Dette</strong> : D125 à D129 (<code>docs/TECH-DEBT.md</code>) ; D111 et D112 sont soldées ou précisées.</li><li>Les droits de la Finance dans le CRM (D8) s'élargissent d'un cran : lecture des agréments et constat du paiement. Les commissions (S4.4c) ajouteront le déblocage.</li><li>Le prototype et les wireframes ne montrent ni l'état « demandé » ni le payeur (D49).</li></ul></main></body></html>

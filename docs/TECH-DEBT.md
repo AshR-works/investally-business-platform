@@ -111,8 +111,8 @@
 | D108 | **Pas d'action « Planifier un rendez-vous » depuis une opportunité** : le lien se choisit dans le formulaire de l'agenda (ou depuis la fiche de l'entreprise) ; l'opportunité n'affiche pas ses rendez-vous | S4.3c | Claude | Fiche d'opportunité enrichie |
 | D109 | **Une seule opportunité par rendez-vous** (pas de rendez-vous qui sert plusieurs opportunités) ; un rendez-vous décideur non lié reste « de l'entreprise » et compte pour toutes | S4.3c | Claude | À confirmer (D38) |
 | D110 | **Valeur calculée à la volée** pour les entreprises de la page affichée (une requête groupée) : pas de total général de la liste ni de valeur sur l'export de la fiche | S4.3c | Claude | S6.1 |
-| D111 | **Pas d'état « demandé »** : l'agrément s'enregistre directement « reçu », avec son document signé (CU-F1-05 prévoyait demandé → reçu → honoré) ; le suivi d'une demande en attente du client n'existe pas | S4.4a | Claude | À confirmer (D39) |
-| D112 | **Honorer = action manuelle du Responsable commercial** (droit `bd.approval.honor`) : le paiement effectif relève de la finance (D5), qui n'a pas encore de module ; le droit passera au DAF avec F4 | S4.4a | Claude | Module Finance (F4) |
+| D111 | ~~**Pas d'état « demandé »**~~ **Soldée par S4.4a-bis (D41)** : l'état « demandé » existe ; l'agrément s'enregistre « demandé » ou directement « reçu » | S4.4a | Claude | Soldée |
+| D112 | **Honorer = constat manuel par la Finance (le DAF)** depuis S4.4a-bis (D41) : le droit `bd.approval.honor` a quitté le Responsable commercial ; le paiement lui-même n'est toujours pas suivi par le CRM (D5), le constat reste une saisie | S4.4a | Claude | Module Finance (F4) |
 | D113 | **Événement « agrément accordé » enregistré mais jamais consommé** : Investudy n'existe pas encore ; aucune inscription n'est ouverte, et la règle D4 (signaler les inscriptions d'un agrément annulé) n'a rien à signaler tant que les inscriptions n'existent pas | S4.4a | Claude | S5.x (inscriptions) |
 | D114 | **Un seul agrément actif par opportunité**, non modifiable : pas de cumul ni d'avenant ; corriger une saisie = annuler (motif) puis réenregistrer | S4.4a | Claude | À confirmer (D39) |
 | D115 | **L'entreprise reste « Cliente »** si son agrément est ensuite annulé ou expiré : aucun retour automatique de statut (et la fiche n'en propose pas de manuel, CU-C-05) | S4.4a | Claude | À confirmer (D39) |
@@ -125,6 +125,11 @@
 | D122 | **Pas de panneau « Ambassadeurs » sur la fiche de l'entreprise**, pas de filtre par entreprise ni d'export de la liste | S4.4b | Claude | Fiche 360° enrichie |
 | D123 | **Visibilité par créateur, pas par entreprise** : si une entreprise change de responsable (S4.3b), ses ambassadeurs restent chez leur créateur | S4.4b | Claude | À confirmer (D40) |
 | D124 | **Un e-mail ne sert qu'à un ambassadeur** ; aucun contrôle de doublon par nom (deux personnes homonymes sont permises) | S4.4b | Claude | À confirmer (D40) |
+| D125 | **Le payeur tiers ne se modifie pas après l'enregistrement** : nom et type se saisissent à la création ; pour corriger, annuler l'agrément (motif) et en enregistrer un nouveau ; pas de fiche du tiers (FD-3 B écartait l'entité à part) | S4.4a-bis | Claude | Si le cas se répète (FD-3 C) |
+| D126 | **Une demande ne se modifie pas** (montant, places, validité) : elle se déclare reçue ou s'annule ; pas de relance automatique des demandes en attente ni de filtre « demandés » dédié sur une page d'ensemble des agréments | S4.4a-bis | Claude | S4.4c / S6 |
+| D127 | **Le type de payeur est une liste fermée** (employeur, organisme, bailleur) : pas de valeur « autre » ; à élargir si le besoin apparaît | S4.4a-bis | Claude | À confirmer (D42) |
+| D128 | **La Finance ne voit les agréments qu'entreprise par entreprise** (panneau de la fiche) : pas de page d'ensemble des agréments reçus à constater, qui faciliterait le travail du DAF | S4.4a-bis | Claude | S4.4c / S6 |
+| D129 | **Le second facteur de la réattribution** est celui de toutes les actions sensibles (vérification de moins de 10 minutes) ; pas de durée propre ni de motif écrit (FD-6 C écartée) | S4.4a-bis | Claude | À confirmer (D42) |
 | D105 | **Le statut « Cliente » n'est posé par rien** tant que l'agrément n'existe pas ; une entreprise ne peut donc pas encore devenir cliente | S4.3b | Claude | *Soldée par S4.4a* : l'agrément reçu pose « Cliente » |
 | D5 | Hypothèses de charge et de périmètre non confirmées | Phase 3 | Revue à la fin de S1 avec les chiffres réels | Ouverte |
 

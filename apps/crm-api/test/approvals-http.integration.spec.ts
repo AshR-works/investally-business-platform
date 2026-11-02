@@ -35,10 +35,11 @@ describeDb('Agréments (HTTP + PostgreSQL)', () => {
     const amUser = await createUserWithRoles(t, [RoleCode.AccountManager], { managerId: chefUser.id });
     const otherUser = await createUserWithRoles(t, [RoleCode.AccountManager]);
     const dirUser = await createUserWithRoles(t, [RoleCode.Direction]);
-    const [chef, am, other, dir] = [await login(chefUser), await login(amUser), await login(otherUser), await login(dirUser)];
+    const finUser = await createUserWithRoles(t, [RoleCode.Finance]);
+    const [chef, am, other, dir, fin] = [await login(chefUser), await login(amUser), await login(otherUser), await login(dirUser), await login(finUser)];
     const company = await api.call('POST', '/api/v1/companies', { ...am, body: { name: `Société ${unique()}` } });
     expect(company.status).toBe(201);
-    return { chef, am, other, dir, companyId: company.body.id as string };
+    return { chef, am, other, dir, fin, companyId: company.body.id as string };
   }
   /** Une opportunité de l'entreprise, amenée directement à l'étape voulue en base (la règle du rendez-vous décideur est testée ailleurs). */
   async function opportunityAt(as: As, companyId: string, stage = 'AGREEMENT_IN_PRINCIPLE') {
@@ -51,8 +52,8 @@ describeDb('Agréments (HTTP + PostgreSQL)', () => {
     api.call('POST', '/api/v1/approvals', { ...as, body: { opportunityId, amount: '12500000', receivedOn: today(), ...extra } });
   const act = (as: As, id: string, action: 'honor' | 'expire' | 'cancel', body: Record<string, unknown>) => api.call('POST', `/api/v1/approvals/${id}/${action}`, { ...as, body });
 
-  it('cycle : enregistrer, lire, honorer ; l’entreprise devient « Cliente » ; versions et états suivent', async () => {
-    const { am, chef, companyId } = await team();
+  it('cycle : enregistrer, lire, honorer (par la Finance) ; l’entreprise devient « Cliente » ; versions et états suivent', async () => {
+    const { am, chef, fin, companyId } = await team();
     const op = await opportunityAt(am, companyId);
     const a = await register(am, op, { places: 8, validUntil: '2099-12-31' });
     expect(a.status).toBe(201);
@@ -61,7 +62,7 @@ describeDb('Agréments (HTTP + PostgreSQL)', () => {
     expect((await api.call('GET', `/api/v1/approvals/${a.body.id}`, am)).body).toMatchObject({
       id: a.body.id, opportunityTitle: expect.stringContaining('Formation'), amount: '12500000.00', places: 8, currency: 'XAF', receivedOn: today(), validUntil: '2099-12-31',
     });
-    const honored = await act(chef, a.body.id, 'honor', { version: 1 });
+    const honored = await act(fin, a.body.id, 'honor', { version: 1 });
     expect(honored.status).toBe(200);
     expect(honored.body).toMatchObject({ status: 'HONORED', version: 2, closedReason: null });
     expect(honored.body.closedAt).not.toBeNull();
@@ -69,7 +70,7 @@ describeDb('Agréments (HTTP + PostgreSQL)', () => {
   }, 120_000);
 
   it('expirer et annuler exigent un motif ; un nouvel agrément est possible après annulation', async () => {
-    const { am, chef, companyId } = await team();
+    const { am, chef, fin, companyId } = await team();
     const op = await opportunityAt(am, companyId);
     const a = await register(am, op);
     expect((await act(chef, a.body.id, 'expire', { version: 1 })).status).toBe(400);
@@ -101,11 +102,15 @@ describeDb('Agréments (HTTP + PostgreSQL)', () => {
     expect((await register(am, '00000000-0000-4000-8000-000000000000')).status).toBe(404);
   }, 180_000);
 
-  it('portée et droits : le chef voit et honore pour son équipe, la Direction lit sans écrire, le chargé de compte ne peut ni honorer ni annuler, le collègue reçoit « introuvable »', async () => {
-    const { am, chef, other, dir, companyId } = await team();
+  it('portée et droits : le chef voit et annule pour son équipe mais ne constate pas le paiement, la Finance honore, la Direction lit sans écrire, le chargé de compte ne peut ni honorer ni annuler, le collègue reçoit « introuvable »', async () => {
+    const { am, chef, other, dir, fin, companyId } = await team();
     const op = await opportunityAt(am, companyId);
     const a = await register(am, op);
     expect((await act(am, a.body.id, 'honor', { version: 1 })).status).toBe(403);
+    expect((await act(chef, a.body.id, 'honor', { version: 1 })).status).toBe(403);
+    expect((await act(fin, a.body.id, 'cancel', { version: 1, reason: 'Erreur' })).status).toBe(403);
+    expect((await api.call('POST', '/api/v1/approvals', { ...fin, body: { opportunityId: op, amount: '1', receivedOn: today() } })).status).toBe(403);
+    expect((await api.call('GET', `/api/v1/approvals/${a.body.id}`, fin)).status).toBe(200);
     expect((await act(am, a.body.id, 'cancel', { version: 1, reason: 'Erreur' })).status).toBe(403);
     expect((await act(other, a.body.id, 'honor', { version: 1 })).status).toBe(403);
     expect((await api.call('GET', `/api/v1/approvals/${a.body.id}`, other)).status).toBe(404);
@@ -118,9 +123,9 @@ describeDb('Agréments (HTTP + PostgreSQL)', () => {
   }, 120_000);
 
   it('version périmée : conflit (409) sans écriture', async () => {
-    const { am, chef, companyId } = await team();
+    const { am, chef, fin, companyId } = await team();
     const a = await register(am, await opportunityAt(am, companyId));
-    expect((await act(chef, a.body.id, 'honor', { version: 5 })).status).toBe(409);
+    expect((await act(fin, a.body.id, 'honor', { version: 5 })).status).toBe(409);
     expect((await api.call('GET', `/api/v1/approvals/${a.body.id}`, am)).body).toMatchObject({ status: 'RECEIVED', version: 1 });
   }, 120_000);
 
@@ -143,13 +148,13 @@ describeDb('Agréments (HTTP + PostgreSQL)', () => {
   }, 120_000);
 
   it('entreprise archivée : plus d’agrément ni de clôture (422)', async () => {
-    const { am, chef, companyId } = await team();
+    const { am, chef, fin, companyId } = await team();
     const op = await opportunityAt(am, companyId);
     const a = await register(am, op);
     const op2 = await opportunityAt(am, companyId);
     await t.prisma.db.company.update({ where: { id: companyId }, data: { status: 'ARCHIVED' } });
     expect((await register(am, op2)).status).toBe(422);
-    expect((await act(chef, a.body.id, 'honor', { version: 1 })).status).toBe(422);
+    expect((await act(fin, a.body.id, 'honor', { version: 1 })).status).toBe(422);
   }, 120_000);
 
   it('règles garanties par la base : montant, places, somme ou places, validité, clôture cohérente, liens existants, un seul agrément actif', async () => {
@@ -164,13 +169,56 @@ describeDb('Agréments (HTTP + PostgreSQL)', () => {
     await sql(`UPDATE bd.approvals SET amount = NULL, places = NULL WHERE id = '${id}'::uuid`);
     await sql(`UPDATE bd.approvals SET valid_until = '2000-01-01' WHERE id = '${id}'::uuid`);
     await sql(`UPDATE bd.approvals SET status = 'HONORED' WHERE id = '${id}'::uuid`);
+    await sql(`UPDATE bd.approvals SET received_on = NULL WHERE id = '${id}'::uuid`);
+    await sql(`UPDATE bd.approvals SET payer_name = 'Seul' WHERE id = '${id}'::uuid`);
+    await sql(`UPDATE bd.approvals SET payer_name = '  ', payer_type = 'EMPLOYER' WHERE id = '${id}'::uuid`);
     await sql(`UPDATE bd.approvals SET closed_reason = 'x' WHERE id = '${id}'::uuid`);
     await sql(`UPDATE bd.approvals SET status = 'EXPIRED', closed_at = now() WHERE id = '${id}'::uuid`);
     await sql(`UPDATE bd.approvals SET version = 0 WHERE id = '${id}'::uuid`);
     await sql(`UPDATE bd.approvals SET opportunity_id = '${'0'.repeat(8)}-0000-4000-8000-${'0'.repeat(12)}'::uuid WHERE id = '${id}'::uuid`);
     await sql(`INSERT INTO bd.approvals (id, company_id, opportunity_id, amount, currency, received_on, status, version, updated_at)
                VALUES (gen_random_uuid(), '${companyId}'::uuid, '${op}'::uuid, 1000, 'XAF', now()::date, 'RECEIVED', 1, now())`);
+    // Une demande est aussi un agrément actif : elle ne peut pas doubler un agrément reçu de la même opportunité.
+    await sql(`INSERT INTO bd.approvals (id, company_id, opportunity_id, amount, currency, status, version, updated_at)
+               VALUES (gen_random_uuid(), '${companyId}'::uuid, '${op}'::uuid, 1000, 'XAF', 'REQUESTED', 1, now())`);
   }, 120_000);
+
+  it('payeur tiers : enregistré et relu avec son type ; le client paie par défaut ; nom sans type refusé', async () => {
+    const { am, companyId } = await team();
+    const asClient = await register(am, await opportunityAt(am, companyId));
+    expect(asClient.body).toMatchObject({ payerName: null, payerType: null });
+    const third = await register(am, await opportunityAt(am, companyId), { payerName: 'Banque du Nord', payerType: 'ORGANISM' });
+    expect(third.status).toBe(201);
+    expect((await api.call('GET', `/api/v1/approvals/${third.body.id}`, am)).body).toMatchObject({ payerName: 'Banque du Nord', payerType: 'ORGANISM' });
+    expect((await register(am, await opportunityAt(am, companyId), { payerName: 'Seul' })).status).toBe(400);
+    expect((await register(am, await opportunityAt(am, companyId), { payerName: 'X', payerType: 'AUTRE' })).status).toBe(400);
+  }, 120_000);
+
+  it('demandé puis reçu : la demande ne rend pas l’entreprise « Cliente », la réception si ; la Finance ne peut honorer qu’un agrément reçu', async () => {
+    const { am, chef, fin, other, companyId } = await team();
+    const asked = await api.call('POST', '/api/v1/approvals', { ...am, body: { opportunityId: await opportunityAt(am, companyId), amount: '4000000', requested: true } });
+    expect(asked.status).toBe(201);
+    expect(asked.body).toMatchObject({ status: 'REQUESTED', receivedOn: null, version: 1 });
+    expect((await api.call('GET', `/api/v1/companies/${companyId}`, am)).body.status).not.toBe('CLIENT');
+    expect((await act(fin, asked.body.id, 'honor', { version: 1 })).status).toBe(422);
+    const receive = (as: As, body: Record<string, unknown>) => api.call('POST', `/api/v1/approvals/${asked.body.id}/receive`, { ...as, body });
+    expect((await receive(am, { version: 1, receivedOn: '2999-01-01' })).status).toBe(400);
+    expect((await receive(other, { version: 1, receivedOn: today() })).status).toBe(404);
+    expect((await receive(fin, { version: 1, receivedOn: today() })).status).toBe(403);
+    expect((await receive(am, { version: 7, receivedOn: today() })).status).toBe(409);
+    const received = await receive(am, { version: 1, receivedOn: today() });
+    expect(received.status).toBe(200);
+    expect(received.body).toMatchObject({ status: 'RECEIVED', receivedOn: today(), version: 2 });
+    expect((await api.call('GET', `/api/v1/companies/${companyId}`, am)).body.status).toBe('CLIENT');
+    expect((await receive(am, { version: 2, receivedOn: today() })).status).toBe(422);
+    expect((await act(fin, asked.body.id, 'honor', { version: 2 })).status).toBe(200);
+    // Une demande peut être annulée, avec un motif, par le Responsable commercial ; elle libère l'opportunité.
+    const op = await opportunityAt(am, companyId);
+    const second = await api.call('POST', '/api/v1/approvals', { ...am, body: { opportunityId: op, amount: '100', requested: true } });
+    expect((await register(am, op)).status).toBe(409);
+    expect((await act(chef, second.body.id, 'cancel', { version: 1, reason: 'Le client renonce' })).body).toMatchObject({ status: 'CANCELLED', receivedOn: null });
+    expect((await register(am, op)).status).toBe(201);
+  }, 180_000);
 
   it('verrou optimiste AU NIVEAU DE LA BASE : deux annulations sur la même version, la seconde est refusée', async () => {
     const { am, companyId } = await team();
@@ -186,13 +234,13 @@ describeDb('Agréments (HTTP + PostgreSQL)', () => {
   }, 120_000);
 
   it('audit : l’enregistrement (agrément et passage en « Cliente ») et la clôture sont tracés, ancienne et nouvelle valeur, avec la session', async () => {
-    const { am, chef, companyId } = await team();
+    const { am, chef, fin, companyId } = await team();
     const a = await register(am, await opportunityAt(am, companyId));
-    await act(chef, a.body.id, 'honor', { version: 1 });
+    await act(fin, a.body.id, 'honor', { version: 1 });
     const approvalLogs = await t.prisma.db.auditLog.findMany({ where: { entityId: a.body.id }, orderBy: { createdAt: 'asc' } });
     expect(approvalLogs.map((l) => l.action)).toEqual(['CREATE', 'UPDATE']);
     expect(approvalLogs[0]!.sessionId).toBe(am.sessionId);
-    expect(approvalLogs[1]!.sessionId).toBe(chef.sessionId);
+    expect(approvalLogs[1]!.sessionId).toBe(fin.sessionId);
     expect((approvalLogs[1]!.oldValue as { status: string }).status).toBe('RECEIVED');
     expect((approvalLogs[1]!.newValue as { status: string }).status).toBe('HONORED');
     const companyLogs = await t.prisma.db.auditLog.findMany({ where: { entityId: companyId, action: 'UPDATE' } });

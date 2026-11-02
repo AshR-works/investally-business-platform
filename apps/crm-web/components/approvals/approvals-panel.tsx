@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { api, ApiError } from '../../lib/api';
 import { useAuth } from '../../lib/auth-context';
-import { APPROVAL_STATUS, approvalActions, APPROVAL_ACTION_LABEL, coverageText } from '../../lib/approvals';
+import { APPROVAL_STATUS, approvalActions, APPROVAL_ACTION_LABEL, coverageText, payerText } from '../../lib/approvals';
 import { formatDate } from '../../lib/format';
 import { can } from '../../lib/permissions';
 import type { Approval, Page } from '../../lib/types';
@@ -14,12 +14,12 @@ import { ApprovalDialogs, type ApprovalDialogState } from './approval-dialogs';
 
 /**
  * Agréments d'une entreprise, dans sa fiche : liste, enregistrement (opportunité à l'accord de principe, document signé), document,
- * honorer, déclarer expiré, annuler. Chaque bouton n'apparaît que si l'état de l'agrément ET les droits le permettent ; le serveur
+ * déclarer reçu (agrément demandé), honorer (la finance), déclarer expiré, annuler. Chaque bouton n'apparaît que si l'état de l'agrément ET les droits le permettent ; le serveur
  * re-contrôle chaque requête, et la portée est celle de l'entreprise. `onChanged` recharge la fiche (l'entreprise devient « Cliente »).
  */
 export function ApprovalsPanel({ company, archived, onChanged }: { company: { id: string; name: string }; archived: boolean; onChanged: () => Promise<void> }) {
   const { profile } = useAuth();
-  const rights = { honor: can(profile, 'bd.approval.honor') && !archived, cancel: can(profile, 'bd.approval.cancel') && !archived };
+  const rights = { honor: can(profile, 'bd.approval.honor') && !archived, cancel: can(profile, 'bd.approval.cancel') && !archived, receive: can(profile, 'bd.approval.create') && !archived };
   const canRegister = can(profile, 'bd.approval.create') && !archived;
   const [items, setItems] = useState<Approval[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -52,7 +52,7 @@ export function ApprovalsPanel({ company, archived, onChanged }: { company: { id
           <div className="table-wrap">
             <table>
               <caption className="sr-only">Agréments de {company.name}</caption>
-              <thead><tr><th scope="col">Opportunité</th><th scope="col">Couvre</th><th scope="col">Reçu le</th><th scope="col">Valide jusqu’au</th><th scope="col">État</th><th scope="col"><span className="sr-only">Actions</span></th></tr></thead>
+              <thead><tr><th scope="col">Opportunité</th><th scope="col">Couvre</th><th scope="col">Payeur</th><th scope="col">Reçu le</th><th scope="col">Valide jusqu’au</th><th scope="col">État</th><th scope="col"><span className="sr-only">Actions</span></th></tr></thead>
               <tbody>
                 {items.map((a) => {
                   const style = APPROVAL_STATUS[a.status] ?? { label: a.status, tone: 'neutral' as const };
@@ -61,7 +61,8 @@ export function ApprovalsPanel({ company, archived, onChanged }: { company: { id
                     <tr key={a.id}>
                       <td><strong>{a.opportunityTitle}</strong>{a.closedReason && <span className="block text-[length:var(--text-sm)] text-ink-2">Motif : {a.closedReason}</span>}</td>
                       <td>{coverageText(a)}</td>
-                      <td>{formatDate(`${a.receivedOn}T00:00:00Z`)}</td>
+                      <td>{payerText(a)}</td>
+                      <td>{a.receivedOn ? formatDate(`${a.receivedOn}T00:00:00Z`) : '—'}</td>
                       <td>{a.validUntil ? formatDate(`${a.validUntil}T00:00:00Z`) : '—'}{a.pastValidity && <> <Badge tone="warn">Validité dépassée</Badge></>}</td>
                       <td><Badge tone={style.tone}>{style.label}</Badge></td>
                       <td>

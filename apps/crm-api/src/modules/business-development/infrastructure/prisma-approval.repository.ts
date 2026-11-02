@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Prisma } from '../../../../generated/prisma/client';
 import { PrismaService } from '../../../platform/prisma.service';
 import { DomainError, Page } from '../../../shared-kernel';
-import { Approval, ApprovalStatus } from '../domain/approval';
+import { ACTIVE_APPROVAL_STATUSES, Approval, ApprovalStatus, PayerType } from '../domain/approval';
 import { ApprovalListItem, ApprovalListQuery, ApprovalRepository } from '../domain/approval-repository';
 
 type ApprovalRow = Prisma.ApprovalGetPayload<object>;
@@ -17,7 +17,9 @@ function toDomain(row: ApprovalRow): Approval {
     amount: row.amount ? row.amount.toFixed(2) : null,
     currency: row.currency,
     places: row.places,
-    receivedOn: row.receivedOn.toISOString().slice(0, 10),
+    receivedOn: day(row.receivedOn),
+    payerName: row.payerName,
+    payerType: row.payerType as PayerType | null,
     validUntil: day(row.validUntil),
     status: row.status as ApprovalStatus,
     closedReason: row.closedReason,
@@ -39,6 +41,7 @@ export class PrismaApprovalRepository implements ApprovalRepository {
   async save(approval: Approval): Promise<void> {
     const data = {
       status: approval.status,
+      receivedOn: approval.receivedOn ? new Date(`${approval.receivedOn}T00:00:00Z`) : null,
       closedReason: approval.closedReason,
       closedAt: approval.closedAt,
     };
@@ -55,7 +58,7 @@ export class PrismaApprovalRepository implements ApprovalRepository {
         data: {
           id: approval.id, companyId: approval.companyId, opportunityId: approval.opportunityId,
           amount: approval.amount, currency: approval.currency, places: approval.places,
-          receivedOn: new Date(`${approval.receivedOn}T00:00:00Z`),
+          payerName: approval.payerName, payerType: approval.payerType,
           validUntil: approval.validUntil ? new Date(`${approval.validUntil}T00:00:00Z`) : null,
           ...data, version: approval.version, createdAt: approval.createdAt,
         },
@@ -74,7 +77,7 @@ export class PrismaApprovalRepository implements ApprovalRepository {
   }
 
   async findActiveByOpportunity(opportunityId: string): Promise<Approval | null> {
-    const row = await this.prisma.db.approval.findFirst({ where: { opportunityId, status: { in: ['RECEIVED', 'HONORED'] } } });
+    const row = await this.prisma.db.approval.findFirst({ where: { opportunityId, status: { in: [...ACTIVE_APPROVAL_STATUSES] } } });
     return row ? toDomain(row) : null;
   }
 

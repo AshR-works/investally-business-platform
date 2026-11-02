@@ -60,6 +60,7 @@ export const IDOR_ROUTES: Record<string, IdorClass> = {
   'GET /approvals': 'objet',
   'POST /approvals': 'objet',
   'GET /approvals/:id': 'objet',
+  'POST /approvals/:id/receive': 'objet',
   'POST /approvals/:id/honor': 'objet',
   'POST /approvals/:id/expire': 'objet',
   'POST /approvals/:id/cancel': 'objet',

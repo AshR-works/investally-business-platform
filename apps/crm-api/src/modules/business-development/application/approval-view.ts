@@ -10,7 +10,11 @@ export interface ApprovalView {
   amount: string | null;
   currency: string;
   places: number | null;
-  receivedOn: string;
+  /** Absente tant que l'agrément est seulement demandé. */
+  receivedOn: string | null;
+  /** Payeur tiers ; absent : le client paie lui-même (D41, FD-3). */
+  payerName: string | null;
+  payerType: string | null;
   validUntil: string | null;
   status: string;
   closedReason: string | null;
@@ -18,7 +22,7 @@ export interface ApprovalView {
   /** Vrai si la fin de validité est passée alors que l'agrément est toujours « reçu » : l'expiration est à déclarer à la main (D3). */
   pastValidity: boolean;
   createdAt: string;
-  /** Verrou optimiste : à renvoyer tel quel pour honorer, déclarer expiré ou annuler l'agrément. */
+  /** Verrou optimiste : à renvoyer tel quel pour déclarer reçu, honorer, déclarer expiré ou annuler l'agrément. */
   version: number;
 }
 
@@ -33,6 +37,8 @@ export function toApprovalView(approval: Approval, context: { companyName: strin
     currency: approval.currency,
     places: approval.places,
     receivedOn: approval.receivedOn,
+    payerName: approval.payerName,
+    payerType: approval.payerType,
     validUntil: approval.validUntil,
     status: approval.status,
     closedReason: approval.closedReason,

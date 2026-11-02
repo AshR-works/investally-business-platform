@@ -9,7 +9,7 @@ import { CompanyName } from '../domain/company-name';
 import { CompanyRepository } from '../domain/company-repository';
 import { CompanyStatus } from '../domain/company-status';
 import { Opportunity } from '../domain/opportunity';
-import { CloseApprovalUseCase, GetApprovalHandler, ListApprovalsHandler, RegisterApprovalUseCase } from './approval-use-cases';
+import { CloseApprovalUseCase, GetApprovalHandler, ListApprovalsHandler, ReceiveApprovalUseCase, RegisterApprovalUseCase } from './approval-use-cases';
 
 class InMemoryCompanies implements CompanyRepository {
   readonly items: Company[] = [];
@@ -49,6 +49,7 @@ function build() {
   return {
     companies, opportunities, approvals, audit, company, opportunity,
     register: new RegisterApprovalUseCase(approvals, opportunities, companies, recorder, unitOfWork, clock, ids),
+    receive: new ReceiveApprovalUseCase(approvals, opportunities, companies, recorder, unitOfWork, clock),
     close: new CloseApprovalUseCase(approvals, opportunities, companies, recorder, unitOfWork, clock),
     get: new GetApprovalHandler(approvals, opportunities, companies, clock),
     list: new ListApprovalsHandler(approvals, opportunities, companies, clock),
@@ -58,6 +59,7 @@ function build() {
 const am1 = as(RoleCode.AccountManager, 'am1');
 const am2 = as(RoleCode.AccountManager, 'am2');
 const chef = as(RoleCode.HeadOfSales, 'chef', ['am1']);
+const finance = as(RoleCode.Finance, 'fin');
 const direction = as(RoleCode.Direction, 'dir');
 const base = { amount: '12500000', receivedOn: '2026-11-05' };
 
@@ -133,16 +135,18 @@ describe('Agréments — honorer, expirer, annuler', () => {
     return w.register.execute({ ...base, opportunityId: 'op1', validUntil: '2026-11-06', access: am1, actor });
   }
 
-  it('le Responsable commercial honore ; la vue et l’audit portent l’ancien et le nouvel état', async () => {
+  it('la Finance (le DAF) honore ; la vue et l’audit portent l’ancien et le nouvel état', async () => {
     const w = build(); const a = await received(w);
     w.audit.length = 0;
-    const done = await w.close.execute({ id: a.id, version: 1, action: 'honor', access: chef, actor });
+    const done = await w.close.execute({ id: a.id, version: 1, action: 'honor', access: finance, actor });
     expect(done).toMatchObject({ status: 'HONORED', closedAt: now.toISOString(), closedReason: null });
     expect(w.audit[0]).toMatchObject({ action: AuditAction.Update, oldValue: { status: 'RECEIVED' }, newValue: { status: 'HONORED' } });
   });
 
-  it('le chargé de compte ne peut ni honorer ni annuler ; les droits sont distincts', async () => {
+  it('le chargé de compte ne peut ni honorer ni annuler ; le Responsable commercial annule mais ne constate plus le paiement (D41)', async () => {
     const w = build(); const a = await received(w);
+    await expect(w.close.execute({ id: a.id, version: 1, action: 'honor', access: chef, actor })).rejects.toMatchObject({ code: 'NOT_FOUND' });
+    await expect(w.close.execute({ id: a.id, version: 1, action: 'cancel', reason: 'Erreur', access: finance, actor })).rejects.toMatchObject({ code: 'NOT_FOUND' });
     await expect(w.close.execute({ id: a.id, version: 1, action: 'honor', access: am1, actor })).rejects.toMatchObject({ code: 'NOT_FOUND' });
     await expect(w.close.execute({ id: a.id, version: 1, action: 'cancel', reason: 'Erreur', access: am1, actor })).rejects.toMatchObject({ code: 'NOT_FOUND' });
     expect(w.approvals.items[0]!.status).toBe('RECEIVED');
@@ -158,9 +162,9 @@ describe('Agréments — honorer, expirer, annuler', () => {
 
   it('un agrément clos est définitif ; version périmée = conflit ; hors portée = introuvable', async () => {
     const w = build(); const a = await received(w);
-    await expect(w.close.execute({ id: a.id, version: 9, action: 'honor', access: chef, actor })).rejects.toMatchObject({ code: 'CONFLICT' });
+    await expect(w.close.execute({ id: a.id, version: 9, action: 'honor', access: finance, actor })).rejects.toMatchObject({ code: 'CONFLICT' });
     await expect(w.close.execute({ id: a.id, version: 1, action: 'honor', access: as(RoleCode.HeadOfSales, 'autre'), actor })).rejects.toMatchObject({ code: 'NOT_FOUND' });
-    await w.close.execute({ id: a.id, version: 1, action: 'honor', access: chef, actor });
+    await w.close.execute({ id: a.id, version: 1, action: 'honor', access: finance, actor });
     await expect(w.close.execute({ id: a.id, version: 1, action: 'cancel', reason: 'Trop tard', access: chef, actor })).rejects.toMatchObject({ code: 'INVARIANT_VIOLATION' });
   });
 
@@ -177,7 +181,7 @@ describe('Agréments — honorer, expirer, annuler', () => {
   it('l’entreprise archivée fige ses agréments', async () => {
     const w = build(); const a = await received(w);
     w.companies.items[0]!.archive();
-    await expect(w.close.execute({ id: a.id, version: 1, action: 'honor', access: chef, actor })).rejects.toMatchObject({ code: 'INVARIANT_VIOLATION' });
+    await expect(w.close.execute({ id: a.id, version: 1, action: 'honor', access: finance, actor })).rejects.toMatchObject({ code: 'INVARIANT_VIOLATION' });
   });
 });
 
@@ -198,12 +202,93 @@ describe('Agréments — lecture', () => {
     const w = build(); w.company('c1', 'am1'); w.opportunity('op1', 'c1'); w.opportunity('op2', 'c1');
     const a = await w.register.execute({ ...base, opportunityId: 'op1', access: am1, actor });
     await w.register.execute({ ...base, opportunityId: 'op2', access: am1, actor });
-    await w.close.execute({ id: a.id, version: 1, action: 'honor', access: chef, actor });
+    await w.close.execute({ id: a.id, version: 1, action: 'honor', access: finance, actor });
     const first = { page: 1, pageSize: 50, access: am1 };
     expect((await w.list.execute({ ...first, companyId: 'c1' })).total).toBe(2);
     expect((await w.list.execute({ ...first, opportunityId: 'op2' })).total).toBe(1);
     expect((await w.list.execute({ ...first, status: 'HONORED' })).total).toBe(1);
     await expect(w.list.execute({ ...first, access: am2, companyId: 'c1' })).rejects.toMatchObject({ code: 'NOT_FOUND' });
     await expect(w.list.execute({ ...first, access: am2, opportunityId: 'op1' })).rejects.toMatchObject({ code: 'NOT_FOUND' });
+  });
+});
+
+describe('Agréments — payeur tiers (D41, FD-3)', () => {
+  const third = { payerName: 'Société Mère SA', payerType: 'EMPLOYER' };
+
+  it('par défaut le client paie : aucun payeur ; un tiers est enregistré avec son nom et son type', async () => {
+    const w = build(); w.company('c1', 'am1'); w.opportunity('op1', 'c1');
+    expect(await w.register.execute({ ...base, opportunityId: 'op1', access: am1, actor })).toMatchObject({ payerName: null, payerType: null });
+    const w2 = build(); w2.company('c1', 'am1'); w2.opportunity('op1', 'c1');
+    expect(await w2.register.execute({ ...base, opportunityId: 'op1', ...third, access: am1, actor })).toMatchObject({ payerName: 'Société Mère SA', payerType: 'EMPLOYER' });
+    expect(w2.audit[0]!.newValue).toMatchObject({ payerName: 'Société Mère SA', payerType: 'EMPLOYER' });
+  });
+
+  it('le nom et le type vont ensemble ; un type inconnu ou un nom trop long est refusé, sans rien écrire', async () => {
+    const w = build(); w.company('c1', 'am1'); w.opportunity('op1', 'c1');
+    for (const payer of [{ payerName: 'Seul' }, { payerType: 'EMPLOYER' }, { payerName: 'X', payerType: 'AUTRE' }, { payerName: 'x'.repeat(201), payerType: 'LANDLORD' }]) {
+      await expect(w.register.execute({ ...base, opportunityId: 'op1', ...payer, access: am1, actor })).rejects.toMatchObject({ code: 'VALIDATION' });
+    }
+    expect(w.approvals.items).toHaveLength(0);
+  });
+});
+
+describe('Agréments — demandé puis reçu (D41, FD-4)', () => {
+  const ask = { amount: '12500000', requested: true };
+
+  it('un agrément demandé n’a pas de date de réception et ne rend pas l’entreprise « Cliente »', async () => {
+    const w = build(); w.company('c1', 'am1'); w.opportunity('op1', 'c1');
+    const view = await w.register.execute({ ...ask, opportunityId: 'op1', access: am1, actor });
+    expect(view).toMatchObject({ status: 'REQUESTED', receivedOn: null, pastValidity: false });
+    expect(w.companies.items[0]!.status).toBe(CompanyStatus.Target);
+    expect(w.audit.map((a) => a.entityType)).toEqual(['Approval']);
+    expect(w.approvals.items[0]!.pullEvents()).toEqual([]);
+  });
+
+  it('refuse une date de réception sur un agrément demandé ; la demande occupe l’opportunité (un seul agrément actif)', async () => {
+    const w = build(); w.company('c1', 'am1'); w.opportunity('op1', 'c1');
+    await expect(w.register.execute({ ...ask, receivedOn: '2026-11-05', opportunityId: 'op1', access: am1, actor })).rejects.toMatchObject({ code: 'VALIDATION' });
+    await w.register.execute({ ...ask, opportunityId: 'op1', access: am1, actor });
+    await expect(w.register.execute({ ...base, opportunityId: 'op1', access: am1, actor })).rejects.toMatchObject({ code: 'CONFLICT' });
+  });
+
+  it('la promesse signée le rend reçu : date, entreprise « Cliente », événement « accordé », audit avant et après', async () => {
+    const w = build(); w.company('c1', 'am1'); w.opportunity('op1', 'c1');
+    const asked = await w.register.execute({ ...ask, opportunityId: 'op1', validUntil: '2027-03-31', access: am1, actor });
+    w.audit.length = 0;
+    const done = await w.receive.execute({ id: asked.id, version: 1, receivedOn: '2026-11-05', access: am1, actor });
+    expect(done).toMatchObject({ status: 'RECEIVED', receivedOn: '2026-11-05' });
+    expect(w.companies.items[0]!.status).toBe(CompanyStatus.Client);
+    expect(w.audit.map((a) => [a.entityType, a.action])).toEqual([['Approval', AuditAction.Update], ['Company', AuditAction.Update]]);
+    expect(w.audit[0]).toMatchObject({ oldValue: { status: 'REQUESTED', receivedOn: null }, newValue: { status: 'RECEIVED', receivedOn: '2026-11-05' } });
+    expect(w.approvals.items[0]!.pullEvents().map((e) => e.name)).toEqual(['bd.approval.received']);
+  });
+
+  it('refuse une réception dans le futur, avant le début de validité, sur version périmée, hors portée ou déjà reçue', async () => {
+    const w = build(); w.company('c1', 'am1'); w.opportunity('op1', 'c1');
+    const asked = await w.register.execute({ ...ask, opportunityId: 'op1', validUntil: '2026-11-01', access: am1, actor });
+    await expect(w.receive.execute({ id: asked.id, version: 1, receivedOn: '2026-11-30', access: am1, actor })).rejects.toMatchObject({ code: 'VALIDATION' });
+    await expect(w.receive.execute({ id: asked.id, version: 1, receivedOn: '2026-11-05', access: am1, actor })).rejects.toMatchObject({ code: 'VALIDATION' });
+    await expect(w.receive.execute({ id: asked.id, version: 9, receivedOn: '2026-10-30', access: am1, actor })).rejects.toMatchObject({ code: 'CONFLICT' });
+    await expect(w.receive.execute({ id: asked.id, version: 1, receivedOn: '2026-10-30', access: am2, actor })).rejects.toMatchObject({ code: 'NOT_FOUND' });
+    await expect(w.receive.execute({ id: asked.id, version: 1, receivedOn: '2026-10-30', access: finance, actor })).rejects.toMatchObject({ code: 'NOT_FOUND' });
+    await w.receive.execute({ id: asked.id, version: 1, receivedOn: '2026-10-30', access: am1, actor });
+    await expect(w.receive.execute({ id: asked.id, version: 1, receivedOn: '2026-10-30', access: am1, actor })).rejects.toMatchObject({ code: 'INVARIANT_VIOLATION' });
+  });
+
+  it('une demande ne peut être ni honorée ni déclarée expirée, mais peut être annulée avec un motif', async () => {
+    const w = build(); w.company('c1', 'am1'); w.opportunity('op1', 'c1');
+    const asked = await w.register.execute({ ...ask, opportunityId: 'op1', access: am1, actor });
+    await expect(w.close.execute({ id: asked.id, version: 1, action: 'honor', access: finance, actor })).rejects.toMatchObject({ code: 'INVARIANT_VIOLATION' });
+    await expect(w.close.execute({ id: asked.id, version: 1, action: 'expire', reason: 'Validité dépassée', access: chef, actor })).rejects.toMatchObject({ code: 'INVARIANT_VIOLATION' });
+    const cancelled = await w.close.execute({ id: asked.id, version: 1, action: 'cancel', reason: 'Le client renonce', access: chef, actor });
+    expect(cancelled).toMatchObject({ status: 'CANCELLED', receivedOn: null });
+    expect(await w.register.execute({ ...base, opportunityId: 'op1', access: am1, actor })).toMatchObject({ status: 'RECEIVED' });
+  });
+
+  it('l’entreprise archivée fige aussi la demande', async () => {
+    const w = build(); w.company('c1', 'am1'); w.opportunity('op1', 'c1');
+    const asked = await w.register.execute({ ...ask, opportunityId: 'op1', access: am1, actor });
+    w.companies.items[0]!.archive();
+    await expect(w.receive.execute({ id: asked.id, version: 1, receivedOn: '2026-11-05', access: am1, actor })).rejects.toMatchObject({ code: 'INVARIANT_VIOLATION' });
   });
 });

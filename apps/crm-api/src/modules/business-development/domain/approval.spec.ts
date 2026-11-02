@@ -104,3 +104,41 @@ describe('Approval — cycle', () => {
     expect(a.isPastValidity('2027-01-01')).toBe(false);
   });
 });
+
+describe('Approval — payeur tiers et état demandé (D41)', () => {
+  const request = (patch: Partial<Parameters<typeof Approval.request>[0]> = {}) => Approval.request({ id: 'a1', companyId: 'c1', opportunityId: 'op1', amount: '5000', now, ...patch });
+
+  it('le client paie par défaut ; un tiers a un nom (nettoyé) et un type, les deux ensemble', () => {
+    expect(register()).toMatchObject({ payerName: null, payerType: null });
+    expect(register({ payerName: '  Banque X ', payerType: 'ORGANISM' })).toMatchObject({ payerName: 'Banque X', payerType: 'ORGANISM' });
+    expect(() => register({ payerName: 'Banque X' })).toThrow(/nom et un type/);
+    expect(() => register({ payerType: 'LANDLORD' })).toThrow(/nom et un type/);
+    expect(() => register({ payerName: 'Banque X', payerType: 'AUTRE' })).toThrow(/employeur, organisme ou bailleur/);
+    expect(() => register({ payerName: 'x'.repeat(201), payerType: 'EMPLOYER' })).toThrow(/200 caractères/);
+  });
+
+  it('une demande n’a ni date de réception ni événement ; la réception la rend « reçue » et émet « accordé »', () => {
+    const a = request({ validUntil: '2027-03-31' });
+    expect(a).toMatchObject({ status: ApprovalStatus.Requested, receivedOn: null, closedAt: null });
+    expect(a.pullEvents()).toEqual([]);
+    a.receive('2026-11-05', now);
+    expect(a).toMatchObject({ status: ApprovalStatus.Received, receivedOn: '2026-11-05' });
+    expect(a.pullEvents().map((e) => e.name)).toEqual(['bd.approval.received']);
+    expect(() => a.receive('2026-11-05', now)).toThrow(/ne peut plus être déclaré reçu/);
+  });
+
+  it('refuse une réception future, mal écrite ou postérieure à la fin de validité', () => {
+    expect(() => request().receive('2026-11-08', now)).toThrow(/futur/);
+    expect(() => request().receive('2026-02-31', now)).toThrow(DomainError);
+    expect(() => request({ validUntil: '2026-11-01' }).receive('2026-11-05', now)).toThrow(/fin de validité/);
+  });
+
+  it('une demande s’annule avec un motif mais ne s’honore ni ne s’expire', () => {
+    expect(() => request().honor(now)).toThrow(/demandé/);
+    expect(() => request().expire('Validité dépassée', now)).toThrow(/demandé/);
+    const a = request();
+    a.cancel('Le client renonce', now);
+    expect(a).toMatchObject({ status: ApprovalStatus.Cancelled, receivedOn: null, closedReason: 'Le client renonce' });
+    expect(request().isPastValidity('2099-01-01')).toBe(false);
+  });
+});

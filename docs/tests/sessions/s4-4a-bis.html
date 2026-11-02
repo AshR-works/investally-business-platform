@@ -1,0 +1,65 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fiche de test — S4.4a-bis — agréments : demandé, payeur tiers, constat par la Finance ; second facteur à la réattribution</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="../../INDEX.html">Index</a> · <a href="../../GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="../../ARCHITECTURE.html">Architecture</a> · <a href="../../SECURITY.html">Sécurité</a> · <a href="../../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../../QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="../../TECH-DEBT.html">Dette</a> · <a href="../../CHARTE-DE-TESTS.html">Charte de tests</a> · <a href="../../tests/README.html">Fiches de test</a> · <a href="../../design/README.html">Design</a> · <a href="../../livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>Fiche de test — S4.4a-bis — agréments : demandé, payeur tiers, constat par la Finance ; second facteur à la réattribution</h1>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td><strong>Session</strong></td><td><code>s4-4a-bis</code></td></tr>
+<tr><td><strong>Recette de référence</strong></td><td><a href="../../SPRINT-S4-4A-BIS-RECETTE.html"><code>SPRINT-S4-4A-BIS-RECETTE.md</code></a></td></tr>
+<tr><td><strong>Étiquette</strong></td><td>—</td></tr>
+<tr><td><strong>Contexte</strong></td><td>Branche <code>sprint/s4-4a-bis-correctifs</code> (partie de <code>main</code>, après S4.4b) · 2026-11-09 · décisions D41 (réponses FD-3, FD-4, FD-6) et D42 ; DDR-0026. Lot correctif : il modifie des lots déjà validés (S4.3b, S4.4a) avant S4.4c (commissions à verser), qui n'est pas livré.</td></tr>
+<tr><td><strong>Écrans concernés</strong></td><td>Aucun écran (serveur, conception ou outillage)</td></tr>
+</tbody></table></div>
+<p><em>Fiche de session de la <a href="../../CHARTE-DE-TESTS.html">charte de tests</a>, <strong>dérivée de la recette</strong> du lot : en cas de doute, la recette fait foi. Elle sert à rejouer la recette utilisateur et à vérifier l'absence de régression.</em></p>
+<h2>Avant de commencer</h2>
+<ul><li>Pile locale lancée (<code>node scripts/local-stack.mjs --demo</code>) ou pile jetable ; comptes de démonstration (mots de passe dans le fichier local, jamais dans le dépôt).</li><li>Rôles utiles : chargé de compte, Responsable commercial (avec son équipe), Direction, Super administrateur.</li></ul>
+<h2>Vérifications à rejouer</h2>
+<div class="table-wrap"><table><thead><tr><th>N°</th><th>Vérification</th><th>Résultat attendu (d'après la recette)</th><th>Constaté (✔ / ✘)</th><th>Date et initiales</th></tr></thead><tbody>
+<tr><td>1</td><td>État « demandé »</td><td>Premier état d'un agrément (promesse pas encore signée) : ni date de réception ni document obligatoire, l'entreprise ne devient pas « Cliente » ; la demande <strong>occupe l'opportunité</strong> ; elle <strong>se déclare reçue</strong> (date non future, avant la fin de validité) ou <strong>s'annule</strong> avec motif ; elle ne s'honore ni ne s'expire</td><td>☐</td><td></td></tr>
+<tr><td>2</td><td>Enregistrer</td><td>La fenêtre « Enregistrer un agrément » propose la case « La promesse n'est pas encore signée » : elle masque la date de réception et le document signé ; sans la case, le parcours de S4.4a est inchangé (agrément directement « reçu »)</td><td>☐</td><td></td></tr>
+<tr><td>3</td><td>Déclarer reçu</td><td>Action du menu de la ligne d'une demande : date de réception (aujourd'hui par défaut) ; l'agrément devient « reçu », l'entreprise devient « Cliente », l'événement « agrément accordé » est émis ; droit de création</td><td>☐</td><td></td></tr>
+<tr><td>4</td><td>Payeur</td><td>Le client par défaut ; sinon un <strong>tiers</strong> (nom et type : employeur, organisme, bailleur), <strong>les deux ensemble</strong>, affiché dans une colonne « Payeur » du panneau ; fixé à la création</td><td>☐</td><td></td></tr>
+<tr><td>5</td><td>Constat du paiement par la Finance</td><td>Le droit « honorer » passe du Responsable commercial à la <strong>Finance (le DAF)</strong>, qui reçoit aussi la lecture des agréments (portée Tous) ; le Responsable commercial garde créer et annuler</td><td>☐</td><td></td></tr>
+<tr><td>6</td><td>Réattribution d'une entreprise</td><td>Exige un <strong>second facteur récent</strong> (moins de 10 minutes) en plus de la case à cocher ; refus sans second facteur : <code>MFA_STEP_UP_REQUIRED</code>, rien n'est modifié ; l'interface redemande un code et rejoue la requête</td><td>☐</td><td></td></tr>
+<tr><td>7</td><td>Base de données</td><td>Migrations <code>20261109000000_s4_4a_bis_requested_status</code> (valeur d'état) et <code>20261109000100_s4_4a_bis_payer_and_request</code> (payeur, date de réception facultative, quatre contraintes recalculées)</td><td>☐</td><td></td></tr>
+</tbody></table></div>
+<h2>Preuves automatisées relevées à la validation</h2>
+<div class="table-wrap"><table><thead><tr><th>Contrôle</th><th>Résultat</th></tr></thead><tbody>
+<tr><td>Types (<code>tsc</code>, API et web), architecture (<code>pnpm arch</code>)</td><td>0 erreur · aucune violation (235 modules)</td></tr>
+<tr><td>Tests unitaires de l'API</td><td><strong>867 réussis</strong>, 0 échec, 1 ignoré (les suites d'intégration sont ignorées dans cette passe) ; 11 nouveaux (domaine : 4 ; cas d'usage : 7 hors adaptation des tests existants)</td></tr>
+<tr><td><strong>Tests d'intégration (PostgreSQL jetable)</strong></td><td><strong>352 / 352</strong> (24 suites) ; 3 nouveaux de bout en bout (payeur tiers, demandé puis reçu, réattribution et second facteur) et 1 sonde IDOR ; règles de la base étendues ; les tests de droits suivent le nouveau partage (la Finance honore, le Responsable commercial non)</td></tr>
+<tr><td><strong>IDOR</strong></td><td>La nouvelle route « objet » (déclarer reçu) est classée et sondée ; la sonde « honorer » s'exerce avec un compte Finance (le Responsable commercial n'en a plus le droit) ; même réponse pour l'agrément d'un collègue et pour un identifiant inexistant, aucune écriture, aucune fuite</td></tr>
+<tr><td>Règles garanties par la base</td><td>Nom et type de payeur ensemble, nom non vide ; date de réception absente seulement pour une demande ou un agrément annulé avant réception ; une demande ne double pas un agrément actif ; clôture cohérente avec les quatre états : vérifiés par des écritures directes refusées</td></tr>
+<tr><td>Tests de l'interface</td><td><strong>467 / 467</strong> (9 nouveaux) : saisie du payeur et de la demande, corps des requêtes, actions d'une demande, date de réception ; <strong>cohérence avec le domaine réel du serveur</strong> étendue au payeur (20 saisies)</td></tr>
+<tr><td><strong>Mutants</strong></td><td><strong>23 / 23 tués</strong> (payeur à moitié renseigné, type de payeur, nom trop long, réception d'un agrément déjà reçu, réception future, réception après la fin de validité, annulation d'une demande, événement « accordé », occupation de l'opportunité, entreprise « Cliente » à tort ou à raison, droits de la réception, demande ignorée, honorer par le Responsable commercial ou refusé à la Finance, second facteur, route de réception, date et payeur non enregistrés, contraintes de la base) ; script <code>scripts/mutants/s44abis-correctifs-agrements.py</code></td></tr>
+<tr><td><strong>Navigateur réel (Edge + axe-core)</strong></td><td><strong>Parcours ciblé</strong> (connexion, entreprise, agréments, ambassadeurs) : <strong>64 contrôles réussis, 0 violation</strong> ; nouveau parcours : demande avec payeur sans type (champ en surbrillance, correction annoncée), demande avec payeur tiers listée « Demandé », déclarer reçu, honoré. Le seul ✘ est l'arrêt volontaire de fin de parcours. Résultats <code>docs/accessibilite/resultats/axe-2026-11-09-s44abis.json</code>, captures <code>docs/accessibilite/s44abis-captures/</code></td></tr>
+</tbody></table></div>
+<h2>Réserves, limites et dette connues</h2>
+<ul><li>Le test de cohérence interface ↔ serveur a montré que l'interface acceptait un type de payeur inconnu que le serveur refuse : la saisie vérifie désormais le type.</li><li>Le contrat anti-IDOR a signalé la nouvelle route non classée avant tout autre test ; la sonde « honorer » a dû passer au compte Finance (changement de droits voulu).</li><li>Aucun autre défaut n'a été trouvé par les tests d'intégration, les mutants ni l'audit.</li><li><strong>Parcours navigateur ciblé</strong> : les écrans des lots antérieurs ne sont pas revérifiés. Trois captures d'écran n'ont pas été produites (le navigateur sans fenêtre ne répond pas à la capture, sans effet sur les contrôles).</li><li><strong>Les rôles autres que le Super administrateur ne sont pas parcourus dans le navigateur</strong> : le constat par la Finance et le refus du Responsable commercial sont couverts par les tests d'intégration, l'IDOR et les mutants, pas par l'audit navigateur.</li><li><strong>La Finance ne voit les agréments que depuis la fiche d'une entreprise</strong> (pas de page d'ensemble des agréments à constater, D128).</li><li>Le payeur et la demande ne se modifient pas après la création (D125, D126) ; le type de payeur est une liste fermée (D127) ; le second facteur de la réattribution est celui de toutes les actions sensibles (D129).</li><li>Pas de passage au lecteur d'écran réel ; testé sous Node 26.7, pas rejoué sous Node 22. Le prototype n'est pas à jour (D49).</li><li><strong>D125 à D129</strong> (<code>docs/TECH-DEBT.md</code>) ; <strong>D111</strong> soldée, <strong>D112</strong> précisée.</li><li><strong>D42 — à confirmer</strong> : demande sans date ni document, entreprise « Cliente » à la réception, honorer réservé à la Finance (le Responsable commercial perd ce droit), payeur tiers fixé à la création, second facteur à la réattribution.</li><li><strong>D39 et D37 sont révisées par D41</strong> : l'état « demandé » et le second facteur remplacent respectivement « pas d'état demandé » et « confirmation par case à cocher seulement ».</li></ul>
+<h2>Rejouer les contrôles automatisés</h2>
+<pre><code>pnpm ci                                   # types, architecture, tests unitaires et interface
+node apps/crm-api/scripts/test-db.mjs     # tests d&#x27;intégration (base PostgreSQL jetable)</code></pre>
+<p><em>Pas de script de mutants versionné pour ce lot.</em></p>
+<h2>Écarts constatés</h2>
+<div class="table-wrap"><table><thead><tr><th>Date</th><th>Vérification n°</th><th>Description</th><th>Défaut ouvert (D…)</th></tr></thead><tbody>
+<tr><td></td><td></td><td></td><td></td></tr>
+</tbody></table></div></main></body></html>

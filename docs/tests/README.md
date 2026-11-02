@@ -22,7 +22,7 @@
 | 08 | [Administration des utilisateurs](interfaces/08-administration-utilisateurs.md) | `/admin/users` | S3.3, S3.4, S3.8 | |
 | 09 | [Vue d'ensemble (hub)](interfaces/09-vue-d-ensemble.md) | `/` | H1 | |
 | 10 | [Entreprises (tableau)](interfaces/10-entreprises.md) | `/companies` | S1, H1b, S4.0, S4.1b, S4.3b, S4.3c | |
-| 11 | [Fiche d'une entreprise](interfaces/11-fiche-entreprise.md) | `/companies/[id]` | S3.6, S4.0, S4.0c, S4.1a, S4.2a–d, S4.3a–c, S4.4a | |
+| 11 | [Fiche d'une entreprise](interfaces/11-fiche-entreprise.md) | `/companies/[id]` | S3.6, S4.0, S4.0c, S4.1a, S4.2a–d, S4.3a–c, S4.4a, S4.4a-bis | |
 | 12 | [Contacts](interfaces/12-contacts.md) | `/contacts` | S4.1a | |
 | 13 | [Offres](interfaces/13-offres.md) | `/offers` | S4.2a, S4.2b | |
 | 14 | [Relances](interfaces/14-relances.md) | `/followups` | S4.2c | |
@@ -30,7 +30,7 @@
 | 16 | [Opportunités (pipeline)](interfaces/16-opportunites.md) | `/opportunities` | S4.3a, S4.3b, S4.3c | |
 | 17 | [Ambassadeurs](interfaces/17-ambassadeurs.md) | `/ambassadors` | S4.4b | |
 
-## Fiches de session (29)
+## Fiches de session (30)
 
 | Session | Intitulé | Étiquette | Vérifications | Dernière exécution |
 |---|---|---|---|---|
@@ -61,6 +61,7 @@
 | [s4-3a](sessions/s4-3a.md) | S4.3a — opportunités : le pipeline commercial | `s4-3a-validated` | 6 | |
 | [s4-3b](sessions/s4-3b.md) | S4.3b — statuts d'entreprise, responsable, fiche 360° | `s4-3b-validated` | 8 | |
 | [s4-3c](sessions/s4-3c.md) | S4.3c — valeur des opportunités et lien rendez-vous ↔ opportunité | `s4-3c-validated` | 7 | |
+| [s4-4a-bis](sessions/s4-4a-bis.md) | S4.4a-bis — agréments : demandé, payeur tiers, constat par la Finance ; second facteur à la réattribution | — | 7 | |
 | [s4-4a](sessions/s4-4a.md) | S4.4a — agréments : la promesse de paiement signée | `s4-4a-validated` | 8 | |
 | [s4-4b](sessions/s4-4b.md) | S4.4b — ambassadeurs : clients ou apprenants devenus relais commerciaux | `s4-4b-validated` | 9 | |
 

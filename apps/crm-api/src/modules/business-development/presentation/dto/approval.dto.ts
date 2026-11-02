@@ -1,8 +1,9 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsIn, IsInt, IsOptional, IsString, IsUUID, Matches, Max, MaxLength, Min } from 'class-validator';
+import { IsBoolean, IsIn, IsInt, IsOptional, IsString, IsUUID, Matches, Max, MaxLength, Min } from 'class-validator';
 
-const STATUSES = ['RECEIVED', 'HONORED', 'EXPIRED', 'CANCELLED'] as const;
+const STATUSES = ['REQUESTED', 'RECEIVED', 'HONORED', 'EXPIRED', 'CANCELLED'] as const;
+const PAYER_TYPES = ['EMPLOYER', 'ORGANISM', 'LANDLORD'] as const;
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 /**
@@ -22,11 +23,29 @@ export class RegisterApprovalDto {
   @ApiPropertyOptional({ example: 'XAF', default: 'XAF' }) @IsOptional() @IsString() @MaxLength(5)
   currency?: string;
 
-  @ApiProperty({ example: '2026-11-03' }) @IsString() @Matches(DATE, { message: 'La date de réception doit être au format AAAA-MM-JJ' })
-  receivedOn!: string;
+  @ApiPropertyOptional({ example: '2026-11-03', description: 'Obligatoire pour un agrément reçu ; absente pour un agrément seulement demandé' }) @IsOptional() @IsString() @Matches(DATE, { message: 'La date de réception doit être au format AAAA-MM-JJ' })
+  receivedOn?: string;
+
+  @ApiPropertyOptional({ description: "Vrai : l'agrément est demandé, la promesse n'est pas encore signée" }) @IsOptional() @IsBoolean()
+  requested?: boolean;
 
   @ApiPropertyOptional({ example: '2027-03-31' }) @IsOptional() @IsString() @Matches(DATE, { message: 'La fin de validité doit être au format AAAA-MM-JJ' })
   validUntil?: string;
+
+  @ApiPropertyOptional({ maxLength: 200, description: 'Payeur tiers (avec son type) ; absent : le client paie' }) @IsOptional() @IsString() @MaxLength(200)
+  payerName?: string;
+
+  @ApiPropertyOptional({ enum: PAYER_TYPES }) @IsOptional() @IsIn(PAYER_TYPES)
+  payerType?: string;
+}
+
+/** Déclarer reçu un agrément demandé : la version lue et la date de réception de la promesse signée. */
+export class ReceiveApprovalDto {
+  @ApiProperty({ minimum: 1 }) @IsInt() @Min(1)
+  version!: number;
+
+  @ApiProperty({ example: '2026-11-03' }) @IsString() @Matches(DATE, { message: 'La date de réception doit être au format AAAA-MM-JJ' })
+  receivedOn!: string;
 }
 
 /** Honorer un agrément : la version lue. */

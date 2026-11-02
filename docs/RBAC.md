@@ -147,10 +147,10 @@ Cellule : **O**, **É**, **T** = portée accordée ; vide = non accordée.
 | `bd.visit.read` | T | T | E | O |  |  |  |  |  |  |
 | `bd.visit.create` | T |  | E | O |  |  |  |  |  |  |
 | `bd.visit.update` | T |  | E | O |  |  |  |  |  |  |
-| `bd.approval.read` | T | T | E | O |  |  |  |  |  |  |
+| `bd.approval.read` | T | T | E | O |  |  |  | T |  |  |
 | `bd.approval.create` | T |  | E | O |  |  |  |  |  |  |
 | `bd.approval.cancel` | T |  | E |  |  |  |  |  |  |  |
-| `bd.approval.honor` | T |  | E |  |  |  |  |  |  |  |
+| `bd.approval.honor` | T |  |  |  |  |  |  | T |  |  |
 | `bd.opportunity.read` | T | T | T | O | T |  |  |  |  |  |
 | `bd.opportunity.create` | T |  | E | O |  |  |  |  |  |  |
 | `bd.opportunity.update` | T |  | E | O |  |  |  |  |  |  |
@@ -225,6 +225,7 @@ Cellule : **O**, **É**, **T** = portée accordée ; vide = non accordée.
 4. La **Direction** est en lecture seule (consulter, télécharger, exporter) sur le métier. Test automatisé.
 5. Un utilisateur **ne peut pas modifier ses propres rôles**, SuperAdmin compris (règle à implémenter dans l'attribution de rôle en S3, avec test).
 6. Tout changement de rôle est audité (`ROLE_CHANGE`) et exige un MFA récent (step-up).
+6 bis. Le changement de responsable d'une entreprise (`bd.company.reassign`) exige aussi un MFA récent (step-up, décision D41, FD-6).
 7. Aucun export massif pour les rôles chargé de compte, support et formateur. Test automatisé.
 8. Droits de base **implicites** pour tout utilisateur authentifié, hors catalogue : consulter son profil, changer son mot de passe, gérer son MFA et voir/révoquer ses propres sessions.
 
