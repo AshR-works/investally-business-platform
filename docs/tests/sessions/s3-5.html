@@ -1,0 +1,83 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fiche de test — Sprint 3.5 — « Mot de passe oublié », commentaires du code et livrables (périmètre et plan de recette)</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="../../INDEX.html">Index</a> · <a href="../../GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="../../ARCHITECTURE.html">Architecture</a> · <a href="../../SECURITY.html">Sécurité</a> · <a href="../../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../../QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="../../TECH-DEBT.html">Dette</a> · <a href="../../CHARTE-DE-TESTS.html">Charte de tests</a> · <a href="../../tests/README.html">Fiches de test</a> · <a href="../../design/README.html">Design</a> · <a href="../../livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>Fiche de test — Sprint 3.5 — « Mot de passe oublié », commentaires du code et livrables (périmètre et plan de recette)</h1>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td><strong>Session</strong></td><td><code>s3-5</code></td></tr>
+<tr><td><strong>Recette de référence</strong></td><td><a href="../../SPRINT-3.5-RECETTE.html"><code>SPRINT-3.5-RECETTE.md</code></a></td></tr>
+<tr><td><strong>Étiquette</strong></td><td><code>s3-5-validated</code></td></tr>
+<tr><td><strong>Écrans concernés</strong></td><td><a href="../interfaces/03-mot-de-passe-oublie.html">Mot de passe oublié</a>, <a href="../interfaces/04-nouveau-mot-de-passe.html">Nouveau mot de passe</a></td></tr>
+</tbody></table></div>
+<p><em>Fiche de session de la <a href="../../CHARTE-DE-TESTS.html">charte de tests</a>, <strong>dérivée de la recette</strong> du lot : en cas de doute, la recette fait foi. Elle sert à rejouer la recette utilisateur et à vérifier l'absence de régression.</em></p>
+<h2>Avant de commencer</h2>
+<ul><li>Pile locale lancée (<code>node scripts/local-stack.mjs --demo</code>) ou pile jetable ; comptes de démonstration (mots de passe dans le fichier local, jamais dans le dépôt).</li><li>Rôles utiles : chargé de compte, Responsable commercial (avec son équipe), Direction, Super administrateur.</li></ul>
+<h2>Vérifications à rejouer</h2>
+<p><em>Lot surtout serveur : la plupart des vérifications sont des <strong>tests automatisés</strong>. Les rejouer = lancer les commandes de la section « Rejouer les contrôles automatisés » et constater le résultat ; les lignes ci-dessous rappellent ce que chaque contrôle prouve.</em></p>
+<div class="table-wrap"><table><thead><tr><th>N°</th><th>Vérification</th><th>Résultat attendu (d'après la recette)</th><th>Constaté (✔ / ✘)</th><th>Date et initiales</th></tr></thead><tbody>
+<tr><td>1</td><td><strong>Bouton « Mot de passe oublié ? »</strong> sur la page de connexion → page de demande (<code>/forgot-password</code>) → e-mail → page de choix du mot de passe …</td><td>Conforme à la recette.</td><td>☐</td><td></td></tr>
+<tr><td>2</td><td><strong>Libre-service</strong> : lien de <strong>60 minutes</strong>, réponse identique pour toute adresse, plafonds, audit.</td><td>Conforme à la recette.</td><td>☐</td><td></td></tr>
+<tr><td>3</td><td><strong>Déclenchement par un administrateur</strong> : bouton « Réinitialiser le mot de passe » dans l'administration (permission <code>iam.user.reset_password</code>, MFA récent, …</td><td>Conforme à la recette.</td><td>☐</td><td></td></tr>
+<tr><td>4</td><td><strong>Effet</strong> : mot de passe changé, <strong>toutes les sessions coupées</strong>, <strong>MFA conservé</strong>, e-mail de confirmation au titulaire.</td><td>Conforme à la recette.</td><td>☐</td><td></td></tr>
+<tr><td>5</td><td><strong>Traçabilité</strong> : action d'audit <code>PASSWORD_RESET</code> (demande et issue, émission, usage, refus).</td><td>Conforme à la recette.</td><td>☐</td><td></td></tr>
+<tr><td>6</td><td><strong>Commentaires</strong> sur toutes les classes, fonctions, interfaces et composants du code.</td><td>Conforme à la recette.</td><td>☐</td><td></td></tr>
+<tr><td>7</td><td><strong>Livrables</strong> dans <code>docs/livrables/</code> : récapitulatif des réalisations, guide du code, index des fonctions (généré), versions HTML imprimables.</td><td>Conforme à la recette.</td><td>☐</td><td></td></tr>
+<tr><td>8</td><td>A1</td><td>Demande : e-mail avec lien dans le <strong>fragment</strong>, 60 min exactement, empreinte seule en base, jeton absent de l'audit — Oui — ✅</td><td>☐</td><td></td></tr>
+<tr><td>9</td><td>A2</td><td>Adresse inconnue, mal formée, vide, compte en attente ou désactivé : <strong>rien n'est envoyé</strong>, aucune différence visible pour l'appelant — Oui — ✅</td><td>☐</td><td></td></tr>
+<tr><td>10</td><td>A3</td><td>Une adresse inconnue <strong>n'apparaît jamais</strong> dans le journal d'audit (ni du texte injecté) — Oui — ✅</td><td>☐</td><td></td></tr>
+<tr><td>11</td><td>A4</td><td>Plafond : 3 liens par heure et par compte, refus silencieux audité (<code>THROTTLED</code>), reprise après une heure (borne testée à la milliseconde) — Oui — ✅</td><td>☐</td><td></td></tr>
+<tr><td>12</td><td>A5</td><td>Nouvelle demande : le lien précédent est révoqué — Oui — ✅</td><td>☐</td><td></td></tr>
+<tr><td>13</td><td>A6</td><td>Échec d'envoi : jamais d'erreur pour l'appelant, échec audité ; transaction en échec : aucun lien utilisable — Oui — ✅</td><td>☐</td><td></td></tr>
+<tr><td>14</td><td>B1</td><td>Succès : nouveau mot de passe actif, ancien refusé, historique à jour — Oui — ✅</td><td>☐</td><td></td></tr>
+<tr><td>15</td><td>B2</td><td><strong>Toutes les sessions et tous les jetons de rafraîchissement coupés</strong> — Oui — ✅</td><td>☐</td><td></td></tr>
+<tr><td>16</td><td>B3</td><td><strong>MFA conservé</strong> : après réinitialisation, la connexion exige toujours le second facteur — Oui — ✅</td><td>☐</td><td></td></tr>
+<tr><td>17</td><td>B4</td><td>Verrouillage de compte levé par la réinitialisation — Oui — ✅</td><td>☐</td><td></td></tr>
+<tr><td>18</td><td>B5</td><td>Audit (terminée, sessions coupées, IP) ; e-mail de confirmation avec la date et l'adresse IP, sans mot de passe — Oui — ✅</td><td>☐</td><td></td></tr>
+<tr><td>19</td><td>B6</td><td>Usage unique ; <strong>deux usages simultanés : un seul aboutit</strong> (course sur la base) — Oui — ✅</td><td>☐</td><td></td></tr>
+<tr><td>20</td><td>B7</td><td>Mot de passe faible / contenant l'identité / déjà utilisé : refusé <strong>sans consommer</strong> le lien — Oui — ✅</td><td>☐</td><td></td></tr>
+<tr><td>21</td><td>B8</td><td>Expiration à 60 minutes ; tous les liens non valides produisent <strong>le même refus</strong> — Oui — ✅</td><td>☐</td><td></td></tr>
+<tr><td>22</td><td>B9</td><td><strong>Usage croisé</strong> : un lien d'invitation ne réinitialise pas, un lien de réinitialisation n'active pas — Oui — ✅</td><td>☐</td><td></td></tr>
+<tr><td>23</td><td>B10</td><td>Compte désactivé entre la demande et l'usage : lien refusé — Oui — ✅</td><td>☐</td><td></td></tr>
+<tr><td>24</td><td>C1</td><td>Administrateur : lien de 48 h, audité avec son identité, lien fonctionnel — Oui — ✅</td><td>☐</td><td></td></tr>
+<tr><td>25</td><td>C2</td><td>Interdit pour soi-même ; refus pour un compte inconnu, en attente ou désactivé ; MFA périmé = step-up exigé ; rôle sans droit = 403 ; sans jeton = 401 — Oui — ✅</td><td>☐</td><td></td></tr>
+<tr><td>26</td><td>D1</td><td>HTTP réel : réponses <strong>identiques</strong> (statut, corps, en-têtes) pour compte connu / inconnu / mal formé — Oui — ✅</td><td>☐</td><td></td></tr>
+<tr><td>27</td><td>D2</td><td>HTTP réel : limitation 3/minute (429 ensuite), autre IP non touchée ; entrées mal formées rejetées (400) — Oui — ✅</td><td>☐</td><td></td></tr>
+<tr><td>28</td><td>D3</td><td>HTTP réel : parcours complet, ancienne session coupée, ancien mot de passe refusé, nouveau accepté + MFA exigé, audit <code>ISSUED</code> puis <code>password_reset_completed</code> — Oui — ✅</td><td>☐</td><td></td></tr>
+<tr><td>29</td><td>E1</td><td><strong>Navigateur réel</strong> : lien sur la page de connexion → demande → message identique → ouverture du lien → fragment effacé de l'adresse → mot de passe <strong>réutilisé refusé</strong> (message clair, lien conservé) → mot de passe neuf accepté → « Mot de passe modifié » — Oui — ✅ réel</td><td>☐</td><td></td></tr>
+<tr><td>30</td><td>E2</td><td>Après E1 : ancien mot de passe refusé (401), nouveau accepté (200), e-mail de confirmation émis, 3 lignes d'audit (demande, refus, usage) — Oui — ✅ réel</td><td>☐</td><td></td></tr>
+<tr><td>31</td><td>F1</td><td>Types propres (API et web) ; architecture : <strong>129 modules, 506 dépendances, 0 violation</strong> — Oui — ✅</td><td>☐</td><td></td></tr>
+<tr><td>32</td><td>F2</td><td><strong>380</strong> tests unitaires API (353 + 27 nouveaux) · <strong>141</strong> tests d'intégration (132 + 9 nouveaux) · <strong>24</strong> tests web, tous verts ; test structurel des routes mis à jour (32 routes) — Oui — ✅</td><td>☐</td><td></td></tr>
+<tr><td>33</td><td>F3</td><td>Migration <code>20261024000000_s3_5_password_reset</code> appliquée sur base vide ; invitations existantes conservées comme <code>INVITATION</code> — Oui — ✅</td><td>☐</td><td></td></tr>
+<tr><td>34</td><td>G1</td><td>Vérification par mutation (voir ci-dessous) — Oui — ✅ 12 sur 12 détectées, <strong>après correction d'un test trop faible</strong></td><td>☐</td><td></td></tr>
+<tr><td>35</td><td>H1</td><td><strong>Commentaires</strong> : 0 déclaration non commentée (script de contrôle), <strong>535 déclarations</strong> dans l'index généré ; l'ancien commentaire périmé de <code>main.ts</code> corrigé — Non — ✅</td><td>☐</td><td></td></tr>
+<tr><td>36</td><td>H2</td><td><strong>Livrables</strong> : récapitulatif, guide du code, index des fonctions, versions HTML — Non — ✅</td><td>☐</td><td></td></tr>
+</tbody></table></div>
+<h2>Réserves, limites et dette connues</h2>
+<ul><li><strong>Tests d'intégration trop impatients</strong> (ma faute) : le traitement continue après la réponse (volontairement), mes premiers tests lisaient l'audit au bout de 300 ms et échouaient sur une machine lente. Les tests <strong>attendent maintenant</strong> l'e-mail ou l'audit (jusqu'à 15 s) et le délai d'un test est relevé à 30 s. La logique n'a pas changé.</li><li><strong>Borne du plafond horaire</strong> : un lien créé <em>pile</em> une heure plus tôt compte encore. Le test le vérifie à la milliseconde plutôt que d'accepter une borne floue.</li><li><strong>Commentaire périmé</strong> : <code>main.ts</code> affirmait que le MFA et le contrôle d'accès n'étaient « pas branchés » ; corrigé.</li><li><strong>Mutant survivant M1</strong> (voir ci-dessus) : test ajouté.</li><li><strong>Premier passage complet des tests d'intégration sous charge</strong> : 4 échecs de <em>délai</em> (transaction non démarrée à temps, tests dépassant 5 s ou 60 s) dans des tests de S3.3, pendant que la machine exécutait d'autres tâches lourdes. <strong>Aucun n'a reproduit</strong> : la même suite passe seule (10/10) puis en entier au calme (<strong>141/141</strong>). Noté honnêtement comme fragilité de l'environnement de test (machine lente), pas comme défaut de code ; à surveiller.</li><li><strong>Incident d'outil de recette</strong> : le navigateur intégré <strong>suspend les requêtes réseau quand son panneau est masqué</strong> (<code>ERR_NETWORK_IO_SUSPENDED</code>) ; une soumission de formulaire n'est pas partie. Elle a été rejouée panneau visible. Aucun lien avec le code livré, noté pour ne pas le confondre avec un défaut.</li><li><strong>Microsoft 365 non testé</strong> : le lien est lu dans la console de développement (option réservée au développement, refusée en production).</li><li><strong>Traitement après la réponse, en mémoire</strong> (D26) : une panne du processus entre la réponse et l'envoi perd la demande ; l'utilisateur redemande.</li><li><strong>Nuisance possible</strong> (D25) : redemander des liens pour une adresse connue invalide le lien légitime de la victime (3 fois par heure au plus) ; tracé, non bloquant.</li><li><strong>Pas de notification</strong> après un changement fait depuis « Mon compte » (D27).</li><li>Si le <strong>téléphone est aussi perdu</strong>, un administrateur doit en plus réinitialiser le MFA (D14) ; les deux actions sont possibles et tracées.</li><li>Les écrans restent vérifiés à la main (D22).</li></ul>
+<h2>Rejouer les contrôles automatisés</h2>
+<pre><code>pnpm ci                                   # types, architecture, tests unitaires et interface
+node apps/crm-api/scripts/test-db.mjs     # tests d&#x27;intégration (base PostgreSQL jetable)</code></pre>
+<p><em>Pas de script de mutants versionné pour ce lot.</em></p>
+<h2>Écarts constatés</h2>
+<div class="table-wrap"><table><thead><tr><th>Date</th><th>Vérification n°</th><th>Description</th><th>Défaut ouvert (D…)</th></tr></thead><tbody>
+<tr><td></td><td></td><td></td><td></td></tr>
+</tbody></table></div></main></body></html>

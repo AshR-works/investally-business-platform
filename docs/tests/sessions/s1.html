@@ -1,0 +1,74 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fiche de test — Sprint 1 — Plan de recette (validation avant clôture)</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="../../INDEX.html">Index</a> · <a href="../../GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="../../ARCHITECTURE.html">Architecture</a> · <a href="../../SECURITY.html">Sécurité</a> · <a href="../../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../../QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="../../TECH-DEBT.html">Dette</a> · <a href="../../CHARTE-DE-TESTS.html">Charte de tests</a> · <a href="../../tests/README.html">Fiches de test</a> · <a href="../../design/README.html">Design</a> · <a href="../../livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>Fiche de test — Sprint 1 — Plan de recette (validation avant clôture)</h1>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td><strong>Session</strong></td><td><code>s1</code></td></tr>
+<tr><td><strong>Recette de référence</strong></td><td><a href="../../SPRINT-1-RECETTE.html"><code>SPRINT-1-RECETTE.md</code></a></td></tr>
+<tr><td><strong>Étiquette</strong></td><td><code>s1-validated</code></td></tr>
+<tr><td><strong>Écrans concernés</strong></td><td>Aucun écran (serveur, conception ou outillage)</td></tr>
+</tbody></table></div>
+<p><em>Fiche de session de la <a href="../../CHARTE-DE-TESTS.html">charte de tests</a>, <strong>dérivée de la recette</strong> du lot : en cas de doute, la recette fait foi. Elle sert à rejouer la recette utilisateur et à vérifier l'absence de régression.</em></p>
+<h2>Avant de commencer</h2>
+<ul><li>Pile locale lancée (<code>node scripts/local-stack.mjs --demo</code>) ou pile jetable ; comptes de démonstration (mots de passe dans le fichier local, jamais dans le dépôt).</li><li>Rôles utiles : chargé de compte, Responsable commercial (avec son équipe), Direction, Super administrateur.</li></ul>
+<h2>Vérifications à rejouer</h2>
+<p><em>Lot surtout serveur : la plupart des vérifications sont des <strong>tests automatisés</strong>. Les rejouer = lancer les commandes de la section « Rejouer les contrôles automatisés » et constater le résultat ; les lignes ci-dessous rappellent ce que chaque contrôle prouve.</em></p>
+<div class="table-wrap"><table><thead><tr><th>N°</th><th>Vérification</th><th>Résultat attendu (d'après la recette)</th><th>Constaté (✔ / ✘)</th><th>Date et initiales</th></tr></thead><tbody>
+<tr><td>1</td><td>A1</td><td>Types API sans erreur — <code>pnpm crm-api typecheck</code> — oui — ✅ (2026-10-20)</td><td>☐</td><td></td></tr>
+<tr><td>2</td><td>A2</td><td>Types Web sans erreur — <code>pnpm crm-web typecheck</code> — oui — ✅</td><td>☐</td><td></td></tr>
+<tr><td>3</td><td>A3</td><td>Règles de dépendances (Domain pur, Application sans Prisma/HTTP, Presentation sans Prisma, frontières de module, pas de cycle) — <code>pnpm arch</code> — oui — ✅</td><td>☐</td><td></td></tr>
+<tr><td>4</td><td>A4</td><td>Les règles bloquent réellement (violations volontaires détectées) — manuel, voir historique S1 — oui — ✅ (4/4 types de violation)</td><td>☐</td><td></td></tr>
+<tr><td>5</td><td>A5</td><td>Build de production API — <code>pnpm crm-api build</code> — oui — ✅ (démarre en ≈10 s, sortie <code>dist/src/main.js</code>)</td><td>☐</td><td></td></tr>
+<tr><td>6</td><td>A6</td><td>Build de production Web — <code>pnpm crm-web build</code> — oui — ✅</td><td>☐</td><td></td></tr>
+<tr><td>7</td><td>A7</td><td>Aucun secret versionné (<code>.env</code>, mots de passe) — <code>git grep -i -E "password\ — secret"</code> + revue — oui — ✅ (seul secret en clair : mot de passe jetable de la base CI)</td><td>☐</td><td></td></tr>
+<tr><td>8</td><td>B1</td><td>Domain : Company, CompanyName, événements — oui — ✅</td><td>☐</td><td></td></tr>
+<tr><td>9</td><td>B2</td><td>Use case RegisterCompany : succès + audit, doublon, validation — oui — ✅</td><td>☐</td><td></td></tr>
+<tr><td>10</td><td>B3</td><td>UUID v7 : format et tri — oui — ✅</td><td>☐</td><td></td></tr>
+<tr><td>11</td><td>B4</td><td>Démarrage de l'application : DI, <code>/health/live</code>, validation stricte, <code>problem+json</code>, plafond de pagination — oui — ✅</td><td>☐</td><td></td></tr>
+<tr><td>12</td><td>C1</td><td><code>prisma migrate deploy</code> s'applique sur base vide — oui — ✅</td><td>☐</td><td></td></tr>
+<tr><td>13</td><td>C2</td><td>Migrations à jour (<code>migrate status</code>). Le diff Prisma exact n'est pas applicable : l'index unique partiel, la contrainte CHECK et le déclencheur d'audit sont du SQL hors schéma Prisma — oui — ✅</td><td>☐</td><td></td></tr>
+<tr><td>14</td><td>C3</td><td>Enregistrement + ligne d'audit dans la même transaction — oui — ✅</td><td>☐</td><td></td></tr>
+<tr><td>15</td><td>C4</td><td>Rollback de l'entreprise si l'audit échoue — oui — ✅</td><td>☐</td><td></td></tr>
+<tr><td>16</td><td>C5</td><td>Doublon refusé (applicatif <strong>et</strong> index unique partiel) — oui — ✅ applicatif (test + navigateur) ; l'index partiel seul n'est pas testé isolément (dette)</td><td>☐</td><td></td></tr>
+<tr><td>17</td><td>C6</td><td><code>UPDATE</code>/<code>DELETE</code> sur <code>audit.audit_logs</code> refusés par la base — oui — ✅ UPDATE ; DELETE non testé isolément (même déclencheur)</td><td>☐</td><td></td></tr>
+<tr><td>18</td><td>C8</td><td>Horodatages enregistrés en UTC (défaut trouvé : décalage d'1 h si le fuseau serveur ≠ UTC) — oui — ✅ corrigé, test de non-régression vérifié rouge sans correctif</td><td>☐</td><td></td></tr>
+<tr><td>19</td><td>C7</td><td><code>/health/ready</code> : OK base up, 503 base arrêtée — oui — ✅ (200 base up, 503 base arrêtée)</td><td>☐</td><td></td></tr>
+<tr><td>20</td><td>D1</td><td>Créer une entreprise depuis la page web, elle apparaît dans la liste — oui — ✅ (navigateur réel, pile complète)</td><td>☐</td><td></td></tr>
+<tr><td>21</td><td>D2</td><td>Un doublon affiche un message d'erreur lisible — non — ✅ (insensible à la casse et aux accents)</td><td>☐</td><td></td></tr>
+<tr><td>22</td><td>D3</td><td>Swagger <code>/api/docs</code> décrit les endpoints — non — ✅ (HTTP 200 sur le build compilé)</td><td>☐</td><td></td></tr>
+<tr><td>23</td><td>E1</td><td>API n'écoute que sur 127.0.0.1 (pas d'auth avant S3) — oui — ✅ (code)</td><td>☐</td><td></td></tr>
+<tr><td>24</td><td>E2</td><td>Champs inconnus refusés, tailles bornées, injection SQL non possible — oui — ✅ (B4 + injection <code>' OR 1=1; DROP TABLE</code> dans la recherche : 0 résultat, table intacte)</td><td>☐</td><td></td></tr>
+<tr><td>25</td><td>E3</td><td>Audit d'une écriture contient IP et appareil — oui — ✅ (C3)</td><td>☐</td><td></td></tr>
+<tr><td>26</td><td>E4</td><td><code>pnpm audit --prod</code> sans vulnérabilité haute — non — ✅ (0 haute ; 1 moyenne js-yaml via swagger, acceptée : TECH-DEBT D6)</td><td>☐</td><td></td></tr>
+<tr><td>27</td><td>F1</td><td><code>docker compose up db</code> démarre PostgreSQL — ➖ à tester sur une machine avec Docker</td><td>☐</td><td></td></tr>
+<tr><td>28</td><td>F2</td><td>Image API construite et démarrée — ➖ idem</td><td>☐</td><td></td></tr>
+<tr><td>29</td><td>F3</td><td>Pipeline CI verte sur la pull request — ⏳ après poussée sur le dépôt distant</td><td>☐</td><td></td></tr>
+</tbody></table></div>
+<h2>Rejouer les contrôles automatisés</h2>
+<pre><code>pnpm ci                                   # types, architecture, tests unitaires et interface
+node apps/crm-api/scripts/test-db.mjs     # tests d&#x27;intégration (base PostgreSQL jetable)</code></pre>
+<p><em>Pas de script de mutants versionné pour ce lot.</em></p>
+<h2>Écarts constatés</h2>
+<div class="table-wrap"><table><thead><tr><th>Date</th><th>Vérification n°</th><th>Description</th><th>Défaut ouvert (D…)</th></tr></thead><tbody>
+<tr><td></td><td></td><td></td><td></td></tr>
+</tbody></table></div></main></body></html>

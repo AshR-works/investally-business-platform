@@ -1,0 +1,57 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fiche de test — Opportunités (pipeline)</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="../../INDEX.html">Index</a> · <a href="../../GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="../../ARCHITECTURE.html">Architecture</a> · <a href="../../SECURITY.html">Sécurité</a> · <a href="../../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../../QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="../../TECH-DEBT.html">Dette</a> · <a href="../../CHARTE-DE-TESTS.html">Charte de tests</a> · <a href="../../tests/README.html">Fiches de test</a> · <a href="../../design/README.html">Design</a> · <a href="../../livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>Fiche de test — Opportunités (pipeline)</h1>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td><strong>Route</strong></td><td><code>/opportunities</code></td></tr>
+<tr><td><strong>Livrée par</strong></td><td>S4.3a, S4.3b, S4.3c</td></tr>
+<tr><td><strong>Accès</strong></td><td>Utilisateur avec <code>bd.opportunity.read</code> (Responsable commercial et Direction lisent toutes).</td></tr>
+<tr><td><strong>Droits</strong></td><td>Créer / modifier / avancer : chargé de compte (Propre), Responsable commercial (Équipe) ; dérogation et clôture gagnée : Responsable commercial.</td></tr>
+<tr><td><strong>Rôles de test</strong></td><td>cc, rc, dir</td></tr>
+</tbody></table></div>
+<p><em>Fiche d'interface de la <a href="../../CHARTE-DE-TESTS.html">charte de tests</a>. À rejouer à chaque changement de l'écran. Cocher, dater, signer ; tout écart devient un défaut.</em></p>
+<h2>Préconditions</h2>
+<p>Une entreprise ; pour la règle de l'accord de principe, un rendez-vous décideur à faire tenir.</p>
+<h2>Scénarios</h2>
+<div class="table-wrap"><table><thead><tr><th>N°</th><th>Scénario</th><th>Étapes</th><th>Résultat attendu</th><th>Constaté (✔ / ✘)</th><th>Date et initiales</th></tr></thead><tbody>
+<tr><td>1</td><td><strong>Cartes et par étape</strong></td><td>Basculer Cartes / Par étape ; filtrer Ouvertes / Gagnées / Perdues / Toutes.</td><td>Cinq colonnes titrées avec effectif et montant ; total annoncé.</td><td>☐</td><td></td></tr>
+<tr><td>2</td><td><strong>Créer</strong></td><td>Nouvelle opportunité (aussi depuis la fiche entreprise).</td><td>Étape « Qualification » ; entreprise imposée depuis la fiche.</td><td>☐</td><td></td></tr>
+<tr><td>3</td><td><strong>Une étape à la fois</strong></td><td>Faire avancer à chaque étape.</td><td>Passage dans l'ordre ; pas de retour en arrière ; chaque passage tracé.</td><td>☐</td><td></td></tr>
+<tr><td>4</td><td><strong>Accord de principe refusé</strong></td><td>Avancer à « Accord de principe » sans rendez-vous décideur tenu.</td><td>Refus annoncé avec renvoi vers la dérogation.</td><td>☐</td><td></td></tr>
+<tr><td>5</td><td><strong>Rendez-vous décideur lié</strong></td><td>Tenir un rendez-vous décideur lié à une autre opportunité.</td><td>Ne débloque pas celle-ci ; lié à elle ou non lié : débloque.</td><td>☐</td><td></td></tr>
+<tr><td>6</td><td><strong>Dérogation</strong></td><td>Responsable commercial : accorder une dérogation sans, puis avec justification.</td><td>Justification obligatoire ; badge « Dérogation » ; une seule fois.</td><td>☐</td><td></td></tr>
+<tr><td>7</td><td><strong>Clôturer perdue</strong></td><td>Clore avec un motif (dont « autre » sans puis avec précision).</td><td>Motif obligatoire ; « autre » exige une précision ; définitif.</td><td>☐</td><td></td></tr>
+<tr><td>8</td><td><strong>Clôturer gagnée</strong></td><td>Chargé de compte puis Responsable commercial.</td><td>Réservé au Responsable commercial, après l'accord de principe.</td><td>☐</td><td></td></tr>
+<tr><td>9</td><td><strong>Immuable après clôture</strong></td><td>Ouvrir le menu d'une opportunité close.</td><td>Seule la fiche est proposée.</td><td>☐</td><td></td></tr>
+<tr><td>10</td><td><strong>Portée et lecture</strong></td><td>Direction : ouvrir ; collègue : ouvrir.</td><td>Direction lit sans écrire ; le collègue ne voit pas les opportunités hors portée d'écriture.</td><td>☐</td><td></td></tr>
+</tbody></table></div>
+<h2>Accessibilité</h2>
+<ul><li>☐ Clavier seul : Tab et Maj+Tab parcourent tous les contrôles dans un ordre logique ; le focus est toujours visible ; aucun piège de focus hors fenêtre modale.</li><li>☐ Un seul titre de niveau 1 ; pas de saut de niveau (h2 avant h3).</li><li>☐ Chaque champ a un libellé relié ; un champ non conforme est en surbrillance <strong>et</strong> accompagné d'un message écrit relié (<code>aria-describedby</code>), jamais la couleur seule ; le focus va au premier champ en erreur.</li><li>☐ Les messages d'état et d'erreur sont annoncés (<code>role=alert</code> ou <code>aria-live</code>).</li><li>☐ Fenêtres modales : le focus entre dans la fenêtre, Échap la ferme, le focus revient à l'élément d'origine, l'arrière-plan est inerte.</li><li>☐ Lisible à 200 % de zoom et à 375 px de large, sans défilement horizontal de la page.</li><li>☐ Les titres des colonnes sont des titres de niveau 2 ; le menu « Déplacer vers… » est l'alternative clavier au glisser-déposer.</li></ul>
+<h2>Tests automatisés qui couvrent cet écran</h2>
+<ul><li>API : <code>opportunities-http.integration</code>, <code>idor-contract.integration</code></li><li>Web : <code>s49.test.ts</code></li><li>Mutants : S4.3a, S4.3c</li><li>Audit navigateur : huit états, 0 violation</li></ul>
+<h2>Limites connues</h2>
+<ul><li>Pas d'export du pipeline (D97) ; limite d'affichage à 200 opportunités (D98) ; clôture gagnée sans effet en aval avant S4.4 (D96, partiellement soldée par l'agrément).</li></ul>
+<h2>Écarts constatés</h2>
+<div class="table-wrap"><table><thead><tr><th>Date</th><th>Scénario</th><th>Description</th><th>Défaut ouvert (D…)</th></tr></thead><tbody>
+<tr><td></td><td></td><td></td><td></td></tr>
+</tbody></table></div></main></body></html>

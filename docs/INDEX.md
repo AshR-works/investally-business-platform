@@ -34,6 +34,8 @@
 | [Droits (RBAC)](RBAC.md) | Rôles, permissions, portées |
 | [Fiabilité](RELIABILITY.md) | Sauvegardes, reprise, audit |
 | [Stratégie de tests](TESTING.md) | Pyramide de tests, règles d'architecture |
+| [Charte de tests](CHARTE-DE-TESTS.md) | Règles de test, définition de « terminé » d'un lot, recette, données, mutants, accessibilité |
+| [Fiches de test](tests/README.md) | Une fiche par interface (16) et par session (28) : scénarios à rejouer, preuves, réserves |
 | [Plan conception, code, architecture](DESIGN-CODE-ARCHITECTURE-PLAN.md) | Plan de référence |
 
 ## Décisions d'architecture (ADR)
