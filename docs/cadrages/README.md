@@ -14,6 +14,7 @@ Chaque cadrage dit **ce que la session fait et ne fait pas**, **l'état de dépa
 | 5+ | S4.1 à S4.4, S5, S6, Stocks, S7 | *Cadrages à produire au fil de l'eau* | — |
 
 | — | **Arbitrage** données de l'API des entreprises | [ARBITRAGE-API-DONNEES-ENTREPRISES.md](ARBITRAGE-API-DONNEES-ENTREPRISES.md) | ARB-API-1 à 4 (**décidés le 2026-10-21**, C, A, A, A) |
+| — | **Feuille de décision** : décisions en attente (commission, payeur, constat du paiement, opportunités, réattribution, confirmations, dossiers externes) | [ARBITRAGE-DECISIONS-EN-ATTENTE.md](ARBITRAGE-DECISIONS-EN-ATTENTE.md) | FD-1 à FD-9 (**à trancher**, 2026-11-02) |
 
 ## Recommandations en un coup d'œil
 | Décision | Recommandation | Note |

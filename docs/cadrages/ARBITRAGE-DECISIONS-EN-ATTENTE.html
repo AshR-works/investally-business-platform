@@ -1,0 +1,274 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Feuille de décision — décisions en attente</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — cadrages · <a href="README.html">Index des cadrages</a> · <a href="../INDEX.html">Documentation</a> · <a href="../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../design/05-AIDE-A-LA-DECISION.html">Aide à la décision</a></nav><h1>Feuille de décision — décisions en attente</h1>
+<p><strong>Date</strong> : 2026-11-02 · <strong>Méthode</strong> : <a href="../METHODE-D-ARBITRAGE.html">METHODE-D-ARBITRAGE.md</a> · <strong>Statut</strong> : <strong>à trancher par la direction produit</strong> · <strong>Rien n'est implémenté avant votre réponse</strong> (sauf mention contraire).</p>
+<p><em>Je suis l'équipe qui éclaire ; vous décidez. Pour chaque décision structurante : contexte, options (statu quo compris), grille calculée, risques, dette, recommandation. Les décisions courtes (confirmations, actions externes) sont en fin de document.</em></p>
+<h2>Comment répondre</h2>
+<p>Répondez par une ligne par décision, par exemple : <strong>« FD-1 B ; FD-2 A (2.1 c, 2.2 a) ; FD-3 B ; FD-4 A ; FD-5 A ; FD-6 B ; FD-7 tout confirmer sauf … ; FD-8 voir mes réponses »</strong>. « <strong>Applique les recommandations</strong> » vaut décision pour tout ce qui est recommandé ci-dessous. Après votre réponse : je consigne chaque décision dans <code>QUESTIONS-ET-DECISIONS.md</code> (référence, date, valeur), j'ouvre un ADR si l'architecture ou la sécurité change, puis seulement j'exécute.</p>
+<h2>Feuille de réponse</h2>
+<div class="table-wrap"><table><thead><tr><th>Réf.</th><th>Décision</th><th>Options</th><th>Ma recommandation</th><th>Bloque</th><th><strong>Votre choix</strong></th></tr></thead><tbody>
+<tr><td><strong>FD-1</strong></td><td>Quel événement rend une commission « due » ?</td><td>A/B/C/D</td><td><strong>B</strong></td><td>S4.4c (commissions à verser)</td><td></td></tr>
+<tr><td><strong>FD-2</strong></td><td>Contrôles du versement : déblocage, seuil, justificatif</td><td>A/B/C</td><td><strong>A</strong></td><td>S4.4c</td><td></td></tr>
+<tr><td><strong>FD-3</strong></td><td>Qui paie l'agrément : le client seul, ou parfois un tiers ?</td><td>A/B/C</td><td><strong>B</strong></td><td>Rien aujourd'hui ; coûte de plus en plus cher à changer (Investudy et la facturation liront ces champs)</td><td></td></tr>
+<tr><td><strong>FD-4</strong></td><td>Constat du paiement (« honoré ») et suivi des demandes d'agrément</td><td>A/B/C</td><td><strong>B</strong></td><td>Rien aujourd'hui ; conditionne FD-1</td><td></td></tr>
+<tr><td><strong>FD-5</strong></td><td>Opportunités : retour en arrière d'étape et réouverture</td><td>A/B/C</td><td><strong>A (statu quo)</strong></td><td>Rien aujourd'hui</td><td></td></tr>
+<tr><td><strong>FD-6</strong></td><td>Changement de responsable d'une entreprise : faut-il un second facteur récent ?</td><td>A/B/C</td><td><strong>B</strong></td><td>Rien aujourd'hui</td><td></td></tr>
+<tr><td><strong>FD-7</strong></td><td>Confirmer les valeurs par défaut déjà appliquées (D22, D29 à D39)</td><td>Oui / Non, par ligne</td><td><strong>Tout confirmer</strong></td><td>Rien (risque de reprise)</td><td></td></tr>
+<tr><td><strong>FD-8</strong></td><td>Dossiers externes : Microsoft 365, second Super administrateur, avis juridique, contact Finance</td><td>Réponses à compléter</td><td>Lancer maintenant</td><td>La mise en production</td><td></td></tr>
+<tr><td><strong>FD-9</strong></td><td>Avant S5 : cas d'usage Investudy, apprenant distinct, droits du rôle Finance</td><td>Confirmer / corriger</td><td><strong>Confirmer</strong></td><td>S5</td><td></td></tr>
+</tbody></table></div>
+<h2>Ordre conseillé</h2>
+<ol><li><strong>FD-1 et FD-2</strong> débloquent S4.4c ; FD-4 conditionne FD-1.</li><li><strong>FD-3, FD-5, FD-6, FD-7</strong> limitent le risque de reprise (plus on attend, plus la reprise coûte).</li><li><strong>FD-8</strong> : les délais externes (Microsoft 365, juridique) se comptent en semaines ; à lancer dès maintenant.</li><li>En attendant vos réponses, je peux faire <strong>S4.4b (ambassadeurs)</strong>, qui ne dépend d'aucune de ces décisions.</li></ol>
+<h2>Critères et pondération (fixés avant de noter)</h2>
+<p>Mêmes cinq critères pour toutes les décisions (extraits de la grille standard, § 3 de la méthode), pour ne pas pondérer au gré de l'option préférée. Les critères Maintenance, Expérience utilisateur et Accessibilité ne discriminent pas ici (ils sont traités dans « Impacts »).</p>
+<div class="table-wrap"><table><thead><tr><th>Critère</th><th>Poids</th></tr></thead><tbody>
+<tr><td>Valeur métier</td><td>5</td></tr>
+<tr><td>Risque (sécurité, juridique, délai)</td><td>5</td></tr>
+<tr><td>Cohérence (architecture, décisions passées)</td><td>4</td></tr>
+<tr><td>Réversibilité</td><td>4</td></tr>
+<tr><td>Coût et délai</td><td>3</td></tr>
+<tr><td><strong>Maximum possible</strong></td><td>21 × 5 = <strong>105</strong></td></tr>
+</tbody></table></div>
+<p><em>Score = Σ (note × poids), notes de 1 (défavorable) à 5 (favorable). Il aide, il ne remplace pas le jugement : un risque rédhibitoire l'emporte sur un bon score. Réversibilité : 🟢 facile · 🟡 moyenne · 🔴 coûteuse. Les faits vérifiés sont distingués des hypothèses.</em></p>
+<hr>
+<h2>FD-1 — Quel événement rend une commission « due » ?</h2>
+<p><em>Références : Flux F3, S4.4c ; D24, D5, D112 · Bloque : S4.4c (commissions à verser)</em></p>
+<h3>1. Contexte</h3>
+<p>Le facilitateur qui a apporté une entreprise touche une commission, versée par le chargé de compte après déblocage des fonds par la Direction administrative et financière (D24). Il faut dire <strong>à quel moment la commission devient « à verser »</strong>. Sans cette réponse, S4.4c ne peut pas être construit.</p>
+<p><strong>Faits vérifiés</strong></p>
+<ul><li>L'agrément existe (S4.4a) ; il passe « honoré » à la main par le Responsable commercial (D112).</li><li>Le CRM ne suit pas le paiement effectif : décision D5, séparation CRM / ERP (ADR-0005).</li><li>Le module Finance (facturation, encaissement) n'existe pas encore.</li></ul>
+<p><strong>Hypothèses (à vérifier)</strong></p>
+<ul><li>La Direction administrative et financière ne veut pas verser avant d'avoir encaissé (à confirmer).</li></ul>
+<h3>2. Options</h3>
+<div class="table-wrap"><table><thead><tr><th>Option</th><th>Avantages</th><th>Inconvénients</th><th>Impacts</th><th>Réversibilité</th></tr></thead><tbody>
+<tr><td><strong>A</strong> — À l'enregistrement de l'agrément (« reçu »)</td><td>Le facilitateur est payé dès la promesse signée ; rien à construire de plus.</td><td>On verse avant d'avoir encaissé : perte possible si le client ne paie pas.</td><td>UX : rapide. Métier : risque financier. Technique : une règle. Maintenance : faible.</td><td>🟢 facile</td></tr>
+<tr><td><strong>B</strong> — Quand l'agrément est honoré (constaté à la main)</td><td>Utilise l'état « honoré » déjà livré ; le déblocage par le DAF reste un second contrôle.</td><td>Dépend d'un constat manuel fiable ; le paiement n'est pas vérifié par le CRM.</td><td>UX : un clic de plus pour le Responsable commercial. Technique : un événement interne. Maintenance : faible.</td><td>🟢 facile (changer l'événement = une règle)</td></tr>
+<tr><td><strong>C</strong> — Quand le paiement est encaissé et constaté par la Finance</td><td>Aucun versement avant encaissement réel ; cohérent avec D5 et l'ERP.</td><td>Exige le module Finance (flux F4), qui n'existe pas : S4.4c serait repoussé.</td><td>Technique : événement venant de l'ERP (à concevoir). Délai : plusieurs sessions.</td><td>🟡 moyenne</td></tr>
+<tr><td><strong>D</strong> — Statu quo : ne pas décider</td><td>Rien n'est versé par erreur ; aucun coût.</td><td>S4.4c reste bloqué ; les commissions se suivent hors de l'application.</td><td>Aucun changement. Dette : le suivi manuel persiste.</td><td>🟢 facile</td></tr>
+</tbody></table></div>
+<h3>3. Grille de comparaison</h3>
+<div class="table-wrap"><table><thead><tr><th>Critère (poids)</th><th><strong>A</strong></th><th><strong>B</strong></th><th><strong>C</strong></th><th><strong>D</strong></th></tr></thead><tbody>
+<tr><td>Valeur métier (5)</td><td>3</td><td>4</td><td>5</td><td>1</td></tr>
+<tr><td>Risque (sécurité, juridique, délai) (5)</td><td>1</td><td>3</td><td>5</td><td>4</td></tr>
+<tr><td>Cohérence (architecture, décisions passées) (4)</td><td>2</td><td>4</td><td>5</td><td>2</td></tr>
+<tr><td>Réversibilité (4)</td><td>4</td><td>4</td><td>3</td><td>5</td></tr>
+<tr><td>Coût et délai (3)</td><td>5</td><td>4</td><td>1</td><td>5</td></tr>
+<tr><td><strong>Total (max 105)</strong></td><td><strong>59</strong></td><td><strong>79</strong></td><td><strong>85</strong></td><td><strong>68</strong></td></tr>
+</tbody></table></div>
+<h3>4. Risques et dette</h3>
+<ul><li><strong>Risque</strong> : Un constat « honoré » erroné déclenche une commission à tort (probabilité moyenne ; parade : second contrôle du DAF au déblocage, audit de chaque changement d'état).</li><li><strong>Risque</strong> : Le Responsable commercial oublie de constater l'honneur : la commission tarde (parade : liste des agréments « reçus » à honorer).</li><li><strong>Dette</strong> : Passage à C avec le module Finance (dette D112 déjà ouverte).</li></ul>
+<h3>5. Recommandation</h3>
+<p><strong>B</strong> maintenant, avec <strong>C comme cible</strong> quand le module Finance existera. La grille classe C en tête (85 sur 105), mais son coût et son délai sont rédhibitoires aujourd'hui : il repousserait S4.4c sans date. B est cohérent avec ce qui est livré, garde le DAF comme second contrôle au déblocage, et passer à C plus tard ne change <strong>qu'une règle</strong> (l'événement déclencheur). Ce qui me ferait changer d'avis : un module Finance planifié <strong>avant</strong> S4.4c (alors C), ou une décision de verser dès la promesse signée (alors A, que je déconseille).</p>
+<p><em>Écart assumé entre la grille et la recommandation : l'option C obtient le meilleur total (85), mais elle n'est pas recommandée pour la raison donnée ci-dessus.</em></p>
+<h3>6. Décision attendue</h3>
+<p><strong>Votre choix pour FD-1</strong> : ☐ A  ☐ B  ☐ C  ☐ D  ☐ autre : …………  — motif / réserves : ………………</p>
+<hr>
+<h2>FD-2 — Contrôles du versement : déblocage, seuil, justificatif</h2>
+<p><em>Références : Flux F3 (CU-F3-04, CU-F3-05), S4.4c ; D24 · Bloque : S4.4c</em></p>
+<h3>1. Contexte</h3>
+<p>Une fois la commission « due », la Direction administrative et financière <strong>débloque les fonds</strong>, puis le chargé de compte <strong>verse</strong> et dépose un <strong>justificatif</strong>. Il faut décider <strong>combien de validations</strong> et <strong>quel document</strong>.</p>
+<p><strong>Faits vérifiés</strong></p>
+<ul><li>Le flux F3 propose : le DAF débloque (droit à créer, <code>bd.commission.release</code>), le chargé de compte verse (<code>bd.commission.pay</code>) et dépose le justificatif, le DAF clôt.</li><li>La catégorie de document « Justificatif » existe déjà dans le module Documents.</li></ul>
+<p><strong>Hypothèses (à vérifier)</strong></p>
+<ul><li>Les montants de commission sont modestes ; aucun seuil n'a été exprimé.</li></ul>
+<h3>2. Options</h3>
+<div class="table-wrap"><table><thead><tr><th>Option</th><th>Avantages</th><th>Inconvénients</th><th>Impacts</th><th>Réversibilité</th></tr></thead><tbody>
+<tr><td><strong>A</strong> — Le DAF seul débloque (flux F3 tel que proposé) — statu quo documentaire</td><td>Simple, conforme à D24 ; un seul acteur de contrôle.</td><td>Un seul contrôle pour tout montant.</td><td>Technique : deux permissions. Maintenance : faible.</td><td>🟢 facile</td></tr>
+<tr><td><strong>B</strong> — Le DAF débloque ; au-delà d'un seuil, une seconde validation de la Direction</td><td>Réduit le risque de fraude pour les gros montants ; le seuil est un paramètre.</td><td>Plus lent pour les gros montants ; un seuil à fixer et à faire vivre.</td><td>Technique : un état et une permission de plus.</td><td>🟢 facile (seuil paramétrable)</td></tr>
+<tr><td><strong>C</strong> — Pas de déblocage : le chargé de compte verse directement, contrôle a posteriori</td><td>Le plus rapide.</td><td>Contredit D24 (déblocage par le DAF) ; un contrôle seulement après coup.</td><td>Technique : plus simple ; risque métier élevé.</td><td>🟡 moyenne</td></tr>
+</tbody></table></div>
+<h3>3. Grille de comparaison</h3>
+<div class="table-wrap"><table><thead><tr><th>Critère (poids)</th><th><strong>A</strong></th><th><strong>B</strong></th><th><strong>C</strong></th></tr></thead><tbody>
+<tr><td>Valeur métier (5)</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>Risque (sécurité, juridique, délai) (5)</td><td>3</td><td>4</td><td>1</td></tr>
+<tr><td>Cohérence (architecture, décisions passées) (4)</td><td>5</td><td>4</td><td>1</td></tr>
+<tr><td>Réversibilité (4)</td><td>4</td><td>4</td><td>3</td></tr>
+<tr><td>Coût et délai (3)</td><td>4</td><td>3</td><td>5</td></tr>
+<tr><td><strong>Total (max 105)</strong></td><td><strong>83</strong></td><td><strong>76</strong></td><td><strong>51</strong></td></tr>
+</tbody></table></div>
+<h3>4. Risques et dette</h3>
+<ul><li><strong>Risque</strong> : Un seul contrôle : une erreur ou une fraude du DAF n'est pas détectée (parade : audit, justificatif obligatoire, seuil activable).</li><li><strong>Dette</strong> : Seuil de seconde validation à activer et fixer si besoin.</li></ul>
+<h3>5. Recommandation</h3>
+<p><strong>A</strong>, avec un <strong>seuil de seconde validation laissé à zéro</strong> (donc inactif) : on pourra l'activer sans nouveau développement si la Direction le demande. A est le plus cohérent avec D24 et le moins coûteux ; B n'apporte de valeur que si de gros montants existent (hypothèse non vérifiée). Ce qui me ferait changer d'avis : des commissions élevées ou une exigence d'audit externe (alors B).</p>
+<h3>6. Décision attendue</h3>
+<p><strong>Votre choix pour FD-2</strong> : ☐ A  ☐ B  ☐ C  ☐ autre : …………  — motif / réserves : ………………</p>
+<div class="table-wrap"><table><thead><tr><th>Sous-décision</th><th>Choix possibles</th><th>Ma recommandation</th><th>Votre choix</th></tr></thead><tbody>
+<tr><td>FD-2.1 Justificatif attendu</td><td>a) reçu de virement · b) ordre de versement · c) l'un ou l'autre</td><td>c) l'un ou l'autre (catégorie « Justificatif » existante).</td><td></td></tr>
+<tr><td>FD-2.2 Commission modifiable après « due »</td><td>a) figée dès « due » · b) modifiable jusqu'au déblocage par le Responsable commercial · c) toujours modifiable</td><td>a) figée dès « due » : ce qui est dû ne bouge plus ; une erreur se corrige par annulation motivée.</td><td></td></tr>
+<tr><td>FD-2.3 Seuil de seconde validation (si FD-2 = B)</td><td>montant en XAF à fixer, ou aucun</td><td>aucun (A).</td><td></td></tr>
+</tbody></table></div>
+<hr>
+<h2>FD-3 — Qui paie l'agrément : le client seul, ou parfois un tiers ?</h2>
+<p><em>Références : D2, D39 ; flux F1, F4 · Bloque : Rien aujourd'hui ; coûte de plus en plus cher à changer (Investudy et la facturation liront ces champs)</em></p>
+<h3>1. Contexte</h3>
+<p>L'agrément est actuellement émis <strong>par le client payeur seulement</strong> (valeur par défaut D2). Dans la réalité, un <strong>employeur, un organisme ou un bailleur</strong> peut payer pour l'apprenant. Si c'est possible, il faut le modéliser <strong>avant</strong> que l'inscription (S5) et la facturation (F4) s'appuient sur l'agrément.</p>
+<p><strong>Faits vérifiés</strong></p>
+<ul><li>Aucun champ « payeur » n'existe dans l'agrément livré.</li><li>Aucune réponse de la direction commerciale n'a été recueillie.</li></ul>
+<p><strong>Hypothèses (à vérifier)</strong></p>
+<ul><li>Il arrive qu'un tiers paie (à vérifier : c'est la vraie question).</li></ul>
+<h3>2. Options</h3>
+<div class="table-wrap"><table><thead><tr><th>Option</th><th>Avantages</th><th>Inconvénients</th><th>Impacts</th><th>Réversibilité</th></tr></thead><tbody>
+<tr><td><strong>A</strong> — Client payeur seulement (statu quo)</td><td>Aucun développement ; modèle simple.</td><td>Si un tiers paie : contournements (notes libres), factures au mauvais nom.</td><td>Aucun impact maintenant ; ajout plus tard = migration et écrans.</td><td>🟡 moyenne (champ à ajouter plus tard)</td></tr>
+<tr><td><strong>B</strong> — Champ « payeur » facultatif : le client par défaut, ou un tiers (nom et type : employeur, organisme, bailleur)</td><td>Couvre le besoin à faible coût ; ajoutable à la facture plus tard.</td><td>Un champ de plus à saisir ; pas de fiche complète du tiers.</td><td>Une colonne facultative, un champ de formulaire, un affichage.</td><td>🟢 facile</td></tr>
+<tr><td><strong>C</strong> — Le tiers est une fiche à part entière (entité « payeur »)</td><td>Suivi complet, factures et relances au tiers.</td><td>Nouvelle entité sans module Finance pour l'exploiter ; sur-construction si le cas est rare.</td><td>Nouvelle table, droits, écrans, doublons.</td><td>🔴 coûteuse</td></tr>
+</tbody></table></div>
+<h3>3. Grille de comparaison</h3>
+<div class="table-wrap"><table><thead><tr><th>Critère (poids)</th><th><strong>A</strong></th><th><strong>B</strong></th><th><strong>C</strong></th></tr></thead><tbody>
+<tr><td>Valeur métier (5)</td><td>3</td><td>4</td><td>5</td></tr>
+<tr><td>Risque (sécurité, juridique, délai) (5)</td><td>2</td><td>4</td><td>4</td></tr>
+<tr><td>Cohérence (architecture, décisions passées) (4)</td><td>4</td><td>4</td><td>3</td></tr>
+<tr><td>Réversibilité (4)</td><td>3</td><td>4</td><td>2</td></tr>
+<tr><td>Coût et délai (3)</td><td>5</td><td>4</td><td>1</td></tr>
+<tr><td><strong>Total (max 105)</strong></td><td><strong>68</strong></td><td><strong>84</strong></td><td><strong>68</strong></td></tr>
+</tbody></table></div>
+<h3>4. Risques et dette</h3>
+<ul><li><strong>Risque</strong> : Le tiers saisi en texte libre est incohérent d'un agrément à l'autre (parade : liste fermée des types).</li><li><strong>Dette</strong> : Fiche « payeur » complète si la facturation l'exige.</li></ul>
+<h3>5. Recommandation</h3>
+<p><strong>B</strong>. C'est l'assurance la moins chère : un champ facultatif qui ne gêne personne si le tiers n'existe jamais, et évite une migration lourde si Investudy ou la facturation en ont besoin. Je vous demande en parallèle de <strong>vérifier avec la direction commerciale</strong> si un tiers paie parfois ; si la réponse est « jamais », A suffit. Ce qui me ferait changer d'avis : un besoin de factures ou de relances adressées au tiers (alors C, avec le module Finance).</p>
+<h3>6. Décision attendue</h3>
+<p><strong>Votre choix pour FD-3</strong> : ☐ A  ☐ B  ☐ C  ☐ autre : …………  — motif / réserves : ………………</p>
+<hr>
+<h2>FD-4 — Constat du paiement (« honoré ») et suivi des demandes d'agrément</h2>
+<p><em>Références : D5, D111, D112, D8 · Bloque : Rien aujourd'hui ; conditionne FD-1</em></p>
+<h3>1. Contexte</h3>
+<p>Aujourd'hui, <strong>le Responsable commercial constate à la main</strong> qu'un agrément est honoré, et l'agrément naît directement « reçu » (pas d'état « demandé »). La question : <strong>qui constate le paiement</strong> et faut-il suivre une <strong>demande d'agrément en attente</strong> du client ?</p>
+<p><strong>Faits vérifiés</strong></p>
+<ul><li>Le paiement effectif relève de la Finance (D5, ADR-0005).</li><li>Le rôle Finance a des droits très limités dans le CRM (D8 ouvert).</li><li>L'état « demandé » du flux F1 n'a pas été réalisé (D111).</li></ul>
+<p><strong>Hypothèses (à vérifier)</strong></p>
+<ul><li>Le DAF est la personne qui sait si le client a payé.</li></ul>
+<h3>2. Options</h3>
+<div class="table-wrap"><table><thead><tr><th>Option</th><th>Avantages</th><th>Inconvénients</th><th>Impacts</th><th>Réversibilité</th></tr></thead><tbody>
+<tr><td><strong>A</strong> — Statu quo : honoré à la main par le Responsable commercial ; pas d'état « demandé »</td><td>Rien à construire ; fonctionne tout de suite.</td><td>Le constat vient de quelqu'un qui n'encaisse pas ; les demandes en attente sont invisibles.</td><td>Aucun impact maintenant.</td><td>🟢 facile</td></tr>
+<tr><td><strong>B</strong> — Honoré par le rôle Finance (DAF) + état « demandé » pour suivre les demandes en attente</td><td>Constat par qui sait ; suivi des promesses non encore signées.</td><td>Donne au rôle Finance un accès au CRM (D8) ; un état et un écran de plus.</td><td>Une permission transférée, un état, un filtre ; tests à étendre.</td><td>🟢 facile</td></tr>
+<tr><td><strong>C</strong> — Le CRM suit le paiement (montants encaissés, échéances)</td><td>Vision complète des encaissements dans le CRM.</td><td>Contredit D5 et la séparation CRM / ERP ; double saisie avec la Finance.</td><td>Nouveau modèle de paiements ; maintenance lourde.</td><td>🔴 coûteuse</td></tr>
+</tbody></table></div>
+<h3>3. Grille de comparaison</h3>
+<div class="table-wrap"><table><thead><tr><th>Critère (poids)</th><th><strong>A</strong></th><th><strong>B</strong></th><th><strong>C</strong></th></tr></thead><tbody>
+<tr><td>Valeur métier (5)</td><td>3</td><td>4</td><td>4</td></tr>
+<tr><td>Risque (sécurité, juridique, délai) (5)</td><td>3</td><td>4</td><td>3</td></tr>
+<tr><td>Cohérence (architecture, décisions passées) (4)</td><td>4</td><td>4</td><td>1</td></tr>
+<tr><td>Réversibilité (4)</td><td>4</td><td>4</td><td>2</td></tr>
+<tr><td>Coût et délai (3)</td><td>5</td><td>3</td><td>1</td></tr>
+<tr><td><strong>Total (max 105)</strong></td><td><strong>77</strong></td><td><strong>81</strong></td><td><strong>50</strong></td></tr>
+</tbody></table></div>
+<h3>4. Risques et dette</h3>
+<ul><li><strong>Risque</strong> : Le DAF n'utilise pas le CRM : les agréments restent « reçus » indéfiniment (parade : rappel, délégation au Responsable commercial).</li><li><strong>Dette</strong> : Suivi des encaissements dans le module Finance (F4).</li></ul>
+<h3>5. Recommandation</h3>
+<p><strong>B</strong>. La grille la place devant A de peu (81 contre 77, un écart qui reste dans la marge d'appréciation) ; je la recommande parce qu'elle aligne le constat du paiement sur la personne qui le connaît et rend FD-1 (B) plus fiable. Elle suppose de trancher <strong>en même temps</strong> les droits du rôle Finance dans le CRM (D8), faute de quoi A reste acceptable. Ce qui me ferait changer d'avis : si le DAF ne veut pas se connecter au CRM (alors A, et le constat reste au Responsable commercial).</p>
+<h3>6. Décision attendue</h3>
+<p><strong>Votre choix pour FD-4</strong> : ☐ A  ☐ B  ☐ C  ☐ autre : …………  — motif / réserves : ………………</p>
+<hr>
+<h2>FD-5 — Opportunités : retour en arrière d'étape et réouverture</h2>
+<p><em>Références : D36, S4.3a · Bloque : Rien aujourd'hui</em></p>
+<h3>1. Contexte</h3>
+<p>Une opportunité avance d'une étape à la fois, <strong>sans retour en arrière</strong>, et une opportunité clôturée (gagnée ou perdue) est <strong>définitive</strong>. En pratique, une erreur de saisie ou un client qui revient peut vouloir l'inverse.</p>
+<p><strong>Faits vérifiés</strong></p>
+<ul><li>Les étapes ne reculent pas ; une clôture est immuable ; une erreur se corrige en clôturant et en recréant.</li><li>Chaque passage et chaque clôture sont tracés dans l'audit.</li></ul>
+<p><strong>Hypothèses (à vérifier)</strong></p>
+<ul><li>Les erreurs de saisie sont rares ; les clients qui reviennent sont plus fréquents (à vérifier).</li></ul>
+<h3>2. Options</h3>
+<div class="table-wrap"><table><thead><tr><th>Option</th><th>Avantages</th><th>Inconvénients</th><th>Impacts</th><th>Réversibilité</th></tr></thead><tbody>
+<tr><td><strong>A</strong> — Statu quo : ni retour en arrière, ni réouverture</td><td>Règles simples, pipeline fiable, audit propre.</td><td>Une erreur oblige à clôturer et recréer (perte de l'historique de l'opportunité).</td><td>Aucun impact.</td><td>🟢 facile</td></tr>
+<tr><td><strong>B</strong> — Le Responsable commercial peut reculer d'un cran ou rouvrir, avec un motif tracé</td><td>Corrige les erreurs sans perdre l'historique.</td><td>Peut servir à contourner la règle de l'accord de principe ; plus de cas à tester.</td><td>Deux actions, un droit, des tests de règles.</td><td>🟡 moyenne</td></tr>
+<tr><td><strong>C</strong> — Le chargé de compte peut reculer et rouvrir librement</td><td>Souplesse maximale.</td><td>Affaiblit le pipeline et l'accord de principe ; fiabilité des chiffres compromise.</td><td>Règles à relâcher partout.</td><td>🟡 moyenne</td></tr>
+</tbody></table></div>
+<h3>3. Grille de comparaison</h3>
+<div class="table-wrap"><table><thead><tr><th>Critère (poids)</th><th><strong>A</strong></th><th><strong>B</strong></th><th><strong>C</strong></th></tr></thead><tbody>
+<tr><td>Valeur métier (5)</td><td>3</td><td>4</td><td>4</td></tr>
+<tr><td>Risque (sécurité, juridique, délai) (5)</td><td>5</td><td>3</td><td>1</td></tr>
+<tr><td>Cohérence (architecture, décisions passées) (4)</td><td>5</td><td>3</td><td>1</td></tr>
+<tr><td>Réversibilité (4)</td><td>4</td><td>4</td><td>3</td></tr>
+<tr><td>Coût et délai (3)</td><td>5</td><td>3</td><td>4</td></tr>
+<tr><td><strong>Total (max 105)</strong></td><td><strong>91</strong></td><td><strong>72</strong></td><td><strong>53</strong></td></tr>
+</tbody></table></div>
+<h3>4. Risques et dette</h3>
+<ul><li><strong>Risque</strong> : Frustration des utilisateurs en cas d'erreur de saisie (parade : message clair indiquant la marche à suivre).</li><li><strong>Dette</strong> : Aucune.</li></ul>
+<h3>5. Recommandation</h3>
+<p><strong>A (statu quo)</strong>. La grille et le jugement convergent : le pipeline ne vaut que s'il est fiable, et la correction par clôture puis recréation reste possible. Je ne changerais que si des erreurs fréquentes sont constatées en usage réel. Ce qui me ferait changer d'avis : plus de quelques corrections par mois (alors B).</p>
+<h3>6. Décision attendue</h3>
+<p><strong>Votre choix pour FD-5</strong> : ☐ A  ☐ B  ☐ C  ☐ autre : …………  — motif / réserves : ………………</p>
+<hr>
+<h2>FD-6 — Changement de responsable d'une entreprise : faut-il un second facteur récent ?</h2>
+<p><em>Références : D17, D37, D102, S4.3b · Bloque : Rien aujourd'hui</em></p>
+<h3>1. Contexte</h3>
+<p>Changer le responsable d'une entreprise <strong>transfère la visibilité</strong> de ses contacts, offres, opportunités, rendez-vous et agréments. La décision D17 prévoyait une <strong>confirmation du second facteur</strong> ; la version livrée utilise une <strong>simple case à cocher</strong> (D102).</p>
+<p><strong>Faits vérifiés</strong></p>
+<ul><li>Le mécanisme de « second facteur récent » existe déjà (utilisé pour fermer toutes les autres sessions).</li><li>Seul le Responsable commercial (et l'administrateur) peut réattribuer, dans son équipe.</li></ul>
+<p><strong>Hypothèses (à vérifier)</strong></p>
+<ul><li>Une session volée pourrait vider le portefeuille d'un commercial (scénario peu probable, impact élevé).</li></ul>
+<h3>2. Options</h3>
+<div class="table-wrap"><table><thead><tr><th>Option</th><th>Avantages</th><th>Inconvénients</th><th>Impacts</th><th>Réversibilité</th></tr></thead><tbody>
+<tr><td><strong>A</strong> — Statu quo : case à cocher seulement</td><td>Rapide ; déjà livré.</td><td>Contredit D17 ; une session détournée suffit.</td><td>Aucun impact.</td><td>🟢 facile</td></tr>
+<tr><td><strong>B</strong> — Second facteur récent demandé avant la réattribution, en plus de la case</td><td>Conforme à D17 ; protège un geste à fort effet.</td><td>Une étape de plus (quelques secondes) pour le Responsable commercial.</td><td>Réutilise le mécanisme existant ; tests à ajouter.</td><td>🟢 facile</td></tr>
+<tr><td><strong>C</strong> — Motif obligatoire en texte, sans second facteur</td><td>Laisse une explication dans l'audit.</td><td>Ne protège pas contre une session détournée.</td><td>Un champ de plus.</td><td>🟢 facile</td></tr>
+</tbody></table></div>
+<h3>3. Grille de comparaison</h3>
+<div class="table-wrap"><table><thead><tr><th>Critère (poids)</th><th><strong>A</strong></th><th><strong>B</strong></th><th><strong>C</strong></th></tr></thead><tbody>
+<tr><td>Valeur métier (5)</td><td>3</td><td>4</td><td>4</td></tr>
+<tr><td>Risque (sécurité, juridique, délai) (5)</td><td>2</td><td>5</td><td>3</td></tr>
+<tr><td>Cohérence (architecture, décisions passées) (4)</td><td>2</td><td>5</td><td>3</td></tr>
+<tr><td>Réversibilité (4)</td><td>5</td><td>4</td><td>4</td></tr>
+<tr><td>Coût et délai (3)</td><td>5</td><td>4</td><td>4</td></tr>
+<tr><td><strong>Total (max 105)</strong></td><td><strong>68</strong></td><td><strong>93</strong></td><td><strong>75</strong></td></tr>
+</tbody></table></div>
+<h3>4. Risques et dette</h3>
+<ul><li><strong>Risque</strong> : Friction pour le Responsable commercial (faible).</li><li><strong>Dette</strong> : Aucune.</li></ul>
+<h3>5. Recommandation</h3>
+<p><strong>B</strong>. Il est conforme à la décision D17, protège un geste à fort effet, et son coût est faible parce que le mécanisme existe. Ce qui me ferait changer d'avis : un retour d'usage montrant que l'étape gêne (alors C).</p>
+<h3>6. Décision attendue</h3>
+<p><strong>Votre choix pour FD-6</strong> : ☐ A  ☐ B  ☐ C  ☐ autre : …………  — motif / réserves : ………………</p>
+<hr>
+<h2>FD-7 — Valeurs par défaut déjà appliquées, à confirmer</h2>
+<p><em>Ce sont des recommandations de l'équipe appliquées faute de réponse. Les confirmer évite une reprise tardive ; en changer une est possible (coût variable). Répondez « confirmé » ou indiquez la correction.</em></p>
+<div class="table-wrap"><table><thead><tr><th>Réf.</th><th>Lot</th><th>Valeur par défaut appliquée (résumé)</th><th>Votre réponse</th></tr></thead><tbody>
+<tr><td>D22</td><td>S3.6 Documents</td><td>Formats PDF, JPG, PNG, DOCX, XLSX (macros refusées) ; 10 Mo maximum ; catégories Décharge, Contrat, Agrément signé, Justificatif, Facture, Autre ; aucune purge des archives.</td><td>☐ confirmé  ☐ à changer : ……</td></tr>
+<tr><td>D29</td><td>S4.1a Contacts</td><td>Fonctions DAF, Décideur, Autre ; un contact appartient à une entreprise ; doublon signalé avec « Créer quand même » ; suppression réservée au Responsable commercial.</td><td>☐ confirmé  ☐ à changer : ……</td></tr>
+<tr><td>D30</td><td>S4.1b Tableau</td><td>Tableau (et non cartes) pour les entreprises et les contacts ; cartes pour les opportunités.</td><td>☐ confirmé  ☐ à changer : ……</td></tr>
+<tr><td>D32</td><td>S4.2a Offres</td><td>États brouillon, déposée, décharge reçue, acceptée, refusée, retirée ; modification en brouillon seulement ; retrait avec motif.</td><td>☐ confirmé  ☐ à changer : ……</td></tr>
+<tr><td>D33</td><td>S4.2b Décharges</td><td>Une seule décharge valide par offre ; fichier signé obligatoire ; date ni future ni antérieure au dépôt ; annulation avec motif.</td><td>☐ confirmé  ☐ à changer : ……</td></tr>
+<tr><td>D34</td><td>S4.2c Relances</td><td>Au plus trois relances par offre ; échéance proposée à sept jours ; résultat obligatoire pour terminer, motif pour annuler.</td><td>☐ confirmé  ☐ à changer : ……</td></tr>
+<tr><td>D35</td><td>S4.2d Agenda</td><td>Trois types de rendez-vous ; 60 minutes ; jamais dans le passé ; conflit d'horaire = avertissement ; aucun rappel envoyé.</td><td>☐ confirmé  ☐ à changer : ……</td></tr>
+<tr><td>D36</td><td>S4.3a Opportunités</td><td>Cinq étapes ; accord de principe avec rendez-vous décideur ou dérogation ; motifs de perte en liste fermée ; clôture gagnée par le Responsable commercial. <em>(retour en arrière : voir FD-5)</em></td><td>☐ confirmé  ☐ à changer : ……</td></tr>
+<tr><td>D37</td><td>S4.3b Statuts</td><td>Statut d'un cran avec retour ; « Qualifiée » exige un contact ; « Cliente » posée par l'agrément ; réattribution limitée à l'équipe. <em>(second facteur : voir FD-6)</em></td><td>☐ confirmé  ☐ à changer : ……</td></tr>
+<tr><td>D38</td><td>S4.3c Valeur</td><td>Valeur = opportunités ouvertes, par devise, non pondérée, selon le droit de lecture ; rendez-vous lié non modifiable ; règle de l'accord de principe précisée.</td><td>☐ confirmé  ☐ à changer : ……</td></tr>
+<tr><td>D39</td><td>S4.4a Agréments</td><td>Montant et/ou places ; validité facultative, expiration manuelle ; un seul agrément actif par opportunité ; entreprise « Cliente » à l'enregistrement. <em>(payeur : FD-3 ; honoré et « demandé » : FD-4)</em></td><td>☐ confirmé  ☐ à changer : ……</td></tr>
+</tbody></table></div>
+<p><strong>Recommandation</strong> : <strong>tout confirmer</strong>, sauf les points renvoyés vers FD-3 à FD-6.</p>
+<h2>FD-8 — Dossiers externes à lancer</h2>
+<p><em>Ce ne sont pas des choix techniques : il faut un nom, un responsable et une échéance. Chaque dossier bloque la <strong>mise en production</strong>, pas le développement.</em></p>
+<div class="table-wrap"><table><thead><tr><th>Dossier</th><th>Pourquoi</th><th>Qui le porte ?</th><th>Pour quand ?</th><th>Votre réponse</th></tr></thead><tbody>
+<tr><td><strong>Microsoft 365</strong> (D9) : locataire, application d'envoi, boîte dédiée, SPF / DKIM / DMARC</td><td>Aucun e-mail réel tant qu'il manque (invitations, réinitialisations) ; bloque la production</td><td>Administrateur M365</td><td></td><td></td></tr>
+<tr><td><strong>Deuxième Super administrateur nominatif</strong> (D10)</td><td>Un seul compte : risque de verrouillage de l'administration</td><td>Direction</td><td></td><td></td></tr>
+<tr><td><strong>Avis juridique</strong> (D11) : conservation de l'audit, données des apprenants, contacts, facilitateurs, suivi des performances</td><td>Avant la production ; bloque le suivi des performances des employés</td><td>Juridique</td><td></td><td></td></tr>
+<tr><td><strong>Contact Direction administrative et financière</strong></td><td>Répondre à FD-1, FD-2 et FD-4 (déblocage, justificatif, constat du paiement)</td><td>Direction</td><td></td><td></td></tr>
+<tr><td><strong>Logos au format SVG</strong> et charte graphique des documents</td><td>Fiche, offre, certificat, émargement, facture</td><td>Graphiste</td><td></td><td></td></tr>
+</tbody></table></div>
+<h2>FD-9 — Avant S5 (Investudy)</h2>
+<div class="table-wrap"><table><thead><tr><th>Réf.</th><th>Question</th><th>Défaut proposé</th><th>Votre réponse</th></tr></thead><tbody>
+<tr><td>D31</td><td>Valider les cas d'usage du module Investudy (flux I1 à I5) : confirmation des inscriptions par le Responsable Investudy seul, seuils de certificat (80 % de présence, 10 sur 20), annulation d'une session sans suppression des inscriptions</td><td>Confirmer tels que proposés (<code>CAS-D-USAGE-MODULE-INVESTUDY.md</code>)</td><td>☐ confirmé  ☐ à changer : ……</td></tr>
+<tr><td>D7</td><td>L'apprenant est-il une entité distincte du contact, avec lien facultatif ?</td><td>Entité distincte</td><td>☐ confirmé  ☐ à changer : ……</td></tr>
+<tr><td>D8</td><td>Droits fins du rôle Finance dans le CRM (liés à FD-4)</td><td>Inchangé, ou élargi si FD-4 = B</td><td>☐ confirmé  ☐ à changer : ……</td></tr>
+</tbody></table></div>
+<h2>Ce qui ne change pas</h2>
+<p>Les décisions déjà prises (D1 à D5 sauf FD-3 et FD-4, D18, D24, D27, D28…) ne sont pas rouvertes. Une décision n'est jamais effacée : si vous changez une valeur par défaut, j'ajoute « remplacée par » avec la date.</p></main></body></html>

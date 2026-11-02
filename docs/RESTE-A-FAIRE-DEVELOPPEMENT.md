@@ -28,7 +28,7 @@ Ordre retenu le 2026-10-21 (DEC-005) : module commercial, puis Investudy, puis p
 | **S4.3a** Opportunités | *Validé* : pipeline en cartes ou par étape, règle du rendez-vous décideur, dérogation, clôture perdue ou gagnée (D28) | — | — |
 | **S4.3b** Entreprises : statuts et responsable | *Validé* : statut manuel d'un cran (CU-C-05), changement de responsable (D17), fiche 360° (opportunités, rendez-vous), colonne Responsable | — | Votre « Je valide » ; défauts D37 |
 | **S4.3c** Valeur et lien rendez-vous | *Validé* : colonne « Valeur » du tableau des entreprises ; lien d'un rendez-vous à une opportunité (D93, D104) | — | Votre « Je valide » ; défauts D38 |
-| **S4.4a** Agréments | *Terminé, validation en attente* : agrément (promesse de paiement signée), entreprise « Cliente », honorer / expirer / annuler | — | Votre « Je valide » ; défauts D39 |
+| **S4.4a** Agréments | *Validé* : agrément (promesse de paiement signée), entreprise « Cliente », honorer / expirer / annuler | — | Défauts D39 à confirmer |
 | **S4.4b** Ambassadeurs | Créer un ambassadeur à la main, avec son origine (client ou apprenant) ; liste et fiche (CU-F2-06 sans les suggestions, qui attendent les certifications d'Investudy) | 0,5 à 1 session | S4.4a |
 | **S4.4c** Commissions à verser | Commission « due » (déclencheur à trancher), déblocage par le DAF, versement et justificatif (flux F3) | 1 session | S4.4a ; réponses de la Direction administrative et financière |
 | **S5.1** Catalogue Investudy | Programmes, formations, salles, formateurs ; modèle de données du module | 1 session | S4.4 ; cas d'usage validés |
@@ -55,6 +55,8 @@ Ordre retenu le 2026-10-21 (DEC-005) : module commercial, puis Investudy, puis p
 | **Prototype de design 0.5.0** | D49 | Ajouter contacts, offres, tableaux, fenêtres, œil du mot de passe |
 
 ## 3. Décisions en attente, par lot qu'elles bloquent
+*Une **feuille de décision** avec options, grilles et recommandations est prête : [ARBITRAGE-DECISIONS-EN-ATTENTE.md](cadrages/ARBITRAGE-DECISIONS-EN-ATTENTE.md) (FD-1 à FD-9).*
+
 | Pour… | Décision à prendre | Ma proposition de départ |
 |---|---|---|
 | **S4.2b** | Une décharge sans fichier est-elle acceptée ? Annulation d'une décharge ? | Fichier obligatoire ; annulation possible par le Responsable commercial |
@@ -73,7 +75,7 @@ Ordre retenu le 2026-10-21 (DEC-005) : module commercial, puis Investudy, puis p
 | **Accès Microsoft 365** (locataire, application, boîte d'envoi, SPF, DKIM, DMARC) | Administrateur M365 | Aucun e-mail réel tant qu'il manque ; **bloque la mise en production** (D9) |
 | **Deuxième SuperAdmin nominatif** | Direction | Un seul compte au départ : risque de blocage (D10, R13) |
 | **Avis juridique** : audit 10 ans, lecture par la Direction, données des apprenants, contacts, facilitateurs, suivi des performances | Juridique | Avant la mise en production (D11) |
-| **Exiger la vérification dans les règles de la branche `main`** | Vous (GitHub) | Aujourd'hui la CI n'est pas obligatoire pour fusionner |
+| ~~Exiger la vérification dans les règles de la branche `main`~~ | Vous (GitHub) | **Fait** : la règle `protection-main` est active (PR obligatoire, contrôle `verify` requis, pas de poussée forcée ni de suppression) |
 | **Logos au format SVG et variante sombre** ; charte graphique des documents | Graphiste | Fiche, offre, certificat, émargement, facture (D35, D61) |
 | **Mentions légales et numérotation des documents** | DAF | Gabarits provisoires en attendant |
 | **Réponses sur la commission** : déclencheur de « due », qui la débloque | Direction administrative et financière | Flux F3, lot S4.4 |
@@ -102,4 +104,4 @@ Ordre retenu le 2026-10-21 (DEC-005) : module commercial, puis Investudy, puis p
 
 **S4.4c — Commissions à verser.** Commission « due », déblocage par le DAF, versement et justificatif (flux F3).
 
-Avant de commencer, il me faut **votre « Je valide S4.4a »** (ou vos corrections). Les valeurs par défaut D36 à D39 sont à confirmer ; S4.4c attend aussi vos réponses sur l'événement qui rend une commission « due ».
+Avant de commencer S4.4b, il n'y a plus de validation en attente. Les valeurs par défaut D36 à D39 restent à confirmer ; S4.4c attend aussi vos réponses sur l'événement qui rend une commission « due ».

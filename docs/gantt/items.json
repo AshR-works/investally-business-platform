@@ -286,10 +286,11 @@
           "tag": "s4-3c-validated"
         },
         {
-          "name": "S4.4a — agréments (terminé, validation en attente)",
+          "name": "S4.4a — agréments",
           "start": "2026-11-02",
           "end": "2026-11-02",
-          "state": "wait"
+          "state": "done",
+          "tag": "s4-4a-validated"
         },
         {
           "name": "S4.4b — ambassadeurs",

@@ -1,6 +1,6 @@
 # Livrable 5 — État d'avancement et tableau de bord
 
-**Projet** : Investally Business Platform · **Date** : 2026-10-21 · **Statut global** : 🟢 socle solide · 🟠 cœur métier à commencer · 🔴 dépendances externes à débloquer
+**Projet** : Investally Business Platform · **Date** : 2026-11-02 (mise à jour ; photographie initiale du 2026-10-21 conservée aux sections 2, 3 et 5 à 7) · **Statut global** : 🟢 socle solide · 🟢 module commercial largement livré · 🔴 dépendances externes à débloquer
 
 > Ce tableau répond à trois questions : **où en est-on, qu'est-ce qui nous freine, et qu'est-ce que la direction doit décider.** Les chiffres sont recomptés à partir du plan (`DESIGN-CODE-ARCHITECTURE-PLAN.md`), des recettes et du code.
 
@@ -8,16 +8,16 @@
 
 ## 1. Synthèse en dix lignes
 
-1. **14 sessions menées** (S0 à S3.5, A11Y-1, cadrages, H1, H1b, H2a, H2b, S3.6), **toutes validées** et fusionnées dans `main` ; design v0.4.1 validé. Prochaine étape : **cadrage UX** (5 écrans clés) puis S4.1.
-2. Le **socle de sécurité et d'accès est complet** : comptes, connexion, second facteur, rôles, périmètres, invitations, mot de passe oublié, audit.
-3. **Aucune fonctionnalité métier commerciale n'est encore livrée** hormis les entreprises cibles (début du pipeline) : c'est **voulu** — on ne bâtit pas un CRM sur un accès fragile.
-4. **434 + 160 tests** côté API, **65** côté interface, tous verts ; **0 violation** d'architecture ; **0 vulnérabilité haute**.
-5. **Plus de 20 défauts ou incidents** consignés et corrigés *avant* livraison (voir le suivi des sessions, §5), la plupart avec un test qui les garde.
-6. Les **deux blocages réels** ne sont pas techniques : accès **Microsoft 365** et **désignation de deux SuperAdmin**.
-7. L'interface est **vérifiée à la main** (navigateur réel) mais pas encore automatisée.
-8. **Docker, intégration continue, sauvegardes, supervision** : écrits ou prévus, **jamais exécutés** (S7).
-9. **Prochaine étape recommandée** : valider S3.4 et S3.5, puis S3.6 (documents), puis un **cadrage UX** avant S4.1.
-10. Reste à construire : **15 lignes du plan sur 23**, dont tout le métier (S4 à S6), la mise en production (S7) et l'ERP.
+1. **31 sessions validées** (de S1 à S4.4a, avec l'accessibilité, l'habillage, le contrat anti-IDOR et les cadrages), toutes fusionnées dans `main` et étiquetées `…-validated`.
+2. Le **socle de sécurité et d'accès est complet** : comptes, connexion, second facteur, rôles et périmètres, invitations, mot de passe oublié, sessions, audit.
+3. Le **module commercial est largement livré** : entreprises (statuts, responsable, fiche 360°), contacts, offres, décharges signées, relances, agenda, opportunités (pipeline), agréments, documents. **Restent** les ambassadeurs (S4.4b) et les commissions à verser (S4.4c).
+4. **833 tests unitaires**, **338 d'intégration** (PostgreSQL jetable) et **433 d'interface**, tous verts ; **0 violation** d'architecture ; contrat anti-IDOR sur chaque route d'objet.
+5. Les **mutants** (fautes injectées) de chaque lot sont **tous détectés** (environ 220, scripts dans `scripts/mutants/`) ; l'**audit navigateur** (axe-core) relève **0 violation** sur les écrans livrés.
+6. Une **charte de tests** et des **fiches de test** (16 par écran, 28 par session) cadrent la recette (`docs/CHARTE-DE-TESTS.md`, `docs/tests/`).
+7. Les **blocages réels** ne sont pas techniques : accès **Microsoft 365**, **avis juridique** sur les données de performance, **second SuperAdmin**, logos au format SVG.
+8. **Décisions à confirmer** : valeurs par défaut D36 à D39 (opportunités, statuts, valeur, agréments) ; l'agrément applique D1 à D5 du registre.
+9. La **CI GitHub** (contrôle `verify`) est active et obligatoire avant toute fusion ; **Docker, sauvegardes, supervision** restent à faire (S7).
+10. **Prochaine étape** : S4.4b (ambassadeurs) puis S4.4c (commissions), puis S5 (Investudy), S6 (pilotage) et S7 (mise en production). Détail : `docs/GANTT-PROJET.md` et `docs/RESTE-A-FAIRE-DEVELOPPEMENT.md`.
 
 ---
 
@@ -72,21 +72,25 @@ Légende : ✅ validé · 🟦 livré, validation attendue · ⏳ à faire
 
 | Capacité | Statut | Preuve |
 |---|---|---|
-| Inviter un collègue par lien à usage unique | ✅ | recette S3.3, S3.4 |
-| Activation du compte et choix du mot de passe | ✅ | recette S3.4 (navigateur) |
-| Second facteur obligatoire (QR, codes de secours) | ✅ | recette S3.2, S3.4 |
-| Connexion sécurisée (verrouillage progressif, message unique) | ✅ | recette S3.1 |
-| Droits par rôle et par périmètre (propre / équipe / tous) | ✅ | matrice 10 rôles × routes |
-| Administration : rôles, désactivation, sessions, MFA | ✅ | recette S3.3, S3.4 |
+| Inviter un collègue par lien à usage unique, activation du compte | ✅ | recettes S3.3, S3.4 |
+| Second facteur obligatoire (QR, codes de secours), connexion sécurisée | ✅ | recettes S3.1, S3.2, S3.7 |
+| Droits par rôle et par périmètre (propre / équipe / tous) ; sélecteur de rôles | ✅ | matrice `docs/RBAC.md`, recette S3.8 |
+| Administration : rôles, désactivation, sessions, MFA ; sessions et historique des connexions | ✅ | recettes S3.3, S3.4, H2b |
 | Mot de passe oublié (libre-service et administrateur) | ✅ | recette S3.5 |
 | Journal d'audit inaltérable | ✅ | triggers + tests |
-| Gérer les entreprises cibles (créer, lister selon le périmètre) | ✅ *(socle)* | recette S1, S3.3 |
+| Documents versionnés (empreinte SHA-256, visibles dans la portée) | ✅ | recette S3.6 |
+| Entreprises : tableau (filtres, tri, effectifs, colonnes), création avec facilitateur et commission, modification, export | ✅ | recettes S4.0, S4.0c, S4.1b |
+| Statut d'une entreprise (un cran), responsable, fiche 360°, colonne « Valeur » | ✅ | recettes S4.3b, S4.3c |
+| Contacts (doublons, portée) | ✅ | recette S4.1a |
+| Offres (références, cycle d'états), décharges signées, relances | ✅ | recettes S4.2a à S4.2c |
+| Agenda : rendez-vous et visites, conflit d'horaire, report, tenue, annulation ; lien à une opportunité | ✅ | recettes S4.2d, S4.3c |
+| Opportunités : pipeline en cinq étapes, accord de principe (rendez-vous décideur ou dérogation), clôtures | ✅ | recette S4.3a |
+| Agréments : promesse de paiement signée, entreprise « Cliente », honorer / expirer / annuler | ✅ | recette S4.4a |
 | Envoyer de vrais e-mails (Microsoft 365) | ❌ **non testé** | en attente d'accès |
-| Contacts, offres, rendez-vous, opportunités | ⏳ | S4 |
-| Agrément, ambassadeurs | ⏳ | S4.4 |
-| Formations, sessions, inscriptions, suivi pédagogique | ⏳ | S5 |
+| Ambassadeurs | ⏳ | S4.4b |
+| Commissions à verser (due, déblocage, versement) | ⏳ | S4.4c |
+| Formations, sessions, inscriptions, suivi pédagogique (Investudy) | ⏳ | S5 |
 | Tableaux de bord et indicateurs | ⏳ | S6 |
-| Documents (téléversement, versions) | ⏳ | S3.6 |
 
 ## 5. Indicateurs de santé
 
@@ -137,6 +141,14 @@ Légende : ✅ validé · 🟦 livré, validation attendue · ⏳ à faire
 
 | Ordre | Étape | Objet | Pré-requis |
 |---|---|---|---|
+| 1 | **S4.4b** Ambassadeurs | Création manuelle avec origine (client ou apprenant), liste et fiche | — |
+| 2 | **S4.4c** Commissions à verser | Commission « due », déblocage, versement et justificatif | Réponses de la direction administrative et financière |
+| 3 | Confirmation des valeurs par défaut | D36 à D39 | Votre décision |
+| 4 | **S5** Investudy | Catalogue, sessions, inscriptions, certifications | Cas d'usage validés |
+| 5 | **S6** Pilotage | Tableaux de bord commerciaux et de direction | S4, S5 |
+| 6 | **S7** | Durcissement, Docker, sauvegardes, supervision, mise en production | Accès M365, avis juridique |
+
+---|---|---|---|
 | 1 | Validation S3.4 puis S3.5 | Fusion dans `main`, étiquettes | Votre « Je valide » |
 | 2 | **S3.6 Documents** | Téléversement, versions, empreinte SHA-256, traçabilité | — |
 | 3 | **Cadrage UX** | Maquettes des écrans du parcours commercial | Séance avec vous |

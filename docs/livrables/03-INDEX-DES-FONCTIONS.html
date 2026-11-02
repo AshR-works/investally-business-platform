@@ -23,8 +23,8 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 @media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
 </style></head><body><main><nav class="top">Investally Business Platform — livrables · <a href="01-RECAPITULATIF-REALISATIONS.html">Récapitulatif</a> · <a href="02-GUIDE-DU-CODE.html">Guide du code</a> · <a href="03-INDEX-DES-FONCTIONS.html">Index des fonctions</a> · <a href="04-SUIVI-DES-SESSIONS.html">Suivi des sessions</a> · <a href="05-ETAT-D-AVANCEMENT.html">État d&#8217;avancement</a> · <a href="06-BESOINS-STYLE-GRAPHIQUE.html">Style graphique</a></nav><h1>Index des fonctions et composants (généré)</h1>
 <blockquote><p>Document <strong>généré</strong> par <code>node scripts/gen-function-index.mjs</code> à partir des commentaires du code. Ne pas le modifier à la main : corriger le commentaire dans le fichier source, puis relancer le script.</p></blockquote>
-<p><strong>741 déclarations commentées au total.</strong></p>
-<h2>API (NestJS) — 572 déclarations commentées</h2>
+<p><strong>1242 déclarations commentées au total.</strong></p>
+<h2>API (NestJS) — 881 déclarations commentées</h2>
 <h3><code>app.module.ts</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
 <tr><td><code>export class AppModule {}</code></td><td>Module racine : assemble la plateforme (base, configuration, limitation de débit, garde CSRF globale) et les modules métier (audit, notifications, IAM, développement commercial).</td></tr>
@@ -42,6 +42,16 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <h3><code>cli/create-admin.ts</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
 <tr><td><code>async function main()</code></td><td>Crée un compte SuperAdmin (le premier, puis le second : il en faut au moins deux, sans compte partagé).</td></tr>
+</tbody></table></div>
+<h3><code>cli/create-demo-users.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>async function main()</code></td><td>Crée un compte de démonstration par rôle (développement et recette SEULEMENT).</td></tr>
+</tbody></table></div>
+<h3><code>cli/demo-users.logic.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export interface DemoUser</code></td><td>Compte de démonstration : adresse (domaine .test réservé, jamais joignable), nom fictif, rôle et responsable.</td></tr>
+<tr><td><code>export function generateDemoPassword(random: (size: number) =&gt; Buffer = randomBytes): string</code></td><td>Mot de passe aléatoire propre à chaque compte (jamais un mot de passe commun ni prévisible).</td></tr>
+<tr><td><code>export function assertNotProduction(env: NodeJS.ProcessEnv = process.env): void</code></td><td>Refuse toute exécution en production : ces comptes sont réservés au développement et à la recette.</td></tr>
 </tbody></table></div>
 <h3><code>cli/seed-core.ts</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
@@ -93,6 +103,42 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td><code>async listByEntity(entityType: string, entityId: string): Promise&lt;AuditEntry[]&gt;</code></td><td>Historique d'une entité, du plus ancien au plus récent (500 entrées au plus).</td></tr>
 <tr><td><code>async listLoginEvents(query: LoginEventQuery): Promise&lt;AuditEntry[]&gt;</code></td><td>Connexions (<code>LOGIN</code>) et échecs (<code>LOGIN_FAILED</code>) rattachés à l'utilisateur, dans la fenêtre demandée, du plus récent au plus ancien.</td></tr>
 </tbody></table></div>
+<h3><code>modules/business-development/application/appointment-use-cases.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>const resourceOf = (type: AppointmentType): 'visit' | 'appointment' =&gt; (type === AppointmentType.Visit ? 'visit' : 'appointment');</code></td><td>Une visite chez Investally relève du droit « visite » ; les rendez-vous avec le DAF ou le décideur, du droit « rendez-vous ».</td></tr>
+<tr><td><code>async function contactOf(contacts: ContactRepository, contactId: string | null | undefined, companyId: string): Promise&lt;Contact | null&gt;</code></td><td>Un contact lié à un rendez-vous appartient à l'entreprise du rendez-vous (sinon refus).</td></tr>
+<tr><td><code>async function appointmentInScope(</code></td><td>Charge le rendez-vous et vérifie qu'il est dans la portée de son entreprise avec le droit demandé ; sinon « introuvable ».</td></tr>
+<tr><td><code>async function withConflicts(appointments: AppointmentRepository, appointment: Appointment, view: AppointmentView): Promise&lt;AppointmentView&gt;</code></td><td>Avertit des rendez-vous à venir du même organisateur qui chevauchent le créneau ; ne bloque jamais (règle proposée, D35).</td></tr>
+<tr><td><code>export class PlanAppointmentUseCase</code></td><td>Planifier un rendez-vous ou une visite : portée de l'entreprise, entreprise non archivée, contact et offre rattachés à cette entreprise ; l'heure ne peut pas être dans le passé ; un conflit d'horaire avertit sans bloquer ; audit.</td></tr>
+<tr><td><code>export class UpdateAppointmentUseCase</code></td><td>Modifier un rendez-vous À VENIR (contact, durée, lieu, note) : portée, version lue, entreprise non archivée ; audit avant/après.</td></tr>
+<tr><td><code>export class TransitionAppointmentUseCase</code></td><td>Reporter (nouvelle heure + motif), tenir (compte rendu) ou annuler (motif) un rendez-vous : portée, version lue, entreprise non archivée ; annuler exige le droit d'annuler (visite : de modifier) ; audit avant/après.</td></tr>
+<tr><td><code>export class GetAppointmentHandler</code></td><td>Lecture d'un rendez-vous : hors de la portée de son entreprise, il est « introuvable ».</td></tr>
+<tr><td><code>export const MAX_AGENDA_DAYS = 63;</code></td><td>Fenêtre d'agenda la plus large acceptée : neuf semaines, de quoi couvrir un mois affiché en grille.</td></tr>
+<tr><td><code>export class ListAppointmentsHandler</code></td><td>L'agenda : rendez-vous visibles dans la fenêtre [from, to[, triés par début.</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/application/appointment-view.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export interface AppointmentConflict</code></td><td>Un autre rendez-vous de l'organisateur qui chevauche celui-ci (avertissement, jamais un blocage).</td></tr>
+<tr><td><code>export interface AppointmentView</code></td><td>Modèle de lecture d'un rendez-vous (jamais l'entité).</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/application/approval-document-owners.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export const APPROVAL_OWNER_TYPE = 'approval';</code></td><td>Type d'objet propriétaire déclaré au module Documents pour les agréments (le document signé).</td></tr>
+<tr><td><code>export class ApprovalDocumentOwnerResolver implements DocumentOwnerResolver, OnModuleInit</code></td><td>Résolveur des agréments pour les documents : un agrément n'est « résolu » que s'il existe ET si l'appelant peut le lire.</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/application/approval-use-cases.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>async function opportunityInScope(</code></td><td>L'opportunité et son entreprise, dans la portée de l'appelant pour la permission demandée ; sinon « introuvable ».</td></tr>
+<tr><td><code>async function approvalInScope(</code></td><td>L'agrément, son opportunité et son entreprise, dans la portée de l'appelant pour la permission demandée ; sinon « introuvable ».</td></tr>
+<tr><td><code>export class RegisterApprovalUseCase</code></td><td>Enregistrer l'agrément d'une opportunité : portée de son entreprise, entreprise non archivée, opportunité qui a franchi l'accord de principe et n'est pas perdue, un seul agrément actif par opportunité.</td></tr>
+<tr><td><code>export class CloseApprovalUseCase</code></td><td>Honorer (le paiement a eu lieu), déclarer expiré ou annuler un agrément reçu : portée, version lue, entreprise non archivée ; le droit d'honorer est distinct de celui d'annuler ou d'expirer ; expirer et annuler exigent un motif.</td></tr>
+<tr><td><code>export class GetApprovalHandler</code></td><td>Lecture d'un agrément : hors de la portée de son entreprise, il est « introuvable ».</td></tr>
+<tr><td><code>export class ListApprovalsHandler</code></td><td>Les agréments visibles de l'appelant, le plus récent d'abord.</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/application/approval-view.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export interface ApprovalView</code></td><td>Modèle de lecture d'un agrément (jamais l'entité).</td></tr>
+</tbody></table></div>
 <h3><code>modules/business-development/application/company-document-owner.ts</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
 <tr><td><code>export const COMPANY_OWNER_TYPE = 'company';</code></td><td>Type d'objet propriétaire déclaré au module Documents pour les entreprises.</td></tr>
@@ -100,10 +146,81 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td><code>onModuleInit(): void</code></td><td>Se déclare auprès du registre des documents au démarrage de l'application.</td></tr>
 <tr><td><code>async resolve(ownerId: string, access: AccessContext): Promise&lt;{ ownerUserId: string | null } | null&gt;</code></td><td>Propriétaire de l'entreprise si elle existe et est lisible par l'appelant, sinon <code>null</code>.</td></tr>
 </tbody></table></div>
+<h3><code>modules/business-development/application/company-lifecycle-use-cases.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>async function loadInScope(companies: CompanyRepository, id: string, access: AccessContext, permission: string): Promise&lt;Company&gt;</code></td><td>Une entreprise hors de la portée de l'appelant (pour la permission demandée) est « introuvable », comme une inexistante.</td></tr>
+<tr><td><code>export class ChangeCompanyStatusUseCase</code></td><td>Cas d'usage : changer le statut d'une entreprise à la main (CU-C-05), d'un cran, avec le droit de modification.</td></tr>
+<tr><td><code>export class ReassignCompanyUseCase</code></td><td>Cas d'usage : confier une entreprise à un autre propriétaire (D17).</td></tr>
+<tr><td><code>async function candidatesFor(owners: OwnerDirectory, access: AccessContext): Promise&lt;OwnerSummary[]&gt;</code></td><td>Les propriétaires possibles dans la portée de l'appelant (droit de réattribution).</td></tr>
+<tr><td><code>export class ListOwnerCandidatesHandler</code></td><td>Requête de lecture : à qui l'appelant peut-il confier une entreprise (liste du choix de la fenêtre de réattribution).</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/application/company-sheet.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export function esc(value: unknown): string</code></td><td>Échappe le texte saisi par les utilisateurs : rien de ce qui est affiché ne peut être interprété comme du HTML.</td></tr>
+<tr><td><code>export const sheetReference = (company: CompanyView): string =&gt; </code>FIC-${company.id.replace(/-/g, '').slice(-8).toUpperCase()}<code>;</code></td><td>Référence lisible du document : ne contient aucune donnée personnelle.</td></tr>
+<tr><td><code>export function renderCompanySheet(company: CompanyView, exportedAt: Date): string</code></td><td>Fiche d'entreprise imprimable (HTML autonome, aux couleurs de l'application ; gabarit PROVISOIRE en attendant la charte des documents).</td></tr>
+</tbody></table></div>
 <h3><code>modules/business-development/application/company-view.ts</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export interface FacilitationView</code></td><td>Facilitation telle qu'exposée : le facilitateur et la commission ne sont renseignés que si l'appelant y a droit.</td></tr>
 <tr><td><code>export interface CompanyView</code></td><td>Modèle de lecture exposé par l'Application (pas l'entité).</td></tr>
-<tr><td><code>export function toCompanyView(company: Company): CompanyView</code></td><td>Transforme une entreprise du domaine en représentation publique (aucun objet interne n'est exposé).</td></tr>
+<tr><td><code>export interface FacilitationVisibility</code></td><td>Ce que l'appelant a le droit de voir dans la facilitation.</td></tr>
+<tr><td><code>export function toCompanyView(company: Company, facilitation?: FacilitationVisibility, ownerName?: string | null): CompanyView</code></td><td>Transforme une entreprise du domaine en représentation publique (aucun objet interne n'est exposé).</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/application/contact-use-cases.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>async function companyInScope(companies: CompanyRepository, id: string, access: AccessContext, permission: string): Promise&lt;Company&gt;</code></td><td>Entreprise visible de l'appelant pour cette permission, sinon « introuvable » (même réponse qu'un identifiant inexistant).</td></tr>
+<tr><td><code>async function contactInScope(</code></td><td>Contact et entreprise visibles de l'appelant (la visibilité d'un contact suit celle de son entreprise).</td></tr>
+<tr><td><code>async function assertNoDuplicate(contacts: ContactRepository, contact: Contact, allowDuplicate: boolean | undefined, excludeId?: string): Promise&lt;voi</code></td><td>Un doublon probable (même entreprise, même nom ou même e-mail) est signalé par un conflit ; <code>allowDuplicate</code> permet de créer quand même (l'utilisateur a vu l'avertissement) : on propose la fiche existante plutôt que d'interdire.</td></tr>
+<tr><td><code>export class RegisterContactUseCase</code></td><td>Créer un contact : l'entreprise doit être dans la portée de l'appelant et non archivée ; doublon signalé ; audit.</td></tr>
+<tr><td><code>export class UpdateContactUseCase</code></td><td>Modifier un contact : portée de son entreprise, version lue, doublon, entreprise non archivée ; audit avant/après.</td></tr>
+<tr><td><code>export class DeleteContactUseCase</code></td><td>Supprimer un contact (suppression logique) : droit de suppression et portée de son entreprise ; audit.</td></tr>
+<tr><td><code>export class GetContactHandler</code></td><td>Lecture d'un contact : hors de la portée de son entreprise, il est « introuvable ».</td></tr>
+<tr><td><code>export class ListContactsHandler</code></td><td>Liste paginée des contacts visibles ; filtrer par entreprise exige que cette entreprise soit dans la portée (sinon « introuvable »).</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/application/contact-view.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export interface ContactView</code></td><td>Modèle de lecture d'un contact (jamais l'entité).</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/application/export-company-sheet.query.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export class ExportCompanySheetHandler</code></td><td>Export de la fiche d'une entreprise.</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/application/facilitation-resolver.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export interface FacilitationInput</code></td><td>Facilitateur à lier : un facilitateur existant (par identifiant) OU un nouveau, jamais les deux.</td></tr>
+<tr><td><code>export class FacilitationResolver</code></td><td>Règles communes à la création et à la modification d'une entreprise : droits de l'appelant (facilitateur, commission), facilitateur retrouvé dans sa portée (sinon « introuvable », prévention d'IDOR) ou créé, validations faites AVANT toute écriture.</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/application/facilitator-queries.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export class ListFacilitatorsHandler</code></td><td>Liste paginée des facilitateurs visibles par l'appelant (portée calculée depuis ses droits).</td></tr>
+<tr><td><code>export class GetFacilitatorHandler</code></td><td>Lecture d'un facilitateur : hors portée → « introuvable » (404), comme pour une entreprise (prévention d'IDOR).</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/application/facilitator-view.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export interface FacilitatorView</code></td><td>Modèle de lecture d'un facilitateur.</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/application/followup-closer.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export class PlannedFollowupsCloser</code></td><td>Annule les relances encore à faire d'une offre qui n'est plus en cours (acceptée, refusée, retirée) : plus de relance après la réponse du client ou le retrait.</td></tr>
+<tr><td><code>async cancelPlanned(offer: Offer, companyName: string, reason: string, actor: ActorContext, now: Date): Promise&lt;number&gt;</code></td><td>Annule les relances à faire de l'offre avec le motif donné ; renvoie leur nombre.</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/application/followup-use-cases.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>async function followupInScope(</code></td><td>Relance, offre et entreprise visibles de l'appelant : la visibilité d'une relance suit celle de l'entreprise de son offre.</td></tr>
+<tr><td><code>export class PlanFollowupUseCase</code></td><td>Planifier une relance sur une offre EN COURS (déposée ou décharge reçue) : portée de son entreprise, entreprise non archivée, au plus trois relances par offre ; l'échéance ne peut pas être dans le passé ; audit.</td></tr>
+<tr><td><code>export class UpdateFollowupUseCase</code></td><td>Modifier une relance À FAIRE : portée, version lue, entreprise non archivée ; audit avant/après.</td></tr>
+<tr><td><code>export class CloseFollowupUseCase</code></td><td>Terminer une relance (avec son résultat) ou l'annuler (avec son motif) : portée, version lue, entreprise non archivée ; terminer exige le droit « terminer », annuler le droit de modifier ; audit avant/après.</td></tr>
+<tr><td><code>export class GetFollowupHandler</code></td><td>Lecture d'une relance : hors de la portée de son entreprise, elle est « introuvable ».</td></tr>
+<tr><td><code>export class ListFollowupsHandler</code></td><td>Liste paginée des relances visibles (la liste « À faire »), triée par échéance.</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/application/followup-view.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export interface FollowupView</code></td><td>Modèle de lecture d'une relance (jamais l'entité).</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/application/get-company-overview.query.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export class GetCompanyOverviewHandler</code></td><td>Requête de lecture : compteurs par statut et valeurs de filtre, dans la seule portée de l'appelant.</td></tr>
 </tbody></table></div>
 <h3><code>modules/business-development/application/get-company.query.ts</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
@@ -116,58 +233,487 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td><code>export class ListCompaniesHandler</code></td><td>Requête de lecture : liste paginée des entreprises visibles par l'appelant.</td></tr>
 <tr><td><code>async execute(query: ListCompaniesQuery): Promise&lt;Page&lt;CompanyView&gt;&gt;</code></td><td>Borne la page et la taille de page, puis ne renvoie que les entreprises de la portée de l'appelant (propriétaires autorisés).</td></tr>
 </tbody></table></div>
+<h3><code>modules/business-development/application/offer-document-owners.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export const OFFER_OWNER_TYPE = 'offer';</code></td><td>Types d'objets propriétaires déclarés au module Documents pour les offres et leurs décharges.</td></tr>
+<tr><td><code>export class OfferDocumentOwnerResolver implements DocumentOwnerResolver, OnModuleInit</code></td><td>Résolveur des offres pour les documents (le fichier de l'offre envoyé au client) : une offre n'est « résolue » que si elle existe ET si l'appelant peut la lire.</td></tr>
+<tr><td><code>export class ReceiptDocumentOwnerResolver implements DocumentOwnerResolver, OnModuleInit</code></td><td>Résolveur des décharges pour les documents (la décharge signée) : même règle, par le droit de lire les décharges.</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/application/offer-use-cases.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export async function companyInScope(companies: CompanyRepository, id: string, access: AccessContext, permission: string): Promise&lt;Company&gt;</code></td><td>Entreprise visible de l'appelant pour cette permission, sinon « introuvable » (même réponse qu'un identifiant inexistant).</td></tr>
+<tr><td><code>export async function offerInScope(</code></td><td>Offre et entreprise visibles de l'appelant (la visibilité d'une offre suit celle de son entreprise).</td></tr>
+<tr><td><code>export class RegisterOfferUseCase</code></td><td>Créer une offre (brouillon) : l'entreprise doit être dans la portée de l'appelant et non archivée ; référence attribuée ; audit.</td></tr>
+<tr><td><code>export class UpdateOfferUseCase</code></td><td>Modifier un brouillon : portée de son entreprise, version lue, entreprise non archivée ; audit avant/après.</td></tr>
+<tr><td><code>export class ChangeOfferStatusUseCase</code></td><td>Changer l'état d'une offre (déposer, accepter, refuser, retirer) : portée, version lue, entreprise non archivée, transition permise ; audit.</td></tr>
+<tr><td><code>export class GetOfferHandler</code></td><td>Lecture d'une offre : hors de la portée de son entreprise, elle est « introuvable ».</td></tr>
+<tr><td><code>export class ListOffersHandler</code></td><td>Liste paginée des offres visibles ; filtrer par entreprise exige que cette entreprise soit dans la portée (sinon « introuvable »).</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/application/offer-view.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export interface OfferView</code></td><td>Modèle de lecture d'une offre (jamais l'entité).</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/application/opportunity-use-cases.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>async function opportunityInScope(</code></td><td>Opportunité et entreprise visibles de l'appelant (la visibilité d'une opportunité suit celle de son entreprise).</td></tr>
+<tr><td><code>export class CreateOpportunityUseCase</code></td><td>Créer une opportunité (à « Qualification ») : l'entreprise doit être dans la portée de l'appelant et non archivée ; audit.</td></tr>
+<tr><td><code>abstract class OpportunityChange&lt;C extends { id: string; version: number; access: AccessContext; actor: ActorContext }&gt;</code></td><td>Les cas d'usage qui changent une opportunité existante partagent la même séquence : portée, version, règle du domaine, audit.</td></tr>
+<tr><td><code>export class UpdateOpportunityUseCase extends OpportunityChange&lt;UpdateOpportunityCommand&gt;</code></td><td>Modifier une opportunité OUVERTE (intitulé, montant, devise, source) : portée, version lue ; audit avant/après.</td></tr>
+<tr><td><code>export class AdvanceOpportunityUseCase extends OpportunityChange&lt;AdvanceOpportunityCommand&gt;</code></td><td>Passer à l'étape suivante (jamais plus loin, jamais en arrière).</td></tr>
+<tr><td><code>export class GrantWaiverUseCase extends OpportunityChange&lt;GrantWaiverCommand&gt;</code></td><td>Accorder la dérogation à la règle du rendez-vous décideur (Responsable commercial) : justification obligatoire, tracée.</td></tr>
+<tr><td><code>export class CloseOpportunityUseCase extends OpportunityChange&lt;CloseOpportunityCommand&gt;</code></td><td>Clore une opportunité : « perdue » (chargé de compte pour les siennes, motif obligatoire) ou « gagnée » (Responsable commercial seulement, une fois l'accord de principe obtenu) ; décision D28.</td></tr>
+<tr><td><code>export class GetOpportunityHandler</code></td><td>Lecture d'une opportunité : hors de la portée de son entreprise, elle est « introuvable ».</td></tr>
+<tr><td><code>export class ListOpportunitiesHandler</code></td><td>Liste paginée des opportunités visibles (cartes et vue par étape), la plus récemment modifiée d'abord.</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/application/opportunity-view.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export interface OpportunityView</code></td><td>Modèle de lecture d'une opportunité (jamais l'entité).</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/application/receipt-use-cases.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>async function receiptInScope(</code></td><td>Décharge, offre et entreprise visibles de l'appelant : la visibilité d'une décharge suit celle de l'entreprise de son offre.</td></tr>
+<tr><td><code>export class RegisterReceiptUseCase</code></td><td>Enregistrer la décharge d'une offre DÉPOSÉE : portée de son entreprise, entreprise non archivée, une seule décharge valide ; l'offre passe à « décharge reçue ».</td></tr>
+<tr><td><code>export class CancelReceiptUseCase</code></td><td>Annuler une décharge (saisie erronée, mauvais fichier) avec un motif : portée, version lue, entreprise non archivée ; l'offre redevient « déposée » et attend sa décharge.</td></tr>
+<tr><td><code>export class GetReceiptHandler</code></td><td>Lecture d'une décharge : hors de la portée de son entreprise, elle est « introuvable ».</td></tr>
+<tr><td><code>export class ListReceiptsHandler</code></td><td>Décharges d'une offre (annulées comprises) ; l'offre doit être dans la portée de l'appelant, sinon « introuvable ».</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/application/receipt-view.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export interface ReceiptView</code></td><td>Modèle de lecture d'une décharge (jamais l'entité).</td></tr>
+</tbody></table></div>
 <h3><code>modules/business-development/application/register-company.use-case.ts</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
 <tr><td><code>export interface RegisterCompanyCommand</code></td><td>Données d'enregistrement d'une entreprise cible ; le propriétaire vient de l'identité de l'appelant, jamais du corps de la requête.</td></tr>
 <tr><td><code>export class RegisterCompanyUseCase</code></td><td>Cas d'usage : enregistrer une entreprise cible, refuser un doublon de nom, tracer l'opération.</td></tr>
-<tr><td><code>async execute(command: RegisterCompanyCommand): Promise&lt;CompanyView&gt;</code></td><td>Crée l'entreprise et son audit dans une même transaction ; un nom déjà pris (sans tenir compte de la casse ni des espaces) est un conflit.</td></tr>
+<tr><td><code>async execute(command: RegisterCompanyCommand): Promise&lt;CompanyView&gt;</code></td><td>Crée l'entreprise, son éventuel facilitateur et leur audit dans une même transaction ; un nom déjà pris (sans tenir compte de la casse ni des espaces) est un conflit.</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/application/register-facilitator.use-case.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export class RegisterFacilitatorUseCase</code></td><td>Cas d'usage : enregistrer un facilitateur réutilisable et tracer l'opération.</td></tr>
+<tr><td><code>async executeInTransaction(command: RegisterFacilitatorCommand): Promise&lt;FacilitatorView&gt;</code></td><td>Corps du cas d'usage, appelable depuis une transaction déjà ouverte (création d'entreprise avec facilitateur).</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/application/update-company.use-case.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export interface UpdateCompanyCommand</code></td><td>Modification d'une fiche d'entreprise.</td></tr>
+<tr><td><code>export class UpdateCompanyUseCase</code></td><td>Cas d'usage : modifier une entreprise.</td></tr>
+<tr><td><code>private async fullView(company: Parameters&lt;typeof toCompanyView&gt;[0], known: ReturnType&lt;typeof toFacilitatorView&gt; | null = null): Promise&lt;CompanyView&gt;</code></td><td>Vue complète (commission comprise) pour l'audit : lisible des seuls détenteurs de <code>audit.log.read</code>.</td></tr>
 </tbody></table></div>
 <h3><code>modules/business-development/business-development.module.ts</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
-<tr><td><code>export class BusinessDevelopmentModule {}</code></td><td>Module « Développement commercial » : entreprises cibles (première brique du pipeline commercial).</td></tr>
+<tr><td><code>export class BusinessDevelopmentModule {}</code></td><td>Module « Développement commercial » : entreprises cibles et facilitateurs (premières briques du pipeline commercial).</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/domain/appointment-repository.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export interface AppointmentListItem</code></td><td>Un rendez-vous avec son entreprise, son contact et son offre (pour les listes).</td></tr>
+<tr><td><code>export interface AppointmentRepository</code></td><td>Port de persistance des rendez-vous.</td></tr>
+<tr><td><code>save(appointment: Appointment): Promise&lt;void&gt;;</code></td><td>Crée ou met à jour ; une modification sur une version périmée est un conflit (verrou optimiste).</td></tr>
+<tr><td><code>findConflicts(query: { organizerUserId: string; startsAt: Date; endsAt: Date; excludeId?: string }): Promise&lt;AppointmentListItem[]&gt;;</code></td><td>Rendez-vous À VENIR de l'organisateur qui chevauchent le créneau (hors <code>excludeId</code>) : sert à avertir d'un conflit d'horaire.</td></tr>
+<tr><td><code>list(query: AppointmentListQuery): Promise&lt;Page&lt;AppointmentListItem&gt;&gt;;</code></td><td>Tri : début, puis création.</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/domain/appointment.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export const DEFAULT_APPOINTMENT_MINUTES = 60;</code></td><td>Durée proposée, minimale et maximale d'un rendez-vous, en minutes : valeurs proposées, à confirmer.</td></tr>
+<tr><td><code>function required(raw: string | undefined, label: string, max: number): string</code></td><td>Texte obligatoire (compte rendu, motif) : trois caractères au moins, la limite donnée au plus.</td></tr>
+<tr><td><code>export class Appointment extends AggregateRoot</code></td><td>Rendez-vous ou visite d'une entreprise, dans l'agenda de son organisateur.</td></tr>
+<tr><td><code>static plan(input:</code></td><td>Planifie un rendez-vous ; l'heure de début ne peut pas être dans le passé.</td></tr>
+<tr><td><code>edit(changes: { durationMinutes?: number; location?: string | null; note?: string | null; contactId?: string | null }): void</code></td><td>Modifie la durée, le lieu, la note ou le contact d'un rendez-vous À VENIR (le changement d'horaire passe par le report).</td></tr>
+<tr><td><code>postpone(startsAt: Date | string, reason: string | undefined, now: Date): void</code></td><td>Reporte le rendez-vous à une autre heure (dans le futur) ; le motif est obligatoire et le rendez-vous reste « à venir ».</td></tr>
+<tr><td><code>hold(report: string | undefined, now: Date): void</code></td><td>Marque le rendez-vous tenu avec son compte rendu (obligatoire) ; impossible avant son heure de début.</td></tr>
+<tr><td><code>cancel(reason: string | undefined, now: Date): void</code></td><td>Annule le rendez-vous avec un motif (obligatoire).</td></tr>
+<tr><td><code>get endsAt(): Date { return new Date(this.props.startsAt.getTime() + this.props.durationMinutes * 60000); }</code></td><td>Fin du rendez-vous.</td></tr>
+<tr><td><code>overlaps(other: { startsAt: Date; endsAt: Date }): boolean</code></td><td>Vrai si les deux créneaux se chevauchent (fin exclusive : deux rendez-vous bout à bout ne se chevauchent pas).</td></tr>
+<tr><td><code>isReportDue(now: Date): boolean</code></td><td>Vrai si le rendez-vous est à venir et son heure de début est passée : un compte rendu est attendu (calculé, jamais stocké).</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/domain/approval-repository.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export interface ApprovalListItem</code></td><td>Un agrément avec le nom de son entreprise et l'intitulé de son opportunité (pour les listes).</td></tr>
+<tr><td><code>export interface ApprovalRepository</code></td><td>Port de persistance des agréments.</td></tr>
+<tr><td><code>save(approval: Approval): Promise&lt;void&gt;;</code></td><td>Crée ou met à jour ; une version périmée est un conflit ; un second agrément actif pour la même opportunité aussi.</td></tr>
+<tr><td><code>findActiveByOpportunity(opportunityId: string): Promise&lt;Approval | null&gt;;</code></td><td>L'agrément actif (reçu ou honoré) de l'opportunité, s'il existe.</td></tr>
+<tr><td><code>list(query: ApprovalListQuery): Promise&lt;Page&lt;ApprovalListItem&gt;&gt;;</code></td><td>Tri : le plus récent d'abord.</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/domain/approval.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>function isoDate(raw: string | null | undefined, label: string): string</code></td><td>Date « AAAA-MM-JJ » réelle (le 31 février n'existe pas), sinon refusée.</td></tr>
+<tr><td><code>function reasonOf(raw: string | undefined, label: string): string</code></td><td>Motif obligatoire (expiration, annulation) : trois caractères au moins, 500 au plus.</td></tr>
+<tr><td><code>export class Approval extends AggregateRoot</code></td><td>Agrément : promesse de paiement signée par l'entreprise cliente (payeur : le client seulement, D2) pour une opportunité qui a franchi l'accord de principe.</td></tr>
+<tr><td><code>static register(input:</code></td><td>Enregistre un agrément reçu.</td></tr>
+<tr><td><code>honor(now: Date): void</code></td><td>Constate que la promesse a été tenue (le paiement a eu lieu).</td></tr>
+<tr><td><code>expire(reason: string | undefined, now: Date): void</code></td><td>Déclare l'agrément expiré (sa validité est passée), avec un motif ; expiration manuelle (D3).</td></tr>
+<tr><td><code>cancel(reason: string | undefined, now: Date): void</code></td><td>Annule l'agrément (saisie erronée, renoncement du client) avec un motif ; il ne revient pas.</td></tr>
+<tr><td><code>isPastValidity(today: string): boolean</code></td><td>Vrai si la date de fin de validité est passée (sert à signaler « à expirer » ; l'expiration reste manuelle).</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/domain/commission.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export const DEFAULT_CURRENCY = 'XAF';</code></td><td>Devise par défaut d'un montant fixe : franc CFA d'Afrique centrale (décision du 2026-10-29).</td></tr>
+<tr><td><code>export class Commission</code></td><td>Objet-valeur : commission du facilitateur, soit un montant fixe dans une devise (ISO 4217), soit un pourcentage (jusqu'à 100).</td></tr>
 </tbody></table></div>
 <h3><code>modules/business-development/domain/company-name.ts</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
 <tr><td><code>export class CompanyName</code></td><td>Objet-valeur : nom d'entreprise normalisé (espaces nettoyés, longueur bornée) avec une clé de comparaison sans casse.</td></tr>
 <tr><td><code>get normalized(): string</code></td><td>Clé de comparaison pour la détection de doublons.</td></tr>
 </tbody></table></div>
+<h3><code>modules/business-development/domain/company-overview-reader.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export interface CompanyOverview</code></td><td>Synthèse de la liste des entreprises : effectifs par statut et valeurs disponibles pour les filtres.</td></tr>
+<tr><td><code>export interface CompanyOverviewReader</code></td><td>Port de lecture de la synthèse : compteurs par statut et valeurs de filtre, toujours bornés à la portée de l'appelant.</td></tr>
+<tr><td><code>overview(query: { ownerIds?: readonly string[]; search?: string; country?: string; sector?: string }): Promise&lt;CompanyOverview&gt;;</code></td><td><code>ownerIds</code> : mêmes règles que la liste (liste vide = aucune ; absent = portée Tous).</td></tr>
+</tbody></table></div>
 <h3><code>modules/business-development/domain/company-repository.ts</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export const COMPANY_SORT_FIELDS = ['createdAt', 'name', 'country', 'sector', 'status'] as const;</code></td><td>Colonnes sur lesquelles la liste peut être triée.</td></tr>
+<tr><td><code>export interface CompanyListQuery</code></td><td>Paramètres de la liste : pagination, recherche, filtres (statut, pays, secteur), tri et portée.</td></tr>
 <tr><td><code>export interface CompanyRepository</code></td><td>Port de persistance des entreprises : enregistrer, retrouver, tester l'unicité du nom et lister selon les propriétaires autorisés.</td></tr>
-<tr><td><code>list(query: { page: number; pageSize: number; search?: string; ownerIds?: readonly string[] }): Promise&lt;Page&lt;Company&gt;&gt;;</code></td><td><code>ownerIds</code> : restreint aux entreprises de ces propriétaires (liste vide = aucune) ; absent = pas de restriction (portée Tous).</td></tr>
+<tr><td><code>list(query: CompanyListQuery): Promise&lt;Page&lt;Company&gt;&gt;;</code></td><td><code>ownerIds</code> : restreint aux entreprises de ces propriétaires (liste vide = aucune) ; absent = pas de restriction (portée Tous).</td></tr>
 </tbody></table></div>
 <h3><code>modules/business-development/domain/company.ts</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
 <tr><td><code>export interface CompanyProps</code></td><td>État interne d'une entreprise (identité, nom, statut, propriétaire, horodatages).</td></tr>
 <tr><td><code>export class Company extends AggregateRoot</code></td><td>Entreprise cible : racine d'agrégat du pipeline commercial.</td></tr>
 <tr><td><code>static rehydrate(props: CompanyProps): Company</code></td><td>Reconstitution depuis la persistance : aucun événement émis.</td></tr>
+<tr><td><code>update(changes:</code></td><td>Modifie les informations de la fiche.</td></tr>
+<tr><td><code>changeStatus(next: CompanyStatus, context: { contactCount: number }): void</code></td><td>Change le statut à la main, d'un cran.</td></tr>
+<tr><td><code>reassign(newOwnerUserId: string): void</code></td><td>Confie l'entreprise à un autre propriétaire (la portée des droits suit).</td></tr>
+<tr><td><code>becomeClient(): void</code></td><td>Un agrément reçu fait de l'entreprise une cliente (flux C5) ; refusé si elle est archivée, sans effet si elle l'est déjà.</td></tr>
 <tr><td><code>archive(): void</code></td><td>Archive l'entreprise ; refuse de l'archiver deux fois (règle métier).</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/domain/contact-info.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export function normalizeEmail(raw: string | null | undefined): string | null</code></td><td>Normalise une adresse e-mail facultative : minuscules, forme simple <code>x@y.z</code>, 200 caractères au plus.</td></tr>
+<tr><td><code>export function normalizePhone(raw: string | null | undefined, options: { required: boolean }): string | null</code></td><td>Normalise un numéro de téléphone : chiffres, espaces, `+ - .</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/domain/contact-repository.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export interface ContactListItem</code></td><td>Un contact et le nom de son entreprise (pour les listes).</td></tr>
+<tr><td><code>export interface ContactRepository</code></td><td>Port de persistance des contacts.</td></tr>
+<tr><td><code>remove(id: string): Promise&lt;void&gt;;</code></td><td>Suppression logique : le contact disparaît partout.</td></tr>
+<tr><td><code>countByCompany(companyId: string): Promise&lt;number&gt;;</code></td><td>Nombre de contacts non supprimés de l'entreprise.</td></tr>
+<tr><td><code>findDuplicates(query: { companyId: string; nameKey: string; emailKey: string | null; excludeId?: string }): Promise&lt;Contact[]&gt;;</code></td><td>Contacts non supprimés de la même entreprise portant le même nom OU le même e-mail (hors <code>excludeId</code>).</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/domain/contact.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export const contactNameKey = (lastName: string, firstName: string): string =&gt; </code>${lastName} ${firstName}<code>.toLocaleLowerCase('fr');</code></td><td>Clé de comparaison du nom pour la détection de doublons : prénom et nom, sans casse ni espaces superflus.</td></tr>
+<tr><td><code>export class Contact extends AggregateRoot</code></td><td>Contact : interlocuteur d'une entreprise (DAF, décideur…).</td></tr>
+<tr><td><code>static rehydrate(props: ContactProps): Contact</code></td><td>Reconstitution depuis la persistance.</td></tr>
+<tr><td><code>update(changes: { lastName?: string; firstName?: string; role?: string; email?: string | null; phone?: string | null }): void</code></td><td>Modifie les champs donnés (absent = inchangé, chaîne vide = champ facultatif effacé) ; tout ou rien en cas d'erreur.</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/domain/events/approval-received.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export class ApprovalReceived implements DomainEvent</code></td><td>Événement de domaine : un agrément vient d'être reçu pour une opportunité (« agrément accordé », flux F1).</td></tr>
 </tbody></table></div>
 <h3><code>modules/business-development/domain/events/company-registered.ts</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
 <tr><td><code>export class CompanyRegistered implements DomainEvent</code></td><td>Événement de domaine : une entreprise vient d'être enregistrée (sera publié vers d'autres contextes plus tard).</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/domain/facilitation.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export class Facilitation</code></td><td>Lien entre une entreprise et son facilitateur : méthode de contact, appartenance, commission éventuelle.</td></tr>
+<tr><td><code>static assertMethod(method: string): void</code></td><td>Refuse une méthode inconnue ; appelable avant toute écriture.</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/domain/facilitator-repository.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export interface FacilitatorRepository</code></td><td>Port de persistance des facilitateurs.</td></tr>
+<tr><td><code>list(query: { page: number; pageSize: number; search?: string; ownerIds?: readonly string[] }): Promise&lt;Page&lt;Facilitator&gt;&gt;;</code></td><td><code>ownerIds</code> : restreint aux facilitateurs de ces propriétaires (liste vide = aucun) ; absent = pas de restriction.</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/domain/facilitator.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export class Facilitator extends AggregateRoot</code></td><td>Facilitateur : personne qui met en relation avec une entreprise (parfois un employé de celle-ci).</td></tr>
+<tr><td><code>static rehydrate(props: FacilitatorProps): Facilitator</code></td><td>Reconstitution depuis la persistance.</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/domain/followup-repository.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export interface FollowupListItem</code></td><td>Une relance avec l'offre et l'entreprise (pour les listes).</td></tr>
+<tr><td><code>export type FollowupDue = 'overdue' | 'today' | 'upcoming';</code></td><td>Filtre sur l'échéance des relances À FAIRE : en retard (avant aujourd'hui), aujourd'hui, à venir (après aujourd'hui).</td></tr>
+<tr><td><code>export interface FollowupRepository</code></td><td>Port de persistance des relances.</td></tr>
+<tr><td><code>save(followup: Followup): Promise&lt;void&gt;;</code></td><td>Crée ou met à jour ; une modification sur une version périmée est un conflit (verrou optimiste).</td></tr>
+<tr><td><code>listByOffer(offerId: string): Promise&lt;Followup[]&gt;;</code></td><td>Relances d'une offre, les plus récentes d'abord (annulées comprises).</td></tr>
+<tr><td><code>countActiveByOffer(offerId: string): Promise&lt;number&gt;;</code></td><td>Nombre de relances de l'offre qui comptent dans la limite (à faire ou terminées ; pas les annulées).</td></tr>
+<tr><td><code>listPlannedByOffer(offerId: string): Promise&lt;Followup[]&gt;;</code></td><td>Relances de l'offre encore à faire (pour les annuler quand l'offre n'est plus en cours).</td></tr>
+<tr><td><code>list(query: { page: number; pageSize: number; status?: FollowupStatus; due?: FollowupDue; today: string; offerId?: string; ownerIds?: readonly string[</code></td><td><code>today</code> : « AAAA-MM-JJ » (UTC) pour situer les échéances.</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/domain/followup.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export const MAX_FOLLOWUPS_PER_OFFER = 3;</code></td><td>Au plus trois relances par offre (terminées ou à faire ; les annulées ne comptent pas) : valeur proposée, à confirmer.</td></tr>
+<tr><td><code>function required(raw: string | undefined, label: string, max: number): string</code></td><td>Texte obligatoire (résultat, motif) : trois caractères au moins, la limite donnée au plus.</td></tr>
+<tr><td><code>export class Followup extends AggregateRoot</code></td><td>Relance d'une offre en cours : à faire à une échéance, par un canal.</td></tr>
+<tr><td><code>static plan(input: { id: string; offerId: string; dueOn: string; channel: string; note?: string | null; now: Date }): Followup</code></td><td>Planifie une relance ; l'échéance ne peut pas être dans le passé.</td></tr>
+<tr><td><code>edit(changes: { dueOn?: string; channel?: string; note?: string | null }, now: Date): void</code></td><td>Modifie l'échéance, le canal ou la note d'une relance À FAIRE.</td></tr>
+<tr><td><code>complete(result: string | undefined, now: Date): void</code></td><td>Termine la relance avec son résultat (obligatoire : ce qui s'est dit ou décidé).</td></tr>
+<tr><td><code>cancel(reason: string | undefined, now: Date): void</code></td><td>Annule la relance avec un motif (obligatoire) ; l'annulation automatique, quand l'offre n'est plus en cours, y a aussi son motif.</td></tr>
+<tr><td><code>isOverdue(now: Date): boolean</code></td><td>Vrai si la relance est à faire et son échéance dépassée.</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/domain/offer-repository.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export interface OfferListItem</code></td><td>Une offre et le nom de son entreprise (pour les listes).</td></tr>
+<tr><td><code>export interface OfferRepository</code></td><td>Port de persistance des offres.</td></tr>
+<tr><td><code>save(offer: Offer): Promise&lt;void&gt;;</code></td><td>Crée ou met à jour ; une modification sur une version périmée est un conflit (verrou optimiste).</td></tr>
+<tr><td><code>nextReference(year: number): Promise&lt;string&gt;;</code></td><td>Prochaine référence « OFF-2026-0001 » : compteur par année, sans trou ni doublon (transactionnel).</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/domain/offer.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export class Offer extends AggregateRoot</code></td><td>Offre faite à une entreprise : sa visibilité suit celle de l'entreprise.</td></tr>
+<tr><td><code>edit(changes: { subject?: string; amount?: string | number; currency?: string; note?: string | null }): void</code></td><td>Modifie les champs donnés ; seulement tant que l'offre est un brouillon (déposée, elle ne change plus).</td></tr>
+<tr><td><code>submit(now: Date): void</code></td><td>Dépôt chez l'entreprise : brouillon → déposée.</td></tr>
+<tr><td><code>receiptReceived(): void</code></td><td>La décharge signée est enregistrée : déposée → décharge reçue.</td></tr>
+<tr><td><code>receiptCancelled(): void</code></td><td>La décharge est annulée : décharge reçue → déposée (l'offre attend de nouveau sa décharge).</td></tr>
+<tr><td><code>accept(now: Date): void</code></td><td>Le client accepte.</td></tr>
+<tr><td><code>refuse(now: Date): void</code></td><td>Le client refuse.</td></tr>
+<tr><td><code>withdraw(reason: string | undefined, now: Date): void</code></td><td>Retrait avec motif obligatoire, tant que le client n'a pas répondu.</td></tr>
+<tr><td><code>get isOpen(): boolean</code></td><td>Les relances et la décharge n'ont de sens que pour une offre en cours.</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/domain/opportunity-repository.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export interface OpportunityListItem</code></td><td>Une opportunité avec le nom de son entreprise (pour les listes).</td></tr>
+<tr><td><code>export interface OpportunityRepository</code></td><td>Port de persistance des opportunités.</td></tr>
+<tr><td><code>save(opportunity: Opportunity): Promise&lt;void&gt;;</code></td><td>Crée ou met à jour ; une modification sur une version périmée est un conflit (verrou optimiste).</td></tr>
+<tr><td><code>list(query: OpportunityListQuery): Promise&lt;Page&lt;OpportunityListItem&gt;&gt;;</code></td><td>Tri : dernière activité d'abord, puis identifiant.</td></tr>
+<tr><td><code>export interface DecisionMakerMeetings</code></td><td>Lecture des rendez-vous décideur tenus (règle de l'accord de principe, flux F1).</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/domain/opportunity-totals.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export interface CurrencyTotal</code></td><td>Montant total d'une devise.</td></tr>
+<tr><td><code>export interface OpenOpportunities</code></td><td>Les opportunités OUVERTES d'une entreprise : leur nombre et leur valeur, devise par devise (on n'additionne jamais deux devises).</td></tr>
+<tr><td><code>export interface OpportunityTotals</code></td><td>Port de lecture de la valeur des opportunités ouvertes, par entreprise (colonne « Valeur » du tableau des entreprises).</td></tr>
+<tr><td><code>openByCompany(companyIds: readonly string[]): Promise&lt;ReadonlyMap&lt;string, OpenOpportunities&gt;&gt;;</code></td><td>Les entreprises sans opportunité ouverte sont absentes du résultat.</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/domain/opportunity.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>function required(raw: string | undefined, label: string, max: number): string</code></td><td>Texte obligatoire (justification, précision) : trois caractères au moins, la limite donnée au plus.</td></tr>
+<tr><td><code>export class Opportunity extends AggregateRoot</code></td><td>Opportunité commerciale d'une entreprise (plusieurs en même temps possibles) : sa visibilité suit celle de l'entreprise.</td></tr>
+<tr><td><code>static create(input:</code></td><td>Crée une opportunité : elle commence à « Qualification ».</td></tr>
+<tr><td><code>edit(changes: { title?: string; amount?: string | number; currency?: string; source?: string }): void</code></td><td>Modifie l'intitulé, le montant, la devise ou la source d'une opportunité OUVERTE.</td></tr>
+<tr><td><code>get nextStage(): OpportunityStage | null</code></td><td>L'étape qui suit l'étape actuelle ; <code>null</code> à la dernière.</td></tr>
+<tr><td><code>advance(context: { decisionMakerMeetingHeld: boolean }, now: Date): void</code></td><td>Passe à l'étape suivante, jamais plus loin ni en arrière.</td></tr>
+<tr><td><code>grantWaiver(reason: string | undefined, now: Date): void</code></td><td>Accorde la dérogation à la règle du rendez-vous décideur (justification obligatoire) ; une seule fois, avant l'accord de principe.</td></tr>
+<tr><td><code>closeLost(reason: string | undefined, note: string | null | undefined, now: Date): void</code></td><td>Clôture « perdue » avec un motif de la liste fermée ; « autre » exige une précision.</td></tr>
+<tr><td><code>closeWon(now: Date): void</code></td><td>Clôture « gagnée » : au plus tôt une fois l'accord de principe obtenu.</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/domain/owner-directory.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export interface OwnerSummary</code></td><td>Une personne qui peut porter des entreprises (utilisateur actif au rôle commercial).</td></tr>
+<tr><td><code>export interface OwnerDirectory</code></td><td>Port de l'annuaire des propriétaires : qui peut recevoir une entreprise, et comment s'appelle un propriétaire.</td></tr>
+<tr><td><code>candidates(ids?: readonly string[]): Promise&lt;OwnerSummary[]&gt;;</code></td><td>Les utilisateurs actifs au rôle commercial parmi <code>ids</code> (tous si <code>ids</code> est absent), triés par nom.</td></tr>
+<tr><td><code>names(ids: readonly string[]): Promise&lt;ReadonlyMap&lt;string, string&gt;&gt;;</code></td><td>Le nom de chaque identifiant connu (les inconnus sont absents du résultat).</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/domain/receipt-repository.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export interface ReceiptRepository</code></td><td>Port de persistance des décharges.</td></tr>
+<tr><td><code>save(receipt: Receipt): Promise&lt;void&gt;;</code></td><td>Crée ou met à jour ; une modification sur une version périmée est un conflit (verrou optimiste).</td></tr>
+<tr><td><code>listByOffer(offerId: string): Promise&lt;Receipt[]&gt;;</code></td><td>Décharges d'une offre, la plus récente d'abord, annulées comprises (l'historique reste lisible).</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/domain/receipt.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>function isoDate(raw: string | undefined): string</code></td><td>Date « AAAA-MM-JJ » réelle (le 31 février n'existe pas), sinon refusée.</td></tr>
+<tr><td><code>export class Receipt extends AggregateRoot</code></td><td>Décharge signée par l'entreprise pour une offre déposée.</td></tr>
+<tr><td><code>static register(input: { id: string; offerId: string; receivedOn: string; receivedBy: string; offerSubmittedAt: Date | null; now: Date }): Receipt</code></td><td>Enregistre une décharge.</td></tr>
+<tr><td><code>cancel(reason: string | undefined, now: Date): void</code></td><td>Annule la décharge (saisie erronée, mauvais fichier) avec un motif obligatoire ; une décharge annulée ne revient pas.</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/infrastructure/prisma-appointment.repository.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export class PrismaAppointmentRepository implements AppointmentRepository</code></td><td>Persistance PostgreSQL des rendez-vous (jamais supprimés : on les tient ou on les annule, avec un texte).</td></tr>
+<tr><td><code>async save(appointment: Appointment): Promise&lt;void&gt;</code></td><td>Crée ou met à jour le rendez-vous ; une modification sur une version périmée est un conflit (verrou optimiste).</td></tr>
+<tr><td><code>async findConflicts(query: { organizerUserId: string; startsAt: Date; endsAt: Date; excludeId?: string }): Promise&lt;AppointmentListItem[]&gt;</code></td><td>Une durée s'exprimant en minutes, le chevauchement se calcule en SQL sur l'heure de début et la durée.</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/infrastructure/prisma-approval.repository.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export class PrismaApprovalRepository implements ApprovalRepository</code></td><td>Persistance PostgreSQL des agréments (jamais supprimés : on les honore, les déclare expirés ou les annule, avec un motif).</td></tr>
+<tr><td><code>async save(approval: Approval): Promise&lt;void&gt;</code></td><td>Crée ou met à jour l'agrément ; une modification sur une version périmée est un conflit (verrou optimiste).</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/infrastructure/prisma-company-overview.reader.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export class PrismaCompanyOverviewReader implements CompanyOverviewReader</code></td><td>Synthèse PostgreSQL : compteurs par statut (recherche, pays, secteur appliqués) et valeurs de filtre de la portée.</td></tr>
 </tbody></table></div>
 <h3><code>modules/business-development/infrastructure/prisma-company.repository.ts</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
 <tr><td><code>function toDomain(row: CompanyRow): Company</code></td><td>Reconstruit une entreprise du domaine à partir d'une ligne de base de données.</td></tr>
 <tr><td><code>export class PrismaCompanyRepository implements CompanyRepository</code></td><td>Persistance PostgreSQL des entreprises (suppression logique : une entreprise supprimée est ignorée partout).</td></tr>
 <tr><td><code>async save(company: Company): Promise&lt;void&gt;</code></td><td>Crée ou met à jour l'entreprise (clé de nom normalisée pour l'unicité).</td></tr>
+<tr><td><code>private async syncFacilitation(company: Company): Promise&lt;void&gt;</code></td><td>Aligne le lien avec le facilitateur sur l'entreprise : créé, remplacé ou retiré (modification d'une fiche existante).</td></tr>
 <tr><td><code>async findById(id: string): Promise&lt;Company | null&gt;</code></td><td>Retrouve une entreprise non supprimée, ou <code>null</code>.</td></tr>
 <tr><td><code>async existsByName(name: CompanyName): Promise&lt;boolean&gt;</code></td><td>Vrai si une entreprise non supprimée porte déjà ce nom (comparaison sans casse).</td></tr>
-<tr><td><code>async list(query: { page: number; pageSize: number; search?: string; ownerIds?: readonly string[] }): Promise&lt;Page&lt;Company&gt;&gt;</code></td><td>Liste paginée, la plus récente d'abord ; <code>ownerIds</code> restreint aux propriétaires autorisés (liste vide = aucune entreprise), absent = aucune restriction.</td></tr>
+<tr><td><code>async list(query: CompanyListQuery): Promise&lt;Page&lt;Company&gt;&gt;</code></td><td>Liste paginée, la plus récente d'abord ; <code>ownerIds</code> restreint aux propriétaires autorisés (liste vide = aucune entreprise), absent = aucune restriction.</td></tr>
+<tr><td><code>export function companyWhere(query: { ownerIds?: readonly string[]; search?: string; status?: CompanyStatus; country?: string; sector?: string }): Pri</code></td><td>Filtre commun à la liste et à la synthèse : suppression logique, portée, recherche, pays et secteur (statut en plus pour la liste).</td></tr>
+<tr><td><code>function orderFor(field: CompanySortField, direction: 'asc' | 'desc'): Prisma.CompanyOrderByWithRelationInput[]</code></td><td>Tri demandé ; les valeurs absentes (pays, secteur) passent toujours en dernier.</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/infrastructure/prisma-contact.repository.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export class PrismaContactRepository implements ContactRepository</code></td><td>Persistance PostgreSQL des contacts (suppression logique).</td></tr>
+<tr><td><code>async save(contact: Contact): Promise&lt;void&gt;</code></td><td>Crée ou met à jour le contact ; une modification sur une version périmée est un conflit (verrou optimiste).</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/infrastructure/prisma-facilitator.repository.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export class PrismaFacilitatorRepository implements FacilitatorRepository</code></td><td>Persistance PostgreSQL des facilitateurs.</td></tr>
+<tr><td><code>async save(facilitator: Facilitator): Promise&lt;void&gt;</code></td><td>Crée le facilitateur (aucune modification n'existe encore : seule la création est possible).</td></tr>
+<tr><td><code>async list(query: { page: number; pageSize: number; search?: string; ownerIds?: readonly string[] }): Promise&lt;Page&lt;Facilitator&gt;&gt;</code></td><td>Liste paginée, la plus récente d'abord ; <code>ownerIds</code> restreint aux propriétaires autorisés.</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/infrastructure/prisma-followup.repository.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export class PrismaFollowupRepository implements FollowupRepository</code></td><td>Persistance PostgreSQL des relances (jamais supprimées : on les termine ou on les annule, avec un texte).</td></tr>
+<tr><td><code>async save(followup: Followup): Promise&lt;void&gt;</code></td><td>Crée ou met à jour la relance ; une modification sur une version périmée est un conflit (verrou optimiste).</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/infrastructure/prisma-offer.repository.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export class PrismaOfferRepository implements OfferRepository</code></td><td>Persistance PostgreSQL des offres (jamais supprimées : on les retire).</td></tr>
+<tr><td><code>async save(offer: Offer): Promise&lt;void&gt;</code></td><td>Crée ou met à jour l'offre ; une modification sur une version périmée est un conflit (verrou optimiste).</td></tr>
+<tr><td><code>async nextReference(year: number): Promise&lt;string&gt;</code></td><td>Incrémente le compteur de l'année dans la transaction en cours : deux créations simultanées ne partagent jamais un numéro.</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/infrastructure/prisma-opportunity-totals.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export class PrismaOpportunityTotals implements OpportunityTotals</code></td><td>Somme des opportunités ouvertes par entreprise et par devise, calculée par la base (une requête, quel que soit le nombre d'entreprises).</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/infrastructure/prisma-opportunity.repository.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export class PrismaOpportunityRepository implements OpportunityRepository</code></td><td>Persistance PostgreSQL des opportunités (jamais supprimées : on les clôt, gagnées ou perdues).</td></tr>
+<tr><td><code>async save(opportunity: Opportunity): Promise&lt;void&gt;</code></td><td>Crée ou met à jour l'opportunité ; une modification sur une version périmée est un conflit (verrou optimiste).</td></tr>
+<tr><td><code>export class PrismaDecisionMakerMeetings implements DecisionMakerMeetings</code></td><td>Les rendez-vous « décideur » tenus d'une entreprise (agenda, S4.2d) : la règle de l'accord de principe les compte.</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/infrastructure/prisma-owner-directory.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>const OWNER_ROLE_CODES = ['ACCOUNT_MANAGER', 'HEAD_OF_SALES', 'SUPER_ADMIN'];</code></td><td>Rôles qui portent des entreprises : chargé de compte, Responsable commercial, administrateur.</td></tr>
+<tr><td><code>export class PrismaOwnerDirectory implements OwnerDirectory</code></td><td>Annuaire des propriétaires, lu dans la table des utilisateurs (jamais d'e-mail ni de secret exposé).</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/infrastructure/prisma-receipt.repository.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export class PrismaReceiptRepository implements ReceiptRepository</code></td><td>Persistance PostgreSQL des décharges (jamais supprimées : on les annule, avec un motif).</td></tr>
+<tr><td><code>async save(receipt: Receipt): Promise&lt;void&gt;</code></td><td>Crée ou met à jour la décharge ; une modification sur une version périmée est un conflit (verrou optimiste).</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/presentation/appointments.controller.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export class AppointmentsController</code></td><td>Agenda : rendez-vous (DAF, décideur) et visites.</td></tr>
+<tr><td><code>plan(@Body() dto: PlanAppointmentDto, @Access() access: AccessContext, @CurrentActor() actor: AuthenticatedActor, @Req() req: Request)</code></td><td>Planifie ; la réponse porte <code>conflicts</code> si l'organisateur a déjà un rendez-vous sur le créneau (avertissement).</td></tr>
+<tr><td><code>list(@Query() query: ListAppointmentsDto, @Access() access: AccessContext)</code></td><td>L'agenda sur une fenêtre de temps, trié par heure de début.</td></tr>
+<tr><td><code>postpone(@Param('id', ParseUUIDPipe) id: string, @Body() dto: TransitionAppointmentDto, @Access() access: AccessContext, @CurrentActor() actor: Authen</code></td><td>Reporter à une autre heure, avec un motif (obligatoire).</td></tr>
+<tr><td><code>hold(@Param('id', ParseUUIDPipe) id: string, @Body() dto: TransitionAppointmentDto, @Access() access: AccessContext, @CurrentActor() actor: Authentica</code></td><td>Marquer tenu, avec le compte rendu (obligatoire).</td></tr>
+<tr><td><code>cancel(@Param('id', ParseUUIDPipe) id: string, @Body() dto: TransitionAppointmentDto, @Access() access: AccessContext, @CurrentActor() actor: Authenti</code></td><td>Annuler, avec un motif (obligatoire).</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/presentation/approvals.controller.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export class ApprovalsController</code></td><td>Agréments (promesses de paiement signées).</td></tr>
+<tr><td><code>register(@Body() dto: RegisterApprovalDto, @Access() access: AccessContext, @CurrentActor() actor: AuthenticatedActor, @Req() req: Request)</code></td><td>Enregistrer l'agrément d'une opportunité qui a franchi l'accord de principe ; l'entreprise devient « Cliente ».</td></tr>
+<tr><td><code>honor(@Param('id', ParseUUIDPipe) id: string, @Body() dto: HonorApprovalDto, @Access() access: AccessContext, @CurrentActor() actor: AuthenticatedActo</code></td><td>Constater que la promesse a été tenue (réservé à qui peut honorer : Responsable commercial).</td></tr>
+<tr><td><code>expire(@Param('id', ParseUUIDPipe) id: string, @Body() dto: CloseApprovalDto, @Access() access: AccessContext, @CurrentActor() actor: AuthenticatedAct</code></td><td>Déclarer l'agrément expiré (motif obligatoire) : l'expiration est manuelle (D3).</td></tr>
+<tr><td><code>cancel(@Param('id', ParseUUIDPipe) id: string, @Body() dto: CloseApprovalDto, @Access() access: AccessContext, @CurrentActor() actor: AuthenticatedAct</code></td><td>Annuler l'agrément (motif obligatoire).</td></tr>
 </tbody></table></div>
 <h3><code>modules/business-development/presentation/companies.controller.ts</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
 <tr><td><code>export class CompaniesController</code></td><td>Chaque route est protégée : identité + MFA vérifié + permission.</td></tr>
 <tr><td><code>register(@Body() dto: RegisterCompanyDto, @Access() access: AccessContext, @CurrentActor() actor: AuthenticatedActor, @Req() req: Request)</code></td><td>L'utilisateur qui crée l'entreprise en devient le propriétaire.</td></tr>
+<tr><td><code>overview(@Query() query: CompanyOverviewDto, @Access() access: AccessContext)</code></td><td>Compteurs par statut et valeurs des filtres (pays, secteurs), dans la portée de l'appelant.</td></tr>
+<tr><td><code>owners(@Access() access: AccessContext)</code></td><td>Les personnes à qui l'appelant peut confier une entreprise (liste du choix de réattribution).</td></tr>
+<tr><td><code>async export(@Param('id', ParseUUIDPipe) id: string, @Access() access: AccessContext, @CurrentActor() actor: AuthenticatedActor, @Req() req: Request)</code></td><td>Fiche imprimable.</td></tr>
+<tr><td><code>update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateCompanyDto, @Access() access: AccessContext, @CurrentActor() actor: AuthenticatedAct</code></td><td>Modifie la fiche.</td></tr>
+<tr><td><code>status(@Param('id', ParseUUIDPipe) id: string, @Body() dto: ChangeStatusDto, @Access() access: AccessContext, @CurrentActor() actor: AuthenticatedActo</code></td><td>Change le statut à la main, d'un cran (CU-C-05) ; « Qualifiée » exige un contact.</td></tr>
+<tr><td><code>owner(@Param('id', ParseUUIDPipe) id: string, @Body() dto: ReassignDto, @Access() access: AccessContext, @CurrentActor() actor: AuthenticatedActor, @R</code></td><td>Confie l'entreprise à un autre propriétaire de la portée de l'appelant (D17).</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/presentation/contacts.controller.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export class ContactsController</code></td><td>Contacts des entreprises.</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/presentation/dto/appointment.dto.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export class PlanAppointmentDto</code></td><td>Planification d'un rendez-vous : le type, l'entreprise et l'heure de début ; le reste est facultatif.</td></tr>
+<tr><td><code>export class UpdateAppointmentDto</code></td><td>Modification d'un rendez-vous à venir : <code>version</code> (celle qui a été lue) obligatoire ; le reste est facultatif (absent = inchangé, contact <code>null</code> = retiré).</td></tr>
+<tr><td><code>export class TransitionAppointmentDto</code></td><td>Report, tenue ou annulation : la version lue, et le texte (motif ou compte rendu) obligatoire ; le report porte aussi la nouvelle heure.</td></tr>
+<tr><td><code>export class ListAppointmentsDto</code></td><td>Fenêtre de l'agenda (début inclus, fin exclue, 63 jours au plus), pagination (taille ≤ 200), type, état, entreprise, offre.</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/presentation/dto/approval.dto.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export class RegisterApprovalDto</code></td><td>Enregistrement d'un agrément : l'opportunité, la date de réception, le montant couvert et/ou le nombre de places (au moins l'un des deux, vérifié par le domaine), la devise et la fin de validité (facultative).</td></tr>
+<tr><td><code>export class HonorApprovalDto</code></td><td>Honorer un agrément : la version lue.</td></tr>
+<tr><td><code>export class CloseApprovalDto</code></td><td>Déclarer un agrément expiré ou l'annuler : la version lue et le motif (obligatoire, vérifié par le domaine).</td></tr>
+<tr><td><code>export class ListApprovalsDto</code></td><td>Liste des agréments : pagination (taille ≤ 100), entreprise, opportunité, état.</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/presentation/dto/company-lifecycle.dto.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export const MANUAL_STATUSES = ['TARGET', 'CONTACTED', 'QUALIFIED'] as const;</code></td><td>Statuts qu'on peut poser à la main (les statuts « Cliente » et « Archivée » ne se posent pas ici).</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/presentation/dto/contact.dto.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export class RegisterContactDto</code></td><td>Création d'un contact : l'entreprise (identifiant), le nom et le prénom sont obligatoires.</td></tr>
+<tr><td><code>export class UpdateContactDto</code></td><td>Modification : <code>version</code> (celle qui a été lue) est obligatoire ; le reste est facultatif (absent = inchangé, vide = effacé).</td></tr>
+<tr><td><code>export class ListContactsDto</code></td><td>Paramètres de la liste : pagination (taille ≤ 100), recherche, entreprise, fonction.</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/presentation/dto/followup.dto.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export class PlanFollowupDto</code></td><td>Planification d'une relance : l'offre, l'échéance (AAAA-MM-JJ) et le canal ; la note est facultative.</td></tr>
+<tr><td><code>export class UpdateFollowupDto</code></td><td>Modification d'une relance à faire : <code>version</code> (celle qui a été lue) obligatoire ; le reste est facultatif (absent = inchangé).</td></tr>
+<tr><td><code>export class CloseFollowupDto</code></td><td>Terminer ou annuler une relance : la version lue et le texte (résultat ou motif), obligatoire.</td></tr>
+<tr><td><code>export class ListFollowupsDto</code></td><td>Paramètres de la liste : pagination (taille ≤ 100), offre, état, échéance.</td></tr>
 </tbody></table></div>
 <h3><code>modules/business-development/presentation/dto/list-companies.dto.ts</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
-<tr><td><code>export class ListCompaniesDto</code></td><td>Paramètres de requête de la liste (page, taille ≤ 100, recherche) validés avant d'atteindre le cas d'usage.</td></tr>
+<tr><td><code>export class ListCompaniesDto</code></td><td>Paramètres de requête de la liste (page, taille ≤ 100, recherche, filtres, tri) validés avant d'atteindre le cas d'usage.</td></tr>
+<tr><td><code>export class CompanyOverviewDto</code></td><td>Paramètres de la synthèse (compteurs par statut) : mêmes filtres que la liste, hors statut.</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/presentation/dto/offer.dto.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>const AMOUNT = /^\s*\d[\d\s]{0,15}([.,]\d{1,2})?\s*$/;</code></td><td>Montant en texte décimal (« 4500000 » ou « 4500000,50 ») : jamais de nombre flottant sur le réseau.</td></tr>
+<tr><td><code>export class RegisterOfferDto</code></td><td>Création d'une offre : entreprise, objet et montant obligatoires ; devise XAF par défaut.</td></tr>
+<tr><td><code>export class UpdateOfferDto</code></td><td>Modification d'un brouillon : <code>version</code> (celle qui a été lue) obligatoire ; le reste est facultatif (absent = inchangé).</td></tr>
+<tr><td><code>export class OfferTransitionDto</code></td><td>Changement d'état : la version lue ; le motif n'est lu que pour un retrait.</td></tr>
+<tr><td><code>export class ListOffersDto</code></td><td>Paramètres de la liste : pagination (taille ≤ 100), recherche, entreprise, état.</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/presentation/dto/opportunity.dto.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export class CreateOpportunityDto</code></td><td>Création : l'entreprise, l'intitulé, le montant estimé et la source ; la devise est facultative (XAF par défaut).</td></tr>
+<tr><td><code>export class UpdateOpportunityDto</code></td><td>Modification d'une opportunité ouverte : <code>version</code> (celle qui a été lue) obligatoire ; le reste est facultatif (absent = inchangé).</td></tr>
+<tr><td><code>export class AdvanceOpportunityDto</code></td><td>Avancer : seulement la version lue.</td></tr>
+<tr><td><code>export class WaiverDto</code></td><td>Dérogation : la version lue et la justification (obligatoire).</td></tr>
+<tr><td><code>export class CloseLostDto</code></td><td>Clôture « perdue » : la version lue, le motif de la liste fermée et une précision (obligatoire pour « autre »).</td></tr>
+<tr><td><code>export class CloseWonDto</code></td><td>Clôture « gagnée » : seulement la version lue.</td></tr>
+<tr><td><code>export class ListOpportunitiesDto</code></td><td>Paramètres de la liste : pagination (taille ≤ 200), recherche, entreprise, état, étape.</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/presentation/dto/receipt.dto.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export class RegisterReceiptDto</code></td><td>Enregistrement d'une décharge : l'offre, la date de réception (AAAA-MM-JJ) et la personne qui l'a remise.</td></tr>
+<tr><td><code>export class CancelReceiptDto</code></td><td>Annulation d'une décharge : la version lue et le motif (obligatoire).</td></tr>
+<tr><td><code>export class ListReceiptsDto</code></td><td>Liste des décharges d'une offre.</td></tr>
 </tbody></table></div>
 <h3><code>modules/business-development/presentation/dto/register-company.dto.ts</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
-<tr><td><code>export class RegisterCompanyDto</code></td><td>Corps de la requête d'enregistrement : nom obligatoire, secteur et pays facultatifs, longueurs bornées ; tout autre champ (notamment le propriétaire) est refusé.</td></tr>
+<tr><td><code>export class NewFacilitatorDto</code></td><td>Nouveau facilitateur saisi à la création de l'entreprise.</td></tr>
+<tr><td><code>export class CommissionDto</code></td><td>Commission : montant fixe (avec devise) ou pourcentage.</td></tr>
+<tr><td><code>export class FacilitationDto</code></td><td>Facilitateur par qui l'entreprise a été approchée : existant (identifiant) OU nouveau, plus la méthode de contact.</td></tr>
+<tr><td><code>export class UpdateFacilitationDto</code></td><td>Modification du lien avec le facilitateur : tout est facultatif (absent = inchangé), <code>commission: null</code> la retire.</td></tr>
+<tr><td><code>export class RegisterCompanyDto</code></td><td>Corps de la requête d'enregistrement : nom obligatoire, le reste facultatif, longueurs bornées ; tout autre champ (notamment le propriétaire) est refusé.</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/presentation/dto/update-company.dto.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export class UpdateCompanyDto</code></td><td>Corps de la modification d'une entreprise : <code>version</code> (celle que l'appelant a lue) est obligatoire, tout le reste est facultatif (absent = inchangé, chaîne vide = champ effacé) ; <code>facilitation: null</code> retire le facilitateur.</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/presentation/facilitators.controller.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export class FacilitatorsController</code></td><td>Facilitateurs : personnes qui mettent en relation avec une entreprise.</td></tr>
+<tr><td><code>register(@Body() dto: NewFacilitatorDto, @Access() access: AccessContext, @CurrentActor() actor: AuthenticatedActor, @Req() req: Request)</code></td><td>L'utilisateur qui crée le facilitateur en devient le propriétaire.</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/presentation/followups.controller.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export class FollowupsController</code></td><td>Relances des offres.</td></tr>
+<tr><td><code>list(@Query() query: ListFollowupsDto, @Access() access: AccessContext)</code></td><td>La liste « À faire » : triée par échéance, filtrable par offre, état et échéance (en retard, aujourd'hui, à venir).</td></tr>
+<tr><td><code>complete(@Param('id', ParseUUIDPipe) id: string, @Body() dto: CloseFollowupDto, @Access() access: AccessContext, @CurrentActor() actor: AuthenticatedA</code></td><td>Terminer la relance avec son résultat (obligatoire).</td></tr>
+<tr><td><code>cancel(@Param('id', ParseUUIDPipe) id: string, @Body() dto: CloseFollowupDto, @Access() access: AccessContext, @CurrentActor() actor: AuthenticatedAct</code></td><td>Annuler la relance avec un motif (obligatoire).</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/presentation/offers.controller.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export class OffersController</code></td><td>Offres faites aux entreprises.</td></tr>
+<tr><td><code>submit(@Param('id', ParseUUIDPipe) id: string, @Body() dto: OfferTransitionDto, @Access() access: AccessContext, @CurrentActor() actor: AuthenticatedA</code></td><td>Déposer le brouillon chez l'entreprise.</td></tr>
+<tr><td><code>accept(@Param('id', ParseUUIDPipe) id: string, @Body() dto: OfferTransitionDto, @Access() access: AccessContext, @CurrentActor() actor: AuthenticatedA</code></td><td>Enregistrer l'acceptation de l'entreprise.</td></tr>
+<tr><td><code>refuse(@Param('id', ParseUUIDPipe) id: string, @Body() dto: OfferTransitionDto, @Access() access: AccessContext, @CurrentActor() actor: AuthenticatedA</code></td><td>Enregistrer le refus de l'entreprise.</td></tr>
+<tr><td><code>withdraw(@Param('id', ParseUUIDPipe) id: string, @Body() dto: OfferTransitionDto, @Access() access: AccessContext, @CurrentActor() actor: Authenticate</code></td><td>Retirer l'offre (motif obligatoire).</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/presentation/opportunities.controller.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export class OpportunitiesController</code></td><td>Opportunités commerciales (pipeline).</td></tr>
+<tr><td><code>list(@Query() query: ListOpportunitiesDto, @Access() access: AccessContext)</code></td><td>Le pipeline : les opportunités visibles, la plus récemment modifiée d'abord ; filtrable par recherche, entreprise, état, étape.</td></tr>
+<tr><td><code>advance(@Param('id', ParseUUIDPipe) id: string, @Body() dto: AdvanceOpportunityDto, @Access() access: AccessContext, @CurrentActor() actor: Authentica</code></td><td>Passer à l'étape suivante (accord de principe : rendez-vous décideur tenu ou dérogation).</td></tr>
+<tr><td><code>waiver(@Param('id', ParseUUIDPipe) id: string, @Body() dto: WaiverDto, @Access() access: AccessContext, @CurrentActor() actor: AuthenticatedActor, @Re</code></td><td>Accorder la dérogation à la règle du rendez-vous décideur (Responsable commercial), avec une justification.</td></tr>
+<tr><td><code>closeLost(@Param('id', ParseUUIDPipe) id: string, @Body() dto: CloseLostDto, @Access() access: AccessContext, @CurrentActor() actor: AuthenticatedActo</code></td><td>Clore « perdue » avec un motif de la liste fermée (chargé de compte pour les siennes).</td></tr>
+<tr><td><code>closeWon(@Param('id', ParseUUIDPipe) id: string, @Body() dto: CloseWonDto, @Access() access: AccessContext, @CurrentActor() actor: AuthenticatedActor,</code></td><td>Clore « gagnée » (Responsable commercial seulement, après l'accord de principe).</td></tr>
+</tbody></table></div>
+<h3><code>modules/business-development/presentation/receipts.controller.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export class ReceiptsController</code></td><td>Décharges signées des offres.</td></tr>
+<tr><td><code>cancel(@Param('id', ParseUUIDPipe) id: string, @Body() dto: CancelReceiptDto, @Access() access: AccessContext, @CurrentActor() actor: AuthenticatedAct</code></td><td>Annuler la décharge (motif obligatoire) : l'offre redevient « déposée ».</td></tr>
 </tbody></table></div>
 <h3><code>modules/documents/application/document-use-cases.ts</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
@@ -957,14 +1503,14 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td><code>export interface RequestLike</code></td><td>Forme minimale d'une requête HTTP (sans dépendre d'Express) pour construire le contexte d'audit.</td></tr>
 <tr><td><code>export function actorContextFrom(req: RequestLike, identity: { userId: string | null; sessionId: string | null } = { userId: null, sessionId: null }</code></td><td>Qui agit, depuis où : IP et appareil de la requête (l'identité est ajoutée une fois l'utilisateur authentifié).</td></tr>
 </tbody></table></div>
-<h2>Interface web — pages (Next.js) — 44 déclarations commentées</h2>
+<h2>Interface web — pages (Next.js) — 53 déclarations commentées</h2>
 <h3><code>(app)/account/page.tsx</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
 <tr><td><code>export default function AccountPage()</code></td><td>Page « Mon compte » : profil, changement de mot de passe, nouveaux codes de secours et accès aux sessions et à l'historique des connexions de l'utilisateur connecté.</td></tr>
 <tr><td><code>function PasswordForm({ email }: { email: string })</code></td><td>Formulaire de changement de mot de passe : indications en direct, confirmation obligatoire, message d'erreur du serveur affiché tel quel.</td></tr>
 <tr><td><code>async function submit(event: FormEvent)</code></td><td>Envoie l'ancien et le nouveau mot de passe ; les champs sont vidés après succès (le serveur coupe les autres sessions).</td></tr>
-<tr><td><code>function RecoveryCodes()</code></td><td>Génère de nouveaux codes de secours (les anciens cessent de fonctionner) et les affiche une seule fois ; un code MFA récent est demandé si nécessaire.</td></tr>
-<tr><td><code>async function regenerate()</code></td><td>Appelle la régénération et garde les codes en mémoire uniquement, jusqu'à ce que l'utilisateur les masque.</td></tr>
+<tr><td><code>function RecoveryCodes()</code></td><td>Régénération des codes de secours : confirmation explicite d'abord (action irréversible), puis code MFA récent si nécessaire, puis affichage UNIQUE des nouveaux codes (copie, fichier, impression).</td></tr>
+<tr><td><code>async function regenerate()</code></td><td>Appelle la régénération et garde les codes en mémoire uniquement, jusqu'à ce que l'utilisateur ait terminé.</td></tr>
 <tr><td><code>function SessionsLink()</code></td><td>Lien vers la page « Sessions et connexions » (sessions actives, révocation, historique des connexions).</td></tr>
 </tbody></table></div>
 <h3><code>(app)/account/sessions/page.tsx</code></h3>
@@ -979,25 +1525,49 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td><code>async function run(action: () =&gt; Promise&lt;unknown&gt;, success: string)</code></td><td>Exécute une action d'administration, affiche son résultat (succès ou message du serveur), ferme la fenêtre et recharge la liste.</td></tr>
 <tr><td><code>function confirmAction(user: UserView, action: 'disable' | 'enable' | 'resetMfa' | 'revokeSessions' | 'resend' | 'resetPassword')</code></td><td>Associe chaque action de confirmation à son appel d'API et à son message de succès.</td></tr>
 <tr><td><code>function rowActions(user: UserView)</code></td><td>Actions possibles sur un compte, selon les droits de l'utilisateur connecté (le serveur re-contrôle tout).</td></tr>
-<tr><td><code>function RoleChoices({ roles, selected, onToggle }: { roles: RoleView[]; selected: string[]; onToggle: (code: string) =&gt; void })</code></td><td>Cases à cocher des rôles, avec leur description.</td></tr>
-<tr><td><code>function toggle(list: string[], code: string): string[]</code></td><td>Ajoute le code à la liste s'il n'y est pas, le retire sinon (sans modifier la liste d'origine).</td></tr>
 <tr><td><code>function InviteDialog({ roles, managers, onClose, onSubmit }:</code></td><td>Fenêtre d'invitation : adresse, nom, rôles et responsable facultatif.</td></tr>
 <tr><td><code>async function submit(event: FormEvent)</code></td><td>Envoie l'invitation avec les rôles cochés (au moins un).</td></tr>
-<tr><td><code>function RolesDialog({ user, roles, onClose, onSubmit }:</code></td><td>Fenêtre de modification des rôles d'un utilisateur ; le changement s'applique immédiatement, y compris aux sessions ouvertes.</td></tr>
+<tr><td><code>function RolesDialog({ user, roles, isSelf, onClose, onSubmit }:</code></td><td>Fenêtre de modification des rôles d'un utilisateur ; le changement s'applique immédiatement, y compris aux sessions ouvertes.</td></tr>
+</tbody></table></div>
+<h3><code>(app)/agenda/page.tsx</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export default function AgendaPage()</code></td><td>L'agenda : rendez-vous et visites visibles selon la portée de l'utilisateur, en vue jour, semaine ou mois.</td></tr>
+<tr><td><code>function AppointmentButton({ appointment: a, compact, onOpen }: { appointment: Appointment; compact?: boolean; onOpen: (a: Appointment) =&gt; void })</code></td><td>Un rendez-vous dans une liste : heure, type, entreprise, état ; ouvre sa fiche.</td></tr>
+<tr><td><code>function DaySection({ day, items, today, onOpen }: { day: string; items: Appointment[]; today: string; onOpen: (a: Appointment) =&gt; void })</code></td><td>Un jour d'une vue jour ou semaine.</td></tr>
+<tr><td><code>function MonthGrid({ anchor, days, byDay, today, title, onOpen, onDay }:</code></td><td>Grille du mois : une ligne par semaine (du lundi au dimanche), les rendez-vous du jour en liste compacte.</td></tr>
 </tbody></table></div>
 <h3><code>(app)/companies/[id]/page.tsx</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
 <tr><td><code>export default function CompanyPage()</code></td><td>Fiche d'une entreprise (version minimale de S3.6) : identité de l'entreprise et ses documents.</td></tr>
+<tr><td><code>async function exportSheet()</code></td><td>Exporte la fiche : le serveur contrôle la portée et trace l'export ; le navigateur propose l'enregistrement en PDF.</td></tr>
 </tbody></table></div>
 <h3><code>(app)/companies/page.tsx</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
-<tr><td><code>export default function CompaniesPage()</code></td><td>Entreprises visibles selon la portée de l'utilisateur : tableau du design (recherche, pagination, sélection persistante) et création d'une entreprise dans une fenêtre (si le droit existe).</td></tr>
-<tr><td><code>function CreateCompanyDialog({ onClose, onCreated }: { onClose: () =&gt; void; onCreated: () =&gt; Promise&lt;void&gt; })</code></td><td>Fenêtre de création : le nom est la seule donnée obligatoire (le propriétaire est l'utilisateur connecté, décidé côté serveur).</td></tr>
-<tr><td><code>async function submit(event: FormEvent)</code></td><td>Enregistre l'entreprise saisie ; en cas d'échec le message de l'API s'affiche dans la fenêtre.</td></tr>
+<tr><td><code>export default function CompaniesPage()</code></td><td>Entreprises visibles selon la portée de l'utilisateur : tableau du design avec recherche, filtres (statut avec effectifs, pays, secteur), tri par colonne, colonnes au choix, pagination et sélection persistante ; création dans une fenêtre (si le droit existe).</td></tr>
+<tr><td><code>function FilterSelect({ label, value, options, onChange }: { label: string; value: string; options: string[]; onChange: (value: string) =&gt; void })</code></td><td>Liste déroulante d'un filtre (valeurs réellement présentes dans la portée de l'utilisateur).</td></tr>
+<tr><td><code>function ColumnsMenu({ visible, onToggle }: { visible: readonly CompanyColumnId[]; onToggle: (id: CompanyColumnId) =&gt; void })</code></td><td>Menu « Colonnes » : une case par colonne ; la colonne du nom est toujours affichée.</td></tr>
+</tbody></table></div>
+<h3><code>(app)/contacts/page.tsx</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export default function ContactsPage()</code></td><td>Contacts visibles selon la portée de l'utilisateur (celle de leur entreprise) : recherche, filtre par fonction, pagination, sélection persistante, création dans une fenêtre (l'entreprise se choisit parmi celles de sa portée).</td></tr>
+</tbody></table></div>
+<h3><code>(app)/followups/page.tsx</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export default function FollowupsPage()</code></td><td>La page « Relances » : la liste « À faire » des offres visibles selon la portée de l'utilisateur, triée par échéance.</td></tr>
 </tbody></table></div>
 <h3><code>(app)/layout.tsx</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
 <tr><td><code>export default function AppLayout({ children }: { children: ReactNode })</code></td><td>Cadre de toutes les pages connectées : n'affiche rien tant que l'utilisateur n'est pas authentifié avec son second facteur, puis place la page dans la coque (navigation, barre supérieure, panneau principal centré).</td></tr>
+</tbody></table></div>
+<h3><code>(app)/offers/page.tsx</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>const STATUS_OPTIONS = [{ value: '', label: 'Toutes' }, ...Object.entries(OFFER_STATUS).map(([value, style]) =&gt; ({ value, label: style.label }))];</code></td><td>Filtre par état : « Toutes » puis chaque état de l'offre.</td></tr>
+<tr><td><code>export default function OffersPage()</code></td><td>Offres visibles selon la portée de l'utilisateur (celle de leur entreprise) : recherche, filtre par état, pagination, sélection persistante, et le cycle d'une offre (créer, modifier, déposer, réponse du client, retirer) depuis le menu d'une ligne.</td></tr>
+</tbody></table></div>
+<h3><code>(app)/opportunities/page.tsx</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export default function OpportunitiesPage()</code></td><td>Le pipeline commercial : cartes par lignes de six, ou colonnes par étape (bascule), selon la portée de l'utilisateur.</td></tr>
+<tr><td><code>function OpportunityCard({ opportunity: o, rights, onAction, compact }: { opportunity: Opportunity; rights: OpportunityRights; onAction: (a: Opportuni</code></td><td>Une opportunité en carte : intitulé (ouvre la fiche), entreprise, montant, étape, dernière activité, menu d'actions.</td></tr>
 </tbody></table></div>
 <h3><code>(app)/page.tsx</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
@@ -1041,7 +1611,15 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td><code>export default function ResetPasswordPage()</code></td><td>Page ouverte depuis le lien reçu par e-mail (A10 à A12).</td></tr>
 <tr><td><code>async function submit(event: FormEvent)</code></td><td>Envoie le jeton et le nouveau mot de passe ; le serveur coupe toutes les sessions, l'utilisateur doit se reconnecter avec son second facteur.</td></tr>
 </tbody></table></div>
-<h2>Interface web — composants — 48 déclarations commentées</h2>
+<h2>Interface web — composants — 103 déclarations commentées</h2>
+<h3><code>admin/rights-preview.tsx</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export function RightsPreview({ roles, selected }: { roles: RoleView[]; selected: string[] })</code></td><td>Aperçu en LECTURE SEULE des droits qu'obtiendra la personne avec les rôles cochés, regroupés par module (EXD-14).</td></tr>
+</tbody></table></div>
+<h3><code>admin/role-picker.tsx</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export function RolePicker({ roles, selected, onChange, original, locked }:</code></td><td>Choix des rôles d'un utilisateur (EXD-14) : les rôles sont rangés par FAMILLE, chacun est une carte entièrement cliquable, un compteur annoncé dit combien de rôles et de permissions sont choisis, « Tout désélectionner » vide la sélection, et l'aperçu des droits effectifs (par module) se met à jour à chaque choix.</td></tr>
+</tbody></table></div>
 <h3><code>app-shell.tsx</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
 <tr><td><code>export const FOCUS_SEARCH_EVENT = 'investally:focus-search';</code></td><td>Événement envoyé au hub pour mettre le focus dans la recherche globale (raccourci Ctrl/⌘ K, bouton de la barre).</td></tr>
@@ -1049,6 +1627,34 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td><code>const openSearch = useCallback(()</code></td><td>Va à la recherche globale du hub (ou y met le focus si l'on y est déjà).</td></tr>
 <tr><td><code>function ShellLink({ href, icon, label, current, railOnly, centered, rail }: { href: string; icon: IconName; label: string; current: boolean; railOnly</code></td><td>Lien de navigation : pictogramme + libellé (le libellé reste lu par les lecteurs d'écran quand le rail est replié).</td></tr>
 <tr><td><code>function ThemeToggle()</code></td><td>Bascule clair / sombre (le choix est mémorisé ; sans choix, l'application suit le réglage de l'appareil).</td></tr>
+</tbody></table></div>
+<h3><code>appointments/appointment-dialogs.tsx</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export interface PlanDefaults</code></td><td>Valeurs imposées à la planification (depuis une entreprise ou une offre) ; l'entreprise imposée n'est pas modifiable.</td></tr>
+<tr><td><code>export type AppointmentDialogState</code></td><td>Fenêtre ouverte sur un rendez-vous, ou pour en planifier un.</td></tr>
+<tr><td><code>export function AppointmentDialogs({ dialog, rights, onOpen, onClose, onDone }:</code></td><td>Toutes les fenêtres du cycle d'un rendez-vous (fiche, planifier, modifier, reporter, tenir, annuler), rendues UNE fois par l'écran hôte.</td></tr>
+<tr><td><code>function ConflictNotice({ appointment, onClose }: { appointment: Appointment; onClose: () =&gt; void })</code></td><td>Avertissement de conflit d'horaire : le rendez-vous est enregistré, mais l'organisateur en a un autre sur le même créneau.</td></tr>
+<tr><td><code>function DetailDialog({ appointment: a, rights, onOpen, onClose }: { appointment: Appointment; rights: AgendaRights; onOpen: (d: AppointmentDialogStat</code></td><td>Fiche d'un rendez-vous : tous ses éléments, et les actions possibles selon son état et les droits.</td></tr>
+<tr><td><code>function AppointmentFormDialog({ appointment, defaults, rights, onClose, onDone }:</code></td><td>Planification (entreprise imposée ou choisie dans la portée) et modification d'un rendez-vous à venir.</td></tr>
+<tr><td><code>function PostponeDialog({ appointment, onClose, onDone }: { appointment: Appointment; onClose: () =&gt; void; onDone: (saved?: Appointment) =&gt; Promise&lt;vo</code></td><td>Report : nouvelle date et heure (dans le futur) et motif obligatoire.</td></tr>
+<tr><td><code>function ClosingDialog({ appointment, closing, onClose, onDone }: { appointment: Appointment; closing: 'hold' | 'cancel'; onClose: () =&gt; void; onDone</code></td><td>Marquer tenu (compte rendu obligatoire) ou annuler (motif obligatoire) un rendez-vous à venir.</td></tr>
+</tbody></table></div>
+<h3><code>appointments/appointments-panel.tsx</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>const SPAN_DAYS = 60;</code></td><td>Fenêtre de lecture : le serveur borne une recherche à 63 jours ; on lit donc deux fenêtres de 60 jours, avant et après aujourd'hui.</td></tr>
+<tr><td><code>export function AppointmentsPanel({ company }: { company: { id: string; name: string } })</code></td><td>Rendez-vous d'une entreprise, dans sa fiche (vue 360°) : lecture seule, les 60 derniers et les 60 prochains jours.</td></tr>
+</tbody></table></div>
+<h3><code>approvals/approval-dialogs.tsx</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export type ApprovalDialogState</code></td><td>Fenêtre ouverte sur un agrément, ou pour en enregistrer un.</td></tr>
+<tr><td><code>export function ApprovalDialogs({ dialog, onClose, onDone }: { dialog: ApprovalDialogState | null; onClose: () =&gt; void; onDone: () =&gt; Promise&lt;void&gt; }</code></td><td>Toutes les fenêtres du cycle d'un agrément, rendues UNE fois par le panneau hôte, hors du tableau.</td></tr>
+<tr><td><code>function DocumentDialog({ approval, onClose }: { approval: Approval; onClose: () =&gt; void })</code></td><td>Le document signé de l'agrément : consultation (liste, téléchargement) et ajout si l'envoi initial a échoué.</td></tr>
+<tr><td><code>function RegisterApprovalDialog({ company, onClose, onDone }: { company: { id: string; name: string }; onClose: () =&gt; void; onDone: () =&gt; Promise&lt;void</code></td><td>Enregistrement d'un agrément : l'opportunité (accord de principe obtenu), le montant et/ou les places, la devise, les dates et le document signé.</td></tr>
+<tr><td><code>function CloseApprovalDialog({ approval, action, onClose, onDone }: { approval: Approval; action: ApprovalAction; onClose: () =&gt; void; onDone: () =&gt; P</code></td><td>Honorer (confirmation), déclarer expiré ou annuler (motif obligatoire) un agrément reçu.</td></tr>
+</tbody></table></div>
+<h3><code>approvals/approvals-panel.tsx</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export function ApprovalsPanel({ company, archived, onChanged }: { company: { id: string; name: string }; archived: boolean; onChanged: () =&gt; Promise&lt;</code></td><td>Agréments d'une entreprise, dans sa fiche : liste, enregistrement (opportunité à l'accord de principe, document signé), document, honorer, déclarer expiré, annuler.</td></tr>
 </tbody></table></div>
 <h3><code>auth/auth-layout.tsx</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
@@ -1067,6 +1673,43 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
 <tr><td><code>export function OtpInput({ label, value, onChange, disabled = false, autoFocus = false }:</code></td><td>Saisie du code à 6 chiffres en six cases (EXD-06, DDR-0009).</td></tr>
 </tbody></table></div>
+<h3><code>auth/password-field.tsx</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export function PasswordField({ label, value, onChange, autoComplete, autoFocus, invalid, required = true }:</code></td><td>Champ mot de passe avec bouton « œil » (EXD-12).</td></tr>
+</tbody></table></div>
+<h3><code>auth/secret-codes-panel.tsx</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export function SecretCodesPanel({ codes, saved, onSavedChange }: { codes: string[]; saved: boolean; onSavedChange: (saved: boolean) =&gt; void })</code></td><td>Codes de secours affichés UNE SEULE FOIS (EXD-13), avec copie, fichier texte et impression (« Enregistrer au format PDF »).</td></tr>
+<tr><td><code>function print()</code></td><td>Imprime uniquement le bloc des codes (feuille de style d'impression) ; « Enregistrer au format PDF » produit le PDF.</td></tr>
+</tbody></table></div>
+<h3><code>companies/company-dialog.tsx</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>function Field({ name, label, error, children }: { name: FieldName; label: string; error?: string; children: ReactNode })</code></td><td>Champ de formulaire : libellé relié, puis le contrôle, puis le message d'erreur écrit sous le champ.</td></tr>
+<tr><td><code>export function CompanyDialog({ company, onClose, onDone }: { company?: Company; onClose: () =&gt; void; onDone: () =&gt; Promise&lt;void&gt; })</code></td><td>Fenêtre de création OU de modification d'une entreprise (<code>company</code> fourni = modification, préremplie) : coordonnées, puis « mise en relation » (facilitateur existant ou nouveau, méthode de contact, commission).</td></tr>
+<tr><td><code>const field = (key: FieldName) =&gt; ({ id: </code>company-${key}<code>, 'aria-invalid': errors[key] ? (true as const) : undefined, 'aria-describedby': errors[key] </code></td><td>Attributs d'un champ : état non conforme annoncé et relié à son message.</td></tr>
+<tr><td><code>async function submit(event: FormEvent)</code></td><td>Enregistre l'entreprise saisie ; en cas d'échec le message de l'API s'affiche dans la fenêtre.</td></tr>
+</tbody></table></div>
+<h3><code>companies/company-lifecycle-dialogs.tsx</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export function CompanyStatusDialog({ company, action, onClose, onDone }: { company: Company; action: StatusAction; onClose: () =&gt; void; onDone: () =&gt;</code></td><td>Changement de statut d'une entreprise (CU-C-05) : confirmation ; le serveur refuse « Qualifiée » sans contact.</td></tr>
+<tr><td><code>export function CompanyOwnerDialog({ company, onClose, onDone }: { company: Company; onClose: () =&gt; void; onDone: () =&gt; Promise&lt;void&gt; })</code></td><td>Changement de responsable (D17) : le choix se limite aux personnes de la portée de l'utilisateur (liste du serveur) et une confirmation explicite précède l'enregistrement, car la portée des droits sur l'entreprise, ses opportunités, offres et rendez-vous suit son responsable.</td></tr>
+</tbody></table></div>
+<h3><code>companies/facilitation-panel.tsx</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export function FacilitationPanel({ facilitation }: { facilitation: Facilitation | null | undefined })</code></td><td>Bloc « Mise en relation » de la fiche entreprise.</td></tr>
+</tbody></table></div>
+<h3><code>confirm-dialog.tsx</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export function ConfirmDialog({ title, confirmLabel, cancelLabel = 'Annuler', busy = false, onConfirm, onCancel, children }:</code></td><td>Fenêtre de confirmation d'une action irréversible (EXD-13).</td></tr>
+</tbody></table></div>
+<h3><code>contacts/contact-dialog.tsx</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export function ContactDialog({ contact, company, onClose, onDone }:</code></td><td>Fenêtre de création OU de modification d'un contact (<code>contact</code> fourni = modification, préremplie).</td></tr>
+</tbody></table></div>
+<h3><code>contacts/contacts-panel.tsx</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export function ContactsPanel({ company }: { company: { id: string; name: string } })</code></td><td>Contacts d'une entreprise, dans sa fiche : liste, création, modification, suppression (avec confirmation).</td></tr>
+</tbody></table></div>
 <h3><code>data/badge.tsx</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
 <tr><td><code>export type Tone = 'ok' | 'warn' | 'bad' | 'info' | 'neutral';</code></td><td>Teinte d'un badge : le sens est porté par le TEXTE et le point, jamais par la couleur seule (WCAG 1.4.1).</td></tr>
@@ -1079,6 +1722,7 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <h3><code>data/data-table.tsx</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
 <tr><td><code>export interface Column&lt;T&gt;</code></td><td>Colonne d'un tableau : en-tête, rendu de la cellule, alignement.</td></tr>
+<tr><td><code>export interface TableSort</code></td><td>Tri courant d'un tableau et son gestionnaire (le tri est fait par le serveur, sur toutes les pages).</td></tr>
 <tr><td><code>export interface TableSelection</code></td><td>Sélection persistante d'un tableau : l'ensemble des identifiants et son gestionnaire.</td></tr>
 <tr><td><code>const INTERACTIVE = 'button, a, input, label, select, textarea, summary, [role="button"], [role="menuitem"]';</code></td><td>Éléments sur lesquels un clic ne doit PAS basculer la sélection de la ligne.</td></tr>
 <tr><td><code>export function DataTable&lt;T&gt;(</code></td><td>Tableau de données du design.</td></tr>
@@ -1125,6 +1769,18 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td><code>async function submit(event: FormEvent)</code></td><td>Envoie le fichier en corps binaire ; le message du serveur s'affiche tel quel en cas de refus.</td></tr>
 <tr><td><code>function HistoryDialog({ document, canDownload, onClose, onError }: { document: DocumentView; canDownload: boolean; onClose: () =&gt; void; onError: (mes</code></td><td>Historique des versions d'un document : chaque version reste téléchargeable, avec son empreinte SHA-256.</td></tr>
 </tbody></table></div>
+<h3><code>followups/followup-dialogs.tsx</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export type FollowupDialogState</code></td><td>Fenêtre ouverte sur une relance, ou pour en planifier une (éventuellement sur une offre imposée).</td></tr>
+<tr><td><code>export function FollowupDialogs({ dialog, onClose, onDone }: { dialog: FollowupDialogState | null; onClose: () =&gt; void; onDone: () =&gt; Promise&lt;void&gt; }</code></td><td>Toutes les fenêtres du cycle d'une relance (planifier, modifier, terminer, annuler), rendues UNE fois par l'écran hôte, hors des lignes d'un tableau (un clic dans une fenêtre ne doit pas basculer la sélection d'une ligne).</td></tr>
+<tr><td><code>function FollowupFormDialog({ followup, offer, onClose, onDone }:</code></td><td>Planification (offre imposée, ou choisie parmi les offres en cours de sa portée) et modification d'une relance à faire.</td></tr>
+<tr><td><code>function ClosingDialog({ followup, closing, onClose, onDone }: { followup: Followup; closing: 'complete' | 'cancel'; onClose: () =&gt; void; onDone: () </code></td><td>Terminer (résultat obligatoire) ou annuler (motif obligatoire) une relance à faire.</td></tr>
+</tbody></table></div>
+<h3><code>form-field.tsx</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export function fieldProps(prefix: string, name: string, error?: string)</code></td><td>Attributs d'un contrôle de formulaire : identifiant, état non conforme annoncé et relié à son message d'erreur.</td></tr>
+<tr><td><code>export function FormField({ prefix, name, label, error, children }: { prefix: string; name: string; label: string; error?: string; children: ReactNode</code></td><td>Champ de formulaire : libellé relié, contrôle, puis message d'erreur écrit sous le champ (avec pictogramme : la couleur ne porte jamais seule l'état, EXD-16).</td></tr>
+</tbody></table></div>
 <h3><code>gate.tsx</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
 <tr><td><code>export function Gate({ allow, children }: { allow: readonly Exclude&lt;AuthStatus, 'loading'&gt;[]; children: ReactNode })</code></td><td>Laisse passer uniquement les états attendus ; sinon redirige vers l'écran qui correspond à l'état réel.</td></tr>
@@ -1142,7 +1798,45 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 </tbody></table></div>
 <h3><code>modal.tsx</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
-<tr><td><code>export function Modal({ title, onClose, children }: { title: string; onClose: () =&gt; void; children: ReactNode })</code></td><td>Fenêtre modale accessible : Échap ferme, le focus entre dans la fenêtre, le fond est rendu inerte (<code>inert</code>), Tab reste dans la fenêtre et le focus revient à l'élément d'origine à la fermeture.</td></tr>
+<tr><td><code>export function Modal({ title, onClose, children, size = 'default' }: { title: string; onClose: () =&gt; void; children: ReactNode; size?: 'default' | '</code></td><td>Fenêtre modale accessible : Échap ferme, le focus entre dans la fenêtre, le fond est rendu inerte (<code>inert</code>), Tab reste dans la fenêtre et le focus revient à l'élément d'origine à la fermeture.</td></tr>
+</tbody></table></div>
+<h3><code>offers/offer-dialog.tsx</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export function OfferDialog({ offer, company, onClose, onDone }:</code></td><td>Fenêtre de création OU de modification d'une offre (<code>offer</code> fourni = modification d'un brouillon, préremplie).</td></tr>
+</tbody></table></div>
+<h3><code>offers/offer-dialogs.tsx</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export type OfferDialogState</code></td><td>Fenêtre ouverte sur une offre ou pour en créer une.</td></tr>
+<tr><td><code>export function OfferDialogs({ dialog, onClose, onDone, onRefresh }:</code></td><td>Toutes les fenêtres du cycle d'une offre (créer, modifier, déposer, accepter, refuser, retirer), rendues UNE fois par l'écran hôte, hors des lignes d'un tableau (un clic dans une fenêtre ne doit pas basculer la sélection d'une ligne).</td></tr>
+<tr><td><code>function OfferDocumentsDialog({ offer, onClose }: { offer: Offer; onClose: () =&gt; void })</code></td><td>Documents d'une offre (par exemple le fichier envoyé au client) : le panneau des documents, dans une fenêtre.</td></tr>
+</tbody></table></div>
+<h3><code>offers/offer-row-actions.tsx</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export function useOfferRights(): OfferRights &amp; { create: boolean }</code></td><td>Droits de l'utilisateur sur les offres, pour <code>availableActions</code> (le serveur re-contrôle chaque requête).</td></tr>
+<tr><td><code>export type OfferDialogAction = Exclude&lt;OfferAction, 'followups' | 'appointment'&gt;;</code></td><td>Actions qui ouvrent une fenêtre (toutes sauf « Relances » et « Planifier un rendez-vous », qui ouvrent une autre page).</td></tr>
+</tbody></table></div>
+<h3><code>offers/offers-panel.tsx</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export function OffersPanel({ company, archived }: { company: { id: string; name: string }; archived: boolean })</code></td><td>Offres d'une entreprise, dans sa fiche : liste, création, modification d'un brouillon, dépôt, réponse du client, retrait.</td></tr>
+</tbody></table></div>
+<h3><code>offers/receipt-dialog.tsx</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export function ReceiptDialog({ offer, onClose, onChanged }: { offer: Offer; onClose: () =&gt; void; onChanged: () =&gt; Promise&lt;void&gt; })</code></td><td>Décharge signée d'une offre : consulter (avec son fichier), enregistrer (offre déposée) ou annuler (motif obligatoire).</td></tr>
+</tbody></table></div>
+<h3><code>opportunities/opportunities-panel.tsx</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export function OpportunitiesPanel({ company }: { company: { id: string; name: string } })</code></td><td>Opportunités d'une entreprise, dans sa fiche (vue 360°) : lecture seule.</td></tr>
+</tbody></table></div>
+<h3><code>opportunities/opportunity-dialogs.tsx</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export type OpportunityDialogState</code></td><td>Fenêtre ouverte sur une opportunité, ou pour en créer une (éventuellement pour une entreprise imposée).</td></tr>
+<tr><td><code>export function OpportunityDialogs({ dialog, rights, onOpen, onClose, onDone }:</code></td><td>Toutes les fenêtres du cycle d'une opportunité (fiche, créer, modifier, avancer, dérogation, clôtures), rendues UNE fois par l'écran hôte, hors des cartes (un clic dans une fenêtre ne doit pas déclencher une carte).</td></tr>
+<tr><td><code>function DetailDialog({ opportunity: o, rights, onOpen, onClose }: { opportunity: Opportunity; rights: OpportunityRights; onOpen: (d: OpportunityDialo</code></td><td>Fiche : tous les éléments de l'opportunité et les actions possibles selon son état et les droits.</td></tr>
+<tr><td><code>function OpportunityFormDialog({ opportunity, company, onClose, onDone }:</code></td><td>Création (entreprise imposée, ou choisie dans la portée) et modification d'une opportunité ouverte.</td></tr>
+<tr><td><code>function AdvanceDialog({ opportunity, rights, onOpen, onClose, onDone }:</code></td><td>Confirmation d'un passage d'étape ; un refus de la règle du rendez-vous décideur renvoie vers la dérogation.</td></tr>
+<tr><td><code>function WaiverDialog({ opportunity, onClose, onDone }: { opportunity: Opportunity; onClose: () =&gt; void; onDone: () =&gt; Promise&lt;void&gt; })</code></td><td>Dérogation à la règle du rendez-vous décideur : justification obligatoire.</td></tr>
+<tr><td><code>function CloseLostDialog({ opportunity, onClose, onDone }: { opportunity: Opportunity; onClose: () =&gt; void; onDone: () =&gt; Promise&lt;void&gt; })</code></td><td>Clôture « perdue » : motif de la liste fermée, précision obligatoire pour « autre ».</td></tr>
+<tr><td><code>function CloseWonDialog({ opportunity, onClose, onDone }: { opportunity: Opportunity; onClose: () =&gt; void; onDone: () =&gt; Promise&lt;void&gt; })</code></td><td>Clôture « gagnée » (Responsable commercial, après l'accord de principe) : confirmation.</td></tr>
 </tbody></table></div>
 <h3><code>page-heading.tsx</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
@@ -1153,7 +1847,7 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td><code>export function StepUpDialog({ onDone }: { onDone: (ok: boolean) =&gt; void })</code></td><td>Demande un code frais du second facteur avant une action sensible (modification de rôles, désactivation, etc.).</td></tr>
 <tr><td><code>async function submit(event: FormEvent)</code></td><td>Vérifie le code ; en cas de succès le nouveau jeton remplace l'ancien et l'action sensible est rejouée.</td></tr>
 </tbody></table></div>
-<h2>Interface web — bibliothèque — 77 déclarations commentées</h2>
+<h2>Interface web — bibliothèque — 205 déclarations commentées</h2>
 <h3><code>api.ts</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
 <tr><td><code>export class ApiError extends Error</code></td><td>Erreur renvoyée par l'API : statut HTTP, code stable (<code>FORBIDDEN</code>, <code>MFA_REQUIRED</code>…) et message lisible.</td></tr>
@@ -1171,6 +1865,43 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td><code>async function send(path: string, options: RequestOptions): Promise&lt;Response&gt;</code></td><td>Envoie une requête vers <code>/api/v1</code> avec le jeton en en-tête (jamais dans l'URL) et sans mise en cache.</td></tr>
 <tr><td><code>function isTokenRejected(res: Response): boolean</code></td><td>Vrai si l'API accuse le jeton (<code>WWW-Authenticate: invalid_token</code>) : seul cas où un rafraîchissement automatique est justifié.</td></tr>
 <tr><td><code>export async function api&lt;T = unknown&gt;(path: string, options: RequestOptions = {}): Promise&lt;T&gt;</code></td><td>Appel d'API de toute l'interface : rafraîchit le jeton une fois si le jeton est refusé, demande un code MFA et rejoue une fois si l'action est sensible, sinon remonte l'erreur lisible.</td></tr>
+</tbody></table></div>
+<h3><code>appointments.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export const APPOINTMENT_TYPES = [</code></td><td>Types de rendez-vous (codes de l'API → libellés).</td></tr>
+<tr><td><code>export const DEFAULT_APPOINTMENT_MINUTES = 60;</code></td><td>Durée proposée, minimale et maximale, en minutes (valeurs proposées, à confirmer ; les mêmes que le serveur).</td></tr>
+<tr><td><code>export interface AgendaRights</code></td><td>Droits de l'utilisateur sur l'agenda, tels que le profil les annonce (le serveur re-contrôle tout).</td></tr>
+<tr><td><code>export interface AppointmentForm</code></td><td>Ce que l'utilisateur saisit pour planifier ou modifier un rendez-vous (date et heure en heure locale).</td></tr>
+<tr><td><code>export const localDay = (iso: string | Date): string</code></td><td>Jour local « AAAA-MM-JJ » d'un instant.</td></tr>
+<tr><td><code>export const localTime = (iso: string | Date): string</code></td><td>Heure locale « hh:mm » d'un instant.</td></tr>
+<tr><td><code>export function toInstant(date: string, time: string): string | null</code></td><td>Instant (ISO) d'un jour et d'une heure LOCAUX saisis ; <code>null</code> si l'un ou l'autre est illisible.</td></tr>
+<tr><td><code>export const startOfLocalDay = (day: string): string =&gt; new Date(</code>${day}T00:00:00<code>).toISOString();</code></td><td>Premier instant (ISO) d'un jour local.</td></tr>
+<tr><td><code>export function validateAppointmentFields(form: AppointmentForm, context: { now: Date; editing: boolean }): AppointmentErrors</code></td><td>Contrôles de saisie rapides, champ par champ (le serveur refait tous les contrôles) : type connu, entreprise choisie, date et heure réelles et dans le futur (à la planification seulement), durée entière de 15 minutes à 8 heures, lieu de 200 caractères et note de 500 au plus.</td></tr>
+<tr><td><code>export function buildAppointmentBody(form: AppointmentForm, options: { version?: number } = {}): Record&lt;string, unknown&gt;</code></td><td>Corps de la planification (type, entreprise, heure ; contact, offre, lieu et note seulement s'ils sont renseignés) ou de la modification (la version lue, jamais le type, l'entreprise ni l'heure : un changement d'heure est un report).</td></tr>
+<tr><td><code>export function appointmentActions(appointment: Pick&lt;Appointment, 'status' | 'type' | 'startsAt'&gt;, rights: AgendaRights, now: Date = new Date()): Ap</code></td><td>Actions proposées : seulement sur un rendez-vous À VENIR, selon les droits de l'utilisateur pour ce type (une visite relève du droit « visite », son annulation de la modification), et « tenu » seulement une fois l'heure de début venue (le serveur re-contrôle tout).</td></tr>
+<tr><td><code>export const canPlan = (type: string, rights: AgendaRights): boolean =&gt; (type === 'VISIT' ? rights.visitCreate : rights.create);</code></td><td>Vrai si l'utilisateur peut planifier ce type de rendez-vous.</td></tr>
+<tr><td><code>export const plannableTypes = (rights: AgendaRights) =&gt; APPOINTMENT_TYPES.filter((t) =&gt; canPlan(t.value, rights));</code></td><td>Types que l'utilisateur peut planifier.</td></tr>
+<tr><td><code>export const timeRange = (a: Pick&lt;Appointment, 'startsAt' | 'endsAt'&gt;): string =&gt; </code>${localTime(a.startsAt)} – ${localTime(a.endsAt)}<code>;</code></td><td>Heure de début et durée d'un rendez-vous, lisibles (« 09:00 – 10:00 »).</td></tr>
+<tr><td><code>const weekdayIndex = (day: string): number =&gt; (new Date(</code>${day}T00:00:00Z<code>).getUTCDay() + 6) % 7;</code></td><td>Jour de la semaine (0 = lundi … 6 = dimanche) d'un jour « AAAA-MM-JJ ».</td></tr>
+<tr><td><code>function shiftMonth(day: string, months: number): string</code></td><td>Le premier du mois qui suit ou précède <code>day</code> de <code>months</code> mois.</td></tr>
+<tr><td><code>export const mondayOf = (day: string): string =&gt; addDays(day, -weekdayIndex(day));</code></td><td>Lundi de la semaine qui contient <code>day</code>.</td></tr>
+<tr><td><code>export function agendaWindow(mode: AgendaMode, anchor: string): AgendaWindow</code></td><td>Fenêtre d'une vue autour d'un jour : un jour, la semaine du lundi au dimanche, ou la grille du mois (4 à 6 semaines).</td></tr>
+<tr><td><code>export function shiftAnchor(mode: AgendaMode, anchor: string, direction: -1 | 1): string</code></td><td>Jour d'ancrage de la vue précédente (<code>-1</code>) ou suivante (<code>1</code>) : un jour, une semaine, ou un mois (même jour, borné au mois).</td></tr>
+<tr><td><code>export function agendaTitle(mode: AgendaMode, anchor: string): string</code></td><td>Titre de la vue : « lundi 9 novembre 2026 », « Semaine du 9 au 15 novembre 2026 », « novembre 2026 ».</td></tr>
+<tr><td><code>export const dayHeading = (day: string): string =&gt; longDay(day, { weekday: 'long', day: 'numeric', month: 'long' });</code></td><td>Libellé d'un jour pour un titre de section (« lundi 9 novembre »).</td></tr>
+<tr><td><code>export function groupByDay(items: readonly Appointment[]): Map&lt;string, Appointment[]&gt;</code></td><td>Rendez-vous regroupés par jour LOCAL, chaque jour trié par heure (l'ordre du serveur est conservé).</td></tr>
+<tr><td><code>export function agendaParams(window: Pick&lt;AgendaWindow, 'from' | 'to'&gt;, type: string): URLSearchParams</code></td><td>Paramètres de la requête d'agenda : la fenêtre, le type éventuel et la taille de page maximale.</td></tr>
+</tbody></table></div>
+<h3><code>approvals.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>const APPROVABLE_STAGES = ['AGREEMENT_IN_PRINCIPLE', 'ACCREDITATION'];</code></td><td>Étapes à partir desquelles un agrément peut être enregistré (l'accord de principe a été obtenu).</td></tr>
+<tr><td><code>export const eligibleOpportunities = (items: readonly Opportunity[]): Opportunity[]</code></td><td>Opportunités d'une entreprise pour lesquelles on peut enregistrer un agrément : accord de principe obtenu, pas perdue (le serveur reste juge).</td></tr>
+<tr><td><code>export interface ApprovalForm</code></td><td>Ce que l'utilisateur saisit pour enregistrer un agrément ; le document signé s'ajoute à part.</td></tr>
+<tr><td><code>export function validateApprovalFields(form: ApprovalForm, context: { today: string }): ApprovalErrors</code></td><td>Contrôles de saisie rapides, champ par champ (le serveur refait tous les contrôles) : opportunité choisie, montant et/ou places (au moins l'un des deux, positifs), devise de trois lettres, date de réception réelle et pas dans le futur, fin de validité réelle et pas avant la réception.</td></tr>
+<tr><td><code>export function buildApprovalBody(form: ApprovalForm): Record&lt;string, unknown&gt;</code></td><td>Corps de l'enregistrement d'un agrément : seuls les champs renseignés partent.</td></tr>
+<tr><td><code>export function coverageText(a: Pick&lt;Approval, 'amount' | 'currency' | 'places'&gt;): string</code></td><td>Ce que couvre l'agrément : « 12 500 000 FCFA · 8 places » (l'un ou l'autre, ou les deux).</td></tr>
+<tr><td><code>export function approvalActions(approval: Pick&lt;Approval, 'status'&gt;, rights: ApprovalRights): ApprovalAction[]</code></td><td>Les actions proposées sur un agrément : seul un agrément « reçu » se clôt ; honorer et annuler ont chacun leur droit.</td></tr>
+<tr><td><code>export function validateReason(text: string): string | null</code></td><td>Motif obligatoire pour déclarer expiré ou annuler : trois caractères au moins, 500 au plus.</td></tr>
 </tbody></table></div>
 <h3><code>auth-context.tsx</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
@@ -1190,9 +1921,76 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td><code>export function authErrorMessage(error: unknown, fallback: string): string</code></td><td>Message à afficher pour un échec d'authentification : le message du serveur (identique pour un compte connu ou inconnu, jamais enrichi ici), un texte propre à la limitation de débit, ou un texte de repli pour une panne réseau.</td></tr>
 <tr><td><code>export function secondsLeft(until: number, now: number): number</code></td><td>Secondes restantes avant <code>until</code> (en millisecondes depuis l'époque), jamais négatives.</td></tr>
 </tbody></table></div>
+<h3><code>company-lifecycle.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>const ORDER = ['TARGET', 'CONTACTED', 'QUALIFIED'] as const;</code></td><td>Ordre des statuts pour distinguer avancer et revenir.</td></tr>
+<tr><td><code>export function statusActions(status: string): StatusAction[]</code></td><td>Les changements de statut proposés depuis l'état actuel.</td></tr>
+<tr><td><code>export interface OwnerCandidate</code></td><td>Une personne à qui confier une entreprise (liste fournie par le serveur, dans la portée de l'utilisateur).</td></tr>
+<tr><td><code>export const otherOwners = (candidates: readonly OwnerCandidate[], currentOwnerId: string | null | undefined): OwnerCandidate[]</code></td><td>Les candidats, hors le responsable actuel (on ne confie pas une entreprise à qui l'a déjà).</td></tr>
+</tbody></table></div>
+<h3><code>company-table.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export type CompanySortField = 'createdAt' | 'name' | 'country' | 'sector' | 'status';</code></td><td>Champs sur lesquels l'API sait trier les entreprises.</td></tr>
+<tr><td><code>export interface CompanyFilters</code></td><td>Filtres du tableau ; chaîne vide = pas de filtre.</td></tr>
+<tr><td><code>export function nextSort(current: CompanySort, field: CompanySortField): CompanySort</code></td><td>Clic sur un en-tête : nouveau champ → croissant ; même champ → inverse ; troisième clic sur « Créée le » repart du tri par défaut.</td></tr>
+<tr><td><code>export function listParams(filters: CompanyFilters, sort: CompanySort, page: number, pageSize: number): URLSearchParams</code></td><td>Paramètres de la liste pour l'API.</td></tr>
+<tr><td><code>export function overviewParams(filters: CompanyFilters): URLSearchParams</code></td><td>Paramètres de la synthèse : mêmes filtres que la liste, SAUF le statut (les compteurs par statut doivent rester lisibles).</td></tr>
+<tr><td><code>export interface CompanyOverview</code></td><td>Synthèse renvoyée par l'API.</td></tr>
+<tr><td><code>export function statusOptions(counts: Record&lt;string, number&gt; | null): { value: string; label: string; count?: number }[]</code></td><td>Boutons de filtre par statut : « Toutes » + chaque statut, avec son effectif quand la synthèse est connue.</td></tr>
+<tr><td><code>export const COMPANY_COLUMNS = [</code></td><td>Colonnes affichables.</td></tr>
+<tr><td><code>export function parseStoredColumns(raw: string | null): CompanyColumnId[]</code></td><td>Relit les colonnes mémorisées : toute valeur douteuse retombe sur le défaut ; la colonne verrouillée est toujours présente.</td></tr>
+<tr><td><code>export function toggleColumn(visible: readonly CompanyColumnId[], id: CompanyColumnId): CompanyColumnId[]</code></td><td>Active ou masque une colonne ; une colonne verrouillée ne se masque pas.</td></tr>
+<tr><td><code>export function openValueText(open: Company['openOpportunities']): string | null</code></td><td>Valeur des opportunités ouvertes d'une entreprise pour la colonne « Valeur » : « 3 · 3 000 000,50 FCFA ».</td></tr>
+</tbody></table></div>
+<h3><code>contacts.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export const CONTACT_ROLES = [</code></td><td>Fonction du contact dans l'entreprise (codes de l'API → libellés).</td></tr>
+<tr><td><code>export interface ContactForm</code></td><td>Ce que l'utilisateur saisit dans la fenêtre d'un contact.</td></tr>
+<tr><td><code>export function validateContactFields(form: ContactForm): ContactErrors</code></td><td>Contrôles de saisie rapides, champ par champ, dans l'ordre de la page (le serveur refait tous les contrôles).</td></tr>
+<tr><td><code>export function formFromContact(contact: Contact): ContactForm</code></td><td>Formulaire prérempli avec le contact à modifier.</td></tr>
+<tr><td><code>export function buildContactBody(form: ContactForm, options: { version?: number; allowDuplicate?: boolean } = {}): Record&lt;string, unknown&gt;</code></td><td>Corps de la création (l'entreprise est incluse) ou de la modification (la version lue, jamais l'entreprise : un contact ne change pas d'entreprise ici).</td></tr>
+<tr><td><code>export const isDuplicateConflict = (status: number, message: string): boolean =&gt; status === 409 &amp;&amp; /existe déjà/i.test(message);</code></td><td>Vrai si l'erreur de l'API est un doublon probable (conflit « existe déjà »), pas une modification concurrente.</td></tr>
+</tbody></table></div>
+<h3><code>countries.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export const COUNTRY_SUGGESTIONS = [</code></td><td>Suggestions de pays pour la fiche d'une entreprise (la saisie reste libre : un pays absent de la liste est accepté).</td></tr>
+</tbody></table></div>
 <h3><code>device.ts</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
 <tr><td><code>export function deviceLabel(userAgent: string): string</code></td><td>Libellé court et lisible d'un User-Agent (« Chrome sur Windows »).</td></tr>
+</tbody></table></div>
+<h3><code>export-sheet.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export async function openCompanySheet(companyId: string): Promise&lt;void&gt;</code></td><td>Ouvre la fiche d'une entreprise dans une nouvelle fenêtre et lance l'impression (le navigateur propose « Enregistrer au format PDF »).</td></tr>
+</tbody></table></div>
+<h3><code>facilitation.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export const CONTACT_METHODS = [</code></td><td>Façons de prendre contact via le facilitateur (codes de l'API → libellés).</td></tr>
+<tr><td><code>export interface CompanyForm</code></td><td>Ce que l'utilisateur saisit dans la fenêtre de création d'une entreprise.</td></tr>
+<tr><td><code>export const DEFAULT_CURRENCY = 'XAF';</code></td><td>Devise par défaut : franc CFA d'Afrique centrale (le serveur applique la même).</td></tr>
+<tr><td><code>export type FieldName</code></td><td>Champs de la fiche qui peuvent porter une erreur, dans l'ordre de la page.</td></tr>
+<tr><td><code>export function validateCompanyFields(form: CompanyForm): FieldErrors</code></td><td>Contrôles de saisie rapides, champ par champ, pour mettre en évidence ce qui n'est pas conforme (le serveur refait tous les contrôles).</td></tr>
+<tr><td><code>export function validateCompanyForm(form: CompanyForm): string[]</code></td><td>Les mêmes contrôles sous forme de liste de messages (récapitulatif annoncé avant l'envoi).</td></tr>
+<tr><td><code>export function buildCompanyBody(form: CompanyForm): Record&lt;string, unknown&gt;</code></td><td>Corps de la requête de création : les champs vides sont omis ; sans facilitateur, aucune facilitation ni commission n'est envoyée.</td></tr>
+<tr><td><code>export function normalizeCurrency(raw: string): string</code></td><td>Devise saisie → code : vide ou « FCFA » = XAF (franc CFA d'Afrique centrale), sinon les trois lettres en majuscules.</td></tr>
+<tr><td><code>export function formatCommission(commission: Commission): string</code></td><td>« 7,50 % » ou « 1 500,00 XAF » (format français).</td></tr>
+<tr><td><code>export interface EditCapabilities</code></td><td>Ce que l'utilisateur a le droit de modifier dans la mise en relation (le serveur re-contrôle chaque droit).</td></tr>
+<tr><td><code>export function editCapabilities(company: Company, canManageCommission: boolean): EditCapabilities</code></td><td>Capacités d'édition d'une fiche existante, d'après ce que l'API a fourni (les clés absentes disent ce qu'on ne voit pas).</td></tr>
+<tr><td><code>export function formFromCompany(company: Company): CompanyForm</code></td><td>Formulaire prérempli avec la fiche à modifier.</td></tr>
+<tr><td><code>export function buildCompanyUpdateBody(form: CompanyForm, company: Company, caps: EditCapabilities): Record&lt;string, unknown&gt;</code></td><td>Corps de la modification : la version lue (verrou optimiste) et les champs de la fiche (une zone vidée est envoyée vide, pour être effacée).</td></tr>
+</tbody></table></div>
+<h3><code>followups.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export const FOLLOWUP_CHANNELS = [</code></td><td>Canaux d'une relance (codes de l'API → libellés).</td></tr>
+<tr><td><code>export const DEFAULT_FOLLOWUP_DELAY_DAYS = 7;</code></td><td>Délai proposé par défaut pour la première relance (valeur proposée, à confirmer) et nombre maximum par offre.</td></tr>
+<tr><td><code>export function addDays(from: string, days: number): string</code></td><td>Date « AAAA-MM-JJ » à <code>days</code> jours de <code>from</code> (UTC).</td></tr>
+<tr><td><code>export interface FollowupForm</code></td><td>Ce que l'utilisateur saisit pour planifier ou modifier une relance.</td></tr>
+<tr><td><code>export function validateFollowupFields(form: FollowupForm, context: { today: string; keepDueOn?: string; needsOffer: boolean }): FollowupErrors</code></td><td>Contrôles de saisie rapides, champ par champ (le serveur refait tous les contrôles) : offre choisie, échéance réelle et non passée (sauf si on garde l'échéance déjà passée d'une relance en retard), canal connu, note de 500 caractères au plus.</td></tr>
+<tr><td><code>export function buildFollowupBody(form: FollowupForm, options: { version?: number } = {}): Record&lt;string, unknown&gt;</code></td><td>Corps de la planification (l'offre est incluse) ou de la modification (la version lue, jamais l'offre).</td></tr>
+<tr><td><code>export function validateClosingText(text: string, max: number): string | null</code></td><td>Texte obligatoire d'une clôture (résultat ou motif) : 3 caractères au moins, la limite donnée au plus.</td></tr>
+<tr><td><code>export function followupActions(status: string, rights: { complete: boolean; update: boolean }): FollowupAction[]</code></td><td>Actions proposées : seulement sur une relance À FAIRE, selon les droits de l'utilisateur (le serveur re-contrôle tout).</td></tr>
+<tr><td><code>export const FOLLOWUP_FILTERS = [</code></td><td>Filtres rapides de la liste : un seul actif, chacun traduit en paramètres de requête.</td></tr>
+<tr><td><code>export function followupListParams(filter: FollowupFilter, page: number, pageSize: number, offerId?: string): URLSearchParams</code></td><td>Paramètres de la liste : page, taille, filtre rapide et offre éventuelle.</td></tr>
 </tbody></table></div>
 <h3><code>format.ts</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
@@ -1216,6 +2014,36 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td><code>export function availableModules(profile: Profile | null): AppModule[]</code></td><td>Modules livrés et que le profil a le droit d'ouvrir.</td></tr>
 <tr><td><code>export function upcomingModules(): AppModule[]</code></td><td>Modules pas encore livrés (présentés « À venir » sur le hub).</td></tr>
 </tbody></table></div>
+<h3><code>offers.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export type OfferAction = 'edit' | 'submit' | 'receipt' | 'followups' | 'appointment' | 'accept' | 'refuse' | 'withdraw' | 'documents';</code></td><td>Actions possibles sur une offre ; la disponibilité dépend de son état ET des droits (le serveur re-contrôle tout).</td></tr>
+<tr><td><code>export interface OfferRights</code></td><td>Droits de l'utilisateur sur les offres, leurs décharges et leurs documents.</td></tr>
+<tr><td><code>export function availableActions(status: string, rights: OfferRights): OfferAction[]</code></td><td>Actions proposées pour un état donné : un brouillon se modifie, se dépose ou se retire ; une offre déposée (ou dont la décharge est reçue) attend la réponse du client ou se retire, et sa décharge se consulte, s'enregistre ou s'annule ; acceptée, refusée et retirée sont définitives (on ne peut plus que consulter la décharge et les documents).</td></tr>
+<tr><td><code>export function formatAmount(amount: string, currency: string): string</code></td><td>Montant lisible : « 4 500 000 FCFA » (XAF s'écrit FCFA), deux décimales seulement si elles existent.</td></tr>
+<tr><td><code>export interface OfferForm</code></td><td>Ce que l'utilisateur saisit dans la fenêtre d'une offre.</td></tr>
+<tr><td><code>export const normalizeAmount = (raw: string): string =&gt; raw.replace(/\s/g, '').replace(',', '.');</code></td><td>Montant saisi → texte décimal sans espaces, virgule remplacée par un point (« 4 500 000,5 » → « 4500000.5 »).</td></tr>
+<tr><td><code>export function isValidAmount(raw: string): boolean</code></td><td>Montant valide : positif, douze chiffres au plus, deux décimales au plus.</td></tr>
+<tr><td><code>export function validateOfferFields(form: OfferForm): OfferErrors</code></td><td>Contrôles de saisie rapides, champ par champ, dans l'ordre de la page (le serveur refait tous les contrôles).</td></tr>
+<tr><td><code>export function formFromOffer(offer: Offer): OfferForm</code></td><td>Formulaire prérempli avec l'offre à modifier.</td></tr>
+<tr><td><code>export function buildOfferBody(form: OfferForm, options: { version?: number } = {}): Record&lt;string, unknown&gt;</code></td><td>Corps de la création (l'entreprise est incluse, les champs vides omis) ou de la modification (la version lue, jamais l'entreprise ; une note vidée est envoyée vide pour être effacée).</td></tr>
+</tbody></table></div>
+<h3><code>opportunities.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export const OPPORTUNITY_STAGES = [</code></td><td>Étapes du pipeline dans l'ordre (codes de l'API → libellés ; noms du prototype, à confirmer).</td></tr>
+<tr><td><code>export interface OpportunityForm</code></td><td>Ce que l'utilisateur saisit pour créer ou modifier une opportunité.</td></tr>
+<tr><td><code>export function validateOpportunityFields(form: OpportunityForm, context: { needsCompany: boolean }): OpportunityErrors</code></td><td>Contrôles de saisie rapides, champ par champ (le serveur refait tous les contrôles) : entreprise choisie (à la création), intitulé de 200 caractères au plus, montant positif à deux décimales au plus, devise de trois lettres, source connue.</td></tr>
+<tr><td><code>export function buildOpportunityBody(form: OpportunityForm, options: { version?: number } = {}): Record&lt;string, unknown&gt;</code></td><td>Corps de la création (l'entreprise est incluse) ou de la modification (la version lue, jamais l'entreprise).</td></tr>
+<tr><td><code>export function validateRequiredText(text: string, max: number): string | null</code></td><td>Motif ou justification obligatoire : trois caractères au moins, la limite donnée au plus.</td></tr>
+<tr><td><code>export function validateLoss(reason: string, note: string): { reason?: string; note?: string }</code></td><td>Contrôle du formulaire de clôture « perdue » : motif choisi dans la liste, précision obligatoire pour « autre ».</td></tr>
+<tr><td><code>export interface OpportunityRights</code></td><td>Droits de l'utilisateur sur les opportunités, tels que le profil les annonce (le serveur re-contrôle tout).</td></tr>
+<tr><td><code>export const AGREEMENT_STAGE = 'AGREEMENT_IN_PRINCIPLE';</code></td><td>Étape à partir de laquelle une opportunité peut être gagnée, et étape qui exige le rendez-vous décideur.</td></tr>
+<tr><td><code>export function opportunityActions(o: Pick&lt;Opportunity, 'status' | 'stage' | 'nextStage' | 'waivedAt'&gt;, rights: OpportunityRights): OpportunityActi</code></td><td>Actions proposées pour une opportunité : la fiche toujours ; sur une opportunité OUVERTE seulement, selon les droits : modifier, passer à l'étape suivante, accorder la dérogation (avant l'accord de principe, une seule fois), clore perdue, clore gagnée (une fois l'accord de principe obtenu).</td></tr>
+<tr><td><code>export const advanceLabel = (nextStage: string | null): string =&gt; </code>Déplacer vers « ${stageLabel(nextStage)} »<code>;</code></td><td>Libellé de l'action « avancer » avec l'étape visée (alternative au glisser-déposer : « Déplacer vers… »).</td></tr>
+<tr><td><code>export function groupByStage(items: readonly Opportunity[]): { stage: string; label: string; items: Opportunity[] }[]</code></td><td>Opportunités regroupées par étape, dans l'ordre du pipeline ; l'ordre reçu du serveur est conservé dans chaque colonne.</td></tr>
+<tr><td><code>export function totalAmount(items: readonly Opportunity[]): { amount: string; currency: string } | null</code></td><td>Total des montants (une seule devise à la fois) : « — » si les devises diffèrent.</td></tr>
+<tr><td><code>export const OPPORTUNITY_FILTERS = [</code></td><td>Filtres rapides sur l'état : un seul actif, chacun traduit en paramètres de requête.</td></tr>
+<tr><td><code>export function opportunityListParams(filter: OpportunityFilter, search: string): URLSearchParams</code></td><td>Paramètres de la liste : taille maximale (le pipeline s'affiche en entier), filtre rapide et recherche.</td></tr>
+</tbody></table></div>
 <h3><code>otp.ts</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
 <tr><td><code>export const OTP_LENGTH = 6;</code></td><td>Longueur du code du second facteur (TOTP) : six chiffres.</td></tr>
@@ -1230,11 +2058,33 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td><code>export function passwordHints(password: string, email = ''): string[]</code></td><td>Indications affichées pendant la saisie (longueur, identifiant e-mail contenu) ; la règle qui fait foi est celle du serveur.</td></tr>
 <tr><td><code>export interface PasswordRule</code></td><td>Une règle de mot de passe affichée en direct, avec son état.</td></tr>
 <tr><td><code>export function passwordRules(password: string, email = ''): PasswordRule[]</code></td><td>Règles du mot de passe avec leur état (respectée ou non), pour la liste affichée pendant la saisie.</td></tr>
+<tr><td><code>export const PASSWORD_AUTO_HIDE_MS = 30_000;</code></td><td>Délai (ms) après lequel un mot de passe affiché est automatiquement remasqué.</td></tr>
 </tbody></table></div>
 <h3><code>permissions.ts</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
 <tr><td><code>export function can(profile: Profile | null, permission: string): boolean</code></td><td>Informatif seulement (menus, boutons) : le serveur re-contrôle chaque requête.</td></tr>
 <tr><td><code>export const roleLabel = (code: string): string =&gt; ROLE_LABELS[code] ?? code;</code></td><td>Libellé français d'un rôle (le code brut si le rôle est inconnu).</td></tr>
+</tbody></table></div>
+<h3><code>receipts.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export interface ReceiptForm</code></td><td>Ce que l'utilisateur saisit pour enregistrer une décharge signée.</td></tr>
+<tr><td><code>export const todayIso = (now: Date = new Date()): string =&gt; now.toISOString().slice(0, 10);</code></td><td>Date du jour au format « AAAA-MM-JJ » (UTC, comme le serveur : une date « de demain » serait refusée).</td></tr>
+<tr><td><code>export function isRealDate(text: string): boolean</code></td><td>Vrai pour une date « AAAA-MM-JJ » qui existe (le 31 février non).</td></tr>
+<tr><td><code>export function validateReceiptFields(form: ReceiptForm, context: { today: string; submittedOn: string | null }): ReceiptErrors</code></td><td>Contrôles de saisie rapides, champ par champ (le serveur refait tous les contrôles) : date réelle, ni dans le futur ni avant le dépôt de l'offre ; nom obligatoire de 150 caractères au plus.</td></tr>
+<tr><td><code>export function buildReceiptBody(offerId: string, form: ReceiptForm): Record&lt;string, unknown&gt;</code></td><td>Corps de l'enregistrement d'une décharge.</td></tr>
+</tbody></table></div>
+<h3><code>roles.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export type ScopeCode = 'OWN' | 'TEAM' | 'ALL';</code></td><td>Portée d'un droit, de la plus étroite à la plus large (même ordre que le serveur).</td></tr>
+<tr><td><code>export interface RoleGroup { id: string; label: string; description: string; roles: readonly string[] }</code></td><td>Familles de rôles, dans l'ordre d'affichage.</td></tr>
+<tr><td><code>export function groupRoles(roles: readonly RoleView[]): GroupedRoles[]</code></td><td>Range les rôles de l'API par famille ; un rôle inconnu va dans « Autres rôles », un rôle absent de l'API est ignoré.</td></tr>
+<tr><td><code>export const MODULE_ORDER = ['bd', 'training', 'docs', 'reporting', 'audit', 'iam'] as const;</code></td><td>Modules du catalogue, dans l'ordre d'affichage, avec leur libellé.</td></tr>
+<tr><td><code>export function mergeGrants(roles: readonly RoleView[], selected: readonly string[]): Map&lt;string, ScopeCode&gt;</code></td><td>Droits obtenus en cumulant les rôles choisis : pour une même permission, la portée la plus large l'emporte (règle du serveur, <code>widestScope</code>).</td></tr>
+<tr><td><code>export function effectiveRights(roles: readonly RoleView[], selected: readonly string[]): EffectiveRights</code></td><td>Droits effectifs regroupés par module puis par ressource, pour l'aperçu en lecture seule.</td></tr>
+<tr><td><code>export function diffRoles(original: readonly string[], selected: readonly string[]): { added: string[]; removed: string[] }</code></td><td>Rôles ajoutés et retirés par rapport à l'état d'origine, dans l'ordre de leur apparition.</td></tr>
+<tr><td><code>export function sameRoles(a: readonly string[], b: readonly string[]): boolean</code></td><td>Vrai si les deux listes contiennent les mêmes rôles (l'ordre ne compte pas).</td></tr>
+<tr><td><code>export function toggleRole(list: readonly string[], code: string): string[]</code></td><td>Ajoute le code à la liste s'il n'y est pas, le retire sinon (sans modifier la liste d'origine).</td></tr>
+<tr><td><code>export function selectionSummary(roleCount: number, permissionCount: number): string</code></td><td>Phrase du compteur de sélection, annoncée aux lecteurs d'écran.</td></tr>
 </tbody></table></div>
 <h3><code>search.ts</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
@@ -1242,6 +2092,11 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td><code>export const MIN_QUERY_LENGTH = 2;</code></td><td>Nombre minimal de caractères avant d'interroger le serveur.</td></tr>
 <tr><td><code>export const HITS_PER_TYPE = 5;</code></td><td>Résultats demandés par type.</td></tr>
 <tr><td><code>export async function searchAll(query: string, profile: Profile | null, signal?: AbortSignal): Promise&lt;SearchHit[]&gt;</code></td><td>Recherche globale (CAD-H1-4) : interroge en parallèle les listes que le profil a le droit de lire (entreprises, utilisateurs).</td></tr>
+</tbody></table></div>
+<h3><code>secret-codes.ts</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
+<tr><td><code>export const CODES_FILE_NAME = 'investally-codes-de-secours.txt';</code></td><td>Nom des fichiers de codes de secours : aucune donnée personnelle (le fichier peut être perdu ou partagé).</td></tr>
+<tr><td><code>export function codesFileText(codes: readonly string[], generatedAt: Date): string</code></td><td>Contenu du fichier texte et de la copie dans le presse-papiers.</td></tr>
 </tbody></table></div>
 <h3><code>selection.ts</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Déclaration</th><th>Rôle</th></tr></thead><tbody>
@@ -1271,6 +2126,15 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td><code>export interface RoleView</code></td><td>Rôle et ses permissions, tels que l'API les expose.</td></tr>
 <tr><td><code>export interface SessionView</code></td><td>Session de connexion telle que l'API l'expose (la courante est marquée).</td></tr>
 <tr><td><code>export interface Company</code></td><td>Entreprise cible telle que l'API l'expose.</td></tr>
+<tr><td><code>export interface Contact</code></td><td>Contact : interlocuteur d'une entreprise.</td></tr>
+<tr><td><code>export interface Offer</code></td><td>Offre faite à une entreprise (le montant est un texte décimal : jamais converti en nombre avant l'affichage).</td></tr>
+<tr><td><code>export interface Receipt</code></td><td>Décharge signée d'une offre déposée (le fichier signé est un document rattaché à la décharge).</td></tr>
+<tr><td><code>export interface Followup</code></td><td>Relance d'une offre en cours : à faire à une échéance, terminée (avec son résultat) ou annulée (avec son motif).</td></tr>
+<tr><td><code>export interface Appointment</code></td><td>Rendez-vous ou visite d'une entreprise, dans l'agenda de son organisateur.</td></tr>
+<tr><td><code>export interface Opportunity</code></td><td>Opportunité commerciale d'une entreprise (pipeline).</td></tr>
+<tr><td><code>export interface Approval</code></td><td>Agrément : promesse de paiement signée par l'entreprise cliente pour une opportunité.</td></tr>
+<tr><td><code>export interface Facilitator</code></td><td>Facilitateur : personne qui met en relation avec une entreprise.</td></tr>
+<tr><td><code>export interface Facilitation</code></td><td>Lien entreprise ↔ facilitateur.</td></tr>
 <tr><td><code>export interface LoginEvent</code></td><td>Une connexion de l'historique (réussie ou échouée) : étape de l'échec, adresse IP et appareil.</td></tr>
 <tr><td><code>export interface LoginHistoryPage</code></td><td>Page de l'historique : <code>nextBefore</code> est le curseur de la page suivante (nul s'il n'y en a pas).</td></tr>
 <tr><td><code>export interface DocumentVersionView</code></td><td>Une version d'un document (le contenu est immuable ; l'empreinte SHA-256 en atteste l'intégrité).</td></tr>

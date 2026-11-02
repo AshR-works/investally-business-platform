@@ -44,7 +44,7 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td><strong>S4.3a</strong> Opportunités</td><td><em>Validé</em> : pipeline en cartes ou par étape, règle du rendez-vous décideur, dérogation, clôture perdue ou gagnée (D28)</td><td>—</td><td>—</td></tr>
 <tr><td><strong>S4.3b</strong> Entreprises : statuts et responsable</td><td><em>Validé</em> : statut manuel d'un cran (CU-C-05), changement de responsable (D17), fiche 360° (opportunités, rendez-vous), colonne Responsable</td><td>—</td><td>Votre « Je valide » ; défauts D37</td></tr>
 <tr><td><strong>S4.3c</strong> Valeur et lien rendez-vous</td><td><em>Validé</em> : colonne « Valeur » du tableau des entreprises ; lien d'un rendez-vous à une opportunité (D93, D104)</td><td>—</td><td>Votre « Je valide » ; défauts D38</td></tr>
-<tr><td><strong>S4.4a</strong> Agréments</td><td><em>Terminé, validation en attente</em> : agrément (promesse de paiement signée), entreprise « Cliente », honorer / expirer / annuler</td><td>—</td><td>Votre « Je valide » ; défauts D39</td></tr>
+<tr><td><strong>S4.4a</strong> Agréments</td><td><em>Validé</em> : agrément (promesse de paiement signée), entreprise « Cliente », honorer / expirer / annuler</td><td>—</td><td>Défauts D39 à confirmer</td></tr>
 <tr><td><strong>S4.4b</strong> Ambassadeurs</td><td>Créer un ambassadeur à la main, avec son origine (client ou apprenant) ; liste et fiche (CU-F2-06 sans les suggestions, qui attendent les certifications d'Investudy)</td><td>0,5 à 1 session</td><td>S4.4a</td></tr>
 <tr><td><strong>S4.4c</strong> Commissions à verser</td><td>Commission « due » (déclencheur à trancher), déblocage par le DAF, versement et justificatif (flux F3)</td><td>1 session</td><td>S4.4a ; réponses de la Direction administrative et financière</td></tr>
 <tr><td><strong>S5.1</strong> Catalogue Investudy</td><td>Programmes, formations, salles, formateurs ; modèle de données du module</td><td>1 session</td><td>S4.4 ; cas d'usage validés</td></tr>
@@ -69,6 +69,7 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td><strong>Prototype de design 0.5.0</strong></td><td>D49</td><td>Ajouter contacts, offres, tableaux, fenêtres, œil du mot de passe</td></tr>
 </tbody></table></div>
 <h2>3. Décisions en attente, par lot qu'elles bloquent</h2>
+<p><em>Une <strong>feuille de décision</strong> avec options, grilles et recommandations est prête : <a href="cadrages/ARBITRAGE-DECISIONS-EN-ATTENTE.html">ARBITRAGE-DECISIONS-EN-ATTENTE.md</a> (FD-1 à FD-9).</em></p>
 <div class="table-wrap"><table><thead><tr><th>Pour…</th><th>Décision à prendre</th><th>Ma proposition de départ</th></tr></thead><tbody>
 <tr><td><strong>S4.2b</strong></td><td>Une décharge sans fichier est-elle acceptée ? Annulation d'une décharge ?</td><td>Fichier obligatoire ; annulation possible par le Responsable commercial</td></tr>
 <tr><td><strong>S4.2c</strong></td><td>Délai par défaut et nombre maximum de relances</td><td>7 jours ; trois relances</td></tr>
@@ -85,7 +86,7 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td><strong>Accès Microsoft 365</strong> (locataire, application, boîte d'envoi, SPF, DKIM, DMARC)</td><td>Administrateur M365</td><td>Aucun e-mail réel tant qu'il manque ; <strong>bloque la mise en production</strong> (D9)</td></tr>
 <tr><td><strong>Deuxième SuperAdmin nominatif</strong></td><td>Direction</td><td>Un seul compte au départ : risque de blocage (D10, R13)</td></tr>
 <tr><td><strong>Avis juridique</strong> : audit 10 ans, lecture par la Direction, données des apprenants, contacts, facilitateurs, suivi des performances</td><td>Juridique</td><td>Avant la mise en production (D11)</td></tr>
-<tr><td><strong>Exiger la vérification dans les règles de la branche <code>main</code></strong></td><td>Vous (GitHub)</td><td>Aujourd'hui la CI n'est pas obligatoire pour fusionner</td></tr>
+<tr><td><del>Exiger la vérification dans les règles de la branche <code>main</code></del></td><td>Vous (GitHub)</td><td><strong>Fait</strong> : la règle <code>protection-main</code> est active (PR obligatoire, contrôle <code>verify</code> requis, pas de poussée forcée ni de suppression)</td></tr>
 <tr><td><strong>Logos au format SVG et variante sombre</strong> ; charte graphique des documents</td><td>Graphiste</td><td>Fiche, offre, certificat, émargement, facture (D35, D61)</td></tr>
 <tr><td><strong>Mentions légales et numérotation des documents</strong></td><td>DAF</td><td>Gabarits provisoires en attendant</td></tr>
 <tr><td><strong>Réponses sur la commission</strong> : déclencheur de « due », qui la débloque</td><td>Direction administrative et financière</td><td>Flux F3, lot S4.4</td></tr>
@@ -110,4 +111,4 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <h2>7. Prochaine session proposée</h2>
 <p><strong>S4.4b — Ambassadeurs.</strong> Créer un ambassadeur à la main, avec son origine (client ou apprenant) ; liste et fiche. Les suggestions après une certification attendent Investudy.</p>
 <p><strong>S4.4c — Commissions à verser.</strong> Commission « due », déblocage par le DAF, versement et justificatif (flux F3).</p>
-<p>Avant de commencer, il me faut <strong>votre « Je valide S4.4a »</strong> (ou vos corrections). Les valeurs par défaut D36 à D39 sont à confirmer ; S4.4c attend aussi vos réponses sur l'événement qui rend une commission « due ».</p></main></body></html>
+<p>Avant de commencer S4.4b, il n'y a plus de validation en attente. Les valeurs par défaut D36 à D39 restent à confirmer ; S4.4c attend aussi vos réponses sur l'événement qui rend une commission « due ».</p></main></body></html>
