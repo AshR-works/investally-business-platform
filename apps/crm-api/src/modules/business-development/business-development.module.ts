@@ -28,6 +28,11 @@ import { COMPANY_REPOSITORY } from './domain/company-repository';
 import { OWNER_DIRECTORY } from './domain/owner-directory';
 import { PrismaOwnerDirectory } from './infrastructure/prisma-owner-directory';
 import { OPPORTUNITY_TOTALS } from './domain/opportunity-totals';
+import { APPROVAL_REPOSITORY } from './domain/approval-repository';
+import { PrismaApprovalRepository } from './infrastructure/prisma-approval.repository';
+import { ApprovalDocumentOwnerResolver } from './application/approval-document-owners';
+import { CloseApprovalUseCase, GetApprovalHandler, ListApprovalsHandler, RegisterApprovalUseCase } from './application/approval-use-cases';
+import { ApprovalsController } from './presentation/approvals.controller';
 import { PrismaOpportunityTotals } from './infrastructure/prisma-opportunity-totals';
 import { ChangeCompanyStatusUseCase, ListOwnerCandidatesHandler, ReassignCompanyUseCase } from './application/company-lifecycle-use-cases';
 import { CONTACT_REPOSITORY } from './domain/contact-repository';
@@ -57,12 +62,17 @@ import { ReceiptsController } from './presentation/receipts.controller';
 /** Composition root du module Business Development. */
 @Module({
   imports: [AuditModule, IamModule, DocumentsModule],
-  controllers: [CompaniesController, FacilitatorsController, ContactsController, OffersController, ReceiptsController, FollowupsController, AppointmentsController, OpportunitiesController],
+  controllers: [CompaniesController, FacilitatorsController, ContactsController, OffersController, ReceiptsController, FollowupsController, AppointmentsController, OpportunitiesController, ApprovalsController],
   providers: [
     RegisterCompanyUseCase,
     RegisterFacilitatorUseCase,
     FacilitationResolver,
     UpdateCompanyUseCase,
+    RegisterApprovalUseCase,
+    CloseApprovalUseCase,
+    GetApprovalHandler,
+    ListApprovalsHandler,
+    ApprovalDocumentOwnerResolver,
     ChangeCompanyStatusUseCase,
     ReassignCompanyUseCase,
     ListOwnerCandidatesHandler,
@@ -110,6 +120,7 @@ import { ReceiptsController } from './presentation/receipts.controller';
     { provide: COMPANY_REPOSITORY, useClass: PrismaCompanyRepository },
     { provide: OWNER_DIRECTORY, useClass: PrismaOwnerDirectory },
     { provide: OPPORTUNITY_TOTALS, useClass: PrismaOpportunityTotals },
+    { provide: APPROVAL_REPOSITORY, useClass: PrismaApprovalRepository },
     { provide: COMPANY_OVERVIEW_READER, useClass: PrismaCompanyOverviewReader },
     { provide: FACILITATOR_REPOSITORY, useClass: PrismaFacilitatorRepository },
     { provide: CONTACT_REPOSITORY, useClass: PrismaContactRepository },

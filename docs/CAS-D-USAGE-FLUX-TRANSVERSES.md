@@ -54,11 +54,11 @@
 - **Variantes** : justification vide → bouton désactivé ; sans le rôle → action absente.
 - **Droits** : réservé au Responsable commercial (portée Équipe). **À créer** : une permission dédiée (par exemple `bd.opportunity.override`) : le catalogue actuel n'en a pas. **État** : à venir.
 
-### CU-F1-05 — Enregistrer un agrément (promesse de paiement)
+### CU-F1-05 — Enregistrer un agrément (promesse de paiement) *(réalisé, S4.4a ; défauts à confirmer, D39)*
 - **Acteur** : chargé de compte. **Préconditions** : accord de principe obtenu.
 - **Scénario** : 1. Il demande au client l'agrément signé. 2. Il enregistre l'agrément : montant, devise (XAF par défaut), payeur, période de validité, **document signé joint** (écran 23). 3. L'état passe à « reçu ». 4. Le système envoie l'événement « agrément accordé » vers Investudy.
 - **Variantes** : document manquant ou format refusé ; payeur tiers (à trancher) ; agrément expiré ou annulé → les inscriptions non réglées sont signalées.
-- **Règles** : états demandé → reçu → honoré, ou expiré / annulé ; montant > 0. **Droits** : **à créer** (le catalogue n'a pas de ressource « agrément »). **État** : à venir.
+- **Règles** : états reçu → honoré, ou expiré / annulé (pas d'état « demandé », D111) ; montant et/ou places positifs ; opportunité ayant franchi l'accord de principe ; un seul agrément actif par opportunité ; honoré, expiré et annulé sont définitifs (motif obligatoire pour expirer et annuler). **Droits** : `bd.approval.read / create` (chargé de compte Propre, Responsable commercial Équipe, Direction lecture), `bd.approval.cancel` et `bd.approval.honor` (Responsable commercial). **État** : **réalisé** ; l'événement vers Investudy est enregistré, non consommé (D113).
 
 **À trancher pour F1** : places couvertes ou somme globale ; payeur tiers ; expiration et effet sur les inscriptions ; paiement suivi par le CRM ou par la Finance (défaut : la Finance).
 

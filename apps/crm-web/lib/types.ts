@@ -208,6 +208,30 @@ export interface Opportunity {
   version: number;
 }
 
+/** Agrément : promesse de paiement signée par l'entreprise cliente pour une opportunité. */
+export interface Approval {
+  id: string;
+  companyId: string;
+  companyName: string;
+  opportunityId: string;
+  opportunityTitle: string;
+  /** Somme couverte (texte décimal) ; `null` si l'agrément ne couvre que des places. */
+  amount: string | null;
+  currency: string;
+  places: number | null;
+  /** Dates « AAAA-MM-JJ ». */
+  receivedOn: string;
+  validUntil: string | null;
+  status: string;
+  closedReason: string | null;
+  closedAt: string | null;
+  /** Calculé par le serveur : fin de validité passée alors que l'agrément est toujours « reçu ». */
+  pastValidity: boolean;
+  createdAt: string;
+  /** Verrou optimiste : renvoyé tel quel pour honorer, déclarer expiré ou annuler l'agrément. */
+  version: number;
+}
+
 /** Facilitateur : personne qui met en relation avec une entreprise. */
 export interface Facilitator {
   id: string;

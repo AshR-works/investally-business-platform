@@ -4,6 +4,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { CompanyDialog } from '../../../../components/companies/company-dialog';
 import { CompanyOwnerDialog, CompanyStatusDialog } from '../../../../components/companies/company-lifecycle-dialogs';
+import { ApprovalsPanel } from '../../../../components/approvals/approvals-panel';
 import { AppointmentsPanel } from '../../../../components/appointments/appointments-panel';
 import { OpportunitiesPanel } from '../../../../components/opportunities/opportunities-panel';
 import { ContactsPanel } from '../../../../components/contacts/contacts-panel';
@@ -132,6 +133,7 @@ export default function CompanyPage() {
       {can(profile, 'bd.contact.read') && <ContactsPanel company={{ id: company.id, name: company.name }} />}
       {can(profile, 'bd.offer.read') && <OffersPanel company={{ id: company.id, name: company.name }} archived={company.status === 'ARCHIVED'} />}
       {can(profile, 'bd.opportunity.read') && <OpportunitiesPanel company={{ id: company.id, name: company.name }} />}
+      {can(profile, 'bd.approval.read') && <ApprovalsPanel company={{ id: company.id, name: company.name }} archived={company.status === 'ARCHIVED'} onChanged={load} />}
       {can(profile, 'bd.appointment.read') && <AppointmentsPanel company={{ id: company.id, name: company.name }} />}
       {can(profile, 'docs.document.read') && <DocumentsPanel ownerType="company" ownerId={company.id} />}
     </>

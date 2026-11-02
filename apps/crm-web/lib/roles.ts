@@ -54,7 +54,7 @@ export const RESOURCE_LABELS: Record<string, string> = {
   'audit.log': "Journal d'audit",
   'docs.document': 'Documents',
   'bd.company': 'Entreprises', 'bd.contact': 'Contacts', 'bd.offer': 'Offres', 'bd.receipt': 'Décharges', 'bd.followup': 'Relances',
-  'bd.appointment': 'Rendez-vous', 'bd.visit': 'Visites Investally', 'bd.opportunity': 'Opportunités', 'bd.ambassador': 'Ambassadeurs',
+  'bd.appointment': 'Rendez-vous', 'bd.visit': 'Visites Investally', 'bd.opportunity': 'Opportunités', 'bd.approval': 'Agréments', 'bd.ambassador': 'Ambassadeurs',
   'bd.facilitator': 'Facilitateurs', 'bd.commission': 'Commissions des facilitateurs',
   'training.program': 'Programmes', 'training.training': 'Formations', 'training.session': 'Sessions', 'training.room': 'Salles',
   'training.trainer': 'Formateurs', 'training.learner': 'Apprenants', 'training.enrollment': 'Inscriptions', 'training.attendance': 'Présences',
@@ -67,7 +67,7 @@ export const ACTION_LABELS: Record<string, string> = {
   read: 'Consulter', create: 'Créer', update: 'Modifier', delete: 'Supprimer', archive: 'Archiver', export: 'Exporter',
   disable: 'Désactiver', assign_role: 'Attribuer des rôles', reset_mfa: 'Réinitialiser le MFA', reset_password: 'Réinitialiser le mot de passe',
   manage: 'Gérer', revoke: 'Révoquer', download: 'Télécharger', withdraw: 'Retirer', complete: 'Terminer', cancel: 'Annuler',
-  advance: 'Faire avancer', close: 'Clore', close_lost: 'Clore : perdue', close_won: 'Clore : gagnée', reassign: 'Changer de responsable', override: 'Accorder une dérogation', record: 'Enregistrer', issue: 'Délivrer',
+  advance: 'Faire avancer', close: 'Clore', close_lost: 'Clore : perdue', close_won: 'Clore : gagnée', reassign: 'Changer de responsable', honor: 'Honorer', override: 'Accorder une dérogation', record: 'Enregistrer', issue: 'Délivrer',
   account_manager: 'Chargé de compte', head_of_sales: 'Responsable commercial', training: 'Formation', direction: 'Direction', security: 'Sécurité', admin: 'Administration',
 };
 export const actionLabel = (action: string): string => ACTION_LABELS[action] ?? action;

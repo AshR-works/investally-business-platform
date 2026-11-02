@@ -50,6 +50,7 @@ model Company {
   offers    Offer[]
   appointments Appointment[]
   opportunities Opportunity[]
+  approvals    Approval[]
 
   @@index([status])
   @@index([ownerUserId])
@@ -770,9 +771,45 @@ model Opportunity {
   updatedAt      DateTime          @updatedAt @map("updated_at") @db.Timestamptz(6)
   company        Company           @relation(fields: [companyId], references: [id])
   appointments   Appointment[]
+  approvals      Approval[]
 
   @@index([companyId])
   @@index([status, stage])
   @@map("opportunities")
+  @@schema("bd")
+}
+
+enum ApprovalStatus {
+  RECEIVED
+  HONORED
+  EXPIRED
+  CANCELLED
+
+  @@schema("bd")
+}
+
+model Approval {
+  id            String         @id @db.Uuid
+  companyId     String         @map("company_id") @db.Uuid
+  opportunityId String         @map("opportunity_id") @db.Uuid
+  /// Somme globale couverte ; absente si l'agrément ne couvre qu'un nombre de places (au moins l'un des deux, D1).
+  amount        Decimal?       @db.Decimal(14, 2)
+  currency      String         @default("XAF") @db.VarChar(3)
+  places        Int?
+  receivedOn    DateTime       @map("received_on") @db.Date
+  validUntil    DateTime?      @map("valid_until") @db.Date
+  status        ApprovalStatus @default(RECEIVED)
+  /// Motif de l'expiration ou de l'annulation ; absent pour un agrément reçu ou honoré.
+  closedReason  String?        @map("closed_reason") @db.VarChar(500)
+  closedAt      DateTime?      @map("closed_at") @db.Timestamptz(6)
+  version       Int            @default(1)
+  createdAt     DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime       @updatedAt @map("updated_at") @db.Timestamptz(6)
+  company       Company        @relation(fields: [companyId], references: [id])
+  opportunity   Opportunity    @relation(fields: [opportunityId], references: [id])
+
+  @@index([companyId])
+  @@index([opportunityId])
+  @@map("approvals")
   @@schema("bd")
 }

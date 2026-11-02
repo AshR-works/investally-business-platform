@@ -39,6 +39,7 @@ Mis à jour **à chaque lot**, en même temps que le code (règle posée le 2026
 | S4.3a — opportunités | 780 réussis | 306 / 306 (21 suites) | 390 / 390 | 24 / 24 | 105 contrôles, 0 échec (parcours limité) |
 | S4.3b — statuts, responsable, fiche 360° | 797 réussis | 319 / 319 (22 suites) | 400 / 400 | 21 / 21 | 38 contrôles, 0 échec (parcours ciblé sur la fiche entreprise) |
 | S4.3c — valeur et lien rendez-vous | 804 réussis | 322 / 322 (22 suites) | 408 / 408 | 14 / 14 | 43 contrôles, 0 échec (parcours ciblé sur la fiche entreprise et l'agenda) |
+| S4.4a — agréments | 833 réussis | 338 / 338 (23 suites) | 433 / 433 | 18 / 18 | 51 contrôles, 0 échec (parcours ciblé sur la fiche entreprise) |
 
 Pour les lots antérieurs, les chiffres sont dans leurs recettes. Les sondes IDOR s'ajoutent avec chaque route « objet » (voir le contrat ci-dessus) ; les mutants sont des fautes injectées une à une (un test doit échouer à chaque fois) ; l'audit navigateur est `scripts/a11y-audit.mjs` (résultats dans `docs/accessibilite/resultats/`).
 
