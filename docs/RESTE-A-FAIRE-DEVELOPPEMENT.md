@@ -30,7 +30,8 @@ Ordre retenu le 2026-10-21 (DEC-005) : module commercial, puis Investudy, puis p
 | **S4.3c** Valeur et lien rendez-vous | *Validé* : colonne « Valeur » du tableau des entreprises ; lien d'un rendez-vous à une opportunité (D93, D104) | — | Votre « Je valide » ; défauts D38 |
 | **S4.4a** Agréments | *Validé* : agrément (promesse de paiement signée), entreprise « Cliente », honorer / expirer / annuler | — | Défauts D39 à confirmer |
 | **S4.4b** Ambassadeurs | *Validé* : création manuelle avec origine (client ou apprenant), liste, modification (les suggestions attendent les certifications d'Investudy) | — | Défauts D40 à confirmer |
-| **S4.4c** Commissions à verser | Commission « due » (déclencheur à trancher), déblocage par le DAF, versement et justificatif (flux F3) | 1 session | S4.4a ; réponses de la Direction administrative et financière |
+| **S4.4a-bis** Correctifs décidés (D41) | Champ « payeur » et état « demandé » sur l'agrément, droits du rôle Finance (lire, constater le paiement), second facteur récent sur le changement de responsable | 0,5 à 1 session | Décisions FD-3, FD-4, FD-6 prises |
+| **S4.4c** Commissions à verser | Commission « due » quand l'agrément est honoré, déblocage par le DAF seul, versement avec justificatif (reçu ou ordre de versement), commission figée (flux F3) | 1 session | S4.4a-bis ; décisions FD-1, FD-2 prises (D41) |
 | **S5.1** Catalogue Investudy | Programmes, formations, salles, formateurs ; modèle de données du module | 1 session | S4.4 ; cas d'usage validés |
 | **S5.2** Sessions et inscriptions | Sessions, apprenants, inscriptions liées à l'agrément, annulation et report | 1,5 session | S5.1 ; D31 (confirmation, liste d'attente) |
 | **S5.3** Suivi pédagogique | Présences, évaluations, clôture, certificats et attestations, suggestion d'ambassadeur | 1 à 1,5 session | S5.2 ; seuils de certification |
@@ -104,4 +105,4 @@ Ordre retenu le 2026-10-21 (DEC-005) : module commercial, puis Investudy, puis p
 
 **S4.4c — Commissions à verser.** Commission « due », déblocage par le DAF, versement et justificatif (flux F3).
 
-Avant de commencer S4.4c, il n'y a plus de validation en attente. Les valeurs par défaut D36 à D40 restent à confirmer ; S4.4c attend aussi vos réponses sur l'événement qui rend une commission « due ».
+Avant de commencer S4.4a-bis puis S4.4c, il n'y a plus de validation en attente. Les décisions FD-1 à FD-6 sont prises (D41). Les valeurs par défaut D36 à D40 restent à confirmer (FD-7), ainsi que FD-8 à FD-11.

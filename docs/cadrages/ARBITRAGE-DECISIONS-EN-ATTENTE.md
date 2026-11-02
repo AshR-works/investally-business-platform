@@ -55,6 +55,8 @@ Mêmes cinq critères pour toutes les décisions (extraits de la grille standard
 
 ---
 
+> **Réponses reçues le 2026-11-02 (décision D41)** : FD-1 B (C visé à terme), FD-2 A, FD-2.1 c, FD-2.2 a, FD-2.3 aucun, FD-3 B, FD-4 B, FD-5 A, FD-6 B. Restent à répondre : FD-7 à FD-11. Les sections FD-1 à FD-6 ci-dessous sont conservées comme trace de l'analyse.
+
 ## FD-1 — Quel événement rend une commission « due » ?
 *Références : Flux F3, S4.4c ; D24, D5, D112 · Bloque : S4.4c (commissions à verser)*
 
