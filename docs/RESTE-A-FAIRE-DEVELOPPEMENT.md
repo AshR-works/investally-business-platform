@@ -27,8 +27,10 @@ Ordre retenu le 2026-10-21 (DEC-005) : module commercial, puis Investudy, puis p
 | **S4.2d** Agenda | *Validé* : rendez-vous (DAF, décideur) et visites, vues jour, semaine et mois, conflit d'horaire en avertissement, report, tenue et annulation. Reste : rappels envoyés (D85), synchronisation Outlook (D88) | — | — |
 | **S4.3a** Opportunités | *Validé* : pipeline en cartes ou par étape, règle du rendez-vous décideur, dérogation, clôture perdue ou gagnée (D28) | — | — |
 | **S4.3b** Entreprises : statuts et responsable | *Validé* : statut manuel d'un cran (CU-C-05), changement de responsable (D17), fiche 360° (opportunités, rendez-vous), colonne Responsable | — | Votre « Je valide » ; défauts D37 |
-| **S4.3c** Valeur et lien rendez-vous | *Terminé, validation en attente* : colonne « Valeur » du tableau des entreprises ; lien d'un rendez-vous à une opportunité (D93, D104) | — | Votre « Je valide » ; défauts D38 |
-| **S4.4** Agrément et ambassadeurs | Agrément (promesse de paiement), ambassadeurs, événements vers Investudy, suivi des commissions à verser (flux F3) | 1 à 1,5 session | S4.3 ; **détails de l'agrément (D1 à D5)** |
+| **S4.3c** Valeur et lien rendez-vous | *Validé* : colonne « Valeur » du tableau des entreprises ; lien d'un rendez-vous à une opportunité (D93, D104) | — | Votre « Je valide » ; défauts D38 |
+| **S4.4a** Agréments | *Terminé, validation en attente* : agrément (promesse de paiement signée), entreprise « Cliente », honorer / expirer / annuler | — | Votre « Je valide » ; défauts D39 |
+| **S4.4b** Ambassadeurs | Créer un ambassadeur à la main, avec son origine (client ou apprenant) ; liste et fiche (CU-F2-06 sans les suggestions, qui attendent les certifications d'Investudy) | 0,5 à 1 session | S4.4a |
+| **S4.4c** Commissions à verser | Commission « due » (déclencheur à trancher), déblocage par le DAF, versement et justificatif (flux F3) | 1 session | S4.4a ; réponses de la Direction administrative et financière |
 | **S5.1** Catalogue Investudy | Programmes, formations, salles, formateurs ; modèle de données du module | 1 session | S4.4 ; cas d'usage validés |
 | **S5.2** Sessions et inscriptions | Sessions, apprenants, inscriptions liées à l'agrément, annulation et report | 1,5 session | S5.1 ; D31 (confirmation, liste d'attente) |
 | **S5.3** Suivi pédagogique | Présences, évaluations, clôture, certificats et attestations, suggestion d'ambassadeur | 1 à 1,5 session | S5.2 ; seuils de certification |
@@ -96,6 +98,8 @@ Ordre retenu le 2026-10-21 (DEC-005) : module commercial, puis Investudy, puis p
 | Mises à jour de la matrice de droits : `bd.opportunity.close_lost` et `close_won`, dérogation, agrément, commissions, exports | S4.3, S4.4 | Avec chaque lot |
 
 ## 7. Prochaine session proposée
-**S4.4 — Agrément et ambassadeurs.** Agrément (promesse de paiement), ambassadeurs, événements vers Investudy, suivi des commissions à verser (flux F3) ; il poserait aussi le statut « Cliente » (D105).
+**S4.4b — Ambassadeurs.** Créer un ambassadeur à la main, avec son origine (client ou apprenant) ; liste et fiche. Les suggestions après une certification attendent Investudy.
 
-Avant de commencer, il me faut **votre « Je valide S4.3c »** (ou vos corrections). Les valeurs par défaut D36, D37 et D38 sont à confirmer ; l'agrément attend aussi vos décisions D1 à D5.
+**S4.4c — Commissions à verser.** Commission « due », déblocage par le DAF, versement et justificatif (flux F3).
+
+Avant de commencer, il me faut **votre « Je valide S4.4a »** (ou vos corrections). Les valeurs par défaut D36 à D39 sont à confirmer ; S4.4c attend aussi vos réponses sur l'événement qui rend une commission « due ».

@@ -147,6 +147,10 @@ Cellule : **O**, **É**, **T** = portée accordée ; vide = non accordée.
 | `bd.visit.read` | T | T | E | O |  |  |  |  |  |  |
 | `bd.visit.create` | T |  | E | O |  |  |  |  |  |  |
 | `bd.visit.update` | T |  | E | O |  |  |  |  |  |  |
+| `bd.approval.read` | T | T | E | O |  |  |  |  |  |  |
+| `bd.approval.create` | T |  | E | O |  |  |  |  |  |  |
+| `bd.approval.cancel` | T |  | E |  |  |  |  |  |  |  |
+| `bd.approval.honor` | T |  | E |  |  |  |  |  |  |  |
 | `bd.opportunity.read` | T | T | T | O | T |  |  |  |  |  |
 | `bd.opportunity.create` | T |  | E | O |  |  |  |  |  |  |
 | `bd.opportunity.update` | T |  | E | O |  |  |  |  |  |  |

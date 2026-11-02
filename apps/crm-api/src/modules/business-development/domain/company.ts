@@ -116,6 +116,14 @@ export class Company extends AggregateRoot {
     this.props.ownerUserId = newOwnerUserId;
   }
 
+  /** Un agrément reçu fait de l'entreprise une cliente (flux C5) ; refusé si elle est archivée, sans effet si elle l'est déjà. */
+  becomeClient(): void {
+    if (this.props.status === CompanyStatus.Archived) {
+      throw new DomainError('INVARIANT_VIOLATION', "L'entreprise est archivée : elle n'est plus modifiable");
+    }
+    this.props.status = CompanyStatus.Client;
+  }
+
   /** Archive l'entreprise ; refuse de l'archiver deux fois (règle métier). */
   archive(): void {
     if (this.props.status === CompanyStatus.Archived) {

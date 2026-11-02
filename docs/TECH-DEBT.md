@@ -111,7 +111,14 @@
 | D108 | **Pas d'action « Planifier un rendez-vous » depuis une opportunité** : le lien se choisit dans le formulaire de l'agenda (ou depuis la fiche de l'entreprise) ; l'opportunité n'affiche pas ses rendez-vous | S4.3c | Claude | Fiche d'opportunité enrichie |
 | D109 | **Une seule opportunité par rendez-vous** (pas de rendez-vous qui sert plusieurs opportunités) ; un rendez-vous décideur non lié reste « de l'entreprise » et compte pour toutes | S4.3c | Claude | À confirmer (D38) |
 | D110 | **Valeur calculée à la volée** pour les entreprises de la page affichée (une requête groupée) : pas de total général de la liste ni de valeur sur l'export de la fiche | S4.3c | Claude | S6.1 |
-| D105 | **Le statut « Cliente » n'est posé par rien** tant que l'agrément n'existe pas ; une entreprise ne peut donc pas encore devenir cliente | S4.3b | Claude | S4.4 |
+| D111 | **Pas d'état « demandé »** : l'agrément s'enregistre directement « reçu », avec son document signé (CU-F1-05 prévoyait demandé → reçu → honoré) ; le suivi d'une demande en attente du client n'existe pas | S4.4a | Claude | À confirmer (D39) |
+| D112 | **Honorer = action manuelle du Responsable commercial** (droit `bd.approval.honor`) : le paiement effectif relève de la finance (D5), qui n'a pas encore de module ; le droit passera au DAF avec F4 | S4.4a | Claude | Module Finance (F4) |
+| D113 | **Événement « agrément accordé » enregistré mais jamais consommé** : Investudy n'existe pas encore ; aucune inscription n'est ouverte, et la règle D4 (signaler les inscriptions d'un agrément annulé) n'a rien à signaler tant que les inscriptions n'existent pas | S4.4a | Claude | S5.x (inscriptions) |
+| D114 | **Un seul agrément actif par opportunité**, non modifiable : pas de cumul ni d'avenant ; corriger une saisie = annuler (motif) puis réenregistrer | S4.4a | Claude | À confirmer (D39) |
+| D115 | **L'entreprise reste « Cliente »** si son agrément est ensuite annulé ou expiré : aucun retour automatique de statut (et la fiche n'en propose pas de manuel, CU-C-05) | S4.4a | Claude | À confirmer (D39) |
+| D116 | **Pas de page « Agréments » transverse, d'export ni de rappel d'expiration** : la validité dépassée est seulement signalée sur la fiche de l'entreprise ; l'expiration reste manuelle (D3) | S4.4a | Claude | S6.1 (tableaux de bord) |
+| D117 | **Document signé obligatoire dans l'interface, non imposé par le serveur** : envoi en deux temps comme les décharges ; si l'envoi échoue, l'agrément existe sans fichier et un message l'indique | S4.4a | Claude | À confirmer |
+| D105 | **Le statut « Cliente » n'est posé par rien** tant que l'agrément n'existe pas ; une entreprise ne peut donc pas encore devenir cliente | S4.3b | Claude | *Soldée par S4.4a* : l'agrément reçu pose « Cliente » |
 | D5 | Hypothèses de charge et de périmètre non confirmées | Phase 3 | Revue à la fin de S1 avec les chiffres réels | Ouverte |
 
 ## Adopted Conventions

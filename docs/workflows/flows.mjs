@@ -5,7 +5,7 @@
 
 export const FLOWS = [
   {
-    id: 'F1', slug: 'besoin-agrement', title: 'Du besoin à l’agrément', status: 'À venir',
+    id: 'F1', slug: 'besoin-agrement', title: 'Du besoin à l’agrément', status: 'Partiel',
     sub: 'Opportunité commerciale → accord de principe → agrément (promesse de paiement). Sprints S4.3 et S4.4.',
     lanes: ['Client (externe)', 'Chargé de compte', 'Responsable commercial', 'Système'],
     steps: [
@@ -17,7 +17,7 @@ export const FLOWS = [
       { id: 's4', lane: 'Responsable commercial', col: 3, label: 'Accorder une dérogation motivée', note: 'Dérogation réservée au Responsable commercial ; justification obligatoire, action confirmée et inscrite dans l’audit.', next: [{ to: 's3' }] },
       { id: 's5', lane: 'Chargé de compte', col: 5, label: 'Demander l’agrément et le document signé', next: [{ to: 's6' }] },
       { id: 's6', lane: 'Client (externe)', col: 6, kind: 'external', label: 'Remet l’agrément signé', next: [{ to: 's7' }] },
-      { id: 's7', lane: 'Chargé de compte', col: 7, label: 'Enregistrer l’agrément (montant, payeur, validité)', note: 'Agrément = promesse de paiement, détenu par Business Development. Montant > 0 en XAF par défaut, document signé joint, période de validité.', next: [{ to: 'e1', exit: 'bottom' }] },
+      { id: 's7', lane: 'Chargé de compte', col: 7, built: true, label: 'Enregistrer l’agrément (montant, payeur, validité)', note: 'Agrément = promesse de paiement, détenu par Business Development. Montant > 0 en XAF par défaut, document signé joint, période de validité.', next: [{ to: 'e1', exit: 'bottom' }] },
       { id: 'e1', lane: 'Système', col: 7, kind: 'event', label: 'Agrément accordé : événement vers Investudy', next: [{ to: 'z' }] },
       { id: 'z', lane: 'Système', col: 8, kind: 'end' },
     ],

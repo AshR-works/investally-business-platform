@@ -279,14 +279,27 @@
           "tag": "s4-3b-validated"
         },
         {
-          "name": "S4.3c — colonne Valeur, lien rendez-vous ↔ opportunité (terminé, validation en attente)",
+          "name": "S4.3c — colonne Valeur, lien rendez-vous ↔ opportunité",
+          "start": "2026-11-02",
+          "end": "2026-11-02",
+          "state": "done",
+          "tag": "s4-3c-validated"
+        },
+        {
+          "name": "S4.4a — agréments (terminé, validation en attente)",
           "start": "2026-11-02",
           "end": "2026-11-02",
           "state": "wait"
         },
         {
-          "name": "S4.4 — agrément et ambassadeurs",
+          "name": "S4.4b — ambassadeurs",
           "start": "2026-11-17",
+          "end": "2026-11-18",
+          "state": "plan"
+        },
+        {
+          "name": "S4.4c — commissions à verser",
+          "start": "2026-11-18",
           "end": "2026-11-19",
           "state": "plan"
         }

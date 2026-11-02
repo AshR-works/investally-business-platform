@@ -1,0 +1,38 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>DDR-0024 — Agréments : la promesse de paiement signée d&#x27;une opportunité</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — design · <a href="../README.html">Mode d&#8217;emploi</a> · <a href="../01-DESIGN-SYSTEM.html">Design system</a> · <a href="../02-SPECIFICATIONS-FRONTEND.html">Spécifications frontend</a> · <a href="../exigences/REGISTRE-EXD.html">Exigences</a> · <a href="../04-ANALYSE-D-IMPACT.html">Analyse d&#8217;impact</a> · <a href="../05-AIDE-A-LA-DECISION.html">Aide à la décision</a> · <a href="../decisions/REGISTRE-DDR.html">Décisions (DDR)</a> · <a href="../CHANGELOG-DESIGN.html">Journal</a> · <a href="../prototype/index.html">Prototype</a></nav><h1>DDR-0024 — Agréments : la promesse de paiement signée d'une opportunité</h1>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td><strong>Statut</strong></td><td>Acceptée (réalisée dans l'application) ; prototype à mettre à jour</td></tr>
+<tr><td><strong>Date</strong></td><td>2026-11-08</td></tr>
+<tr><td><strong>Version du design</strong></td><td>0.4.1 (le prototype n'est pas encore à jour : version 0.5.0 à décider)</td></tr>
+<tr><td><strong>Lié à</strong></td><td>Lot S4.4a ; wireframe 23 ; cas d'usage CU-F1-05 ; flux F1 et C5 ; décisions D1 à D5 et D39</td></tr>
+</tbody></table></div>
+<h2>Contexte</h2>
+<p>Une opportunité qui a obtenu l'accord de principe doit se concrétiser par un <strong>agrément</strong> : la promesse de paiement signée par l'entreprise cliente. C'est lui qui fait d'un prospect un client et qui ouvrira les inscriptions d'Investudy. Les points laissés « à trancher » (D1 à D5 : places ou somme, payeur tiers, expiration, effet sur les inscriptions, suivi du paiement) reçoivent les valeurs du registre ; elles sont <strong>à confirmer</strong> (D39).</p>
+<h2>Décisions</h2>
+<ol><li><strong>Où</strong> : un panneau « Agréments » sur la <strong>fiche de l'entreprise</strong> (opportunité, ce qui est couvert, date de réception, validité, état) et une fenêtre « Enregistrer un agrément ». Pas de page transverse dans cette version.</li><li><strong>Quand</strong> : on enregistre l'agrément d'une <strong>opportunité qui a franchi l'accord de principe</strong> (étape « Accord de principe » ou « Agrément », ouverte ou gagnée) et qui <strong>n'est pas perdue</strong>. <strong>Un seul agrément actif</strong> (reçu ou honoré) par opportunité ; corriger une saisie = annuler puis réenregistrer.</li><li><strong>Ce qu'il couvre (D1)</strong> : une <strong>somme</strong>, un <strong>nombre de places</strong>, ou <strong>les deux</strong> (au moins l'un des deux) ; devise XAF par défaut. <strong>Payeur : le client seulement</strong> (D2), donc pas de champ.</li><li><strong>Dates (D3)</strong> : date de <strong>réception</strong> (réelle, pas dans le futur) et <strong>fin de validité facultative</strong> (jamais avant la réception). L'<strong>expiration est manuelle</strong> : une validité dépassée est seulement signalée sur la fiche.</li><li><strong>Document signé</strong> : joint à l'enregistrement (catégorie « Agrément signé » du module Documents) ; il n'est visible que dans la portée de l'agrément.</li><li><strong>États</strong> : <strong>reçu → honoré</strong>, ou <strong>expiré / annulé</strong> (avec un <strong>motif obligatoire</strong>). Honoré, expiré et annulé sont <strong>définitifs</strong>. Pas d'état « demandé » (D111).</li><li><strong>Droits</strong> : lire et enregistrer : chargé de compte (ses entreprises), Responsable commercial (son équipe), Direction (lecture) ; <strong>honorer</strong> et <strong>annuler / expirer</strong> sont deux droits distincts, tenus par le Responsable commercial.</li><li><strong>Paiement (D5)</strong> : le CRM ne suit pas le paiement effectif ; « honoré » est constaté à la main (D112) en attendant le module Finance.</li><li><strong>Entreprise « Cliente » (flux C5)</strong> : l'enregistrement fait passer l'entreprise à <strong>« Cliente »</strong> (statut qu'aucune action manuelle ne pose), tracé dans l'audit. Si l'agrément est ensuite annulé ou expiré, l'entreprise <strong>reste cliente</strong> (D115).</li><li><strong>Investudy</strong> : l'événement « agrément accordé » est enregistré sur l'agrément mais <strong>aucun consommateur n'existe encore</strong> (D113) ; la règle D4 (signaler les inscriptions d'un agrément annulé) attend les inscriptions.</li><li><strong>Entreprise archivée</strong> : plus d'enregistrement ni de clôture ; les agréments restent lisibles.</li></ol>
+<h2>Mesures de rigueur</h2>
+<ul><li>La base garantit : un seul agrément actif par opportunité ; montant et places positifs ; <strong>au moins l'un des deux</strong> ; validité jamais avant la réception ; un agrément reçu n'est pas clos, un clos a sa date, un expiré ou annulé a son motif ; version positive ; liens vers des opportunités et entreprises existantes (vérifié par des écritures directes refusées).</li><li>Les règles (accord de principe, perdue, un seul actif, montants, dates, motifs, définitif, droits distincts, portée) sont couvertes par des tests unitaires et d'intégration ; des fautes injectées sont toutes détectées (voir la recette).</li><li>Les mêmes règles de saisie sont comparées entre l'interface et le <strong>domaine réel</strong> du serveur.</li><li>Le contrat anti-IDOR est étendu aux six nouvelles routes.</li></ul>
+<h2>Conséquences</h2>
+<ul><li>Réversible : une migration (une table), un module, trois composants.</li><li><strong>Dette</strong> : D111 à D117 (<code>docs/TECH-DEBT.md</code>) ; D105 soldée.</li></ul></main></body></html>
