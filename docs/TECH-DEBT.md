@@ -118,6 +118,13 @@
 | D115 | **L'entreprise reste « Cliente »** si son agrément est ensuite annulé ou expiré : aucun retour automatique de statut (et la fiche n'en propose pas de manuel, CU-C-05) | S4.4a | Claude | À confirmer (D39) |
 | D116 | **Pas de page « Agréments » transverse, d'export ni de rappel d'expiration** : la validité dépassée est seulement signalée sur la fiche de l'entreprise ; l'expiration reste manuelle (D3) | S4.4a | Claude | S6.1 (tableaux de bord) |
 | D117 | **Document signé obligatoire dans l'interface, non imposé par le serveur** : envoi en deux temps comme les décharges ; si l'envoi échoue, l'agrément existe sans fichier et un message l'indique | S4.4a | Claude | À confirmer |
+| D118 | **Pas de suggestion d'ambassadeur après une certification** : le bandeau du wireframe 24 n'est pas construit ; il attend les certifications d'Investudy (S5.3). La création reste toujours manuelle | S4.4b | Claude | S5.3 |
+| D119 | **Pas de fin d'ambassade ni de suppression** : un ambassadeur reste dans la liste ; une correction passe par la modification | S4.4b | Claude | À confirmer (D40) |
+| D120 | **Le chargé de compte ne modifie pas ses ambassadeurs** : la matrice de droits existante réserve la modification au Responsable commercial (Équipe) ; une erreur de saisie demande donc son intervention | S4.4b | Claude | À confirmer (D40) |
+| D121 | **Pas de lien avec l'apprenant ni avec un contact** : l'origine « apprenant » est un libellé (l'entité apprenant naît en S5) ; un client est rattaché à une entreprise visible, sans vérifier qu'elle est « Cliente » | S4.4b | Claude | S5.2 |
+| D122 | **Pas de panneau « Ambassadeurs » sur la fiche de l'entreprise**, pas de filtre par entreprise ni d'export de la liste | S4.4b | Claude | Fiche 360° enrichie |
+| D123 | **Visibilité par créateur, pas par entreprise** : si une entreprise change de responsable (S4.3b), ses ambassadeurs restent chez leur créateur | S4.4b | Claude | À confirmer (D40) |
+| D124 | **Un e-mail ne sert qu'à un ambassadeur** ; aucun contrôle de doublon par nom (deux personnes homonymes sont permises) | S4.4b | Claude | À confirmer (D40) |
 | D105 | **Le statut « Cliente » n'est posé par rien** tant que l'agrément n'existe pas ; une entreprise ne peut donc pas encore devenir cliente | S4.3b | Claude | *Soldée par S4.4a* : l'agrément reçu pose « Cliente » |
 | D5 | Hypothèses de charge et de périmètre non confirmées | Phase 3 | Revue à la fin de S1 avec les chiffres réels | Ouverte |
 

@@ -29,6 +29,10 @@ import { OWNER_DIRECTORY } from './domain/owner-directory';
 import { PrismaOwnerDirectory } from './infrastructure/prisma-owner-directory';
 import { OPPORTUNITY_TOTALS } from './domain/opportunity-totals';
 import { APPROVAL_REPOSITORY } from './domain/approval-repository';
+import { AMBASSADOR_REPOSITORY } from './domain/ambassador-repository';
+import { PrismaAmbassadorRepository } from './infrastructure/prisma-ambassador.repository';
+import { GetAmbassadorHandler, ListAmbassadorsHandler, RegisterAmbassadorUseCase, UpdateAmbassadorUseCase } from './application/ambassador-use-cases';
+import { AmbassadorsController } from './presentation/ambassadors.controller';
 import { PrismaApprovalRepository } from './infrastructure/prisma-approval.repository';
 import { ApprovalDocumentOwnerResolver } from './application/approval-document-owners';
 import { CloseApprovalUseCase, GetApprovalHandler, ListApprovalsHandler, RegisterApprovalUseCase } from './application/approval-use-cases';
@@ -62,13 +66,17 @@ import { ReceiptsController } from './presentation/receipts.controller';
 /** Composition root du module Business Development. */
 @Module({
   imports: [AuditModule, IamModule, DocumentsModule],
-  controllers: [CompaniesController, FacilitatorsController, ContactsController, OffersController, ReceiptsController, FollowupsController, AppointmentsController, OpportunitiesController, ApprovalsController],
+  controllers: [CompaniesController, FacilitatorsController, ContactsController, OffersController, ReceiptsController, FollowupsController, AppointmentsController, OpportunitiesController, ApprovalsController, AmbassadorsController],
   providers: [
     RegisterCompanyUseCase,
     RegisterFacilitatorUseCase,
     FacilitationResolver,
     UpdateCompanyUseCase,
     RegisterApprovalUseCase,
+    RegisterAmbassadorUseCase,
+    UpdateAmbassadorUseCase,
+    GetAmbassadorHandler,
+    ListAmbassadorsHandler,
     CloseApprovalUseCase,
     GetApprovalHandler,
     ListApprovalsHandler,
@@ -121,6 +129,7 @@ import { ReceiptsController } from './presentation/receipts.controller';
     { provide: OWNER_DIRECTORY, useClass: PrismaOwnerDirectory },
     { provide: OPPORTUNITY_TOTALS, useClass: PrismaOpportunityTotals },
     { provide: APPROVAL_REPOSITORY, useClass: PrismaApprovalRepository },
+    { provide: AMBASSADOR_REPOSITORY, useClass: PrismaAmbassadorRepository },
     { provide: COMPANY_OVERVIEW_READER, useClass: PrismaCompanyOverviewReader },
     { provide: FACILITATOR_REPOSITORY, useClass: PrismaFacilitatorRepository },
     { provide: CONTACT_REPOSITORY, useClass: PrismaContactRepository },

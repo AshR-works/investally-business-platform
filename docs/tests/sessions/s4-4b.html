@@ -1,0 +1,67 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fiche de test — S4.4b — ambassadeurs : clients ou apprenants devenus relais commerciaux</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="../../INDEX.html">Index</a> · <a href="../../GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="../../ARCHITECTURE.html">Architecture</a> · <a href="../../SECURITY.html">Sécurité</a> · <a href="../../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../../QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="../../TECH-DEBT.html">Dette</a> · <a href="../../CHARTE-DE-TESTS.html">Charte de tests</a> · <a href="../../tests/README.html">Fiches de test</a> · <a href="../../design/README.html">Design</a> · <a href="../../livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>Fiche de test — S4.4b — ambassadeurs : clients ou apprenants devenus relais commerciaux</h1>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td><strong>Session</strong></td><td><code>s4-4b</code></td></tr>
+<tr><td><strong>Recette de référence</strong></td><td><a href="../../SPRINT-S4-4B-RECETTE.html"><code>SPRINT-S4-4B-RECETTE.md</code></a></td></tr>
+<tr><td><strong>Étiquette</strong></td><td>—</td></tr>
+<tr><td><strong>Contexte</strong></td><td>Branche <code>sprint/s4-4b-ambassadeurs</code> (partie de <code>main</code>, après S4.4a) · 2026-11-08 · cas d'usage CU-F2-06 ; flux F2 ; DDR-0025 ; décisions n° 11 et D40. Deuxième partie de la session S4.4 ; S4.4c (commissions à verser) n'est pas livré.</td></tr>
+<tr><td><strong>Écrans concernés</strong></td><td><a href="../interfaces/17-ambassadeurs.html">Ambassadeurs</a></td></tr>
+</tbody></table></div>
+<p><em>Fiche de session de la <a href="../../CHARTE-DE-TESTS.html">charte de tests</a>, <strong>dérivée de la recette</strong> du lot : en cas de doute, la recette fait foi. Elle sert à rejouer la recette utilisateur et à vérifier l'absence de régression.</em></p>
+<h2>Avant de commencer</h2>
+<ul><li>Pile locale lancée (<code>node scripts/local-stack.mjs --demo</code>) ou pile jetable ; comptes de démonstration (mots de passe dans le fichier local, jamais dans le dépôt).</li><li>Rôles utiles : chargé de compte, Responsable commercial (avec son équipe), Direction, Super administrateur.</li></ul>
+<h2>Vérifications à rejouer</h2>
+<div class="table-wrap"><table><thead><tr><th>N°</th><th>Vérification</th><th>Résultat attendu (d'après la recette)</th><th>Constaté (✔ / ✘)</th><th>Date et initiales</th></tr></thead><tbody>
+<tr><td>1</td><td>Page « Ambassadeurs »</td><td>Module du hub livré : tableau (ambassadeur, origine, entreprise, « depuis » au format mois/année, e-mail, téléphone), recherche, filtre par origine, pagination ; le texte rappelle que la création est une décision manuelle</td><td>☐</td><td></td></tr>
+<tr><td>2</td><td>Création manuelle</td><td>« Nouvel ambassadeur » : nom, prénom, <strong>origine</strong> (client ou apprenant), entreprise, e-mail, téléphone, date de début (jamais dans le futur), note ; <strong>jamais de création automatique</strong></td><td>☐</td><td></td></tr>
+<tr><td>3</td><td>Origine et entreprise</td><td>Un <strong>client</strong> est toujours rattaché à son entreprise (parmi celles de sa portée) ; un <strong>apprenant</strong> peut n'en avoir aucune ; l'<strong>origine ne change jamais</strong></td><td>☐</td><td></td></tr>
+<tr><td>4</td><td>E-mail unique</td><td>Une adresse ne sert qu'à <strong>un</strong> ambassadeur : conflit lisible (alerte annoncée, fenêtre toujours ouverte)</td><td>☐</td><td></td></tr>
+<tr><td>5</td><td>Modifier</td><td>Menu de la ligne, « Modifier » ; origine affichée « non modifiable » ; un client ne peut pas perdre son entreprise ; version périmée = conflit</td><td>☐</td><td></td></tr>
+<tr><td>6</td><td>Responsable et portée</td><td>L'ambassadeur appartient au <strong>chargé de compte qui l'a créé</strong> : il voit <strong>les siens</strong> ; le Responsable commercial et la Direction voient <strong>tous</strong></td><td>☐</td><td></td></tr>
+<tr><td>7</td><td>Droits</td><td>Créer : chargé de compte, Responsable commercial ; <strong>modifier : Responsable commercial</strong> ; lire : chargé de compte, Responsable commercial, Direction (lecture seule) ; aucune permission nouvelle</td><td>☐</td><td></td></tr>
+<tr><td>8</td><td>Audit</td><td>Création et modification tracées (ancienne et nouvelle valeur, session)</td><td>☐</td><td></td></tr>
+<tr><td>9</td><td>Base de données</td><td>Migration <code>20261108000000_s4_4b_ambassadors</code> : table, clé étrangère, unicité de l'e-mail, trois contrôles</td><td>☐</td><td></td></tr>
+</tbody></table></div>
+<h2>Preuves automatisées relevées à la validation</h2>
+<div class="table-wrap"><table><thead><tr><th>Contrôle</th><th>Résultat</th></tr></thead><tbody>
+<tr><td>Types (<code>tsc</code>, API et web), architecture (<code>pnpm arch</code>)</td><td>0 erreur · aucune violation (235 modules)</td></tr>
+<tr><td>Tests unitaires de l'API</td><td><strong>856 réussis</strong>, 0 échec (les suites d'intégration, qui exigent la base, sont ignorées dans cette passe) ; 23 nouveaux (domaine : 11 ; cas d'usage : 12)</td></tr>
+<tr><td><strong>Tests d'intégration (PostgreSQL jetable)</strong></td><td><strong>348 / 348</strong> (24 suites) ; 8 nouveaux de bout en bout (cycle et responsable, apprenant sans entreprise, liste filtrée et triée, refus, portée et droits, entreprise d'un collègue, règles de la base, verrou optimiste au niveau de la base, audit) et 2 sondes IDOR</td></tr>
+<tr><td><strong>IDOR</strong></td><td>Les deux routes « objet » (lecture et modification) sont classées et sondées : même réponse pour l'ambassadeur d'un collègue et pour un identifiant inexistant, aucune écriture, aucune fuite. <strong>Exception documentée</strong> : le Responsable commercial lit tous les ambassadeurs (matrice de droits), donc la lecture n'est pas sondée avec lui comme attaquant ; sa modification l'est</td></tr>
+<tr><td>Règles garanties par la base</td><td>Client rattaché à une entreprise ; nom et prénom non vides ; e-mail unique ; version positive ; entreprise existante : vérifiés par des écritures directes refusées</td></tr>
+<tr><td>Tests de l'interface</td><td><strong>458 / 458</strong> (25 nouveaux) : saisie, corps des requêtes (création, modification), reconstitution du formulaire, « Depuis », module du hub ; <strong>cohérence avec le domaine réel du serveur</strong> sur 14 saisies</td></tr>
+<tr><td><strong>Mutants</strong></td><td><strong>17 / 17 tués</strong> (client sans entreprise, date future, origine, e-mail partagé, entreprise d'un collègue, responsable, droit de création, portée de la modification, verrou optimiste, portée de la liste, client qui perd son entreprise, droit de la route de modification, contrainte client, téléphone et note non enregistrés, filtre par origine, noms vides) ; script <code>scripts/mutants/s44b-ambassadeurs.py</code></td></tr>
+<tr><td><strong>Navigateur réel (Edge + axe-core)</strong></td><td><strong>Parcours ciblé</strong> (connexion, entreprise, puis ce lot) : <strong>58 contrôles réussis, 0 violation</strong> : liste vide, champs non conformes (surbrillance et liste annoncée), création d'un client, liste avec « depuis », modification, e-mail déjà pris. Le seul ✘ est l'arrêt volontaire de fin de parcours. Résultats <code>docs/accessibilite/resultats/axe-2026-11-08-s44b.json</code>, captures <code>docs/accessibilite/s44b-captures/</code></td></tr>
+</tbody></table></div>
+<h2>Réserves, limites et dette connues</h2>
+<ul><li>Aucun défaut n'a été trouvé par les tests, les mutants ni l'audit sur ce lot.</li><li><strong>Constat de conception</strong> (pas un défaut) : la matrice de droits existante réserve la <strong>modification</strong> au Responsable commercial ; un chargé de compte ne peut donc pas corriger lui-même un ambassadeur qu'il a créé. Cela figure en dette (D120) et en décision à confirmer (D40).</li><li><strong>Parcours navigateur ciblé</strong> : les écrans des lots antérieurs ne sont pas revérifiés (le navigateur sans fenêtre décroche dans l'agenda, voir la recette de S4.3b).</li><li><strong>Les rôles autres que le Super administrateur ne sont pas parcourus dans le navigateur</strong> : droits et portée sont couverts par les tests d'intégration et les mutants, pas par l'audit navigateur.</li><li><strong>Pas de suggestion « après certification »</strong> : le bandeau du wireframe 24 n'est pas construit ; il attend les certifications d'Investudy (D118).</li><li><strong>Pas de fin d'ambassade ni de suppression</strong> (D119) ; <strong>pas de lien avec la fiche de l'apprenant</strong> (entité créée en S5) ni avec un contact (D121) ; <strong>pas de panneau sur la fiche de l'entreprise</strong> ni d'export (D122) ; <strong>visibilité par créateur</strong>, non par entreprise (D123).</li><li>Pas de passage au lecteur d'écran réel ; testé sous Node 26.7, pas rejoué sous Node 22. Le prototype et le wireframe 24 ne sont pas à jour (D49).</li><li><strong>D118 à D124</strong> (<code>docs/TECH-DEBT.md</code>).</li><li><strong>D40 — à confirmer</strong> : création manuelle, origine non modifiable, client rattaché à son entreprise, e-mail unique, visibilité par créateur, modification réservée au Responsable commercial, aucune fin d'ambassade.</li></ul>
+<h2>Rejouer les contrôles automatisés</h2>
+<pre><code>pnpm ci                                   # types, architecture, tests unitaires et interface
+node apps/crm-api/scripts/test-db.mjs     # tests d&#x27;intégration (base PostgreSQL jetable)
+python scripts/mutants/s44b-ambassadeurs.py   # mutants du lot (arbre de travail propre)</code></pre>
+<h2>Écarts constatés</h2>
+<div class="table-wrap"><table><thead><tr><th>Date</th><th>Vérification n°</th><th>Description</th><th>Défaut ouvert (D…)</th></tr></thead><tbody>
+<tr><td></td><td></td><td></td><td></td></tr>
+</tbody></table></div></main></body></html>

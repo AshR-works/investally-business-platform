@@ -8,7 +8,7 @@
 3. **Un écart** : le noter dans la section « Écarts constatés » de la fiche ; il devient un défaut (charte, § 10).
 4. **Mise à jour** : un lot qui modifie un écran met à jour sa fiche d'interface ; la fiche de session d'un nouveau lot est créée à partir de sa recette (`docs/SPRINT-*-RECETTE.md`).
 
-## Fiches d'interface (16)
+## Fiches d'interface (17)
 
 | N° | Écran | Route | Lots | Dernière exécution |
 |---|---|---|---|---|
@@ -28,8 +28,9 @@
 | 14 | [Relances](interfaces/14-relances.md) | `/followups` | S4.2c | |
 | 15 | [Agenda (rendez-vous et visites)](interfaces/15-agenda.md) | `/agenda` | S4.2d, S4.3c | |
 | 16 | [Opportunités (pipeline)](interfaces/16-opportunites.md) | `/opportunities` | S4.3a, S4.3b, S4.3c | |
+| 17 | [Ambassadeurs](interfaces/17-ambassadeurs.md) | `/ambassadors` | S4.4b | |
 
-## Fiches de session (28)
+## Fiches de session (29)
 
 | Session | Intitulé | Étiquette | Vérifications | Dernière exécution |
 |---|---|---|---|---|
@@ -61,6 +62,7 @@
 | [s4-3b](sessions/s4-3b.md) | S4.3b — statuts d'entreprise, responsable, fiche 360° | `s4-3b-validated` | 8 | |
 | [s4-3c](sessions/s4-3c.md) | S4.3c — valeur des opportunités et lien rendez-vous ↔ opportunité | `s4-3c-validated` | 7 | |
 | [s4-4a](sessions/s4-4a.md) | S4.4a — agréments : la promesse de paiement signée | `s4-4a-validated` | 8 | |
+| [s4-4b](sessions/s4-4b.md) | S4.4b — ambassadeurs : clients ou apprenants devenus relais commerciaux | — | 9 | |
 
 ## Remarques
 - Les fiches de session sont **dérivées des recettes** : en cas de doute, la recette fait foi. Celles des premiers sprints (S1 à S3.5) sont surtout des tests automatisés ; leurs « vérifications » rappellent ce que chaque contrôle prouve.

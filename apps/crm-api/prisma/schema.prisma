@@ -51,6 +51,7 @@ model Company {
   appointments Appointment[]
   opportunities Opportunity[]
   approvals    Approval[]
+  ambassadors  Ambassador[]
 
   @@index([status])
   @@index([ownerUserId])
@@ -811,5 +812,36 @@ model Approval {
   @@index([companyId])
   @@index([opportunityId])
   @@map("approvals")
+  @@schema("bd")
+}
+
+enum AmbassadorOrigin {
+  CLIENT
+  LEARNER
+
+  @@schema("bd")
+}
+
+model Ambassador {
+  id          String           @id @db.Uuid
+  /// Le chargé de compte qui l'a créé (référence inter-contextes vers iam.users, SANS clé étrangère) : détermine la portée des droits.
+  ownerUserId String           @map("owner_user_id") @db.Uuid
+  lastName    String           @map("last_name") @db.VarChar(100)
+  firstName   String           @map("first_name") @db.VarChar(100)
+  origin      AmbassadorOrigin
+  /// Entreprise d'origine : obligatoire pour un client, facultative pour un apprenant.
+  companyId   String?          @map("company_id") @db.Uuid
+  email       String?          @db.VarChar(200)
+  phone       String?          @db.VarChar(40)
+  appointedOn DateTime         @map("appointed_on") @db.Date
+  note        String?          @db.VarChar(500)
+  version     Int              @default(1)
+  createdAt   DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime         @updatedAt @map("updated_at") @db.Timestamptz(6)
+  company     Company?         @relation(fields: [companyId], references: [id])
+
+  @@index([ownerUserId])
+  @@index([companyId])
+  @@map("ambassadors")
   @@schema("bd")
 }

@@ -34,7 +34,7 @@ export const FLOWS = [
     ],
   },
   {
-    id: 'F2', slug: 'agrement-ambassadeur', title: 'De l’agrément à l’ambassadeur', status: 'À venir',
+    id: 'F2', slug: 'agrement-ambassadeur', title: 'De l’agrément à l’ambassadeur', status: 'Partiel',
     sub: 'Inscription → session → présences et évaluations → certification → suggestion d’ambassadeur. Sprints S5.1 à S5.3 et S4.4.',
     lanes: ['Chargé de compte', 'Responsable Investudy', 'Formateur', 'Système'],
     steps: [
@@ -47,7 +47,7 @@ export const FLOWS = [
       { id: 's4', lane: 'Responsable Investudy', col: 5, label: 'Clôturer la session', note: 'Session clôturée : présences figées.', next: [{ to: 's5' }] },
       { id: 's5', lane: 'Responsable Investudy', col: 6, label: 'Délivrer certificat ou attestation', next: [{ to: 'e1', exit: 'bottom' }] },
       { id: 'e1', lane: 'Système', col: 6, kind: 'event', label: 'Certification délivrée : suggestion', next: [{ to: 's6' }] },
-      { id: 's6', lane: 'Chargé de compte', col: 7, label: 'Décider de créer un ambassadeur', note: 'La création est toujours manuelle ; la suggestion n’est qu’une tâche pour le chargé de compte.', next: [{ to: 'z' }] },
+      { id: 's6', lane: 'Chargé de compte', col: 7, built: true, label: 'Décider de créer un ambassadeur', note: 'La création est toujours manuelle ; la suggestion n’est qu’une tâche pour le chargé de compte.', next: [{ to: 'z' }] },
       { id: 'z', lane: 'Chargé de compte', col: 8, kind: 'end' },
     ],
     rules: [
