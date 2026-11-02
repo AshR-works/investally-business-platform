@@ -8,16 +8,16 @@
 
 ## 1. Synthèse en dix lignes
 
-1. **31 sessions validées** (de S1 à S4.4a, avec l'accessibilité, l'habillage, le contrat anti-IDOR et les cadrages), toutes fusionnées dans `main` et étiquetées `…-validated`.
+1. **32 sessions validées** (de S1 à S4.4b, avec l'accessibilité, l'habillage, le contrat anti-IDOR et les cadrages), toutes fusionnées dans `main` et étiquetées `…-validated`.
 2. Le **socle de sécurité et d'accès est complet** : comptes, connexion, second facteur, rôles et périmètres, invitations, mot de passe oublié, sessions, audit.
-3. Le **module commercial est largement livré** : entreprises (statuts, responsable, fiche 360°), contacts, offres, décharges signées, relances, agenda, opportunités (pipeline), agréments, documents. **Restent** les ambassadeurs (S4.4b) et les commissions à verser (S4.4c).
+3. Le **module commercial est largement livré** : entreprises (statuts, responsable, fiche 360°), contacts, offres, décharges signées, relances, agenda, opportunités (pipeline), agréments, documents. **Reste** les commissions à verser (S4.4c).
 4. **833 tests unitaires**, **338 d'intégration** (PostgreSQL jetable) et **433 d'interface**, tous verts ; **0 violation** d'architecture ; contrat anti-IDOR sur chaque route d'objet.
 5. Les **mutants** (fautes injectées) de chaque lot sont **tous détectés** (environ 220, scripts dans `scripts/mutants/`) ; l'**audit navigateur** (axe-core) relève **0 violation** sur les écrans livrés.
 6. Une **charte de tests** et des **fiches de test** (16 par écran, 28 par session) cadrent la recette (`docs/CHARTE-DE-TESTS.md`, `docs/tests/`).
 7. Les **blocages réels** ne sont pas techniques : accès **Microsoft 365**, **avis juridique** sur les données de performance, **second SuperAdmin**, logos au format SVG.
 8. **Décisions à confirmer** : valeurs par défaut D36 à D39 (opportunités, statuts, valeur, agréments) ; l'agrément applique D1 à D5 du registre.
 9. La **CI GitHub** (contrôle `verify`) est active et obligatoire avant toute fusion ; **Docker, sauvegardes, supervision** restent à faire (S7).
-10. **Prochaine étape** : S4.4b (ambassadeurs) puis S4.4c (commissions), puis S5 (Investudy), S6 (pilotage) et S7 (mise en production). Détail : `docs/GANTT-PROJET.md` et `docs/RESTE-A-FAIRE-DEVELOPPEMENT.md`.
+10. **Prochaine étape** : S4.4c (commissions), puis S5 (Investudy), S6 (pilotage) et S7 (mise en production). Détail : `docs/GANTT-PROJET.md` et `docs/RESTE-A-FAIRE-DEVELOPPEMENT.md`.
 
 ---
 
@@ -87,7 +87,7 @@ Légende : ✅ validé · 🟦 livré, validation attendue · ⏳ à faire
 | Opportunités : pipeline en cinq étapes, accord de principe (rendez-vous décideur ou dérogation), clôtures | ✅ | recette S4.3a |
 | Agréments : promesse de paiement signée, entreprise « Cliente », honorer / expirer / annuler | ✅ | recette S4.4a |
 | Envoyer de vrais e-mails (Microsoft 365) | ❌ **non testé** | en attente d'accès |
-| Ambassadeurs | ⏳ | S4.4b |
+| Ambassadeurs : création manuelle, origine client ou apprenant, liste | ✅ | recette S4.4b |
 | Commissions à verser (due, déblocage, versement) | ⏳ | S4.4c |
 | Formations, sessions, inscriptions, suivi pédagogique (Investudy) | ⏳ | S5 |
 | Tableaux de bord et indicateurs | ⏳ | S6 |
@@ -141,8 +141,7 @@ Légende : ✅ validé · 🟦 livré, validation attendue · ⏳ à faire
 
 | Ordre | Étape | Objet | Pré-requis |
 |---|---|---|---|
-| 1 | **S4.4b** Ambassadeurs | Création manuelle avec origine (client ou apprenant), liste et fiche | — |
-| 2 | **S4.4c** Commissions à verser | Commission « due », déblocage, versement et justificatif | Réponses de la direction administrative et financière |
+| 1 | **S4.4c** Commissions à verser | Commission « due », déblocage, versement et justificatif | Réponses de la direction administrative et financière |
 | 3 | Confirmation des valeurs par défaut | D36 à D39 | Votre décision |
 | 4 | **S5** Investudy | Catalogue, sessions, inscriptions, certifications | Cas d'usage validés |
 | 5 | **S6** Pilotage | Tableaux de bord commerciaux et de direction | S4, S5 |
