@@ -1,0 +1,66 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fiche de test — S4.2c — relances des offres</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="../../INDEX.html">Index</a> · <a href="../../GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="../../ARCHITECTURE.html">Architecture</a> · <a href="../../SECURITY.html">Sécurité</a> · <a href="../../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../../QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="../../TECH-DEBT.html">Dette</a> · <a href="../../CHARTE-DE-TESTS.html">Charte de tests</a> · <a href="../../tests/README.html">Fiches de test</a> · <a href="../../design/README.html">Design</a> · <a href="../../livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>Fiche de test — S4.2c — relances des offres</h1>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td><strong>Session</strong></td><td><code>s4-2c</code></td></tr>
+<tr><td><strong>Recette de référence</strong></td><td><a href="../../SPRINT-S4-2C-RECETTE.html"><code>SPRINT-S4-2C-RECETTE.md</code></a></td></tr>
+<tr><td><strong>Étiquette</strong></td><td><code>s4-2c-validated</code></td></tr>
+<tr><td><strong>Contexte</strong></td><td>Branche <code>sprint/s4-2c-relances</code> (partie de <code>sprint/s4-2b-decharges</code>) · 2026-11-03 · cas d'usage CU-C-22 ; flux C2 ; DDR-0019 ; décision D34. Dernier des trois lots de S4.2 : offres (S4.2a, validé), décharges (S4.2b, en attente), relances (ce lot).</td></tr>
+<tr><td><strong>Écrans concernés</strong></td><td><a href="../interfaces/14-relances.html">Relances</a>, <a href="../interfaces/13-offres.html">Offres</a></td></tr>
+</tbody></table></div>
+<p><em>Fiche de session de la <a href="../../CHARTE-DE-TESTS.html">charte de tests</a>, <strong>dérivée de la recette</strong> du lot : en cas de doute, la recette fait foi. Elle sert à rejouer la recette utilisateur et à vérifier l'absence de régression.</em></p>
+<h2>Avant de commencer</h2>
+<ul><li>Pile locale lancée (<code>node scripts/local-stack.mjs --demo</code>) ou pile jetable ; comptes de démonstration (mots de passe dans le fichier local, jamais dans le dépôt).</li><li>Rôles utiles : chargé de compte, Responsable commercial (avec son équipe), Direction, Super administrateur.</li></ul>
+<h2>Vérifications à rejouer</h2>
+<div class="table-wrap"><table><thead><tr><th>N°</th><th>Vérification</th><th>Résultat attendu (d'après la recette)</th><th>Constaté (✔ / ✘)</th><th>Date et initiales</th></tr></thead><tbody>
+<tr><td>1</td><td>Page « Relances »</td><td>Nouveau module de la navigation : liste triée par échéance, filtres rapides <strong>À faire, En retard, Aujourd'hui, À venir, Terminées, Annulées</strong>, sélection persistante, pagination</td><td>☐</td><td></td></tr>
+<tr><td>2</td><td>Planifier</td><td>Offre (imposée depuis son menu, ou choisie parmi les offres en cours), échéance proposée à <strong>sept jours</strong>, canal (Appel, E-mail, WhatsApp, Rencontre, Autre), note ; seulement sur une offre <strong>déposée ou à décharge reçue</strong></td><td>☐</td><td></td></tr>
+<tr><td>3</td><td>Au plus trois relances par offre</td><td>Une relance annulée libère une place</td><td>☐</td><td></td></tr>
+<tr><td>4</td><td>En retard</td><td>Calculé à la lecture (échéance dépassée, relance à faire), signalé par un badge ; une relance en retard peut être terminée ou modifiée sans changer son échéance passée</td><td>☐</td><td></td></tr>
+<tr><td>5</td><td>Terminer / annuler</td><td><strong>Résultat obligatoire</strong> pour terminer, <strong>motif obligatoire</strong> pour annuler ; définitives ; historique visible dans les filtres</td><td>☐</td><td></td></tr>
+<tr><td>6</td><td>Avec l'offre</td><td>Acceptée, refusée ou retirée : les relances à faire sont <strong>annulées automatiquement</strong> (motif écrit, une trace d'audit par relance, même transaction)</td><td>☐</td><td></td></tr>
+<tr><td>7</td><td>Depuis les offres</td><td>Action « Relances » dans le menu d'une offre (page filtrée sur l'offre) ; colonne <strong>« Prochaine relance »</strong> dans la liste des offres et la fiche entreprise</td><td>☐</td><td></td></tr>
+<tr><td>8</td><td>Droits et audit</td><td>Chargé de compte (Propre), Responsable commercial (Équipe), Direction en lecture ; planification, modification, clôture et annulation automatique tracées avec la session</td><td>☐</td><td></td></tr>
+</tbody></table></div>
+<h2>Preuves automatisées relevées à la validation</h2>
+<div class="table-wrap"><table><thead><tr><th>Contrôle</th><th>Résultat</th></tr></thead><tbody>
+<tr><td>Types (<code>tsc</code>), architecture (<code>pnpm arch</code>)</td><td>0 erreur · aucune violation (199 modules)</td></tr>
+<tr><td>Tests unitaires de l'API</td><td><strong>679 / 679</strong> (1 ignoré, antérieur) ; 53 nouveaux (relance : 25 ; cas d'usage : 28)</td></tr>
+<tr><td><strong>Tests d'intégration (PostgreSQL jetable)</strong></td><td><strong>268 / 268</strong> (19 suites) ; 17 nouveaux : 11 de bout en bout (cycle, refus, limite de trois, retard calculé, tri et portée, annulation avec l'offre, droits, règles de la base, verrou optimiste au niveau de la base, entreprise archivée, audit) et 6 sondes IDOR</td></tr>
+<tr><td><strong>IDOR</strong></td><td>Les six routes de relance sont classées « objet » et sondées : même réponse pour la relance d'un collègue et pour un identifiant inexistant, aucune écriture, aucune fuite ; la relance de Marie reste « à faire », version 1, après les tentatives</td></tr>
+<tr><td>Règles garanties par la base</td><td>Une relance à faire n'est pas close ; une relance close a sa date et son texte ensemble ; version positive : vérifiées par des écritures directes refusées</td></tr>
+<tr><td>Tests de l'interface</td><td><strong>308 / 308</strong> (27 nouveaux) : dates, saisie, corps des requêtes, filtres, actions selon l'état et les droits ; <strong>cohérence avec le domaine réel du serveur</strong> sur 15 saisies</td></tr>
+<tr><td><strong>Mutants</strong></td><td><strong>15 / 15 tués</strong> (échéance passée, limite de trois, relance sur une offre sans réponse attendue, relances annulées comptées, annulation à l'acceptation, relances terminées aussi annulées, retard du jour, échéance passée conservée, résultat vide, droit de la route, portée de la liste, cohérence de la base, tri inversé, prochaine relance, verrou optimiste)</td></tr>
+<tr><td><strong>Navigateur réel (Edge + axe-core)</strong></td><td>Parcours limité aux offres, aux décharges et aux relances : <strong>77 contrôles réussis, aucun échec</strong> (dont tous ceux des relances : échéance refusée avec focus, liste, résultat obligatoire, relance terminée, annulation avec l'offre retirée) ; résultats <code>docs/accessibilite/resultats/axe-2026-11-03-s42c.json</code>, captures <code>docs/accessibilite/s42c-captures/</code></td></tr>
+</tbody></table></div>
+<h2>Réserves, limites et dette connues</h2>
+<ul><li><strong>Le menu d'une offre retirée n'était plus vide</strong> : il propose maintenant la consultation (décharge, relances, documents) ; les attentes de l'audit ont été mises à jour, pas le comportement.</li><li><strong>Mesures de mutants parasitées par la machine</strong> : une adresse réseau de la base de test restait occupée par un processus disparu (Windows) ; les cinq derniers mutants ont été rejoués sur un autre port, tous tués.</li><li><strong>Le parcours navigateur complet n'a pas été mené à son terme</strong> : le navigateur sans fenêtre de la machine reste instable (captures et chargements qui n'aboutissent pas). Une première exécution complète a réussi les relances puis s'est arrêtée sur une attente de menu corrigée depuis ; une deuxième s'est arrêtée sur un contrôle d'un lot précédent ; la troisième, limitée aux offres, décharges et relances, est complète et réussie. Les écrans des lots précédents situés après les relances ne sont donc <strong>pas</strong> revérifiés par ce lot. Quatre captures n'ont pas pu être produites (dont la liste des …</li><li><strong>Pas de planification automatique après le dépôt</strong> (D80) ni de rappel envoyé à l'échéance (D82) : la liste « À faire » est le seul signal avant l'agenda (S4.2d).</li><li>Pas de passage au lecteur d'écran réel ; testé sous Node 26.7, pas rejoué sous Node 22.</li><li>Cette branche dépend de <code>sprint/s4-2b-decharges</code> (PR 24, en attente de validation) : <strong>elle ne peut être fusionnée qu'après elle</strong>. Le prototype et le wireframe 16 ne sont pas à jour (D49).</li><li><strong>D80 à D84</strong> (<code>docs/TECH-DEBT.md</code>).</li><li><strong>D34 — à confirmer</strong> : délai de sept jours, limite de trois relances, planification automatique au dépôt.</li></ul>
+<h2>Rejouer les contrôles automatisés</h2>
+<pre><code>pnpm ci                                   # types, architecture, tests unitaires et interface
+node apps/crm-api/scripts/test-db.mjs     # tests d&#x27;intégration (base PostgreSQL jetable)
+python scripts/mutants/s42c-relances.py   # mutants du lot (arbre de travail propre)</code></pre>
+<h2>Écarts constatés</h2>
+<div class="table-wrap"><table><thead><tr><th>Date</th><th>Vérification n°</th><th>Description</th><th>Défaut ouvert (D…)</th></tr></thead><tbody>
+<tr><td></td><td></td><td></td><td></td></tr>
+</tbody></table></div></main></body></html>

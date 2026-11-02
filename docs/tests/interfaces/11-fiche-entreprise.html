@@ -1,0 +1,61 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fiche de test — Fiche d&#x27;une entreprise</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="../../INDEX.html">Index</a> · <a href="../../GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="../../ARCHITECTURE.html">Architecture</a> · <a href="../../SECURITY.html">Sécurité</a> · <a href="../../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../../QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="../../TECH-DEBT.html">Dette</a> · <a href="../../CHARTE-DE-TESTS.html">Charte de tests</a> · <a href="../../tests/README.html">Fiches de test</a> · <a href="../../design/README.html">Design</a> · <a href="../../livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>Fiche de test — Fiche d'une entreprise</h1>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td><strong>Route</strong></td><td><code>/companies/[id]</code></td></tr>
+<tr><td><strong>Livrée par</strong></td><td>S3.6, S4.0, S4.0c, S4.1a, S4.2a–d, S4.3a–c, S4.4a</td></tr>
+<tr><td><strong>Accès</strong></td><td>Utilisateur avec <code>bd.company.read</code> sur cette entreprise (hors portée : « introuvable »).</td></tr>
+<tr><td><strong>Droits</strong></td><td>Voir chaque panneau : contacts, offres, opportunités, agréments, rendez-vous, documents.</td></tr>
+<tr><td><strong>Rôles de test</strong></td><td>cc, rc, dir</td></tr>
+</tbody></table></div>
+<p><em>Fiche d'interface de la <a href="../../CHARTE-DE-TESTS.html">charte de tests</a>. À rejouer à chaque changement de l'écran. Cocher, dater, signer ; tout écart devient un défaut.</em></p>
+<h2>Préconditions</h2>
+<p>Une entreprise avec un contact, une offre, une opportunité à l'accord de principe ; le compte du propriétaire et celui d'un collègue.</p>
+<h2>Scénarios</h2>
+<div class="table-wrap"><table><thead><tr><th>N°</th><th>Scénario</th><th>Étapes</th><th>Résultat attendu</th><th>Constaté (✔ / ✘)</th><th>Date et initiales</th></tr></thead><tbody>
+<tr><td>1</td><td><strong>Hors portée</strong></td><td>Ouvrir la fiche d'une entreprise d'un collègue (adresse directe).</td><td>« Entreprise introuvable » — même réponse qu'un identifiant inexistant.</td><td>☐</td><td></td></tr>
+<tr><td>2</td><td><strong>Identité et responsable</strong></td><td>Lire la fiche.</td><td>Statut, secteur, pays, e-mail, téléphone, date de création, <strong>responsable</strong> nommé.</td><td>☐</td><td></td></tr>
+<tr><td>3</td><td><strong>Modifier</strong></td><td>Cliquer « Modifier », changer un champ, enregistrer (puis refaire avec une version périmée).</td><td>Mise à jour ; conflit annoncé si quelqu'un a modifié entre-temps ; le propriétaire et le statut ne changent pas ici.</td><td>☐</td><td></td></tr>
+<tr><td>4</td><td><strong>Statut</strong></td><td>Cliquer « Marquer comme contactée », puis « Qualifier » (avec puis sans contact).</td><td>Un cran à la fois ; « Qualifiée » refusée sans contact ; retour d'un cran possible ; « Cliente » et « Archivée » jamais proposées.</td><td>☐</td><td></td></tr>
+<tr><td>5</td><td><strong>Changer de responsable</strong></td><td>Responsable commercial : « Changer de responsable », choisir, confirmer.</td><td>Liste limitée à l'équipe ; case de confirmation obligatoire ; l'ancien responsable perd la vue.</td><td>☐</td><td></td></tr>
+<tr><td>6</td><td><strong>Exporter la fiche</strong></td><td>Cliquer « Exporter la fiche ».</td><td>Document imprimable ne contenant que ce que vous voyez ; export tracé.</td><td>☐</td><td></td></tr>
+<tr><td>7</td><td><strong>Mise en relation</strong></td><td>Observer le panneau facilitateur / commission.</td><td>Facilitateur visible selon les droits ; commission visible du Responsable commercial et du chargé de compte.</td><td>☐</td><td></td></tr>
+<tr><td>8</td><td><strong>Contacts</strong></td><td>Créer, modifier un contact ; créer un doublon.</td><td>Doublon probable signalé avec la fiche existante proposée.</td><td>☐</td><td></td></tr>
+<tr><td>9</td><td><strong>Offres et décharge</strong></td><td>Créer une offre, la déposer, enregistrer la décharge avec un fichier.</td><td>Voir la fiche de l'écran Offres.</td><td>☐</td><td></td></tr>
+<tr><td>10</td><td><strong>Opportunités</strong></td><td>Lire le panneau.</td><td>Étape, montant, état, dérogation ; lecture seule ; lien vers le pipeline.</td><td>☐</td><td></td></tr>
+<tr><td>11</td><td><strong>Agrément</strong></td><td>Enregistrer un agrément (opportunité à l'accord de principe, montant, document signé).</td><td>Agrément « Reçu » listé ; l'entreprise devient « Cliente » ; honorer / expirer / annuler avec motif (Responsable commercial).</td><td>☐</td><td></td></tr>
+<tr><td>12</td><td><strong>Rendez-vous</strong></td><td>Lire le panneau ; planifier depuis le bouton.</td><td>Rendez-vous des 60 derniers et 60 prochains jours ; planification préremplie.</td><td>☐</td><td></td></tr>
+<tr><td>13</td><td><strong>Documents</strong></td><td>Ajouter, télécharger, versionner, archiver un document.</td><td>Formats et tailles contrôlés ; fichier trompeur refusé ; visible dans la portée seulement.</td><td>☐</td><td></td></tr>
+<tr><td>14</td><td><strong>Entreprise archivée</strong></td><td>Ouvrir une entreprise archivée.</td><td>Lecture seule : plus de création ni de modification.</td><td>☐</td><td></td></tr>
+</tbody></table></div>
+<h2>Accessibilité</h2>
+<ul><li>☐ Clavier seul : Tab et Maj+Tab parcourent tous les contrôles dans un ordre logique ; le focus est toujours visible ; aucun piège de focus hors fenêtre modale.</li><li>☐ Un seul titre de niveau 1 ; pas de saut de niveau (h2 avant h3).</li><li>☐ Chaque champ a un libellé relié ; un champ non conforme est en surbrillance <strong>et</strong> accompagné d'un message écrit relié (<code>aria-describedby</code>), jamais la couleur seule ; le focus va au premier champ en erreur.</li><li>☐ Les messages d'état et d'erreur sont annoncés (<code>role=alert</code> ou <code>aria-live</code>).</li><li>☐ Fenêtres modales : le focus entre dans la fenêtre, Échap la ferme, le focus revient à l'élément d'origine, l'arrière-plan est inerte.</li><li>☐ Lisible à 200 % de zoom et à 375 px de large, sans défilement horizontal de la page.</li><li>☐ Chaque panneau a un titre de niveau 2 ; les menus d'actions des lignes ont un nom accessible (« Actions pour… »).</li></ul>
+<h2>Tests automatisés qui couvrent cet écran</h2>
+<ul><li>API : <code>company-edit-export.integration</code>, <code>company-lifecycle-http.integration</code>, <code>contacts-http.integration</code>, <code>offers-http.integration</code>, <code>receipts-http.integration</code>, <code>approvals-http.integration</code>, <code>documents.integration</code>, <code>idor-contract.integration</code></li><li>Web : <code>s50.test.ts</code>, <code>s51.test.ts</code>, <code>s52.test.ts</code>, <code>s43.test.ts</code></li><li>Audit navigateur : fiche 360°, statut, responsable, agrément (axe, 0 violation)</li></ul>
+<h2>Limites connues</h2>
+<ul><li>Fiche 360° en lecture sans chronologie (D103) ; pas de page « Agréments » transverse (D116).</li></ul>
+<h2>Écarts constatés</h2>
+<div class="table-wrap"><table><thead><tr><th>Date</th><th>Scénario</th><th>Description</th><th>Défaut ouvert (D…)</th></tr></thead><tbody>
+<tr><td></td><td></td><td></td><td></td></tr>
+</tbody></table></div></main></body></html>

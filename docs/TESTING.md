@@ -1,14 +1,17 @@
 # Stratégie de tests
 
+> **Règles, définition de « terminé » et fiches de test** : voir la [charte de tests](CHARTE-DE-TESTS.md) et les [fiches par interface et par session](tests/README.md). Ce document décrit la stratégie technique et tient le journal des tests par lot.
+
 ## Pyramide
 | Niveau | Cible | Outils | Part |
 |---|---|---|---|
 | Unitaires du Domain | Agrégats, VO, services de domaine — sans base, sans NestJS | Jest | majorité |
 | Use cases | Application avec repositories en mémoire / faux ports | Jest | forte |
-| Intégration | Repositories Prisma + mappers + contraintes (PostgreSQL réel en Docker) | Jest + Testcontainers | moyenne |
-| Contrat/API | Endpoints, RBAC, validation, erreurs | Supertest | moyenne |
+| Intégration et API | Routes réelles (HTTP), RBAC, validation, erreurs, repositories Prisma, contraintes de la base, audit : base PostgreSQL **jetable** lancée par `apps/crm-api/scripts/test-db.mjs` | Jest + helpers HTTP de `test/support` | moyenne |
+| Interface | Logique des écrans, cohérence avec le domaine réel du serveur | Vitest (`apps/crm-web/test`) | moyenne |
+| Mutation | Les tests détectent-ils les fautes injectées ? | scripts `scripts/mutants/` | chaque lot |
 | Architecture | Règles de dépendances | dependency-cruiser / eslint-plugin-boundaries | obligatoire, bloquant |
-| E2E | Parcours critiques (connexion+MFA, parcours prospect→offre→décharge) | Playwright | faible |
+| Navigateur réel et accessibilité | Parcours scriptés dans Edge sans fenêtre, axe-core à chaque état d'écran (Playwright non retenu) | `scripts/a11y-audit.mjs` | chaque lot qui touche un écran |
 | Sécurité | Tests d'autorisation par rôle, injection, rate limiting | automatisés + revue | à chaque module |
 
 ## Règles d'architecture testées en CI

@@ -146,7 +146,7 @@ def main():
             f'<a href="{prefix}INDEX.html">Index</a> · <a href="{prefix}GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · '
             f'<a href="{prefix}ARCHITECTURE.html">Architecture</a> · <a href="{prefix}SECURITY.html">Sécurité</a> · '
             f'<a href="{prefix}METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="{prefix}QUESTIONS-ET-DECISIONS.html">Décisions</a> · '
-            f'<a href="{prefix}TECH-DEBT.html">Dette</a> · <a href="{prefix}design/README.html">Design</a> · '
+            f'<a href="{prefix}TECH-DEBT.html">Dette</a> · <a href="{prefix}CHARTE-DE-TESTS.html">Charte de tests</a> · <a href="{prefix}tests/README.html">Fiches de test</a> · <a href="{prefix}design/README.html">Design</a> · '
             f'<a href="{prefix}livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a>'
         )
     nav_cadrages = 'Investally Business Platform — cadrages · <a href="README.html">Index des cadrages</a> · <a href="../INDEX.html">Documentation</a> · <a href="../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../design/05-AIDE-A-LA-DECISION.html">Aide à la décision</a>'
@@ -156,6 +156,8 @@ def main():
         (os.path.join(design, 'decisions'), design_nav('../'), None), (os.path.join(docs_root, 'cadrages'), nav_cadrages, None),
         (docs_root, root_nav(''), None), (os.path.join(docs_root, 'adr'), root_nav('../'), None),
         (acc, root_nav('../'), None), (os.path.join(acc, 'resultats'), root_nav('../../'), None),
+        (os.path.join(docs_root, 'tests'), root_nav('../'), None), (os.path.join(docs_root, 'tests', 'interfaces'), root_nav('../../'), None),
+        (os.path.join(docs_root, 'tests', 'sessions'), root_nav('../../'), None),
     ):
         for name in sorted(n for n in os.listdir(folder) if n.endswith('.md') and (only is None or n in only)):
             md = open(os.path.join(folder, name), encoding='utf-8').read()

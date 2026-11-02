@@ -1,0 +1,66 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fiche de test — S4.4a — agréments : la promesse de paiement signée</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="../../INDEX.html">Index</a> · <a href="../../GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="../../ARCHITECTURE.html">Architecture</a> · <a href="../../SECURITY.html">Sécurité</a> · <a href="../../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../../QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="../../TECH-DEBT.html">Dette</a> · <a href="../../CHARTE-DE-TESTS.html">Charte de tests</a> · <a href="../../tests/README.html">Fiches de test</a> · <a href="../../design/README.html">Design</a> · <a href="../../livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>Fiche de test — S4.4a — agréments : la promesse de paiement signée</h1>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td><strong>Session</strong></td><td><code>s4-4a</code></td></tr>
+<tr><td><strong>Recette de référence</strong></td><td><a href="../../SPRINT-S4-4A-RECETTE.html"><code>SPRINT-S4-4A-RECETTE.md</code></a></td></tr>
+<tr><td><strong>Étiquette</strong></td><td><code>s4-4a-validated</code></td></tr>
+<tr><td><strong>Contexte</strong></td><td>Branche <code>sprint/s4-4a-agrements</code> (partie de <code>main</code>, après S4.3c) · 2026-11-08 · cas d'usage CU-F1-05 ; flux F1 et C5 ; DDR-0024 ; décisions D1 à D5 et D39. Première partie de la session S4.4 ; S4.4b (ambassadeurs) et S4.4c (commissions à verser) ne sont pas livrés.</td></tr>
+<tr><td><strong>Écrans concernés</strong></td><td><a href="../interfaces/11-fiche-entreprise.html">Fiche d'une entreprise</a></td></tr>
+</tbody></table></div>
+<p><em>Fiche de session de la <a href="../../CHARTE-DE-TESTS.html">charte de tests</a>, <strong>dérivée de la recette</strong> du lot : en cas de doute, la recette fait foi. Elle sert à rejouer la recette utilisateur et à vérifier l'absence de régression.</em></p>
+<h2>Avant de commencer</h2>
+<ul><li>Pile locale lancée (<code>node scripts/local-stack.mjs --demo</code>) ou pile jetable ; comptes de démonstration (mots de passe dans le fichier local, jamais dans le dépôt).</li><li>Rôles utiles : chargé de compte, Responsable commercial (avec son équipe), Direction, Super administrateur.</li></ul>
+<h2>Vérifications à rejouer</h2>
+<div class="table-wrap"><table><thead><tr><th>N°</th><th>Vérification</th><th>Résultat attendu (d'après la recette)</th><th>Constaté (✔ / ✘)</th><th>Date et initiales</th></tr></thead><tbody>
+<tr><td>1</td><td>Panneau « Agréments »</td><td>Sur la fiche de l'entreprise : opportunité, ce qui est couvert, date de réception, validité, état, motif de clôture ; menu d'actions par agrément</td><td>☐</td><td></td></tr>
+<tr><td>2</td><td>Enregistrer un agrément</td><td>Opportunité qui a franchi l'accord de principe (étape « Accord de principe » ou « Agrément », ouverte ou gagnée, jamais perdue) ; <strong>montant, nombre de places, ou les deux</strong> (D1) ; devise XAF par défaut ; date de réception ; <strong>fin de validité facultative</strong> (D3) ; <strong>document signé joint</strong> ; payeur = le client seulement (D2)</td><td>☐</td><td></td></tr>
+<tr><td>3</td><td>Un seul agrément actif</td><td>Une opportunité n'a qu'un agrément reçu ou honoré à la fois ; la base le garantit</td><td>☐</td><td></td></tr>
+<tr><td>4</td><td>Entreprise « Cliente »</td><td>L'enregistrement fait passer l'entreprise à « Cliente » (flux C5), tracé dans l'audit ; elle le reste si l'agrément est ensuite annulé</td><td>☐</td><td></td></tr>
+<tr><td>5</td><td>Cycle</td><td>Reçu → <strong>honoré</strong> (le paiement a eu lieu, constaté à la main : D5), ou <strong>expiré</strong> / <strong>annulé</strong> avec un <strong>motif obligatoire</strong> ; tous définitifs ; une validité dépassée est signalée, l'expiration reste manuelle</td><td>☐</td><td></td></tr>
+<tr><td>6</td><td>Droits</td><td>Lire et enregistrer : chargé de compte (Propre), Responsable commercial (Équipe), Direction (lecture) ; <strong>honorer</strong> et <strong>annuler / expirer</strong> sont deux droits distincts, tenus par le Responsable commercial</td><td>☐</td><td></td></tr>
+<tr><td>7</td><td>Investudy</td><td>L'événement « agrément accordé » est enregistré sur l'agrément ; aucun consommateur n'existe encore (D113)</td><td>☐</td><td></td></tr>
+<tr><td>8</td><td>Base de données</td><td>Migration <code>20261107000000_s4_4a_approvals</code> : table, clés étrangères, index unique de l'agrément actif et sept contrôles</td><td>☐</td><td></td></tr>
+</tbody></table></div>
+<h2>Preuves automatisées relevées à la validation</h2>
+<div class="table-wrap"><table><thead><tr><th>Contrôle</th><th>Résultat</th></tr></thead><tbody>
+<tr><td>Types (<code>tsc</code>, API et web), architecture (<code>pnpm arch</code>)</td><td>0 erreur · aucune violation (228 modules)</td></tr>
+<tr><td>Tests unitaires de l'API</td><td><strong>833 réussis</strong>, 0 échec (les suites d'intégration, qui exigent la base, sont ignorées dans cette passe) ; 29 nouveaux (domaine : 14 ; cas d'usage : 15), dont le cas des <strong>droits distincts</strong> testé avec des droits construits à la main</td></tr>
+<tr><td><strong>Tests d'intégration (PostgreSQL jetable)</strong></td><td><strong>338 / 338</strong> (23 suites) ; 10 nouveaux de bout en bout : cycle et entreprise « Cliente », motifs, refus (avant l'accord, perdue, second agrément, sans montant ni places, date future, identifiant mal écrit, champ inconnu), portée et droits, version périmée, <strong>document signé</strong> (visible dans la portée, refusé hors portée <strong>et à un rôle qui lit tous les documents mais pas les agréments</strong>), entreprise archivée, règles de la base, verrou optimiste au niveau de la base, audit</td></tr>
+<tr><td><strong>IDOR</strong></td><td>Les six routes sont classées « objet » et sondées : même réponse pour l'agrément d'un collègue et pour un identifiant inexistant, aucune écriture, aucune fuite</td></tr>
+<tr><td>Règles garanties par la base</td><td>Un seul agrément actif par opportunité ; montant et places positifs ; au moins l'un des deux ; validité jamais avant la réception ; clôture cohérente (date et motif) ; version positive ; liens existants : vérifiés par des écritures directes refusées</td></tr>
+<tr><td>Tests de l'interface</td><td><strong>433 / 433</strong> (25 nouveaux) : saisie, devise et dates, corps de la requête, couverture, opportunités éligibles, actions selon l'état et les droits, motif ; <strong>cohérence avec le domaine réel du serveur</strong> sur 15 saisies</td></tr>
+<tr><td><strong>Mutants</strong></td><td><strong>18 / 18 tués</strong> (accord de principe non exigé, opportunité perdue, plusieurs agréments actifs, entreprise non passée cliente, honorer sous le droit d'annuler, verrou optimiste, validité avant la réception, ni montant ni places, motif trop court, agrément clos modifiable, portée de la liste, droit de la route d'honorer, contraintes de la base, document visible hors portée, validité dépassée le jour même, places non enregistrées, clôture incohérente)</td></tr>
+<tr><td><strong>Navigateur réel (Edge + axe-core)</strong></td><td><strong>Parcours ciblé</strong> (connexion, entreprise, opportunité menée à l'accord de principe par une dérogation, puis le bloc de ce lot) : <strong>51 contrôles réussis, 0 violation</strong> : panneau vide, fenêtre d'enregistrement, champs non conformes, enregistrement avec le document, liste (« Reçu », « 4 000 000 », « 12 places », entreprise « Cliente »), annulation sans motif puis avec motif. Le seul ✘ est l'arrêt volontaire de fin de parcours. Résultats <code>docs/accessibilite/resultats/axe-2026-11-08-s44a.json</code>, captures <code>docs/accessibilite/s44a-captures/</code></td></tr>
+</tbody></table></div>
+<h2>Réserves, limites et dette connues</h2>
+<ul><li><strong>Test manquant</strong> : le premier passage des mutants a laissé survivre « document visible hors portée ». Le résolveur de documents des agréments n'était protégé que par la portée du module Documents ; un rôle qui lit <strong>tous</strong> les documents sans lire les agréments (responsable de formation) n'était pas testé. Test ajouté, mutant tué.</li><li><strong>Droits de lecture oubliés</strong> : au premier essai, le chargé de compte n'avait pas les droits sur les agréments (les tests unitaires l'ont signalé immédiatement) ; corrigés.</li><li><strong>Sondes IDOR</strong> : l'enregistrement d'un agrément fait passer l'entreprise à « cliente » et change sa version ; les agréments des sondes vivent sur une seconde entreprise pour ne pas fausser les sondes de la première.</li><li><strong>Audit</strong> (outil, hors application) : un sélecteur d'attente erroné sur la liste, corrigé ; un parcours a échoué au début (limitation de débit à la connexion) sans rapport avec ce lot et a réussi à la relance.</li><li><strong>Parcours navigateur ciblé</strong> : les écrans des lots antérieurs ne sont pas revérifiés (le navigateur sans fenêtre décroche dans l'agenda, voir la recette de S4.3b). Honorer et déclarer expiré ne sont pas parcourus dans le navigateur (couverts par les tests d'intégration et les mutants) ; l'annulation, elle, l'est.</li><li><strong>Capture manquante</strong> de la colonne « Valeur » (lot précédent) ; les trois captures des agréments sont fournies.</li><li><strong>Pas d'état « demandé »</strong> (D111) ; <strong>honorer à la main</strong> par le Responsable commercial en attendant la finance (D112) ; <strong>événement vers Investudy non consommé</strong> et règle D4 sans objet tant que les inscriptions n'existent pas (D113) ; <strong>un seul agrément actif</strong>, non modifiable (D114) ; <strong>l'entreprise reste cliente</strong> après annulation (D115) ; <strong>pas de page transverse ni de rappel d'expiration</strong> (D116) ; <strong>document obligatoire dans l'interface seulement</strong>, envoi en deux temps comme les décharges (D117).</li><li>Pas de passage au lecteur d'écran réel ; testé sous Node 26.7, pas rejoué sous Node 22. Le prototype et le wireframe 23 ne sont pas à jour (D49).</li><li><strong>D111 à D117</strong> (<code>docs/TECH-DEBT.md</code>) ; D105 soldée.</li><li><strong>D39 — à confirmer</strong> : les valeurs de D1 à D5 (places et/ou somme, client payeur seul, expiration manuelle, paiement suivi par la finance), l'absence d'état « demandé », l'entreprise « Cliente » à l'enregistrement, le droit d'honorer tenu par le Responsable commercial.</li></ul>
+<h2>Rejouer les contrôles automatisés</h2>
+<pre><code>pnpm ci                                   # types, architecture, tests unitaires et interface
+node apps/crm-api/scripts/test-db.mjs     # tests d&#x27;intégration (base PostgreSQL jetable)
+python scripts/mutants/s44a-agrements.py   # mutants du lot (arbre de travail propre)</code></pre>
+<h2>Écarts constatés</h2>
+<div class="table-wrap"><table><thead><tr><th>Date</th><th>Vérification n°</th><th>Description</th><th>Défaut ouvert (D…)</th></tr></thead><tbody>
+<tr><td></td><td></td><td></td><td></td></tr>
+</tbody></table></div></main></body></html>
