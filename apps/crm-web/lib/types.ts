@@ -208,6 +208,26 @@ export interface Opportunity {
   version: number;
 }
 
+/** Ambassadeur : client ou apprenant devenu relais commercial (création manuelle). */
+export interface Ambassador {
+  id: string;
+  lastName: string;
+  firstName: string;
+  /** `CLIENT` ou `LEARNER`. */
+  origin: string;
+  companyId: string | null;
+  companyName: string | null;
+  email: string | null;
+  phone: string | null;
+  /** Depuis quand la personne est ambassadeur, « AAAA-MM-JJ ». */
+  appointedOn: string;
+  note: string | null;
+  ownerUserId: string;
+  createdAt: string;
+  /** Verrou optimiste : renvoyé tel quel pour modifier l'ambassadeur. */
+  version: number;
+}
+
 /** Agrément : promesse de paiement signée par l'entreprise cliente pour une opportunité. */
 export interface Approval {
   id: string;

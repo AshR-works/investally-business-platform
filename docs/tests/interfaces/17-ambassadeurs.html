@@ -1,0 +1,59 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fiche de test — Ambassadeurs</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="../../INDEX.html">Index</a> · <a href="../../GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="../../ARCHITECTURE.html">Architecture</a> · <a href="../../SECURITY.html">Sécurité</a> · <a href="../../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../../QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="../../TECH-DEBT.html">Dette</a> · <a href="../../CHARTE-DE-TESTS.html">Charte de tests</a> · <a href="../../tests/README.html">Fiches de test</a> · <a href="../../design/README.html">Design</a> · <a href="../../livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>Fiche de test — Ambassadeurs</h1>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td><strong>Route</strong></td><td><code>/ambassadors</code></td></tr>
+<tr><td><strong>Livrée par</strong></td><td>S4.4b</td></tr>
+<tr><td><strong>Accès</strong></td><td>Utilisateur avec <code>bd.ambassador.read</code>.</td></tr>
+<tr><td><strong>Droits</strong></td><td>Lire : chargé de compte (les siens), Responsable commercial et Direction (tous) ; créer : chargé de compte, Responsable commercial ; <strong>modifier : Responsable commercial</strong> (son équipe).</td></tr>
+<tr><td><strong>Rôles de test</strong></td><td>cc, rc, dir</td></tr>
+</tbody></table></div>
+<p><em>Fiche d'interface de la <a href="../../CHARTE-DE-TESTS.html">charte de tests</a>. À rejouer à chaque changement de l'écran. Cocher, dater, signer ; tout écart devient un défaut.</em></p>
+<h2>Préconditions</h2>
+<p>Un chargé de compte et son Responsable commercial ; une entreprise du chargé de compte ; un second chargé de compte d'une autre équipe.</p>
+<h2>Scénarios</h2>
+<div class="table-wrap"><table><thead><tr><th>N°</th><th>Scénario</th><th>Étapes</th><th>Résultat attendu</th><th>Constaté (✔ / ✘)</th><th>Date et initiales</th></tr></thead><tbody>
+<tr><td>1</td><td><strong>Création toujours manuelle</strong></td><td>Ouvrir la page.</td><td>Le texte rappelle que créer un ambassadeur est une décision manuelle ; aucun ambassadeur n'apparaît sans action.</td><td>☐</td><td></td></tr>
+<tr><td>2</td><td><strong>Créer un ambassadeur client</strong></td><td>Chargé de compte : « Nouvel ambassadeur » ; nom, prénom, origine « Client », entreprise, e-mail ; enregistrer.</td><td>Ambassadeur listé avec « Client », son entreprise et « Depuis » au format mois/année ; vous en êtes le responsable.</td><td>☐</td><td></td></tr>
+<tr><td>3</td><td><strong>Créer un apprenant sans entreprise</strong></td><td>Origine « Apprenant » ; ne pas choisir d'entreprise.</td><td>Création acceptée ; entreprise affichée « — ».</td><td>☐</td><td></td></tr>
+<tr><td>4</td><td><strong>Champs non conformes</strong></td><td>Enregistrer sans nom, sans prénom, client sans entreprise ; saisir un e-mail ou une date invalide.</td><td>Champs en surbrillance avec liste des corrections annoncée ; focus sur le premier ; date future refusée.</td><td>☐</td><td></td></tr>
+<tr><td>5</td><td><strong>E-mail déjà pris</strong></td><td>Créer un second ambassadeur avec le même e-mail (casse différente).</td><td>Alerte du serveur annoncée, fenêtre toujours ouverte ; aucune création.</td><td>☐</td><td></td></tr>
+<tr><td>6</td><td><strong>Entreprise d'un collègue</strong></td><td>Essayer de rattacher un client à l'entreprise d'un collègue (adresse directe, ou liste).</td><td>Refusé (« introuvable ») ; la liste ne propose que les entreprises de votre périmètre.</td><td>☐</td><td></td></tr>
+<tr><td>7</td><td><strong>Rechercher et filtrer</strong></td><td>Rechercher un nom ou un e-mail ; filtrer par origine.</td><td>Résultats exacts, triés par nom.</td><td>☐</td><td></td></tr>
+<tr><td>8</td><td><strong>Modifier (Responsable commercial)</strong></td><td>Menu de la ligne, « Modifier » ; changer le téléphone, la note ; enregistrer.</td><td>Mise à jour ; l'origine est affichée « non modifiable » ; un client ne peut pas perdre son entreprise ; version périmée = conflit.</td><td>☐</td><td></td></tr>
+<tr><td>9</td><td><strong>Chargé de compte : pas de modification</strong></td><td>Se connecter en chargé de compte.</td><td>Aucun menu « Modifier » (droit réservé au Responsable commercial) ; l'accès direct est refusé.</td><td>☐</td><td></td></tr>
+<tr><td>10</td><td><strong>Portée</strong></td><td>Chargé de compte, collègue d'une autre équipe, Responsable commercial, Direction.</td><td>Chargé de compte : les siens ; collègue : aucun ambassadeur d'autrui ; Responsable commercial et Direction : tous.</td><td>☐</td><td></td></tr>
+<tr><td>11</td><td><strong>Direction : lecture seule</strong></td><td>Se connecter en Direction.</td><td>Liste visible ; ni « Nouvel ambassadeur » ni « Modifier ».</td><td>☐</td><td></td></tr>
+<tr><td>12</td><td><strong>Sans accès</strong></td><td>Se connecter avec un rôle sans droit de lecture (Support).</td><td>Message « Votre profil n'a pas accès aux ambassadeurs ».</td><td>☐</td><td></td></tr>
+</tbody></table></div>
+<h2>Accessibilité</h2>
+<ul><li>☐ Clavier seul : Tab et Maj+Tab parcourent tous les contrôles dans un ordre logique ; le focus est toujours visible ; aucun piège de focus hors fenêtre modale.</li><li>☐ Un seul titre de niveau 1 ; pas de saut de niveau (h2 avant h3).</li><li>☐ Chaque champ a un libellé relié ; un champ non conforme est en surbrillance <strong>et</strong> accompagné d'un message écrit relié (<code>aria-describedby</code>), jamais la couleur seule ; le focus va au premier champ en erreur.</li><li>☐ Les messages d'état et d'erreur sont annoncés (<code>role=alert</code> ou <code>aria-live</code>).</li><li>☐ Fenêtres modales : le focus entre dans la fenêtre, Échap la ferme, le focus revient à l'élément d'origine, l'arrière-plan est inerte.</li><li>☐ Lisible à 200 % de zoom et à 375 px de large, sans défilement horizontal de la page.</li><li>☐ Le tableau a un titre (caption) ; le menu d'actions de ligne porte le nom de l'ambassadeur ; le nombre de résultats est annoncé (<code>aria-live</code>).</li></ul>
+<h2>Tests automatisés qui couvrent cet écran</h2>
+<ul><li>API : <code>ambassadors-http.integration</code>, <code>ambassador.spec</code>, <code>ambassador-use-cases.spec</code>, <code>idor-contract.integration</code> (lecture et modification)</li><li>Web : <code>s53.test.ts</code> (saisie, cohérence avec le domaine du serveur, module du hub)</li><li>Mutants : S4.4b (17)</li><li>Audit navigateur : liste vide, champs non conformes, liste, e-mail déjà pris (0 violation)</li></ul>
+<h2>Limites connues</h2>
+<ul><li>Pas de suggestion « après certification » (attend Investudy, D118) ; pas de fin d'ambassade ni de suppression (D119) ; le chargé de compte ne modifie pas ses ambassadeurs (D120) ; pas de panneau sur la fiche entreprise (D122).</li></ul>
+<h2>Écarts constatés</h2>
+<div class="table-wrap"><table><thead><tr><th>Date</th><th>Scénario</th><th>Description</th><th>Défaut ouvert (D…)</th></tr></thead><tbody>
+<tr><td></td><td></td><td></td><td></td></tr>
+</tbody></table></div></main></body></html>

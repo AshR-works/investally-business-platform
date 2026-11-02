@@ -91,10 +91,10 @@
 - **Acteur** : Responsable Investudy. **Scénario** : 1. Pour chaque apprenant, il décide : certificat (réussite) ou attestation (suivi) (écran 32). 2. Le document est généré selon la charte. 3. Le système envoie l'événement « certification délivrée ».
 - **Variantes** : révocation avec justification, confirmée. **Droits** : `training.certification.issue / revoke`. **À trancher** : seuils de note et de présence. **État** : à venir.
 
-### CU-F2-06 — Créer un ambassadeur
+### CU-F2-06 — Créer un ambassadeur *(réalisé, S4.4b, sans les suggestions ; défauts à confirmer, D40)*
 - **Acteur** : chargé de compte. **Déclencheur** : suggestion après une certification.
 - **Scénario** : 1. Il consulte les suggestions (écran 24). 2. Il décide **manuellement** de créer l'ambassadeur. 3. Il l'enregistre avec son origine (client ou apprenant).
-- **Règle** : jamais de création automatique. **Droits** : `bd.ambassador.create` (Propre). **État** : à venir.
+- **Règle** : jamais de création automatique. **Droits** : `bd.ambassador.create` (chargé de compte et Responsable commercial) ; modification : `bd.ambassador.update` (Responsable commercial). **État** : **réalisé** (liste, création manuelle, modification) ; les **suggestions après certification** attendent Investudy (D118).
 
 **À trancher pour F2** : liste d'attente ; qui confirme l'inscription ; seuils de certification.
 
