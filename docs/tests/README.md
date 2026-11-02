@@ -62,7 +62,7 @@
 | [s4-3b](sessions/s4-3b.md) | S4.3b — statuts d'entreprise, responsable, fiche 360° | `s4-3b-validated` | 8 | |
 | [s4-3c](sessions/s4-3c.md) | S4.3c — valeur des opportunités et lien rendez-vous ↔ opportunité | `s4-3c-validated` | 7 | |
 | [s4-4a](sessions/s4-4a.md) | S4.4a — agréments : la promesse de paiement signée | `s4-4a-validated` | 8 | |
-| [s4-4b](sessions/s4-4b.md) | S4.4b — ambassadeurs : clients ou apprenants devenus relais commerciaux | — | 9 | |
+| [s4-4b](sessions/s4-4b.md) | S4.4b — ambassadeurs : clients ou apprenants devenus relais commerciaux | `s4-4b-validated` | 9 | |
 
 ## Remarques
 - Les fiches de session sont **dérivées des recettes** : en cas de doute, la recette fait foi. Celles des premiers sprints (S1 à S3.5) sont surtout des tests automatisés ; leurs « vérifications » rappellent ce que chaque contrôle prouve.
