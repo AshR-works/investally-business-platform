@@ -2,10 +2,10 @@
 
 > Document **généré** par `node scripts/gen-function-index.mjs` à partir des commentaires du code. Ne pas le modifier à la main : corriger le commentaire dans le fichier source, puis relancer le script.
 
-**741 déclarations commentées au total.**
+**1242 déclarations commentées au total.**
 
 
-## API (NestJS) — 572 déclarations commentées
+## API (NestJS) — 881 déclarations commentées
 
 ### `app.module.ts`
 
@@ -32,6 +32,20 @@
 | Déclaration | Rôle |
 |---|---|
 | `async function main()` | Crée un compte SuperAdmin (le premier, puis le second : il en faut au moins deux, sans compte partagé). |
+
+### `cli/create-demo-users.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `async function main()` | Crée un compte de démonstration par rôle (développement et recette SEULEMENT). |
+
+### `cli/demo-users.logic.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export interface DemoUser` | Compte de démonstration : adresse (domaine .test réservé, jamais joignable), nom fictif, rôle et responsable. |
+| `export function generateDemoPassword(random: (size: number) => Buffer = randomBytes): string` | Mot de passe aléatoire propre à chaque compte (jamais un mot de passe commun ni prévisible). |
+| `export function assertNotProduction(env: NodeJS.ProcessEnv = process.env): void` | Refuse toute exécution en production : ces comptes sont réservés au développement et à la recette. |
 
 ### `cli/seed-core.ts`
 
@@ -99,6 +113,52 @@
 | `async listByEntity(entityType: string, entityId: string): Promise<AuditEntry[]>` | Historique d'une entité, du plus ancien au plus récent (500 entrées au plus). |
 | `async listLoginEvents(query: LoginEventQuery): Promise<AuditEntry[]>` | Connexions (`LOGIN`) et échecs (`LOGIN_FAILED`) rattachés à l'utilisateur, dans la fenêtre demandée, du plus récent au plus ancien. |
 
+### `modules/business-development/application/appointment-use-cases.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `const resourceOf = (type: AppointmentType): 'visit' \| 'appointment' => (type === AppointmentType.Visit ? 'visit' : 'appointment');` | Une visite chez Investally relève du droit « visite » ; les rendez-vous avec le DAF ou le décideur, du droit « rendez-vous ». |
+| `async function contactOf(contacts: ContactRepository, contactId: string \| null \| undefined, companyId: string): Promise<Contact \| null>` | Un contact lié à un rendez-vous appartient à l'entreprise du rendez-vous (sinon refus). |
+| `async function appointmentInScope(` | Charge le rendez-vous et vérifie qu'il est dans la portée de son entreprise avec le droit demandé ; sinon « introuvable ». |
+| `async function withConflicts(appointments: AppointmentRepository, appointment: Appointment, view: AppointmentView): Promise<AppointmentView>` | Avertit des rendez-vous à venir du même organisateur qui chevauchent le créneau ; ne bloque jamais (règle proposée, D35). |
+| `export class PlanAppointmentUseCase` | Planifier un rendez-vous ou une visite : portée de l'entreprise, entreprise non archivée, contact et offre rattachés à cette entreprise ; l'heure ne peut pas être dans le passé ; un conflit d'horaire avertit sans bloquer ; audit. |
+| `export class UpdateAppointmentUseCase` | Modifier un rendez-vous À VENIR (contact, durée, lieu, note) : portée, version lue, entreprise non archivée ; audit avant/après. |
+| `export class TransitionAppointmentUseCase` | Reporter (nouvelle heure + motif), tenir (compte rendu) ou annuler (motif) un rendez-vous : portée, version lue, entreprise non archivée ; annuler exige le droit d'annuler (visite : de modifier) ; audit avant/après. |
+| `export class GetAppointmentHandler` | Lecture d'un rendez-vous : hors de la portée de son entreprise, il est « introuvable ». |
+| `export const MAX_AGENDA_DAYS = 63;` | Fenêtre d'agenda la plus large acceptée : neuf semaines, de quoi couvrir un mois affiché en grille. |
+| `export class ListAppointmentsHandler` | L'agenda : rendez-vous visibles dans la fenêtre [from, to[, triés par début. |
+
+### `modules/business-development/application/appointment-view.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export interface AppointmentConflict` | Un autre rendez-vous de l'organisateur qui chevauche celui-ci (avertissement, jamais un blocage). |
+| `export interface AppointmentView` | Modèle de lecture d'un rendez-vous (jamais l'entité). |
+
+### `modules/business-development/application/approval-document-owners.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export const APPROVAL_OWNER_TYPE = 'approval';` | Type d'objet propriétaire déclaré au module Documents pour les agréments (le document signé). |
+| `export class ApprovalDocumentOwnerResolver implements DocumentOwnerResolver, OnModuleInit` | Résolveur des agréments pour les documents : un agrément n'est « résolu » que s'il existe ET si l'appelant peut le lire. |
+
+### `modules/business-development/application/approval-use-cases.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `async function opportunityInScope(` | L'opportunité et son entreprise, dans la portée de l'appelant pour la permission demandée ; sinon « introuvable ». |
+| `async function approvalInScope(` | L'agrément, son opportunité et son entreprise, dans la portée de l'appelant pour la permission demandée ; sinon « introuvable ». |
+| `export class RegisterApprovalUseCase` | Enregistrer l'agrément d'une opportunité : portée de son entreprise, entreprise non archivée, opportunité qui a franchi l'accord de principe et n'est pas perdue, un seul agrément actif par opportunité. |
+| `export class CloseApprovalUseCase` | Honorer (le paiement a eu lieu), déclarer expiré ou annuler un agrément reçu : portée, version lue, entreprise non archivée ; le droit d'honorer est distinct de celui d'annuler ou d'expirer ; expirer et annuler exigent un motif. |
+| `export class GetApprovalHandler` | Lecture d'un agrément : hors de la portée de son entreprise, il est « introuvable ». |
+| `export class ListApprovalsHandler` | Les agréments visibles de l'appelant, le plus récent d'abord. |
+
+### `modules/business-development/application/approval-view.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export interface ApprovalView` | Modèle de lecture d'un agrément (jamais l'entité). |
+
 ### `modules/business-development/application/company-document-owner.ts`
 
 | Déclaration | Rôle |
@@ -108,12 +168,107 @@
 | `onModuleInit(): void` | Se déclare auprès du registre des documents au démarrage de l'application. |
 | `async resolve(ownerId: string, access: AccessContext): Promise<{ ownerUserId: string \| null } \| null>` | Propriétaire de l'entreprise si elle existe et est lisible par l'appelant, sinon `null`. |
 
+### `modules/business-development/application/company-lifecycle-use-cases.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `async function loadInScope(companies: CompanyRepository, id: string, access: AccessContext, permission: string): Promise<Company>` | Une entreprise hors de la portée de l'appelant (pour la permission demandée) est « introuvable », comme une inexistante. |
+| `export class ChangeCompanyStatusUseCase` | Cas d'usage : changer le statut d'une entreprise à la main (CU-C-05), d'un cran, avec le droit de modification. |
+| `export class ReassignCompanyUseCase` | Cas d'usage : confier une entreprise à un autre propriétaire (D17). |
+| `async function candidatesFor(owners: OwnerDirectory, access: AccessContext): Promise<OwnerSummary[]>` | Les propriétaires possibles dans la portée de l'appelant (droit de réattribution). |
+| `export class ListOwnerCandidatesHandler` | Requête de lecture : à qui l'appelant peut-il confier une entreprise (liste du choix de la fenêtre de réattribution). |
+
+### `modules/business-development/application/company-sheet.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export function esc(value: unknown): string` | Échappe le texte saisi par les utilisateurs : rien de ce qui est affiché ne peut être interprété comme du HTML. |
+| `export const sheetReference = (company: CompanyView): string => `FIC-${company.id.replace(/-/g, '').slice(-8).toUpperCase()}`;` | Référence lisible du document : ne contient aucune donnée personnelle. |
+| `export function renderCompanySheet(company: CompanyView, exportedAt: Date): string` | Fiche d'entreprise imprimable (HTML autonome, aux couleurs de l'application ; gabarit PROVISOIRE en attendant la charte des documents). |
+
 ### `modules/business-development/application/company-view.ts`
 
 | Déclaration | Rôle |
 |---|---|
+| `export interface FacilitationView` | Facilitation telle qu'exposée : le facilitateur et la commission ne sont renseignés que si l'appelant y a droit. |
 | `export interface CompanyView` | Modèle de lecture exposé par l'Application (pas l'entité). |
-| `export function toCompanyView(company: Company): CompanyView` | Transforme une entreprise du domaine en représentation publique (aucun objet interne n'est exposé). |
+| `export interface FacilitationVisibility` | Ce que l'appelant a le droit de voir dans la facilitation. |
+| `export function toCompanyView(company: Company, facilitation?: FacilitationVisibility, ownerName?: string \| null): CompanyView` | Transforme une entreprise du domaine en représentation publique (aucun objet interne n'est exposé). |
+
+### `modules/business-development/application/contact-use-cases.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `async function companyInScope(companies: CompanyRepository, id: string, access: AccessContext, permission: string): Promise<Company>` | Entreprise visible de l'appelant pour cette permission, sinon « introuvable » (même réponse qu'un identifiant inexistant). |
+| `async function contactInScope(` | Contact et entreprise visibles de l'appelant (la visibilité d'un contact suit celle de son entreprise). |
+| `async function assertNoDuplicate(contacts: ContactRepository, contact: Contact, allowDuplicate: boolean \| undefined, excludeId?: string): Promise<voi` | Un doublon probable (même entreprise, même nom ou même e-mail) est signalé par un conflit ; `allowDuplicate` permet de créer quand même (l'utilisateur a vu l'avertissement) : on propose la fiche existante plutôt que d'interdire. |
+| `export class RegisterContactUseCase` | Créer un contact : l'entreprise doit être dans la portée de l'appelant et non archivée ; doublon signalé ; audit. |
+| `export class UpdateContactUseCase` | Modifier un contact : portée de son entreprise, version lue, doublon, entreprise non archivée ; audit avant/après. |
+| `export class DeleteContactUseCase` | Supprimer un contact (suppression logique) : droit de suppression et portée de son entreprise ; audit. |
+| `export class GetContactHandler` | Lecture d'un contact : hors de la portée de son entreprise, il est « introuvable ». |
+| `export class ListContactsHandler` | Liste paginée des contacts visibles ; filtrer par entreprise exige que cette entreprise soit dans la portée (sinon « introuvable »). |
+
+### `modules/business-development/application/contact-view.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export interface ContactView` | Modèle de lecture d'un contact (jamais l'entité). |
+
+### `modules/business-development/application/export-company-sheet.query.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export class ExportCompanySheetHandler` | Export de la fiche d'une entreprise. |
+
+### `modules/business-development/application/facilitation-resolver.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export interface FacilitationInput` | Facilitateur à lier : un facilitateur existant (par identifiant) OU un nouveau, jamais les deux. |
+| `export class FacilitationResolver` | Règles communes à la création et à la modification d'une entreprise : droits de l'appelant (facilitateur, commission), facilitateur retrouvé dans sa portée (sinon « introuvable », prévention d'IDOR) ou créé, validations faites AVANT toute écriture. |
+
+### `modules/business-development/application/facilitator-queries.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export class ListFacilitatorsHandler` | Liste paginée des facilitateurs visibles par l'appelant (portée calculée depuis ses droits). |
+| `export class GetFacilitatorHandler` | Lecture d'un facilitateur : hors portée → « introuvable » (404), comme pour une entreprise (prévention d'IDOR). |
+
+### `modules/business-development/application/facilitator-view.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export interface FacilitatorView` | Modèle de lecture d'un facilitateur. |
+
+### `modules/business-development/application/followup-closer.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export class PlannedFollowupsCloser` | Annule les relances encore à faire d'une offre qui n'est plus en cours (acceptée, refusée, retirée) : plus de relance après la réponse du client ou le retrait. |
+| `async cancelPlanned(offer: Offer, companyName: string, reason: string, actor: ActorContext, now: Date): Promise<number>` | Annule les relances à faire de l'offre avec le motif donné ; renvoie leur nombre. |
+
+### `modules/business-development/application/followup-use-cases.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `async function followupInScope(` | Relance, offre et entreprise visibles de l'appelant : la visibilité d'une relance suit celle de l'entreprise de son offre. |
+| `export class PlanFollowupUseCase` | Planifier une relance sur une offre EN COURS (déposée ou décharge reçue) : portée de son entreprise, entreprise non archivée, au plus trois relances par offre ; l'échéance ne peut pas être dans le passé ; audit. |
+| `export class UpdateFollowupUseCase` | Modifier une relance À FAIRE : portée, version lue, entreprise non archivée ; audit avant/après. |
+| `export class CloseFollowupUseCase` | Terminer une relance (avec son résultat) ou l'annuler (avec son motif) : portée, version lue, entreprise non archivée ; terminer exige le droit « terminer », annuler le droit de modifier ; audit avant/après. |
+| `export class GetFollowupHandler` | Lecture d'une relance : hors de la portée de son entreprise, elle est « introuvable ». |
+| `export class ListFollowupsHandler` | Liste paginée des relances visibles (la liste « À faire »), triée par échéance. |
+
+### `modules/business-development/application/followup-view.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export interface FollowupView` | Modèle de lecture d'une relance (jamais l'entité). |
+
+### `modules/business-development/application/get-company-overview.query.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export class GetCompanyOverviewHandler` | Requête de lecture : compteurs par statut et valeurs de filtre, dans la seule portée de l'appelant. |
 
 ### `modules/business-development/application/get-company.query.ts`
 
@@ -130,19 +285,152 @@
 | `export class ListCompaniesHandler` | Requête de lecture : liste paginée des entreprises visibles par l'appelant. |
 | `async execute(query: ListCompaniesQuery): Promise<Page<CompanyView>>` | Borne la page et la taille de page, puis ne renvoie que les entreprises de la portée de l'appelant (propriétaires autorisés). |
 
+### `modules/business-development/application/offer-document-owners.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export const OFFER_OWNER_TYPE = 'offer';` | Types d'objets propriétaires déclarés au module Documents pour les offres et leurs décharges. |
+| `export class OfferDocumentOwnerResolver implements DocumentOwnerResolver, OnModuleInit` | Résolveur des offres pour les documents (le fichier de l'offre envoyé au client) : une offre n'est « résolue » que si elle existe ET si l'appelant peut la lire. |
+| `export class ReceiptDocumentOwnerResolver implements DocumentOwnerResolver, OnModuleInit` | Résolveur des décharges pour les documents (la décharge signée) : même règle, par le droit de lire les décharges. |
+
+### `modules/business-development/application/offer-use-cases.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export async function companyInScope(companies: CompanyRepository, id: string, access: AccessContext, permission: string): Promise<Company>` | Entreprise visible de l'appelant pour cette permission, sinon « introuvable » (même réponse qu'un identifiant inexistant). |
+| `export async function offerInScope(` | Offre et entreprise visibles de l'appelant (la visibilité d'une offre suit celle de son entreprise). |
+| `export class RegisterOfferUseCase` | Créer une offre (brouillon) : l'entreprise doit être dans la portée de l'appelant et non archivée ; référence attribuée ; audit. |
+| `export class UpdateOfferUseCase` | Modifier un brouillon : portée de son entreprise, version lue, entreprise non archivée ; audit avant/après. |
+| `export class ChangeOfferStatusUseCase` | Changer l'état d'une offre (déposer, accepter, refuser, retirer) : portée, version lue, entreprise non archivée, transition permise ; audit. |
+| `export class GetOfferHandler` | Lecture d'une offre : hors de la portée de son entreprise, elle est « introuvable ». |
+| `export class ListOffersHandler` | Liste paginée des offres visibles ; filtrer par entreprise exige que cette entreprise soit dans la portée (sinon « introuvable »). |
+
+### `modules/business-development/application/offer-view.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export interface OfferView` | Modèle de lecture d'une offre (jamais l'entité). |
+
+### `modules/business-development/application/opportunity-use-cases.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `async function opportunityInScope(` | Opportunité et entreprise visibles de l'appelant (la visibilité d'une opportunité suit celle de son entreprise). |
+| `export class CreateOpportunityUseCase` | Créer une opportunité (à « Qualification ») : l'entreprise doit être dans la portée de l'appelant et non archivée ; audit. |
+| `abstract class OpportunityChange<C extends { id: string; version: number; access: AccessContext; actor: ActorContext }>` | Les cas d'usage qui changent une opportunité existante partagent la même séquence : portée, version, règle du domaine, audit. |
+| `export class UpdateOpportunityUseCase extends OpportunityChange<UpdateOpportunityCommand>` | Modifier une opportunité OUVERTE (intitulé, montant, devise, source) : portée, version lue ; audit avant/après. |
+| `export class AdvanceOpportunityUseCase extends OpportunityChange<AdvanceOpportunityCommand>` | Passer à l'étape suivante (jamais plus loin, jamais en arrière). |
+| `export class GrantWaiverUseCase extends OpportunityChange<GrantWaiverCommand>` | Accorder la dérogation à la règle du rendez-vous décideur (Responsable commercial) : justification obligatoire, tracée. |
+| `export class CloseOpportunityUseCase extends OpportunityChange<CloseOpportunityCommand>` | Clore une opportunité : « perdue » (chargé de compte pour les siennes, motif obligatoire) ou « gagnée » (Responsable commercial seulement, une fois l'accord de principe obtenu) ; décision D28. |
+| `export class GetOpportunityHandler` | Lecture d'une opportunité : hors de la portée de son entreprise, elle est « introuvable ». |
+| `export class ListOpportunitiesHandler` | Liste paginée des opportunités visibles (cartes et vue par étape), la plus récemment modifiée d'abord. |
+
+### `modules/business-development/application/opportunity-view.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export interface OpportunityView` | Modèle de lecture d'une opportunité (jamais l'entité). |
+
+### `modules/business-development/application/receipt-use-cases.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `async function receiptInScope(` | Décharge, offre et entreprise visibles de l'appelant : la visibilité d'une décharge suit celle de l'entreprise de son offre. |
+| `export class RegisterReceiptUseCase` | Enregistrer la décharge d'une offre DÉPOSÉE : portée de son entreprise, entreprise non archivée, une seule décharge valide ; l'offre passe à « décharge reçue ». |
+| `export class CancelReceiptUseCase` | Annuler une décharge (saisie erronée, mauvais fichier) avec un motif : portée, version lue, entreprise non archivée ; l'offre redevient « déposée » et attend sa décharge. |
+| `export class GetReceiptHandler` | Lecture d'une décharge : hors de la portée de son entreprise, elle est « introuvable ». |
+| `export class ListReceiptsHandler` | Décharges d'une offre (annulées comprises) ; l'offre doit être dans la portée de l'appelant, sinon « introuvable ». |
+
+### `modules/business-development/application/receipt-view.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export interface ReceiptView` | Modèle de lecture d'une décharge (jamais l'entité). |
+
 ### `modules/business-development/application/register-company.use-case.ts`
 
 | Déclaration | Rôle |
 |---|---|
 | `export interface RegisterCompanyCommand` | Données d'enregistrement d'une entreprise cible ; le propriétaire vient de l'identité de l'appelant, jamais du corps de la requête. |
 | `export class RegisterCompanyUseCase` | Cas d'usage : enregistrer une entreprise cible, refuser un doublon de nom, tracer l'opération. |
-| `async execute(command: RegisterCompanyCommand): Promise<CompanyView>` | Crée l'entreprise et son audit dans une même transaction ; un nom déjà pris (sans tenir compte de la casse ni des espaces) est un conflit. |
+| `async execute(command: RegisterCompanyCommand): Promise<CompanyView>` | Crée l'entreprise, son éventuel facilitateur et leur audit dans une même transaction ; un nom déjà pris (sans tenir compte de la casse ni des espaces) est un conflit. |
+
+### `modules/business-development/application/register-facilitator.use-case.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export class RegisterFacilitatorUseCase` | Cas d'usage : enregistrer un facilitateur réutilisable et tracer l'opération. |
+| `async executeInTransaction(command: RegisterFacilitatorCommand): Promise<FacilitatorView>` | Corps du cas d'usage, appelable depuis une transaction déjà ouverte (création d'entreprise avec facilitateur). |
+
+### `modules/business-development/application/update-company.use-case.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export interface UpdateCompanyCommand` | Modification d'une fiche d'entreprise. |
+| `export class UpdateCompanyUseCase` | Cas d'usage : modifier une entreprise. |
+| `private async fullView(company: Parameters<typeof toCompanyView>[0], known: ReturnType<typeof toFacilitatorView> \| null = null): Promise<CompanyView>` | Vue complète (commission comprise) pour l'audit : lisible des seuls détenteurs de `audit.log.read`. |
 
 ### `modules/business-development/business-development.module.ts`
 
 | Déclaration | Rôle |
 |---|---|
-| `export class BusinessDevelopmentModule {}` | Module « Développement commercial » : entreprises cibles (première brique du pipeline commercial). |
+| `export class BusinessDevelopmentModule {}` | Module « Développement commercial » : entreprises cibles et facilitateurs (premières briques du pipeline commercial). |
+
+### `modules/business-development/domain/appointment-repository.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export interface AppointmentListItem` | Un rendez-vous avec son entreprise, son contact et son offre (pour les listes). |
+| `export interface AppointmentRepository` | Port de persistance des rendez-vous. |
+| `save(appointment: Appointment): Promise<void>;` | Crée ou met à jour ; une modification sur une version périmée est un conflit (verrou optimiste). |
+| `findConflicts(query: { organizerUserId: string; startsAt: Date; endsAt: Date; excludeId?: string }): Promise<AppointmentListItem[]>;` | Rendez-vous À VENIR de l'organisateur qui chevauchent le créneau (hors `excludeId`) : sert à avertir d'un conflit d'horaire. |
+| `list(query: AppointmentListQuery): Promise<Page<AppointmentListItem>>;` | Tri : début, puis création. |
+
+### `modules/business-development/domain/appointment.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export const DEFAULT_APPOINTMENT_MINUTES = 60;` | Durée proposée, minimale et maximale d'un rendez-vous, en minutes : valeurs proposées, à confirmer. |
+| `function required(raw: string \| undefined, label: string, max: number): string` | Texte obligatoire (compte rendu, motif) : trois caractères au moins, la limite donnée au plus. |
+| `export class Appointment extends AggregateRoot` | Rendez-vous ou visite d'une entreprise, dans l'agenda de son organisateur. |
+| `static plan(input:` | Planifie un rendez-vous ; l'heure de début ne peut pas être dans le passé. |
+| `edit(changes: { durationMinutes?: number; location?: string \| null; note?: string \| null; contactId?: string \| null }): void` | Modifie la durée, le lieu, la note ou le contact d'un rendez-vous À VENIR (le changement d'horaire passe par le report). |
+| `postpone(startsAt: Date \| string, reason: string \| undefined, now: Date): void` | Reporte le rendez-vous à une autre heure (dans le futur) ; le motif est obligatoire et le rendez-vous reste « à venir ». |
+| `hold(report: string \| undefined, now: Date): void` | Marque le rendez-vous tenu avec son compte rendu (obligatoire) ; impossible avant son heure de début. |
+| `cancel(reason: string \| undefined, now: Date): void` | Annule le rendez-vous avec un motif (obligatoire). |
+| `get endsAt(): Date { return new Date(this.props.startsAt.getTime() + this.props.durationMinutes * 60000); }` | Fin du rendez-vous. |
+| `overlaps(other: { startsAt: Date; endsAt: Date }): boolean` | Vrai si les deux créneaux se chevauchent (fin exclusive : deux rendez-vous bout à bout ne se chevauchent pas). |
+| `isReportDue(now: Date): boolean` | Vrai si le rendez-vous est à venir et son heure de début est passée : un compte rendu est attendu (calculé, jamais stocké). |
+
+### `modules/business-development/domain/approval-repository.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export interface ApprovalListItem` | Un agrément avec le nom de son entreprise et l'intitulé de son opportunité (pour les listes). |
+| `export interface ApprovalRepository` | Port de persistance des agréments. |
+| `save(approval: Approval): Promise<void>;` | Crée ou met à jour ; une version périmée est un conflit ; un second agrément actif pour la même opportunité aussi. |
+| `findActiveByOpportunity(opportunityId: string): Promise<Approval \| null>;` | L'agrément actif (reçu ou honoré) de l'opportunité, s'il existe. |
+| `list(query: ApprovalListQuery): Promise<Page<ApprovalListItem>>;` | Tri : le plus récent d'abord. |
+
+### `modules/business-development/domain/approval.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `function isoDate(raw: string \| null \| undefined, label: string): string` | Date « AAAA-MM-JJ » réelle (le 31 février n'existe pas), sinon refusée. |
+| `function reasonOf(raw: string \| undefined, label: string): string` | Motif obligatoire (expiration, annulation) : trois caractères au moins, 500 au plus. |
+| `export class Approval extends AggregateRoot` | Agrément : promesse de paiement signée par l'entreprise cliente (payeur : le client seulement, D2) pour une opportunité qui a franchi l'accord de principe. |
+| `static register(input:` | Enregistre un agrément reçu. |
+| `honor(now: Date): void` | Constate que la promesse a été tenue (le paiement a eu lieu). |
+| `expire(reason: string \| undefined, now: Date): void` | Déclare l'agrément expiré (sa validité est passée), avec un motif ; expiration manuelle (D3). |
+| `cancel(reason: string \| undefined, now: Date): void` | Annule l'agrément (saisie erronée, renoncement du client) avec un motif ; il ne revient pas. |
+| `isPastValidity(today: string): boolean` | Vrai si la date de fin de validité est passée (sert à signaler « à expirer » ; l'expiration reste manuelle). |
+
+### `modules/business-development/domain/commission.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export const DEFAULT_CURRENCY = 'XAF';` | Devise par défaut d'un montant fixe : franc CFA d'Afrique centrale (décision du 2026-10-29). |
+| `export class Commission` | Objet-valeur : commission du facilitateur, soit un montant fixe dans une devise (ISO 4217), soit un pourcentage (jusqu'à 100). |
 
 ### `modules/business-development/domain/company-name.ts`
 
@@ -151,12 +439,22 @@
 | `export class CompanyName` | Objet-valeur : nom d'entreprise normalisé (espaces nettoyés, longueur bornée) avec une clé de comparaison sans casse. |
 | `get normalized(): string` | Clé de comparaison pour la détection de doublons. |
 
+### `modules/business-development/domain/company-overview-reader.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export interface CompanyOverview` | Synthèse de la liste des entreprises : effectifs par statut et valeurs disponibles pour les filtres. |
+| `export interface CompanyOverviewReader` | Port de lecture de la synthèse : compteurs par statut et valeurs de filtre, toujours bornés à la portée de l'appelant. |
+| `overview(query: { ownerIds?: readonly string[]; search?: string; country?: string; sector?: string }): Promise<CompanyOverview>;` | `ownerIds` : mêmes règles que la liste (liste vide = aucune ; absent = portée Tous). |
+
 ### `modules/business-development/domain/company-repository.ts`
 
 | Déclaration | Rôle |
 |---|---|
+| `export const COMPANY_SORT_FIELDS = ['createdAt', 'name', 'country', 'sector', 'status'] as const;` | Colonnes sur lesquelles la liste peut être triée. |
+| `export interface CompanyListQuery` | Paramètres de la liste : pagination, recherche, filtres (statut, pays, secteur), tri et portée. |
 | `export interface CompanyRepository` | Port de persistance des entreprises : enregistrer, retrouver, tester l'unicité du nom et lister selon les propriétaires autorisés. |
-| `list(query: { page: number; pageSize: number; search?: string; ownerIds?: readonly string[] }): Promise<Page<Company>>;` | `ownerIds` : restreint aux entreprises de ces propriétaires (liste vide = aucune) ; absent = pas de restriction (portée Tous). |
+| `list(query: CompanyListQuery): Promise<Page<Company>>;` | `ownerIds` : restreint aux entreprises de ces propriétaires (liste vide = aucune) ; absent = pas de restriction (portée Tous). |
 
 ### `modules/business-development/domain/company.ts`
 
@@ -165,13 +463,199 @@
 | `export interface CompanyProps` | État interne d'une entreprise (identité, nom, statut, propriétaire, horodatages). |
 | `export class Company extends AggregateRoot` | Entreprise cible : racine d'agrégat du pipeline commercial. |
 | `static rehydrate(props: CompanyProps): Company` | Reconstitution depuis la persistance : aucun événement émis. |
+| `update(changes:` | Modifie les informations de la fiche. |
+| `changeStatus(next: CompanyStatus, context: { contactCount: number }): void` | Change le statut à la main, d'un cran. |
+| `reassign(newOwnerUserId: string): void` | Confie l'entreprise à un autre propriétaire (la portée des droits suit). |
+| `becomeClient(): void` | Un agrément reçu fait de l'entreprise une cliente (flux C5) ; refusé si elle est archivée, sans effet si elle l'est déjà. |
 | `archive(): void` | Archive l'entreprise ; refuse de l'archiver deux fois (règle métier). |
+
+### `modules/business-development/domain/contact-info.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export function normalizeEmail(raw: string \| null \| undefined): string \| null` | Normalise une adresse e-mail facultative : minuscules, forme simple `x@y.z`, 200 caractères au plus. |
+| `export function normalizePhone(raw: string \| null \| undefined, options: { required: boolean }): string \| null` | Normalise un numéro de téléphone : chiffres, espaces, `+ - . |
+
+### `modules/business-development/domain/contact-repository.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export interface ContactListItem` | Un contact et le nom de son entreprise (pour les listes). |
+| `export interface ContactRepository` | Port de persistance des contacts. |
+| `remove(id: string): Promise<void>;` | Suppression logique : le contact disparaît partout. |
+| `countByCompany(companyId: string): Promise<number>;` | Nombre de contacts non supprimés de l'entreprise. |
+| `findDuplicates(query: { companyId: string; nameKey: string; emailKey: string \| null; excludeId?: string }): Promise<Contact[]>;` | Contacts non supprimés de la même entreprise portant le même nom OU le même e-mail (hors `excludeId`). |
+
+### `modules/business-development/domain/contact.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export const contactNameKey = (lastName: string, firstName: string): string => `${lastName} ${firstName}`.toLocaleLowerCase('fr');` | Clé de comparaison du nom pour la détection de doublons : prénom et nom, sans casse ni espaces superflus. |
+| `export class Contact extends AggregateRoot` | Contact : interlocuteur d'une entreprise (DAF, décideur…). |
+| `static rehydrate(props: ContactProps): Contact` | Reconstitution depuis la persistance. |
+| `update(changes: { lastName?: string; firstName?: string; role?: string; email?: string \| null; phone?: string \| null }): void` | Modifie les champs donnés (absent = inchangé, chaîne vide = champ facultatif effacé) ; tout ou rien en cas d'erreur. |
+
+### `modules/business-development/domain/events/approval-received.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export class ApprovalReceived implements DomainEvent` | Événement de domaine : un agrément vient d'être reçu pour une opportunité (« agrément accordé », flux F1). |
 
 ### `modules/business-development/domain/events/company-registered.ts`
 
 | Déclaration | Rôle |
 |---|---|
 | `export class CompanyRegistered implements DomainEvent` | Événement de domaine : une entreprise vient d'être enregistrée (sera publié vers d'autres contextes plus tard). |
+
+### `modules/business-development/domain/facilitation.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export class Facilitation` | Lien entre une entreprise et son facilitateur : méthode de contact, appartenance, commission éventuelle. |
+| `static assertMethod(method: string): void` | Refuse une méthode inconnue ; appelable avant toute écriture. |
+
+### `modules/business-development/domain/facilitator-repository.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export interface FacilitatorRepository` | Port de persistance des facilitateurs. |
+| `list(query: { page: number; pageSize: number; search?: string; ownerIds?: readonly string[] }): Promise<Page<Facilitator>>;` | `ownerIds` : restreint aux facilitateurs de ces propriétaires (liste vide = aucun) ; absent = pas de restriction. |
+
+### `modules/business-development/domain/facilitator.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export class Facilitator extends AggregateRoot` | Facilitateur : personne qui met en relation avec une entreprise (parfois un employé de celle-ci). |
+| `static rehydrate(props: FacilitatorProps): Facilitator` | Reconstitution depuis la persistance. |
+
+### `modules/business-development/domain/followup-repository.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export interface FollowupListItem` | Une relance avec l'offre et l'entreprise (pour les listes). |
+| `export type FollowupDue = 'overdue' \| 'today' \| 'upcoming';` | Filtre sur l'échéance des relances À FAIRE : en retard (avant aujourd'hui), aujourd'hui, à venir (après aujourd'hui). |
+| `export interface FollowupRepository` | Port de persistance des relances. |
+| `save(followup: Followup): Promise<void>;` | Crée ou met à jour ; une modification sur une version périmée est un conflit (verrou optimiste). |
+| `listByOffer(offerId: string): Promise<Followup[]>;` | Relances d'une offre, les plus récentes d'abord (annulées comprises). |
+| `countActiveByOffer(offerId: string): Promise<number>;` | Nombre de relances de l'offre qui comptent dans la limite (à faire ou terminées ; pas les annulées). |
+| `listPlannedByOffer(offerId: string): Promise<Followup[]>;` | Relances de l'offre encore à faire (pour les annuler quand l'offre n'est plus en cours). |
+| `list(query: { page: number; pageSize: number; status?: FollowupStatus; due?: FollowupDue; today: string; offerId?: string; ownerIds?: readonly string[` | `today` : « AAAA-MM-JJ » (UTC) pour situer les échéances. |
+
+### `modules/business-development/domain/followup.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export const MAX_FOLLOWUPS_PER_OFFER = 3;` | Au plus trois relances par offre (terminées ou à faire ; les annulées ne comptent pas) : valeur proposée, à confirmer. |
+| `function required(raw: string \| undefined, label: string, max: number): string` | Texte obligatoire (résultat, motif) : trois caractères au moins, la limite donnée au plus. |
+| `export class Followup extends AggregateRoot` | Relance d'une offre en cours : à faire à une échéance, par un canal. |
+| `static plan(input: { id: string; offerId: string; dueOn: string; channel: string; note?: string \| null; now: Date }): Followup` | Planifie une relance ; l'échéance ne peut pas être dans le passé. |
+| `edit(changes: { dueOn?: string; channel?: string; note?: string \| null }, now: Date): void` | Modifie l'échéance, le canal ou la note d'une relance À FAIRE. |
+| `complete(result: string \| undefined, now: Date): void` | Termine la relance avec son résultat (obligatoire : ce qui s'est dit ou décidé). |
+| `cancel(reason: string \| undefined, now: Date): void` | Annule la relance avec un motif (obligatoire) ; l'annulation automatique, quand l'offre n'est plus en cours, y a aussi son motif. |
+| `isOverdue(now: Date): boolean` | Vrai si la relance est à faire et son échéance dépassée. |
+
+### `modules/business-development/domain/offer-repository.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export interface OfferListItem` | Une offre et le nom de son entreprise (pour les listes). |
+| `export interface OfferRepository` | Port de persistance des offres. |
+| `save(offer: Offer): Promise<void>;` | Crée ou met à jour ; une modification sur une version périmée est un conflit (verrou optimiste). |
+| `nextReference(year: number): Promise<string>;` | Prochaine référence « OFF-2026-0001 » : compteur par année, sans trou ni doublon (transactionnel). |
+
+### `modules/business-development/domain/offer.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export class Offer extends AggregateRoot` | Offre faite à une entreprise : sa visibilité suit celle de l'entreprise. |
+| `edit(changes: { subject?: string; amount?: string \| number; currency?: string; note?: string \| null }): void` | Modifie les champs donnés ; seulement tant que l'offre est un brouillon (déposée, elle ne change plus). |
+| `submit(now: Date): void` | Dépôt chez l'entreprise : brouillon → déposée. |
+| `receiptReceived(): void` | La décharge signée est enregistrée : déposée → décharge reçue. |
+| `receiptCancelled(): void` | La décharge est annulée : décharge reçue → déposée (l'offre attend de nouveau sa décharge). |
+| `accept(now: Date): void` | Le client accepte. |
+| `refuse(now: Date): void` | Le client refuse. |
+| `withdraw(reason: string \| undefined, now: Date): void` | Retrait avec motif obligatoire, tant que le client n'a pas répondu. |
+| `get isOpen(): boolean` | Les relances et la décharge n'ont de sens que pour une offre en cours. |
+
+### `modules/business-development/domain/opportunity-repository.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export interface OpportunityListItem` | Une opportunité avec le nom de son entreprise (pour les listes). |
+| `export interface OpportunityRepository` | Port de persistance des opportunités. |
+| `save(opportunity: Opportunity): Promise<void>;` | Crée ou met à jour ; une modification sur une version périmée est un conflit (verrou optimiste). |
+| `list(query: OpportunityListQuery): Promise<Page<OpportunityListItem>>;` | Tri : dernière activité d'abord, puis identifiant. |
+| `export interface DecisionMakerMeetings` | Lecture des rendez-vous décideur tenus (règle de l'accord de principe, flux F1). |
+
+### `modules/business-development/domain/opportunity-totals.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export interface CurrencyTotal` | Montant total d'une devise. |
+| `export interface OpenOpportunities` | Les opportunités OUVERTES d'une entreprise : leur nombre et leur valeur, devise par devise (on n'additionne jamais deux devises). |
+| `export interface OpportunityTotals` | Port de lecture de la valeur des opportunités ouvertes, par entreprise (colonne « Valeur » du tableau des entreprises). |
+| `openByCompany(companyIds: readonly string[]): Promise<ReadonlyMap<string, OpenOpportunities>>;` | Les entreprises sans opportunité ouverte sont absentes du résultat. |
+
+### `modules/business-development/domain/opportunity.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `function required(raw: string \| undefined, label: string, max: number): string` | Texte obligatoire (justification, précision) : trois caractères au moins, la limite donnée au plus. |
+| `export class Opportunity extends AggregateRoot` | Opportunité commerciale d'une entreprise (plusieurs en même temps possibles) : sa visibilité suit celle de l'entreprise. |
+| `static create(input:` | Crée une opportunité : elle commence à « Qualification ». |
+| `edit(changes: { title?: string; amount?: string \| number; currency?: string; source?: string }): void` | Modifie l'intitulé, le montant, la devise ou la source d'une opportunité OUVERTE. |
+| `get nextStage(): OpportunityStage \| null` | L'étape qui suit l'étape actuelle ; `null` à la dernière. |
+| `advance(context: { decisionMakerMeetingHeld: boolean }, now: Date): void` | Passe à l'étape suivante, jamais plus loin ni en arrière. |
+| `grantWaiver(reason: string \| undefined, now: Date): void` | Accorde la dérogation à la règle du rendez-vous décideur (justification obligatoire) ; une seule fois, avant l'accord de principe. |
+| `closeLost(reason: string \| undefined, note: string \| null \| undefined, now: Date): void` | Clôture « perdue » avec un motif de la liste fermée ; « autre » exige une précision. |
+| `closeWon(now: Date): void` | Clôture « gagnée » : au plus tôt une fois l'accord de principe obtenu. |
+
+### `modules/business-development/domain/owner-directory.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export interface OwnerSummary` | Une personne qui peut porter des entreprises (utilisateur actif au rôle commercial). |
+| `export interface OwnerDirectory` | Port de l'annuaire des propriétaires : qui peut recevoir une entreprise, et comment s'appelle un propriétaire. |
+| `candidates(ids?: readonly string[]): Promise<OwnerSummary[]>;` | Les utilisateurs actifs au rôle commercial parmi `ids` (tous si `ids` est absent), triés par nom. |
+| `names(ids: readonly string[]): Promise<ReadonlyMap<string, string>>;` | Le nom de chaque identifiant connu (les inconnus sont absents du résultat). |
+
+### `modules/business-development/domain/receipt-repository.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export interface ReceiptRepository` | Port de persistance des décharges. |
+| `save(receipt: Receipt): Promise<void>;` | Crée ou met à jour ; une modification sur une version périmée est un conflit (verrou optimiste). |
+| `listByOffer(offerId: string): Promise<Receipt[]>;` | Décharges d'une offre, la plus récente d'abord, annulées comprises (l'historique reste lisible). |
+
+### `modules/business-development/domain/receipt.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `function isoDate(raw: string \| undefined): string` | Date « AAAA-MM-JJ » réelle (le 31 février n'existe pas), sinon refusée. |
+| `export class Receipt extends AggregateRoot` | Décharge signée par l'entreprise pour une offre déposée. |
+| `static register(input: { id: string; offerId: string; receivedOn: string; receivedBy: string; offerSubmittedAt: Date \| null; now: Date }): Receipt` | Enregistre une décharge. |
+| `cancel(reason: string \| undefined, now: Date): void` | Annule la décharge (saisie erronée, mauvais fichier) avec un motif obligatoire ; une décharge annulée ne revient pas. |
+
+### `modules/business-development/infrastructure/prisma-appointment.repository.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export class PrismaAppointmentRepository implements AppointmentRepository` | Persistance PostgreSQL des rendez-vous (jamais supprimés : on les tient ou on les annule, avec un texte). |
+| `async save(appointment: Appointment): Promise<void>` | Crée ou met à jour le rendez-vous ; une modification sur une version périmée est un conflit (verrou optimiste). |
+| `async findConflicts(query: { organizerUserId: string; startsAt: Date; endsAt: Date; excludeId?: string }): Promise<AppointmentListItem[]>` | Une durée s'exprimant en minutes, le chevauchement se calcule en SQL sur l'heure de début et la durée. |
+
+### `modules/business-development/infrastructure/prisma-approval.repository.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export class PrismaApprovalRepository implements ApprovalRepository` | Persistance PostgreSQL des agréments (jamais supprimés : on les honore, les déclare expirés ou les annule, avec un motif). |
+| `async save(approval: Approval): Promise<void>` | Crée ou met à jour l'agrément ; une modification sur une version périmée est un conflit (verrou optimiste). |
+
+### `modules/business-development/infrastructure/prisma-company-overview.reader.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export class PrismaCompanyOverviewReader implements CompanyOverviewReader` | Synthèse PostgreSQL : compteurs par statut (recherche, pays, secteur appliqués) et valeurs de filtre de la portée. |
 
 ### `modules/business-development/infrastructure/prisma-company.repository.ts`
 
@@ -180,9 +664,91 @@
 | `function toDomain(row: CompanyRow): Company` | Reconstruit une entreprise du domaine à partir d'une ligne de base de données. |
 | `export class PrismaCompanyRepository implements CompanyRepository` | Persistance PostgreSQL des entreprises (suppression logique : une entreprise supprimée est ignorée partout). |
 | `async save(company: Company): Promise<void>` | Crée ou met à jour l'entreprise (clé de nom normalisée pour l'unicité). |
+| `private async syncFacilitation(company: Company): Promise<void>` | Aligne le lien avec le facilitateur sur l'entreprise : créé, remplacé ou retiré (modification d'une fiche existante). |
 | `async findById(id: string): Promise<Company \| null>` | Retrouve une entreprise non supprimée, ou `null`. |
 | `async existsByName(name: CompanyName): Promise<boolean>` | Vrai si une entreprise non supprimée porte déjà ce nom (comparaison sans casse). |
-| `async list(query: { page: number; pageSize: number; search?: string; ownerIds?: readonly string[] }): Promise<Page<Company>>` | Liste paginée, la plus récente d'abord ; `ownerIds` restreint aux propriétaires autorisés (liste vide = aucune entreprise), absent = aucune restriction. |
+| `async list(query: CompanyListQuery): Promise<Page<Company>>` | Liste paginée, la plus récente d'abord ; `ownerIds` restreint aux propriétaires autorisés (liste vide = aucune entreprise), absent = aucune restriction. |
+| `export function companyWhere(query: { ownerIds?: readonly string[]; search?: string; status?: CompanyStatus; country?: string; sector?: string }): Pri` | Filtre commun à la liste et à la synthèse : suppression logique, portée, recherche, pays et secteur (statut en plus pour la liste). |
+| `function orderFor(field: CompanySortField, direction: 'asc' \| 'desc'): Prisma.CompanyOrderByWithRelationInput[]` | Tri demandé ; les valeurs absentes (pays, secteur) passent toujours en dernier. |
+
+### `modules/business-development/infrastructure/prisma-contact.repository.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export class PrismaContactRepository implements ContactRepository` | Persistance PostgreSQL des contacts (suppression logique). |
+| `async save(contact: Contact): Promise<void>` | Crée ou met à jour le contact ; une modification sur une version périmée est un conflit (verrou optimiste). |
+
+### `modules/business-development/infrastructure/prisma-facilitator.repository.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export class PrismaFacilitatorRepository implements FacilitatorRepository` | Persistance PostgreSQL des facilitateurs. |
+| `async save(facilitator: Facilitator): Promise<void>` | Crée le facilitateur (aucune modification n'existe encore : seule la création est possible). |
+| `async list(query: { page: number; pageSize: number; search?: string; ownerIds?: readonly string[] }): Promise<Page<Facilitator>>` | Liste paginée, la plus récente d'abord ; `ownerIds` restreint aux propriétaires autorisés. |
+
+### `modules/business-development/infrastructure/prisma-followup.repository.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export class PrismaFollowupRepository implements FollowupRepository` | Persistance PostgreSQL des relances (jamais supprimées : on les termine ou on les annule, avec un texte). |
+| `async save(followup: Followup): Promise<void>` | Crée ou met à jour la relance ; une modification sur une version périmée est un conflit (verrou optimiste). |
+
+### `modules/business-development/infrastructure/prisma-offer.repository.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export class PrismaOfferRepository implements OfferRepository` | Persistance PostgreSQL des offres (jamais supprimées : on les retire). |
+| `async save(offer: Offer): Promise<void>` | Crée ou met à jour l'offre ; une modification sur une version périmée est un conflit (verrou optimiste). |
+| `async nextReference(year: number): Promise<string>` | Incrémente le compteur de l'année dans la transaction en cours : deux créations simultanées ne partagent jamais un numéro. |
+
+### `modules/business-development/infrastructure/prisma-opportunity-totals.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export class PrismaOpportunityTotals implements OpportunityTotals` | Somme des opportunités ouvertes par entreprise et par devise, calculée par la base (une requête, quel que soit le nombre d'entreprises). |
+
+### `modules/business-development/infrastructure/prisma-opportunity.repository.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export class PrismaOpportunityRepository implements OpportunityRepository` | Persistance PostgreSQL des opportunités (jamais supprimées : on les clôt, gagnées ou perdues). |
+| `async save(opportunity: Opportunity): Promise<void>` | Crée ou met à jour l'opportunité ; une modification sur une version périmée est un conflit (verrou optimiste). |
+| `export class PrismaDecisionMakerMeetings implements DecisionMakerMeetings` | Les rendez-vous « décideur » tenus d'une entreprise (agenda, S4.2d) : la règle de l'accord de principe les compte. |
+
+### `modules/business-development/infrastructure/prisma-owner-directory.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `const OWNER_ROLE_CODES = ['ACCOUNT_MANAGER', 'HEAD_OF_SALES', 'SUPER_ADMIN'];` | Rôles qui portent des entreprises : chargé de compte, Responsable commercial, administrateur. |
+| `export class PrismaOwnerDirectory implements OwnerDirectory` | Annuaire des propriétaires, lu dans la table des utilisateurs (jamais d'e-mail ni de secret exposé). |
+
+### `modules/business-development/infrastructure/prisma-receipt.repository.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export class PrismaReceiptRepository implements ReceiptRepository` | Persistance PostgreSQL des décharges (jamais supprimées : on les annule, avec un motif). |
+| `async save(receipt: Receipt): Promise<void>` | Crée ou met à jour la décharge ; une modification sur une version périmée est un conflit (verrou optimiste). |
+
+### `modules/business-development/presentation/appointments.controller.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export class AppointmentsController` | Agenda : rendez-vous (DAF, décideur) et visites. |
+| `plan(@Body() dto: PlanAppointmentDto, @Access() access: AccessContext, @CurrentActor() actor: AuthenticatedActor, @Req() req: Request)` | Planifie ; la réponse porte `conflicts` si l'organisateur a déjà un rendez-vous sur le créneau (avertissement). |
+| `list(@Query() query: ListAppointmentsDto, @Access() access: AccessContext)` | L'agenda sur une fenêtre de temps, trié par heure de début. |
+| `postpone(@Param('id', ParseUUIDPipe) id: string, @Body() dto: TransitionAppointmentDto, @Access() access: AccessContext, @CurrentActor() actor: Authen` | Reporter à une autre heure, avec un motif (obligatoire). |
+| `hold(@Param('id', ParseUUIDPipe) id: string, @Body() dto: TransitionAppointmentDto, @Access() access: AccessContext, @CurrentActor() actor: Authentica` | Marquer tenu, avec le compte rendu (obligatoire). |
+| `cancel(@Param('id', ParseUUIDPipe) id: string, @Body() dto: TransitionAppointmentDto, @Access() access: AccessContext, @CurrentActor() actor: Authenti` | Annuler, avec un motif (obligatoire). |
+
+### `modules/business-development/presentation/approvals.controller.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export class ApprovalsController` | Agréments (promesses de paiement signées). |
+| `register(@Body() dto: RegisterApprovalDto, @Access() access: AccessContext, @CurrentActor() actor: AuthenticatedActor, @Req() req: Request)` | Enregistrer l'agrément d'une opportunité qui a franchi l'accord de principe ; l'entreprise devient « Cliente ». |
+| `honor(@Param('id', ParseUUIDPipe) id: string, @Body() dto: HonorApprovalDto, @Access() access: AccessContext, @CurrentActor() actor: AuthenticatedActo` | Constater que la promesse a été tenue (réservé à qui peut honorer : Responsable commercial). |
+| `expire(@Param('id', ParseUUIDPipe) id: string, @Body() dto: CloseApprovalDto, @Access() access: AccessContext, @CurrentActor() actor: AuthenticatedAct` | Déclarer l'agrément expiré (motif obligatoire) : l'expiration est manuelle (D3). |
+| `cancel(@Param('id', ParseUUIDPipe) id: string, @Body() dto: CloseApprovalDto, @Access() access: AccessContext, @CurrentActor() actor: AuthenticatedAct` | Annuler l'agrément (motif obligatoire). |
 
 ### `modules/business-development/presentation/companies.controller.ts`
 
@@ -190,18 +756,156 @@
 |---|---|
 | `export class CompaniesController` | Chaque route est protégée : identité + MFA vérifié + permission. |
 | `register(@Body() dto: RegisterCompanyDto, @Access() access: AccessContext, @CurrentActor() actor: AuthenticatedActor, @Req() req: Request)` | L'utilisateur qui crée l'entreprise en devient le propriétaire. |
+| `overview(@Query() query: CompanyOverviewDto, @Access() access: AccessContext)` | Compteurs par statut et valeurs des filtres (pays, secteurs), dans la portée de l'appelant. |
+| `owners(@Access() access: AccessContext)` | Les personnes à qui l'appelant peut confier une entreprise (liste du choix de réattribution). |
+| `async export(@Param('id', ParseUUIDPipe) id: string, @Access() access: AccessContext, @CurrentActor() actor: AuthenticatedActor, @Req() req: Request)` | Fiche imprimable. |
+| `update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateCompanyDto, @Access() access: AccessContext, @CurrentActor() actor: AuthenticatedAct` | Modifie la fiche. |
+| `status(@Param('id', ParseUUIDPipe) id: string, @Body() dto: ChangeStatusDto, @Access() access: AccessContext, @CurrentActor() actor: AuthenticatedActo` | Change le statut à la main, d'un cran (CU-C-05) ; « Qualifiée » exige un contact. |
+| `owner(@Param('id', ParseUUIDPipe) id: string, @Body() dto: ReassignDto, @Access() access: AccessContext, @CurrentActor() actor: AuthenticatedActor, @R` | Confie l'entreprise à un autre propriétaire de la portée de l'appelant (D17). |
+
+### `modules/business-development/presentation/contacts.controller.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export class ContactsController` | Contacts des entreprises. |
+
+### `modules/business-development/presentation/dto/appointment.dto.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export class PlanAppointmentDto` | Planification d'un rendez-vous : le type, l'entreprise et l'heure de début ; le reste est facultatif. |
+| `export class UpdateAppointmentDto` | Modification d'un rendez-vous à venir : `version` (celle qui a été lue) obligatoire ; le reste est facultatif (absent = inchangé, contact `null` = retiré). |
+| `export class TransitionAppointmentDto` | Report, tenue ou annulation : la version lue, et le texte (motif ou compte rendu) obligatoire ; le report porte aussi la nouvelle heure. |
+| `export class ListAppointmentsDto` | Fenêtre de l'agenda (début inclus, fin exclue, 63 jours au plus), pagination (taille ≤ 200), type, état, entreprise, offre. |
+
+### `modules/business-development/presentation/dto/approval.dto.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export class RegisterApprovalDto` | Enregistrement d'un agrément : l'opportunité, la date de réception, le montant couvert et/ou le nombre de places (au moins l'un des deux, vérifié par le domaine), la devise et la fin de validité (facultative). |
+| `export class HonorApprovalDto` | Honorer un agrément : la version lue. |
+| `export class CloseApprovalDto` | Déclarer un agrément expiré ou l'annuler : la version lue et le motif (obligatoire, vérifié par le domaine). |
+| `export class ListApprovalsDto` | Liste des agréments : pagination (taille ≤ 100), entreprise, opportunité, état. |
+
+### `modules/business-development/presentation/dto/company-lifecycle.dto.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export const MANUAL_STATUSES = ['TARGET', 'CONTACTED', 'QUALIFIED'] as const;` | Statuts qu'on peut poser à la main (les statuts « Cliente » et « Archivée » ne se posent pas ici). |
+
+### `modules/business-development/presentation/dto/contact.dto.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export class RegisterContactDto` | Création d'un contact : l'entreprise (identifiant), le nom et le prénom sont obligatoires. |
+| `export class UpdateContactDto` | Modification : `version` (celle qui a été lue) est obligatoire ; le reste est facultatif (absent = inchangé, vide = effacé). |
+| `export class ListContactsDto` | Paramètres de la liste : pagination (taille ≤ 100), recherche, entreprise, fonction. |
+
+### `modules/business-development/presentation/dto/followup.dto.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export class PlanFollowupDto` | Planification d'une relance : l'offre, l'échéance (AAAA-MM-JJ) et le canal ; la note est facultative. |
+| `export class UpdateFollowupDto` | Modification d'une relance à faire : `version` (celle qui a été lue) obligatoire ; le reste est facultatif (absent = inchangé). |
+| `export class CloseFollowupDto` | Terminer ou annuler une relance : la version lue et le texte (résultat ou motif), obligatoire. |
+| `export class ListFollowupsDto` | Paramètres de la liste : pagination (taille ≤ 100), offre, état, échéance. |
 
 ### `modules/business-development/presentation/dto/list-companies.dto.ts`
 
 | Déclaration | Rôle |
 |---|---|
-| `export class ListCompaniesDto` | Paramètres de requête de la liste (page, taille ≤ 100, recherche) validés avant d'atteindre le cas d'usage. |
+| `export class ListCompaniesDto` | Paramètres de requête de la liste (page, taille ≤ 100, recherche, filtres, tri) validés avant d'atteindre le cas d'usage. |
+| `export class CompanyOverviewDto` | Paramètres de la synthèse (compteurs par statut) : mêmes filtres que la liste, hors statut. |
+
+### `modules/business-development/presentation/dto/offer.dto.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `const AMOUNT = /^\s*\d[\d\s]{0,15}([.,]\d{1,2})?\s*$/;` | Montant en texte décimal (« 4500000 » ou « 4500000,50 ») : jamais de nombre flottant sur le réseau. |
+| `export class RegisterOfferDto` | Création d'une offre : entreprise, objet et montant obligatoires ; devise XAF par défaut. |
+| `export class UpdateOfferDto` | Modification d'un brouillon : `version` (celle qui a été lue) obligatoire ; le reste est facultatif (absent = inchangé). |
+| `export class OfferTransitionDto` | Changement d'état : la version lue ; le motif n'est lu que pour un retrait. |
+| `export class ListOffersDto` | Paramètres de la liste : pagination (taille ≤ 100), recherche, entreprise, état. |
+
+### `modules/business-development/presentation/dto/opportunity.dto.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export class CreateOpportunityDto` | Création : l'entreprise, l'intitulé, le montant estimé et la source ; la devise est facultative (XAF par défaut). |
+| `export class UpdateOpportunityDto` | Modification d'une opportunité ouverte : `version` (celle qui a été lue) obligatoire ; le reste est facultatif (absent = inchangé). |
+| `export class AdvanceOpportunityDto` | Avancer : seulement la version lue. |
+| `export class WaiverDto` | Dérogation : la version lue et la justification (obligatoire). |
+| `export class CloseLostDto` | Clôture « perdue » : la version lue, le motif de la liste fermée et une précision (obligatoire pour « autre »). |
+| `export class CloseWonDto` | Clôture « gagnée » : seulement la version lue. |
+| `export class ListOpportunitiesDto` | Paramètres de la liste : pagination (taille ≤ 200), recherche, entreprise, état, étape. |
+
+### `modules/business-development/presentation/dto/receipt.dto.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export class RegisterReceiptDto` | Enregistrement d'une décharge : l'offre, la date de réception (AAAA-MM-JJ) et la personne qui l'a remise. |
+| `export class CancelReceiptDto` | Annulation d'une décharge : la version lue et le motif (obligatoire). |
+| `export class ListReceiptsDto` | Liste des décharges d'une offre. |
 
 ### `modules/business-development/presentation/dto/register-company.dto.ts`
 
 | Déclaration | Rôle |
 |---|---|
-| `export class RegisterCompanyDto` | Corps de la requête d'enregistrement : nom obligatoire, secteur et pays facultatifs, longueurs bornées ; tout autre champ (notamment le propriétaire) est refusé. |
+| `export class NewFacilitatorDto` | Nouveau facilitateur saisi à la création de l'entreprise. |
+| `export class CommissionDto` | Commission : montant fixe (avec devise) ou pourcentage. |
+| `export class FacilitationDto` | Facilitateur par qui l'entreprise a été approchée : existant (identifiant) OU nouveau, plus la méthode de contact. |
+| `export class UpdateFacilitationDto` | Modification du lien avec le facilitateur : tout est facultatif (absent = inchangé), `commission: null` la retire. |
+| `export class RegisterCompanyDto` | Corps de la requête d'enregistrement : nom obligatoire, le reste facultatif, longueurs bornées ; tout autre champ (notamment le propriétaire) est refusé. |
+
+### `modules/business-development/presentation/dto/update-company.dto.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export class UpdateCompanyDto` | Corps de la modification d'une entreprise : `version` (celle que l'appelant a lue) est obligatoire, tout le reste est facultatif (absent = inchangé, chaîne vide = champ effacé) ; `facilitation: null` retire le facilitateur. |
+
+### `modules/business-development/presentation/facilitators.controller.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export class FacilitatorsController` | Facilitateurs : personnes qui mettent en relation avec une entreprise. |
+| `register(@Body() dto: NewFacilitatorDto, @Access() access: AccessContext, @CurrentActor() actor: AuthenticatedActor, @Req() req: Request)` | L'utilisateur qui crée le facilitateur en devient le propriétaire. |
+
+### `modules/business-development/presentation/followups.controller.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export class FollowupsController` | Relances des offres. |
+| `list(@Query() query: ListFollowupsDto, @Access() access: AccessContext)` | La liste « À faire » : triée par échéance, filtrable par offre, état et échéance (en retard, aujourd'hui, à venir). |
+| `complete(@Param('id', ParseUUIDPipe) id: string, @Body() dto: CloseFollowupDto, @Access() access: AccessContext, @CurrentActor() actor: AuthenticatedA` | Terminer la relance avec son résultat (obligatoire). |
+| `cancel(@Param('id', ParseUUIDPipe) id: string, @Body() dto: CloseFollowupDto, @Access() access: AccessContext, @CurrentActor() actor: AuthenticatedAct` | Annuler la relance avec un motif (obligatoire). |
+
+### `modules/business-development/presentation/offers.controller.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export class OffersController` | Offres faites aux entreprises. |
+| `submit(@Param('id', ParseUUIDPipe) id: string, @Body() dto: OfferTransitionDto, @Access() access: AccessContext, @CurrentActor() actor: AuthenticatedA` | Déposer le brouillon chez l'entreprise. |
+| `accept(@Param('id', ParseUUIDPipe) id: string, @Body() dto: OfferTransitionDto, @Access() access: AccessContext, @CurrentActor() actor: AuthenticatedA` | Enregistrer l'acceptation de l'entreprise. |
+| `refuse(@Param('id', ParseUUIDPipe) id: string, @Body() dto: OfferTransitionDto, @Access() access: AccessContext, @CurrentActor() actor: AuthenticatedA` | Enregistrer le refus de l'entreprise. |
+| `withdraw(@Param('id', ParseUUIDPipe) id: string, @Body() dto: OfferTransitionDto, @Access() access: AccessContext, @CurrentActor() actor: Authenticate` | Retirer l'offre (motif obligatoire). |
+
+### `modules/business-development/presentation/opportunities.controller.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export class OpportunitiesController` | Opportunités commerciales (pipeline). |
+| `list(@Query() query: ListOpportunitiesDto, @Access() access: AccessContext)` | Le pipeline : les opportunités visibles, la plus récemment modifiée d'abord ; filtrable par recherche, entreprise, état, étape. |
+| `advance(@Param('id', ParseUUIDPipe) id: string, @Body() dto: AdvanceOpportunityDto, @Access() access: AccessContext, @CurrentActor() actor: Authentica` | Passer à l'étape suivante (accord de principe : rendez-vous décideur tenu ou dérogation). |
+| `waiver(@Param('id', ParseUUIDPipe) id: string, @Body() dto: WaiverDto, @Access() access: AccessContext, @CurrentActor() actor: AuthenticatedActor, @Re` | Accorder la dérogation à la règle du rendez-vous décideur (Responsable commercial), avec une justification. |
+| `closeLost(@Param('id', ParseUUIDPipe) id: string, @Body() dto: CloseLostDto, @Access() access: AccessContext, @CurrentActor() actor: AuthenticatedActo` | Clore « perdue » avec un motif de la liste fermée (chargé de compte pour les siennes). |
+| `closeWon(@Param('id', ParseUUIDPipe) id: string, @Body() dto: CloseWonDto, @Access() access: AccessContext, @CurrentActor() actor: AuthenticatedActor,` | Clore « gagnée » (Responsable commercial seulement, après l'accord de principe). |
+
+### `modules/business-development/presentation/receipts.controller.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export class ReceiptsController` | Décharges signées des offres. |
+| `cancel(@Param('id', ParseUUIDPipe) id: string, @Body() dto: CancelReceiptDto, @Access() access: AccessContext, @CurrentActor() actor: AuthenticatedAct` | Annuler la décharge (motif obligatoire) : l'offre redevient « déposée ». |
 
 ### `modules/documents/application/document-use-cases.ts`
 
@@ -1179,7 +1883,7 @@
 | `export interface RequestLike` | Forme minimale d'une requête HTTP (sans dépendre d'Express) pour construire le contexte d'audit. |
 | `export function actorContextFrom(req: RequestLike, identity: { userId: string \| null; sessionId: string \| null } = { userId: null, sessionId: null }` | Qui agit, depuis où : IP et appareil de la requête (l'identité est ajoutée une fois l'utilisateur authentifié). |
 
-## Interface web — pages (Next.js) — 44 déclarations commentées
+## Interface web — pages (Next.js) — 53 déclarations commentées
 
 ### `(app)/account/page.tsx`
 
@@ -1188,8 +1892,8 @@
 | `export default function AccountPage()` | Page « Mon compte » : profil, changement de mot de passe, nouveaux codes de secours et accès aux sessions et à l'historique des connexions de l'utilisateur connecté. |
 | `function PasswordForm({ email }: { email: string })` | Formulaire de changement de mot de passe : indications en direct, confirmation obligatoire, message d'erreur du serveur affiché tel quel. |
 | `async function submit(event: FormEvent)` | Envoie l'ancien et le nouveau mot de passe ; les champs sont vidés après succès (le serveur coupe les autres sessions). |
-| `function RecoveryCodes()` | Génère de nouveaux codes de secours (les anciens cessent de fonctionner) et les affiche une seule fois ; un code MFA récent est demandé si nécessaire. |
-| `async function regenerate()` | Appelle la régénération et garde les codes en mémoire uniquement, jusqu'à ce que l'utilisateur les masque. |
+| `function RecoveryCodes()` | Régénération des codes de secours : confirmation explicite d'abord (action irréversible), puis code MFA récent si nécessaire, puis affichage UNIQUE des nouveaux codes (copie, fichier, impression). |
+| `async function regenerate()` | Appelle la régénération et garde les codes en mémoire uniquement, jusqu'à ce que l'utilisateur ait terminé. |
 | `function SessionsLink()` | Lien vers la page « Sessions et connexions » (sessions actives, révocation, historique des connexions). |
 
 ### `(app)/account/sessions/page.tsx`
@@ -1208,31 +1912,65 @@
 | `async function run(action: () => Promise<unknown>, success: string)` | Exécute une action d'administration, affiche son résultat (succès ou message du serveur), ferme la fenêtre et recharge la liste. |
 | `function confirmAction(user: UserView, action: 'disable' \| 'enable' \| 'resetMfa' \| 'revokeSessions' \| 'resend' \| 'resetPassword')` | Associe chaque action de confirmation à son appel d'API et à son message de succès. |
 | `function rowActions(user: UserView)` | Actions possibles sur un compte, selon les droits de l'utilisateur connecté (le serveur re-contrôle tout). |
-| `function RoleChoices({ roles, selected, onToggle }: { roles: RoleView[]; selected: string[]; onToggle: (code: string) => void })` | Cases à cocher des rôles, avec leur description. |
-| `function toggle(list: string[], code: string): string[]` | Ajoute le code à la liste s'il n'y est pas, le retire sinon (sans modifier la liste d'origine). |
 | `function InviteDialog({ roles, managers, onClose, onSubmit }:` | Fenêtre d'invitation : adresse, nom, rôles et responsable facultatif. |
 | `async function submit(event: FormEvent)` | Envoie l'invitation avec les rôles cochés (au moins un). |
-| `function RolesDialog({ user, roles, onClose, onSubmit }:` | Fenêtre de modification des rôles d'un utilisateur ; le changement s'applique immédiatement, y compris aux sessions ouvertes. |
+| `function RolesDialog({ user, roles, isSelf, onClose, onSubmit }:` | Fenêtre de modification des rôles d'un utilisateur ; le changement s'applique immédiatement, y compris aux sessions ouvertes. |
+
+### `(app)/agenda/page.tsx`
+
+| Déclaration | Rôle |
+|---|---|
+| `export default function AgendaPage()` | L'agenda : rendez-vous et visites visibles selon la portée de l'utilisateur, en vue jour, semaine ou mois. |
+| `function AppointmentButton({ appointment: a, compact, onOpen }: { appointment: Appointment; compact?: boolean; onOpen: (a: Appointment) => void })` | Un rendez-vous dans une liste : heure, type, entreprise, état ; ouvre sa fiche. |
+| `function DaySection({ day, items, today, onOpen }: { day: string; items: Appointment[]; today: string; onOpen: (a: Appointment) => void })` | Un jour d'une vue jour ou semaine. |
+| `function MonthGrid({ anchor, days, byDay, today, title, onOpen, onDay }:` | Grille du mois : une ligne par semaine (du lundi au dimanche), les rendez-vous du jour en liste compacte. |
 
 ### `(app)/companies/[id]/page.tsx`
 
 | Déclaration | Rôle |
 |---|---|
 | `export default function CompanyPage()` | Fiche d'une entreprise (version minimale de S3.6) : identité de l'entreprise et ses documents. |
+| `async function exportSheet()` | Exporte la fiche : le serveur contrôle la portée et trace l'export ; le navigateur propose l'enregistrement en PDF. |
 
 ### `(app)/companies/page.tsx`
 
 | Déclaration | Rôle |
 |---|---|
-| `export default function CompaniesPage()` | Entreprises visibles selon la portée de l'utilisateur : tableau du design (recherche, pagination, sélection persistante) et création d'une entreprise dans une fenêtre (si le droit existe). |
-| `function CreateCompanyDialog({ onClose, onCreated }: { onClose: () => void; onCreated: () => Promise<void> })` | Fenêtre de création : le nom est la seule donnée obligatoire (le propriétaire est l'utilisateur connecté, décidé côté serveur). |
-| `async function submit(event: FormEvent)` | Enregistre l'entreprise saisie ; en cas d'échec le message de l'API s'affiche dans la fenêtre. |
+| `export default function CompaniesPage()` | Entreprises visibles selon la portée de l'utilisateur : tableau du design avec recherche, filtres (statut avec effectifs, pays, secteur), tri par colonne, colonnes au choix, pagination et sélection persistante ; création dans une fenêtre (si le droit existe). |
+| `function FilterSelect({ label, value, options, onChange }: { label: string; value: string; options: string[]; onChange: (value: string) => void })` | Liste déroulante d'un filtre (valeurs réellement présentes dans la portée de l'utilisateur). |
+| `function ColumnsMenu({ visible, onToggle }: { visible: readonly CompanyColumnId[]; onToggle: (id: CompanyColumnId) => void })` | Menu « Colonnes » : une case par colonne ; la colonne du nom est toujours affichée. |
+
+### `(app)/contacts/page.tsx`
+
+| Déclaration | Rôle |
+|---|---|
+| `export default function ContactsPage()` | Contacts visibles selon la portée de l'utilisateur (celle de leur entreprise) : recherche, filtre par fonction, pagination, sélection persistante, création dans une fenêtre (l'entreprise se choisit parmi celles de sa portée). |
+
+### `(app)/followups/page.tsx`
+
+| Déclaration | Rôle |
+|---|---|
+| `export default function FollowupsPage()` | La page « Relances » : la liste « À faire » des offres visibles selon la portée de l'utilisateur, triée par échéance. |
 
 ### `(app)/layout.tsx`
 
 | Déclaration | Rôle |
 |---|---|
 | `export default function AppLayout({ children }: { children: ReactNode })` | Cadre de toutes les pages connectées : n'affiche rien tant que l'utilisateur n'est pas authentifié avec son second facteur, puis place la page dans la coque (navigation, barre supérieure, panneau principal centré). |
+
+### `(app)/offers/page.tsx`
+
+| Déclaration | Rôle |
+|---|---|
+| `const STATUS_OPTIONS = [{ value: '', label: 'Toutes' }, ...Object.entries(OFFER_STATUS).map(([value, style]) => ({ value, label: style.label }))];` | Filtre par état : « Toutes » puis chaque état de l'offre. |
+| `export default function OffersPage()` | Offres visibles selon la portée de l'utilisateur (celle de leur entreprise) : recherche, filtre par état, pagination, sélection persistante, et le cycle d'une offre (créer, modifier, déposer, réponse du client, retirer) depuis le menu d'une ligne. |
+
+### `(app)/opportunities/page.tsx`
+
+| Déclaration | Rôle |
+|---|---|
+| `export default function OpportunitiesPage()` | Le pipeline commercial : cartes par lignes de six, ou colonnes par étape (bascule), selon la portée de l'utilisateur. |
+| `function OpportunityCard({ opportunity: o, rights, onAction, compact }: { opportunity: Opportunity; rights: OpportunityRights; onAction: (a: Opportuni` | Une opportunité en carte : intitulé (ouvre la fiche), entreprise, montant, étape, dernière activité, menu d'actions. |
 
 ### `(app)/page.tsx`
 
@@ -1290,7 +2028,19 @@
 | `export default function ResetPasswordPage()` | Page ouverte depuis le lien reçu par e-mail (A10 à A12). |
 | `async function submit(event: FormEvent)` | Envoie le jeton et le nouveau mot de passe ; le serveur coupe toutes les sessions, l'utilisateur doit se reconnecter avec son second facteur. |
 
-## Interface web — composants — 48 déclarations commentées
+## Interface web — composants — 103 déclarations commentées
+
+### `admin/rights-preview.tsx`
+
+| Déclaration | Rôle |
+|---|---|
+| `export function RightsPreview({ roles, selected }: { roles: RoleView[]; selected: string[] })` | Aperçu en LECTURE SEULE des droits qu'obtiendra la personne avec les rôles cochés, regroupés par module (EXD-14). |
+
+### `admin/role-picker.tsx`
+
+| Déclaration | Rôle |
+|---|---|
+| `export function RolePicker({ roles, selected, onChange, original, locked }:` | Choix des rôles d'un utilisateur (EXD-14) : les rôles sont rangés par FAMILLE, chacun est une carte entièrement cliquable, un compteur annoncé dit combien de rôles et de permissions sont choisis, « Tout désélectionner » vide la sélection, et l'aperçu des droits effectifs (par module) se met à jour à chaque choix. |
 
 ### `app-shell.tsx`
 
@@ -1301,6 +2051,42 @@
 | `const openSearch = useCallback(()` | Va à la recherche globale du hub (ou y met le focus si l'on y est déjà). |
 | `function ShellLink({ href, icon, label, current, railOnly, centered, rail }: { href: string; icon: IconName; label: string; current: boolean; railOnly` | Lien de navigation : pictogramme + libellé (le libellé reste lu par les lecteurs d'écran quand le rail est replié). |
 | `function ThemeToggle()` | Bascule clair / sombre (le choix est mémorisé ; sans choix, l'application suit le réglage de l'appareil). |
+
+### `appointments/appointment-dialogs.tsx`
+
+| Déclaration | Rôle |
+|---|---|
+| `export interface PlanDefaults` | Valeurs imposées à la planification (depuis une entreprise ou une offre) ; l'entreprise imposée n'est pas modifiable. |
+| `export type AppointmentDialogState` | Fenêtre ouverte sur un rendez-vous, ou pour en planifier un. |
+| `export function AppointmentDialogs({ dialog, rights, onOpen, onClose, onDone }:` | Toutes les fenêtres du cycle d'un rendez-vous (fiche, planifier, modifier, reporter, tenir, annuler), rendues UNE fois par l'écran hôte. |
+| `function ConflictNotice({ appointment, onClose }: { appointment: Appointment; onClose: () => void })` | Avertissement de conflit d'horaire : le rendez-vous est enregistré, mais l'organisateur en a un autre sur le même créneau. |
+| `function DetailDialog({ appointment: a, rights, onOpen, onClose }: { appointment: Appointment; rights: AgendaRights; onOpen: (d: AppointmentDialogStat` | Fiche d'un rendez-vous : tous ses éléments, et les actions possibles selon son état et les droits. |
+| `function AppointmentFormDialog({ appointment, defaults, rights, onClose, onDone }:` | Planification (entreprise imposée ou choisie dans la portée) et modification d'un rendez-vous à venir. |
+| `function PostponeDialog({ appointment, onClose, onDone }: { appointment: Appointment; onClose: () => void; onDone: (saved?: Appointment) => Promise<vo` | Report : nouvelle date et heure (dans le futur) et motif obligatoire. |
+| `function ClosingDialog({ appointment, closing, onClose, onDone }: { appointment: Appointment; closing: 'hold' \| 'cancel'; onClose: () => void; onDone` | Marquer tenu (compte rendu obligatoire) ou annuler (motif obligatoire) un rendez-vous à venir. |
+
+### `appointments/appointments-panel.tsx`
+
+| Déclaration | Rôle |
+|---|---|
+| `const SPAN_DAYS = 60;` | Fenêtre de lecture : le serveur borne une recherche à 63 jours ; on lit donc deux fenêtres de 60 jours, avant et après aujourd'hui. |
+| `export function AppointmentsPanel({ company }: { company: { id: string; name: string } })` | Rendez-vous d'une entreprise, dans sa fiche (vue 360°) : lecture seule, les 60 derniers et les 60 prochains jours. |
+
+### `approvals/approval-dialogs.tsx`
+
+| Déclaration | Rôle |
+|---|---|
+| `export type ApprovalDialogState` | Fenêtre ouverte sur un agrément, ou pour en enregistrer un. |
+| `export function ApprovalDialogs({ dialog, onClose, onDone }: { dialog: ApprovalDialogState \| null; onClose: () => void; onDone: () => Promise<void> }` | Toutes les fenêtres du cycle d'un agrément, rendues UNE fois par le panneau hôte, hors du tableau. |
+| `function DocumentDialog({ approval, onClose }: { approval: Approval; onClose: () => void })` | Le document signé de l'agrément : consultation (liste, téléchargement) et ajout si l'envoi initial a échoué. |
+| `function RegisterApprovalDialog({ company, onClose, onDone }: { company: { id: string; name: string }; onClose: () => void; onDone: () => Promise<void` | Enregistrement d'un agrément : l'opportunité (accord de principe obtenu), le montant et/ou les places, la devise, les dates et le document signé. |
+| `function CloseApprovalDialog({ approval, action, onClose, onDone }: { approval: Approval; action: ApprovalAction; onClose: () => void; onDone: () => P` | Honorer (confirmation), déclarer expiré ou annuler (motif obligatoire) un agrément reçu. |
+
+### `approvals/approvals-panel.tsx`
+
+| Déclaration | Rôle |
+|---|---|
+| `export function ApprovalsPanel({ company, archived, onChanged }: { company: { id: string; name: string }; archived: boolean; onChanged: () => Promise<` | Agréments d'une entreprise, dans sa fiche : liste, enregistrement (opportunité à l'accord de principe, document signé), document, honorer, déclarer expiré, annuler. |
 
 ### `auth/auth-layout.tsx`
 
@@ -1327,6 +2113,59 @@
 |---|---|
 | `export function OtpInput({ label, value, onChange, disabled = false, autoFocus = false }:` | Saisie du code à 6 chiffres en six cases (EXD-06, DDR-0009). |
 
+### `auth/password-field.tsx`
+
+| Déclaration | Rôle |
+|---|---|
+| `export function PasswordField({ label, value, onChange, autoComplete, autoFocus, invalid, required = true }:` | Champ mot de passe avec bouton « œil » (EXD-12). |
+
+### `auth/secret-codes-panel.tsx`
+
+| Déclaration | Rôle |
+|---|---|
+| `export function SecretCodesPanel({ codes, saved, onSavedChange }: { codes: string[]; saved: boolean; onSavedChange: (saved: boolean) => void })` | Codes de secours affichés UNE SEULE FOIS (EXD-13), avec copie, fichier texte et impression (« Enregistrer au format PDF »). |
+| `function print()` | Imprime uniquement le bloc des codes (feuille de style d'impression) ; « Enregistrer au format PDF » produit le PDF. |
+
+### `companies/company-dialog.tsx`
+
+| Déclaration | Rôle |
+|---|---|
+| `function Field({ name, label, error, children }: { name: FieldName; label: string; error?: string; children: ReactNode })` | Champ de formulaire : libellé relié, puis le contrôle, puis le message d'erreur écrit sous le champ. |
+| `export function CompanyDialog({ company, onClose, onDone }: { company?: Company; onClose: () => void; onDone: () => Promise<void> })` | Fenêtre de création OU de modification d'une entreprise (`company` fourni = modification, préremplie) : coordonnées, puis « mise en relation » (facilitateur existant ou nouveau, méthode de contact, commission). |
+| `const field = (key: FieldName) => ({ id: `company-${key}`, 'aria-invalid': errors[key] ? (true as const) : undefined, 'aria-describedby': errors[key] ` | Attributs d'un champ : état non conforme annoncé et relié à son message. |
+| `async function submit(event: FormEvent)` | Enregistre l'entreprise saisie ; en cas d'échec le message de l'API s'affiche dans la fenêtre. |
+
+### `companies/company-lifecycle-dialogs.tsx`
+
+| Déclaration | Rôle |
+|---|---|
+| `export function CompanyStatusDialog({ company, action, onClose, onDone }: { company: Company; action: StatusAction; onClose: () => void; onDone: () =>` | Changement de statut d'une entreprise (CU-C-05) : confirmation ; le serveur refuse « Qualifiée » sans contact. |
+| `export function CompanyOwnerDialog({ company, onClose, onDone }: { company: Company; onClose: () => void; onDone: () => Promise<void> })` | Changement de responsable (D17) : le choix se limite aux personnes de la portée de l'utilisateur (liste du serveur) et une confirmation explicite précède l'enregistrement, car la portée des droits sur l'entreprise, ses opportunités, offres et rendez-vous suit son responsable. |
+
+### `companies/facilitation-panel.tsx`
+
+| Déclaration | Rôle |
+|---|---|
+| `export function FacilitationPanel({ facilitation }: { facilitation: Facilitation \| null \| undefined })` | Bloc « Mise en relation » de la fiche entreprise. |
+
+### `confirm-dialog.tsx`
+
+| Déclaration | Rôle |
+|---|---|
+| `export function ConfirmDialog({ title, confirmLabel, cancelLabel = 'Annuler', busy = false, onConfirm, onCancel, children }:` | Fenêtre de confirmation d'une action irréversible (EXD-13). |
+
+### `contacts/contact-dialog.tsx`
+
+| Déclaration | Rôle |
+|---|---|
+| `export function ContactDialog({ contact, company, onClose, onDone }:` | Fenêtre de création OU de modification d'un contact (`contact` fourni = modification, préremplie). |
+
+### `contacts/contacts-panel.tsx`
+
+| Déclaration | Rôle |
+|---|---|
+| `export function ContactsPanel({ company }: { company: { id: string; name: string } })` | Contacts d'une entreprise, dans sa fiche : liste, création, modification, suppression (avec confirmation). |
+
 ### `data/badge.tsx`
 
 | Déclaration | Rôle |
@@ -1345,6 +2184,7 @@
 | Déclaration | Rôle |
 |---|---|
 | `export interface Column<T>` | Colonne d'un tableau : en-tête, rendu de la cellule, alignement. |
+| `export interface TableSort` | Tri courant d'un tableau et son gestionnaire (le tri est fait par le serveur, sur toutes les pages). |
 | `export interface TableSelection` | Sélection persistante d'un tableau : l'ensemble des identifiants et son gestionnaire. |
 | `const INTERACTIVE = 'button, a, input, label, select, textarea, summary, [role="button"], [role="menuitem"]';` | Éléments sur lesquels un clic ne doit PAS basculer la sélection de la ligne. |
 | `export function DataTable<T>(` | Tableau de données du design. |
@@ -1405,6 +2245,22 @@
 | `async function submit(event: FormEvent)` | Envoie le fichier en corps binaire ; le message du serveur s'affiche tel quel en cas de refus. |
 | `function HistoryDialog({ document, canDownload, onClose, onError }: { document: DocumentView; canDownload: boolean; onClose: () => void; onError: (mes` | Historique des versions d'un document : chaque version reste téléchargeable, avec son empreinte SHA-256. |
 
+### `followups/followup-dialogs.tsx`
+
+| Déclaration | Rôle |
+|---|---|
+| `export type FollowupDialogState` | Fenêtre ouverte sur une relance, ou pour en planifier une (éventuellement sur une offre imposée). |
+| `export function FollowupDialogs({ dialog, onClose, onDone }: { dialog: FollowupDialogState \| null; onClose: () => void; onDone: () => Promise<void> }` | Toutes les fenêtres du cycle d'une relance (planifier, modifier, terminer, annuler), rendues UNE fois par l'écran hôte, hors des lignes d'un tableau (un clic dans une fenêtre ne doit pas basculer la sélection d'une ligne). |
+| `function FollowupFormDialog({ followup, offer, onClose, onDone }:` | Planification (offre imposée, ou choisie parmi les offres en cours de sa portée) et modification d'une relance à faire. |
+| `function ClosingDialog({ followup, closing, onClose, onDone }: { followup: Followup; closing: 'complete' \| 'cancel'; onClose: () => void; onDone: () ` | Terminer (résultat obligatoire) ou annuler (motif obligatoire) une relance à faire. |
+
+### `form-field.tsx`
+
+| Déclaration | Rôle |
+|---|---|
+| `export function fieldProps(prefix: string, name: string, error?: string)` | Attributs d'un contrôle de formulaire : identifiant, état non conforme annoncé et relié à son message d'erreur. |
+| `export function FormField({ prefix, name, label, error, children }: { prefix: string; name: string; label: string; error?: string; children: ReactNode` | Champ de formulaire : libellé relié, contrôle, puis message d'erreur écrit sous le champ (avec pictogramme : la couleur ne porte jamais seule l'état, EXD-16). |
+
 ### `gate.tsx`
 
 | Déclaration | Rôle |
@@ -1430,7 +2286,59 @@
 
 | Déclaration | Rôle |
 |---|---|
-| `export function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: ReactNode })` | Fenêtre modale accessible : Échap ferme, le focus entre dans la fenêtre, le fond est rendu inerte (`inert`), Tab reste dans la fenêtre et le focus revient à l'élément d'origine à la fermeture. |
+| `export function Modal({ title, onClose, children, size = 'default' }: { title: string; onClose: () => void; children: ReactNode; size?: 'default' \| '` | Fenêtre modale accessible : Échap ferme, le focus entre dans la fenêtre, le fond est rendu inerte (`inert`), Tab reste dans la fenêtre et le focus revient à l'élément d'origine à la fermeture. |
+
+### `offers/offer-dialog.tsx`
+
+| Déclaration | Rôle |
+|---|---|
+| `export function OfferDialog({ offer, company, onClose, onDone }:` | Fenêtre de création OU de modification d'une offre (`offer` fourni = modification d'un brouillon, préremplie). |
+
+### `offers/offer-dialogs.tsx`
+
+| Déclaration | Rôle |
+|---|---|
+| `export type OfferDialogState` | Fenêtre ouverte sur une offre ou pour en créer une. |
+| `export function OfferDialogs({ dialog, onClose, onDone, onRefresh }:` | Toutes les fenêtres du cycle d'une offre (créer, modifier, déposer, accepter, refuser, retirer), rendues UNE fois par l'écran hôte, hors des lignes d'un tableau (un clic dans une fenêtre ne doit pas basculer la sélection d'une ligne). |
+| `function OfferDocumentsDialog({ offer, onClose }: { offer: Offer; onClose: () => void })` | Documents d'une offre (par exemple le fichier envoyé au client) : le panneau des documents, dans une fenêtre. |
+
+### `offers/offer-row-actions.tsx`
+
+| Déclaration | Rôle |
+|---|---|
+| `export function useOfferRights(): OfferRights & { create: boolean }` | Droits de l'utilisateur sur les offres, pour `availableActions` (le serveur re-contrôle chaque requête). |
+| `export type OfferDialogAction = Exclude<OfferAction, 'followups' \| 'appointment'>;` | Actions qui ouvrent une fenêtre (toutes sauf « Relances » et « Planifier un rendez-vous », qui ouvrent une autre page). |
+
+### `offers/offers-panel.tsx`
+
+| Déclaration | Rôle |
+|---|---|
+| `export function OffersPanel({ company, archived }: { company: { id: string; name: string }; archived: boolean })` | Offres d'une entreprise, dans sa fiche : liste, création, modification d'un brouillon, dépôt, réponse du client, retrait. |
+
+### `offers/receipt-dialog.tsx`
+
+| Déclaration | Rôle |
+|---|---|
+| `export function ReceiptDialog({ offer, onClose, onChanged }: { offer: Offer; onClose: () => void; onChanged: () => Promise<void> })` | Décharge signée d'une offre : consulter (avec son fichier), enregistrer (offre déposée) ou annuler (motif obligatoire). |
+
+### `opportunities/opportunities-panel.tsx`
+
+| Déclaration | Rôle |
+|---|---|
+| `export function OpportunitiesPanel({ company }: { company: { id: string; name: string } })` | Opportunités d'une entreprise, dans sa fiche (vue 360°) : lecture seule. |
+
+### `opportunities/opportunity-dialogs.tsx`
+
+| Déclaration | Rôle |
+|---|---|
+| `export type OpportunityDialogState` | Fenêtre ouverte sur une opportunité, ou pour en créer une (éventuellement pour une entreprise imposée). |
+| `export function OpportunityDialogs({ dialog, rights, onOpen, onClose, onDone }:` | Toutes les fenêtres du cycle d'une opportunité (fiche, créer, modifier, avancer, dérogation, clôtures), rendues UNE fois par l'écran hôte, hors des cartes (un clic dans une fenêtre ne doit pas déclencher une carte). |
+| `function DetailDialog({ opportunity: o, rights, onOpen, onClose }: { opportunity: Opportunity; rights: OpportunityRights; onOpen: (d: OpportunityDialo` | Fiche : tous les éléments de l'opportunité et les actions possibles selon son état et les droits. |
+| `function OpportunityFormDialog({ opportunity, company, onClose, onDone }:` | Création (entreprise imposée, ou choisie dans la portée) et modification d'une opportunité ouverte. |
+| `function AdvanceDialog({ opportunity, rights, onOpen, onClose, onDone }:` | Confirmation d'un passage d'étape ; un refus de la règle du rendez-vous décideur renvoie vers la dérogation. |
+| `function WaiverDialog({ opportunity, onClose, onDone }: { opportunity: Opportunity; onClose: () => void; onDone: () => Promise<void> })` | Dérogation à la règle du rendez-vous décideur : justification obligatoire. |
+| `function CloseLostDialog({ opportunity, onClose, onDone }: { opportunity: Opportunity; onClose: () => void; onDone: () => Promise<void> })` | Clôture « perdue » : motif de la liste fermée, précision obligatoire pour « autre ». |
+| `function CloseWonDialog({ opportunity, onClose, onDone }: { opportunity: Opportunity; onClose: () => void; onDone: () => Promise<void> })` | Clôture « gagnée » (Responsable commercial, après l'accord de principe) : confirmation. |
 
 ### `page-heading.tsx`
 
@@ -1445,7 +2353,7 @@
 | `export function StepUpDialog({ onDone }: { onDone: (ok: boolean) => void })` | Demande un code frais du second facteur avant une action sensible (modification de rôles, désactivation, etc.). |
 | `async function submit(event: FormEvent)` | Vérifie le code ; en cas de succès le nouveau jeton remplace l'ancien et l'action sensible est rejouée. |
 
-## Interface web — bibliothèque — 77 déclarations commentées
+## Interface web — bibliothèque — 205 déclarations commentées
 
 ### `api.ts`
 
@@ -1466,6 +2374,47 @@
 | `async function send(path: string, options: RequestOptions): Promise<Response>` | Envoie une requête vers `/api/v1` avec le jeton en en-tête (jamais dans l'URL) et sans mise en cache. |
 | `function isTokenRejected(res: Response): boolean` | Vrai si l'API accuse le jeton (`WWW-Authenticate: invalid_token`) : seul cas où un rafraîchissement automatique est justifié. |
 | `export async function api<T = unknown>(path: string, options: RequestOptions = {}): Promise<T>` | Appel d'API de toute l'interface : rafraîchit le jeton une fois si le jeton est refusé, demande un code MFA et rejoue une fois si l'action est sensible, sinon remonte l'erreur lisible. |
+
+### `appointments.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export const APPOINTMENT_TYPES = [` | Types de rendez-vous (codes de l'API → libellés). |
+| `export const DEFAULT_APPOINTMENT_MINUTES = 60;` | Durée proposée, minimale et maximale, en minutes (valeurs proposées, à confirmer ; les mêmes que le serveur). |
+| `export interface AgendaRights` | Droits de l'utilisateur sur l'agenda, tels que le profil les annonce (le serveur re-contrôle tout). |
+| `export interface AppointmentForm` | Ce que l'utilisateur saisit pour planifier ou modifier un rendez-vous (date et heure en heure locale). |
+| `export const localDay = (iso: string \| Date): string` | Jour local « AAAA-MM-JJ » d'un instant. |
+| `export const localTime = (iso: string \| Date): string` | Heure locale « hh:mm » d'un instant. |
+| `export function toInstant(date: string, time: string): string \| null` | Instant (ISO) d'un jour et d'une heure LOCAUX saisis ; `null` si l'un ou l'autre est illisible. |
+| `export const startOfLocalDay = (day: string): string => new Date(`${day}T00:00:00`).toISOString();` | Premier instant (ISO) d'un jour local. |
+| `export function validateAppointmentFields(form: AppointmentForm, context: { now: Date; editing: boolean }): AppointmentErrors` | Contrôles de saisie rapides, champ par champ (le serveur refait tous les contrôles) : type connu, entreprise choisie, date et heure réelles et dans le futur (à la planification seulement), durée entière de 15 minutes à 8 heures, lieu de 200 caractères et note de 500 au plus. |
+| `export function buildAppointmentBody(form: AppointmentForm, options: { version?: number } = {}): Record<string, unknown>` | Corps de la planification (type, entreprise, heure ; contact, offre, lieu et note seulement s'ils sont renseignés) ou de la modification (la version lue, jamais le type, l'entreprise ni l'heure : un changement d'heure est un report). |
+| `export function appointmentActions(appointment: Pick<Appointment, 'status' \| 'type' \| 'startsAt'>, rights: AgendaRights, now: Date = new Date()): Ap` | Actions proposées : seulement sur un rendez-vous À VENIR, selon les droits de l'utilisateur pour ce type (une visite relève du droit « visite », son annulation de la modification), et « tenu » seulement une fois l'heure de début venue (le serveur re-contrôle tout). |
+| `export const canPlan = (type: string, rights: AgendaRights): boolean => (type === 'VISIT' ? rights.visitCreate : rights.create);` | Vrai si l'utilisateur peut planifier ce type de rendez-vous. |
+| `export const plannableTypes = (rights: AgendaRights) => APPOINTMENT_TYPES.filter((t) => canPlan(t.value, rights));` | Types que l'utilisateur peut planifier. |
+| `export const timeRange = (a: Pick<Appointment, 'startsAt' \| 'endsAt'>): string => `${localTime(a.startsAt)} – ${localTime(a.endsAt)}`;` | Heure de début et durée d'un rendez-vous, lisibles (« 09:00 – 10:00 »). |
+| `const weekdayIndex = (day: string): number => (new Date(`${day}T00:00:00Z`).getUTCDay() + 6) % 7;` | Jour de la semaine (0 = lundi … 6 = dimanche) d'un jour « AAAA-MM-JJ ». |
+| `function shiftMonth(day: string, months: number): string` | Le premier du mois qui suit ou précède `day` de `months` mois. |
+| `export const mondayOf = (day: string): string => addDays(day, -weekdayIndex(day));` | Lundi de la semaine qui contient `day`. |
+| `export function agendaWindow(mode: AgendaMode, anchor: string): AgendaWindow` | Fenêtre d'une vue autour d'un jour : un jour, la semaine du lundi au dimanche, ou la grille du mois (4 à 6 semaines). |
+| `export function shiftAnchor(mode: AgendaMode, anchor: string, direction: -1 \| 1): string` | Jour d'ancrage de la vue précédente (`-1`) ou suivante (`1`) : un jour, une semaine, ou un mois (même jour, borné au mois). |
+| `export function agendaTitle(mode: AgendaMode, anchor: string): string` | Titre de la vue : « lundi 9 novembre 2026 », « Semaine du 9 au 15 novembre 2026 », « novembre 2026 ». |
+| `export const dayHeading = (day: string): string => longDay(day, { weekday: 'long', day: 'numeric', month: 'long' });` | Libellé d'un jour pour un titre de section (« lundi 9 novembre »). |
+| `export function groupByDay(items: readonly Appointment[]): Map<string, Appointment[]>` | Rendez-vous regroupés par jour LOCAL, chaque jour trié par heure (l'ordre du serveur est conservé). |
+| `export function agendaParams(window: Pick<AgendaWindow, 'from' \| 'to'>, type: string): URLSearchParams` | Paramètres de la requête d'agenda : la fenêtre, le type éventuel et la taille de page maximale. |
+
+### `approvals.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `const APPROVABLE_STAGES = ['AGREEMENT_IN_PRINCIPLE', 'ACCREDITATION'];` | Étapes à partir desquelles un agrément peut être enregistré (l'accord de principe a été obtenu). |
+| `export const eligibleOpportunities = (items: readonly Opportunity[]): Opportunity[]` | Opportunités d'une entreprise pour lesquelles on peut enregistrer un agrément : accord de principe obtenu, pas perdue (le serveur reste juge). |
+| `export interface ApprovalForm` | Ce que l'utilisateur saisit pour enregistrer un agrément ; le document signé s'ajoute à part. |
+| `export function validateApprovalFields(form: ApprovalForm, context: { today: string }): ApprovalErrors` | Contrôles de saisie rapides, champ par champ (le serveur refait tous les contrôles) : opportunité choisie, montant et/ou places (au moins l'un des deux, positifs), devise de trois lettres, date de réception réelle et pas dans le futur, fin de validité réelle et pas avant la réception. |
+| `export function buildApprovalBody(form: ApprovalForm): Record<string, unknown>` | Corps de l'enregistrement d'un agrément : seuls les champs renseignés partent. |
+| `export function coverageText(a: Pick<Approval, 'amount' \| 'currency' \| 'places'>): string` | Ce que couvre l'agrément : « 12 500 000 FCFA · 8 places » (l'un ou l'autre, ou les deux). |
+| `export function approvalActions(approval: Pick<Approval, 'status'>, rights: ApprovalRights): ApprovalAction[]` | Les actions proposées sur un agrément : seul un agrément « reçu » se clôt ; honorer et annuler ont chacun leur droit. |
+| `export function validateReason(text: string): string \| null` | Motif obligatoire pour déclarer expiré ou annuler : trois caractères au moins, 500 au plus. |
 
 ### `auth-context.tsx`
 
@@ -1489,11 +2438,92 @@
 | `export function authErrorMessage(error: unknown, fallback: string): string` | Message à afficher pour un échec d'authentification : le message du serveur (identique pour un compte connu ou inconnu, jamais enrichi ici), un texte propre à la limitation de débit, ou un texte de repli pour une panne réseau. |
 | `export function secondsLeft(until: number, now: number): number` | Secondes restantes avant `until` (en millisecondes depuis l'époque), jamais négatives. |
 
+### `company-lifecycle.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `const ORDER = ['TARGET', 'CONTACTED', 'QUALIFIED'] as const;` | Ordre des statuts pour distinguer avancer et revenir. |
+| `export function statusActions(status: string): StatusAction[]` | Les changements de statut proposés depuis l'état actuel. |
+| `export interface OwnerCandidate` | Une personne à qui confier une entreprise (liste fournie par le serveur, dans la portée de l'utilisateur). |
+| `export const otherOwners = (candidates: readonly OwnerCandidate[], currentOwnerId: string \| null \| undefined): OwnerCandidate[]` | Les candidats, hors le responsable actuel (on ne confie pas une entreprise à qui l'a déjà). |
+
+### `company-table.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export type CompanySortField = 'createdAt' \| 'name' \| 'country' \| 'sector' \| 'status';` | Champs sur lesquels l'API sait trier les entreprises. |
+| `export interface CompanyFilters` | Filtres du tableau ; chaîne vide = pas de filtre. |
+| `export function nextSort(current: CompanySort, field: CompanySortField): CompanySort` | Clic sur un en-tête : nouveau champ → croissant ; même champ → inverse ; troisième clic sur « Créée le » repart du tri par défaut. |
+| `export function listParams(filters: CompanyFilters, sort: CompanySort, page: number, pageSize: number): URLSearchParams` | Paramètres de la liste pour l'API. |
+| `export function overviewParams(filters: CompanyFilters): URLSearchParams` | Paramètres de la synthèse : mêmes filtres que la liste, SAUF le statut (les compteurs par statut doivent rester lisibles). |
+| `export interface CompanyOverview` | Synthèse renvoyée par l'API. |
+| `export function statusOptions(counts: Record<string, number> \| null): { value: string; label: string; count?: number }[]` | Boutons de filtre par statut : « Toutes » + chaque statut, avec son effectif quand la synthèse est connue. |
+| `export const COMPANY_COLUMNS = [` | Colonnes affichables. |
+| `export function parseStoredColumns(raw: string \| null): CompanyColumnId[]` | Relit les colonnes mémorisées : toute valeur douteuse retombe sur le défaut ; la colonne verrouillée est toujours présente. |
+| `export function toggleColumn(visible: readonly CompanyColumnId[], id: CompanyColumnId): CompanyColumnId[]` | Active ou masque une colonne ; une colonne verrouillée ne se masque pas. |
+| `export function openValueText(open: Company['openOpportunities']): string \| null` | Valeur des opportunités ouvertes d'une entreprise pour la colonne « Valeur » : « 3 · 3 000 000,50 FCFA ». |
+
+### `contacts.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export const CONTACT_ROLES = [` | Fonction du contact dans l'entreprise (codes de l'API → libellés). |
+| `export interface ContactForm` | Ce que l'utilisateur saisit dans la fenêtre d'un contact. |
+| `export function validateContactFields(form: ContactForm): ContactErrors` | Contrôles de saisie rapides, champ par champ, dans l'ordre de la page (le serveur refait tous les contrôles). |
+| `export function formFromContact(contact: Contact): ContactForm` | Formulaire prérempli avec le contact à modifier. |
+| `export function buildContactBody(form: ContactForm, options: { version?: number; allowDuplicate?: boolean } = {}): Record<string, unknown>` | Corps de la création (l'entreprise est incluse) ou de la modification (la version lue, jamais l'entreprise : un contact ne change pas d'entreprise ici). |
+| `export const isDuplicateConflict = (status: number, message: string): boolean => status === 409 && /existe déjà/i.test(message);` | Vrai si l'erreur de l'API est un doublon probable (conflit « existe déjà »), pas une modification concurrente. |
+
+### `countries.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export const COUNTRY_SUGGESTIONS = [` | Suggestions de pays pour la fiche d'une entreprise (la saisie reste libre : un pays absent de la liste est accepté). |
+
 ### `device.ts`
 
 | Déclaration | Rôle |
 |---|---|
 | `export function deviceLabel(userAgent: string): string` | Libellé court et lisible d'un User-Agent (« Chrome sur Windows »). |
+
+### `export-sheet.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export async function openCompanySheet(companyId: string): Promise<void>` | Ouvre la fiche d'une entreprise dans une nouvelle fenêtre et lance l'impression (le navigateur propose « Enregistrer au format PDF »). |
+
+### `facilitation.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export const CONTACT_METHODS = [` | Façons de prendre contact via le facilitateur (codes de l'API → libellés). |
+| `export interface CompanyForm` | Ce que l'utilisateur saisit dans la fenêtre de création d'une entreprise. |
+| `export const DEFAULT_CURRENCY = 'XAF';` | Devise par défaut : franc CFA d'Afrique centrale (le serveur applique la même). |
+| `export type FieldName` | Champs de la fiche qui peuvent porter une erreur, dans l'ordre de la page. |
+| `export function validateCompanyFields(form: CompanyForm): FieldErrors` | Contrôles de saisie rapides, champ par champ, pour mettre en évidence ce qui n'est pas conforme (le serveur refait tous les contrôles). |
+| `export function validateCompanyForm(form: CompanyForm): string[]` | Les mêmes contrôles sous forme de liste de messages (récapitulatif annoncé avant l'envoi). |
+| `export function buildCompanyBody(form: CompanyForm): Record<string, unknown>` | Corps de la requête de création : les champs vides sont omis ; sans facilitateur, aucune facilitation ni commission n'est envoyée. |
+| `export function normalizeCurrency(raw: string): string` | Devise saisie → code : vide ou « FCFA » = XAF (franc CFA d'Afrique centrale), sinon les trois lettres en majuscules. |
+| `export function formatCommission(commission: Commission): string` | « 7,50 % » ou « 1 500,00 XAF » (format français). |
+| `export interface EditCapabilities` | Ce que l'utilisateur a le droit de modifier dans la mise en relation (le serveur re-contrôle chaque droit). |
+| `export function editCapabilities(company: Company, canManageCommission: boolean): EditCapabilities` | Capacités d'édition d'une fiche existante, d'après ce que l'API a fourni (les clés absentes disent ce qu'on ne voit pas). |
+| `export function formFromCompany(company: Company): CompanyForm` | Formulaire prérempli avec la fiche à modifier. |
+| `export function buildCompanyUpdateBody(form: CompanyForm, company: Company, caps: EditCapabilities): Record<string, unknown>` | Corps de la modification : la version lue (verrou optimiste) et les champs de la fiche (une zone vidée est envoyée vide, pour être effacée). |
+
+### `followups.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export const FOLLOWUP_CHANNELS = [` | Canaux d'une relance (codes de l'API → libellés). |
+| `export const DEFAULT_FOLLOWUP_DELAY_DAYS = 7;` | Délai proposé par défaut pour la première relance (valeur proposée, à confirmer) et nombre maximum par offre. |
+| `export function addDays(from: string, days: number): string` | Date « AAAA-MM-JJ » à `days` jours de `from` (UTC). |
+| `export interface FollowupForm` | Ce que l'utilisateur saisit pour planifier ou modifier une relance. |
+| `export function validateFollowupFields(form: FollowupForm, context: { today: string; keepDueOn?: string; needsOffer: boolean }): FollowupErrors` | Contrôles de saisie rapides, champ par champ (le serveur refait tous les contrôles) : offre choisie, échéance réelle et non passée (sauf si on garde l'échéance déjà passée d'une relance en retard), canal connu, note de 500 caractères au plus. |
+| `export function buildFollowupBody(form: FollowupForm, options: { version?: number } = {}): Record<string, unknown>` | Corps de la planification (l'offre est incluse) ou de la modification (la version lue, jamais l'offre). |
+| `export function validateClosingText(text: string, max: number): string \| null` | Texte obligatoire d'une clôture (résultat ou motif) : 3 caractères au moins, la limite donnée au plus. |
+| `export function followupActions(status: string, rights: { complete: boolean; update: boolean }): FollowupAction[]` | Actions proposées : seulement sur une relance À FAIRE, selon les droits de l'utilisateur (le serveur re-contrôle tout). |
+| `export const FOLLOWUP_FILTERS = [` | Filtres rapides de la liste : un seul actif, chacun traduit en paramètres de requête. |
+| `export function followupListParams(filter: FollowupFilter, page: number, pageSize: number, offerId?: string): URLSearchParams` | Paramètres de la liste : page, taille, filtre rapide et offre éventuelle. |
 
 ### `format.ts`
 
@@ -1525,6 +2555,40 @@
 | `export function availableModules(profile: Profile \| null): AppModule[]` | Modules livrés et que le profil a le droit d'ouvrir. |
 | `export function upcomingModules(): AppModule[]` | Modules pas encore livrés (présentés « À venir » sur le hub). |
 
+### `offers.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export type OfferAction = 'edit' \| 'submit' \| 'receipt' \| 'followups' \| 'appointment' \| 'accept' \| 'refuse' \| 'withdraw' \| 'documents';` | Actions possibles sur une offre ; la disponibilité dépend de son état ET des droits (le serveur re-contrôle tout). |
+| `export interface OfferRights` | Droits de l'utilisateur sur les offres, leurs décharges et leurs documents. |
+| `export function availableActions(status: string, rights: OfferRights): OfferAction[]` | Actions proposées pour un état donné : un brouillon se modifie, se dépose ou se retire ; une offre déposée (ou dont la décharge est reçue) attend la réponse du client ou se retire, et sa décharge se consulte, s'enregistre ou s'annule ; acceptée, refusée et retirée sont définitives (on ne peut plus que consulter la décharge et les documents). |
+| `export function formatAmount(amount: string, currency: string): string` | Montant lisible : « 4 500 000 FCFA » (XAF s'écrit FCFA), deux décimales seulement si elles existent. |
+| `export interface OfferForm` | Ce que l'utilisateur saisit dans la fenêtre d'une offre. |
+| `export const normalizeAmount = (raw: string): string => raw.replace(/\s/g, '').replace(',', '.');` | Montant saisi → texte décimal sans espaces, virgule remplacée par un point (« 4 500 000,5 » → « 4500000.5 »). |
+| `export function isValidAmount(raw: string): boolean` | Montant valide : positif, douze chiffres au plus, deux décimales au plus. |
+| `export function validateOfferFields(form: OfferForm): OfferErrors` | Contrôles de saisie rapides, champ par champ, dans l'ordre de la page (le serveur refait tous les contrôles). |
+| `export function formFromOffer(offer: Offer): OfferForm` | Formulaire prérempli avec l'offre à modifier. |
+| `export function buildOfferBody(form: OfferForm, options: { version?: number } = {}): Record<string, unknown>` | Corps de la création (l'entreprise est incluse, les champs vides omis) ou de la modification (la version lue, jamais l'entreprise ; une note vidée est envoyée vide pour être effacée). |
+
+### `opportunities.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export const OPPORTUNITY_STAGES = [` | Étapes du pipeline dans l'ordre (codes de l'API → libellés ; noms du prototype, à confirmer). |
+| `export interface OpportunityForm` | Ce que l'utilisateur saisit pour créer ou modifier une opportunité. |
+| `export function validateOpportunityFields(form: OpportunityForm, context: { needsCompany: boolean }): OpportunityErrors` | Contrôles de saisie rapides, champ par champ (le serveur refait tous les contrôles) : entreprise choisie (à la création), intitulé de 200 caractères au plus, montant positif à deux décimales au plus, devise de trois lettres, source connue. |
+| `export function buildOpportunityBody(form: OpportunityForm, options: { version?: number } = {}): Record<string, unknown>` | Corps de la création (l'entreprise est incluse) ou de la modification (la version lue, jamais l'entreprise). |
+| `export function validateRequiredText(text: string, max: number): string \| null` | Motif ou justification obligatoire : trois caractères au moins, la limite donnée au plus. |
+| `export function validateLoss(reason: string, note: string): { reason?: string; note?: string }` | Contrôle du formulaire de clôture « perdue » : motif choisi dans la liste, précision obligatoire pour « autre ». |
+| `export interface OpportunityRights` | Droits de l'utilisateur sur les opportunités, tels que le profil les annonce (le serveur re-contrôle tout). |
+| `export const AGREEMENT_STAGE = 'AGREEMENT_IN_PRINCIPLE';` | Étape à partir de laquelle une opportunité peut être gagnée, et étape qui exige le rendez-vous décideur. |
+| `export function opportunityActions(o: Pick<Opportunity, 'status' \| 'stage' \| 'nextStage' \| 'waivedAt'>, rights: OpportunityRights): OpportunityActi` | Actions proposées pour une opportunité : la fiche toujours ; sur une opportunité OUVERTE seulement, selon les droits : modifier, passer à l'étape suivante, accorder la dérogation (avant l'accord de principe, une seule fois), clore perdue, clore gagnée (une fois l'accord de principe obtenu). |
+| `export const advanceLabel = (nextStage: string \| null): string => `Déplacer vers « ${stageLabel(nextStage)} »`;` | Libellé de l'action « avancer » avec l'étape visée (alternative au glisser-déposer : « Déplacer vers… »). |
+| `export function groupByStage(items: readonly Opportunity[]): { stage: string; label: string; items: Opportunity[] }[]` | Opportunités regroupées par étape, dans l'ordre du pipeline ; l'ordre reçu du serveur est conservé dans chaque colonne. |
+| `export function totalAmount(items: readonly Opportunity[]): { amount: string; currency: string } \| null` | Total des montants (une seule devise à la fois) : « — » si les devises diffèrent. |
+| `export const OPPORTUNITY_FILTERS = [` | Filtres rapides sur l'état : un seul actif, chacun traduit en paramètres de requête. |
+| `export function opportunityListParams(filter: OpportunityFilter, search: string): URLSearchParams` | Paramètres de la liste : taille maximale (le pipeline s'affiche en entier), filtre rapide et recherche. |
+
 ### `otp.ts`
 
 | Déclaration | Rôle |
@@ -1543,6 +2607,7 @@
 | `export function passwordHints(password: string, email = ''): string[]` | Indications affichées pendant la saisie (longueur, identifiant e-mail contenu) ; la règle qui fait foi est celle du serveur. |
 | `export interface PasswordRule` | Une règle de mot de passe affichée en direct, avec son état. |
 | `export function passwordRules(password: string, email = ''): PasswordRule[]` | Règles du mot de passe avec leur état (respectée ou non), pour la liste affichée pendant la saisie. |
+| `export const PASSWORD_AUTO_HIDE_MS = 30_000;` | Délai (ms) après lequel un mot de passe affiché est automatiquement remasqué. |
 
 ### `permissions.ts`
 
@@ -1550,6 +2615,31 @@
 |---|---|
 | `export function can(profile: Profile \| null, permission: string): boolean` | Informatif seulement (menus, boutons) : le serveur re-contrôle chaque requête. |
 | `export const roleLabel = (code: string): string => ROLE_LABELS[code] ?? code;` | Libellé français d'un rôle (le code brut si le rôle est inconnu). |
+
+### `receipts.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export interface ReceiptForm` | Ce que l'utilisateur saisit pour enregistrer une décharge signée. |
+| `export const todayIso = (now: Date = new Date()): string => now.toISOString().slice(0, 10);` | Date du jour au format « AAAA-MM-JJ » (UTC, comme le serveur : une date « de demain » serait refusée). |
+| `export function isRealDate(text: string): boolean` | Vrai pour une date « AAAA-MM-JJ » qui existe (le 31 février non). |
+| `export function validateReceiptFields(form: ReceiptForm, context: { today: string; submittedOn: string \| null }): ReceiptErrors` | Contrôles de saisie rapides, champ par champ (le serveur refait tous les contrôles) : date réelle, ni dans le futur ni avant le dépôt de l'offre ; nom obligatoire de 150 caractères au plus. |
+| `export function buildReceiptBody(offerId: string, form: ReceiptForm): Record<string, unknown>` | Corps de l'enregistrement d'une décharge. |
+
+### `roles.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export type ScopeCode = 'OWN' \| 'TEAM' \| 'ALL';` | Portée d'un droit, de la plus étroite à la plus large (même ordre que le serveur). |
+| `export interface RoleGroup { id: string; label: string; description: string; roles: readonly string[] }` | Familles de rôles, dans l'ordre d'affichage. |
+| `export function groupRoles(roles: readonly RoleView[]): GroupedRoles[]` | Range les rôles de l'API par famille ; un rôle inconnu va dans « Autres rôles », un rôle absent de l'API est ignoré. |
+| `export const MODULE_ORDER = ['bd', 'training', 'docs', 'reporting', 'audit', 'iam'] as const;` | Modules du catalogue, dans l'ordre d'affichage, avec leur libellé. |
+| `export function mergeGrants(roles: readonly RoleView[], selected: readonly string[]): Map<string, ScopeCode>` | Droits obtenus en cumulant les rôles choisis : pour une même permission, la portée la plus large l'emporte (règle du serveur, `widestScope`). |
+| `export function effectiveRights(roles: readonly RoleView[], selected: readonly string[]): EffectiveRights` | Droits effectifs regroupés par module puis par ressource, pour l'aperçu en lecture seule. |
+| `export function diffRoles(original: readonly string[], selected: readonly string[]): { added: string[]; removed: string[] }` | Rôles ajoutés et retirés par rapport à l'état d'origine, dans l'ordre de leur apparition. |
+| `export function sameRoles(a: readonly string[], b: readonly string[]): boolean` | Vrai si les deux listes contiennent les mêmes rôles (l'ordre ne compte pas). |
+| `export function toggleRole(list: readonly string[], code: string): string[]` | Ajoute le code à la liste s'il n'y est pas, le retire sinon (sans modifier la liste d'origine). |
+| `export function selectionSummary(roleCount: number, permissionCount: number): string` | Phrase du compteur de sélection, annoncée aux lecteurs d'écran. |
 
 ### `search.ts`
 
@@ -1559,6 +2649,13 @@
 | `export const MIN_QUERY_LENGTH = 2;` | Nombre minimal de caractères avant d'interroger le serveur. |
 | `export const HITS_PER_TYPE = 5;` | Résultats demandés par type. |
 | `export async function searchAll(query: string, profile: Profile \| null, signal?: AbortSignal): Promise<SearchHit[]>` | Recherche globale (CAD-H1-4) : interroge en parallèle les listes que le profil a le droit de lire (entreprises, utilisateurs). |
+
+### `secret-codes.ts`
+
+| Déclaration | Rôle |
+|---|---|
+| `export const CODES_FILE_NAME = 'investally-codes-de-secours.txt';` | Nom des fichiers de codes de secours : aucune donnée personnelle (le fichier peut être perdu ou partagé). |
+| `export function codesFileText(codes: readonly string[], generatedAt: Date): string` | Contenu du fichier texte et de la copie dans le presse-papiers. |
 
 ### `selection.ts`
 
@@ -1596,6 +2693,15 @@
 | `export interface RoleView` | Rôle et ses permissions, tels que l'API les expose. |
 | `export interface SessionView` | Session de connexion telle que l'API l'expose (la courante est marquée). |
 | `export interface Company` | Entreprise cible telle que l'API l'expose. |
+| `export interface Contact` | Contact : interlocuteur d'une entreprise. |
+| `export interface Offer` | Offre faite à une entreprise (le montant est un texte décimal : jamais converti en nombre avant l'affichage). |
+| `export interface Receipt` | Décharge signée d'une offre déposée (le fichier signé est un document rattaché à la décharge). |
+| `export interface Followup` | Relance d'une offre en cours : à faire à une échéance, terminée (avec son résultat) ou annulée (avec son motif). |
+| `export interface Appointment` | Rendez-vous ou visite d'une entreprise, dans l'agenda de son organisateur. |
+| `export interface Opportunity` | Opportunité commerciale d'une entreprise (pipeline). |
+| `export interface Approval` | Agrément : promesse de paiement signée par l'entreprise cliente pour une opportunité. |
+| `export interface Facilitator` | Facilitateur : personne qui met en relation avec une entreprise. |
+| `export interface Facilitation` | Lien entreprise ↔ facilitateur. |
 | `export interface LoginEvent` | Une connexion de l'historique (réussie ou échouée) : étape de l'échec, adresse IP et appareil. |
 | `export interface LoginHistoryPage` | Page de l'historique : `nextBefore` est le curseur de la page suivante (nul s'il n'y en a pas). |
 | `export interface DocumentVersionView` | Une version d'un document (le contenu est immuable ; l'empreinte SHA-256 en atteste l'intégrité). |

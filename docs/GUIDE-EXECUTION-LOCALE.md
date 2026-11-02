@@ -65,11 +65,14 @@ node apps/crm-api/scripts/test-db.mjs     # intégration, base jetable (TEST_DB_
 6. Agenda : « Planifier un rendez-vous » depuis une offre ou une fiche d'entreprise ; planifier deux rendez-vous qui se chevauchent (un avertissement s'affiche, sans blocage) ; essayer les vues Jour, Semaine et Mois ; reporter, marquer tenu (une fois l'heure venue) et annuler, en laissant le texte obligatoire vide pour voir le refus.
 7. Documents d'une entreprise ou d'une offre : envoi, nouvelle version, téléchargement, archivage.
 8. Sessions actives : historique et révocation des autres sessions.
-9. Portée et droits : `compte2` ne voit rien de `compte1`, `commercial@` voit son équipe, `direction@` lit sans écrire ; tout accès hors périmètre répond « introuvable ».
+9. Opportunités : « Nouvelle opportunité » depuis la fiche d'une entreprise ; faire avancer d'étape en étape ; essayer l'accord de principe sans rendez-vous décideur tenu (refus, puis dérogation du Responsable commercial avec justification) ; clore perdue (motif obligatoire) ou gagnée (Responsable commercial).
+10. Statut et responsable d'une entreprise : sur la fiche, marquer « contactée » puis « qualifier » (refus sans contact) ; en Responsable commercial, « Changer de responsable » (équipe seulement, confirmation) ; observer les colonnes « Responsable » et « Valeur » du tableau des entreprises.
+11. Agrément : sur une opportunité à l'accord de principe, « Enregistrer un agrément » depuis la fiche (montant et/ou places, document signé) ; l'entreprise devient « Cliente » ; honorer, déclarer expiré ou annuler (motif) en Responsable commercial.
+12. Portée et droits : `compte2` ne voit rien de `compte1`, `commercial@` voit son équipe, `direction@` lit sans écrire ; tout accès hors périmètre répond « introuvable ».
 
 ## Limites connues
-- Modules livrés : identité et accès, entreprises, contacts, offres, décharges signées, relances, agenda (rendez-vous et visites), documents. Les opportunités, l'agrément, Investudy, le pilotage et les stocks arrivent avec S4.3 à S7.
-- La démonstration (`--demo`) crée des entreprises et des comptes, mais **aucune offre, relance ni rendez-vous** : on les crée soi-même (scénarios 4 à 7).
+- Modules livrés : identité et accès, entreprises (statuts, responsable, fiche 360°), contacts, offres, décharges signées, relances, agenda (rendez-vous et visites), opportunités, agréments, documents. Les ambassadeurs et les commissions à verser (S4.4b, S4.4c), Investudy, le pilotage et les stocks arrivent ensuite.
+- La démonstration (`--demo`) crée des entreprises et des comptes, mais **aucune offre, relance, rendez-vous, opportunité ni agrément** : on les crée soi-même (scénarios 4 à 6, 9 et 11).
 - Rappels de rendez-vous : aucun envoi (ni e-mail ni notification) ; synchronisation Outlook absente.
 - Non testé : enrôlement MFA dans un navigateur, `--dev`. Node 22 : testé le 2026-10-29 (183 tests d'intégration et 159 tests de l'interface réussis, voir « Node 22 » ci-dessous).
 - Docker : prévu en S7 (voir la stratégie).

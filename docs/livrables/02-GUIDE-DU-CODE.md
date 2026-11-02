@@ -1,8 +1,10 @@
 # Livrable 2 — Guide du code
 
+> **Mise à jour du 2026-11-02** : l'arborescence ci-dessous est à jour (modules `documents` et `business-development` étendus). Les exemples de requêtes (§ 3) restent valables. Règles de test : `docs/CHARTE-DE-TESTS.md`.
+
 *Pour qui ?* Toute personne qui ouvre le code pour la première fois (nouvel ingénieur, relecteur, auditeur). *Objectif :* trouver en moins de cinq minutes **où** vit chaque comportement, **comment** une requête traverse l'application et **comment** ajouter une fonctionnalité sans casser les règles.
 
-> Les fonctions elles-mêmes sont commentées dans le code (535 déclarations). Leur liste complète, avec leur rôle en une phrase, est dans [03-INDEX-DES-FONCTIONS.md](03-INDEX-DES-FONCTIONS.md) (document généré).
+> Les fonctions elles-mêmes sont commentées dans le code (1242 déclarations). Leur liste complète, avec leur rôle en une phrase, est dans [03-INDEX-DES-FONCTIONS.md](03-INDEX-DES-FONCTIONS.md) (document généré).
 
 ## 1. Vue d'ensemble
 
@@ -17,16 +19,17 @@ investally-platform/
 │   │   │       ├── audit/                journal d'audit en ajout seul
 │   │   │       ├── notifications/        envoi d'e-mails (journal en dev, Microsoft 365 en prod)
 │   │   │       ├── iam/                  comptes, connexion, MFA, sessions, rôles, invitations, mot de passe oublié
-│   │   │       └── business-development/ entreprises cibles (début du pipeline commercial)
+│   │   │       ├── documents/            pièces jointes versionnées, stockage derrière un port
+│   │   │       └── business-development/ module commercial : entreprises, contacts, offres, décharges, relances, agenda, opportunités, agréments, facilitateurs et commissions
 │   │   ├── prisma/                 schéma de base de données et migrations (SQL versionné)
 │   │   ├── scripts/                outils (base de test jetable, clés, seed, documents générés)
 │   │   └── test/                   tests de bout en bout et matrices de droits
 │   └── crm-web/          Interface (Next.js / React) — aucune règle de sécurité n'y est « décisive »
-│       ├── app/                    pages (connexion, MFA, invitation, mot de passe oublié, administration, compte)
+│       ├── app/                    pages (connexion, MFA, invitation, mot de passe oublié, administration, compte et sessions, vue d'ensemble, entreprises et leur fiche, contacts, offres, relances, agenda, opportunités)
 │       ├── components/             composants partagés (fenêtre modale, confirmation MFA, garde d'accès)
 │       └── lib/                    client HTTP, état d'authentification, droits, utilitaires
 ├── docs/                 documentation (architecture, sécurité, recettes, registre des décisions, livrables)
-└── scripts/              outils du dépôt (index des fonctions)
+└── scripts/              outils du dépôt : index des fonctions, audit navigateur (`a11y-audit.mjs`), lancement local, conversion HTML, scripts de mutants (`mutants/`)
 ```
 
 **Règle d'or** : l'interface *affiche* ce que l'utilisateur peut faire ; c'est l'API qui *décide*. Chaque requête est re-contrôlée côté serveur.

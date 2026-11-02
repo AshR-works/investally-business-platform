@@ -39,6 +39,35 @@
 
 ---
 
+## 1bis. Sessions validées après S3.5 (mise à jour du 2026-11-02)
+
+*Les fiches détaillées ci-dessous (§ 2) décrivent les premières sessions (S0 à S3.5) telles qu'elles ont été vécues. Les sessions suivantes sont consignées dans leur **recette**, leur **fiche de test** et le **journal des tests** (`docs/TESTING.md`) ; le calendrier est dans `docs/GANTT-PROJET.md`. Date de validation = date de l'étiquette Git.*
+
+| Session | Validée le | Objet | Recette | Fiche de test |
+|---|---|---|---|---|
+| `a11y-1` | 2026-10-21 18:58 | Accessibilité 1 — vérification « lecteurs d'écran » | [SPRINT-A11Y-1-RECETTE.md](../SPRINT-A11Y-1-RECETTE.md) | [a11y-1](../tests/sessions/a11y-1.md) |
+| `h1` | 2026-10-21 23:11 | H1 et H1b — Habillage, hub et composants de données | [SPRINT-H1-RECETTE.md](../SPRINT-H1-RECETTE.md) | [h1](../tests/sessions/h1.md) |
+| `h1b` | 2026-10-21 23:11 | H1 et H1b — Habillage, hub et composants de données | [SPRINT-H1-RECETTE.md](../SPRINT-H1-RECETTE.md) | [h1](../tests/sessions/h1.md) |
+| `h2a` | 2026-10-22 00:28 | H2a — Écrans d'accès au nouveau style | [SPRINT-H2A-RECETTE.md](../SPRINT-H2A-RECETTE.md) | [h2a](../tests/sessions/h2a.md) |
+| `h2b` | 2026-10-22 06:53 | H2b — Sessions et historique des connexions | [SPRINT-H2B-RECETTE.md](../SPRINT-H2B-RECETTE.md) | [h2b](../tests/sessions/h2b.md) |
+| `s3-6` | 2026-10-22 08:48 | S3.6 — Documents | [SPRINT-S3-6-RECETTE.md](../SPRINT-S3-6-RECETTE.md) | [s3-6](../tests/sessions/s3-6.md) |
+| `idor` | 2026-10-22 13:44 | Contrat anti-IDOR | [SPRINT-IDOR-RECETTE.md](../SPRINT-IDOR-RECETTE.md) | [idor](../tests/sessions/idor.md) |
+| `s3-7` | 2026-10-27 17:20 | S3.7 — UX de l'authentification | [SPRINT-S3-7-RECETTE.md](../SPRINT-S3-7-RECETTE.md) | [s3-7](../tests/sessions/s3-7.md) |
+| `s3-8` | 2026-10-28 10:40 | S3.8 — Rôles et permissions (UX-02) | [SPRINT-S3-8-RECETTE.md](../SPRINT-S3-8-RECETTE.md) | [s3-8](../tests/sessions/s3-8.md) |
+| `s4-0` | 2026-10-29 10:53 | S4.0 — Fiche d'entreprise : facilitateur et commission | [SPRINT-S4-0-RECETTE.md](../SPRINT-S4-0-RECETTE.md) | [s4-0](../tests/sessions/s4-0.md) |
+| `s4-0b` | 2026-10-30 09:24 | S4.0 (retours de tests) — fenêtres, champs en surbrillance, pays | [SPRINT-S4-0B-RECETTE.md](../SPRINT-S4-0B-RECETTE.md) | [s4-0b](../tests/sessions/s4-0b.md) |
+| `s4-0c` | 2026-10-30 09:25 | S4.0 (suite) — modifier et exporter une fiche d'entreprise | [SPRINT-S4-0C-RECETTE.md](../SPRINT-S4-0C-RECETTE.md) | [s4-0c](../tests/sessions/s4-0c.md) |
+| `s4-1a` | 2026-10-30 11:25 | S4.1a — contacts des entreprises | [SPRINT-S4-1A-RECETTE.md](../SPRINT-S4-1A-RECETTE.md) | [s4-1a](../tests/sessions/s4-1a.md) |
+| `s4-1b` | 2026-10-30 12:35 | S4.1b — tableau des entreprises (filtres, tri, effectifs, colonnes) | [SPRINT-S4-1B-RECETTE.md](../SPRINT-S4-1B-RECETTE.md) | [s4-1b](../tests/sessions/s4-1b.md) |
+| `s4-2a` | 2026-11-01 11:56 | S4.2a — offres faites aux entreprises | [SPRINT-S4-2A-RECETTE.md](../SPRINT-S4-2A-RECETTE.md) | [s4-2a](../tests/sessions/s4-2a.md) |
+| `s4-2b` | 2026-11-01 15:11 | S4.2b — décharges signées des offres | [SPRINT-S4-2B-RECETTE.md](../SPRINT-S4-2B-RECETTE.md) | [s4-2b](../tests/sessions/s4-2b.md) |
+| `s4-2c` | 2026-11-01 15:11 | S4.2c — relances des offres | [SPRINT-S4-2C-RECETTE.md](../SPRINT-S4-2C-RECETTE.md) | [s4-2c](../tests/sessions/s4-2c.md) |
+| `s4-2d` | 2026-11-01 19:01 | S4.2d — agenda : rendez-vous et visites | [SPRINT-S4-2D-RECETTE.md](../SPRINT-S4-2D-RECETTE.md) | [s4-2d](../tests/sessions/s4-2d.md) |
+| `s4-3a` | 2026-11-01 21:33 | S4.3a — opportunités : le pipeline commercial | [SPRINT-S4-3A-RECETTE.md](../SPRINT-S4-3A-RECETTE.md) | [s4-3a](../tests/sessions/s4-3a.md) |
+| `s4-3b` | 2026-11-02 06:01 | S4.3b — statuts d'entreprise, responsable, fiche 360° | [SPRINT-S4-3B-RECETTE.md](../SPRINT-S4-3B-RECETTE.md) | [s4-3b](../tests/sessions/s4-3b.md) |
+| `s4-3c` | 2026-11-02 09:11 | S4.3c — valeur des opportunités et lien rendez-vous ↔ opportunité | [SPRINT-S4-3C-RECETTE.md](../SPRINT-S4-3C-RECETTE.md) | [s4-3c](../tests/sessions/s4-3c.md) |
+| `s4-4a` | 2026-11-02 10:58 | S4.4a — agréments : la promesse de paiement signée | [SPRINT-S4-4A-RECETTE.md](../SPRINT-S4-4A-RECETTE.md) | [s4-4a](../tests/sessions/s4-4a.md) |
+
 ## 2. Fiches de session
 
 ### S0 — Cadrage (2026-10-20, ≈ 16 h 30)

@@ -8,6 +8,9 @@
 
 ---
 
+## Mise à jour du 2026-11-02
+> Ce récapitulatif a été rédigé le 2026-10-21 ; les sections 1 à 11 ci-dessous en conservent la photographie. **Depuis**, plus de vingt sessions supplémentaires ont été validées (documents, contrat anti-IDOR, UX de l'authentification, rôles, puis tout le module commercial : facilitateurs, contacts, tableau des entreprises, offres, décharges, relances, agenda, opportunités, statuts et responsable, valeur et rendez-vous liés, agréments). Le système sait désormais conduire un prospect de la **fiche d'entreprise** à l'**agrément** et à son passage en **client**, avec droits par rôle, audit et documents. État courant : `docs/livrables/05-ETAT-D-AVANCEMENT.md` ; calendrier : `docs/GANTT-PROJET.md` ; reste à faire : `docs/RESTE-A-FAIRE-DEVELOPPEMENT.md` ; tests : `docs/CHARTE-DE-TESTS.md` et `docs/tests/`.
+
 ## 1. En une page
 
 **Ce qui existe aujourd'hui**
