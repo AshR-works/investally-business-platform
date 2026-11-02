@@ -27,6 +27,8 @@ import { COMPANY_OVERVIEW_READER } from './domain/company-overview-reader';
 import { COMPANY_REPOSITORY } from './domain/company-repository';
 import { OWNER_DIRECTORY } from './domain/owner-directory';
 import { PrismaOwnerDirectory } from './infrastructure/prisma-owner-directory';
+import { OPPORTUNITY_TOTALS } from './domain/opportunity-totals';
+import { PrismaOpportunityTotals } from './infrastructure/prisma-opportunity-totals';
 import { ChangeCompanyStatusUseCase, ListOwnerCandidatesHandler, ReassignCompanyUseCase } from './application/company-lifecycle-use-cases';
 import { CONTACT_REPOSITORY } from './domain/contact-repository';
 import { FACILITATOR_REPOSITORY } from './domain/facilitator-repository';
@@ -107,6 +109,7 @@ import { ReceiptsController } from './presentation/receipts.controller';
     ListOpportunitiesHandler,
     { provide: COMPANY_REPOSITORY, useClass: PrismaCompanyRepository },
     { provide: OWNER_DIRECTORY, useClass: PrismaOwnerDirectory },
+    { provide: OPPORTUNITY_TOTALS, useClass: PrismaOpportunityTotals },
     { provide: COMPANY_OVERVIEW_READER, useClass: PrismaCompanyOverviewReader },
     { provide: FACILITATOR_REPOSITORY, useClass: PrismaFacilitatorRepository },
     { provide: CONTACT_REPOSITORY, useClass: PrismaContactRepository },

@@ -108,6 +108,28 @@ describeDb('Opportunités (HTTP + PostgreSQL)', () => {
     expect((await advance(am, o.id, o.version)).body.stage).toBe('AGREEMENT_IN_PRINCIPLE');
   }, 180_000);
 
+  it('D93 : un rendez-vous décideur lié à une AUTRE opportunité ne débloque pas celle-ci ; lié à elle ou non lié, il la débloque', async () => {
+    const { am, companyId } = await team();
+    const a = (await create(am, companyId, { title: 'Formation A' })).body;
+    const b = (await create(am, companyId, { title: 'Formation B' })).body;
+    const heldMeeting = async (extra: Record<string, unknown>) => {
+      const m = await api.call('POST', '/api/v1/appointments', { ...am, body: { type: 'DECISION_MAKER', companyId, startsAt: inDays(2), ...extra } });
+      expect(m.status).toBe(201);
+      await t.prisma.db.appointment.update({ where: { id: m.body.id }, data: { startsAt: new Date(Date.now() - 3600000) } });
+      expect((await api.call('POST', `/api/v1/appointments/${m.body.id}/hold`, { ...am, body: { version: 1, text: 'Décideur favorable' } })).status).toBe(200);
+    };
+    const toNegotiation = async (o: { id: string; version: number }) => advanceBy(am, o, 2);
+    const na = await toNegotiation(a);
+    const nb = await toNegotiation(b);
+    await heldMeeting({ opportunityId: a.id });
+    expect((await advance(am, na.id, na.version)).status).toBe(200);
+    const refused = await advance(am, nb.id, nb.version);
+    expect(refused.status).toBe(422);
+    expect(refused.body.detail).toContain('rendez-vous décideur');
+    await heldMeeting({});
+    expect((await advance(am, nb.id, nb.version)).status).toBe(200);
+  }, 180_000);
+
   it('dérogation : réservée au Responsable commercial, justification obligatoire, tracée ; elle débloque l’accord de principe', async () => {
     const { am, chef, other, dir, companyId } = await team();
     const o = await advanceBy(am, (await create(am, companyId)).body, 2);

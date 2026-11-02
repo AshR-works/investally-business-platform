@@ -20,6 +20,8 @@ export interface AppointmentView {
   contactName: string | null;
   offerId: string | null;
   offerReference: string | null;
+  opportunityId: string | null;
+  opportunityTitle: string | null;
   organizerUserId: string;
   startsAt: string;
   endsAt: string;
@@ -44,6 +46,7 @@ export interface AppointmentContext {
   companyName: string;
   contactName: string | null;
   offerReference: string | null;
+  opportunityTitle: string | null;
 }
 
 export function toAppointmentView(appointment: Appointment, context: AppointmentContext, now: Date): AppointmentView {
@@ -56,6 +59,8 @@ export function toAppointmentView(appointment: Appointment, context: Appointment
     contactName: context.contactName,
     offerId: appointment.offerId,
     offerReference: context.offerReference,
+    opportunityId: appointment.opportunityId,
+    opportunityTitle: context.opportunityTitle,
     organizerUserId: appointment.organizerUserId,
     startsAt: appointment.startsAt.toISOString(),
     endsAt: appointment.endsAt.toISOString(),

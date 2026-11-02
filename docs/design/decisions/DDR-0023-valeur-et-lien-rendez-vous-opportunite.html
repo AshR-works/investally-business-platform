@@ -1,0 +1,38 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>DDR-0023 — Valeur des opportunités au tableau des entreprises ; rendez-vous lié à une opportunité</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — design · <a href="../README.html">Mode d&#8217;emploi</a> · <a href="../01-DESIGN-SYSTEM.html">Design system</a> · <a href="../02-SPECIFICATIONS-FRONTEND.html">Spécifications frontend</a> · <a href="../exigences/REGISTRE-EXD.html">Exigences</a> · <a href="../04-ANALYSE-D-IMPACT.html">Analyse d&#8217;impact</a> · <a href="../05-AIDE-A-LA-DECISION.html">Aide à la décision</a> · <a href="../decisions/REGISTRE-DDR.html">Décisions (DDR)</a> · <a href="../CHANGELOG-DESIGN.html">Journal</a> · <a href="../prototype/index.html">Prototype</a></nav><h1>DDR-0023 — Valeur des opportunités au tableau des entreprises ; rendez-vous lié à une opportunité</h1>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td><strong>Statut</strong></td><td>Acceptée (réalisée dans l'application) ; prototype à mettre à jour</td></tr>
+<tr><td><strong>Date</strong></td><td>2026-11-07</td></tr>
+<tr><td><strong>Version du design</strong></td><td>0.4.1 (le prototype n'est pas encore à jour : version 0.5.0 à décider)</td></tr>
+<tr><td><strong>Lié à</strong></td><td>Lot S4.3c ; cas d'usage CU-C-30 et CU-C-43 ; flux C3, C4 et F1 ; décisions D93, D104 et D38</td></tr>
+</tbody></table></div>
+<h2>Contexte</h2>
+<p>Deux manques restaient de S4.3. Le tableau des entreprises ne disait pas ce qu'elles représentent : on ne voyait pas, d'un coup d'œil, combien d'opportunités sont ouvertes ni pour quel montant. Et la règle de l'accord de principe comptait <strong>n'importe quel</strong> rendez-vous décideur tenu avec l'entreprise : un rendez-vous tenu pour une opportunité en débloquait aussi une autre, sans rapport (D93). Ce lot ajoute la colonne « Valeur » et le lien d'un rendez-vous à une opportunité. Les valeurs retenues sont <strong>à confirmer</strong> (D38).</p>
+<h2>Décisions</h2>
+<ol><li><strong>Colonne « Valeur »</strong> du tableau des entreprises, visible par défaut, juste après « Responsable » : le <strong>nombre</strong> d'opportunités <strong>ouvertes</strong> et leur <strong>valeur</strong>, par exemple « 3 · 3 000 000,50 FCFA ». Les opportunités gagnées ou perdues ne comptent pas.</li><li><strong>Jamais deux devises additionnées</strong> : plusieurs devises s'affichent l'une après l'autre (« 2 · 300,25 € + 1 000 000 FCFA »).</li><li><strong>Visible seulement de qui peut lire les opportunités</strong>, et dans la même portée : le chargé de compte voit la valeur de <strong>ses</strong> entreprises, le Responsable commercial et la Direction celle de <strong>toutes</strong>. Un rôle qui voit les entreprises sans le droit de lire les opportunités (Support, Finance) a la cellule vide : le serveur ne calcule même pas la valeur.</li><li><strong>Le montant est une estimation non pondérée</strong> : aucune probabilité n'est appliquée. La colonne ne se trie ni ne se filtre dans cette version.</li><li><strong>Rendez-vous lié à une opportunité</strong> (facultatif) : à la planification, un choix « Opportunité liée » propose les opportunités <strong>ouvertes de l'entreprise</strong> ; une opportunité d'une autre entreprise, inconnue ou déjà clôturée est refusée. Le lien est <strong>posé à la planification et ne change plus</strong> (comme l'offre liée).</li><li><strong>Règle de l'accord de principe, précisée (D93)</strong> : pour une opportunité, comptent les rendez-vous décideur <strong>tenus</strong> qui lui sont <strong>liés</strong> ET ceux qui ne sont liés à <strong>aucune</strong> opportunité (rendez-vous « de l'entreprise »). Un rendez-vous lié à une <strong>autre</strong> opportunité ne compte <strong>pas</strong>. La dérogation reste possible.</li><li><strong>Rendez-vous existants</strong> : ceux planifiés avant ce lot ne sont liés à rien ; ils continuent donc de compter pour toutes les opportunités de leur entreprise (comportement de transition, sans rupture).</li><li><strong>Lecture</strong> : le lien et l'intitulé de l'opportunité apparaissent dans la fiche du rendez-vous et dans les listes ; le lien est tracé dans l'audit à la planification.</li></ol>
+<h2>Mesures de rigueur</h2>
+<ul><li>Une migration ajoute la colonne et sa <strong>clé étrangère</strong> ; la base refuse un lien vers une opportunité inexistante (vérifié par une écriture directe refusée).</li><li>La règle D93 est couverte de bout en bout (HTTP + PostgreSQL) : lié à une autre opportunité → refusé ; lié à elle ou non lié → accepté.</li><li>Le périmètre de la valeur est couvert par des tests unitaires et d'intégration, dont le cas du rôle sans droit de lecture des opportunités.</li><li>Les mutants (fautes injectées) sont tous détectés (voir la recette).</li></ul>
+<h2>Conséquences</h2>
+<ul><li>Réversible : une colonne facultative, un port de lecture, une colonne de tableau, un champ de formulaire.</li><li><strong>Dette</strong> : D106 à D110 (<code>docs/TECH-DEBT.md</code>) ; D93 et D104 soldées.</li></ul></main></body></html>

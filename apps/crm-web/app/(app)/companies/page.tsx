@@ -17,7 +17,7 @@ import { api, ApiError } from '../../../lib/api';
 import { useAuth } from '../../../lib/auth-context';
 import {
   COMPANY_COLUMNS, type CompanyColumnId, type CompanyFilters, type CompanyOverview, type CompanySort, type CompanySortField, DEFAULT_COLUMNS, DEFAULT_SORT,
-  hasActiveFilters, listParams, loadColumns, nextSort, NO_FILTERS, overviewParams, saveColumns, statusOptions, toggleColumn,
+  hasActiveFilters, listParams, loadColumns, nextSort, NO_FILTERS, openValueText, overviewParams, saveColumns, statusOptions, toggleColumn,
 } from '../../../lib/company-table';
 import { formatDate } from '../../../lib/format';
 import { can } from '../../../lib/permissions';
@@ -33,6 +33,7 @@ const ALL_COLUMNS: Record<CompanyColumnId, Column<Company>> = {
   country: { id: 'country', header: 'Pays', sortField: 'country', cell: (c) => c.country ?? <span className="text-ink-2">—</span> },
   email: { id: 'email', header: 'E-mail', cell: (c) => c.email ?? <span className="text-ink-2">—</span> },
   phone: { id: 'phone', header: 'Téléphone', cell: (c) => c.phone ?? <span className="text-ink-2">—</span> },
+  value: { id: 'value', header: 'Valeur', cell: (c) => openValueText(c.openOpportunities) ?? <span className="text-ink-2">—</span> },
   owner: { id: 'owner', header: 'Responsable', cell: (c) => c.ownerName ?? <span className="text-ink-2">—</span> },
   status: {
     id: 'status',

@@ -136,6 +136,25 @@ describeDb('Statuts et propriétaire d’une entreprise (HTTP + PostgreSQL)', ()
     expect((await setStatus(marie, companyId, 2, 'QUALIFIED')).status).toBe(422);
   }, 120_000);
 
+  it('valeur (S4.3c) : la liste des entreprises donne le nombre et la valeur des opportunités OUVERTES par devise, dans la portée de lecture', async () => {
+    const { chef, marie, paul, companyId } = await team();
+    const make = (title: string, amount: string, currency?: string) =>
+      api.call('POST', '/api/v1/opportunities', { ...marie, body: { companyId, title, amount, ...(currency ? { currency } : {}), source: 'REFERRAL' } });
+    await make('Une', '1000000.50');
+    await make('Deux', '2000000');
+    await make('Euro', '300.25', 'EUR');
+    const lost = await make('Perdue', '9000000');
+    expect((await api.call('POST', `/api/v1/opportunities/${lost.body.id}/close-lost`, { ...marie, body: { version: 1, reason: 'PRICE' } })).status).toBe(200);
+    const valueFor = async (as: As) => ((await api.call('GET', '/api/v1/companies?pageSize=100', as)).body.items as { id: string; openOpportunities?: unknown }[]).find((c) => c.id === companyId);
+    expect((await valueFor(marie))!.openOpportunities).toEqual({ count: 3, totals: [{ currency: 'EUR', amount: '300.25' }, { currency: 'XAF', amount: '3000000.50' }] });
+    expect((await valueFor(chef))!.openOpportunities).toMatchObject({ count: 3 });
+    expect(await valueFor(paul)).toBeUndefined(); // hors de sa portée
+    const support = await login(await createUserWithRoles(t, [RoleCode.Support]));
+    const seen = await valueFor(support);
+    expect(seen).toBeDefined();
+    expect(seen!.openOpportunities).toBeUndefined(); // peut voir l'entreprise, pas ses opportunités
+  }, 120_000);
+
   it('une entreprise archivée ne change plus de statut ni de propriétaire (422)', async () => {
     const { chef, marie, ids, companyId } = await team();
     await t.prisma.db.company.update({ where: { id: companyId }, data: { status: 'ARCHIVED' } });

@@ -1,4 +1,5 @@
 import { Company } from '../domain/company';
+import { OpenOpportunities } from '../domain/opportunity-totals';
 import { FacilitatorView } from './facilitator-view';
 
 export interface CommissionView {
@@ -30,6 +31,8 @@ export interface CompanyView {
   country: string | null;
   email: string | null;
   phone: string | null;
+  /** Opportunités ouvertes (nombre et valeur par devise) : seulement dans la liste, et seulement si l'appelant peut les lire. */
+  openOpportunities?: OpenOpportunities;
   createdAt: string;
   /** Numéro de version (verrou optimiste) : à renvoyer tel quel pour modifier l'entreprise. */
   version: number;

@@ -5,11 +5,13 @@ import { RoleCode, resolveGrants } from '../../iam';
 import { InMemoryAppointments } from '../../../../test/support/in-memory-appointments';
 import { InMemoryContacts } from '../../../../test/support/in-memory-contacts';
 import { InMemoryOffers } from '../../../../test/support/in-memory-offers';
+import { InMemoryOpportunities } from '../../../../test/support/in-memory-opportunities';
 import { Company } from '../domain/company';
 import { CompanyName } from '../domain/company-name';
 import { CompanyRepository } from '../domain/company-repository';
 import { Contact } from '../domain/contact';
 import { Offer } from '../domain/offer';
+import { Opportunity } from '../domain/opportunity';
 import { GetAppointmentHandler, ListAppointmentsHandler, PlanAppointmentUseCase, TransitionAppointmentUseCase, UpdateAppointmentUseCase } from './appointment-use-cases';
 
 class InMemoryCompanies implements CompanyRepository {
@@ -28,7 +30,8 @@ function build() {
   const companies = new InMemoryCompanies();
   const contacts = new InMemoryContacts(companies);
   const offers = new InMemoryOffers(companies);
-  const appointments = new InMemoryAppointments(companies, contacts, offers);
+  const opportunities = new InMemoryOpportunities(companies);
+  const appointments = new InMemoryAppointments(companies, contacts, offers, opportunities);
   const audit: AuditRecord[] = [];
   let seq = 0;
   const recorder = { record: async (r: AuditRecord) => { audit.push(r); } };
@@ -51,12 +54,17 @@ function build() {
     offers.items.push(o);
     return o;
   };
+  const opportunity = (id: string, companyId: string) => {
+    const o = Opportunity.create({ id, companyId, title: `Formation ${id}`, amount: '5000000', source: 'REFERRAL', now });
+    opportunities.items.push(o);
+    return o;
+  };
   return {
-    companies, appointments, audit, company, contact, offer,
-    plan: new PlanAppointmentUseCase(appointments, companies, contacts, offers, recorder, unitOfWork, clock, ids),
-    update: new UpdateAppointmentUseCase(appointments, companies, contacts, offers, recorder, unitOfWork, clock),
-    transition: new TransitionAppointmentUseCase(appointments, companies, contacts, offers, recorder, unitOfWork, clock),
-    get: new GetAppointmentHandler(appointments, companies, contacts, offers, clock),
+    companies, appointments, audit, company, contact, offer, opportunities, opportunity,
+    plan: new PlanAppointmentUseCase(appointments, companies, contacts, offers, opportunities, recorder, unitOfWork, clock, ids),
+    update: new UpdateAppointmentUseCase(appointments, companies, contacts, offers, opportunities, recorder, unitOfWork, clock),
+    transition: new TransitionAppointmentUseCase(appointments, companies, contacts, offers, opportunities, recorder, unitOfWork, clock),
+    get: new GetAppointmentHandler(appointments, companies, contacts, offers, opportunities, clock),
     list: new ListAppointmentsHandler(appointments, companies, offers, clock),
   };
 }
@@ -83,6 +91,24 @@ describe('Rendez-vous — planification', () => {
     await expect(w.plan.execute({ ...base, companyId: 'c1', contactId: 'k2', access: am1, actor })).rejects.toMatchObject({ code: 'VALIDATION', message: expect.stringContaining('contact') });
     await expect(w.plan.execute({ ...base, companyId: 'c1', offerId: 'o2', access: am1, actor })).rejects.toMatchObject({ code: 'VALIDATION', message: expect.stringContaining('offre') });
     await expect(w.plan.execute({ ...base, companyId: 'c1', contactId: 'inconnu', access: am1, actor })).rejects.toMatchObject({ code: 'VALIDATION' });
+    expect(w.appointments.items).toHaveLength(0);
+    expect(w.audit).toHaveLength(0);
+  });
+  it('lie le rendez-vous à une opportunité ouverte de l’entreprise : identifiant et intitulé exposés, tracés', async () => {
+    const w = build(); w.company('c1', 'am1'); w.opportunity('op1', 'c1');
+    const view = await w.plan.execute({ ...base, companyId: 'c1', opportunityId: 'op1', access: am1, actor });
+    expect(view).toMatchObject({ opportunityId: 'op1', opportunityTitle: 'Formation op1' });
+    expect(w.audit[0]!.newValue).toMatchObject({ opportunityId: 'op1', opportunityTitle: 'Formation op1' });
+    const read = await w.get.execute({ id: view.id, access: am1 });
+    expect(read).toMatchObject({ opportunityId: 'op1', opportunityTitle: 'Formation op1' });
+    expect((await w.list.execute({ from: '2026-11-01T00:00:00Z', to: '2026-11-30T00:00:00Z', page: 1, pageSize: 50, access: am1 })).items[0]).toMatchObject({ opportunityTitle: 'Formation op1' });
+  });
+  it('refuse une opportunité d’une autre entreprise, inconnue ou clôturée, sans rien écrire ; le lien ne change pas après coup', async () => {
+    const w = build(); w.company('c1', 'am1'); w.company('c2', 'am1'); w.opportunity('op2', 'c2'); w.opportunity('op1', 'c1');
+    w.opportunities.items.find((o) => o.id === 'op1')!.closeLost('PRICE', null, now);
+    await expect(w.plan.execute({ ...base, companyId: 'c1', opportunityId: 'op2', access: am1, actor })).rejects.toMatchObject({ code: 'VALIDATION', message: expect.stringContaining('opportunité') });
+    await expect(w.plan.execute({ ...base, companyId: 'c1', opportunityId: 'inconnue', access: am1, actor })).rejects.toMatchObject({ code: 'VALIDATION' });
+    await expect(w.plan.execute({ ...base, companyId: 'c1', opportunityId: 'op1', access: am1, actor })).rejects.toMatchObject({ code: 'VALIDATION', message: expect.stringContaining('clôturée') });
     expect(w.appointments.items).toHaveLength(0);
     expect(w.audit).toHaveLength(0);
   });

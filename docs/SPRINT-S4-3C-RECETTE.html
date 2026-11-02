@@ -1,0 +1,53 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>S4.3c — valeur des opportunités et lien rendez-vous ↔ opportunité : recette</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="INDEX.html">Index</a> · <a href="GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="ARCHITECTURE.html">Architecture</a> · <a href="SECURITY.html">Sécurité</a> · <a href="METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="TECH-DEBT.html">Dette</a> · <a href="design/README.html">Design</a> · <a href="livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>S4.3c — valeur des opportunités et lien rendez-vous ↔ opportunité : recette</h1>
+<p><em>Branche <code>sprint/s4-3c-valeur-lien-rdv</code> (partie de <code>main</code>, après S4.3b) · 2026-11-07 · cas d'usage CU-C-30 et CU-C-43 ; flux C3, C4 et F1 ; DDR-0023 ; décisions D93, D104 et D38. Dernier lot de la session S4.3.</em></p>
+<h2>Ce qui est livré</h2>
+<div class="table-wrap"><table><thead><tr><th>Demande</th><th>Réponse</th></tr></thead><tbody>
+<tr><td><strong>Colonne « Valeur »</strong></td><td>Au tableau des entreprises, visible par défaut après « Responsable » : le <strong>nombre</strong> d'opportunités <strong>ouvertes</strong> et leur <strong>valeur</strong>, par exemple « 1 · 4 000 000 FCFA » ; gagnées et perdues ne comptent pas</td></tr>
+<tr><td><strong>Devises</strong></td><td><strong>Jamais additionnées</strong> : plusieurs devises s'écrivent l'une après l'autre</td></tr>
+<tr><td><strong>Droit de lecture</strong></td><td>La valeur suit la portée de <strong>lecture des opportunités</strong> : le chargé de compte voit celle de ses entreprises, le Responsable commercial et la Direction celle de toutes ; un rôle qui voit les entreprises <strong>sans</strong> pouvoir lire les opportunités (Support, Finance) a la cellule vide, le serveur ne la calcule même pas</td></tr>
+<tr><td><strong>Rendez-vous lié</strong></td><td>Dans la fenêtre de planification, « Opportunité liée (facultatif) » propose les opportunités <strong>ouvertes de l'entreprise</strong>, avec une aide écrite ; refus si l'opportunité est d'une autre entreprise, inconnue ou clôturée ; le lien est posé à la planification et <strong>ne change plus</strong></td></tr>
+<tr><td><strong>Règle de l'accord de principe (D93)</strong></td><td>Comptent les rendez-vous décideur <strong>tenus</strong> liés à <strong>cette</strong> opportunité ou <strong>non liés</strong> ; un rendez-vous lié à une <strong>autre</strong> opportunité ne compte plus</td></tr>
+<tr><td><strong>Lecture</strong></td><td>L'intitulé de l'opportunité figure dans la fiche du rendez-vous et dans les listes ; le lien est tracé dans l'audit</td></tr>
+<tr><td><strong>Base de données</strong></td><td>Une migration ajoute la colonne facultative et sa <strong>clé étrangère</strong></td></tr>
+</tbody></table></div>
+<h2>Preuves</h2>
+<div class="table-wrap"><table><thead><tr><th>Contrôle</th><th>Résultat</th></tr></thead><tbody>
+<tr><td>Types (<code>tsc</code>, API et web), architecture (<code>pnpm arch</code>)</td><td>0 erreur · aucune violation (219 modules)</td></tr>
+<tr><td>Tests unitaires de l'API</td><td><strong>804 réussis</strong>, 0 échec (les suites d'intégration, qui exigent la base, sont ignorées dans cette passe) ; 7 nouveaux (lien du rendez-vous : 2 ; règle D93 : 1 ; valeur dans la liste : 4)</td></tr>
+<tr><td><strong>Tests d'intégration (PostgreSQL jetable)</strong></td><td><strong>322 / 322</strong> (22 suites) ; 3 nouveaux de bout en bout : lien accepté ou refusé (autre entreprise, clôturée, inconnue, identifiant mal écrit) et immuable ; <strong>règle D93</strong> (lié à une autre opportunité : refusé ; lié à elle ou non lié : accepté) ; <strong>valeur</strong> par devise, opportunités perdues exclues, portée du chef et du collègue, rôle sans droit de lecture ; et une écriture directe refusée par la clé étrangère</td></tr>
+<tr><td><strong>IDOR</strong></td><td>Les routes sont inchangées (le lien se contrôle contre l'entreprise de l'appelant, donc hors portée l'opportunité est refusée) ; le contrat anti-IDOR reste vert</td></tr>
+<tr><td>Tests de l'interface</td><td><strong>408 / 408</strong> (8 nouveaux) : lien dans la requête de planification (jamais renvoyé à la modification), reconstitution du formulaire, colonne « Valeur » (affichage d'une ou de plusieurs devises, vide sans droit ou sans opportunité ouverte)</td></tr>
+<tr><td><strong>Mutants</strong></td><td><strong>14 / 14 tués</strong> (rendez-vous non lié ignoré, lié à une autre opportunité compté, opportunité d'une autre entreprise, clôturée ou inconnue acceptée, lien non transmis, intitulé absent de l'agenda et de la fiche, lien non enregistré, opportunités clôturées comptées, valeur hors du droit de lecture, portée de la valeur sur le droit des entreprises, clé étrangère absente, identifiant non validé)</td></tr>
+<tr><td><strong>Navigateur réel (Edge + axe-core)</strong></td><td><strong>Parcours ciblé</strong> (connexion, création d'une entreprise, fiche, puis ce lot) : <strong>43 contrôles réussis, aucun échec, 0 violation</strong> ; la colonne « Valeur » annonce « 1 · 4 000 000 » après la création d'une opportunité depuis la fiche, et la planification propose l'opportunité liée avec son aide. Le seul ✘ est l'arrêt volontaire de fin de parcours. Résultats <code>docs/accessibilite/resultats/axe-2026-11-07-s43c.json</code>, captures <code>docs/accessibilite/s43c-captures/</code></td></tr>
+</tbody></table></div>
+<h2>Défauts trouvés par la recette et corrigés</h2>
+<ul><li>Aucun défaut de l'application n'a été trouvé par les tests, les mutants ni l'audit sur ce lot.</li><li><strong>Hors lot</strong> : les doublures de test du dépôt de rendez-vous et du dépôt d'opportunités ont dû suivre le nouveau lien (mise à jour sans changement de comportement).</li></ul>
+<h2>Réserves sur la recette</h2>
+<ul><li><strong>Parcours navigateur ciblé</strong> : les écrans des lots antérieurs ne sont pas revérifiés par ce lot (voir la recette de S4.3b pour l'instabilité du navigateur sans fenêtre dans l'agenda).</li><li><strong>Une capture manquante</strong> : « entreprises-valeur » (le contrôle a réussi, le navigateur n'a pas répondu à la capture) ; la capture du formulaire de rendez-vous lié est fournie.</li><li><strong>Rendez-vous lié non mené jusqu'à son terme dans le navigateur</strong> : l'audit enregistre un rendez-vous décideur lié, mais la vérification que la règle D93 s'applique ensuite est couverte par les tests d'intégration et les mutants, pas par le navigateur.</li><li><strong>Rendez-vous antérieurs non liés</strong> : ils comptent encore pour toutes les opportunités de leur entreprise (D106) ; le lien ne se modifie pas après coup.</li><li><strong>Valeur non pondérée, non triable</strong> (D107) ; pas d'action « Planifier » depuis une opportunité (D108) ; une seule opportunité par rendez-vous (D109) ; pas de total général de la liste (D110).</li><li>Pas de passage au lecteur d'écran réel ; testé sous Node 26.7, pas rejoué sous Node 22. Le prototype n'est pas à jour (D49).</li></ul>
+<h2>Dette et à confirmer</h2>
+<ul><li><strong>D106 à D110</strong> (<code>docs/TECH-DEBT.md</code>) ; D93 et D104 soldées.</li><li><strong>D38 — à confirmer</strong> : colonne « Valeur » (ouvertes, par devise, selon le droit de lecture, non pondérée), lien facultatif non modifiable, règle D93, rendez-vous antérieurs non liés.</li></ul>
+<h2>À valider</h2>
+<ol><li>Les écrans (colonne « Valeur », choix « Opportunité liée » dans la planification, intitulé rappelé dans la fiche du rendez-vous) et les valeurs par défaut de D38.</li><li>« Je valide S4.3c » → fusion avec commit de fusion et étiquette <code>s4-3c-validated</code>.</li></ol></main></body></html>

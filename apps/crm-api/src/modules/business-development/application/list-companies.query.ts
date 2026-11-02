@@ -3,6 +3,7 @@ import { Page } from '../../../shared-kernel';
 import type { Visibility } from '../../iam';
 import { COMPANY_REPOSITORY, CompanyRepository, CompanySortField } from '../domain/company-repository';
 import { CompanyStatus } from '../domain/company-status';
+import { OPPORTUNITY_TOTALS, OpportunityTotals } from '../domain/opportunity-totals';
 import { OWNER_DIRECTORY, OwnerDirectory } from '../domain/owner-directory';
 
 // Vocabulaire de la liste, ré-exporté pour la couche de présentation (qui n'importe jamais le domaine).
@@ -26,6 +27,8 @@ export interface ListCompaniesQuery {
   direction?: 'asc' | 'desc';
   /** Ce que l'appelant a le droit de voir (calculé depuis ses droits, jamais depuis la requête). */
   visibility: Visibility;
+  /** Ce que l'appelant a le droit de voir des opportunités : sans lecture, la valeur n'est pas calculée. */
+  opportunityVisibility: Visibility;
 }
 
 const MAX_PAGE_SIZE = 100;
@@ -36,6 +39,7 @@ export class ListCompaniesHandler {
   constructor(
     @Inject(COMPANY_REPOSITORY) private readonly companies: CompanyRepository,
     @Inject(OWNER_DIRECTORY) private readonly owners: OwnerDirectory,
+    @Inject(OPPORTUNITY_TOTALS) private readonly totals: OpportunityTotals,
   ) {}
 
   /**
@@ -57,6 +61,16 @@ export class ListCompaniesHandler {
       ownerIds: query.visibility.unrestricted ? undefined : query.visibility.ownerIds,
     });
     const names = await this.owners.names(result.items.flatMap((c) => (c.ownerUserId ? [c.ownerUserId] : [])));
-    return { ...result, items: result.items.map((company) => toCompanyView(company, undefined, company.ownerUserId ? (names.get(company.ownerUserId) ?? null) : null)) };
+    // La valeur des opportunités suit la portée de lecture des opportunités : hors de cette portée, la colonne reste vide.
+    const sees = (ownerId: string | null) => query.opportunityVisibility.unrestricted || (ownerId !== null && query.opportunityVisibility.ownerIds.includes(ownerId));
+    const visible = result.items.filter((c) => sees(c.ownerUserId)).map((c) => c.id);
+    const open = await this.totals.openByCompany(visible);
+    return {
+      ...result,
+      items: result.items.map((company) => {
+        const view = toCompanyView(company, undefined, company.ownerUserId ? (names.get(company.ownerUserId) ?? null) : null);
+        return sees(company.ownerUserId) ? { ...view, openOpportunities: open.get(company.id) ?? { count: 0, totals: [] } } : view;
+      }),
+    };
   }
 }

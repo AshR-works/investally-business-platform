@@ -7,6 +7,7 @@ export interface AppointmentListItem {
   companyName: string;
   contactName: string | null;
   offerReference: string | null;
+  opportunityTitle: string | null;
 }
 
 export interface AppointmentListQuery {

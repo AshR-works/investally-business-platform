@@ -83,6 +83,28 @@ describeDb('Agenda — rendez-vous et visites (HTTP + PostgreSQL)', () => {
     expect(unlinked.body).toMatchObject({ contactId: null, contactName: null });
   }, 120_000);
 
+  it('opportunité (D93) : liée si elle est ouverte et de la même entreprise (intitulé rendu), refusée sinon ; le lien ne change plus', async () => {
+    const { am, companyId } = await team();
+    const other = await api.call('POST', '/api/v1/companies', { ...am, body: { name: `Autre société ${unique()}` } });
+    const mine = await api.call('POST', '/api/v1/opportunities', { ...am, body: { companyId, title: 'Formation liée', amount: '2500000', source: 'REFERRAL' } });
+    const foreign = await api.call('POST', '/api/v1/opportunities', { ...am, body: { companyId: other.body.id, title: 'Formation étrangère', amount: '1000000', source: 'REFERRAL' } });
+    const closed = await api.call('POST', '/api/v1/opportunities', { ...am, body: { companyId, title: 'Formation perdue', amount: '1000000', source: 'REFERRAL' } });
+    expect((await api.call('POST', `/api/v1/opportunities/${closed.body.id}/close-lost`, { ...am, body: { version: 1, reason: 'PRICE' } })).status).toBe(200);
+    const linked = await plan(am, companyId, { type: 'DECISION_MAKER', opportunityId: mine.body.id });
+    expect(linked.status).toBe(201);
+    expect(linked.body).toMatchObject({ opportunityId: mine.body.id, opportunityTitle: 'Formation liée' });
+    expect((await api.call('GET', `/api/v1/appointments/${linked.body.id}`, am)).body).toMatchObject({ opportunityTitle: 'Formation liée' });
+    const listed = await api.call('GET', `/api/v1/appointments?${wide()}&companyId=${companyId}`, am);
+    expect(listed.body.items.find((x: { id: string }) => x.id === linked.body.id)).toMatchObject({ opportunityTitle: 'Formation liée' });
+    expect((await plan(am, companyId, { opportunityId: foreign.body.id })).status).toBe(400);
+    expect((await plan(am, companyId, { opportunityId: closed.body.id })).status).toBe(400);
+    expect((await plan(am, companyId, { opportunityId: '00000000-0000-4000-8000-000000000000' })).status).toBe(400);
+    expect((await plan(am, companyId, { opportunityId: 'pas-un-identifiant' })).status).toBe(400);
+    const edited = await api.call('PUT', `/api/v1/appointments/${linked.body.id}`, { ...am, body: { version: 1, location: 'Siège' } });
+    expect(edited.body).toMatchObject({ opportunityId: mine.body.id, version: 2 });
+    expect((await api.call('PUT', `/api/v1/appointments/${linked.body.id}`, { ...am, body: { version: 2, opportunityId: foreign.body.id } })).status).toBe(400);
+  }, 120_000);
+
   it('refus : heure passée ou mal écrite, type inconnu, durée hors limites (400/422), champ inconnu (400), version périmée (409)', async () => {
     const { am, companyId } = await team();
     expect([400, 422]).toContain((await plan(am, companyId, { startsAt: at(-2) })).status);
@@ -176,6 +198,7 @@ describeDb('Agenda — rendez-vous et visites (HTTP + PostgreSQL)', () => {
     await expect(db.$executeRawUnsafe(`UPDATE bd.appointments SET version = 0 WHERE id = '${id}'::uuid`)).rejects.toThrow();
     await expect(db.$executeRawUnsafe(`UPDATE bd.appointments SET postponements = -1 WHERE id = '${id}'::uuid`)).rejects.toThrow();
     await expect(db.$executeRawUnsafe(`UPDATE bd.appointments SET contact_id = '${'0'.repeat(8)}-0000-4000-8000-${'0'.repeat(12)}'::uuid WHERE id = '${id}'::uuid`)).rejects.toThrow();
+    await expect(db.$executeRawUnsafe(`UPDATE bd.appointments SET opportunity_id = '${'0'.repeat(8)}-0000-4000-8000-${'0'.repeat(12)}'::uuid WHERE id = '${id}'::uuid`)).rejects.toThrow();
     await act(am, id, 'cancel', { version: 1, text: 'Annulé' });
     await expect(db.$executeRawUnsafe(`UPDATE bd.appointments SET status = 'PLANNED' WHERE id = '${id}'::uuid`)).rejects.toThrow();
   }, 120_000);

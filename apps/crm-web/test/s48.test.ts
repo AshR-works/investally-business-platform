@@ -12,7 +12,7 @@ import type { Appointment as AppointmentView } from '../lib/types';
 
 const now = new Date('2026-11-04T10:00:00Z');
 const form = (patch: Partial<AppointmentForm> = {}): AppointmentForm => ({
-  type: 'FINANCE_DIRECTOR', companyId: 'c1', contactId: '', offerId: '', date: '2026-11-20', time: '09:00', durationMinutes: '60', location: 'Siège', note: 'Présenter l’offre', ...patch,
+  type: 'FINANCE_DIRECTOR', companyId: 'c1', contactId: '', offerId: '', opportunityId: '', date: '2026-11-20', time: '09:00', durationMinutes: '60', location: 'Siège', note: 'Présenter l’offre', ...patch,
 });
 const serverAccepts = (f: AppointmentForm): boolean => {
   try {
@@ -26,7 +26,7 @@ const serverAccepts = (f: AppointmentForm): boolean => {
   }
 };
 const view = (patch: Partial<AppointmentView> = {}): AppointmentView => ({
-  id: 'a1', type: 'FINANCE_DIRECTOR', companyId: 'c1', companyName: 'Atlas', contactId: 'k1', contactName: 'Marie Fotso', offerId: null, offerReference: null, organizerUserId: 'u1',
+  id: 'a1', type: 'FINANCE_DIRECTOR', companyId: 'c1', companyName: 'Atlas', contactId: 'k1', contactName: 'Marie Fotso', offerId: null, offerReference: null, opportunityId: null, opportunityTitle: null, organizerUserId: 'u1',
   startsAt: new Date(2026, 10, 20, 9, 0).toISOString(), endsAt: new Date(2026, 10, 20, 10, 0).toISOString(), durationMinutes: 60, location: 'Siège', note: 'Présenter', status: 'PLANNED',
   outcomeNote: null, closedAt: null, postponements: 0, lastPostponeReason: null, reportDue: false, createdAt: '2026-11-04T10:00:00Z', version: 2, ...patch,
 });
@@ -68,7 +68,7 @@ describe('agenda : date et heure locales', () => {
     expect(EMPTY_APPOINTMENT_FORM({ companyId: 'c9', type: 'VISIT' }, new Date(2026, 10, 4)).companyId).toBe('c9');
   });
   it('reconstitue le formulaire d’un rendez-vous existant', () => {
-    expect(formFromAppointment(view())).toEqual({ type: 'FINANCE_DIRECTOR', companyId: 'c1', contactId: 'k1', offerId: '', date: '2026-11-20', time: '09:00', durationMinutes: '60', location: 'Siège', note: 'Présenter' });
+    expect(formFromAppointment(view())).toEqual({ type: 'FINANCE_DIRECTOR', companyId: 'c1', contactId: 'k1', offerId: '', opportunityId: '', date: '2026-11-20', time: '09:00', durationMinutes: '60', location: 'Siège', note: 'Présenter' });
   });
 });
 

@@ -58,8 +58,8 @@ const ITEMS = [
     { name: 'S4.2c — relances', start: '2026-11-01', end: '2026-11-01', state: 'done', tag: 's4-2c-validated' },
     { name: 'S4.2d — agenda, rendez-vous, visites', start: '2026-11-01', end: '2026-11-01', state: 'done', tag: 's4-2d-validated' },
     { name: 'S4.3a — opportunités, pipeline', start: '2026-11-01', end: '2026-11-01', state: 'done', tag: 's4-3a-validated' },
-    { name: 'S4.3b — statuts d’entreprise, responsable, fiche 360° (terminé, validation en attente)', start: '2026-11-01', end: '2026-11-01', state: 'wait' },
-    { name: 'S4.3c — colonne Valeur, lien rendez-vous ↔ opportunité', start: '2026-11-12', end: '2026-11-13', state: 'plan' },
+    { name: 'S4.3b — statuts d’entreprise, responsable, fiche 360°', start: '2026-11-01', end: '2026-11-01', state: 'done', tag: 's4-3b-validated' },
+    { name: 'S4.3c — colonne Valeur, lien rendez-vous ↔ opportunité (terminé, validation en attente)', start: '2026-11-02', end: '2026-11-02', state: 'wait' },
     { name: 'S4.4 — agrément et ambassadeurs', start: '2026-11-17', end: '2026-11-19', state: 'plan' },
   ] },
   { phase: 'Module Investudy (formation)', rows: [
@@ -197,9 +197,9 @@ const md = `# Diagramme de Gantt du projet
 | **Lancement** (Sprint 0) | 20/10/2026 |
 | Premier jalon de code validé (S1 à S3.3) | 20/10/2026 (le même jour) |
 | Fin de la fondation et du design | 22/10/2026 |
-| Module commercial : dernier lot validé (S4.3a) | 01/11/2026 |
+| Module commercial : dernier lot validé (S4.3b) | 01/11/2026 |
 | Lots réalisés et validés au ${frFull(TODAY)} | ${done.length} (dont ${done.filter((r) => r.tag).length} étiquetés) |
-| **Prochaine session** | Validation de S4.3b, puis S4.3c (colonne Valeur, lien rendez-vous ↔ opportunité) prévue du 12/11 au 13/11/2026 |
+| **Prochaine session** | Validation de S4.3c, puis S4.4 (agrément et ambassadeurs) prévue du 17/11 au 19/11/2026 |
 | Fin du module commercial (prévision) | 19/11/2026 |
 | Fin d'Investudy (prévision) | 30/11/2026 |
 | **Mise en production du CRM, prévision prudente** | **23/12/2026** |

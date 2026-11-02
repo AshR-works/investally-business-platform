@@ -20,6 +20,9 @@ export class PlanAppointmentDto {
   @ApiPropertyOptional({ format: 'uuid', nullable: true }) @IsOptional() @IsUUID()
   offerId?: string;
 
+  @ApiPropertyOptional({ format: 'uuid', nullable: true, description: "Opportunité servie par le rendez-vous (même entreprise, ouverte)" }) @IsOptional() @IsUUID()
+  opportunityId?: string;
+
   @ApiProperty({ example: '2026-11-10T09:00:00Z' }) @IsISO8601({ strict: true }, ISO)
   startsAt!: string;
 

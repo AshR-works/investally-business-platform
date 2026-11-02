@@ -112,9 +112,10 @@ Chaque schéma est dans `workflows/svg/`.
 
 ## 6. Rendez-vous, visites et agenda *(flux C3, S4.2b et S4.3)*
 
-### CU-C-30 — Planifier un rendez-vous *(réalisé, S4.2d ; conflit d'horaire en avertissement, rappel non envoyé : D85, D86)*
+### CU-C-30 — Planifier un rendez-vous *(réalisé, S4.2d ; opportunité liée, S4.3c ; conflit d'horaire en avertissement, rappel non envoyé : D85, D86)*
 - **Écran** : 18. **Types** : RDV DAF, RDV décideur, visite chez Investally. **Scénario** : 1. Type, entreprise, contact, date, heure, lieu ou lien, opportunité liée. 2. Contrôle du conflit d'horaire. 3. Enregistrement dans l'agenda, rappel programmé.
-- **Variantes** : conflit d'horaire (bloque ou avertit : à trancher) ; contact non rattaché à l'entreprise → refus. **Droits** : `bd.appointment.create`, `bd.visit.create` (Propre).
+- **Opportunité liée (S4.3c, D38)** : facultative ; une opportunité **ouverte de la même entreprise** ; posée à la planification, non modifiable. Un rendez-vous décideur **tenu** lié à une opportunité ne débloque que **celle-ci** ; non lié, il compte pour toutes les opportunités de l'entreprise.
+- **Variantes** : conflit d'horaire (bloque ou avertit : à trancher) ; contact non rattaché à l'entreprise → refus ; opportunité d'une autre entreprise ou clôturée → refus. **Droits** : `bd.appointment.create`, `bd.visit.create` (Propre).
 
 ### CU-C-31 — Tenir, annuler ou reporter un rendez-vous *(réalisé, S4.2d ; le déblocage de l'accord de principe viendra avec S4.4 : D90)*
 - **Scénario** : après le rendez-vous, le chargé de compte le marque « tenu » avec une note, ou « annulé » / « reporté » avec motif. **Règle** : un rendez-vous **décideur tenu** débloque l'accord de principe (flux F1). **Droits** : `bd.appointment.update / cancel`.

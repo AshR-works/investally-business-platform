@@ -681,6 +681,8 @@ model Appointment {
   companyId          String            @map("company_id") @db.Uuid
   contactId          String?           @map("contact_id") @db.Uuid
   offerId            String?           @map("offer_id") @db.Uuid
+  /// Opportunité que le rendez-vous sert (facultatif) : un rendez-vous décideur lié ne compte que pour elle (D93).
+  opportunityId      String?           @map("opportunity_id") @db.Uuid
   organizerUserId    String            @map("organizer_user_id") @db.Uuid
   startsAt           DateTime          @map("starts_at") @db.Timestamptz(6)
   durationMinutes    Int               @map("duration_minutes")
@@ -698,9 +700,11 @@ model Appointment {
   company            Company           @relation(fields: [companyId], references: [id])
   contact            Contact?          @relation(fields: [contactId], references: [id])
   offer              Offer?            @relation(fields: [offerId], references: [id])
+  opportunity        Opportunity?      @relation(fields: [opportunityId], references: [id])
 
   @@index([companyId])
   @@index([startsAt])
+  @@index([opportunityId])
   @@map("appointments")
   @@schema("bd")
 }
@@ -765,6 +769,7 @@ model Opportunity {
   createdAt      DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt      DateTime          @updatedAt @map("updated_at") @db.Timestamptz(6)
   company        Company           @relation(fields: [companyId], references: [id])
+  appointments   Appointment[]
 
   @@index([companyId])
   @@index([status, stage])

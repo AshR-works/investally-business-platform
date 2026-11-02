@@ -1,6 +1,7 @@
 import { GetCompanyHandler } from '../src/modules/business-development/application/get-company.query';
 import { ListCompaniesHandler } from '../src/modules/business-development/application/list-companies.query';
 import { Company } from '../src/modules/business-development/domain/company';
+import { Opportunity } from '../src/modules/business-development/domain/opportunity';
 import { CompanyName } from '../src/modules/business-development/domain/company-name';
 import { CompanyRepository } from '../src/modules/business-development/domain/company-repository';
 import { CompanyStatus } from '../src/modules/business-development/domain/company-status';
@@ -9,6 +10,8 @@ import { RoleCode } from '../src/modules/iam/domain/roles';
 import { Page } from '../src/shared-kernel';
 import { buildIamWorld } from './support/iam-world';
 import { InMemoryFacilitators } from './support/in-memory-facilitators';
+import { InMemoryOpportunities } from './support/in-memory-opportunities';
+import { InMemoryOpportunityTotals } from './support/in-memory-opportunity-totals';
 import { InMemoryOwnerDirectory } from './support/in-memory-owner-directory';
 
 class InMemoryCompanies implements CompanyRepository {
@@ -46,14 +49,15 @@ async function scenario() {
   const repo = new InMemoryCompanies();
   for (const [id, owner] of [['hos', hos.id], ['am1', am1.id], ['am2', am2.id], ['intern', intern.id], ['legacy', null]] as const) repo.items.push(company(id, owner));
 
-  const list = new ListCompaniesHandler(repo, new InMemoryOwnerDirectory());
+  const opportunities = new InMemoryOpportunities(repo);
+  const list = new ListCompaniesHandler(repo, new InMemoryOwnerDirectory(), new InMemoryOpportunityTotals(opportunities));
   const get = new GetCompanyHandler(repo, new InMemoryFacilitators(), new InMemoryOwnerDirectory());
   const ctx = (userId: string) => w.authorization.contextFor(userId);
   const visible = async (userId: string) => {
     const access = await ctx(userId);
-    return (await list.execute({ page: 1, pageSize: 50, visibility: visibilityFor(access, 'bd.company.read') })).items.map((c) => c.id.valueOf()).sort();
+    return (await list.execute({ page: 1, pageSize: 50, visibility: visibilityFor(access, 'bd.company.read'), opportunityVisibility: visibilityFor(access, 'bd.opportunity.read') })).items.map((c) => c.id.valueOf()).sort();
   };
-  return { w, repo, list, get, ctx, visible, ids: { hos: hos.id, am1: am1.id, am2: am2.id, intern: intern.id, direction: direction.id, trainer: trainer.id, support: support.id } };
+  return { w, repo, opportunities, list, get, ctx, visible, ids: { hos: hos.id, am1: am1.id, am2: am2.id, intern: intern.id, direction: direction.id, trainer: trainer.id, support: support.id } };
 }
 
 describe('Portée des entreprises (B9)', () => {
@@ -84,17 +88,17 @@ describe('Portée des entreprises (B9)', () => {
   it('le total et la pagination reflètent la portée, pas la table entière', async () => {
     const s = await scenario();
     const access = await s.ctx(s.ids.hos);
-    const page = await s.list.execute({ page: 1, pageSize: 2, visibility: visibilityFor(access, 'bd.company.read') });
+    const page = await s.list.execute({ page: 1, pageSize: 2, visibility: visibilityFor(access, 'bd.company.read'), opportunityVisibility: visibilityFor(access, 'bd.opportunity.read') });
     expect(page.total).toBe(3);
     expect(page.items).toHaveLength(2);
-    const huge = await s.list.execute({ page: 1, pageSize: 5000, visibility: visibilityFor(access, 'bd.company.read') });
+    const huge = await s.list.execute({ page: 1, pageSize: 5000, visibility: visibilityFor(access, 'bd.company.read'), opportunityVisibility: visibilityFor(access, 'bd.opportunity.read') });
     expect(huge.pageSize).toBe(100);
   });
 
   it('la recherche ne sort jamais de la portée (une correspondance hors portée reste invisible)', async () => {
     const s = await scenario();
     const access = await s.ctx(s.ids.am1);
-    const result = await s.list.execute({ page: 1, pageSize: 20, search: 'société', visibility: visibilityFor(access, 'bd.company.read') });
+    const result = await s.list.execute({ page: 1, pageSize: 20, search: 'société', visibility: visibilityFor(access, 'bd.company.read'), opportunityVisibility: visibilityFor(access, 'bd.opportunity.read') });
     expect(result.items.map((c) => c.id)).toEqual(['am1']);
   });
 
@@ -129,5 +133,45 @@ describe('Portée des entreprises (B9)', () => {
     expect(await s.visible(s.ids.hos)).toContain('intern');
     s.w.users.items.get(s.ids.am2)!.assignManager(null); // am2 quitte l'équipe
     expect(await s.visible(s.ids.hos)).not.toContain('am2');
+  });
+});
+
+describe('Valeur des opportunités ouvertes dans la liste des entreprises (S4.3c)', () => {
+  const now = new Date('2026-11-06T10:00:00Z');
+  const opp = (id: string, companyId: string, amount: string, currency = 'XAF') => Opportunity.create({ id, companyId, title: `Opportunité ${id}`, amount, currency, source: 'REFERRAL', now });
+  const valueOf = async (s: Awaited<ReturnType<typeof scenario>>, userId: string, companyId: string) => {
+    const access = await s.ctx(userId);
+    const page = await s.list.execute({ page: 1, pageSize: 50, visibility: visibilityFor(access, 'bd.company.read'), opportunityVisibility: visibilityFor(access, 'bd.opportunity.read') });
+    return page.items.find((c) => c.id === companyId)?.openOpportunities;
+  };
+
+  it('additionne les opportunités OUVERTES, devise par devise, sans jamais mélanger deux devises', async () => {
+    const s = await scenario();
+    s.opportunities.items.push(opp('o1', 'am1', '1000000.50'), opp('o2', 'am1', '2000000'), opp('o3', 'am1', '300.25', 'EUR'));
+    const lost = opp('o4', 'am1', '9000000'); lost.closeLost('PRICE', null, now); s.opportunities.items.push(lost);
+    expect(await valueOf(s, s.ids.am1, 'am1')).toEqual({ count: 3, totals: [{ currency: 'EUR', amount: '300.25' }, { currency: 'XAF', amount: '3000000.50' }] });
+  });
+
+  it('une entreprise sans opportunité ouverte affiche zéro, pas « absente »', async () => {
+    const s = await scenario();
+    expect(await valueOf(s, s.ids.am1, 'am1')).toEqual({ count: 0, totals: [] });
+  });
+
+  it('suit la portée de lecture : le chargé de compte ne voit que les siennes, le Responsable commercial et la Direction toutes', async () => {
+    const s = await scenario();
+    s.opportunities.items.push(opp('o5', 'am2', '700000'));
+    expect(await valueOf(s, s.ids.hos, 'am2')).toMatchObject({ count: 1 });
+    expect(await valueOf(s, s.ids.direction, 'am2')).toMatchObject({ count: 1 });
+    expect(await valueOf(s, s.ids.am1, 'am1')).toEqual({ count: 0, totals: [] });
+    expect(await valueOf(s, s.ids.am1, 'am2')).toBeUndefined(); // entreprise hors de sa portée : même absente de la liste
+  });
+
+  it('sans le droit de lire les opportunités (Support), la valeur n’est pas calculée, même si l’entreprise est visible', async () => {
+    const s = await scenario();
+    s.opportunities.items.push(opp('o6', 'am1', '5000000'));
+    const access = await s.ctx(s.ids.support);
+    const page = await s.list.execute({ page: 1, pageSize: 50, visibility: visibilityFor(access, 'bd.company.read'), opportunityVisibility: visibilityFor(access, 'bd.opportunity.read') });
+    expect(page.items.length).toBeGreaterThan(0);
+    expect(page.items.every((c) => c.openOpportunities === undefined)).toBe(true);
   });
 });

@@ -39,6 +39,7 @@ export interface AppointmentForm {
   companyId: string;
   contactId: string;
   offerId: string;
+  opportunityId: string;
   date: string;
   time: string;
   durationMinutes: string;
@@ -76,14 +77,14 @@ export const startOfLocalDay = (day: string): string => new Date(`${day}T00:00:0
 export const EMPTY_APPOINTMENT_FORM = (defaults: Partial<AppointmentForm> = {}, now: Date = new Date()): AppointmentForm => {
   const next = new Date(now.getTime() + 86400000);
   return {
-    type: 'FINANCE_DIRECTOR', companyId: '', contactId: '', offerId: '', date: localDay(next), time: '09:00',
+    type: 'FINANCE_DIRECTOR', companyId: '', contactId: '', offerId: '', opportunityId: '', date: localDay(next), time: '09:00',
     durationMinutes: String(DEFAULT_APPOINTMENT_MINUTES), location: '', note: '', ...defaults,
   };
 };
 
 export function formFromAppointment(a: Appointment): AppointmentForm {
   return {
-    type: a.type, companyId: a.companyId, contactId: a.contactId ?? '', offerId: a.offerId ?? '', date: localDay(a.startsAt), time: localTime(a.startsAt),
+    type: a.type, companyId: a.companyId, contactId: a.contactId ?? '', offerId: a.offerId ?? '', opportunityId: a.opportunityId ?? '', date: localDay(a.startsAt), time: localTime(a.startsAt),
     durationMinutes: String(a.durationMinutes), location: a.location ?? '', note: a.note ?? '',
   };
 }
@@ -126,6 +127,7 @@ export function buildAppointmentBody(form: AppointmentForm, options: { version?:
     body.startsAt = toInstant(form.date, form.time);
     if (form.contactId) body.contactId = form.contactId;
     if (form.offerId) body.offerId = form.offerId;
+    if (form.opportunityId) body.opportunityId = form.opportunityId;
     if (!form.location.trim()) delete body.location;
     if (!form.note.trim()) delete body.note;
   } else {

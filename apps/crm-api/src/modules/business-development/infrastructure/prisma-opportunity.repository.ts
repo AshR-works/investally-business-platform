@@ -94,7 +94,8 @@ export class PrismaOpportunityRepository implements OpportunityRepository {
 export class PrismaDecisionMakerMeetings implements DecisionMakerMeetings {
   constructor(private readonly prisma: PrismaService) {}
 
-  async hasHeld(companyId: string): Promise<boolean> {
-    return (await this.prisma.db.appointment.count({ where: { companyId, type: 'DECISION_MAKER', status: 'HELD' } })) > 0;
+  async hasHeld(companyId: string, opportunityId: string): Promise<boolean> {
+    const where: Prisma.AppointmentWhereInput = { companyId, type: 'DECISION_MAKER', status: 'HELD', OR: [{ opportunityId }, { opportunityId: null }] };
+    return (await this.prisma.db.appointment.count({ where })) > 0;
   }
 }

@@ -7,13 +7,14 @@ import { AppointmentListItem, AppointmentListQuery, AppointmentRepository } from
 
 type AppointmentRow = Prisma.AppointmentGetPayload<object>;
 type AppointmentWithContext = Prisma.AppointmentGetPayload<{
-  include: { company: { select: { name: true } }; contact: { select: { firstName: true; lastName: true } }; offer: { select: { reference: true } } };
+  include: { company: { select: { name: true } }; contact: { select: { firstName: true; lastName: true } }; offer: { select: { reference: true } }; opportunity: { select: { title: true } } };
 }>;
 
 const WITH_CONTEXT = {
   company: { select: { name: true } },
   contact: { select: { firstName: true, lastName: true } },
   offer: { select: { reference: true } },
+  opportunity: { select: { title: true } },
 } as const;
 
 function toDomain(row: AppointmentRow): Appointment {
@@ -23,6 +24,7 @@ function toDomain(row: AppointmentRow): Appointment {
     companyId: row.companyId,
     contactId: row.contactId,
     offerId: row.offerId,
+    opportunityId: row.opportunityId,
     organizerUserId: row.organizerUserId,
     startsAt: row.startsAt,
     durationMinutes: row.durationMinutes,
@@ -43,6 +45,7 @@ const toItem = (row: AppointmentWithContext): AppointmentListItem => ({
   companyName: row.company.name,
   contactName: row.contact ? `${row.contact.firstName} ${row.contact.lastName}` : null,
   offerReference: row.offer?.reference ?? null,
+  opportunityTitle: row.opportunity?.title ?? null,
 });
 
 /** Persistance PostgreSQL des rendez-vous (jamais supprimés : on les tient ou on les annule, avec un texte). */
@@ -74,7 +77,7 @@ export class PrismaAppointmentRepository implements AppointmentRepository {
     }
     await this.prisma.db.appointment.create({
       data: {
-        id: appointment.id, type: appointment.type, companyId: appointment.companyId, offerId: appointment.offerId,
+        id: appointment.id, type: appointment.type, companyId: appointment.companyId, offerId: appointment.offerId, opportunityId: appointment.opportunityId,
         organizerUserId: appointment.organizerUserId, ...data, version: appointment.version, createdAt: appointment.createdAt,
       },
     });
