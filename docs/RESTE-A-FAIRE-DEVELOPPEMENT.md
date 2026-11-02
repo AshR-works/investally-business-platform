@@ -55,6 +55,8 @@ Ordre retenu le 2026-10-21 (DEC-005) : module commercial, puis Investudy, puis p
 | **Prototype de design 0.5.0** | D49 | Ajouter contacts, offres, tableaux, fenêtres, œil du mot de passe |
 
 ## 3. Décisions en attente, par lot qu'elles bloquent
+*Une **feuille de décision** avec options, grilles et recommandations est prête : [ARBITRAGE-DECISIONS-EN-ATTENTE.md](cadrages/ARBITRAGE-DECISIONS-EN-ATTENTE.md) (FD-1 à FD-9).*
+
 | Pour… | Décision à prendre | Ma proposition de départ |
 |---|---|---|
 | **S4.2b** | Une décharge sans fichier est-elle acceptée ? Annulation d'une décharge ? | Fichier obligatoire ; annulation possible par le Responsable commercial |
@@ -73,7 +75,7 @@ Ordre retenu le 2026-10-21 (DEC-005) : module commercial, puis Investudy, puis p
 | **Accès Microsoft 365** (locataire, application, boîte d'envoi, SPF, DKIM, DMARC) | Administrateur M365 | Aucun e-mail réel tant qu'il manque ; **bloque la mise en production** (D9) |
 | **Deuxième SuperAdmin nominatif** | Direction | Un seul compte au départ : risque de blocage (D10, R13) |
 | **Avis juridique** : audit 10 ans, lecture par la Direction, données des apprenants, contacts, facilitateurs, suivi des performances | Juridique | Avant la mise en production (D11) |
-| **Exiger la vérification dans les règles de la branche `main`** | Vous (GitHub) | Aujourd'hui la CI n'est pas obligatoire pour fusionner |
+| ~~Exiger la vérification dans les règles de la branche `main`~~ | Vous (GitHub) | **Fait** : la règle `protection-main` est active (PR obligatoire, contrôle `verify` requis, pas de poussée forcée ni de suppression) |
 | **Logos au format SVG et variante sombre** ; charte graphique des documents | Graphiste | Fiche, offre, certificat, émargement, facture (D35, D61) |
 | **Mentions légales et numérotation des documents** | DAF | Gabarits provisoires en attendant |
 | **Réponses sur la commission** : déclencheur de « due », qui la débloque | Direction administrative et financière | Flux F3, lot S4.4 |
