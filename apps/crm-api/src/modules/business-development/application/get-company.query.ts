@@ -4,6 +4,7 @@ import { decideFor } from '../../iam';
 import type { AccessContext } from '../../iam';
 import { COMPANY_REPOSITORY, CompanyRepository } from '../domain/company-repository';
 import { FACILITATOR_REPOSITORY, FacilitatorRepository } from '../domain/facilitator-repository';
+import { OWNER_DIRECTORY, OwnerDirectory } from '../domain/owner-directory';
 import { CompanyView, toCompanyView } from './company-view';
 import { toFacilitatorView } from './facilitator-view';
 
@@ -19,6 +20,7 @@ export class GetCompanyHandler {
   constructor(
     @Inject(COMPANY_REPOSITORY) private readonly companies: CompanyRepository,
     @Inject(FACILITATOR_REPOSITORY) private readonly facilitators: FacilitatorRepository,
+    @Inject(OWNER_DIRECTORY) private readonly owners: OwnerDirectory,
   ) {}
 
   /**
@@ -33,9 +35,14 @@ export class GetCompanyHandler {
     const link = company.facilitation;
     const facilitator = link ? await this.facilitators.findById(link.facilitatorId) : null;
     const canSeeFacilitator = facilitator !== null && decideFor(query.access, 'bd.facilitator.read', facilitator.ownerUserId).allowed;
-    return toCompanyView(company, {
-      facilitator: canSeeFacilitator ? toFacilitatorView(facilitator) : null,
-      canReadCommission: decideFor(query.access, 'bd.commission.read', company.ownerUserId).allowed,
-    });
+    const ownerName = company.ownerUserId ? ((await this.owners.names([company.ownerUserId])).get(company.ownerUserId) ?? null) : null;
+    return toCompanyView(
+      company,
+      {
+        facilitator: canSeeFacilitator ? toFacilitatorView(facilitator) : null,
+        canReadCommission: decideFor(query.access, 'bd.commission.read', company.ownerUserId).allowed,
+      },
+      ownerName,
+    );
   }
 }

@@ -1,6 +1,6 @@
 import { AggregateRoot, DomainError } from '../../../shared-kernel';
 import { CompanyName } from './company-name';
-import { CompanyStatus } from './company-status';
+import { CompanyStatus, MANUAL_STATUS_TRANSITIONS } from './company-status';
 import { normalizeEmail, normalizePhone } from './contact-info';
 import { Facilitation } from './facilitation';
 import { CompanyRegistered } from './events/company-registered';
@@ -85,6 +85,35 @@ export class Company extends AggregateRoot {
     if (changes.phone !== undefined) next.phone = normalizePhone(changes.phone, { required: false });
     if (changes.facilitation !== undefined) next.facilitation = changes.facilitation;
     this.props = next; // tout ou rien : une validation qui échoue ne laisse aucune modification partielle
+  }
+
+  /**
+   * Change le statut à la main, d'un cran. « Qualifiée » exige au moins un contact (on ne qualifie pas une entreprise dont
+   * personne n'est joignable). Les statuts « Cliente » et « Archivée » ne se posent pas ici.
+   */
+  changeStatus(next: CompanyStatus, context: { contactCount: number }): void {
+    if (next === this.props.status) {
+      throw new DomainError('INVARIANT_VIOLATION', "L'entreprise a déjà ce statut");
+    }
+    if (!MANUAL_STATUS_TRANSITIONS[this.props.status].includes(next)) {
+      throw new DomainError('INVARIANT_VIOLATION', `Le passage de « ${this.props.status} » à « ${next} » n'est pas possible à la main`);
+    }
+    if (next === CompanyStatus.Qualified && context.contactCount < 1) {
+      throw new DomainError('INVARIANT_VIOLATION', 'Une entreprise ne peut être qualifiée sans au moins un contact');
+    }
+    this.props.status = next;
+  }
+
+  /** Confie l'entreprise à un autre propriétaire (la portée des droits suit). Refus si archivée ou si c'est déjà le sien. */
+  reassign(newOwnerUserId: string): void {
+    if (this.props.status === CompanyStatus.Archived) {
+      throw new DomainError('INVARIANT_VIOLATION', "L'entreprise est archivée : elle n'est plus modifiable");
+    }
+    if (!newOwnerUserId) throw new DomainError('VALIDATION', 'Le nouveau propriétaire est obligatoire');
+    if (newOwnerUserId === this.props.ownerUserId) {
+      throw new DomainError('INVARIANT_VIOLATION', "Cette personne est déjà responsable de l'entreprise");
+    }
+    this.props.ownerUserId = newOwnerUserId;
   }
 
   /** Archive l'entreprise ; refuse de l'archiver deux fois (règle métier). */

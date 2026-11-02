@@ -9,7 +9,9 @@ import { GetCompanyHandler } from '../application/get-company.query';
 import { GetCompanyOverviewHandler } from '../application/get-company-overview.query';
 import { ListCompaniesHandler } from '../application/list-companies.query';
 import { RegisterCompanyUseCase } from '../application/register-company.use-case';
+import { ChangeCompanyStatusUseCase, CompanyStatus, ListOwnerCandidatesHandler, ReassignCompanyUseCase } from '../application/company-lifecycle-use-cases';
 import { UpdateCompanyUseCase } from '../application/update-company.use-case';
+import { ChangeStatusDto, ReassignDto } from './dto/company-lifecycle.dto';
 import { CompanyOverviewDto, ListCompaniesDto } from './dto/list-companies.dto';
 import { RegisterCompanyDto } from './dto/register-company.dto';
 import { UpdateCompanyDto } from './dto/update-company.dto';
@@ -28,6 +30,9 @@ export class CompaniesController {
     private readonly companyOverview: GetCompanyOverviewHandler,
     private readonly getCompany: GetCompanyHandler,
     private readonly exportCompanySheet: ExportCompanySheetHandler,
+    private readonly changeStatus: ChangeCompanyStatusUseCase,
+    private readonly reassign: ReassignCompanyUseCase,
+    private readonly ownerCandidates: ListOwnerCandidatesHandler,
   ) {}
 
   /** L'utilisateur qui crée l'entreprise en devient le propriétaire. */
@@ -49,6 +54,13 @@ export class CompaniesController {
   @Protected('bd.company.read')
   overview(@Query() query: CompanyOverviewDto, @Access() access: AccessContext) {
     return this.companyOverview.execute({ ...query, visibility: visibilityFor(access, 'bd.company.read') });
+  }
+
+  /** Les personnes à qui l'appelant peut confier une entreprise (liste du choix de réattribution). Déclarée avant `:id`. */
+  @Get('owners')
+  @Protected('bd.company.reassign')
+  owners(@Access() access: AccessContext) {
+    return this.ownerCandidates.execute({ access });
   }
 
   /**
@@ -77,5 +89,21 @@ export class CompaniesController {
   @Protected('bd.company.update')
   update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateCompanyDto, @Access() access: AccessContext, @CurrentActor() actor: AuthenticatedActor, @Req() req: Request) {
     return this.updateCompany.execute({ ...dto, id, access, actor: actorContextFrom(req, actor) });
+  }
+
+  /** Change le statut à la main, d'un cran (CU-C-05) ; « Qualifiée » exige un contact. */
+  @Post(':id/status')
+  @HttpCode(200)
+  @Protected('bd.company.update')
+  status(@Param('id', ParseUUIDPipe) id: string, @Body() dto: ChangeStatusDto, @Access() access: AccessContext, @CurrentActor() actor: AuthenticatedActor, @Req() req: Request) {
+    return this.changeStatus.execute({ id, version: dto.version, status: dto.status as CompanyStatus, access, actor: actorContextFrom(req, actor) });
+  }
+
+  /** Confie l'entreprise à un autre propriétaire de la portée de l'appelant (D17). */
+  @Post(':id/owner')
+  @HttpCode(200)
+  @Protected('bd.company.reassign')
+  owner(@Param('id', ParseUUIDPipe) id: string, @Body() dto: ReassignDto, @Access() access: AccessContext, @CurrentActor() actor: AuthenticatedActor, @Req() req: Request) {
+    return this.reassign.execute({ id, version: dto.version, ownerUserId: dto.ownerUserId, access, actor: actorContextFrom(req, actor) });
   }
 }

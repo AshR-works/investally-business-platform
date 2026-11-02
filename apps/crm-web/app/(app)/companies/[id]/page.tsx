@@ -3,6 +3,9 @@
 import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { CompanyDialog } from '../../../../components/companies/company-dialog';
+import { CompanyOwnerDialog, CompanyStatusDialog } from '../../../../components/companies/company-lifecycle-dialogs';
+import { AppointmentsPanel } from '../../../../components/appointments/appointments-panel';
+import { OpportunitiesPanel } from '../../../../components/opportunities/opportunities-panel';
 import { ContactsPanel } from '../../../../components/contacts/contacts-panel';
 import { OffersPanel } from '../../../../components/offers/offers-panel';
 import { FacilitationPanel } from '../../../../components/companies/facilitation-panel';
@@ -14,6 +17,7 @@ import { Icon } from '../../../../components/icon';
 import { PageHeading } from '../../../../components/page-heading';
 import { api, ApiError } from '../../../../lib/api';
 import { useAuth } from '../../../../lib/auth-context';
+import { type StatusAction, statusActions } from '../../../../lib/company-lifecycle';
 import { openCompanySheet } from '../../../../lib/export-sheet';
 import { formatDate } from '../../../../lib/format';
 import { can } from '../../../../lib/permissions';
@@ -31,6 +35,8 @@ export default function CompanyPage() {
   const [company, setCompany] = useState<Company | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
+  const [statusAction, setStatusAction] = useState<StatusAction | null>(null);
+  const [changingOwner, setChangingOwner] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
 
   const load = useCallback(
@@ -67,7 +73,7 @@ export default function CompanyPage() {
       <PageHeader
         eyebrow="Business Development"
         title={company.name}
-        description="Fiche de l’entreprise : contacts, offres et documents. Ses rendez-vous se planifient depuis l’agenda."
+        description="Vue d’ensemble de l’entreprise : responsable, statut, contacts, offres, opportunités, rendez-vous et documents. Les actions se font dans chaque module."
         actions={
           <div className="flex flex-wrap items-center gap-2">
             <button type="button" className="secondary inline-flex items-center gap-2" onClick={() => void exportSheet()}>
@@ -81,6 +87,11 @@ export default function CompanyPage() {
             {can(profile, 'bd.opportunity.create') && company.status !== 'ARCHIVED' && (
               <button type="button" className="secondary inline-flex items-center gap-2" onClick={() => router.push(`/opportunities?new=1&companyId=${company.id}`)}>
                 <Icon name="target" className="size-4" />Nouvelle opportunité
+              </button>
+            )}
+            {can(profile, 'bd.company.reassign') && company.status !== 'ARCHIVED' && (
+              <button type="button" className="secondary inline-flex items-center gap-2" onClick={() => setChangingOwner(true)}>
+                <Icon name="users" className="size-4" />Changer de responsable
               </button>
             )}
             {can(profile, 'bd.company.update') && (
@@ -102,9 +113,14 @@ export default function CompanyPage() {
           }}
         />
       )}
+      {statusAction && <CompanyStatusDialog company={company} action={statusAction} onClose={() => setStatusAction(null)} onDone={async () => { setStatusAction(null); await load(); }} />}
+      {changingOwner && <CompanyOwnerDialog company={company} onClose={() => setChangingOwner(false)} onDone={async () => { setChangingOwner(false); await load(); }} />}
       <Card className="mb-8">
         <dl className="m-0 grid grid-cols-[repeat(auto-fit,minmax(12rem,1fr))] gap-6 p-5">
-          <div><dt className="text-xs font-semibold text-ink-2">Statut</dt><dd className="m-0 mt-1"><Badge tone={status.tone}>{status.label}</Badge></dd></div>
+          <div><dt className="text-xs font-semibold text-ink-2">Statut</dt><dd className="m-0 mt-1"><Badge tone={status.tone}>{status.label}</Badge>{can(profile, 'bd.company.update') && statusActions(company.status).length > 0 && (
+            <span className="ml-2 inline-flex flex-wrap gap-2">{statusActions(company.status).map((a) => <button key={a.to} type="button" className="secondary" onClick={() => setStatusAction(a)}>{a.label}</button>)}</span>
+          )}</dd></div>
+          <div><dt className="text-xs font-semibold text-ink-2">Responsable</dt><dd className="m-0 mt-1">{company.ownerName ?? '—'}</dd></div>
           <div><dt className="text-xs font-semibold text-ink-2">Secteur</dt><dd className="m-0 mt-1">{company.sector ?? '—'}</dd></div>
           <div><dt className="text-xs font-semibold text-ink-2">Pays</dt><dd className="m-0 mt-1">{company.country ?? '—'}</dd></div>
           <div><dt className="text-xs font-semibold text-ink-2">E-mail</dt><dd className="m-0 mt-1">{company.email ?? '—'}</dd></div>
@@ -115,6 +131,8 @@ export default function CompanyPage() {
       <FacilitationPanel facilitation={company.facilitation} />
       {can(profile, 'bd.contact.read') && <ContactsPanel company={{ id: company.id, name: company.name }} />}
       {can(profile, 'bd.offer.read') && <OffersPanel company={{ id: company.id, name: company.name }} archived={company.status === 'ARCHIVED'} />}
+      {can(profile, 'bd.opportunity.read') && <OpportunitiesPanel company={{ id: company.id, name: company.name }} />}
+      {can(profile, 'bd.appointment.read') && <AppointmentsPanel company={{ id: company.id, name: company.name }} />}
       {can(profile, 'docs.document.read') && <DocumentsPanel ownerType="company" ownerId={company.id} />}
     </>
   );

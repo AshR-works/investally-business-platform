@@ -13,8 +13,8 @@
 | F7 | [Documents et pièces jointes](svg/F7-documents-pieces-jointes.svg) | Réalisé | Utilisateur, Système |
 | C1 | [Prospection : de l’entreprise cible au premier contact](svg/C1-prospection.svg) | Partiel | Chargé de compte, Responsable commercial, Système, Facilitateur (externe), Entreprise (externe) |
 | C2 | [Offre, décharge et relances](svg/C2-offre-decharge-relances.svg) | Partiel | Chargé de compte, Entreprise (externe), Système |
-| C3 | [Rendez-vous, visite et agenda](svg/C3-rendez-vous-agenda.svg) | À venir | Chargé de compte, Système, Contact (externe) |
-| C4 | [Opportunité : du pipeline à la clôture](svg/C4-opportunite-pipeline.svg) | À venir | Chargé de compte, Responsable commercial, Système |
+| C3 | [Rendez-vous, visite et agenda](svg/C3-rendez-vous-agenda.svg) | Partiel | Chargé de compte, Système, Contact (externe) |
+| C4 | [Opportunité : du pipeline à la clôture](svg/C4-opportunite-pipeline.svg) | Réalisé | Chargé de compte, Responsable commercial, Système |
 | C5 | [Cycle de vie d’une entreprise (statuts)](svg/C5-cycle-de-vie-entreprise.svg) | Partiel | Chargé de compte, Responsable commercial, Système |
 | I1 | [Du catalogue à la session ouverte](svg/I1-catalogue-planification.svg) | À venir | Responsable Investudy, Système, Formateur, Chargé de compte |
 | I2 | [Inscription d’un apprenant à une session](svg/I2-inscription.svg) | À venir | Chargé de compte, Système, Responsable Investudy, Finance (ERP) |

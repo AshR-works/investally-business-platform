@@ -83,7 +83,7 @@ export const FLOWS_COMMERCIAL = [
   },
   {
     id: 'C4', slug: 'opportunite-pipeline', title: 'Opportunité : du pipeline à la clôture', status: 'Réalisé',
-    sub: 'Créer → proposer → négocier → accord de principe (flux F1) ou clôture perdue. Suivi par le Responsable commercial. Réalisé en S4.3a (l'agrément et la commission suivent avec S4.4).',
+    sub: 'Créer → proposer → négocier → accord de principe (flux F1) ou clôture perdue. Suivi par le Responsable commercial. Réalisé en S4.3a (l’agrément et la commission suivent avec S4.4).',
     lanes: ['Chargé de compte', 'Responsable commercial', 'Système'],
     steps: [
       { id: 's0', built: true, lane: 'Chargé de compte', col: 0, kind: 'start', next: [{ to: 's1' }] },
@@ -108,12 +108,12 @@ export const FLOWS_COMMERCIAL = [
   },
   {
     id: 'C5', slug: 'cycle-de-vie-entreprise', title: 'Cycle de vie d’une entreprise (statuts)', status: 'Partiel',
-    sub: 'Cible → Contactée → Qualifiée → Cliente, et Archivée. Les statuts existent ; les transitions sont à décider.',
+    sub: 'Cible → Contactée → Qualifiée → Cliente, et Archivée. Les transitions manuelles (un cran, avec retour) sont réalisées ; « Cliente » (agrément) et « Archivée » (archivage) restent à construire.',
     lanes: ['Chargé de compte', 'Responsable commercial', 'Système'],
     steps: [
       { id: 's0', lane: 'Système', col: 0, built: true, kind: 'event', label: 'Création : statut « Cible »', next: [{ to: 's1', exit: 'bottom' }] },
-      { id: 's1', lane: 'Chargé de compte', col: 1, label: 'Premier contact établi : « Contactée »', next: [{ to: 's2' }] },
-      { id: 's2', lane: 'Chargé de compte', col: 2, label: 'Besoin confirmé et RDV tenu : « Qualifiée »', note: 'Critères de qualification à définir avec la direction commerciale.', next: [{ to: 'e1', exit: 'bottom' }] },
+      { id: 's1', lane: 'Chargé de compte', col: 1, built: true, label: 'Premier contact établi : « Contactée »', next: [{ to: 's2' }] },
+      { id: 's2', lane: 'Chargé de compte', col: 2, built: true, label: 'Au moins un contact : « Qualifiée »', note: 'Critère par défaut, à confirmer avec la direction commerciale (D37).', next: [{ to: 'e1', exit: 'bottom' }] },
       { id: 'e1', lane: 'Système', col: 3, kind: 'event', label: 'Agrément reçu : « Cliente »', note: 'Transition automatique proposée ; à confirmer.', next: [{ to: 's3', exit: 'bottom' }] },
       { id: 's3', lane: 'Responsable commercial', col: 4, label: 'Archiver (motif, confirmation)', next: [{ to: 'e2', exit: 'bottom' }] },
       { id: 'e2', lane: 'Système', col: 5, kind: 'event', label: 'Entreprise archivée : lecture seule', next: [{ to: 'z' }] },

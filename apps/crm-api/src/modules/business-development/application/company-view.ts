@@ -24,6 +24,8 @@ export interface CompanyView {
   name: string;
   status: string;
   ownerUserId: string | null;
+  /** Nom du responsable, quand l'appelant le demande (liste, fiche) ; absent des réponses d'écriture sans relecture. */
+  ownerName?: string | null;
   sector: string | null;
   country: string | null;
   email: string | null;
@@ -42,12 +44,13 @@ export interface FacilitationVisibility {
 }
 
 /** Transforme une entreprise du domaine en représentation publique (aucun objet interne n'est exposé). */
-export function toCompanyView(company: Company, facilitation?: FacilitationVisibility): CompanyView {
+export function toCompanyView(company: Company, facilitation?: FacilitationVisibility, ownerName?: string | null): CompanyView {
   const view: CompanyView = {
     id: company.id,
     name: company.name.value,
     status: company.status,
     ownerUserId: company.ownerUserId,
+    ...(ownerName !== undefined ? { ownerName } : {}),
     sector: company.sector,
     country: company.country,
     email: company.email,

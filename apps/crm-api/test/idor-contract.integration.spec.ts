@@ -13,7 +13,7 @@ const pdf = () => Buffer.from('%PDF-1.7\ncontrat idor\n%%EOF');
 
 interface As { token: string; ip: string }
 /** Identifiants visés par une sonde : les vrais (objet de Marie) ou inexistants (tous `NIL`). */
-interface Ids { company: string; doc: string; session: string; facilitator: string; contact: string; offer: string; offerSent: string; offerPending: string; offerReceipt: string; receipt: string; followup: string; appointment: string; appointmentDue: string; opportunity: string; opportunityAgreed: string }
+interface Ids { company: string; doc: string; session: string; facilitator: string; contact: string; offer: string; offerSent: string; offerPending: string; offerReceipt: string; receipt: string; followup: string; appointment: string; appointmentDue: string; opportunity: string; opportunityAgreed: string; teammate: string }
 
 /**
  * Une sonde par route « objet » : elle appelle la route avec les identifiants donnés, en tant que `as`.
@@ -25,6 +25,8 @@ const READ_ALL_FOR_HEAD_OF_SALES = ['GET /opportunities', 'GET /opportunities/:i
 const PROBES: Record<string, (api: Api, as: As, ids: Ids) => Promise<ApiResponse>> = {
   'GET /companies/:id': (api, as, ids) => api.call('GET', `/api/v1/companies/${ids.company}`, as),
   'GET /companies/:id/export': (api, as, ids) => api.call('GET', `/api/v1/companies/${ids.company}/export`, as),
+  'POST /companies/:id/status': (api, as, ids) => api.call('POST', `/api/v1/companies/${ids.company}/status`, { ...as, body: { version: 1, status: 'CONTACTED' } }),
+  'POST /companies/:id/owner': (api, as, ids) => api.call('POST', `/api/v1/companies/${ids.company}/owner`, { ...as, body: { version: 1, ownerUserId: ids.teammate } }),
   'PUT /companies/:id': (api, as, ids) => api.call('PUT', `/api/v1/companies/${ids.company}`, { ...as, body: { version: 1, sector: 'Piège' } }),
   'GET /contacts': (api, as, ids) => api.call('GET', `/api/v1/contacts?companyId=${ids.company}`, as),
   'POST /contacts': (api, as, ids) => api.call('POST', '/api/v1/contacts', { ...as, body: { companyId: ids.company, lastName: 'Piege', firstName: 'Contact', email: 'piege@exemple.cm' } }),
@@ -110,6 +112,7 @@ describeDb('Contrat anti-IDOR : un acteur sans portée reçoit la réponse d\'un
   async function world() {
     const chef = await createUserWithRoles(t, [RoleCode.HeadOfSales]);
     const marie = await createUserWithRoles(t, [RoleCode.AccountManager], { managerId: chef.id });
+    const anne = await createUserWithRoles(t, [RoleCode.AccountManager], { managerId: chef.id }); // coéquipière de Marie : destinataire d'une réattribution
     const paul = await createUserWithRoles(t, [RoleCode.AccountManager]); // autre équipe, portée « propres objets »
     const autreChef = await createUserWithRoles(t, [RoleCode.HeadOfSales]); // autre équipe, portée « équipe »
     const m = await login(marie);
@@ -154,8 +157,8 @@ describeDb('Contrat anti-IDOR : un acteur sans portée reçoit la réponse d\'un
       marie: m,
       chef: chefSession,
       attackers: { paul: await login(paul), autreChef: await login(autreChef) },
-      real: { company: company.body.id as string, doc: doc.body.id as string, session: second.sessionId, facilitator: facilitator.body.id as string, contact: contact.body.id as string, offer: offer.body.id as string, offerSent: offerSent.body.id as string, offerPending: offerPending.body.id as string, offerReceipt: offerReceipt.body.id as string, receipt: receipt.body.id as string, followup: followup.body.id as string, appointment: appointment.body.id as string, appointmentDue: appointmentDue.body.id as string, opportunity: opportunity.body.id as string, opportunityAgreed: opportunityAgreed.body.id as string } satisfies Ids,
-      nil: { company: NIL, doc: NIL, session: NIL, facilitator: NIL, contact: NIL, offer: NIL, offerSent: NIL, offerPending: NIL, offerReceipt: NIL, receipt: NIL, followup: NIL, appointment: NIL, appointmentDue: NIL, opportunity: NIL, opportunityAgreed: NIL } satisfies Ids,
+      real: { company: company.body.id as string, doc: doc.body.id as string, session: second.sessionId, facilitator: facilitator.body.id as string, contact: contact.body.id as string, offer: offer.body.id as string, offerSent: offerSent.body.id as string, offerPending: offerPending.body.id as string, offerReceipt: offerReceipt.body.id as string, receipt: receipt.body.id as string, followup: followup.body.id as string, appointment: appointment.body.id as string, appointmentDue: appointmentDue.body.id as string, opportunity: opportunity.body.id as string, opportunityAgreed: opportunityAgreed.body.id as string, teammate: anne.id } satisfies Ids,
+      nil: { company: NIL, doc: NIL, session: NIL, facilitator: NIL, contact: NIL, offer: NIL, offerSent: NIL, offerPending: NIL, offerReceipt: NIL, receipt: NIL, followup: NIL, appointment: NIL, appointmentDue: NIL, opportunity: NIL, opportunityAgreed: NIL, teammate: NIL } satisfies Ids,
       secondSession: second,
     };
   }
@@ -188,7 +191,7 @@ describeDb('Contrat anti-IDOR : un acteur sans portée reçoit la réponse d\'un
     // Contrôle positif : le propriétaire, lui, réussit (le test n'est pas vide), puis les dégâts éventuels sont vérifiés.
     // L'archivage exige le droit de suppression, que Marie n'a pas : c'est son chef (même équipe) qui l'exerce.
     // La dérogation et la clôture « gagnée » (D28) relèvent du Responsable commercial.
-    const owner = ['POST /documents/:id/archive', 'DELETE /contacts/:id', 'POST /opportunities/:id/waiver', 'POST /opportunities/:id/close-won'].includes(key) ? w.chef : w.marie;
+    const owner = ['POST /documents/:id/archive', 'DELETE /contacts/:id', 'POST /opportunities/:id/waiver', 'POST /opportunities/:id/close-won', 'POST /companies/:id/owner'].includes(key) ? w.chef : w.marie;
     const ok = await probe(api, owner, w.real);
     expect([key, ok.status < 300]).toEqual([key, true]);
   }, 60_000);

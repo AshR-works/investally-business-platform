@@ -265,15 +265,22 @@
           "tag": "s4-2d-validated"
         },
         {
-          "name": "S4.3a — opportunités, pipeline (terminé, validation en attente)",
+          "name": "S4.3a — opportunités, pipeline",
+          "start": "2026-11-01",
+          "end": "2026-11-01",
+          "state": "done",
+          "tag": "s4-3a-validated"
+        },
+        {
+          "name": "S4.3b — statuts d’entreprise, responsable, fiche 360° (terminé, validation en attente)",
           "start": "2026-11-01",
           "end": "2026-11-01",
           "state": "wait"
         },
         {
-          "name": "S4.3b — statuts d’entreprise, propriétaire, fiche 360°",
+          "name": "S4.3c — colonne Valeur, lien rendez-vous ↔ opportunité",
           "start": "2026-11-12",
-          "end": "2026-11-16",
+          "end": "2026-11-13",
           "state": "plan"
         },
         {

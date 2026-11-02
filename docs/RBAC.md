@@ -123,6 +123,7 @@ Cellule : **O**, **É**, **T** = portée accordée ; vide = non accordée.
 | `bd.company.create` | T |  | E | O |  |  |  |  |  |  |
 | `bd.company.update` | T |  | E | O |  |  |  |  |  |  |
 | `bd.company.archive` | T |  | E |  |  |  |  |  |  |  |
+| `bd.company.reassign` | T |  | E |  |  |  |  |  |  |  |
 | `bd.company.export` | T | T | E |  |  |  |  |  |  |  |
 | `bd.contact.read` | T | T | E | O | T |  | T |  |  |  |
 | `bd.contact.create` | T |  | E | O |  |  |  |  |  |  |

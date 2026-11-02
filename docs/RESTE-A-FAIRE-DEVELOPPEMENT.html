@@ -41,8 +41,9 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td><strong>S4.2b</strong> Décharges</td><td><em>Validé</em> : décharge signée avec son fichier, une seule décharge valide par offre, documents de l'offre</td><td>—</td><td>—</td></tr>
 <tr><td><strong>S4.2c</strong> Relances</td><td><em>Validé</em> : relances planifiées, liste « À faire », annulation avec l'offre, colonne « Prochaine relance »</td><td>—</td><td>—</td></tr>
 <tr><td><strong>S4.2d</strong> Agenda</td><td><em>Validé</em> : rendez-vous (DAF, décideur) et visites, vues jour, semaine et mois, conflit d'horaire en avertissement, report, tenue et annulation. Reste : rappels envoyés (D85), synchronisation Outlook (D88)</td><td>—</td><td>—</td></tr>
-<tr><td><strong>S4.3a</strong> Opportunités</td><td><em>Terminé, validation en attente</em> : pipeline en cartes ou par étape, règle du rendez-vous décideur, dérogation, clôture perdue ou gagnée (D28)</td><td>—</td><td>Votre « Je valide »</td></tr>
-<tr><td><strong>S4.3b</strong> Entreprises : statuts et propriétaire</td><td>Transitions du statut d'une entreprise (CU-C-05), réattribution du propriétaire (D17), fiche 360° avec ses opportunités, colonnes Responsable et Valeur ; lien rendez-vous ↔ opportunité (D93)</td><td>1 à 1,5 session</td><td>S4.3a ; transitions du statut (§ 3)</td></tr>
+<tr><td><strong>S4.3a</strong> Opportunités</td><td><em>Validé</em> : pipeline en cartes ou par étape, règle du rendez-vous décideur, dérogation, clôture perdue ou gagnée (D28)</td><td>—</td><td>—</td></tr>
+<tr><td><strong>S4.3b</strong> Entreprises : statuts et responsable</td><td><em>Terminé, validation en attente</em> : statut manuel d'un cran (CU-C-05), changement de responsable (D17), fiche 360° (opportunités, rendez-vous), colonne Responsable</td><td>—</td><td>Votre « Je valide » ; défauts D37</td></tr>
+<tr><td><strong>S4.3c</strong> Valeur et lien rendez-vous</td><td>Colonne « Valeur » du tableau des entreprises ; lien d'un rendez-vous à une opportunité (D93, D104)</td><td>0,5 session</td><td>S4.3b</td></tr>
 <tr><td><strong>S4.4</strong> Agrément et ambassadeurs</td><td>Agrément (promesse de paiement), ambassadeurs, événements vers Investudy, suivi des commissions à verser (flux F3)</td><td>1 à 1,5 session</td><td>S4.3 ; <strong>détails de l'agrément (D1 à D5)</strong></td></tr>
 <tr><td><strong>S5.1</strong> Catalogue Investudy</td><td>Programmes, formations, salles, formateurs ; modèle de données du module</td><td>1 session</td><td>S4.4 ; cas d'usage validés</td></tr>
 <tr><td><strong>S5.2</strong> Sessions et inscriptions</td><td>Sessions, apprenants, inscriptions liées à l'agrément, annulation et report</td><td>1,5 session</td><td>S5.1 ; D31 (confirmation, liste d'attente)</td></tr>
@@ -58,7 +59,7 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <p><strong>Total indicatif du CRM jusqu'à la mise en production : environ 16 à 20 sessions.</strong> L'ERP s'y ajoute et n'est pas chiffré.</p>
 <h3>Lots transversaux sans sprint attribué</h3>
 <div class="table-wrap"><table><thead><tr><th>Besoin</th><th>Origine</th><th>Proposition</th></tr></thead><tbody>
-<tr><td><strong>Réattribuer le propriétaire d'une entreprise</strong></td><td>D17</td><td>Avec S4.3 (fiche 360°), permission dédiée, confirmation du second facteur, audit</td></tr>
+<tr><td><strong>Réattribuer le propriétaire d'une entreprise</strong></td><td>D17</td><td><em>Réalisé (S4.3b)</em> : permission dédiée, confirmation par case à cocher, audit ; second facteur récent non exigé (D102)</td></tr>
 <tr><td><strong>Export de listes et actions groupées</strong></td><td>D37, D59</td><td>Cadrage de sécurité (option C : lire donne exporter, avec second facteur récent), puis un premier export</td></tr>
 <tr><td><strong>Facilitateur modifiable, plusieurs facilitateurs</strong></td><td>D53</td><td>Avec la fiche entreprise 360°</td></tr>
 <tr><td><strong>Vues partagées</strong> (rapports des employés, agendas)</td><td>D60</td><td>Modèle d'audience à décider avant l'agenda</td></tr>
@@ -105,5 +106,5 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td>Mises à jour de la matrice de droits : <code>bd.opportunity.close_lost</code> et <code>close_won</code>, dérogation, agrément, commissions, exports</td><td>S4.3, S4.4</td><td>Avec chaque lot</td></tr>
 </tbody></table></div>
 <h2>7. Prochaine session proposée</h2>
-<p><strong>S4.3b — Statuts d'entreprise, propriétaire, fiche 360°.</strong> Transitions du statut d'une entreprise (CU-C-05), réattribution du propriétaire (D17, permission dédiée avec confirmation), fiche de l'entreprise avec ses opportunités, offres et rendez-vous, colonnes Responsable et Valeur du tableau, lien d'un rendez-vous à une opportunité (D93).</p>
-<p>Avant de commencer, il me faut <strong>votre « Je valide S4.3a »</strong> (ou vos corrections), puis la poussée de la branche. Les valeurs par défaut D36 (étapes, retour en arrière, motifs de perte) sont à confirmer.</p></main></body></html>
+<p><strong>S4.3c — Valeur et lien rendez-vous.</strong> Colonne « Valeur » du tableau des entreprises (somme des opportunités ouvertes) et lien d'un rendez-vous à une opportunité (D93, D104).</p>
+<p>Avant de commencer, il me faut <strong>votre « Je valide S4.3b »</strong> (ou vos corrections). Les valeurs par défaut D36 et D37 (statuts, critère « Qualifiée », droit de réattribution, confirmation) sont à confirmer.</p></main></body></html>

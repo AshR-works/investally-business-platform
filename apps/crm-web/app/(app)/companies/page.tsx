@@ -33,6 +33,7 @@ const ALL_COLUMNS: Record<CompanyColumnId, Column<Company>> = {
   country: { id: 'country', header: 'Pays', sortField: 'country', cell: (c) => c.country ?? <span className="text-ink-2">—</span> },
   email: { id: 'email', header: 'E-mail', cell: (c) => c.email ?? <span className="text-ink-2">—</span> },
   phone: { id: 'phone', header: 'Téléphone', cell: (c) => c.phone ?? <span className="text-ink-2">—</span> },
+  owner: { id: 'owner', header: 'Responsable', cell: (c) => c.ownerName ?? <span className="text-ink-2">—</span> },
   status: {
     id: 'status',
     header: 'Statut',

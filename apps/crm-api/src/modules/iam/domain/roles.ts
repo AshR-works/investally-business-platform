@@ -88,7 +88,7 @@ export const ROLE_GRANTS: Record<RoleCode, readonly Grant[]> = {
     g('iam.session.read', Own), g('iam.session.revoke', Own),
   ],
   [RoleCode.HeadOfSales]: [
-    g('bd.company.read', Team), g('bd.company.create', Team), g('bd.company.update', Team), g('bd.company.archive', Team), g('bd.company.export', Team),
+    g('bd.company.read', Team), g('bd.company.create', Team), g('bd.company.update', Team), g('bd.company.archive', Team), g('bd.company.reassign', Team), g('bd.company.export', Team),
     g('bd.contact.*', Team), g('bd.offer.*', Team), g('bd.receipt.*', Team),
     g('bd.followup.*', Team), g('bd.appointment.*', Team), g('bd.visit.*', Team),
     g('bd.opportunity.read', All), g('bd.opportunity.create', Team), g('bd.opportunity.update', Team),

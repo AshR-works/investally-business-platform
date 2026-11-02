@@ -12,9 +12,9 @@
 | **Lancement** (Sprint 0) | 20/10/2026 |
 | Premier jalon de code validé (S1 à S3.3) | 20/10/2026 (le même jour) |
 | Fin de la fondation et du design | 22/10/2026 |
-| Module commercial : dernier lot validé (S4.2d) | 01/11/2026 |
-| Lots réalisés et validés au 01/11/2026 | 36 (dont 27 étiquetés) |
-| **Prochaine session** | Validation de S4.3a, puis S4.3b (statuts d'entreprise, propriétaire, fiche 360°) prévue du 12/11 au 16/11/2026 |
+| Module commercial : dernier lot validé (S4.3a) | 01/11/2026 |
+| Lots réalisés et validés au 01/11/2026 | 37 (dont 28 étiquetés) |
+| **Prochaine session** | Validation de S4.3b, puis S4.3c (colonne Valeur, lien rendez-vous ↔ opportunité) prévue du 12/11 au 13/11/2026 |
 | Fin du module commercial (prévision) | 19/11/2026 |
 | Fin d'Investudy (prévision) | 30/11/2026 |
 | **Mise en production du CRM, prévision prudente** | **23/12/2026** |
@@ -80,8 +80,9 @@
 | S4.2b — décharges signées | 01/11/2026 | 01/11/2026 | Validé | `s4-2b-validated` |
 | S4.2c — relances | 01/11/2026 | 01/11/2026 | Validé | `s4-2c-validated` |
 | S4.2d — agenda, rendez-vous, visites | 01/11/2026 | 01/11/2026 | Validé | `s4-2d-validated` |
-| S4.3a — opportunités, pipeline (terminé, validation en attente) | 01/11/2026 | 01/11/2026 | Terminé, validation en attente | — |
-| S4.3b — statuts d’entreprise, propriétaire, fiche 360° | 12/11/2026 | 16/11/2026 | Prévu | — |
+| S4.3a — opportunités, pipeline | 01/11/2026 | 01/11/2026 | Validé | `s4-3a-validated` |
+| S4.3b — statuts d’entreprise, responsable, fiche 360° (terminé, validation en attente) | 01/11/2026 | 01/11/2026 | Terminé, validation en attente | — |
+| S4.3c — colonne Valeur, lien rendez-vous ↔ opportunité | 12/11/2026 | 13/11/2026 | Prévu | — |
 | S4.4 — agrément et ambassadeurs | 17/11/2026 | 19/11/2026 | Prévu | — |
 
 ### Module Investudy (formation)
