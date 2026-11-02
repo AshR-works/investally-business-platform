@@ -55,7 +55,7 @@ Ordre retenu le 2026-10-21 (DEC-005) : module commercial, puis Investudy, puis p
 | **Prototype de design 0.5.0** | D49 | Ajouter contacts, offres, tableaux, fenêtres, œil du mot de passe |
 
 ## 3. Décisions en attente, par lot qu'elles bloquent
-*Une **feuille de décision** avec options, grilles et recommandations est prête : [ARBITRAGE-DECISIONS-EN-ATTENTE.md](cadrages/ARBITRAGE-DECISIONS-EN-ATTENTE.md) (FD-1 à FD-9).*
+*Une **feuille de décision** avec options, grilles et recommandations est prête : [ARBITRAGE-DECISIONS-EN-ATTENTE.md](cadrages/ARBITRAGE-DECISIONS-EN-ATTENTE.md) (FD-1 à FD-11).*
 
 | Pour… | Décision à prendre | Ma proposition de départ |
 |---|---|---|
