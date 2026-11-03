@@ -64,6 +64,7 @@ const ITEMS = [
     { name: 'S4.4b — ambassadeurs', start: '2026-11-02', end: '2026-11-02', state: 'done', tag: 's4-4b-validated' },
     { name: 'Correctifs 1 — téléphones, fenêtres, barres de défilement, tableaux', start: '2026-11-03', end: '2026-11-03', state: 'done', tag: 'correctifs-1-validated' },
     { name: 'S4.4a-bis — correctifs D41 (agrément demandé, payeur, Finance, second facteur)', start: '2026-11-03', end: '2026-11-03', state: 'wait' },
+    { name: 'Jeu de données de démonstration (module commercial)', start: '2026-11-03', end: '2026-11-03', state: 'wait' },
     { name: 'S4.4c — commissions à verser', start: '2026-11-18', end: '2026-11-19', state: 'plan' },
   ] },
   { phase: 'Module Investudy (formation)', rows: [

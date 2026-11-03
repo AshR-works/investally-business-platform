@@ -224,11 +224,13 @@ Trois profils : **minimal** (les 25 entreprises génériques actuelles, pour les
 | **T2.2** | Mesure du débordement de toutes les fenêtres à 320, 375, 768, 1280 px dans l'audit navigateur (clair et sombre) | P1 | T2.1 | Aucun débordement ; test de non-régression |
 | **T3.1** | Inventaire des écarts au Design System (grille + captures claires et sombres) | P2 | — | Grille remplie, écarts E1 à E6 confirmés ou écartés |
 | **T3.2** | Réalignement par lots + garde-fou contre les valeurs en dur | P2 | T3.1 | Pages conformes aux trois gabarits |
-| **T4.1** | Squelette du seed (commande, profils, garde-fous, validation des fixtures) | P1 | T1.1 | Charge, rejoue sans doublon, refuse hors base locale |
-| **T4.2** | Fixtures organisation, entreprises, contacts, facilitateurs | P1 | T4.1 | Couverture 5.6 |
-| **T4.3** | Fixtures commerciales (offres, relances, rendez-vous, opportunités, agréments, ambassadeurs), dates relatives, 12 mois | P1 | T4.2 | Tous les états présents ; totaux crédibles |
-| **T4.4** | Intégration (`local-stack --demo`, `test-db --seed demo`) et scénarios de recette par persona | P1 | T4.3 | Chaque rôle parcourt son espace avec des données |
+| **T4.1** | Squelette du seed (commande, garde-fous, validation du plan) : **fait** (le profil « minimal » reste les 25 entreprises génériques des tests ; le profil « volume » n'est pas fait) | P1 | T1.1 | Charge, rejoue sans doublon, refuse la production et toute base non locale |
+| **T4.2** | Plan des entreprises, contacts, facilitateurs : **fait** (40 entreprises, 84 contacts, facilitateurs et commissions) | P1 | T4.1 | Couverture 5.6 |
+| **T4.3** | Plan commercial (offres, relances, rendez-vous, opportunités, agréments, ambassadeurs), dates relatives, 12 mois : **fait** (559 événements) | P1 | T4.2 | Tous les états présents ; totaux crédibles |
+| **T4.4** | Intégration : `local-stack --demo` **fait** ; `test-db --seed demo` non fait (D135) ; scénarios de recette par persona non faits | P1 | T4.3 | Chaque rôle parcourt son espace avec des données |
 | **T4.5** | Fixtures Investudy et finance, chargées avec leurs modules | P3 | S5, module finance | Spécification livrée maintenant, chargement plus tard |
+
+**Statut au 2026-11-03** : T1.1 à T1.4 et T2.1 **faits** (correctifs de recette 1, validés ; recette `SPRINT-CORRECTIFS-1-RECETTE.md`) ; T2.2 **partiel** (une seule fenêtre mesurée, D132) ; T3.1 et T3.2 **non faits** ; T4.1 à T4.4 **faits pour le module commercial** (recette `SPRINT-JEU-DE-DONNEES-RECETTE.md`) ; T4.5 **non fait** (modules absents).
 
 **Ordre conseillé** : T1.x d'abord (risque de données invalides déjà en base), T2.x en parallèle (rapide), puis T4.x (les données servent à constater T3.x), puis T3.x.
 

@@ -313,6 +313,12 @@
           "state": "wait"
         },
         {
+          "name": "Jeu de données de démonstration (module commercial)",
+          "start": "2026-11-03",
+          "end": "2026-11-03",
+          "state": "wait"
+        },
+        {
           "name": "S4.4c — commissions à verser",
           "start": "2026-11-18",
           "end": "2026-11-19",
