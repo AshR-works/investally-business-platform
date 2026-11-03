@@ -9,7 +9,7 @@
 | Sujet | Constat | Priorité | Effort estimé |
 |---|---|---|---|
 | **O1 Téléphones** | Le contrôle actuel est large (chiffres, `+ - . ( )`, 6 chiffres au moins, 40 caractères) et **ne correspond à aucune de vos règles** ; la règle existe en **une** fonction côté serveur mais en **trois copies** côté interface | **P0** | 1 session |
-| **O2 Barre qui déborde** | Aucune « trackbar » (curseur, barre de progression) dans le code : je comprends **barre de défilement** des fenêtres. **Non reproduit** (il me faut la fenêtre concernée) ; causes probables identifiées | **P1** | 0,5 session |
+| **O2 Barre qui déborde** | **Confirmé par vos captures** : la barre de défilement de la fenêtre est collée au bord et déborde sur les angles arrondis ; les boutons d'action défilent avec le formulaire. Une correction commune (un composant, un style) | **P1** | 0,5 session |
 | **O3 Cohérence visuelle** | Écarts probables entre pages et vis-à-vis du Design System ; **audit visuel à faire** avant de corriger (je ne l'ai pas encore fait) | **P2** | 1 à 2 sessions |
 | **Jeu de données** | Un jeu minimal existe (40 entreprises génériques, un compte par rôle). **Réalisable maintenant** : tout le métier commercial. **Pas réalisable maintenant** : Investudy, finance, reporting (ces modules n'existent pas encore) ; je livre leur **spécification** et leur structure | **P1** (commercial), **P3** (le reste) | 1 à 2 sessions + 1 par module |
 
@@ -67,23 +67,29 @@ Valides : `+237 699 12 34 56` · `+225 0701234567` · `+33 6 12 34 56 78` · `23
 
 ## 3. Observation 2 : barre qui déborde des fenêtres
 
-### 3.1 Ce que j'ai vérifié
-- Le code ne contient **aucun** curseur (`range`), ni barre de progression. J'interprète « trackbar » comme la **barre de défilement** (horizontale surtout) qui apparaît dans certaines fenêtres. **Si vous parlez d'autre chose, dites-moi laquelle.**
-- **Non reproduit** : je n'ai pas encore ouvert chaque fenêtre à petite largeur. Le diagnostic ci-dessous est donc un **faisceau de causes probables**, pas une certitude.
+### 3.1 Diagnostic confirmé par vos captures (2026-11-03)
+Les trois captures (Nouvelle entreprise, Nouvel ambassadeur, Nouveau rendez-vous) montrent la même chose : la **barre de défilement verticale de la fenêtre** est collée au bord extérieur de la fenêtre et **déborde sur les coins arrondis** (flèches haute et basse dans les angles, rail qui dépasse du cadre). Ce n'est pas un curseur ni une barre de progression : le mot « trackbar » désignait ce rail.
 
-### 3.2 Causes probables (d'après le style actuel)
-1. `.dialog` a `overflow: auto` : **dès qu'un enfant dépasse en largeur, une barre horizontale apparaît**, au lieu d'être absorbée.
-2. Les fenêtres larges ont `min-width: min(46rem, 100%)` : à 320 ou 375 px, la largeur utile devient petite et un tableau ou une grille de champs la dépasse.
-3. Les fenêtres qui contiennent le **panneau Documents** (document signé de l'agrément, décharge) emboîtent un tableau défilant dans une fenêtre défilante : **deux barres l'une dans l'autre**.
-4. Éléments qui ne rétrécissent pas dans une grille ou une flexion (`min-width: auto`) : listes déroulantes à libellés longs, champs de date, noms d'entreprise ou adresses sans coupure.
+**Cause, vérifiée dans le style** (`app/globals.css`, `.dialog`) : la fenêtre elle-même est la zone de défilement (`overflow: auto`) **et** porte le rayon d'angle et le remplissage (`padding: 1.5rem`). Le navigateur place donc la barre à l'extrême bord de la boîte, **par-dessus les arrondis**, sans marge. Conséquences visibles :
+1. barre et flèches en contact avec les angles de la fenêtre ;
+2. la largeur du contenu change quand la barre apparaît (pas de gouttière réservée) ;
+3. **les boutons « Retour » et « Enregistrer » défilent avec le formulaire** : sur la première capture ils sont à moitié coupés en bas, sous la flèche indiquée ; sur les deux autres il faut défiler pour les atteindre.
+
+### 3.2 Autres causes possibles à vérifier (pas vues sur vos captures)
+- Un tableau dans une fenêtre large (panneau Documents) peut ajouter une seconde barre, horizontale, dans la fenêtre.
+- À 320 ou 375 px, la largeur minimale des fenêtres larges peut provoquer un débordement horizontal.
 
 ### 3.3 Correction recommandée (sans toucher à l'architecture)
-1. **Reproduire d'abord** : étendre le script d'audit navigateur existant pour ouvrir chaque fenêtre à **320, 375, 768 et 1280 px** et signaler toute fenêtre où `scrollWidth > clientWidth`. Cela donne la liste exacte des fenêtres touchées et un test qui empêche la régression.
-2. **Corrections de style communes** (un seul endroit, `globals.css`) : `max-width: calc(100vw - 2rem)` ; `min-width: 0` sur les enfants de grille et de flexion ; `overflow-wrap: anywhere` pour les textes longs ; tableaux des fenêtres dans le conteneur `table-wrap` existant ; défilement **vertical** seulement pour le corps de la fenêtre (en-tête fixe), `scrollbar-gutter: stable`.
-3. **À ne pas faire** : `overflow-x: hidden` sur la fenêtre. Il cache le débordement au lieu de le corriger et rend des champs inaccessibles au clavier et au zoom (critère d'accessibilité du projet).
-4. Pour le panneau Documents dans une fenêtre : une seule zone de défilement.
+Un seul composant (`modal.tsx`) et un seul endroit de style (`globals.css`) : toutes les fenêtres sont corrigées d'un coup.
+1. **Séparer le cadre et le défilement** : la fenêtre devient un cadre (`overflow: hidden`, rayon, bordure) en colonne ; l'**en-tête** (titre et croix) reste fixe ; seul un **corps** intérieur défile, avec son propre remplissage. La barre se retrouve **à l'intérieur** du cadre, à distance des angles.
+2. **Barre discrète et stable** : `scrollbar-gutter: stable` (la largeur ne saute plus), `scrollbar-width: thin` et couleurs des jetons du design (clair et sombre).
+3. **Boutons d'action toujours visibles** : la ligne « Retour / Enregistrer » reste collée en bas du corps (`position: sticky`), avec un fond et un filet de séparation.
+4. **Largeur** : `max-width: calc(100vw - 2rem)` et `min-width: 0` sur les enfants de grille, `overflow-wrap: anywhere` ; tableaux dans `table-wrap` ; une seule zone de défilement pour le panneau Documents.
+5. **À ne pas faire** : `overflow-x: hidden` sur la fenêtre (cache le débordement et nuit à l'accessibilité).
 
-**Composants concernés (à confirmer par l'étape 1)** : `components/modal.tsx`, `app/globals.css` (`.dialog`, `.dialog.wide`), `components/documents/documents-panel.tsx`, `components/approvals/approval-dialogs.tsx`, `components/offers/*`, `components/companies/company-dialog.tsx`, `components/contacts/contact-dialog.tsx`, `components/data/data-table.tsx`.
+**Vérification** : le script d'audit navigateur ouvre chaque fenêtre à 320, 375, 768 et 1280 px, contrôle l'absence de débordement horizontal, que les boutons d'action sont visibles sans défiler, et prend des captures avant et après (thèmes clair et sombre).
+
+**Composants concernés** : `components/modal.tsx`, `app/globals.css` (`.dialog`, `.dialog.wide`, `.dialog-head`, `.overlay`) ; contrôle visuel des fenêtres de `components/{companies,contacts,offers,appointments,approvals,ambassadors,documents}/*` et de `components/confirm-dialog.tsx`, `components/step-up-dialog.tsx`.
 
 ---
 
@@ -214,8 +220,8 @@ Trois profils : **minimal** (les 25 entreprises génériques actuelles, pour les
 | **T1.2** | Règle partagée côté interface (supprime 3 copies), aide permanente, `inputMode` | P0 | T1.1 | Même décision que le serveur sur le jeu d'essai (test de cohérence) |
 | **T1.3** | Nettoyage des téléphones existants + contrainte `CHECK` en base | P0 | T1.1 | Rapport des valeurs non conformes ; aucune effacée ; écriture directe invalide refusée |
 | **T1.4** | Mutants et audit navigateur de la règle | P0 | T1.1, T1.2 | Mutants tués ; 0 violation d'accessibilité |
-| **T2.1** | Mesure du débordement des fenêtres à 320, 375, 768, 1280 px (script d'audit) | P1 | — | Liste des fenêtres touchées |
-| **T2.2** | Correction commune des fenêtres (`globals.css`, `modal.tsx`) | P1 | T2.1 | Plus aucun débordement mesuré ; test de non-régression |
+| **T2.1** | Correction commune des fenêtres : cadre fixe, corps défilant, boutons d'action visibles, barre discrète (`globals.css`, `modal.tsx`) | P1 | — | Sur vos trois captures : barre à l'intérieur du cadre, boutons visibles sans défiler |
+| **T2.2** | Mesure du débordement de toutes les fenêtres à 320, 375, 768, 1280 px dans l'audit navigateur (clair et sombre) | P1 | T2.1 | Aucun débordement ; test de non-régression |
 | **T3.1** | Inventaire des écarts au Design System (grille + captures claires et sombres) | P2 | — | Grille remplie, écarts E1 à E6 confirmés ou écartés |
 | **T3.2** | Réalignement par lots + garde-fou contre les valeurs en dur | P2 | T3.1 | Pages conformes aux trois gabarits |
 | **T4.1** | Squelette du seed (commande, profils, garde-fous, validation des fixtures) | P1 | T1.1 | Charge, rejoue sans doublon, refuse hors base locale |
@@ -224,7 +230,7 @@ Trois profils : **minimal** (les 25 entreprises génériques actuelles, pour les
 | **T4.4** | Intégration (`local-stack --demo`, `test-db --seed demo`) et scénarios de recette par persona | P1 | T4.3 | Chaque rôle parcourt son espace avec des données |
 | **T4.5** | Fixtures Investudy et finance, chargées avec leurs modules | P3 | S5, module finance | Spécification livrée maintenant, chargement plus tard |
 
-**Ordre conseillé** : T1.x d'abord (risque de données invalides déjà en base), T2.1 en parallèle (rapide), puis T4.x (les données servent à constater T3.x), puis T3.x.
+**Ordre conseillé** : T1.x d'abord (risque de données invalides déjà en base), T2.x en parallèle (rapide), puis T4.x (les données servent à constater T3.x), puis T3.x.
 
 ## 7. Points à confirmer (valeurs par défaut appliquées)
 | # | Point | Valeur par défaut |
@@ -233,7 +239,7 @@ Trois profils : **minimal** (les 25 entreprises génériques actuelles, pour les
 | Q2 | Minimum de chiffres d'un numéro | 8 |
 | Q3 | Forme stockée | Sans espace, « + » conservé (`+237699123456`) |
 | Q4 | Contrainte `CHECK` en base et nettoyage des données existantes | Oui |
-| Q5 | « Trackbar » = barre de défilement des fenêtres | À confirmer ; **indiquez la fenêtre concernée ou une capture** |
+| Q5 | « Trackbar » = barre de défilement des fenêtres | **Confirmé** par les captures du 2026-11-03 |
 | Q6 | Noms d'entreprises et de personnes entièrement fictifs | Oui (dépôt public) |
 | Q7 | Seed par les cas d'usage plutôt que par `INSERT` | Oui |
 | Q8 | Investudy et finance : spécification seule tant que les modules n'existent pas | Oui |
