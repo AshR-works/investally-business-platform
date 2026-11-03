@@ -1,3 +1,4 @@
+import { phoneProblem } from './phone';
 import type { Commission, Company } from './types';
 
 /** Façons de prendre contact via le facilitateur (codes de l'API → libellés). */
@@ -51,8 +52,6 @@ export const EMPTY_COMPANY_FORM: CompanyForm = {
 };
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const PHONE = /^[0-9+().\- ]+$/;
-const phoneOk = (value: string): boolean => PHONE.test(value) && value.replace(/\D/g, '').length >= 6;
 
 /** Champs de la fiche qui peuvent porter une erreur, dans l'ordre de la page. */
 export type FieldName =
@@ -69,13 +68,19 @@ export function validateCompanyFields(form: CompanyForm): FieldErrors {
   if (!form.name.trim()) errors.name = "Le nom de l'entreprise est obligatoire.";
   if (form.country.trim().length > 100) errors.country = 'Le pays ne peut dépasser 100 caractères.';
   if (form.email.trim() && !EMAIL.test(form.email.trim())) errors.email = "L'adresse e-mail de l'entreprise n'est pas valide.";
-  if (form.phone.trim() && !phoneOk(form.phone.trim())) errors.phone = "Le numéro de téléphone de l'entreprise n'est pas valide.";
+  if (form.phone.trim()) {
+    const problem = phoneProblem(form.phone);
+    if (problem) errors.phone = problem;
+  }
   if (form.facilitatorMode === 'existing' && !form.facilitatorId) errors.facilitatorId = 'Choisissez un facilitateur dans la liste.';
   if (form.facilitatorMode === 'new') {
     if (!form.facilitatorLastName.trim()) errors.facilitatorLastName = 'Le nom du facilitateur est obligatoire.';
     if (!form.facilitatorFirstName.trim()) errors.facilitatorFirstName = 'Le prénom du facilitateur est obligatoire.';
     if (!form.facilitatorPhone.trim()) errors.facilitatorPhone = 'Le téléphone du facilitateur est obligatoire.';
-    else if (!phoneOk(form.facilitatorPhone.trim())) errors.facilitatorPhone = 'Le téléphone du facilitateur n’est pas valide.';
+    else {
+      const problem = phoneProblem(form.facilitatorPhone);
+      if (problem) errors.facilitatorPhone = problem;
+    }
   }
   if (form.facilitatorMode !== 'none' && form.commissionType) {
     const value = Number(form.commissionValue.trim().replace(',', '.'));

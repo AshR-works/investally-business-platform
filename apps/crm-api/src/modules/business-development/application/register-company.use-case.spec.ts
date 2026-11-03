@@ -90,7 +90,7 @@ describe('RegisterCompanyUseCase', () => {
     it("normalise l'e-mail (minuscules) et le téléphone", async () => {
       const { useCase } = build();
       const view = await useCase.execute({ name: 'Acme', ownerUserId: 'u1', email: '  Contact@ACME.cm ', phone: '+237  222 33 44 55', actor });
-      expect(view).toMatchObject({ email: 'contact@acme.cm', phone: '+237 222 33 44 55' });
+      expect(view).toMatchObject({ email: 'contact@acme.cm', phone: '+237222334455' });
     });
     it.each([['pas-un-mail'], ['a@b'], ['a b@c.d']])("refuse l'e-mail %s", async (email) => {
       const { useCase, companies } = build();
@@ -113,7 +113,7 @@ describe('RegisterCompanyUseCase', () => {
       expect(facilitators.items).toHaveLength(1);
       expect(view.facilitation).toMatchObject({
         contactMethod: 'WHATSAPP_MESSAGE', isCompanyEmployee: true,
-        facilitator: { firstName: 'Paul', lastName: 'Mbarga', phone: '+237 6 99 00 11 22', comment: 'Ancien collègue du DAF' },
+        facilitator: { firstName: 'Paul', lastName: 'Mbarga', phone: '+237699001122', comment: 'Ancien collègue du DAF' },
       });
       expect(audit.map((a) => a.entityType).sort()).toEqual(['Company', 'Facilitator']);
     });

@@ -294,9 +294,16 @@
         },
         {
           "name": "S4.4b — ambassadeurs",
-          "start": "2026-11-17",
-          "end": "2026-11-18",
-          "state": "plan"
+          "start": "2026-11-02",
+          "end": "2026-11-02",
+          "state": "done",
+          "tag": "s4-4b-validated"
+        },
+        {
+          "name": "Correctifs 1 — téléphones, fenêtres, barres de défilement, tableaux",
+          "start": "2026-11-03",
+          "end": "2026-11-03",
+          "state": "wait"
         },
         {
           "name": "S4.4c — commissions à verser",

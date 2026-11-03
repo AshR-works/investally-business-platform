@@ -82,6 +82,7 @@ export default function SessionsPage() {
   const sessionColumns: Column<SessionView>[] = [
     {
       id: 'device',
+      weight: 4,
       header: 'Appareil',
       cell: (s) => (
         <span title={s.device} className="flex flex-wrap items-center gap-2">
@@ -90,12 +91,13 @@ export default function SessionsPage() {
         </span>
       ),
     },
-    { id: 'ip', header: 'Adresse IP', cell: (s) => s.ipAddress },
-    { id: 'risk', header: 'Risque', cell: (s) => { const risk = statusStyle(SESSION_RISK, s.riskLevel); return <Badge tone={risk.tone}>{risk.label}</Badge>; } },
-    { id: 'in', header: 'Connexion', cell: (s) => formatDateTime(s.loggedInAt) },
-    { id: 'seen', header: 'Dernière activité', cell: (s) => formatDateTime(s.lastSeenAt) },
+    { id: 'ip', weight: 2, header: 'Adresse IP', cell: (s) => s.ipAddress },
+    { id: 'risk', weight: 1.6, header: 'Risque', cell: (s) => { const risk = statusStyle(SESSION_RISK, s.riskLevel); return <Badge tone={risk.tone}>{risk.label}</Badge>; } },
+    { id: 'in', weight: 2.4, header: 'Connexion', cell: (s) => formatDateTime(s.loggedInAt) },
+    { id: 'seen', weight: 2.4, header: 'Dernière activité', cell: (s) => formatDateTime(s.lastSeenAt) },
     {
       id: 'actions',
+      weight: 1.4,
       header: 'Actions',
       srOnlyHeader: true,
       align: 'right',
@@ -104,9 +106,10 @@ export default function SessionsPage() {
   ];
 
   const historyColumns: Column<LoginEvent>[] = [
-    { id: 'at', header: 'Date', cell: (e) => formatDateTime(e.at) },
+    { id: 'at', weight: 2.4, header: 'Date', cell: (e) => formatDateTime(e.at) },
     {
       id: 'result',
+      weight: 3,
       header: 'Résultat',
       cell: (e) => {
         const d = describeLoginEvent(e);
@@ -118,8 +121,8 @@ export default function SessionsPage() {
         );
       },
     },
-    { id: 'ip', header: 'Adresse IP', cell: (e) => e.ipAddress },
-    { id: 'device', header: 'Appareil', cell: (e) => <span title={e.device}>{deviceLabel(e.device)}</span> },
+    { id: 'ip', weight: 2, header: 'Adresse IP', cell: (e) => e.ipAddress },
+    { id: 'device', weight: 3, header: 'Appareil', cell: (e) => <span title={e.device}>{deviceLabel(e.device)}</span> },
   ];
 
   return (

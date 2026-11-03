@@ -47,6 +47,7 @@ Mis à jour **à chaque lot**, en même temps que le code (règle posée le 2026
 | S4.3c — valeur et lien rendez-vous | 804 réussis | 322 / 322 (22 suites) | 408 / 408 | 14 / 14 | 43 contrôles, 0 échec (parcours ciblé sur la fiche entreprise et l'agenda) |
 | S4.4a — agréments | 833 réussis | 338 / 338 (23 suites) | 433 / 433 | 18 / 18 | 51 contrôles, 0 échec (parcours ciblé sur la fiche entreprise) |
 | S4.4b — ambassadeurs | 856 réussis | 348 / 348 (24 suites) | 458 / 458 | 17 / 17 | 58 contrôles, 0 échec (parcours ciblé sur la page Ambassadeurs) |
+| Correctifs 1 — téléphones, fenêtres, barres de défilement, tableaux | 879 réussis | 349 / 349 (24 suites) | 499 / 499 | 24 / 24 | 65 contrôles, 0 échec, 0 violation (parcours ciblé sur la fiche entreprise, les agréments et les ambassadeurs) |
 
 Pour les lots antérieurs, les chiffres sont dans leurs recettes. Les sondes IDOR s'ajoutent avec chaque route « objet » (voir le contrat ci-dessus) ; les mutants sont des fautes injectées une à une (un test doit échouer à chaque fois) ; l'audit navigateur est `scripts/a11y-audit.mjs` (résultats dans `docs/accessibilite/resultats/`).
 

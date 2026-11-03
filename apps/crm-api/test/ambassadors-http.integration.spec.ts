@@ -53,7 +53,7 @@ describeDb('Ambassadeurs (HTTP + PostgreSQL)', () => {
     expect(a.body.email).toBe(a.body.email.toLowerCase());
     expect(a.body.companyName).toContain('Société');
     expect((await api.call('GET', `/api/v1/ambassadors/${a.body.id}`, am)).body).toMatchObject({
-      id: a.body.id, companyName: a.body.companyName, phone: '+237 699 00 11 22', note: 'Relais à Douala', appointedOn: today(), email: a.body.email, origin: 'CLIENT',
+      id: a.body.id, companyName: a.body.companyName, phone: '+237699001122', note: 'Relais à Douala', appointedOn: today(), email: a.body.email, origin: 'CLIENT',
     });
     const edited = await update(chef, a.body.id, { version: 1, lastName: 'Ndzana', phone: '', note: 'Changé' });
     expect(edited.status).toBe(200);

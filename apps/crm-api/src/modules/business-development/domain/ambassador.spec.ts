@@ -10,7 +10,7 @@ describe('Ambassador — création manuelle', () => {
     const a = register({ lastName: '  Fotso ', firstName: 'Alain   Pierre', email: ' Alain.Fotso@Exemple.CM ', phone: '+237 699 00 11 22', note: '  Relais à Douala ' });
     expect(a).toMatchObject({
       lastName: 'Fotso', firstName: 'Alain Pierre', origin: AmbassadorOrigin.Client, companyId: 'c1', email: 'alain.fotso@exemple.cm',
-      phone: '+237 699 00 11 22', appointedOn: '2026-11-05', note: 'Relais à Douala', ownerUserId: 'u1', version: 1,
+      phone: '+237699001122', appointedOn: '2026-11-05', note: 'Relais à Douala', ownerUserId: 'u1', version: 1,
     });
   });
 
@@ -34,7 +34,7 @@ describe('Ambassador — création manuelle', () => {
 
   it('refuse un e-mail ou un téléphone invalide ; les deux sont facultatifs', () => {
     expect(() => register({ email: 'pas-un-mail' })).toThrow(/e-mail/);
-    expect(() => register({ phone: 'abc' })).toThrow(/téléphone/);
+    expect(() => register({ phone: 'abc' })).toThrow(/numéro/);
     expect(register({ email: '', phone: '' })).toMatchObject({ email: null, phone: null });
   });
 

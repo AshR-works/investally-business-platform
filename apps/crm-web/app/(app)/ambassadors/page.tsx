@@ -67,14 +67,14 @@ export default function AmbassadorsPage() {
   }
 
   const columns: Column<Ambassador>[] = [
-    { id: 'name', header: 'Ambassadeur', cell: (a) => <EntityCell name={`${a.firstName} ${a.lastName}`} /> },
-    { id: 'origin', header: 'Origine', cell: (a) => <Badge tone="neutral">{originLabel(a.origin)}</Badge> },
-    { id: 'company', header: 'Entreprise', cell: (a) => (a.companyId ? <Link href={`/companies/${a.companyId}`} className="text-ink no-underline hover:underline">{a.companyName}</Link> : <span className="text-ink-2">—</span>) },
-    { id: 'since', header: 'Depuis', cell: (a) => sinceLabel(a.appointedOn) },
-    { id: 'email', header: 'E-mail', cell: (a) => a.email ?? <span className="text-ink-2">—</span> },
-    { id: 'phone', header: 'Téléphone', cell: (a) => a.phone ?? <span className="text-ink-2">—</span> },
+    { id: 'name', weight: 3, header: 'Ambassadeur', cell: (a) => <EntityCell name={`${a.firstName} ${a.lastName}`} /> },
+    { id: 'origin', weight: 1.6, header: 'Origine', cell: (a) => <Badge tone="neutral">{originLabel(a.origin)}</Badge> },
+    { id: 'company', weight: 3, header: 'Entreprise', cell: (a) => (a.companyId ? <Link href={`/companies/${a.companyId}`} className="text-ink no-underline hover:underline">{a.companyName}</Link> : <span className="text-ink-2">—</span>) },
+    { id: 'since', weight: 1.4, header: 'Depuis', cell: (a) => sinceLabel(a.appointedOn) },
+    { id: 'email', weight: 3.2, header: 'E-mail', cell: (a) => a.email ?? <span className="text-ink-2">—</span> },
+    { id: 'phone', weight: 2.4, header: 'Téléphone', cell: (a) => a.phone ?? <span className="text-ink-2">—</span> },
     ...(canUpdate
-      ? [{ id: 'actions', header: 'Actions', srOnlyHeader: true, cell: (a: Ambassador) => (
+      ? [{ id: 'actions', weight: 0.8, header: 'Actions', srOnlyHeader: true, cell: (a: Ambassador) => (
           <RowActions label={`Actions pour l’ambassadeur ${a.firstName} ${a.lastName}`}>
             <RowAction onClick={() => setDialog({ ambassador: a })}>Modifier</RowAction>
           </RowActions>

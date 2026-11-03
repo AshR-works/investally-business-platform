@@ -48,7 +48,7 @@ describe('ambassadeur : saisie', () => {
   });
   it('contrôle l’e-mail, le téléphone, la date de début et la note', () => {
     expect(validateAmbassadorFields(form({ email: 'pas-un-mail' }), { today }).email).toMatch(/e-mail/);
-    expect(validateAmbassadorFields(form({ phone: 'abc' }), { today }).phone).toMatch(/téléphone/);
+    expect(validateAmbassadorFields(form({ phone: 'abc' }), { today }).phone).toMatch(/numéro/);
     expect(validateAmbassadorFields(form({ appointedOn: '' }), { today }).appointedOn).toMatch(/obligatoire/);
     expect(validateAmbassadorFields(form({ appointedOn: '2026-02-31' }), { today }).appointedOn).toMatch(/pas valide/);
     expect(validateAmbassadorFields(form({ appointedOn: '2026-11-09' }), { today }).appointedOn).toMatch(/futur/);

@@ -9,6 +9,7 @@ import { todayIso } from '../../lib/receipts';
 import type { Ambassador, Company, Page } from '../../lib/types';
 import { FormField, fieldProps } from '../form-field';
 import { Modal } from '../modal';
+import { PHONE_HINT } from '../../lib/phone';
 
 const PREFIX = 'ambassador';
 
@@ -84,8 +85,8 @@ export function AmbassadorDialog({ ambassador, onClose, onDone }: { ambassador?:
           <FormField prefix={PREFIX} name="email" label="E-mail" error={errors.email}>
             <input {...props('email')} type="email" value={form.email} onChange={(e) => set('email', e.target.value)} maxLength={200} autoComplete="off" />
           </FormField>
-          <FormField prefix={PREFIX} name="phone" label="Téléphone" error={errors.phone}>
-            <input {...props('phone')} type="tel" value={form.phone} onChange={(e) => set('phone', e.target.value)} maxLength={40} autoComplete="off" />
+          <FormField prefix={PREFIX} name="phone" label={`Téléphone (${PHONE_HINT})`} error={errors.phone}>
+            <input {...props('phone')} type="tel" inputMode="tel" value={form.phone} onChange={(e) => set('phone', e.target.value)} maxLength={40} autoComplete="off" />
           </FormField>
           <FormField prefix={PREFIX} name="appointedOn" label="Ambassadeur depuis le" error={errors.appointedOn}>
             <input {...props('appointedOn')} type="date" value={form.appointedOn} max={todayIso()} onChange={(e) => set('appointedOn', e.target.value)} required aria-required="true" />

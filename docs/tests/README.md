@@ -22,7 +22,7 @@
 | 08 | [Administration des utilisateurs](interfaces/08-administration-utilisateurs.md) | `/admin/users` | S3.3, S3.4, S3.8 | |
 | 09 | [Vue d'ensemble (hub)](interfaces/09-vue-d-ensemble.md) | `/` | H1 | |
 | 10 | [Entreprises (tableau)](interfaces/10-entreprises.md) | `/companies` | S1, H1b, S4.0, S4.1b, S4.3b, S4.3c | |
-| 11 | [Fiche d'une entreprise](interfaces/11-fiche-entreprise.md) | `/companies/[id]` | S3.6, S4.0, S4.0c, S4.1a, S4.2a–d, S4.3a–c, S4.4a | |
+| 11 | [Fiche d'une entreprise](interfaces/11-fiche-entreprise.md) | `/companies/[id]` | S3.6, S4.0, S4.0c, S4.1a, S4.2a–d, S4.3a–c, S4.4a, S4.4a-bis | |
 | 12 | [Contacts](interfaces/12-contacts.md) | `/contacts` | S4.1a | |
 | 13 | [Offres](interfaces/13-offres.md) | `/offers` | S4.2a, S4.2b | |
 | 14 | [Relances](interfaces/14-relances.md) | `/followups` | S4.2c | |
@@ -30,7 +30,7 @@
 | 16 | [Opportunités (pipeline)](interfaces/16-opportunites.md) | `/opportunities` | S4.3a, S4.3b, S4.3c | |
 | 17 | [Ambassadeurs](interfaces/17-ambassadeurs.md) | `/ambassadors` | S4.4b | |
 
-## Fiches de session (29)
+## Fiches de session (30)
 
 | Session | Intitulé | Étiquette | Vérifications | Dernière exécution |
 |---|---|---|---|---|
@@ -42,6 +42,7 @@
 | [s3-4](sessions/s3-4.md) | Sprint 3.4 — Front de base : connexion, MFA, invitation, administration, mon compte (périmètre et plan de recette) | `s3-4-validated` | 39 | |
 | [s3-5](sessions/s3-5.md) | Sprint 3.5 — « Mot de passe oublié », commentaires du code et livrables (périmètre et plan de recette) | `s3-5-validated` | 36 | |
 | [a11y-1](sessions/a11y-1.md) | Accessibilité 1 — vérification « lecteurs d'écran » | `a11y-1-validated` | 0 | |
+| [correctifs-1](sessions/correctifs-1.md) | Correctifs de recette n° 1 : téléphones, fenêtres, barres de défilement, tableaux | — | 7 | |
 | [h1](sessions/h1.md) | H1 et H1b — Habillage, hub et composants de données | `h1-validated`, `h1b-validated` | 8 | |
 | [h2a](sessions/h2a.md) | H2a — Écrans d'accès au nouveau style | `h2a-validated` | 12 | |
 | [h2b](sessions/h2b.md) | H2b — Sessions et historique des connexions | `h2b-validated` | 2 | |

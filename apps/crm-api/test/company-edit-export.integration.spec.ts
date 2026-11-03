@@ -55,7 +55,7 @@ describeDb('Modifier et exporter une fiche d\'entreprise (HTTP + PostgreSQL)', (
     expect(res.status).toBe(200);
     expect(res.body).toMatchObject({ sector: 'Assurance', country: 'Cameroun', email: 'contact@acme.cm', version: company.version + 1 });
     const read = await api.call('GET', `/api/v1/companies/${id}`, am);
-    expect(read.body).toMatchObject({ sector: 'Assurance', phone: '+237 222 33 44 55', version: company.version + 1 });
+    expect(read.body).toMatchObject({ sector: 'Assurance', phone: '+237222334455', version: company.version + 1 });
   }, 90_000);
 
   it('verrou optimiste : une version périmée est refusée (409) et rien n\'est modifié', async () => {

@@ -61,7 +61,8 @@ const ITEMS = [
     { name: 'S4.3b — statuts d’entreprise, responsable, fiche 360°', start: '2026-11-01', end: '2026-11-01', state: 'done', tag: 's4-3b-validated' },
     { name: 'S4.3c — colonne Valeur, lien rendez-vous ↔ opportunité', start: '2026-11-02', end: '2026-11-02', state: 'done', tag: 's4-3c-validated' },
     { name: 'S4.4a — agréments', start: '2026-11-02', end: '2026-11-02', state: 'done', tag: 's4-4a-validated' },
-    { name: 'S4.4b — ambassadeurs', start: '2026-11-17', end: '2026-11-18', state: 'plan' },
+    { name: 'S4.4b — ambassadeurs', start: '2026-11-02', end: '2026-11-02', state: 'done', tag: 's4-4b-validated' },
+    { name: 'Correctifs 1 — téléphones, fenêtres, barres de défilement, tableaux', start: '2026-11-03', end: '2026-11-03', state: 'wait' },
     { name: 'S4.4c — commissions à verser', start: '2026-11-18', end: '2026-11-19', state: 'plan' },
   ] },
   { phase: 'Module Investudy (formation)', rows: [
