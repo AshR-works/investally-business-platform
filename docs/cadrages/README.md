@@ -15,6 +15,7 @@ Chaque cadrage dit **ce que la session fait et ne fait pas**, **l'état de dépa
 
 | — | **Arbitrage** données de l'API des entreprises | [ARBITRAGE-API-DONNEES-ENTREPRISES.md](ARBITRAGE-API-DONNEES-ENTREPRISES.md) | ARB-API-1 à 4 (**décidés le 2026-10-21**, C, A, A, A) |
 | — | **Feuille de décision** : décisions en attente (commission, payeur, constat du paiement, opportunités, réattribution, confirmations, dossiers externes, contrôle interne, formateurs) | [ARBITRAGE-DECISIONS-EN-ATTENTE.md](ARBITRAGE-DECISIONS-EN-ATTENTE.md) | FD-1 à FD-11 (**à trancher**, 2026-11-02) |
+| — | **Observations de recette** : téléphones, fenêtres qui débordent, cohérence visuelle, jeu de données de démonstration | [OBSERVATIONS-VALIDATION-UX-ET-DONNEES-DE-TEST.md](OBSERVATIONS-VALIDATION-UX-ET-DONNEES-DE-TEST.md) | Analyse et plan (2026-11-03) ; tâches T1 à T4, points Q1 à Q9 à confirmer |
 
 ## Recommandations en un coup d'œil
 | Décision | Recommandation | Note |
