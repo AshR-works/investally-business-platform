@@ -291,10 +291,49 @@ try {
   await clickText('Nouvelle entreprise');
   await waitFor("document.querySelector('[role=dialog]')", 'fenêtre de création');
   await audit('Entreprises — fenêtre « Nouvelle entreprise »', 'fond inerte, focus dans la fenêtre');
+  // Correctif de recette : le cadre ne défile pas, seul le corps défile (barre à l'intérieur du cadre), les boutons d'action restent visibles,
+  // aucun débordement horizontal, quelle que soit la largeur de l'écran.
+  const dialogMetrics = `(() => {
+    const d = document.querySelector('[role=dialog]'); const b = d.querySelector('.dialog-body');
+    const r = d.getBoundingClientRect(); const br = b.getBoundingClientRect();
+    const last = [...b.querySelectorAll('.row.end button')].at(-1); const ar = last ? last.getBoundingClientRect() : null;
+    return {
+      aucunDebordementHorizontal: b.scrollWidth <= b.clientWidth + 1,
+      fenetreDansEcran: r.left >= 0 && r.right <= innerWidth + 0.5 && r.top >= 0 && r.bottom <= innerHeight + 0.5,
+      cadreSansDefilement: d.scrollHeight <= d.clientHeight + 1 && d.scrollWidth <= d.clientWidth + 1,
+      boutonsVisibles: !ar || (ar.bottom <= br.bottom + 1 && ar.top >= br.top - 1),
+      barreDansLeCadre: br.right <= r.right - 6 && br.bottom <= r.bottom - 8,
+    };
+  })()`;
+  for (const [width, height] of [[320, 640], [375, 700], [768, 900], [1280, 900]]) {
+    await send('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: 1, mobile: width < 768 });
+    await sleep(400);
+    const m = await js(dialogMetrics);
+    console.log(`  fenêtre « Nouvelle entreprise » à ${width} px : ${JSON.stringify(m)}`);
+    await expectThat(`la fenêtre « Nouvelle entreprise » à ${width} px : cadre fixe, aucun débordement horizontal, boutons visibles, barre dans le cadre`, `Object.values(${JSON.stringify(m)}).every(Boolean)`);
+  }
+  await send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 900, deviceScaleFactor: 1, mobile: false });
+  await sleep(300);
   await setValue('[role=dialog] input', `Société Horizon ${Date.now() % 100000}`);
   await clickText('Enregistrer');
   await waitFor("!document.querySelector('[role=dialog]')", 'création terminée', 15000);
   await sleep(1200);
+  // Correctif de recette : le tri des tableaux utilise des pictogrammes (plus de ↕ ▲ ▼) et ne change pas l'aspect du tableau.
+  const headState = `(() => { const t = document.querySelector('main table'); const ths = [...t.querySelectorAll('thead th')]; return { text: t.querySelector('thead').textContent, icons: t.querySelectorAll('thead th button svg').length, widths: ths.map((x) => Math.round(x.getBoundingClientRect().width)), buttons: [...t.querySelectorAll('thead th button')].map((x) => Math.round(x.getBoundingClientRect().width)), heights: ths.map((x) => Math.round(x.getBoundingClientRect().height)), table: Math.round(t.getBoundingClientRect().width), sorts: ths.map((x) => x.getAttribute('aria-sort')) }; })()`;
+  await waitFor("document.querySelector('main table thead th button')", 'en-têtes triables du tableau des entreprises');
+  const before = await js(headState);
+  await expectThat('les en-têtes triables portent un pictogramme (pas de symbole de texte ↕ ▲ ▼)', `(${JSON.stringify(before)}.icons >= 2) && !/[↕▲▼]/.test(${JSON.stringify(before.text)})`);
+  await shot('tableau-tri-neutre');
+  await js(`(() => { const b = [...document.querySelectorAll('main table thead th button')].find((x) => x.textContent.trim().startsWith('Créée')) ?? document.querySelector('main table thead th button'); b.click(); })()`);
+  await sleep(1200);
+  const after = await js(headState);
+  await js(`(() => { const b = [...document.querySelectorAll('main table thead th button')].find((x) => x.textContent.trim().startsWith('Créée')) ?? document.querySelector('main table thead th button'); b.click(); })()`);
+  await sleep(1200);
+  const again = await js(headState);
+  console.log(`  tri : largeurs ${JSON.stringify(before.widths)} → ${JSON.stringify(after.widths)} → ${JSON.stringify(again.widths)} ; tableau ${before.table} → ${after.table} → ${again.table}`);
+  await expectThat('le tri change le sens annoncé sans rien déplacer : colonnes de même largeur (à 1 px près), boutons de tri de même largeur, en-têtes de même hauteur, tableau de même largeur', `(() => { const [a, b, c] = ${JSON.stringify([before, after, again])}; const same = (x, y) => x.widths.length === y.widths.length && x.widths.every((w, i) => Math.abs(w - y.widths[i]) <= 1) && x.buttons.every((w, i) => Math.abs(w - y.buttons[i]) <= 1) && x.heights.every((h, i) => h === y.heights[i]) && Math.abs(x.table - y.table) <= 2; return same(a, b) && same(b, c) && JSON.stringify(a.sorts) !== JSON.stringify(b.sorts) && JSON.stringify(b.sorts) !== JSON.stringify(c.sorts); })()`);
+  await expectThat('les barres de défilement sont fines et minimalistes (scrollbar-width: thin sur la fenêtre et sur la page)', `getComputedStyle(document.documentElement).scrollbarWidth === 'thin' && getComputedStyle(document.querySelector('main')).scrollbarWidth === 'thin'`);
+  await shot('tableau-tri-actif');
   // S4.0 : entreprise avec coordonnées, nouveau facilitateur, méthode de contact et commission (le Super administrateur a tous les droits).
   const fillField = (labelStart, value) => js(`(() => {
     const label = [...document.querySelectorAll('[role=dialog] label')].find((l) => l.textContent.trim().startsWith(${JSON.stringify(labelStart)}));
@@ -348,8 +387,8 @@ try {
   mid: {
     if (process.env.AUDIT_COMPANY_ONLY) break mid;
     await sleep(600);
-    await expectThat('la fiche affiche le facilitateur, son téléphone, la méthode, l’appartenance et la commission formatée', `(() => { const t = document.querySelector('main').textContent; return t.includes('Paul Mbarga') && t.includes('+237 699 00 11 22') && t.includes('Appel téléphonique') && t.includes('Employé de l’entreprise') && t.includes('7,50') && t.includes('Ancien collègue du directeur financier'); })()`);
-    await expectThat('l’e-mail est enregistré en minuscules, le téléphone et le pays de l’entreprise affichés', `(() => { const t = document.querySelector('main').textContent; return t.includes('contact@relais.cm') && t.includes('+237 222 33 44 55') && t.includes('Cameroun'); })()`);
+    await expectThat('la fiche affiche le facilitateur, son téléphone, la méthode, l’appartenance et la commission formatée', `(() => { const t = document.querySelector('main').textContent; return t.includes('Paul Mbarga') && t.includes('+237699001122') && t.includes('Appel téléphonique') && t.includes('Employé de l’entreprise') && t.includes('7,50') && t.includes('Ancien collègue du directeur financier'); })()`);
+    await expectThat('l’e-mail est enregistré en minuscules, le téléphone et le pays de l’entreprise affichés', `(() => { const t = document.querySelector('main').textContent; return t.includes('contact@relais.cm') && t.includes('+237222334455') && t.includes('Cameroun'); })()`);
     await audit('Fiche entreprise — mise en relation (facilitateur, commission)');
     await shot('fiche-entreprise-facilitateur');
     // S4.1a : contacts de l'entreprise (panneau de la fiche), doublon, modification, suppression, page « Contacts ».
@@ -798,6 +837,7 @@ try {
   await waitFor("!document.querySelector('[role=dialog]') && document.querySelector('main article').textContent.includes('Accord de principe')", 'accord de principe obtenu (S4.4a)', 20000);
   await go(`/companies/${valueCompanyId}`);
   await waitFor("document.querySelector('#approvals-title')", 'panneau Agréments de la fiche', 25000);
+  await waitFor("document.querySelector('#approvals-title').closest('section').textContent.includes('Aucun agrément')", 'panneau Agréments chargé (vide)', 25000);
   await expectThat('le panneau Agréments est vide et propose « Enregistrer un agrément »', `(() => { const s = document.querySelector('#approvals-title').closest('section'); return s.textContent.includes('Aucun agrément') && [...s.querySelectorAll('button')].some((b) => b.textContent.trim() === 'Enregistrer un agrément'); })()`);
   await clickText('Enregistrer un agrément');
   await waitFor("document.querySelector('[role=dialog] #approval-opportunityId') && document.querySelector('#approval-opportunityId').options.length > 1", 'fenêtre d’enregistrement et opportunités éligibles', 25000);
@@ -889,7 +929,7 @@ try {
   await js("(() => { const s = document.querySelector('#ambassador-companyId'); Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value').set.call(s, s.options[1].value); s.dispatchEvent(new Event('change', { bubbles: true })); })()");
   await fillField('E-mail', 'alain.fotso@exemple.cm');
   await clickText('Enregistrer', "document.querySelector('[role=dialog]')");
-  await waitFor("!document.querySelector('[role=dialog]') && document.querySelector('main tbody tr')", 'ambassadeur créé', 25000);
+  await waitFor("!document.querySelector('[role=dialog]') && document.querySelector('main tbody tr')?.textContent.includes('Alain Fotso')", 'ambassadeur créé', 25000);
   await expectThat('la liste montre l’ambassadeur d’origine « Client », son entreprise et « Depuis » au format mois/année', `(() => { const r = document.querySelector('main tbody tr').textContent; return r.includes('Alain Fotso') && r.includes('Client') && /\\d{2}\\/\\d{4}/.test(r); })()`);
   await audit('Ambassadeurs — liste', 'tableau, origine, entreprise, depuis, actions');
   await shot('ambassadeurs-liste');
@@ -899,7 +939,7 @@ try {
   await waitFor("document.querySelector('[role=dialog]') && document.querySelector('[role=dialog]').textContent.includes('non modifiable')", 'fenêtre de modification (origine non modifiable)');
   await fillField('Téléphone', '+237 699 00 11 22');
   await clickText('Enregistrer', "document.querySelector('[role=dialog]')");
-  await waitFor("!document.querySelector('[role=dialog]') && document.querySelector('main tbody tr').textContent.includes('+237 699 00 11 22')", 'ambassadeur modifié', 25000);
+  await waitFor("!document.querySelector('[role=dialog]') && document.querySelector('main tbody tr').textContent.includes('+237699001122')", 'ambassadeur modifié', 25000);
   await clickText('Nouvel ambassadeur');
   await waitFor("document.querySelector('[role=dialog] #ambassador-lastName')", 'seconde fenêtre de création');
   await fillField('Nom', 'Ndzana');

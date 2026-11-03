@@ -62,7 +62,7 @@ describe('UpdateCompanyUseCase — modifier une fiche', () => {
   it("modifie les champs donnés, laisse les autres, et trace l'ancienne et la nouvelle valeur dans l'audit", async () => {
     const { update, id, version, am1, audit } = await setup();
     const view = await update.execute({ id, version, sector: 'Assurance', country: 'Cameroun', email: ' Contact@Acme.CM ', access: am1, actor });
-    expect(view).toMatchObject({ name: 'Acme', sector: 'Assurance', country: 'Cameroun', email: 'contact@acme.cm', phone: '+237 222 33 44 55' });
+    expect(view).toMatchObject({ name: 'Acme', sector: 'Assurance', country: 'Cameroun', email: 'contact@acme.cm', phone: '+237222334455' });
     expect(audit).toHaveLength(1);
     expect(audit[0]).toMatchObject({ action: AuditAction.Update, entityType: 'Company', entityId: id, oldValue: { sector: 'Banque', country: null }, newValue: { sector: 'Assurance', country: 'Cameroun' } });
   });
@@ -144,7 +144,7 @@ describe('UpdateCompanyUseCase — modifier une fiche', () => {
       const withCommission = await update.execute({ id, version, facilitation: { commission: { type: 'PERCENT', value: 7.5 } }, access: chef, actor });
       expect(withCommission.facilitation?.commission).toEqual({ type: 'PERCENT', value: '7.50', currency: null });
       const edited = await update.execute({ id, version: withCommission.version, phone: '+237 600 00 00 09', facilitation: { contactMethod: 'MEETING' }, access: am1, actor });
-      expect(edited.phone).toBe('+237 600 00 00 09');
+      expect(edited.phone).toBe('+237600000009');
       expect(edited.facilitation?.commission).toEqual({ type: 'PERCENT', value: '7.50', currency: null });
     });
 

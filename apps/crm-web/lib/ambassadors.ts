@@ -1,3 +1,4 @@
+import { phoneProblem } from './phone';
 import { isRealDate, todayIso } from './receipts';
 import type { Ambassador } from './types';
 
@@ -29,7 +30,6 @@ export type AmbassadorField = keyof AmbassadorForm;
 export type AmbassadorErrors = Partial<Record<AmbassadorField, string>>;
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const PHONE = /^[0-9+().\- ]+$/;
 
 /**
  * Contrôles de saisie rapides, champ par champ, dans l'ordre de la page (le serveur refait tous les contrôles) : nom et prénom,
@@ -45,7 +45,10 @@ export function validateAmbassadorFields(form: AmbassadorForm, context: { today:
   if (!AMBASSADOR_ORIGINS.some((o) => o.value === form.origin)) errors.origin = 'Choisissez l’origine.';
   if (form.origin === 'CLIENT' && !form.companyId) errors.companyId = 'Un ambassadeur client est rattaché à son entreprise.';
   if (form.email.trim() && !EMAIL.test(form.email.trim())) errors.email = 'L’adresse e-mail n’est pas valide.';
-  if (form.phone.trim() && (!PHONE.test(form.phone.trim()) || form.phone.replace(/\D/g, '').length < 6)) errors.phone = 'Le numéro de téléphone n’est pas valide.';
+  if (form.phone.trim()) {
+    const problem = phoneProblem(form.phone);
+    if (problem) errors.phone = problem;
+  }
   const date = form.appointedOn.trim();
   if (!date) errors.appointedOn = 'La date de début est obligatoire.';
   else if (!isRealDate(date)) errors.appointedOn = 'La date de début n’est pas valide.';

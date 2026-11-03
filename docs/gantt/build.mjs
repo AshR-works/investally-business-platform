@@ -62,7 +62,8 @@ const ITEMS = [
     { name: 'S4.3c — colonne Valeur, lien rendez-vous ↔ opportunité', start: '2026-11-02', end: '2026-11-02', state: 'done', tag: 's4-3c-validated' },
     { name: 'S4.4a — agréments', start: '2026-11-02', end: '2026-11-02', state: 'done', tag: 's4-4a-validated' },
     { name: 'S4.4b — ambassadeurs', start: '2026-11-02', end: '2026-11-02', state: 'done', tag: 's4-4b-validated' },
-    { name: 'S4.4a-bis — correctifs D41 (agrément demandé, payeur, Finance, second facteur)', start: '2026-11-02', end: '2026-11-02', state: 'wait' },
+    { name: 'Correctifs 1 — téléphones, fenêtres, barres de défilement, tableaux', start: '2026-11-03', end: '2026-11-03', state: 'done', tag: 'correctifs-1-validated' },
+    { name: 'S4.4a-bis — correctifs D41 (agrément demandé, payeur, Finance, second facteur)', start: '2026-11-03', end: '2026-11-03', state: 'wait' },
     { name: 'S4.4c — commissions à verser', start: '2026-11-18', end: '2026-11-19', state: 'plan' },
   ] },
   { phase: 'Module Investudy (formation)', rows: [
@@ -200,7 +201,7 @@ const md = `# Diagramme de Gantt du projet
 | **Lancement** (Sprint 0) | 20/10/2026 |
 | Premier jalon de code validé (S1 à S3.3) | 20/10/2026 (le même jour) |
 | Fin de la fondation et du design | 22/10/2026 |
-| Module commercial : dernier lot validé (S4.4b) | 02/11/2026 |
+| Module commercial : dernier lot validé (correctifs de recette 1, après S4.4b) | 03/11/2026 |
 | Lots réalisés et validés au ${frFull(TODAY)} | ${done.length} (dont ${done.filter((r) => r.tag).length} étiquetés) |
 | **Prochaine session** | S4.4a-bis (correctifs D41, en attente de validation) puis S4.4c (commissions à verser), prévues du 17/11 au 19/11/2026 |
 | Fin du module commercial (prévision) | 19/11/2026 |

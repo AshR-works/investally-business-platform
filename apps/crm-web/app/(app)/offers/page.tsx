@@ -62,14 +62,14 @@ export default function OffersPage() {
   }, [load]);
 
   const columns = useMemo<Column<Offer>[]>(() => [
-    { id: 'reference', header: 'Référence', cell: (o) => <strong>{o.reference}</strong> },
-    { id: 'subject', header: 'Objet', cell: (o) => o.subject },
-    { id: 'company', header: 'Entreprise', cell: (o) => <Link href={`/companies/${o.companyId}`} className="text-ink no-underline hover:underline">{o.companyName}</Link> },
-    { id: 'amount', header: 'Montant', align: 'right', cell: (o) => formatAmount(o.amount, o.currency) },
-    { id: 'status', header: 'État', cell: (o) => { const style = statusStyle(OFFER_STATUS, o.status); return <Badge tone={style.tone}>{style.label}</Badge>; } },
-    { id: 'submitted', header: 'Déposée le', cell: (o) => formatDate(o.submittedAt) },
-    { id: 'next', header: 'Prochaine relance', cell: (o) => (o.nextFollowupOn ? formatDate(`${o.nextFollowupOn}T00:00:00Z`) : <span className="text-ink-2">—</span>) },
-    { id: 'actions', header: 'Actions', srOnlyHeader: true, align: 'right', cell: (o) => <OfferRowActions offer={o} rights={rights} onAction={(kind, offer) => setDialog({ kind, offer })} /> },
+    { id: 'reference', weight: 2, header: 'Référence', cell: (o) => <strong>{o.reference}</strong> },
+    { id: 'subject', weight: 4, header: 'Objet', cell: (o) => o.subject },
+    { id: 'company', weight: 3, header: 'Entreprise', cell: (o) => <Link href={`/companies/${o.companyId}`} className="text-ink no-underline hover:underline">{o.companyName}</Link> },
+    { id: 'amount', weight: 2.4, header: 'Montant', align: 'right', cell: (o) => formatAmount(o.amount, o.currency) },
+    { id: 'status', weight: 1.8, header: 'État', cell: (o) => { const style = statusStyle(OFFER_STATUS, o.status); return <Badge tone={style.tone}>{style.label}</Badge>; } },
+    { id: 'submitted', weight: 2, header: 'Déposée le', cell: (o) => formatDate(o.submittedAt) },
+    { id: 'next', weight: 2.2, header: 'Prochaine relance', cell: (o) => (o.nextFollowupOn ? formatDate(`${o.nextFollowupOn}T00:00:00Z`) : <span className="text-ink-2">—</span>) },
+    { id: 'actions', weight: 0.8, header: 'Actions', srOnlyHeader: true, align: 'right', cell: (o) => <OfferRowActions offer={o} rights={rights} onAction={(kind, offer) => setDialog({ kind, offer })} /> },
   ], [rights]);
 
   if (!canRead) {

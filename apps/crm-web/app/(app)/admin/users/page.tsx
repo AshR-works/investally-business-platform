@@ -151,12 +151,12 @@ export default function UsersPage() {
   }
 
   const columns: Column<UserView>[] = [
-    { id: 'user', header: 'Utilisateur', cell: (u) => <EntityCell name={u.displayName} subtitle={u.email} round /> },
-    { id: 'roles', header: 'Rôles', cell: (u) => (u.roles.length ? <div className="flex flex-wrap gap-1">{u.roles.map((r) => <Badge key={r}>{roleLabel(r)}</Badge>)}</div> : <span className="text-ink-2">—</span>) },
-    { id: 'status', header: 'Statut', cell: (u) => { const st = statusStyle(USER_STATUS, u.status); return <Badge tone={st.tone}>{st.label}</Badge>; } },
-    { id: 'mfa', header: 'MFA', cell: (u) => <Badge tone={u.mfaEnabled ? 'ok' : 'warn'}>{u.mfaEnabled ? 'Activé' : 'Non configuré'}</Badge> },
-    { id: 'last', header: 'Dernière connexion', cell: (u) => (u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleString('fr-FR') : 'Jamais') },
-    { id: 'actions', header: 'Actions', srOnlyHeader: true, align: 'right', cell: rowActions },
+    { id: 'user', weight: 4, header: 'Utilisateur', cell: (u) => <EntityCell name={u.displayName} subtitle={u.email} round /> },
+    { id: 'roles', weight: 4, header: 'Rôles', cell: (u) => (u.roles.length ? <div className="flex flex-wrap gap-1">{u.roles.map((r) => <Badge key={r}>{roleLabel(r)}</Badge>)}</div> : <span className="text-ink-2">—</span>) },
+    { id: 'status', weight: 1.6, header: 'Statut', cell: (u) => { const st = statusStyle(USER_STATUS, u.status); return <Badge tone={st.tone}>{st.label}</Badge>; } },
+    { id: 'mfa', weight: 1.8, header: 'MFA', cell: (u) => <Badge tone={u.mfaEnabled ? 'ok' : 'warn'}>{u.mfaEnabled ? 'Activé' : 'Non configuré'}</Badge> },
+    { id: 'last', weight: 2.4, header: 'Dernière connexion', cell: (u) => (u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleString('fr-FR') : 'Jamais') },
+    { id: 'actions', weight: 0.8, header: 'Actions', srOnlyHeader: true, align: 'right', cell: rowActions },
   ];
 
   return (

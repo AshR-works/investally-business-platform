@@ -1,3 +1,4 @@
+import { phoneProblem } from './phone';
 import type { Contact } from './types';
 
 /** Fonction du contact dans l'entreprise (codes de l'API → libellés). */
@@ -25,7 +26,6 @@ export type ContactField = keyof ContactForm;
 export type ContactErrors = Partial<Record<ContactField, string>>;
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const PHONE = /^[0-9+().\- ]+$/;
 
 /** Contrôles de saisie rapides, champ par champ, dans l'ordre de la page (le serveur refait tous les contrôles). */
 export function validateContactFields(form: ContactForm): ContactErrors {
@@ -36,7 +36,10 @@ export function validateContactFields(form: ContactForm): ContactErrors {
   if (!form.firstName.trim()) errors.firstName = 'Le prénom est obligatoire.';
   else if (form.firstName.trim().length > 100) errors.firstName = 'Le prénom ne peut dépasser 100 caractères.';
   if (form.email.trim() && !EMAIL.test(form.email.trim())) errors.email = 'L’adresse e-mail n’est pas valide.';
-  if (form.phone.trim() && (!PHONE.test(form.phone.trim()) || form.phone.replace(/\D/g, '').length < 6)) errors.phone = 'Le numéro de téléphone n’est pas valide.';
+  if (form.phone.trim()) {
+    const problem = phoneProblem(form.phone);
+    if (problem) errors.phone = problem;
+  }
   return errors;
 }
 

@@ -12,6 +12,7 @@ import { can } from '../../lib/permissions';
 import type { Company, Facilitator, Page } from '../../lib/types';
 import { Icon } from '../icon';
 import { Modal } from '../modal';
+import { PHONE_HINT } from '../../lib/phone';
 
 const COMMENT_MAX = 2000;
 
@@ -96,8 +97,8 @@ export function CompanyDialog({ company, onClose, onDone }: { company?: Company;
           <Field name="email" error={errors.email} label="E-mail de l’entreprise">
             <input {...field('email')} type="email" value={form.email} onChange={(e) => set('email', e.target.value)} maxLength={200} autoComplete="off" />
           </Field>
-          <Field name="phone" error={errors.phone} label="Téléphone de l’entreprise">
-            <input {...field('phone')} type="tel" value={form.phone} onChange={(e) => set('phone', e.target.value)} maxLength={40} autoComplete="off" />
+          <Field name="phone" error={errors.phone} label={`Téléphone de l’entreprise (${PHONE_HINT})`}>
+            <input {...field('phone')} type="tel" inputMode="tel" value={form.phone} onChange={(e) => set('phone', e.target.value)} maxLength={40} autoComplete="off" />
           </Field>
           <div className="field">
             <label htmlFor="company-sector">Secteur d’activité</label>
@@ -143,8 +144,8 @@ export function CompanyDialog({ company, onClose, onDone }: { company?: Company;
                 <Field name="facilitatorFirstName" error={errors.facilitatorFirstName} label="Prénom du facilitateur">
                   <input {...field('facilitatorFirstName')} value={form.facilitatorFirstName} onChange={(e) => set('facilitatorFirstName', e.target.value)} maxLength={100} required aria-required="true" />
                 </Field>
-                <Field name="facilitatorPhone" error={errors.facilitatorPhone} label="Téléphone du facilitateur">
-                  <input {...field('facilitatorPhone')} type="tel" value={form.facilitatorPhone} onChange={(e) => set('facilitatorPhone', e.target.value)} maxLength={40} required aria-required="true" autoComplete="off" />
+                <Field name="facilitatorPhone" error={errors.facilitatorPhone} label={`Téléphone du facilitateur (${PHONE_HINT})`}>
+                  <input {...field('facilitatorPhone')} type="tel" inputMode="tel" value={form.facilitatorPhone} onChange={(e) => set('facilitatorPhone', e.target.value)} maxLength={40} required aria-required="true" autoComplete="off" />
                 </Field>
                 <div className="field">
                   <label htmlFor="company-facilitator-comment">Commentaire sur le facilitateur</label>

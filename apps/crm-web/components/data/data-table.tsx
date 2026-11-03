@@ -1,6 +1,8 @@
 'use client';
 
 import { ReactNode, useEffect, useRef } from 'react';
+import { Icon } from '../icon';
+import { columnWidths } from '../../lib/table-layout';
 import { allSelected, setMany, someSelected, toggleId, type Selection } from '../../lib/selection';
 
 /** Colonne d'un tableau : en-tête, rendu de la cellule, alignement. `srOnlyHeader` pour une colonne d'actions sans titre visible. */
@@ -10,6 +12,8 @@ export interface Column<T> {
   cell: (row: T) => ReactNode;
   align?: 'left' | 'right';
   srOnlyHeader?: boolean;
+  /** Part relative de la largeur du tableau (défaut 1). Les largeurs sont fixes : trier ou changer de page ne les déplace jamais. */
+  weight?: number;
   /** Champ de tri côté serveur : l'en-tête devient un bouton qui trie (et annonce le sens avec `aria-sort`). */
   sortField?: string;
 }
@@ -58,12 +62,18 @@ export function DataTable<T>({
   }, [some]);
 
   const cols = columns.length + (selection ? 1 : 0);
-  const cell = 'border-b border-line px-4 py-3 align-middle';
+  // Largeurs fixes : chaque colonne garde sa part du tableau (la case de sélection garde 3 rem ; 7 % de marge lui sont réservés).
+  const widths = columnWidths(columns.map((column) => column.weight), !!selection);
+  const cell = 'border-b border-line px-4 py-3 align-middle [overflow-wrap:anywhere]';
 
   return (
     <div className="overflow-x-auto" aria-busy={busy}>
-      <table className="w-full border-collapse text-[length:var(--text-sm)]">
+      <table className="w-full min-w-[48rem] table-fixed border-collapse text-[length:var(--text-sm)]">
         <caption className="sr-only">{caption}</caption>
+        <colgroup>
+          {selection && <col style={{ width: '3rem' }} />}
+          {columns.map((column, index) => <col key={column.id} style={{ width: widths[index] }} />)}
+        </colgroup>
         <thead>
           <tr>
             {selection && (
@@ -90,9 +100,17 @@ export function DataTable<T>({
                   {column.srOnlyHeader ? (
                     <span className="sr-only">{column.header}</span>
                   ) : sort && column.sortField ? (
-                    <button type="button" onClick={() => sort.onSort(column.sortField as string)} className="inline-flex cursor-pointer items-center gap-1 border-0 bg-transparent p-0 font-[inherit] text-[length:inherit] text-inherit">
-                      {column.header}
-                      <span aria-hidden="true">{sorted === 'asc' ? '▲' : sorted === 'desc' ? '▼' : '↕'}</span>
+                    <button
+                      type="button"
+                      onClick={() => sort.onSort(column.sortField as string)}
+                      className={`group inline-flex cursor-pointer items-center gap-1 border-0 bg-transparent p-0 font-[inherit] text-[length:inherit] hover:text-ink ${sorted ? 'text-ink' : 'text-inherit'}`}
+                    >
+                      <span className="min-w-0 text-left">{column.header}</span>
+                      {/* Emplacement de taille fixe : l'icône change avec le tri sans jamais déplacer ni élargir l'en-tête. */}
+                      <Icon
+                        name={sorted === 'asc' ? 'sort-asc' : sorted === 'desc' ? 'sort-desc' : 'sort'}
+                        className={`size-4 ${sorted ? 'text-[var(--brand-strong)]' : 'opacity-40 group-hover:opacity-100'}`}
+                      />
                     </button>
                   ) : (
                     column.header

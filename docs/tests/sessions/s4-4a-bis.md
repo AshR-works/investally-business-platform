@@ -6,7 +6,7 @@
 | **Recette de référence** | [`SPRINT-S4-4A-BIS-RECETTE.md`](../../SPRINT-S4-4A-BIS-RECETTE.md) |
 | **Étiquette** | — |
 | **Contexte** | Branche `sprint/s4-4a-bis-correctifs` (partie de `main`, après S4.4b) · 2026-11-09 · décisions D41 (réponses FD-3, FD-4, FD-6) et D42 ; DDR-0026. Lot correctif : il modifie des lots déjà validés (S4.3b, S4.4a) avant S4.4c (commissions à verser), qui n'est pas livré. |
-| **Écrans concernés** | Aucun écran (serveur, conception ou outillage) |
+| **Écrans concernés** | [Fiche d'une entreprise](../interfaces/11-fiche-entreprise.md) |
 
 *Fiche de session de la [charte de tests](../../CHARTE-DE-TESTS.md), **dérivée de la recette** du lot : en cas de doute, la recette fait foi. Elle sert à rejouer la recette utilisateur et à vérifier l'absence de régression.*
 
@@ -54,9 +54,8 @@
 ```bash
 pnpm ci                                   # types, architecture, tests unitaires et interface
 node apps/crm-api/scripts/test-db.mjs     # tests d'intégration (base PostgreSQL jetable)
+python scripts/mutants/s44abis-correctifs-agrements.py   # mutants du lot (arbre de travail propre)
 ```
-
-*Pas de script de mutants versionné pour ce lot.*
 
 ## Écarts constatés
 | Date | Vérification n° | Description | Défaut ouvert (D…) |
