@@ -1,0 +1,184 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Observations de recette : téléphones, fenêtres, cohérence visuelle, jeu de données de démonstration</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — cadrages · <a href="README.html">Index des cadrages</a> · <a href="../INDEX.html">Documentation</a> · <a href="../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../design/05-AIDE-A-LA-DECISION.html">Aide à la décision</a></nav><h1>Observations de recette : téléphones, fenêtres, cohérence visuelle, jeu de données de démonstration</h1>
+<p><strong>Date</strong> : 2026-11-03 · <strong>Statut</strong> : analyse et plan, <strong>rien n'est encore codé</strong> · <strong>Périmètre</strong> : qualité des validations, corrections d'interface, cohérence visuelle, données de démonstration ; <strong>l'architecture n'est pas modifiée</strong> · <strong>Lié à</strong> : <a href="../design/01-DESIGN-SYSTEM.html">DESIGN-SYSTEM</a>, <a href="../CHARTE-DE-TESTS.html">CHARTE-DE-TESTS</a>, <a href="../GUIDE-EXECUTION-LOCALE.html">GUIDE-EXECUTION-LOCALE</a></p>
+<blockquote><p>Ce document analyse trois observations et le besoin d'un jeu de données complet. Il s'appuie sur ce que contient réellement le dépôt à la date ci-dessus. Les points que je n'ai pas pu vérifier sont signalés ; les valeurs par défaut que j'ai retenues sont marquées <strong>« à confirmer »</strong>.</p></blockquote>
+<h2>1. En bref</h2>
+<div class="table-wrap"><table><thead><tr><th>Sujet</th><th>Constat</th><th>Priorité</th><th>Effort estimé</th></tr></thead><tbody>
+<tr><td><strong>O1 Téléphones</strong></td><td>Le contrôle actuel est large (chiffres, <code>+ - . ( )</code>, 6 chiffres au moins, 40 caractères) et <strong>ne correspond à aucune de vos règles</strong> ; la règle existe en <strong>une</strong> fonction côté serveur mais en <strong>trois copies</strong> côté interface</td><td><strong>P0</strong></td><td>1 session</td></tr>
+<tr><td><strong>O2 Barre qui déborde</strong></td><td><strong>Confirmé par vos captures</strong> : la barre de défilement de la fenêtre est collée au bord et déborde sur les angles arrondis ; les boutons d'action défilent avec le formulaire. Une correction commune (un composant, un style)</td><td><strong>P1</strong></td><td>0,5 session</td></tr>
+<tr><td><strong>O3 Cohérence visuelle</strong></td><td>Écarts probables entre pages et vis-à-vis du Design System ; <strong>audit visuel à faire</strong> avant de corriger (je ne l'ai pas encore fait)</td><td><strong>P2</strong></td><td>1 à 2 sessions</td></tr>
+<tr><td><strong>Jeu de données</strong></td><td>Un jeu minimal existe (40 entreprises génériques, un compte par rôle). <strong>Réalisable maintenant</strong> : tout le métier commercial. <strong>Pas réalisable maintenant</strong> : Investudy, finance, reporting (ces modules n'existent pas encore) ; je livre leur <strong>spécification</strong> et leur structure</td><td><strong>P1</strong> (commercial), <strong>P3</strong> (le reste)</td><td>1 à 2 sessions + 1 par module</td></tr>
+</tbody></table></div>
+<p><strong>Ce que je ne ferai pas</strong> : changer l'architecture, ajouter des modules, produire des documents (contrats, attestations, factures, fichiers joints, certificats) : conforme à votre consigne.</p>
+<hr>
+<h2>2. Observation 1 : validation des numéros de téléphone</h2>
+<h3>2.1 État actuel (vérifié dans le code)</h3>
+<ul><li><strong>Serveur</strong> : une seule fonction, <code>normalizePhone</code> (<code>domain/contact-info.ts</code>), appelée par le <strong>contact</strong>, l'<strong>entreprise</strong>, le <strong>facilitateur</strong> et l'<strong>ambassadeur</strong>. Elle accepte chiffres, espaces et <code>+ - . ( )</code>, exige <strong>6 chiffres au moins</strong> et <strong>40 caractères au plus</strong>, et <strong>conserve la mise en forme saisie</strong>.</li><li><strong>Interface</strong> : la même règle est <strong>recopiée trois fois</strong> (<code>lib/contacts.ts</code>, <code>lib/facilitation.ts</code>, <code>lib/ambassadors.ts</code>) sous la forme d'une expression régulière. Une comparaison avec le domaine réel du serveur existe dans les tests, mais seulement pour la règle actuelle.</li><li><strong>Base de données</strong> : aucune contrainte sur les téléphones.</li></ul>
+<h3>2.2 Écarts avec vos règles</h3>
+<div class="table-wrap"><table><thead><tr><th>Règle attendue</th><th>Aujourd'hui</th></tr></thead><tbody>
+<tr><td>15 chiffres au plus</td><td>Non (limite de 40 caractères, aucune limite de chiffres)</td></tr>
+<tr><td>Ne commence jamais par 0</td><td>Non</td></tr>
+<tr><td>Espaces acceptés à la saisie, <strong>retirés</strong> à l'enregistrement</td><td>Acceptés, <strong>conservés</strong></td></tr>
+<tr><td>« + » accepté en première position seulement</td><td>Non (<code>+</code> accepté partout)</td></tr>
+<tr><td>Seuls chiffres, espaces et « + »</td><td>Non (<code>- . ( )</code> acceptés)</td></tr>
+</tbody></table></div>
+<h3>2.3 Interprétation de la règle « ne commence jamais par 0 »</h3>
+<p>Vos exemples valides comprennent <code>+225 0701234567</code> : le 0 y suit l'indicatif du pays. La règle cohérente avec <strong>tous</strong> vos exemples est donc : <strong>le premier chiffre du numéro (après un « + » éventuel) n'est pas 0</strong>. <code>0699123456</code> est refusé parce qu'il commence par 0 ; <code>+225 0701234567</code> est accepté parce qu'il commence par 2. <em>(À confirmer : si vous voulez aussi refuser un 0 juste après l'indicatif, dites-le, mais <code>+225 0701234567</code> deviendrait invalide.)</em></p>
+<h3>2.4 Stratégie de validation proposée</h3>
+<p><strong>Une seule règle, deux applications, une garantie en base.</strong></p>
+<ol><li><strong>Une fonction de référence</strong> côté serveur (le domaine reste maître) : retire les espaces ; refuse tout caractère autre que chiffre, espace ou « + » ; « + » seulement en tête ; premier chiffre ≠ 0 ; de <strong>8 à 15 chiffres</strong> <em>(le minimum de 8 est une valeur par défaut, à confirmer ; le maximum est celui de la norme internationale)</em> ; <strong>stocke</strong> la forme nettoyée <code>+237699123456</code> ou <code>237699123456</code>.</li><li><strong>Côté interface</strong> : une seule fonction partagée (supprime les trois copies), qui <strong>accepte</strong> les espaces en cours de saisie, <strong>affiche</strong> la valeur nettoyée sous le champ une fois sortie du champ, et reprend <strong>exactement</strong> les messages du serveur. Le test de cohérence interface ↔ domaine réel est étendu à la nouvelle règle (cas valides et invalides de votre liste, plus les cas limites).</li><li><strong>Base de données</strong> : contrainte <code>CHECK</code> sur les téléphones (modèle déjà employé dans le projet : <code>COALESCE(... , false)</code>) pour qu'aucune écriture directe ne contourne la règle.</li><li><strong>Données existantes</strong> : avant la contrainte, un <strong>nettoyage</strong> des téléphones déjà saisis (retrait des espaces et séparateurs ; liste des valeurs qui restent invalides, à corriger à la main, <strong>jamais effacées automatiquement</strong>). Les données de démonstration actuelles sont régénérées.</li></ol>
+<h3>2.5 Règles et messages</h3>
+<div class="table-wrap"><table><thead><tr><th>Cas</th><th>Message d'erreur (même texte côté interface et serveur)</th></tr></thead><tbody>
+<tr><td>Caractère interdit (<code>-</code>, <code>(</code>, <code>)</code>, <code>.</code>, lettre)</td><td>« Le numéro ne peut contenir que des chiffres, des espaces et un « + » au début. »</td></tr>
+<tr><td>« + » ailleurs qu'en tête, ou doublé</td><td>« Le « + » n'est accepté qu'au début du numéro, une seule fois. »</td></tr>
+<tr><td>Premier chiffre 0</td><td>« Le numéro ne doit pas commencer par 0 : indiquez l'indicatif du pays (ex. +237 699 12 34 56). »</td></tr>
+<tr><td>Plus de 15 chiffres</td><td>« Le numéro ne peut pas dépasser 15 chiffres. »</td></tr>
+<tr><td>Moins de 8 chiffres</td><td>« Le numéro est trop court (8 chiffres au moins). »</td></tr>
+<tr><td>Vide alors qu'obligatoire (facilitateur)</td><td>« Le numéro de téléphone est obligatoire. »</td></tr>
+</tbody></table></div>
+<h3>2.6 Recommandations d'interface</h3>
+<ul><li>Champ <code>type="tel"</code> avec <code>inputMode="tel"</code> et <code>autoComplete="tel"</code> (déjà <code>tel</code> ; ajouter les deux autres).</li><li><strong>Texte d'aide permanent</strong> sous le champ : « Avec l'indicatif du pays, par exemple +237 699 12 34 56 ». Il remplace l'erreur en cas de doute.</li><li><strong>Ne pas bloquer la frappe</strong> (pas de masque qui efface des caractères) : on laisse saisir, on signale à la sortie du champ, et on propose la forme nettoyée.</li><li>Affichage des numéros enregistrés avec un regroupement lisible (ex. <code>+237 699 12 34 56</code>) <strong>sans</strong> changer la valeur stockée.</li></ul>
+<h3>2.7 Jeu d'essai (à intégrer aux tests)</h3>
+<p>Valides : <code>+237 699 12 34 56</code> · <code>+225 0701234567</code> · <code>+33 6 12 34 56 78</code> · <code>237699123456</code>. Invalides : <code>0699123456</code> · <code>++237699123456</code> · <code>+237-699123456</code> · <code>+237(699)123456</code> · <code>+237 699 12 34 56 78 90 12</code> (plus de 15 chiffres) · <code>69912</code> (trop court) · <code>+</code> seul · <code>237+699123456</code>.</p>
+<hr>
+<h2>3. Observation 2 : barre qui déborde des fenêtres</h2>
+<h3>3.1 Diagnostic confirmé par vos captures (2026-11-03)</h3>
+<p>Les trois captures (Nouvelle entreprise, Nouvel ambassadeur, Nouveau rendez-vous) montrent la même chose : la <strong>barre de défilement verticale de la fenêtre</strong> est collée au bord extérieur de la fenêtre et <strong>déborde sur les coins arrondis</strong> (flèches haute et basse dans les angles, rail qui dépasse du cadre). Ce n'est pas un curseur ni une barre de progression : le mot « trackbar » désignait ce rail.</p>
+<p><strong>Cause, vérifiée dans le style</strong> (<code>app/globals.css</code>, <code>.dialog</code>) : la fenêtre elle-même est la zone de défilement (<code>overflow: auto</code>) <strong>et</strong> porte le rayon d'angle et le remplissage (<code>padding: 1.5rem</code>). Le navigateur place donc la barre à l'extrême bord de la boîte, <strong>par-dessus les arrondis</strong>, sans marge. Conséquences visibles :</p>
+<ol><li>barre et flèches en contact avec les angles de la fenêtre ;</li><li>la largeur du contenu change quand la barre apparaît (pas de gouttière réservée) ;</li><li><strong>les boutons « Retour » et « Enregistrer » défilent avec le formulaire</strong> : sur la première capture ils sont à moitié coupés en bas, sous la flèche indiquée ; sur les deux autres il faut défiler pour les atteindre.</li></ol>
+<h3>3.2 Autres causes possibles à vérifier (pas vues sur vos captures)</h3>
+<ul><li>Un tableau dans une fenêtre large (panneau Documents) peut ajouter une seconde barre, horizontale, dans la fenêtre.</li><li>À 320 ou 375 px, la largeur minimale des fenêtres larges peut provoquer un débordement horizontal.</li></ul>
+<h3>3.3 Correction recommandée (sans toucher à l'architecture)</h3>
+<p>Un seul composant (<code>modal.tsx</code>) et un seul endroit de style (<code>globals.css</code>) : toutes les fenêtres sont corrigées d'un coup.</p>
+<ol><li><strong>Séparer le cadre et le défilement</strong> : la fenêtre devient un cadre (<code>overflow: hidden</code>, rayon, bordure) en colonne ; l'<strong>en-tête</strong> (titre et croix) reste fixe ; seul un <strong>corps</strong> intérieur défile, avec son propre remplissage. La barre se retrouve <strong>à l'intérieur</strong> du cadre, à distance des angles.</li><li><strong>Barre discrète et stable</strong> : <code>scrollbar-gutter: stable</code> (la largeur ne saute plus), <code>scrollbar-width: thin</code> et couleurs des jetons du design (clair et sombre).</li><li><strong>Boutons d'action toujours visibles</strong> : la ligne « Retour / Enregistrer » reste collée en bas du corps (<code>position: sticky</code>), avec un fond et un filet de séparation.</li><li><strong>Largeur</strong> : <code>max-width: calc(100vw - 2rem)</code> et <code>min-width: 0</code> sur les enfants de grille, <code>overflow-wrap: anywhere</code> ; tableaux dans <code>table-wrap</code> ; une seule zone de défilement pour le panneau Documents.</li><li><strong>À ne pas faire</strong> : <code>overflow-x: hidden</code> sur la fenêtre (cache le débordement et nuit à l'accessibilité).</li></ol>
+<p><strong>Vérification</strong> : le script d'audit navigateur ouvre chaque fenêtre à 320, 375, 768 et 1280 px, contrôle l'absence de débordement horizontal, que les boutons d'action sont visibles sans défiler, et prend des captures avant et après (thèmes clair et sombre).</p>
+<p><strong>Composants concernés</strong> : <code>components/modal.tsx</code>, <code>app/globals.css</code> (<code>.dialog</code>, <code>.dialog.wide</code>, <code>.dialog-head</code>, <code>.overlay</code>) ; contrôle visuel des fenêtres de <code>components/{companies,contacts,offers,appointments,approvals,ambassadors,documents}/*</code> et de <code>components/confirm-dialog.tsx</code>, <code>components/step-up-dialog.tsx</code>.</p>
+<hr>
+<h2>4. Observation 3 : cohérence des interfaces</h2>
+<h3>4.1 Ce que j'ai constaté dans le code</h3>
+<ul><li>Le Design System (<code>docs/design/01-DESIGN-SYSTEM.md</code>) décrit : une <strong>structure de page en cinq parties</strong> (fil d'Ariane, étiquette de domaine, titre avec aide et actions, <strong>carte héros ou indicateurs</strong>, contenu), des <strong>rayons</strong> précis (cartes 22 px, cartes de liste 14, boutons et champs 10) et une <strong>seule couleur de marque</strong>.</li><li>Le composant <code>Card</code> est employé sur les pages et les panneaux, mais <strong>plusieurs pages et composants posent encore leurs propres bordures et arrondis</strong> (<code>rounded-…</code>, <code>border …</code> dans l'agenda, la liste des entreprises, les opportunités, l'accueil, la barre latérale, l'administration).</li><li>Le composant <code>PageHeading</code> est employé par presque toutes les pages principales ; la page <strong>Ambassadeurs</strong> et celles des modules les plus récents sont à contrôler.</li><li>Il n'existe <strong>pas encore</strong> de carte héros ni de cartes d'indicateurs (elles viennent avec le reporting, S6) : leur absence n'est pas un écart.</li></ul>
+<h3>4.2 Écarts à qualifier (liste de départ, à compléter par l'audit)</h3>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Écart probable</th><th>Où</th><th>Comment le confirmer</th></tr></thead><tbody>
+<tr><td>E1</td><td>Cartes posées à la main au lieu de <code>Card</code></td><td>agenda, entreprises, opportunités, accueil</td><td>revue du code et captures</td></tr>
+<tr><td>E2</td><td>Hiérarchie de page variable (titre, aide, actions, ordre des blocs)</td><td>pages récentes contre pages anciennes</td><td>grille de comparaison page par page</td></tr>
+<tr><td>E3</td><td>Panneaux de la fiche entreprise sans mise en page commune (titre de section, bouton d'action, état vide)</td><td><code>components/*/…-panel.tsx</code></td><td>comparaison des 8 panneaux</td></tr>
+<tr><td>E4</td><td>Fenêtres : taille, boutons « Retour / Enregistrer » et textes d'aide non homogènes</td><td><code>components/*/…-dialog.tsx</code></td><td>inventaire des fenêtres</td></tr>
+<tr><td>E5</td><td>États vides, de chargement et d'erreur de styles différents</td><td>listes et panneaux</td><td>inventaire</td></tr>
+<tr><td>E6</td><td>Rayons et espacements hors jetons</td><td>styles ponctuels</td><td>recherche des valeurs en dur</td></tr>
+</tbody></table></div>
+<h3>4.3 Plan de réalignement (sans refonte)</h3>
+<ol><li><strong>Inventaire</strong> (0,5 session) : une grille « page ou composant × élément du Design System » (structure de page, carte, rayon, titre, bouton principal, état vide) remplie à partir du code <strong>et</strong> de captures prises par le script d'audit, dans le thème clair et sombre.</li><li><strong>Règles</strong> : n'utiliser que <code>Card</code>, <code>PageHeading</code>, la barre d'outils de tableau et les jetons ; documenter dans le Design System les <strong>trois gabarits</strong> déjà présents (liste, fiche à panneaux, fenêtre) plutôt que d'en inventer.</li><li><strong>Correction par lots</strong>, du plus visible au moins visible : accueil et entreprises, fiche et panneaux, agenda et opportunités, fenêtres.</li><li><strong>Garde-fou</strong> : un test qui interdit les couleurs et rayons en dur hors des jetons, et un contrôle visuel par page dans l'audit navigateur.</li></ol>
+<hr>
+<h2>5. Jeu de données de démonstration</h2>
+<h3>5.1 Ce qui existe et ce qui est possible</h3>
+<div class="table-wrap"><table><thead><tr><th>Domaine demandé</th><th>État de l'application</th><th>Ce que je peux faire</th></tr></thead><tbody>
+<tr><td>Entreprises, contacts, prospects, partenaires</td><td><strong>Existe</strong> (entreprises, contacts, facilitateurs avec commission)</td><td>Seed complet</td></tr>
+<tr><td>Opportunités, pipeline, rendez-vous, historique</td><td><strong>Existe</strong> (opportunités en 5 étapes, agenda, relances, offres, décharges, agréments, ambassadeurs, audit)</td><td>Seed complet</td></tr>
+<tr><td>« Tâches »</td><td>Les <strong>relances</strong> en tiennent lieu</td><td>Seed via les relances</td></tr>
+<tr><td>« Devis »</td><td>Les <strong>offres</strong> en tiennent lieu</td><td>Seed via les offres (tous les états)</td></tr>
+<tr><td>Administration : utilisateurs, rôles, permissions, équipes</td><td><strong>Existe</strong> ; l'équipe est un lien responsable → collaborateur ; <strong>pas de notion de département</strong></td><td>Seed d'une organisation par fonctions (voir 5.4)</td></tr>
+<tr><td><strong>Investudy</strong> : programmes, sessions, formateurs, participants, inscriptions, certifications</td><td><strong>N'existe pas</strong> (lot S5)</td><td><strong>Spécification et fichiers de données prêts</strong>, chargés quand le module existe</td></tr>
+<tr><td><strong>Finance</strong> : paiements, revenus, dépenses, centres de coûts</td><td><strong>N'existe pas</strong> ; le CRM ne suit pas les paiements (décision D5, ERP séparé)</td><td>Spécification seulement</td></tr>
+<tr><td><strong>Reporting</strong> : indicateurs, graphiques, comparaisons mensuelles</td><td><strong>N'existe pas</strong> (lot S6)</td><td>Les données du CRM sont <strong>réparties sur 12 mois</strong> pour l'alimenter ; le reste suivra</td></tr>
+</tbody></table></div>
+<p>Créer des tables « en avance » pour Investudy ou la finance serait une <strong>modification d'architecture</strong> : je ne le fais pas.</p>
+<h3>5.2 Principes</h3>
+<ol><li><strong>Fictif intégral</strong> : le dépôt est public. <strong>Aucune vraie raison sociale ni personne réelle</strong> : noms d'entreprises inventés (inspirés des secteurs et des pays, sans reprendre de marque existante), personnes inventées, adresses e-mail en <code>.test</code>, numéros inventés mais <strong>valides</strong> selon la nouvelle règle. <em>(Choix par défaut, à confirmer : des marques réelles dans un dépôt public pourraient laisser croire à une relation commerciale.)</em></li><li><strong>Réaliste</strong> : pays d'Afrique centrale et de l'Ouest (Cameroun surtout, Côte d'Ivoire, Sénégal, Gabon, RDC), devise XAF (et EUR, USD pour quelques offres), TVA 19,25 % si utile, noms africains variés.</li><li><strong>Passer par le domaine</strong> : le seed utilise les mêmes règles que l'application (validation, états, versions, audit), pas des <code>INSERT</code> bruts. Les données actuelles de <code>local-stack --demo</code> contournent la validation : c'est ce qui laisse passer des téléphones non conformes.</li><li><strong>Déterministe et répétable</strong> : générateur à graine fixe, dates <strong>relatives à aujourd'hui</strong> (« il y a 45 jours », « dans 6 jours ») pour que les écrans, les retards et les graphiques restent parlants, identifiants stables, rejouable sans doublon.</li><li><strong>Garde-fous</strong> : refuse de s'exécuter hors base locale ou jetable ; jamais en production.</li></ol>
+<h3>5.3 Structure proposée</h3>
+<pre><code>apps/crm-api/seed/
+  fixtures/                 données lisibles (JSON), versionnées
+    organisation.json       fonctions, équipes, comptes de démonstration
+    entreprises.json        ~40 entreprises (secteur, pays, statut, responsable)
+    contacts.json           ~120 contacts (rôle : dirigeant, financier, prescripteur…)
+    facilitateurs.json      ~8 facilitateurs et leur commission
+    commercial.json         offres, décharges, relances, rendez-vous, opportunités, agréments, ambassadeurs
+    investudy.json          (spécifié ; chargé quand S5 existe)
+    finance.json            (spécifié ; chargé quand le module existe)
+  scenarios/                scénarios de recette (un fichier par persona)
+  seed-demo.ts              commande : charge les fixtures par les cas d&#x27;usage
+  validate-fixtures.spec.ts contrôles de cohérence (voir 5.6)</code></pre>
+<p>Trois profils : <strong>minimal</strong> (les 25 entreprises génériques actuelles, pour les tests automatiques), <strong>demo</strong> (jeu complet réaliste), <strong>volume</strong> (milliers de lignes, pour la lenteur et la pagination).</p>
+<h3>5.4 Contenu proposé (volumes et couverture)</h3>
+<p><strong>Organisation (par fonctions, sans noms de personnes réelles)</strong> : 1 Super administrateur, 1 Direction (CEO), 1 Direction + RH (DGA), 1 Finance (DAF), 1 Responsable commercial et <strong>3 chargés de compte</strong> (pour que la portée « propres objets / équipe » soit testable), 1 responsable de formation, 1 support, 1 « conformité » <em>si FD-10 est retenu</em>, 2 formateurs externes sans compte. Un compte par rôle existe déjà (<code>create-demo-users</code>).</p>
+<p><strong>Entreprises (~40)</strong> : banques et établissements de microfinance, fintechs, assurances, sociétés de gestion de patrimoine, sociétés de bourse, télécoms, industries, PME, grandes entreprises ; répartition des <strong>statuts</strong> (cible, contactée, qualifiée, cliente, archivée) et des responsables entre les trois chargés de compte ; quelques entreprises <strong>sans contact</strong> (pour tester la règle « Qualifiée »).</p>
+<p><strong>Exemples d'entreprises fictives</strong> (liste complète produite lors du lot) :</p>
+<div class="table-wrap"><table><thead><tr><th>Nom fictif</th><th>Secteur</th><th>Pays</th></tr></thead><tbody>
+<tr><td>Banque du Wouri Capital</td><td>Banque</td><td>Cameroun</td></tr>
+<tr><td>Sahel Fintech Pay</td><td>Fintech</td><td>Sénégal</td></tr>
+<tr><td>Assurances Mont-Cameroun</td><td>Assurance</td><td>Cameroun</td></tr>
+<tr><td>Kivu Patrimoine et Gestion</td><td>Gestion de patrimoine</td><td>RDC</td></tr>
+<tr><td>Courtage Boursier de l'Équateur</td><td>Société de bourse</td><td>Gabon</td></tr>
+<tr><td>Télécom Delta Afrique</td><td>Télécoms</td><td>Côte d'Ivoire</td></tr>
+<tr><td>Fonderies Littoral Industrie</td><td>Industrie</td><td>Cameroun</td></tr>
+<tr><td>Cabinet Savane Conseil (PME)</td><td>Services</td><td>Côte d'Ivoire</td></tr>
+</tbody></table></div>
+<p><strong>Contacts (~120)</strong> : dirigeants, responsables financiers, prescripteurs, un contact principal par entreprise ; quelques <strong>doublons probables</strong> (pour la détection) ; numéros et e-mails fictifs valides.</p>
+<p><strong>CRM commercial</strong> (couvre tous les états et les cas limites) :</p>
+<ul><li><strong>Offres (~50)</strong> : brouillon, déposée, en attente de décharge, acceptée, refusée, retirée ; plusieurs devises.</li><li><strong>Décharges et relances</strong> : valides et annulées ; relances à venir, <strong>en retard</strong>, faites, annulées.</li><li><strong>Rendez-vous</strong> : tenus, à venir, annulés ; avec et sans lien à une opportunité ; avec un <strong>décideur</strong>.</li><li><strong>Opportunités (~45)</strong> : toutes les étapes, quelques-unes <strong>perdues</strong> (avec motifs variés), <strong>gagnées</strong>, une avec <strong>dérogation</strong> ; montants étalés pour des totaux crédibles.</li><li><strong>Agréments (~12)</strong> : demandé, reçu, honoré, expiré, annulé ; avec et sans <strong>payeur tiers</strong> ; entreprises devenues clientes.</li><li><strong>Ambassadeurs (~6)</strong> : clients et apprenants.</li><li><strong>Historique</strong> : le journal d'audit se remplit de lui-même parce que le seed passe par le domaine ; dates de création <strong>réparties sur 12 mois</strong> pour les comparaisons mensuelles.</li></ul>
+<p><strong>Investudy (spécifié)</strong> : ~8 programmes (marchés financiers, gestion de patrimoine, conformité, fintech…), ~14 sessions (passées, en cours, à venir, complètes, annulée), ~6 formateurs externes, ~120 participants, inscriptions (confirmées, en attente, annulées), présences, évaluations et certifications obtenues ou non.</p>
+<p><strong>Finance (spécifiée, hors périmètre actuel)</strong> : paiements (reçus, partiels, en retard), revenus par mois et par ligne, dépenses par centre de coûts (ex. formation, marketing, informatique, administration), pour le reporting financier.</p>
+<h3>5.5 Stratégie d'intégration dans les environnements</h3>
+<div class="table-wrap"><table><thead><tr><th>Environnement</th><th>Profil</th><th>Comment</th></tr></thead><tbody>
+<tr><td>Tests automatiques (base jetable)</td><td>minimal</td><td>inchangé ; option <code>--seed demo</code> de <code>test-db.mjs</code> pour les parcours de bout en bout</td></tr>
+<tr><td>Poste de développement</td><td>demo</td><td><code>node scripts/local-stack.mjs --demo</code> charge le jeu complet (remplace les 40 entreprises génériques) ; comptes de démonstration inchangés</td></tr>
+<tr><td>Audit navigateur (accessibilité)</td><td>demo</td><td>le parcours actuel crée ses propres données ; ajout d'un parcours « base remplie »</td></tr>
+<tr><td>Recette utilisateur</td><td>demo</td><td>scénarios de recette par persona ; réinitialisable en une commande</td></tr>
+<tr><td>Performance et pagination</td><td>volume</td><td>à la demande</td></tr>
+<tr><td>Production</td><td><strong>aucun</strong></td><td>le seed refuse de s'exécuter</td></tr>
+</tbody></table></div>
+<h3>5.6 Stratégie de validation des données</h3>
+<ol><li><strong>Les validateurs de l'application</strong> passent sur chaque ligne (téléphones, e-mails, montants, dates, états) : une fixture invalide fait échouer le chargement et le test.</li><li><strong>Cohérence métier</strong> (test automatique) : une opportunité gagnée a franchi l'accord de principe ; un agrément honoré a d'abord été reçu ; une entreprise cliente a un agrément ; un facilitateur a un téléphone ; aucune date d'événement passé dans le futur ; un chargé de compte ne possède que des entreprises de son équipe ; un seul agrément actif par opportunité.</li><li><strong>Unicité</strong> : noms d'entreprises, e-mails de contacts et d'ambassadeurs.</li><li><strong>Couverture</strong> (test automatique) : chaque état de chaque entité apparaît au moins une fois ; chaque rôle voit au moins une ligne dans chaque liste de sa portée.</li><li><strong>Hygiène du dépôt public</strong> : un contrôle refuse tout e-mail hors <code>.test</code>, tout numéro hors du motif fictif réservé, toute liste de marques réelles.</li><li><strong>Déterminisme</strong> : deux exécutions donnent les mêmes données (à la date près).</li></ol>
+<hr>
+<h2>6. Priorisation et tâches à créer</h2>
+<div class="table-wrap"><table><thead><tr><th>Id</th><th>Tâche</th><th>Priorité</th><th>Dépend de</th><th>Critère d'acceptation</th></tr></thead><tbody>
+<tr><td><strong>T1.1</strong></td><td>Règle de téléphone unique côté serveur (domaine) + messages</td><td>P0</td><td>—</td><td>Jeu d'essai du 2.7 : valides acceptés, invalides refusés ; stockage nettoyé</td></tr>
+<tr><td><strong>T1.2</strong></td><td>Règle partagée côté interface (supprime 3 copies), aide permanente, <code>inputMode</code></td><td>P0</td><td>T1.1</td><td>Même décision que le serveur sur le jeu d'essai (test de cohérence)</td></tr>
+<tr><td><strong>T1.3</strong></td><td>Nettoyage des téléphones existants + contrainte <code>CHECK</code> en base</td><td>P0</td><td>T1.1</td><td>Rapport des valeurs non conformes ; aucune effacée ; écriture directe invalide refusée</td></tr>
+<tr><td><strong>T1.4</strong></td><td>Mutants et audit navigateur de la règle</td><td>P0</td><td>T1.1, T1.2</td><td>Mutants tués ; 0 violation d'accessibilité</td></tr>
+<tr><td><strong>T2.1</strong></td><td>Correction commune des fenêtres : cadre fixe, corps défilant, boutons d'action visibles, barre discrète (<code>globals.css</code>, <code>modal.tsx</code>)</td><td>P1</td><td>—</td><td>Sur vos trois captures : barre à l'intérieur du cadre, boutons visibles sans défiler</td></tr>
+<tr><td><strong>T2.2</strong></td><td>Mesure du débordement de toutes les fenêtres à 320, 375, 768, 1280 px dans l'audit navigateur (clair et sombre)</td><td>P1</td><td>T2.1</td><td>Aucun débordement ; test de non-régression</td></tr>
+<tr><td><strong>T3.1</strong></td><td>Inventaire des écarts au Design System (grille + captures claires et sombres)</td><td>P2</td><td>—</td><td>Grille remplie, écarts E1 à E6 confirmés ou écartés</td></tr>
+<tr><td><strong>T3.2</strong></td><td>Réalignement par lots + garde-fou contre les valeurs en dur</td><td>P2</td><td>T3.1</td><td>Pages conformes aux trois gabarits</td></tr>
+<tr><td><strong>T4.1</strong></td><td>Squelette du seed (commande, profils, garde-fous, validation des fixtures)</td><td>P1</td><td>T1.1</td><td>Charge, rejoue sans doublon, refuse hors base locale</td></tr>
+<tr><td><strong>T4.2</strong></td><td>Fixtures organisation, entreprises, contacts, facilitateurs</td><td>P1</td><td>T4.1</td><td>Couverture 5.6</td></tr>
+<tr><td><strong>T4.3</strong></td><td>Fixtures commerciales (offres, relances, rendez-vous, opportunités, agréments, ambassadeurs), dates relatives, 12 mois</td><td>P1</td><td>T4.2</td><td>Tous les états présents ; totaux crédibles</td></tr>
+<tr><td><strong>T4.4</strong></td><td>Intégration (<code>local-stack --demo</code>, <code>test-db --seed demo</code>) et scénarios de recette par persona</td><td>P1</td><td>T4.3</td><td>Chaque rôle parcourt son espace avec des données</td></tr>
+<tr><td><strong>T4.5</strong></td><td>Fixtures Investudy et finance, chargées avec leurs modules</td><td>P3</td><td>S5, module finance</td><td>Spécification livrée maintenant, chargement plus tard</td></tr>
+</tbody></table></div>
+<p><strong>Ordre conseillé</strong> : T1.x d'abord (risque de données invalides déjà en base), T2.x en parallèle (rapide), puis T4.x (les données servent à constater T3.x), puis T3.x.</p>
+<h2>7. Points à confirmer (valeurs par défaut appliquées)</h2>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Point</th><th>Valeur par défaut</th></tr></thead><tbody>
+<tr><td>Q1</td><td>Règle « pas de 0 » : premier chiffre après le « + » éventuel</td><td>Oui (<code>+225 0701234567</code> valide)</td></tr>
+<tr><td>Q2</td><td>Minimum de chiffres d'un numéro</td><td>8</td></tr>
+<tr><td>Q3</td><td>Forme stockée</td><td>Sans espace, « + » conservé (<code>+237699123456</code>)</td></tr>
+<tr><td>Q4</td><td>Contrainte <code>CHECK</code> en base et nettoyage des données existantes</td><td>Oui</td></tr>
+<tr><td>Q5</td><td>« Trackbar » = barre de défilement des fenêtres</td><td><strong>Confirmé</strong> par les captures du 2026-11-03</td></tr>
+<tr><td>Q6</td><td>Noms d'entreprises et de personnes entièrement fictifs</td><td>Oui (dépôt public)</td></tr>
+<tr><td>Q7</td><td>Seed par les cas d'usage plutôt que par <code>INSERT</code></td><td>Oui</td></tr>
+<tr><td>Q8</td><td>Investudy et finance : spécification seule tant que les modules n'existent pas</td><td>Oui</td></tr>
+<tr><td>Q9</td><td>Où placer ces lots dans le calendrier : avant S4.4c, ou après</td><td><strong>Votre décision</strong> (T1.x est petit et réduit un risque de données ; je le recommande avant S4.4c)</td></tr>
+</tbody></table></div>
+<h2>8. Ce qui ne change pas</h2>
+<p>L'architecture, les modules, les droits, le modèle de données hors la contrainte de téléphone, les documents (aucun contrat, attestation, facture, fichier joint ni certificat n'est généré).</p></main></body></html>
