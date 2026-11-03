@@ -107,7 +107,7 @@ describe('Ambassadeurs — modification', () => {
     const w = build(); const a = await created(w);
     w.audit.length = 0;
     const view = await w.update.execute({ id: a.id, version: 1, lastName: 'Ndzana', phone: '+237 699 00 11 22', access: chef, actor });
-    expect(view).toMatchObject({ lastName: 'Ndzana', phone: '+237 699 00 11 22', firstName: 'Alain' });
+    expect(view).toMatchObject({ lastName: 'Ndzana', phone: '+237699001122', firstName: 'Alain' });
     expect(w.audit[0]).toMatchObject({ action: AuditAction.Update, oldValue: { lastName: 'Fotso' }, newValue: { lastName: 'Ndzana' } });
   });
 

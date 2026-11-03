@@ -20,6 +20,7 @@ Chaque lot du module commercial a son script. Les résultats (nombre de mutants 
 | `s43b-statuts-responsable.py` | S4.3b | statuts d'entreprise et responsable |
 | `s43c-valeur-lien-rdv.py` | S4.3c | valeur des opportunités et lien rendez-vous |
 | `s44a-agrements.py` | S4.4a | agréments |
+| `correctifs-recette-1.py` | Correctifs 1 | téléphones, fenêtres, barres de défilement, tableaux |
 | `documents.py` | S3.x | module Documents |
 | `roles-ux.py` | S3.8 | sélecteur de rôles |
 | `rapport-journalier.py` | hors lot | rapport journalier |

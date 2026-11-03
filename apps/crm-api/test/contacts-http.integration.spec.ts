@@ -95,6 +95,21 @@ describeDb('Contacts (HTTP + PostgreSQL)', () => {
     expect((await api.call('POST', '/api/v1/contacts', { ...am, body: { ...body, companyId: other.body.id } })).status).toBe(201);
   }, 90_000);
 
+  it('téléphone : enregistré sans espace, refusé s’il commence par 0 ou contient un séparateur ; la base refuse aussi une écriture directe invalide', async () => {
+    const { am, companyId } = await team();
+    const created = await api.call('POST', '/api/v1/contacts', { ...am, body: payload(companyId, { phone: ' +237 699 12 34 56 ' }) });
+    expect(created.status).toBe(201);
+    expect(created.body.phone).toBe('+237699123456');
+    const post = async (phone: string) => (await api.call('POST', '/api/v1/contacts', { ...am, body: payload(companyId, { phone }) })).status;
+    for (const bad of ['0699123456', '++237699123456', '+237-699123456', '+237(699)123456', '69912', '+237 699 12 34 56 78 90 12']) expect([bad, await post(bad)]).toEqual([bad, 400]);
+    expect(await post('+225 0701234567')).toBe(201);
+    const db = t.prisma.db;
+    await expect(db.$executeRawUnsafe(`UPDATE bd.contacts SET phone = '0699123456' WHERE id = '${created.body.id}'::uuid`)).rejects.toThrow();
+    await expect(db.$executeRawUnsafe(`UPDATE bd.contacts SET phone = '+237 699 12 34 56' WHERE id = '${created.body.id}'::uuid`)).rejects.toThrow();
+    await expect(db.$executeRawUnsafe(`UPDATE bd.companies SET phone = '+237-699123456' WHERE id = '${companyId}'::uuid`)).rejects.toThrow();
+    await db.$executeRawUnsafe(`UPDATE bd.contacts SET phone = '+237699123457' WHERE id = '${created.body.id}'::uuid`);
+  }, 120_000);
+
   it('validations HTTP : champs obligatoires, e-mail, fonction ; champs inconnus refusés (400)', async () => {
     const { am, companyId } = await team();
     const post = async (patch: Record<string, unknown>) => (await api.call('POST', '/api/v1/contacts', { ...am, body: { ...payload(companyId), ...patch } })).status;

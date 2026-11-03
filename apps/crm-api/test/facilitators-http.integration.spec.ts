@@ -49,7 +49,7 @@ describeDb('Facilitateurs et commissions (HTTP + PostgreSQL)', () => {
     const chef = await login(await createUserWithRoles(t, [RoleCode.HeadOfSales]));
     const created = await api.call('POST', '/api/v1/companies', { ...chef, body: body() });
     expect(created.status).toBe(201);
-    expect(created.body).toMatchObject({ email: 'contact@exemple.cm', phone: '+237 222 33 44 55' });
+    expect(created.body).toMatchObject({ email: 'contact@exemple.cm', phone: '+237222334455' });
     expect(created.body.facilitation).toMatchObject({
       contactMethod: 'WHATSAPP_MESSAGE', isCompanyEmployee: true,
       facilitator: { firstName: 'Paul', lastName: 'Mbarga', comment: 'Connaît le DAF' },

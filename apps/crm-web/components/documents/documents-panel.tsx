@@ -96,6 +96,7 @@ export function DocumentsPanel({ ownerType, ownerId }: { ownerType: string; owne
   const columns: Column<DocumentView>[] = [
     {
       id: 'title',
+      weight: 4,
       header: 'Document',
       cell: (d) => (
         <div className="min-w-0">
@@ -109,6 +110,7 @@ export function DocumentsPanel({ ownerType, ownerId }: { ownerType: string; owne
     },
     {
       id: 'file',
+      weight: 3,
       header: 'Fichier',
       cell: (d) => (
         <span title={d.current.sha256}>
@@ -117,10 +119,11 @@ export function DocumentsPanel({ ownerType, ownerId }: { ownerType: string; owne
         </span>
       ),
     },
-    { id: 'added', header: 'Version du', cell: (d) => formatDate(d.current.uploadedAt) },
-    { id: 'scan', header: 'Antivirus', cell: (d) => scanBadge(d.current.scanStatus) },
+    { id: 'added', weight: 2, header: 'Version du', cell: (d) => formatDate(d.current.uploadedAt) },
+    { id: 'scan', weight: 2, header: 'Antivirus', cell: (d) => scanBadge(d.current.scanStatus) },
     {
       id: 'actions',
+      weight: 1,
       header: 'Actions',
       srOnlyHeader: true,
       align: 'right',

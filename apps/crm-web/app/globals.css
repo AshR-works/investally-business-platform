@@ -15,6 +15,16 @@
  */
 @layer legacy {
 * { box-sizing: border-box; }
+/* Barres de défilement minimalistes, sur toute l'application : fines, sans rail ni flèches, pouce arrondi discret qui se renforce au survol
+   (couleurs dérivées du texte : elles suivent les thèmes clair et sombre). */
+* { scrollbar-width: thin; scrollbar-color: color-mix(in srgb, var(--ink) 24%, transparent) transparent; }
+*:hover { scrollbar-color: color-mix(in srgb, var(--ink) 42%, transparent) transparent; }
+@supports not (scrollbar-width: thin) {
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track, ::-webkit-scrollbar-corner { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--ink) 24%, transparent); border-radius: 999px; border: 2px solid transparent; background-clip: content-box; }
+  ::-webkit-scrollbar-thumb:hover { background: color-mix(in srgb, var(--ink) 42%, transparent); background-clip: content-box; }
+}
 body {
   margin: 0;
   background: var(--canvas);
@@ -85,13 +95,19 @@ td .row { min-width: 15rem; }
 .badge.warn { color: var(--warn); background: var(--warn-bg); border-color: transparent; }
 .badge.bad { color: var(--bad); background: var(--bad-bg); border-color: transparent; }
 .overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, .55); display: grid; place-items: center; padding: 1rem; z-index: 50; }
-.dialog { background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--radius); box-shadow: var(--shadow-3); padding: 1.5rem; width: 100%; max-width: 480px; max-height: 90vh; overflow: auto; }
-.dialog.wide { max-width: 1040px; }
+.dialog { background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--radius); box-shadow: var(--shadow-3); padding: 0; width: 100%; max-width: min(480px, calc(100vw - 2rem)); max-height: min(90vh, calc(100dvh - 2rem)); display: flex; flex-direction: column; overflow: hidden; }
+.dialog.wide { max-width: min(1040px, calc(100vw - 2rem)); }
 /* Largeur minimale : les champs et les groupes ne se tassent pas (sur un écran plus étroit, la fenêtre prend toute la largeur). */
 .dialog { min-width: min(26rem, 100%); }
 .dialog.wide { min-width: min(46rem, 100%); }
-.dialog-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: .75rem; }
-.dialog-head h2 { margin: 0; }
+/* Le cadre ne défile jamais : l'en-tête reste en place et seul le corps défile. La barre de défilement est fine, à l'intérieur du cadre
+   (marges à droite et en bas : elle ne touche plus les angles arrondis) et sa place est réservée (la largeur ne saute pas à l'apparition). */
+.dialog-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; padding: 1.25rem 1.5rem .5rem; flex: none; }
+.dialog-head h2 { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.dialog-body { flex: 1 1 auto; min-height: 0; overflow: auto; margin: 0 .5rem .75rem 0; padding: .25rem .75rem 0 1.5rem; scrollbar-gutter: stable; overflow-wrap: break-word; }
+.dialog-body > *, .dialog-body form > * { min-width: 0; }
+/* Les boutons d'action restent visibles en bas de la fenêtre, sans avoir à défiler. */
+.dialog-body > .row.end:last-child, .dialog-body > form > .row.end:last-child { position: sticky; bottom: 0; z-index: 1; background: var(--surface); border-top: 1px solid var(--line); margin-top: 1rem; padding: .75rem 0 .25rem; }
 .dialog-close { flex-shrink: 0; display: inline-grid; place-items: center; padding: .4rem; margin: -.2rem -.3rem 0 0; background: transparent; color: var(--ink); border-color: transparent; border-radius: var(--radius-pill); }
 .dialog-close:hover:not(:disabled) { background: var(--surface-2); }
 .qr { display: block; margin: .5rem auto 1rem; width: 220px; height: 220px; background: #fff; padding: 8px; border-radius: var(--radius-xs); }

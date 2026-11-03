@@ -125,6 +125,9 @@
 | D122 | **Pas de panneau « Ambassadeurs » sur la fiche de l'entreprise**, pas de filtre par entreprise ni d'export de la liste | S4.4b | Claude | Fiche 360° enrichie |
 | D123 | **Visibilité par créateur, pas par entreprise** : si une entreprise change de responsable (S4.3b), ses ambassadeurs restent chez leur créateur | S4.4b | Claude | À confirmer (D40) |
 | D124 | **Un e-mail ne sert qu'à un ambassadeur** ; aucun contrôle de doublon par nom (deux personnes homonymes sont permises) | S4.4b | Claude | À confirmer (D40) |
+| D130 | **Lignes anciennes au téléphone non conforme** : la contrainte est posée sans validation des lignes existantes ; une ligne dont le numéro commence par 0 ou contient un séparateur non retirable n'est pas modifiée mais ne peut plus être mise à jour avant correction (requêtes de rapport dans la migration `20261110000000_phone_format`) ; puis `VALIDATE CONSTRAINT` | Correctifs 1 | Claude | Avant la mise en production |
+| D131 | **Poids de colonnes des tableaux choisis sans données réelles** : à ajuster après regard sur de vraies données (neuf tableaux) | Correctifs 1 | Claude | Jeu de données de démonstration |
+| D132 | **Seule la fenêtre « Nouvelle entreprise » est mesurée aux quatre largeurs** (320, 375, 768, 1280 px) dans le navigateur ; les autres partagent le composant et le style | Correctifs 1 | Claude | Mesure de toutes les fenêtres (T2.2) |
 | D105 | **Le statut « Cliente » n'est posé par rien** tant que l'agrément n'existe pas ; une entreprise ne peut donc pas encore devenir cliente | S4.3b | Claude | *Soldée par S4.4a* : l'agrément reçu pose « Cliente » |
 | D5 | Hypothèses de charge et de périmètre non confirmées | Phase 3 | Revue à la fin de S1 avec les chiffres réels | Ouverte |
 

@@ -73,6 +73,7 @@ function FollowupsContent() {
   const columns = useMemo<Column<Followup>[]>(() => [
     {
       id: 'due',
+      weight: 2.4,
       header: 'Échéance',
       cell: (f) => (
         <span className="inline-flex flex-wrap items-center gap-2">
@@ -81,17 +82,19 @@ function FollowupsContent() {
         </span>
       ),
     },
-    { id: 'offer', header: 'Offre', cell: (f) => <strong>{f.offerReference}</strong> },
-    { id: 'company', header: 'Entreprise', cell: (f) => <Link href={`/companies/${f.companyId}`} className="text-ink no-underline hover:underline">{f.companyName}</Link> },
-    { id: 'channel', header: 'Canal', cell: (f) => channelLabel(f.channel) },
+    { id: 'offer', weight: 2, header: 'Offre', cell: (f) => <strong>{f.offerReference}</strong> },
+    { id: 'company', weight: 3, header: 'Entreprise', cell: (f) => <Link href={`/companies/${f.companyId}`} className="text-ink no-underline hover:underline">{f.companyName}</Link> },
+    { id: 'channel', weight: 1.6, header: 'Canal', cell: (f) => channelLabel(f.channel) },
     {
       id: 'note',
+      weight: 4,
       header: 'Note ou résultat',
       cell: (f) => f.resultNote ?? f.note ?? <span className="text-ink-2">—</span>,
     },
-    { id: 'status', header: 'État', cell: (f) => { const s = statusStyle(FOLLOWUP_STATUS, f.status); return <Badge tone={s.tone}>{s.label}</Badge>; } },
+    { id: 'status', weight: 1.6, header: 'État', cell: (f) => { const s = statusStyle(FOLLOWUP_STATUS, f.status); return <Badge tone={s.tone}>{s.label}</Badge>; } },
     {
       id: 'actions',
+      weight: 1,
       header: 'Actions',
       srOnlyHeader: true,
       align: 'right',

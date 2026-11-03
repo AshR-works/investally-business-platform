@@ -58,7 +58,7 @@ export function Modal({ title, onClose, children, size = 'default' }: { title: s
           <h2>{title}</h2>
           <button type="button" className="dialog-close" onClick={onClose} aria-label="Fermer la fenêtre" title="Fermer"><Icon name="close" className="size-5" /></button>
         </div>
-        {children}
+        <div className="dialog-body">{children}</div>
       </div>
     </div>
   );
