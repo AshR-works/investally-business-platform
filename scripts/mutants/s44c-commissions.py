@@ -57,7 +57,8 @@ def run(kind):
         out = subprocess.run(['node', 'scripts/test-db.mjs', '--tests=' + kind.split(':')[1]], cwd=api, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, timeout=800, env=env).stdout
     lines = [l for l in out.splitlines() if l.startswith('Tests:')]
     assert lines, 'run inconclusive: ' + out[-300:]
-    return ' failed' in lines[-1]
+    # Une suite qui ne compile plus (le vérificateur de types refuse la faute) est aussi une faute détectée.
+    return ' failed' in lines[-1] or any(l.startswith('Test Suites:') and ' failed' in l for l in out.splitlines())
 res = []
 for name, path, a, b, kind in M:
     raw = open(path, 'rb').read()
