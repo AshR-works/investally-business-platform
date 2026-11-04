@@ -17,7 +17,7 @@ Prérequis : Node 22 LTS, pnpm 12, une application TOTP (téléphone ou extensio
 2. Compile l'API et l'interface (long la première fois seulement).
 3. Démarre PostgreSQL (données dans `..\investally-local\pgdata`), applique les migrations, crée rôles et permissions.
 4. Crée `admin@investally.test` si aucun utilisateur n'existe : mot de passe aléatoire **affiché une seule fois**.
-5. Avec `--demo` : 40 entreprises fictives (20 pour `compte1`, 20 pour `compte2`) et un compte par rôle.
+5. Avec `--demo` : un compte par rôle, puis le **jeu de données de démonstration** : 40 entreprises fictives (banques, fintechs, assurances, gestion de patrimoine, bourse, télécoms, industries, PME) réparties entre `compte1`, `compte2` et `compte3`, avec leur vie commerciale sur douze mois : contacts, facilitateurs et commissions, offres, décharges, relances (faites, à venir, en retard), rendez-vous (tenus, annulés, à venir), opportunités à toutes les étapes (perdues, gagnées, dérogations), agréments (demandé, reçu, honoré, expiré, annulé, payeur tiers) et ambassadeurs. Les données sont **entièrement fictives** et passent par les vrais cas d'usage ; le chargement est **rejouable sans doublon** (commande seule : `node apps/crm-api/dist/src/cli/seed-demo.js` après la compilation).
 6. Démarre l'API puis l'interface et affiche les adresses.
 
 ## Utiliser
@@ -32,7 +32,7 @@ Prérequis : Node 22 LTS, pnpm 12, une application TOTP (téléphone ou extensio
 | Super administrateur | `admin@investally.test` |
 | Direction | `direction@` |
 | Responsable commercial | `commercial@` |
-| Chargés de compte (2) | `compte1@`, `compte2@` (responsable : `commercial@`) |
+| Chargés de compte (3) | `compte1@`, `compte2@`, `compte3@` (responsable : `commercial@`) |
 | Responsable Investudy | `investudy@` |
 | Formateur | `formateur@` (responsable : `investudy@`) |
 | Support, Finance, RH, Fiscalité | `support@`, `finance@`, `rh@`, `fiscalite@` |
@@ -72,7 +72,7 @@ node apps/crm-api/scripts/test-db.mjs     # intégration, base jetable (TEST_DB_
 
 ## Limites connues
 - Modules livrés : identité et accès, entreprises (statuts, responsable, fiche 360°), contacts, offres, décharges signées, relances, agenda (rendez-vous et visites), opportunités, agréments, documents. Les ambassadeurs et les commissions à verser (S4.4b, S4.4c), Investudy, le pilotage et les stocks arrivent ensuite.
-- La démonstration (`--demo`) crée des entreprises et des comptes, mais **aucune offre, relance, rendez-vous, opportunité ni agrément** : on les crée soi-même (scénarios 4 à 6, 9 et 11).
+- La démonstration (`--demo`) charge un jeu complet pour tout le module commercial (voir l'étape 5). **Investudy, la finance et le reporting n'ont pas de données : ces modules n'existent pas encore** (leur jeu est spécifié dans `docs/cadrages/OBSERVATIONS-VALIDATION-UX-ET-DONNEES-DE-TEST.md`). Aucun document, contrat, attestation, facture ni fichier joint n'est généré.
 - Rappels de rendez-vous : aucun envoi (ni e-mail ni notification) ; synchronisation Outlook absente.
 - Non testé : enrôlement MFA dans un navigateur, `--dev`. Node 22 : testé le 2026-10-29 (183 tests d'intégration et 159 tests de l'interface réussis, voir « Node 22 » ci-dessous).
 - Docker : prévu en S7 (voir la stratégie).

@@ -1,0 +1,188 @@
+import { AppointmentTransition, PlanAppointmentUseCase, TransitionAppointmentUseCase } from '../../modules/business-development/application/appointment-use-cases';
+import { AmbassadorOrigin } from '../../modules/business-development/domain/ambassador';
+import { RegisterAmbassadorUseCase } from '../../modules/business-development/application/ambassador-use-cases';
+import { CloseApprovalUseCase, ReceiveApprovalUseCase, RegisterApprovalUseCase } from '../../modules/business-development/application/approval-use-cases';
+import { ChangeCompanyStatusUseCase, CompanyStatus } from '../../modules/business-development/application/company-lifecycle-use-cases';
+import { RegisterContactUseCase } from '../../modules/business-development/application/contact-use-cases';
+import { CloseFollowupUseCase, PlanFollowupUseCase } from '../../modules/business-development/application/followup-use-cases';
+import { ChangeOfferStatusUseCase, RegisterOfferUseCase } from '../../modules/business-development/application/offer-use-cases';
+import { AdvanceOpportunityUseCase, CloseOpportunityUseCase, CreateOpportunityUseCase, GrantWaiverUseCase } from '../../modules/business-development/application/opportunity-use-cases';
+import { RegisterCompanyUseCase } from '../../modules/business-development/application/register-company.use-case';
+import { RegisterReceiptUseCase } from '../../modules/business-development/application/receipt-use-cases';
+import { UpdateCompanyUseCase } from '../../modules/business-development/application/update-company.use-case';
+import { AuthorizationService } from '../../modules/iam/application/authorization.service';
+import type { AccessContext } from '../../modules/iam';
+import { PrismaService } from '../../platform/prisma.service';
+import { ActorContext, CLOCK } from '../../shared-kernel';
+import { COMPANIES, SeedEvent, SeedOp, Who } from './seed-plan';
+
+/** Ce dont le chargeur a besoin de l'application : retrouver un service, sans en dépendre autrement (l'application complète ou un test). */
+export interface ProviderSource {
+  get<T>(token: unknown, options?: { strict: boolean }): T;
+}
+
+export interface SeedOptions {
+  /** Utilisateur de chaque rôle du plan. */
+  users: Record<Who, string>;
+  log?: (message: string) => void;
+}
+
+export interface SeedResult {
+  executed: number;
+  skipped: boolean;
+  counts: Record<string, number>;
+}
+
+/** Nom de la première entreprise du plan : sa présence indique que le jeu est déjà chargé. */
+export const SEED_MARKER = COMPANIES[0]!.name;
+
+/**
+ * Charge le jeu de données de démonstration en rejouant le plan à travers les VRAIS cas d'usage de l'application : mêmes règles
+ * (validation, états, versions, portée, audit) que l'interface. L'horloge est avancée de date en date, ce qui donne à chaque objet sa vraie
+ * date de création ; elle est rendue à son état normal à la fin. Idempotent : si le jeu est déjà là, rien n'est fait.
+ */
+export async function runSeed(app: ProviderSource, events: readonly SeedEvent[], options: SeedOptions): Promise<SeedResult> {
+  const log = options.log ?? (() => undefined);
+  const prisma = app.get<PrismaService>(PrismaService, { strict: false });
+  if ((await prisma.db.company.count({ where: { name: SEED_MARKER } })) > 0) {
+    log(`Le jeu de démonstration est déjà chargé (« ${SEED_MARKER} » existe) : rien à faire.`);
+    return { executed: 0, skipped: true, counts: {} };
+  }
+
+  const clock = app.get<{ now: () => Date }>(CLOCK, { strict: false });
+  const realNow = clock.now.bind(clock);
+  const authorization = app.get<AuthorizationService>(AuthorizationService, { strict: false });
+  const use = <T,>(type: new (...args: never[]) => T): T => app.get<T>(type, { strict: false });
+  const accessOf = new Map<Who, AccessContext>();
+  const actorOf = (who: Who): ActorContext => ({ userId: options.users[who], sessionId: null, ipAddress: 'cli', device: 'cli:seed:demo' });
+  for (const who of Object.keys(options.users) as Who[]) accessOf.set(who, await authorization.contextFor(options.users[who]));
+
+  const ids = new Map<string, string>();
+  const id = (key: string): string => {
+    const found = ids.get(key);
+    if (!found) throw new Error(`Objet « ${key} » introuvable : le plan est incohérent`);
+    return found;
+  };
+  const versionOf = async (kind: 'company' | 'offer' | 'followup' | 'appointment' | 'opportunity' | 'approval', key: string): Promise<number> => {
+    const where = { id: id(key) };
+    const row = await (prisma.db[kind] as unknown as { findUniqueOrThrow(args: { where: { id: string }; select: { version: true } }): Promise<{ version: number }> }).findUniqueOrThrow({ where, select: { version: true } });
+    return row.version;
+  };
+  const counts: Record<string, number> = {};
+
+  let executed = 0;
+  try {
+    for (const event of events) {
+      const at = event.at;
+      clock.now = () => at;
+      const access = accessOf.get(event.who)!;
+      const actor = actorOf(event.who);
+      const op: SeedOp = event.op;
+      try {
+        switch (op.k) {
+          case 'company': {
+            const view = await use(RegisterCompanyUseCase).execute({
+              name: op.name, ownerUserId: options.users[event.who], sector: op.sector, country: op.country, email: op.email, phone: op.phone, access, actor,
+              facilitation: op.facilitator ? { newFacilitator: { lastName: op.facilitator.lastName, firstName: op.facilitator.firstName, phone: op.facilitator.phone, comment: op.facilitator.comment }, contactMethod: op.facilitator.contactMethod, isCompanyEmployee: op.facilitator.isCompanyEmployee } : undefined,
+            });
+            ids.set(op.key, view.id);
+            if (op.facilitator) {
+              const link = await prisma.db.companyFacilitation.findUniqueOrThrow({ where: { companyId: view.id }, select: { facilitatorId: true } });
+              ids.set(op.facilitator.key, link.facilitatorId);
+            }
+            break;
+          }
+          case 'companyFacilitator':
+            await use(UpdateCompanyUseCase).execute({ id: id(op.key), version: await versionOf('company', op.key), facilitation: { facilitatorId: id(op.facilitatorKey), contactMethod: op.contactMethod, isCompanyEmployee: op.isCompanyEmployee }, access, actor });
+            break;
+          case 'commission':
+            await use(UpdateCompanyUseCase).execute({ id: id(op.company), version: await versionOf('company', op.company), facilitation: { commission: { type: op.type, value: op.value, currency: op.type === 'FIXED' ? op.currency : undefined } }, access, actor });
+            break;
+          case 'companyStatus':
+            await use(ChangeCompanyStatusUseCase).execute({ id: id(op.company), version: await versionOf('company', op.company), status: op.status as CompanyStatus, access, actor });
+            break;
+          case 'contact': {
+            const view = await use(RegisterContactUseCase).execute({ companyId: id(op.company), lastName: op.lastName, firstName: op.firstName, role: op.role, email: op.email, phone: op.phone, allowDuplicate: true, access, actor });
+            ids.set(op.key, (view as { id: string }).id);
+            break;
+          }
+          case 'offer': {
+            const view = await use(RegisterOfferUseCase).execute({ companyId: id(op.company), subject: op.subject, amount: op.amount, currency: op.currency, note: op.note, access, actor });
+            ids.set(op.key, view.id);
+            break;
+          }
+          case 'offerAction':
+            await use(ChangeOfferStatusUseCase).execute({ id: id(op.offer), version: await versionOf('offer', op.offer), action: op.action, reason: op.reason, access, actor });
+            break;
+          case 'receipt':
+            await use(RegisterReceiptUseCase).execute({ offerId: id(op.offer), receivedOn: at.toISOString().slice(0, 10), receivedBy: op.receivedBy, access, actor });
+            break;
+          case 'followupPlan': {
+            const view = await use(PlanFollowupUseCase).execute({ offerId: id(op.offer), dueOn: op.dueOn, channel: op.channel, note: op.note, access, actor });
+            ids.set(op.key, view.id);
+            break;
+          }
+          case 'followupClose':
+            await use(CloseFollowupUseCase).execute({ id: id(op.followup), version: await versionOf('followup', op.followup), closing: op.closing, text: op.text, access, actor });
+            break;
+          case 'appointment': {
+            const view = await use(PlanAppointmentUseCase).execute({
+              type: op.type, companyId: id(op.company), contactId: op.contact ? id(op.contact) : null, opportunityId: op.opportunity ? id(op.opportunity) : null,
+              startsAt: op.startsAt, durationMinutes: op.durationMinutes, location: op.location, note: op.note, access, actor,
+            });
+            ids.set(op.key, (view as { id: string }).id);
+            break;
+          }
+          case 'appointmentTransition':
+            await use(TransitionAppointmentUseCase).execute({ id: id(op.appointment), version: await versionOf('appointment', op.appointment), transition: op.transition as AppointmentTransition, text: op.text, startsAt: op.startsAt, access, actor });
+            break;
+          case 'opportunity': {
+            const view = await use(CreateOpportunityUseCase).execute({ companyId: id(op.company), title: op.title, amount: op.amount, currency: op.currency, source: op.source, access, actor });
+            ids.set(op.key, view.id);
+            break;
+          }
+          case 'advance':
+            await use(AdvanceOpportunityUseCase).execute({ id: id(op.opportunity), version: await versionOf('opportunity', op.opportunity), access, actor });
+            break;
+          case 'waiver':
+            await use(GrantWaiverUseCase).execute({ id: id(op.opportunity), version: await versionOf('opportunity', op.opportunity), reason: op.reason, access, actor });
+            break;
+          case 'close':
+            await use(CloseOpportunityUseCase).execute({ id: id(op.opportunity), version: await versionOf('opportunity', op.opportunity), outcome: op.outcome, reason: op.reason, note: op.note, access, actor });
+            break;
+          case 'approval': {
+            const view = await use(RegisterApprovalUseCase).execute({
+              opportunityId: id(op.opportunity), amount: op.amount, places: op.places, currency: op.currency, requested: op.requested, receivedOn: op.receivedOn,
+              validUntil: op.validUntil, payerName: op.payerName, payerType: op.payerType, access, actor,
+            });
+            ids.set(op.key, view.id);
+            break;
+          }
+          case 'approvalReceive':
+            await use(ReceiveApprovalUseCase).execute({ id: id(op.approval), version: await versionOf('approval', op.approval), receivedOn: op.receivedOn, access, actor });
+            break;
+          case 'approvalClose':
+            await use(CloseApprovalUseCase).execute({ id: id(op.approval), version: await versionOf('approval', op.approval), action: op.action, reason: op.reason, access, actor });
+            break;
+          case 'ambassador': {
+            const view = await use(RegisterAmbassadorUseCase).execute({
+              lastName: op.lastName, firstName: op.firstName, origin: op.origin as AmbassadorOrigin, companyId: op.company ? id(op.company) : null, email: op.email, phone: op.phone,
+              appointedOn: op.appointedOn, note: op.note, access, actor,
+            });
+            ids.set(op.key, (view as { id: string }).id);
+            break;
+          }
+        }
+      } catch (error) {
+        throw new Error(`Événement ${executed + 1}/${events.length} (${op.k}, ${event.who}, ${event.at.toISOString().slice(0, 10)}) : ${error instanceof Error ? error.message : String(error)}`);
+      }
+      counts[op.k] = (counts[op.k] ?? 0) + 1;
+      executed += 1;
+      if (executed % 100 === 0) log(`  ${executed} / ${events.length} événements…`);
+    }
+  } finally {
+    clock.now = realNow;
+  }
+  log(`Jeu de démonstration chargé : ${executed} événements.`);
+  return { executed, skipped: false, counts };
+}

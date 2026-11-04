@@ -1,7 +1,7 @@
 // Pile LOCALE PERSISTANTE de l'application, sans Docker et sans Claude Code.
 //
 //   node scripts/local-stack.mjs            démarre base + API + interface (Ctrl+C pour tout arrêter)
-//   node scripts/local-stack.mjs --demo     idem, et ajoute des entreprises fictives (idempotent)
+//   node scripts/local-stack.mjs --demo     idem, et charge le jeu de données de démonstration fictif (idempotent)
 //   node scripts/local-stack.mjs --rebuild  force la recompilation de l'API et de l'interface
 //   node scripts/local-stack.mjs --dev      interface en mode développement (rechargement à chaud)
 //   node scripts/local-stack.mjs reset      supprime base, documents et secrets locaux (après confirmation)
@@ -173,36 +173,14 @@ if (users.rows[0].n === 0) {
 
 // --- données de démonstration (facultatif) -----------------------------------------------------------------------
 if (flag('demo')) {
-  const sectors = ['Banque', 'Assurance', 'Industrie', 'Distribution', 'Énergie', 'Télécoms', 'Santé'];
-  const countries = ['Cameroun', 'Côte d\'Ivoire', 'Sénégal', 'Gabon', 'RDC'];
-  const statuses = ['TARGET', 'TARGET', 'TARGET'];
-  let added = 0;
-  for (let i = 1; i <= 40; i++) {
-    const name = `Démo Entreprise ${String(i).padStart(2, '0')}`;
-    const r = await db.query(
-      `INSERT INTO bd.companies (id, name, name_key, status, sector, country, updated_at)
-       VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, now()) ON CONFLICT DO NOTHING`,
-      [name, name.toLowerCase(), statuses[i % statuses.length], sectors[i % sectors.length], countries[i % countries.length]],
-    );
-    added += r.rowCount;
-  }
-  say(`✔ Données de démonstration : ${added} entreprise(s) ajoutée(s)`);
-
   // Un compte par rôle (mots de passe aléatoires, conservés dans demo-accounts.json, droits restreints).
   const accountsFile = join(home, 'demo-accounts.json');
   const before = existsSync(accountsFile) ? JSON.parse(readFileSync(accountsFile, 'utf8')).length : 0;
   node(apiDir, join('dist', 'src', 'cli', 'create-demo-users.js'), [], { ...appEnv, DEMO_ACCOUNTS_FILE: accountsFile }, 'comptes de démonstration');
   const accounts = JSON.parse(readFileSync(accountsFile, 'utf8'));
-  // Répartit les entreprises sans propriétaire entre les deux chargés de compte (tests de portée « propres objets »).
-  const owners = await db.query("SELECT id, email_key FROM iam.users WHERE email_key IN ('compte1@demo.investally.test', 'compte2@demo.investally.test') ORDER BY email_key");
-  if (owners.rowCount === 2) {
-    await db.query(
-      `UPDATE bd.companies SET owner_user_id = CASE WHEN (row_number % 2) = 1 THEN $1::uuid ELSE $2::uuid END
-       FROM (SELECT id AS cid, row_number() OVER (ORDER BY name) AS row_number FROM bd.companies WHERE owner_user_id IS NULL AND name LIKE 'Démo Entreprise%') t
-       WHERE bd.companies.id = t.cid`,
-      [owners.rows[0].id, owners.rows[1].id],
-    );
-  }
+  // Jeu de données de démonstration : quarante entreprises fictives et leur vie commerciale sur douze mois, rejouées par les vrais cas
+  // d'usage (idempotent : rien n'est refait si le jeu est déjà là).
+  node(apiDir, join('dist', 'src', 'cli', 'seed-demo.js'), [], appEnv, 'jeu de données de démonstration');
   if (accounts.length > before) {
     say('\n┌ Comptes de démonstration (un par rôle ; MFA à enrôler à la première connexion)');
     for (const a of accounts) say(`│ ${a.role.padEnd(16)} ${a.email.padEnd(36)} ${a.password}`);

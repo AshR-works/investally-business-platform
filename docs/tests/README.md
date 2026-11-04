@@ -30,7 +30,7 @@
 | 16 | [Opportunités (pipeline)](interfaces/16-opportunites.md) | `/opportunities` | S4.3a, S4.3b, S4.3c | |
 | 17 | [Ambassadeurs](interfaces/17-ambassadeurs.md) | `/ambassadors` | S4.4b | |
 
-## Fiches de session (31)
+## Fiches de session (32)
 
 | Session | Intitulé | Étiquette | Vérifications | Dernière exécution |
 |---|---|---|---|---|
@@ -47,6 +47,7 @@
 | [h2a](sessions/h2a.md) | H2a — Écrans d'accès au nouveau style | `h2a-validated` | 12 | |
 | [h2b](sessions/h2b.md) | H2b — Sessions et historique des connexions | `h2b-validated` | 2 | |
 | [idor](sessions/idor.md) | Contrat anti-IDOR | `idor-validated` | 5 | |
+| [jeu-de-donnees](sessions/jeu-de-donnees.md) | Jeu de données de démonstration (module commercial) | — | 7 | |
 | [s3-6](sessions/s3-6.md) | S3.6 — Documents | `s3-6-validated` | 7 | |
 | [s3-7](sessions/s3-7.md) | S3.7 — UX de l'authentification | `s3-7-validated` | 3 | |
 | [s3-8](sessions/s3-8.md) | S3.8 — Rôles et permissions (UX-02) | `s3-8-validated` | 7 | |

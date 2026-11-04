@@ -87,6 +87,7 @@
 | S4.4b — ambassadeurs | 02/11/2026 | 02/11/2026 | Validé | `s4-4b-validated` |
 | Correctifs 1 — téléphones, fenêtres, barres de défilement, tableaux | 03/11/2026 | 03/11/2026 | Validé | `correctifs-1-validated` |
 | S4.4a-bis — correctifs D41 (agrément demandé, payeur, Finance, second facteur) | 03/11/2026 | 03/11/2026 | Terminé, validation en attente | — |
+| Jeu de données de démonstration (module commercial) | 03/11/2026 | 03/11/2026 | Terminé, validation en attente | — |
 | S4.4c — commissions à verser | 18/11/2026 | 19/11/2026 | Prévu | — |
 
 ### Module Investudy (formation)
