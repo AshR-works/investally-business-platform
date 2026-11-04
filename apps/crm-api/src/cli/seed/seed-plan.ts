@@ -17,6 +17,7 @@ export type SeedOp =
   | { k: 'offer'; key: string; company: string; subject: string; amount: string; currency: string; note?: string }
   | { k: 'offerAction'; offer: string; action: 'submit' | 'accept' | 'refuse' | 'withdraw'; reason?: string }
   | { k: 'receipt'; offer: string; receivedBy: string }
+  | { k: 'receiptCancel'; offer: string; reason: string }
   | { k: 'followupPlan'; key: string; offer: string; dueOn: string; channel: string; note: string }
   | { k: 'followupClose'; followup: string; closing: 'complete' | 'cancel'; text: string }
   | { k: 'appointment'; key: string; company: string; contact?: string; opportunity?: string; type: 'FINANCE_DIRECTOR' | 'DECISION_MAKER' | 'VISIT'; startsAt: string; durationMinutes: number; location: string; note: string }
@@ -28,6 +29,8 @@ export type SeedOp =
   | { k: 'approval'; key: string; opportunity: string; amount?: string; places?: number; currency: string; requested?: boolean; receivedOn?: string; validUntil?: string; payerName?: string; payerType?: string }
   | { k: 'approvalReceive'; approval: string; receivedOn: string }
   | { k: 'approvalClose'; approval: string; action: 'honor' | 'expire' | 'cancel'; reason?: string }
+  | { k: 'reassign'; company: string; to: Who }
+  | { k: 'ambassadorUpdate'; ambassador: string; note: string }
   | { k: 'ambassador'; key: string; lastName: string; firstName: string; origin: 'CLIENT' | 'LEARNER'; company?: string; email: string; phone: string; appointedOn: string; note: string };
 
 export interface SeedEvent {
@@ -147,6 +150,11 @@ export function buildPlan({ anchor, seed = 2026 }: PlanOptions): SeedEvent[] {
   let phoneCounter = 100;
   let facilitatorCount = 0;
   const facilitators: { key: string; owner: Who }[] = [];
+  // Dernière activité de chaque entreprise (pour ne la réattribuer qu'après) et propriétaire de départ.
+  const lastAt = new Map<string, number>();
+  const ownerOf = new Map<string, Who>();
+  const companyOfOffer = new Map<string, string>();
+  const track = (companyKey: string, when: Date) => lastAt.set(companyKey, Math.max(lastAt.get(companyKey) ?? 0, when.getTime()));
 
   COMPANIES.forEach((company, i) => {
     const owner = OWNERS[i % OWNERS.length]!;
@@ -162,11 +170,14 @@ export function buildPlan({ anchor, seed = 2026 }: PlanOptions): SeedEvent[] {
       const when = at(offsetDays, hour);
       if (when.getTime() > anchor.getTime()) return false;
       events.push({ at: when, who, op });
+      track(key, when);
+      if (op.k === 'offer') companyOfOffer.set(op.key, key);
       return true;
     };
     const inDays = (offsetDays: number, hour = 9) => at(offsetDays, hour).toISOString();
     const dayOf = (offsetDays: number) => isoDay(at(offsetDays));
     const scenario = i % 10;
+    ownerOf.set(key, owner);
 
     // L'entreprise, son éventuel facilitateur (une entreprise sur cinq) et ses contacts.
     let facilitator: Extract<SeedOp, { k: 'company' }>['facilitator'];
@@ -192,7 +203,9 @@ export function buildPlan({ anchor, seed = 2026 }: PlanOptions): SeedEvent[] {
     const [dmFirst, dmLast] = person();
     const dmKey = `${key}-dm`;
     if (scenario >= 2) add(2, owner, { k: 'contact', key: dmKey, company: key, lastName: dmLast, firstName: dmFirst, role: 'DECISION_MAKER', email: emailFor(dmFirst, dmLast), phone: phone() }, 10);
-    if (scenario % 4 === 1) {
+    // Quelques doublons probables (même nom que le directeur financier, autre e-mail) : l'application les signale mais les accepte.
+    if ([3, 13, 23, 33].includes(i)) add(4, owner, { k: 'contact', key: `${key}-fd-doublon`, company: key, lastName: fdLast, firstName: fdFirst, role: 'OTHER', email: `${slug(fdFirst)}.${slug(fdLast)}.bis@${key}.test`, phone: phone() }, 11);
+    if (scenario % 2 === 1) {
       const [oFirst, oLast] = person();
       add(3, owner, { k: 'contact', key: `${key}-autre`, company: key, lastName: oLast, firstName: oFirst, role: 'OTHER', email: emailFor(oFirst, oLast), phone: phone() }, 14);
     }
@@ -202,7 +215,11 @@ export function buildPlan({ anchor, seed = 2026 }: PlanOptions): SeedEvent[] {
     add(3, owner, { k: 'companyStatus', company: key, status: 'CONTACTED' }, 15);
     const apptFd = `${key}-rdv-fd`;
     const planned = add(3, owner, { k: 'appointment', key: apptFd, company: key, contact: fdKey, type: 'FINANCE_DIRECTOR', startsAt: inDays(7, 9), durationMinutes: 60, location: 'Siège du client', note: 'Présentation du catalogue de formations' }, 16);
-    if (planned && i % 20 === 11) add(6, owner, { k: 'appointmentTransition', appointment: apptFd, transition: 'cancel', text: 'Le client est indisponible : rendez-vous annulé.' }, 18);
+    if (planned && i % 20 === 1) {
+      // Reporté une fois à la demande du client, puis tenu.
+      add(5, owner, { k: 'appointmentTransition', appointment: apptFd, transition: 'postpone', text: 'Report demandé par le client (déplacement professionnel).', startsAt: inDays(10, 9) }, 10);
+      add(10, owner, { k: 'appointmentTransition', appointment: apptFd, transition: 'hold', text: 'Besoin confirmé après le report : formation de dix cadres.' }, 11);
+    } else if (planned && i % 20 === 11) add(6, owner, { k: 'appointmentTransition', appointment: apptFd, transition: 'cancel', text: 'Le client est indisponible : rendez-vous annulé.' }, 18);
     else if (planned) add(7, owner, { k: 'appointmentTransition', appointment: apptFd, transition: 'hold', text: 'Besoin confirmé : formation de dix cadres, budget à valider.' }, 11);
     if (scenario === 1) return;
 
@@ -215,12 +232,22 @@ export function buildPlan({ anchor, seed = 2026 }: PlanOptions): SeedEvent[] {
     const offerKey = `${key}-offre`;
     if (add(10, owner, { k: 'offer', key: offerKey, company: key, subject: SUBJECTS[i % SUBJECTS.length]!, amount: money, currency, note: 'Offre établie après le premier rendez-vous' }) && add(12, owner, { k: 'offerAction', offer: offerKey, action: 'submit' }, 10)) {
       // Scénario 4 : offre déposée dont la décharge n'est pas encore revenue.
-      if (scenario !== 4) add(15, owner, { k: 'receipt', offer: offerKey, receivedBy: `${dmFirst} ${dmLast}` }, 14);
+      if (scenario !== 4 && add(15, owner, { k: 'receipt', offer: offerKey, receivedBy: `${dmFirst} ${dmLast}` }, 14) && scenario === 5) {
+        // Mauvais fichier : la décharge est annulée puis ressaisie.
+        if (add(16, owner, { k: 'receiptCancel', offer: offerKey, reason: 'Mauvais fichier joint : décharge à ressaisir.' }, 10)) add(17, owner, { k: 'receipt', offer: offerKey, receivedBy: `${dmFirst} ${dmLast}` }, 11);
+      }
     }
     if (scenario === 2 || scenario === 3) {
       const fu = `${key}-relance`;
       const due = scenario === 2 ? 40 : 22;
       add(16, owner, { k: 'followupPlan', key: fu, offer: offerKey, dueOn: dayOf(due), channel: pick(CHANNELS), note: 'Relancer après la décharge pour connaître la décision' }, 9);
+      if (scenario === 3) {
+        // Première relance faite, deuxième restée sans suite (en retard), troisième annulée.
+        if (add(due, owner, { k: 'followupClose', followup: fu, closing: 'complete', text: 'Le client demande un délai de réflexion.' }, 15)) {
+          add(due + 1, owner, { k: 'followupPlan', key: `${fu}-2`, offer: offerKey, dueOn: dayOf(due + 12), channel: 'EMAIL', note: 'Deuxième relance : proposer un rendez-vous de décision' }, 9);
+          if (add(due + 2, owner, { k: 'followupPlan', key: `${fu}-3`, offer: offerKey, dueOn: dayOf(due + 18), channel: 'CALL', note: 'Troisième relance si pas de réponse' }, 9)) add(due + 8, owner, { k: 'followupClose', followup: `${fu}-3`, closing: 'cancel', text: 'Le contact est injoignable : relance abandonnée.' }, 10);
+        }
+      }
       if (scenario === 2) {
         if (add(due, owner, { k: 'followupClose', followup: fu, closing: 'complete', text: 'Décision attendue sous quinze jours.' }, 15)) {
           add(due + 3, owner, { k: 'offerAction', offer: offerKey, action: 'withdraw', reason: 'Le client reporte son projet à l’an prochain.' }, 10);
@@ -269,7 +296,9 @@ export function buildPlan({ anchor, seed = 2026 }: PlanOptions): SeedEvent[] {
       if (add(aAt, owner, { k: 'approval', key: aKey, opportunity: oppKey, amount: money, currency, receivedOn: dayOf(aAt), validUntil: dayOf(aAt + 180) }, 11)) {
         add(aAt + 1, owner, { k: 'advance', opportunity: oppKey }, 10); // étape « Agrément »
         if (add(aAt + 14, 'finance', { k: 'approvalClose', approval: aKey, action: 'honor' }, 10)) {
-          add(aAt + 40, owner, { k: 'ambassador', key: `${key}-ambassadeur`, lastName: dmLast, firstName: dmFirst, origin: 'CLIENT', company: key, email: emailFor(dmFirst, dmLast).replace('@', '.ambassadeur@'), phone: phone(), appointedOn: dayOf(aAt + 40), note: 'A recommandé deux entreprises du secteur.' }, 15);
+          if (add(aAt + 40, owner, { k: 'ambassador', key: `${key}-ambassadeur`, lastName: dmLast, firstName: dmFirst, origin: 'CLIENT', company: key, email: emailFor(dmFirst, dmLast).replace('@', '.ambassadeur@'), phone: phone(), appointedOn: dayOf(aAt + 40), note: 'A recommandé deux entreprises du secteur.' }, 15) && i % 20 === 6) {
+            add(aAt + 55, 'commercial', { k: 'ambassadorUpdate', ambassador: `${key}-ambassadeur`, note: 'A mis en relation deux nouveaux prospects (suivi par la direction commerciale).' }, 10);
+          }
         }
       }
       return;
@@ -291,28 +320,58 @@ export function buildPlan({ anchor, seed = 2026 }: PlanOptions): SeedEvent[] {
 
   // Activité récente : relances et rendez-vous planifiés à l'avance (échéances futures), sur les offres encore ouvertes les plus récentes.
   const finalActions = new Set(events.filter((e) => e.op.k === 'offerAction' && e.op.action !== 'submit').map((e) => (e.op as { offer: string }).offer));
-  const openOffers = events.filter((e) => e.op.k === 'receipt' && !finalActions.has(e.op.offer)).slice(-3);
+  const seenOffers = new Set<string>(events.filter((e) => e.op.k === 'followupPlan').map((e) => (e.op as { offer: string }).offer)); // offres qui ont déjà leurs relances
+  const openOffers = events.filter((e) => {
+    if (e.op.k !== 'receipt' || finalActions.has(e.op.offer) || seenOffers.has(e.op.offer)) return false;
+    seenOffers.add(e.op.offer);
+    return true;
+  }).slice(-6);
   const ownerOfOffer = (offerKey: string): Who => events.find((e) => e.op.k === 'offer' && e.op.key === offerKey)?.who ?? 'compte1';
+  const pushRecent = (event: SeedEvent, companyKey: string | undefined) => {
+    events.push(event);
+    if (companyKey) track(companyKey, event.at);
+  };
   openOffers.forEach((receiptEvent, index) => {
     const offer = (receiptEvent.op as { offer: string }).offer;
     const plannedAt = new Date(Math.max(receiptEvent.at.getTime() + DAY, day0.getTime() - DAY + 9 * 3_600_000));
-    events.push({ at: plannedAt, who: ownerOfOffer(offer), op: { k: 'followupPlan', key: `${offer}-relance-recente`, offer, dueOn: isoDay(new Date(day0.getTime() + (4 + index * 5) * DAY)), channel: CHANNELS[index % CHANNELS.length]!, note: 'Prendre des nouvelles de la décision du comité' } });
+    const company = companyOfOffer.get(offer);
+    pushRecent({ at: plannedAt, who: ownerOfOffer(offer), op: { k: 'followupPlan', key: `${offer}-relance-recente`, offer, dueOn: isoDay(new Date(day0.getTime() + (3 + index * 4) * DAY)), channel: CHANNELS[index % CHANNELS.length]!, note: 'Prendre des nouvelles de la décision du comité' } }, company);
+    // Les deux premières offres ont une seconde relance plus lointaine.
+    if (index < 2) pushRecent({ at: new Date(plannedAt.getTime() + 3_600_000), who: ownerOfOffer(offer), op: { k: 'followupPlan', key: `${offer}-relance-recente-2`, offer, dueOn: isoDay(new Date(day0.getTime() + (14 + index * 7) * DAY)), channel: 'MEETING', note: 'Proposer un point d’étape avec la direction' } }, company);
   });
-  const recentCompanies = events.filter((e) => e.op.k === 'contact' && e.op.role === 'FINANCE_DIRECTOR').slice(-3);
+  const recentCompanies = events.filter((e) => e.op.k === 'contact' && e.op.role === 'FINANCE_DIRECTOR').slice(-9);
   const apptTypes = ['FINANCE_DIRECTOR', 'VISIT', 'DECISION_MAKER'] as const;
+  let recentAppointments = 0;
   recentCompanies.forEach((contactEvent, index) => {
     const contact = contactEvent.op as Extract<SeedOp, { k: 'contact' }>;
     const type = apptTypes[index % apptTypes.length]!;
-    const plannedAt = new Date(day0.getTime() - DAY + (9 + index) * 3_600_000);
+    const plannedAt = new Date(day0.getTime() - DAY + (8 + index) * 3_600_000);
     if (plannedAt.getTime() < contactEvent.at.getTime()) return;
-    events.push({ at: plannedAt, who: contactEvent.who, op: { k: 'appointment', key: `${contact.company}-rdv-a-venir`, company: contact.company, contact: type === 'VISIT' ? undefined : contact.key, type, startsAt: new Date(day0.getTime() + (2 + index * 3) * DAY + 10 * 3_600_000).toISOString(), durationMinutes: 60, location: type === 'VISIT' ? 'Locaux du client' : 'Visioconférence', note: 'Rendez-vous planifié lors du dernier échange' } });
+    recentAppointments += 1;
+    const key = `${contact.company}-rdv-a-venir`;
+    const startsAt = new Date(day0.getTime() + (1 + index * 2) * DAY + (9 + (index % 5)) * 3_600_000);
+    pushRecent({ at: plannedAt, who: contactEvent.who, op: { k: 'appointment', key, company: contact.company, contact: type === 'VISIT' ? undefined : contact.key, type, startsAt: startsAt.toISOString(), durationMinutes: type === 'DECISION_MAKER' ? 90 : 60, location: type === 'VISIT' ? 'Locaux du client' : 'Visioconférence', note: 'Rendez-vous planifié lors du dernier échange' } }, contact.company);
+    // Un rendez-vous à venir sur trois est déjà reporté une fois.
+    if (recentAppointments % 3 === 2) pushRecent({ at: new Date(plannedAt.getTime() + 2 * 3_600_000), who: contactEvent.who, op: { k: 'appointmentTransition', appointment: key, transition: 'postpone', text: 'Le client demande de décaler d’une semaine.', startsAt: new Date(startsAt.getTime() + 7 * DAY).toISOString() } }, contact.company);
   });
 
-  // Deux ambassadeurs issus de la formation (sans entreprise rattachée).
+  // Quatre entreprises sont confiées à un autre chargé de compte par le Responsable commercial, une fois leur histoire terminée.
+  [4, 14, 24, 34].forEach((index) => {
+    const key = slug(COMPANIES[index]!.name);
+    const last = lastAt.get(key);
+    const owner = ownerOf.get(key);
+    if (last === undefined || owner === undefined) return;
+    const when = new Date(last + 2 * DAY + 11 * 3_600_000);
+    if (when.getTime() > anchor.getTime()) return;
+    events.push({ at: when, who: 'commercial', op: { k: 'reassign', company: key, to: OWNERS[(OWNERS.indexOf(owner) + 1) % OWNERS.length]! } });
+  });
+
+  // Deux ambassadeurs issus de la formation (sans entreprise rattachée) ; le premier est ensuite complété par le Responsable commercial.
   const learners: [number, string, string][] = [[-120, 'Marie-Claire', 'Ngassa'], [-45, 'Ousmane', 'Gueye']];
   learners.forEach(([offset, first, last], index) => {
     const when = new Date(day0.getTime() + offset * DAY + 10 * 3_600_000);
     events.push({ at: when, who: OWNERS[index % OWNERS.length]!, op: { k: 'ambassador', key: `apprenant-${index + 1}`, lastName: last, firstName: first, origin: 'LEARNER', email: `${slug(first)}.${slug(last)}@apprenants.test`, phone: demoPhone('Cameroun', 9000 + index), appointedOn: isoDay(when), note: 'Ancien apprenant devenu relais auprès de son réseau.' } });
+    if (index === 0) events.push({ at: new Date(when.getTime() + 20 * DAY), who: 'commercial', op: { k: 'ambassadorUpdate', ambassador: 'apprenant-1', note: 'Anime un club d’investisseurs : à inviter aux prochaines sessions.' } });
   });
 
   // Ordre chronologique stable (à date égale, l'ordre de construction est conservé).

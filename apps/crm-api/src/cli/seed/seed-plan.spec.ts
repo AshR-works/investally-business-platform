@@ -62,7 +62,9 @@ describe('plan du jeu de données de démonstration', () => {
         case 'commission': case 'companyStatus': need(op.company, 'entreprise'); break;
         case 'contact': need(op.company, 'entreprise'); created.add(op.key); break;
         case 'offer': need(op.company, 'entreprise'); created.add(op.key); break;
-        case 'offerAction': case 'receipt': need(op.offer, 'offre'); break;
+        case 'offerAction': case 'receipt': case 'receiptCancel': need(op.offer, 'offre'); break;
+        case 'reassign': need(op.company, 'entreprise'); break;
+        case 'ambassadorUpdate': need(op.ambassador, 'ambassadeur'); break;
         case 'followupPlan': need(op.offer, 'offre'); created.add(op.key); break;
         case 'followupClose': need(op.followup, 'relance'); break;
         case 'appointment': need(op.company, 'entreprise'); if (op.contact) need(op.contact, 'contact'); if (op.opportunity) need(op.opportunity, 'opportunité'); created.add(op.key); break;
@@ -103,6 +105,40 @@ describe('plan du jeu de données de démonstration', () => {
     expect(ofKind('ambassador').map((a) => a.origin)).toEqual(expect.arrayContaining(['CLIENT', 'LEARNER']));
     expect(ofKind('contact').map((c) => c.role)).toEqual(expect.arrayContaining(['FINANCE_DIRECTOR', 'DECISION_MAKER', 'OTHER']));
     expect(ofKind('companyStatus').map((c) => c.status)).toEqual(expect.arrayContaining(['CONTACTED', 'QUALIFIED']));
+  });
+
+  it('enrichit l’agenda, les relances, les contacts et les ambassadeurs (observations de recette)', () => {
+    const upcoming = ofKind('appointment').filter((o) => dayDiff(o.startsAt) > 0);
+    expect(upcoming.length).toBeGreaterThanOrEqual(6);
+    expect(new Set(upcoming.map((o) => o.type)).size).toBe(3);
+    expect(ofKind('appointmentTransition').filter((o) => o.transition === 'postpone').length).toBeGreaterThanOrEqual(3);
+    expect(ofKind('appointmentTransition').some((o) => o.transition === 'postpone' && o.startsAt && dayDiff(o.startsAt) > 0)).toBe(true);
+    const plans = ofKind('followupPlan');
+    expect(plans.filter((p) => dayDiff(p.dueOn) > 0).length).toBeGreaterThanOrEqual(6);
+    expect(plans.filter((p) => dayDiff(p.dueOn) < 0).length).toBeGreaterThanOrEqual(2);
+    expect(ofKind('followupClose').some((c) => c.closing === 'cancel')).toBe(true);
+    const perOffer = new Map<string, number>();
+    for (const p of plans) perOffer.set(p.offer, (perOffer.get(p.offer) ?? 0) + 1);
+    expect(Math.max(...perOffer.values())).toBeGreaterThanOrEqual(2);
+    expect(Math.max(...perOffer.values())).toBeLessThanOrEqual(3); // la règle : trois relances au plus par offre
+    expect(ofKind('receiptCancel').length).toBeGreaterThan(0);
+    const contacts = ofKind('contact');
+    const names = new Map<string, number>();
+    for (const c of contacts) names.set(`${c.company}|${c.firstName}|${c.lastName}`, (names.get(`${c.company}|${c.firstName}|${c.lastName}`) ?? 0) + 1);
+    expect([...names.values()].filter((n) => n > 1).length).toBeGreaterThanOrEqual(3); // doublons probables
+    expect(contacts.filter((c) => c.role === 'OTHER').length).toBeGreaterThanOrEqual(15);
+    expect(ofKind('ambassadorUpdate').length).toBeGreaterThanOrEqual(2);
+    expect(ofKind('reassign').length).toBeGreaterThanOrEqual(3);
+  });
+
+  it('une entreprise réattribuée n’a plus d’événement du chargé de compte d’origine après sa réattribution', () => {
+    const reassigned = plan.filter((e) => e.op.k === 'reassign');
+    for (const event of reassigned) {
+      const key = (event.op as { company: string }).company;
+      const later = plan.filter((e) => e.at.getTime() > event.at.getTime() && e.who !== 'commercial' && e.who !== 'finance'
+        && Object.values(e.op).some((v) => typeof v === 'string' && v.startsWith(`${key}`)));
+      expect([key, later.length]).toEqual([key, 0]);
+    }
   });
 
   it('répartit les entreprises entre les trois chargés de compte, et réserve ce qui est réservé', () => {
