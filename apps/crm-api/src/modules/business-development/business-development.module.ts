@@ -37,6 +37,11 @@ import { PrismaApprovalRepository } from './infrastructure/prisma-approval.repos
 import { ApprovalDocumentOwnerResolver } from './application/approval-document-owners';
 import { CloseApprovalUseCase, GetApprovalHandler, ListApprovalsHandler, ReceiveApprovalUseCase, RegisterApprovalUseCase } from './application/approval-use-cases';
 import { ApprovalsController } from './presentation/approvals.controller';
+import { COMMISSION_PAYOUT_REPOSITORY } from './domain/commission-payout-repository';
+import { PrismaCommissionPayoutRepository } from './infrastructure/prisma-commission-payout.repository';
+import { PayoutDocumentOwnerResolver } from './application/commission-payout-document-owners';
+import { ChangePayoutUseCase, GetPayoutHandler, ListPayoutsHandler, RegisterCommissionDue } from './application/commission-payout-use-cases';
+import { CommissionPayoutsController } from './presentation/commission-payouts.controller';
 import { PrismaOpportunityTotals } from './infrastructure/prisma-opportunity-totals';
 import { ChangeCompanyStatusUseCase, ListOwnerCandidatesHandler, ReassignCompanyUseCase } from './application/company-lifecycle-use-cases';
 import { CONTACT_REPOSITORY } from './domain/contact-repository';
@@ -66,7 +71,7 @@ import { ReceiptsController } from './presentation/receipts.controller';
 /** Composition root du module Business Development. */
 @Module({
   imports: [AuditModule, IamModule, DocumentsModule],
-  controllers: [CompaniesController, FacilitatorsController, ContactsController, OffersController, ReceiptsController, FollowupsController, AppointmentsController, OpportunitiesController, ApprovalsController, AmbassadorsController],
+  controllers: [CompaniesController, FacilitatorsController, ContactsController, OffersController, ReceiptsController, FollowupsController, AppointmentsController, OpportunitiesController, ApprovalsController, AmbassadorsController, CommissionPayoutsController],
   providers: [
     RegisterCompanyUseCase,
     RegisterFacilitatorUseCase,
@@ -81,6 +86,8 @@ import { ReceiptsController } from './presentation/receipts.controller';
     GetApprovalHandler,
     ListApprovalsHandler,
     ApprovalDocumentOwnerResolver,
+    RegisterCommissionDue, ChangePayoutUseCase, GetPayoutHandler, ListPayoutsHandler, PayoutDocumentOwnerResolver,
+    { provide: COMMISSION_PAYOUT_REPOSITORY, useClass: PrismaCommissionPayoutRepository },
     ChangeCompanyStatusUseCase,
     ReassignCompanyUseCase,
     ListOwnerCandidatesHandler,

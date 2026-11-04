@@ -52,6 +52,7 @@ model Company {
   opportunities Opportunity[]
   approvals    Approval[]
   ambassadors  Ambassador[]
+  payouts      CommissionPayout[]
 
   @@index([status])
   @@index([ownerUserId])
@@ -237,6 +238,7 @@ model Facilitator {
   updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt   DateTime? @map("deleted_at") @db.Timestamptz(6)
   facilitations CompanyFacilitation[]
+  payouts       CommissionPayout[]
 
   @@index([ownerUserId])
   @@map("facilitators")
@@ -813,6 +815,7 @@ model Approval {
   updatedAt     DateTime       @updatedAt @map("updated_at") @db.Timestamptz(6)
   company       Company        @relation(fields: [companyId], references: [id])
   opportunity   Opportunity    @relation(fields: [opportunityId], references: [id])
+  payout        CommissionPayout?
 
   @@index([companyId])
   @@index([opportunityId])
@@ -824,6 +827,16 @@ enum ApprovalPayerType {
   EMPLOYER
   ORGANISM
   LANDLORD
+
+  @@schema("bd")
+}
+
+enum CommissionPayoutStatus {
+  DUE
+  ON_HOLD
+  RELEASED
+  PAID
+  CANCELLED
 
   @@schema("bd")
 }
@@ -856,5 +869,37 @@ model Ambassador {
   @@index([ownerUserId])
   @@index([companyId])
   @@map("ambassadors")
+  @@schema("bd")
+}
+
+/// Versement de la commission d'un facilitateur (flux F3) : naît à l'honneur d'un agrément ; montant figé ; déblocage par la Finance, versement avec justificatif.
+model CommissionPayout {
+  id                 String                 @id @db.Uuid
+  companyId          String                 @map("company_id") @db.Uuid
+  facilitatorId      String                 @map("facilitator_id") @db.Uuid
+  /// Un seul versement par agrément.
+  approvalId         String                 @unique @map("approval_id") @db.Uuid
+  /// Définition de la commission au moment où elle est devenue due (figée).
+  commissionType     CommissionType         @map("commission_type")
+  commissionValue    Decimal                @map("commission_value") @db.Decimal(12, 2)
+  commissionCurrency String?                @map("commission_currency") @db.Char(3)
+  /// Montant à verser ; absent tant qu'un pourcentage n'a pas de montant d'agrément à s'appliquer.
+  amount             Decimal?               @db.Decimal(14, 2)
+  currency           String                 @db.VarChar(3)
+  status             CommissionPayoutStatus @default(DUE)
+  holdReason         String?                @map("hold_reason") @db.VarChar(500)
+  cancelledReason    String?                @map("cancelled_reason") @db.VarChar(500)
+  paidOn             DateTime?              @map("paid_on") @db.Date
+  version            Int                    @default(1)
+  createdAt          DateTime               @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime               @updatedAt @map("updated_at") @db.Timestamptz(6)
+  company            Company                @relation(fields: [companyId], references: [id])
+  facilitator        Facilitator            @relation(fields: [facilitatorId], references: [id])
+  approval           Approval               @relation(fields: [approvalId], references: [id])
+
+  @@index([companyId])
+  @@index([facilitatorId])
+  @@index([status])
+  @@map("commission_payouts")
   @@schema("bd")
 }

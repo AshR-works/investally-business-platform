@@ -8,6 +8,7 @@ import { CloseFollowupUseCase, PlanFollowupUseCase } from '../../modules/busines
 import { ChangeOfferStatusUseCase, RegisterOfferUseCase } from '../../modules/business-development/application/offer-use-cases';
 import { AdvanceOpportunityUseCase, CloseOpportunityUseCase, CreateOpportunityUseCase, GrantWaiverUseCase } from '../../modules/business-development/application/opportunity-use-cases';
 import { RegisterCompanyUseCase } from '../../modules/business-development/application/register-company.use-case';
+import { ChangePayoutUseCase } from '../../modules/business-development/application/commission-payout-use-cases';
 import { CancelReceiptUseCase, RegisterReceiptUseCase } from '../../modules/business-development/application/receipt-use-cases';
 import { UpdateCompanyUseCase } from '../../modules/business-development/application/update-company.use-case';
 import { AuthorizationService } from '../../modules/iam/application/authorization.service';
@@ -125,6 +126,11 @@ export async function runSeed(app: ProviderSource, events: readonly SeedEvent[],
           case 'reassign':
             await use(ReassignCompanyUseCase).execute({ id: id(op.company), version: await versionOf('company', op.company), ownerUserId: options.users[op.to], access, actor });
             break;
+          case 'payout': {
+            const payout = await prisma.db.commissionPayout.findUniqueOrThrow({ where: { approvalId: id(op.approval) }, select: { id: true, version: true } });
+            await use(ChangePayoutUseCase).execute({ id: payout.id, version: payout.version, action: op.action, reason: op.reason, access, actor });
+            break;
+          }
           case 'ambassadorUpdate':
             await use(UpdateAmbassadorUseCase).execute({ id: id(op.ambassador), version: await versionOf('ambassador', op.ambassador), note: op.note, access, actor });
             break;

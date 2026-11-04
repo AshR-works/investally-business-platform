@@ -334,3 +334,28 @@ export interface UploadRules {
   categories: { code: string; label: string }[];
 }
 
+/** Versement de la commission d'un facilitateur (flux F3) : naît à l'honneur d'un agrément ; montant figé. */
+export interface Payout {
+  id: string;
+  companyId: string;
+  companyName: string;
+  facilitatorId: string;
+  facilitatorName: string;
+  approvalId: string;
+  /** Définition de la commission au moment où elle est devenue due (figée) : FIXED ou PERCENT. */
+  commissionType: string;
+  commissionValue: string;
+  commissionCurrency: string | null;
+  /** Montant à verser (texte décimal) ; `null` tant qu'il reste à fixer. */
+  amount: string | null;
+  currency: string;
+  /** DUE, ON_HOLD, RELEASED, PAID ou CANCELLED. */
+  status: string;
+  holdReason: string | null;
+  cancelledReason: string | null;
+  /** Date du versement « AAAA-MM-JJ ». */
+  paidOn: string | null;
+  createdAt: string;
+  /** Verrou optimiste : renvoyé tel quel pour débloquer, mettre en attente, verser, annuler ou fixer le montant. */
+  version: number;
+}

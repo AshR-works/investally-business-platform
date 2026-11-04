@@ -30,6 +30,7 @@ export type SeedOp =
   | { k: 'approvalReceive'; approval: string; receivedOn: string }
   | { k: 'approvalClose'; approval: string; action: 'honor' | 'expire' | 'cancel'; reason?: string }
   | { k: 'reassign'; company: string; to: Who }
+  | { k: 'payout'; approval: string; action: 'release' | 'hold' | 'cancel'; reason?: string }
   | { k: 'ambassadorUpdate'; ambassador: string; note: string }
   | { k: 'ambassador'; key: string; lastName: string; firstName: string; origin: 'CLIENT' | 'LEARNER'; company?: string; email: string; phone: string; appointedOn: string; note: string };
 
@@ -182,7 +183,7 @@ export function buildPlan({ anchor, seed = 2026 }: PlanOptions): SeedEvent[] {
     // L'entreprise, son éventuel facilitateur (une entreprise sur cinq) et ses contacts.
     let facilitator: Extract<SeedOp, { k: 'company' }>['facilitator'];
     let reuseFacilitator: string | undefined;
-    if (i % 5 === 2) {
+    if (i % 5 === 2 || i % 10 === 6) {
       const existing = facilitators.find((f) => f.owner === owner);
       if (existing && i > 12) reuseFacilitator = existing.key;
       else {
@@ -195,7 +196,7 @@ export function buildPlan({ anchor, seed = 2026 }: PlanOptions): SeedEvent[] {
     }
     if (!add(0, owner, { k: 'company', key, name: company.name, sector: company.sector, country: company.country, email: `contact@${key}.${hosts.tld}.test`, phone: phone(), facilitator })) return;
     if (reuseFacilitator) add(0, owner, { k: 'companyFacilitator', key, facilitatorKey: reuseFacilitator, contactMethod: 'PHONE_CALL', isCompanyEmployee: false }, 10);
-    if (facilitator && i % 10 !== 0) add(2, 'commercial', { k: 'commission', company: key, type: i % 4 === 2 ? 'PERCENT' : 'FIXED', value: i % 4 === 2 ? '5' : String(150_000 + (i % 7) * 25_000), currency: 'XAF' }, 11);
+    if ((facilitator || reuseFacilitator) && i % 10 !== 0) add(2, 'commercial', { k: 'commission', company: key, type: i % 4 === 2 ? 'PERCENT' : 'FIXED', value: i % 4 === 2 ? '5' : String(150_000 + (i % 7) * 25_000), currency: 'XAF' }, 11);
 
     const [fdFirst, fdLast] = person();
     const fdKey = `${key}-fd`;
@@ -296,6 +297,10 @@ export function buildPlan({ anchor, seed = 2026 }: PlanOptions): SeedEvent[] {
       if (add(aAt, owner, { k: 'approval', key: aKey, opportunity: oppKey, amount: money, currency, receivedOn: dayOf(aAt), validUntil: dayOf(aAt + 180) }, 11)) {
         add(aAt + 1, owner, { k: 'advance', opportunity: oppKey }, 10); // étape « Agrément »
         if (add(aAt + 14, 'finance', { k: 'approvalClose', approval: aKey, action: 'honor' }, 10)) {
+          // La commission du facilitateur devient due : la Finance la débloque (1re), la suspend (2e), la laisse à verser (3e) ; la 4e est annulée.
+          if (i === 6) add(aAt + 16, 'finance', { k: 'payout', approval: aKey, action: 'release' }, 11);
+          if (i === 16) add(aAt + 16, 'finance', { k: 'payout', approval: aKey, action: 'hold', reason: 'Virement du client attendu avant tout versement.' }, 11);
+          if (i === 36) add(aAt + 18, 'commercial', { k: 'payout', approval: aKey, action: 'cancel', reason: 'Facilitateur remplacé : commission à recalculer.' }, 11);
           if (add(aAt + 40, owner, { k: 'ambassador', key: `${key}-ambassadeur`, lastName: dmLast, firstName: dmFirst, origin: 'CLIENT', company: key, email: emailFor(dmFirst, dmLast).replace('@', '.ambassadeur@'), phone: phone(), appointedOn: dayOf(aAt + 40), note: 'A recommandé deux entreprises du secteur.' }, 15) && i % 20 === 6) {
             add(aAt + 55, 'commercial', { k: 'ambassadorUpdate', ambassador: `${key}-ambassadeur`, note: 'A mis en relation deux nouveaux prospects (suivi par la direction commerciale).' }, 10);
           }

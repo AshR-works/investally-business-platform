@@ -11,6 +11,7 @@ import { CompanyStatus } from '../domain/company-status';
 import { Opportunity, OpportunityStage, OpportunityStatus, STAGE_ORDER } from '../domain/opportunity';
 import { OPPORTUNITY_REPOSITORY, OpportunityRepository } from '../domain/opportunity-repository';
 import { ApprovalView, toApprovalView } from './approval-view';
+import { RegisterCommissionDue } from './commission-payout-use-cases';
 import { toCompanyView } from './company-view';
 
 const NOT_FOUND = 'Agrément introuvable';
@@ -184,6 +185,7 @@ export class CloseApprovalUseCase {
     @Inject(AUDIT_RECORDER) private readonly audit: AuditRecorder,
     @Inject(UNIT_OF_WORK) private readonly unitOfWork: UnitOfWork,
     @Inject(CLOCK) private readonly clock: Clock,
+    private readonly commissionDue: RegisterCommissionDue,
   ) {}
 
   async execute(command: CloseApprovalCommand): Promise<ApprovalView> {
@@ -203,6 +205,8 @@ export class CloseApprovalUseCase {
       const saved = (await this.approvals.findById(approval.id)) ?? approval;
       const after = toApprovalView(saved, contextOf(company, opportunity), now);
       await this.audit.record({ actor: command.actor, module: 'business-development', entityType: 'Approval', entityId: approval.id, action: AuditAction.Update, oldValue: { ...before }, newValue: { ...after } });
+      // Le paiement constaté rend la commission du facilitateur due (D41, FD-1 B), dans la même transaction.
+      if (command.action === 'honor') await this.commissionDue.execute({ approval: saved, company, actor: command.actor });
       return after;
     });
   }

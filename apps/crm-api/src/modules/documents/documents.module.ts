@@ -5,6 +5,7 @@ import {
   AddDocumentVersionUseCase, ArchiveDocumentUseCase, DocumentOwnerGate, DownloadDocumentUseCase, GetDocumentHandler, ListDocumentsHandler,
   UploadDocumentUseCase,
 } from './application/document-use-cases';
+import { DOCUMENT_PRESENCE, RepositoryDocumentPresence } from './application/document-presence';
 import { DOCUMENT_OWNER_REGISTRY, InMemoryDocumentOwnerRegistry } from './application/owner-registry';
 import { DOCUMENT_REPOSITORY, OBJECT_STORAGE } from './domain/ports';
 import { LocalDiskObjectStorage } from './infrastructure/local-disk-object-storage';
@@ -26,8 +27,9 @@ import { DocumentsController } from './presentation/documents.controller';
     { provide: DOCUMENT_REPOSITORY, useClass: PrismaDocumentRepository },
     { provide: OBJECT_STORAGE, useClass: LocalDiskObjectStorage },
     { provide: DOCUMENT_OWNER_REGISTRY, useClass: InMemoryDocumentOwnerRegistry },
+    { provide: DOCUMENT_PRESENCE, useClass: RepositoryDocumentPresence },
   ],
-  exports: [DOCUMENT_OWNER_REGISTRY],
+  exports: [DOCUMENT_OWNER_REGISTRY, DOCUMENT_PRESENCE],
 })
 /**
  * Module « Documents » : versions immuables avec empreinte SHA-256, stockage derrière un port, téléchargement contrôlé

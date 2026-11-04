@@ -1,4 +1,6 @@
 import { InMemoryApprovals } from '../../../../test/support/in-memory-approvals';
+import { InMemoryFacilitators } from '../../../../test/support/in-memory-facilitators';
+import { InMemoryPayouts } from '../../../../test/support/in-memory-payouts';
 import { InMemoryOpportunities } from '../../../../test/support/in-memory-opportunities';
 import { ActorContext, Page } from '../../../shared-kernel';
 import { AuditAction, AuditRecord } from '../../audit';
@@ -9,6 +11,7 @@ import { CompanyName } from '../domain/company-name';
 import { CompanyRepository } from '../domain/company-repository';
 import { CompanyStatus } from '../domain/company-status';
 import { Opportunity } from '../domain/opportunity';
+import { RegisterCommissionDue } from './commission-payout-use-cases';
 import { CloseApprovalUseCase, GetApprovalHandler, ListApprovalsHandler, ReceiveApprovalUseCase, RegisterApprovalUseCase } from './approval-use-cases';
 
 class InMemoryCompanies implements CompanyRepository {
@@ -50,7 +53,7 @@ function build() {
     companies, opportunities, approvals, audit, company, opportunity,
     register: new RegisterApprovalUseCase(approvals, opportunities, companies, recorder, unitOfWork, clock, ids),
     receive: new ReceiveApprovalUseCase(approvals, opportunities, companies, recorder, unitOfWork, clock),
-    close: new CloseApprovalUseCase(approvals, opportunities, companies, recorder, unitOfWork, clock),
+    close: new CloseApprovalUseCase(approvals, opportunities, companies, recorder, unitOfWork, clock, new RegisterCommissionDue(new InMemoryPayouts(companies, new InMemoryFacilitators()), new InMemoryFacilitators(), recorder, clock, ids)),
     get: new GetApprovalHandler(approvals, opportunities, companies, clock),
     list: new ListApprovalsHandler(approvals, opportunities, companies, clock),
   };
