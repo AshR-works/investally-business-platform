@@ -8,7 +8,7 @@
 3. **Un écart** : le noter dans la section « Écarts constatés » de la fiche ; il devient un défaut (charte, § 10).
 4. **Mise à jour** : un lot qui modifie un écran met à jour sa fiche d'interface ; la fiche de session d'un nouveau lot est créée à partir de sa recette (`docs/SPRINT-*-RECETTE.md`).
 
-## Fiches d'interface (17)
+## Fiches d'interface (18)
 
 | N° | Écran | Route | Lots | Dernière exécution |
 |---|---|---|---|---|
@@ -29,8 +29,9 @@
 | 15 | [Agenda (rendez-vous et visites)](interfaces/15-agenda.md) | `/agenda` | S4.2d, S4.3c | |
 | 16 | [Opportunités (pipeline)](interfaces/16-opportunites.md) | `/opportunities` | S4.3a, S4.3b, S4.3c | |
 | 17 | [Ambassadeurs](interfaces/17-ambassadeurs.md) | `/ambassadors` | S4.4b | |
+| 18 | [Commissions](interfaces/18-commissions.md) | `/commissions` | S4.4c | |
 
-## Fiches de session (32)
+## Fiches de session (33)
 
 | Session | Intitulé | Étiquette | Vérifications | Dernière exécution |
 |---|---|---|---|---|
@@ -47,7 +48,7 @@
 | [h2a](sessions/h2a.md) | H2a — Écrans d'accès au nouveau style | `h2a-validated` | 12 | |
 | [h2b](sessions/h2b.md) | H2b — Sessions et historique des connexions | `h2b-validated` | 2 | |
 | [idor](sessions/idor.md) | Contrat anti-IDOR | `idor-validated` | 5 | |
-| [jeu-de-donnees](sessions/jeu-de-donnees.md) | Jeu de données de démonstration (module commercial) | — | 7 | |
+| [jeu-de-donnees](sessions/jeu-de-donnees.md) | Jeu de données de démonstration (module commercial) | `jeu-de-donnees-validated` | 7 | |
 | [s3-6](sessions/s3-6.md) | S3.6 — Documents | `s3-6-validated` | 7 | |
 | [s3-7](sessions/s3-7.md) | S3.7 — UX de l'authentification | `s3-7-validated` | 3 | |
 | [s3-8](sessions/s3-8.md) | S3.8 — Rôles et permissions (UX-02) | `s3-8-validated` | 7 | |
@@ -63,9 +64,10 @@
 | [s4-3a](sessions/s4-3a.md) | S4.3a — opportunités : le pipeline commercial | `s4-3a-validated` | 6 | |
 | [s4-3b](sessions/s4-3b.md) | S4.3b — statuts d'entreprise, responsable, fiche 360° | `s4-3b-validated` | 8 | |
 | [s4-3c](sessions/s4-3c.md) | S4.3c — valeur des opportunités et lien rendez-vous ↔ opportunité | `s4-3c-validated` | 7 | |
-| [s4-4a-bis](sessions/s4-4a-bis.md) | S4.4a-bis — agréments : demandé, payeur tiers, constat par la Finance ; second facteur à la réattribution | — | 7 | |
+| [s4-4a-bis](sessions/s4-4a-bis.md) | S4.4a-bis — agréments : demandé, payeur tiers, constat par la Finance ; second facteur à la réattribution | `s4-4a-bis-validated` | 7 | |
 | [s4-4a](sessions/s4-4a.md) | S4.4a — agréments : la promesse de paiement signée | `s4-4a-validated` | 8 | |
 | [s4-4b](sessions/s4-4b.md) | S4.4b — ambassadeurs : clients ou apprenants devenus relais commerciaux | `s4-4b-validated` | 9 | |
+| [s4-4c](sessions/s4-4c.md) | S4.4c — commissions des facilitateurs à verser | — | 11 | |
 
 ## Remarques
 - Les fiches de session sont **dérivées des recettes** : en cas de doute, la recette fait foi. Celles des premiers sprints (S1 à S3.5) sont surtout des tests automatisés ; leurs « vérifications » rappellent ce que chaque contrôle prouve.

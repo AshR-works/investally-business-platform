@@ -310,19 +310,21 @@
           "name": "S4.4a-bis — correctifs D41 (agrément demandé, payeur, Finance, second facteur)",
           "start": "2026-11-03",
           "end": "2026-11-03",
-          "state": "wait"
+          "state": "done",
+          "tag": "s4-4a-bis-validated"
         },
         {
           "name": "Jeu de données de démonstration (module commercial)",
           "start": "2026-11-03",
-          "end": "2026-11-03",
-          "state": "wait"
+          "end": "2026-11-04",
+          "state": "done",
+          "tag": "jeu-de-donnees-enrichi-validated"
         },
         {
           "name": "S4.4c — commissions à verser",
-          "start": "2026-11-18",
-          "end": "2026-11-19",
-          "state": "plan"
+          "start": "2026-11-04",
+          "end": "2026-11-04",
+          "state": "wait"
         }
       ]
     },

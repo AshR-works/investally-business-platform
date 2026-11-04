@@ -4,7 +4,7 @@
 |---|---|
 | **Session** | `s4-4a-bis` |
 | **Recette de référence** | [`SPRINT-S4-4A-BIS-RECETTE.md`](../../SPRINT-S4-4A-BIS-RECETTE.md) |
-| **Étiquette** | — |
+| **Étiquette** | `s4-4a-bis-validated` |
 | **Contexte** | Branche `sprint/s4-4a-bis-correctifs` (partie de `main`, après S4.4b) · 2026-11-09 · décisions D41 (réponses FD-3, FD-4, FD-6) et D42 ; DDR-0026. Lot correctif : il modifie des lots déjà validés (S4.3b, S4.4a) avant S4.4c (commissions à verser), qui n'est pas livré. |
 | **Écrans concernés** | [Fiche d'une entreprise](../interfaces/11-fiche-entreprise.md) |
 
