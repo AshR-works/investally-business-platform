@@ -918,15 +918,15 @@ try {
   await expectThat('la page propose le filtre par état et annonce le nombre de commissions', `(() => { const m = document.querySelector('main'); return Boolean(m.querySelector('select')) && /1 commission/.test(m.textContent); })()`);
   await audit('Commissions — liste', 'état À verser, montant et commission figée');
   await shot('commissions-liste');
-  const openRowMenu = () => js("document.querySelector('main tbody tr summary[aria-label^=\"Actions pour la commission\"]').click()");
-  await openRowMenu();
+  const openCommissionMenu = () => js("document.querySelector('main tbody tr summary[aria-label^=\"Actions pour la commission\"]').click()");
+  await openCommissionMenu();
   await sleep(300);
   await clickText('Débloquer les fonds');
   await waitFor("document.querySelector('[role=dialog]') && document.querySelector('[role=dialog]').textContent.includes('sera débloquée')", 'fenêtre de déblocage');
   await audit('Commissions — débloquer les fonds', 'confirmation, décision tracée');
   await clickText('Débloquer les fonds', "document.querySelector('[role=dialog]')");
   await waitFor("!document.querySelector('[role=dialog]') && document.querySelector('main tbody tr').textContent.includes('Fonds débloqués')", 'fonds débloqués', 25000);
-  await openRowMenu();
+  await openCommissionMenu();
   await sleep(300);
   await clickText('Constater le versement');
   await waitFor("document.querySelector('[role=dialog] #payout-paidOn')", 'fenêtre de versement');
