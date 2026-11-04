@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 // Cohérence interface ↔ serveur : le domaine RÉEL de l'agrément valide les mêmes saisies.
 import { Approval } from '../../crm-api/src/modules/business-development/domain/approval';
 import {
+  APPROVAL_ACTION_LABEL, PAYER_TYPES, payerText, validateReceivedOn,
   APPROVAL_STATUS, approvalActions, buildApprovalBody, coverageText, eligibleOpportunities, EMPTY_APPROVAL_FORM, validateApprovalFields, validateReason,
   type ApprovalForm,
 } from '../lib/approvals';
@@ -9,12 +10,12 @@ import type { Opportunity } from '../lib/types';
 
 const now = new Date('2026-11-07T10:00:00Z');
 const today = '2026-11-07';
-const form = (patch: Partial<ApprovalForm> = {}): ApprovalForm => ({ opportunityId: 'op1', amount: '12 500 000', places: '', currency: 'XAF', receivedOn: '2026-11-05', validUntil: '', ...patch });
+const form = (patch: Partial<ApprovalForm> = {}): ApprovalForm => ({ opportunityId: 'op1', amount: '12 500 000', places: '', currency: 'XAF', receivedOn: '2026-11-05', validUntil: '', requested: false, payerName: '', payerType: '', ...patch });
 const serverAccepts = (f: ApprovalForm): boolean => {
   try {
     Approval.register({
       id: 'x', companyId: 'c1', opportunityId: f.opportunityId || 'op1', amount: f.amount || null, places: f.places ? Number(f.places) : null,
-      currency: f.currency, receivedOn: f.receivedOn, validUntil: f.validUntil || null, now,
+      currency: f.currency, receivedOn: f.receivedOn, validUntil: f.validUntil || null, payerName: f.payerName || null, payerType: f.payerType || null, now,
     });
     return true;
   } catch {
@@ -60,6 +61,7 @@ describe('cohérence avec le domaine réel du serveur', () => {
   const cases: Partial<ApprovalForm>[] = [
     {}, { amount: '', places: '12' }, { places: '12' }, { amount: '' }, { amount: '0' }, { amount: '1.234' }, { amount: '', places: '0' }, { amount: '', places: '2,5' },
     { currency: 'EURO' }, { currency: 'fcfa' }, { receivedOn: '2026-02-31' }, { receivedOn: '2026-11-08' }, { validUntil: '2026-11-04' }, { validUntil: '2027-03-31' }, { validUntil: '2027-13-01' },
+    { payerName: 'Banque X', payerType: 'ORGANISM' }, { payerName: 'Banque X' }, { payerType: 'LANDLORD' }, { payerName: 'x'.repeat(201), payerType: 'EMPLOYER' }, { payerName: 'Banque X', payerType: 'AUTRE' },
   ];
   it.each(cases.map((c, i) => [i, c] as const))('saisie %i : l’interface et le serveur décident pareil', (_i, patch) => {
     const f = form(patch);
@@ -69,7 +71,7 @@ describe('cohérence avec le domaine réel du serveur', () => {
 
 describe('agrément : lecture et actions', () => {
   it('libellés d’état', () => {
-    expect(Object.keys(APPROVAL_STATUS).sort()).toEqual(['CANCELLED', 'EXPIRED', 'HONORED', 'RECEIVED']);
+    expect(Object.keys(APPROVAL_STATUS).sort()).toEqual(['CANCELLED', 'EXPIRED', 'HONORED', 'RECEIVED', 'REQUESTED']);
     expect(APPROVAL_STATUS.HONORED!.label).toBe('Honoré');
   });
   it('décrit la couverture : montant, places, ou les deux', () => {
@@ -94,5 +96,36 @@ describe('agrément : lecture et actions', () => {
     expect(validateReason(' ab ')).toMatch(/obligatoire/);
     expect(validateReason('Erreur de saisie')).toBeNull();
     expect(validateReason('x'.repeat(501))).toMatch(/500/);
+  });
+});
+
+describe('agrément : demandé et payeur tiers (D41)', () => {
+  it('un agrément demandé n’exige ni date de réception ni fichier ; le corps n’envoie pas de date', () => {
+    expect(validateApprovalFields(form({ requested: true, receivedOn: '' }), { today })).toEqual({});
+    expect(buildApprovalBody(form({ requested: true, receivedOn: '' }))).toEqual({ opportunityId: 'op1', requested: true, amount: '12 500 000', currency: 'XAF' });
+  });
+  it('le payeur tiers : nom et type ensemble, ou aucun (le client paie) ; le corps les envoie ensemble', () => {
+    expect(validateApprovalFields(form({ payerName: 'Banque X' }), { today }).payerName).toMatch(/nom et le type/);
+    expect(validateApprovalFields(form({ payerType: 'LANDLORD' }), { today }).payerName).toMatch(/nom et le type/);
+    expect(validateApprovalFields(form({ payerName: 'x'.repeat(201), payerType: 'EMPLOYER' }), { today }).payerName).toMatch(/200/);
+    expect(buildApprovalBody(form({ payerName: ' Banque X ', payerType: 'ORGANISM' }))).toMatchObject({ payerName: 'Banque X', payerType: 'ORGANISM' });
+    expect(buildApprovalBody(form())).not.toHaveProperty('payerName');
+    expect(payerText({ payerName: null, payerType: null })).toBe('Le client');
+    expect(payerText({ payerName: 'Banque X', payerType: 'ORGANISM' })).toBe('Banque X (Organisme)');
+    expect(Object.keys(PAYER_TYPES)).toEqual(['EMPLOYER', 'ORGANISM', 'LANDLORD']);
+  });
+  it('actions d’un agrément demandé : déclarer reçu (droit de création) et annuler ; ni honorer ni expirer', () => {
+    expect(approvalActions({ status: 'REQUESTED' }, { honor: true, cancel: true, receive: true })).toEqual(['receive', 'cancel']);
+    expect(approvalActions({ status: 'REQUESTED' }, { honor: true, cancel: false, receive: true })).toEqual(['receive']);
+    expect(approvalActions({ status: 'REQUESTED' }, { honor: true, cancel: true })).toEqual(['cancel']);
+    expect(approvalActions({ status: 'REQUESTED' }, { honor: true, cancel: false })).toEqual([]);
+    expect(APPROVAL_ACTION_LABEL.receive).toBe('Déclarer reçu');
+  });
+  it('date de réception : obligatoire, réelle, pas future, pas après la fin de validité', () => {
+    expect(validateReceivedOn('', { today })).toMatch(/obligatoire/);
+    expect(validateReceivedOn('2026-02-31', { today })).toMatch(/pas valide/);
+    expect(validateReceivedOn('2026-11-08', { today })).toMatch(/futur/);
+    expect(validateReceivedOn('2026-11-05', { today, validUntil: '2026-11-01' })).toMatch(/fin de validité/);
+    expect(validateReceivedOn('2026-11-05', { today, validUntil: '2027-03-31' })).toBeNull();
   });
 });

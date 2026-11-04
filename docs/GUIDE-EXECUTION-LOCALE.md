@@ -67,7 +67,7 @@ node apps/crm-api/scripts/test-db.mjs     # intégration, base jetable (TEST_DB_
 8. Sessions actives : historique et révocation des autres sessions.
 9. Opportunités : « Nouvelle opportunité » depuis la fiche d'une entreprise ; faire avancer d'étape en étape ; essayer l'accord de principe sans rendez-vous décideur tenu (refus, puis dérogation du Responsable commercial avec justification) ; clore perdue (motif obligatoire) ou gagnée (Responsable commercial).
 10. Statut et responsable d'une entreprise : sur la fiche, marquer « contactée » puis « qualifier » (refus sans contact) ; en Responsable commercial, « Changer de responsable » (équipe seulement, confirmation) ; observer les colonnes « Responsable » et « Valeur » du tableau des entreprises.
-11. Agrément : sur une opportunité à l'accord de principe, « Enregistrer un agrément » depuis la fiche (montant et/ou places, document signé) ; l'entreprise devient « Cliente » ; honorer, déclarer expiré ou annuler (motif) en Responsable commercial.
+11. Agrément : sur une opportunité à l'accord de principe, « Enregistrer un agrément » depuis la fiche (montant et/ou places, document signé) ; l'entreprise devient « Cliente » ; déclarer expiré ou annuler (motif) en Responsable commercial ; **honorer (constater le paiement) en Finance** ; case « La promesse n'est pas encore signée » pour un agrément seulement demandé (puis « Déclarer reçu »), payeur tiers facultatif ; la réattribution d'une entreprise redemande un code si le dernier a plus de 10 minutes.
 12. Portée et droits : `compte2` ne voit rien de `compte1`, `commercial@` voit son équipe, `direction@` lit sans écrire ; tout accès hors périmètre répond « introuvable ».
 
 ## Limites connues

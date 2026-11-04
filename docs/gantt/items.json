@@ -303,6 +303,13 @@
           "name": "Correctifs 1 — téléphones, fenêtres, barres de défilement, tableaux",
           "start": "2026-11-03",
           "end": "2026-11-03",
+          "state": "done",
+          "tag": "correctifs-1-validated"
+        },
+        {
+          "name": "S4.4a-bis — correctifs D41 (agrément demandé, payeur, Finance, second facteur)",
+          "start": "2026-11-03",
+          "end": "2026-11-03",
           "state": "wait"
         },
         {

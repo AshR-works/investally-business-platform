@@ -4,8 +4,8 @@ import { Request } from 'express';
 import { actorContextFrom } from '../../../shared-kernel';
 import { Access, CurrentActor, Protected } from '../../iam';
 import type { AccessContext, AuthenticatedActor } from '../../iam';
-import { CloseApprovalUseCase, GetApprovalHandler, ListApprovalsHandler, RegisterApprovalUseCase } from '../application/approval-use-cases';
-import { CloseApprovalDto, HonorApprovalDto, ListApprovalsDto, RegisterApprovalDto } from './dto/approval.dto';
+import { CloseApprovalUseCase, GetApprovalHandler, ListApprovalsHandler, ReceiveApprovalUseCase, RegisterApprovalUseCase } from '../application/approval-use-cases';
+import { CloseApprovalDto, HonorApprovalDto, ListApprovalsDto, ReceiveApprovalDto, RegisterApprovalDto } from './dto/approval.dto';
 
 /**
  * Agréments (promesses de paiement signées). Chaque route est protégée (identité + MFA + permission) ; la PORTÉE est celle de
@@ -16,12 +16,13 @@ import { CloseApprovalDto, HonorApprovalDto, ListApprovalsDto, RegisterApprovalD
 export class ApprovalsController {
   constructor(
     private readonly registerApproval: RegisterApprovalUseCase,
+    private readonly receiveApproval: ReceiveApprovalUseCase,
     private readonly closeApproval: CloseApprovalUseCase,
     private readonly getApproval: GetApprovalHandler,
     private readonly listApprovals: ListApprovalsHandler,
   ) {}
 
-  /** Enregistrer l'agrément d'une opportunité qui a franchi l'accord de principe ; l'entreprise devient « Cliente ». */
+  /** Enregistrer l'agrément d'une opportunité qui a franchi l'accord de principe : reçu (l'entreprise devient « Cliente ») ou seulement demandé. */
   @Post()
   @HttpCode(201)
   @Protected('bd.approval.create')
@@ -41,7 +42,15 @@ export class ApprovalsController {
     return this.getApproval.execute({ id, access });
   }
 
-  /** Constater que la promesse a été tenue (réservé à qui peut honorer : Responsable commercial). */
+  /** La promesse est signée : l'agrément demandé devient reçu (l'entreprise devient « Cliente »). */
+  @Post(':id/receive')
+  @HttpCode(200)
+  @Protected('bd.approval.create')
+  receive(@Param('id', ParseUUIDPipe) id: string, @Body() dto: ReceiveApprovalDto, @Access() access: AccessContext, @CurrentActor() actor: AuthenticatedActor, @Req() req: Request) {
+    return this.receiveApproval.execute({ id, version: dto.version, receivedOn: dto.receivedOn, access, actor: actorContextFrom(req, actor) });
+  }
+
+  /** Constater que la promesse a été tenue, c'est-à-dire que le paiement a eu lieu (réservé à qui peut honorer : la finance, D41). */
   @Post(':id/honor')
   @HttpCode(200)
   @Protected('bd.approval.honor')

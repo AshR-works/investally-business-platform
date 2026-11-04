@@ -35,7 +35,7 @@ Monolithe modulaire, Clean Architecture ; règles testées par `pnpm arch` (doma
 |---|---|---|
 | `iam` | connexion, MFA, rôles (10), permissions (plus de 100), sessions, invitations | livré (S3.1–S3.5, H2, S3.7–S3.8) |
 | `audit` | journal transactionnel, historique des connexions | livré |
-| `business-development` | entreprises (statuts, responsable, fiche 360°), facilitateurs et commissions, contacts, offres, décharges, relances, agenda, opportunités, agréments | livré (S1, S4.0 à S4.4b, ambassadeurs compris) ; commissions à verser (S4.4c) : à venir |
+| `business-development` | entreprises (statuts, responsable, fiche 360°), facilitateurs et commissions, contacts, offres, décharges, relances, agenda, opportunités, agréments | livré (S1, S4.0 à S4.4b, ambassadeurs compris ; correctifs D41 S4.4a-bis en attente de validation) ; commissions à verser (S4.4c) : à venir |
 | `documents` | pièces jointes versionnées, stockage derrière un port | livré (S3.6) |
 | Investudy, Stocks, Reporting, ERP | | à venir (S5, S6, S7) |
 

@@ -12,9 +12,9 @@
 | **Lancement** (Sprint 0) | 20/10/2026 |
 | Premier jalon de code validé (S1 à S3.3) | 20/10/2026 (le même jour) |
 | Fin de la fondation et du design | 22/10/2026 |
-| Module commercial : dernier lot validé (S4.4a) | 02/11/2026 |
-| Lots réalisés et validés au 01/11/2026 | 41 (dont 32 étiquetés) |
-| **Prochaine session** | S4.4b (ambassadeurs) puis S4.4c (commissions à verser), prévues du 17/11 au 19/11/2026 |
+| Module commercial : dernier lot validé (correctifs de recette 1, après S4.4b) | 03/11/2026 |
+| Lots réalisés et validés au 01/11/2026 | 42 (dont 33 étiquetés) |
+| **Prochaine session** | S4.4a-bis (correctifs D41, en attente de validation) puis S4.4c (commissions à verser), prévues du 17/11 au 19/11/2026 |
 | Fin du module commercial (prévision) | 19/11/2026 |
 | Fin d'Investudy (prévision) | 30/11/2026 |
 | **Mise en production du CRM, prévision prudente** | **23/12/2026** |
@@ -85,7 +85,8 @@
 | S4.3c — colonne Valeur, lien rendez-vous ↔ opportunité | 02/11/2026 | 02/11/2026 | Validé | `s4-3c-validated` |
 | S4.4a — agréments | 02/11/2026 | 02/11/2026 | Validé | `s4-4a-validated` |
 | S4.4b — ambassadeurs | 02/11/2026 | 02/11/2026 | Validé | `s4-4b-validated` |
-| Correctifs 1 — téléphones, fenêtres, barres de défilement, tableaux | 03/11/2026 | 03/11/2026 | Terminé, validation en attente | — |
+| Correctifs 1 — téléphones, fenêtres, barres de défilement, tableaux | 03/11/2026 | 03/11/2026 | Validé | `correctifs-1-validated` |
+| S4.4a-bis — correctifs D41 (agrément demandé, payeur, Finance, second facteur) | 03/11/2026 | 03/11/2026 | Terminé, validation en attente | — |
 | S4.4c — commissions à verser | 18/11/2026 | 19/11/2026 | Prévu | — |
 
 ### Module Investudy (formation)

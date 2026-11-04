@@ -239,8 +239,11 @@ export interface Approval {
   amount: string | null;
   currency: string;
   places: number | null;
-  /** Dates « AAAA-MM-JJ ». */
-  receivedOn: string;
+  /** Dates « AAAA-MM-JJ » ; la réception manque tant que l'agrément est seulement demandé. */
+  receivedOn: string | null;
+  /** Payeur tiers (nom et type EMPLOYER, ORGANISM ou LANDLORD) ; absent : le client paie lui-même. */
+  payerName: string | null;
+  payerType: string | null;
   validUntil: string | null;
   status: string;
   closedReason: string | null;
@@ -248,7 +251,7 @@ export interface Approval {
   /** Calculé par le serveur : fin de validité passée alors que l'agrément est toujours « reçu ». */
   pastValidity: boolean;
   createdAt: string;
-  /** Verrou optimiste : renvoyé tel quel pour honorer, déclarer expiré ou annuler l'agrément. */
+  /** Verrou optimiste : renvoyé tel quel pour déclarer reçu, honorer, déclarer expiré ou annuler l'agrément. */
   version: number;
 }
 

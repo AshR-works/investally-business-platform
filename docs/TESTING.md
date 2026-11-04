@@ -33,7 +33,7 @@ Preuve de câblage de bout en bout : créer une `Company` (BD) via Next.js → c
 - Aucun merge si la CI est rouge.
 
 ## Tests de mutation (scripts versionnés)
-Un mutant est une faute injectée volontairement : on relance les tests, il doit échouer. Les scripts de chaque lot sont dans [`scripts/mutants/`](../scripts/mutants/README.md) (un script par lot, de S3.8 à S4.4a) et se rejouent à la demande ; leurs résultats sont consignés dans la recette du lot et dans le journal ci-dessous. Ils modifient temporairement le code source : à lancer sur un arbre de travail propre, un seul à la fois.
+Un mutant est une faute injectée volontairement : on relance les tests, il doit échouer. Les scripts de chaque lot sont dans [`scripts/mutants/`](../scripts/mutants/README.md) (un script par lot, de S3.8 à S4.4a-bis) et se rejouent à la demande ; leurs résultats sont consignés dans la recette du lot et dans le journal ci-dessous. Ils modifient temporairement le code source : à lancer sur un arbre de travail propre, un seul à la fois.
 
 ## Journal des tests par lot
 Mis à jour **à chaque lot**, en même temps que le code (règle posée le 2026-11-01) : chiffres relevés avant la demande de validation ; le détail se trouve dans la recette du lot (`SPRINT-*-RECETTE.md`).
@@ -47,6 +47,7 @@ Mis à jour **à chaque lot**, en même temps que le code (règle posée le 2026
 | S4.3c — valeur et lien rendez-vous | 804 réussis | 322 / 322 (22 suites) | 408 / 408 | 14 / 14 | 43 contrôles, 0 échec (parcours ciblé sur la fiche entreprise et l'agenda) |
 | S4.4a — agréments | 833 réussis | 338 / 338 (23 suites) | 433 / 433 | 18 / 18 | 51 contrôles, 0 échec (parcours ciblé sur la fiche entreprise) |
 | S4.4b — ambassadeurs | 856 réussis | 348 / 348 (24 suites) | 458 / 458 | 17 / 17 | 58 contrôles, 0 échec (parcours ciblé sur la page Ambassadeurs) |
+| S4.4a-bis — agrément demandé, payeur, constat par la Finance, second facteur | 867 réussis | 352 / 352 (24 suites) | 467 / 467 | 23 / 23 | 64 contrôles, 0 échec (parcours ciblé sur la fiche entreprise et les ambassadeurs) |
 | Correctifs 1 — téléphones, fenêtres, barres de défilement, tableaux | 879 réussis | 349 / 349 (24 suites) | 499 / 499 | 24 / 24 | 65 contrôles, 0 échec, 0 violation (parcours ciblé sur la fiche entreprise, les agréments et les ambassadeurs) |
 
 Pour les lots antérieurs, les chiffres sont dans leurs recettes. Les sondes IDOR s'ajoutent avec chaque route « objet » (voir le contrat ci-dessus) ; les mutants sont des fautes injectées une à une (un test doit échouer à chaque fois) ; l'audit navigateur est `scripts/a11y-audit.mjs` (résultats dans `docs/accessibilite/resultats/`).

@@ -46,21 +46,38 @@ async function approvalInScope(
 
 const contextOf = (company: Company, opportunity: Opportunity) => ({ companyName: company.name.value, opportunityTitle: opportunity.title });
 
+/** L'entreprise devient « Cliente » dès qu'un agrément est reçu (flux C5) ; la modification de l'entreprise est tracée dans l'audit. */
+async function promoteToClient(companies: CompanyRepository, audit: AuditRecorder, company: Company, actor: ActorContext): Promise<void> {
+  if (company.status === CompanyStatus.Client) return;
+  const before = toCompanyView(company);
+  company.becomeClient();
+  await companies.save(company);
+  const after = toCompanyView((await companies.findById(company.id)) ?? company);
+  await audit.record({ actor, module: 'business-development', entityType: 'Company', entityId: company.id, action: AuditAction.Update, oldValue: { ...before }, newValue: { ...after } });
+}
+
 export interface RegisterApprovalCommand {
   opportunityId: string;
   amount?: string | number | null;
   places?: number | null;
   currency?: string;
-  receivedOn: string;
+  /** Date de réception de la promesse signée ; absente (avec `requested`) pour un agrément seulement demandé. */
+  receivedOn?: string;
+  /** Vrai : l'agrément est demandé, la promesse n'est pas encore signée (D41, FD-4). */
+  requested?: boolean;
   validUntil?: string | null;
+  /** Payeur tiers (nom et type) ; absents : le client paie lui-même (D41, FD-3). */
+  payerName?: string | null;
+  payerType?: string | null;
   access: AccessContext;
   actor: ActorContext;
 }
 
 /**
  * Enregistrer l'agrément d'une opportunité : portée de son entreprise, entreprise non archivée, opportunité qui a franchi l'accord
- * de principe et n'est pas perdue, un seul agrément actif par opportunité. L'entreprise devient « Cliente » (flux C5). Les deux
- * écritures et leurs traces d'audit sont dans la même transaction.
+ * de principe et n'est pas perdue, un seul agrément actif par opportunité. Reçu, il rend l'entreprise « Cliente » (flux C5) ; seulement
+ * demandé (D41), il n'a pas de date de réception et l'entreprise ne change pas. Les écritures et leurs traces d'audit sont dans la
+ * même transaction.
  */
 @Injectable()
 export class RegisterApprovalUseCase {
@@ -84,21 +101,60 @@ export class RegisterApprovalUseCase {
       }
       if (await this.approvals.findActiveByOpportunity(opportunity.id)) throw new DomainError('CONFLICT', 'Cette opportunité a déjà un agrément actif');
       const now = this.clock.now();
-      const approval = Approval.register({
+      const common = {
         id: this.ids.next(), companyId: company.id, opportunityId: opportunity.id, amount: command.amount, places: command.places,
-        currency: command.currency, receivedOn: command.receivedOn, validUntil: command.validUntil, now,
-      });
+        currency: command.currency, validUntil: command.validUntil, payerName: command.payerName, payerType: command.payerType, now,
+      };
+      if (command.requested && command.receivedOn) throw new DomainError('VALIDATION', "Un agrément demandé n'a pas encore de date de réception");
+      const approval = command.requested ? Approval.request(common) : Approval.register({ ...common, receivedOn: command.receivedOn ?? '' });
       await this.approvals.save(approval);
       const view = toApprovalView(approval, contextOf(company, opportunity), now);
       await this.audit.record({ actor: command.actor, module: 'business-development', entityType: 'Approval', entityId: approval.id, action: AuditAction.Create, newValue: { ...view } });
-      if (company.status !== CompanyStatus.Client) {
-        const before = toCompanyView(company);
-        company.becomeClient();
-        await this.companies.save(company);
-        const after = toCompanyView((await this.companies.findById(company.id)) ?? company);
-        await this.audit.record({ actor: command.actor, module: 'business-development', entityType: 'Company', entityId: company.id, action: AuditAction.Update, oldValue: { ...before }, newValue: { ...after } });
-      }
+      if (approval.status === ApprovalStatus.Received) await promoteToClient(this.companies, this.audit, company, command.actor);
       return view;
+    });
+  }
+}
+
+export interface ReceiveApprovalCommand {
+  id: string;
+  version: number;
+  receivedOn: string;
+  access: AccessContext;
+  actor: ActorContext;
+}
+
+/**
+ * La promesse de paiement est signée : l'agrément demandé devient reçu (D41, FD-4). Mêmes règles de portée que l'enregistrement
+ * (droit de création), version lue, entreprise non archivée ; l'entreprise devient « Cliente ». Audit avant et après.
+ */
+@Injectable()
+export class ReceiveApprovalUseCase {
+  constructor(
+    @Inject(APPROVAL_REPOSITORY) private readonly approvals: ApprovalRepository,
+    @Inject(OPPORTUNITY_REPOSITORY) private readonly opportunities: OpportunityRepository,
+    @Inject(COMPANY_REPOSITORY) private readonly companies: CompanyRepository,
+    @Inject(AUDIT_RECORDER) private readonly audit: AuditRecorder,
+    @Inject(UNIT_OF_WORK) private readonly unitOfWork: UnitOfWork,
+    @Inject(CLOCK) private readonly clock: Clock,
+  ) {}
+
+  async execute(command: ReceiveApprovalCommand): Promise<ApprovalView> {
+    return this.unitOfWork.run(async () => {
+      const { approval, opportunity, company } = await approvalInScope(
+        { approvals: this.approvals, opportunities: this.opportunities, companies: this.companies }, command.id, command.access, 'bd.approval.create',
+      );
+      assertWritable(company);
+      if (approval.version !== command.version) throw new DomainError('CONFLICT', STALE);
+      const now = this.clock.now();
+      const before = toApprovalView(approval, contextOf(company, opportunity), now);
+      approval.receive(command.receivedOn, now);
+      await this.approvals.save(approval);
+      const saved = (await this.approvals.findById(approval.id)) ?? approval;
+      const after = toApprovalView(saved, contextOf(company, opportunity), now);
+      await this.audit.record({ actor: command.actor, module: 'business-development', entityType: 'Approval', entityId: approval.id, action: AuditAction.Update, oldValue: { ...before }, newValue: { ...after } });
+      await promoteToClient(this.companies, this.audit, company, command.actor);
+      return after;
     });
   }
 }
@@ -116,7 +172,7 @@ export interface CloseApprovalCommand {
 }
 
 /**
- * Honorer (le paiement a eu lieu), déclarer expiré ou annuler un agrément reçu : portée, version lue, entreprise non archivée ; le
+ * Honorer (le paiement a eu lieu, constaté par la finance), déclarer expiré ou annuler un agrément (reçu, ou demandé pour l'annuler) : portée, version lue, entreprise non archivée ; le
  * droit d'honorer est distinct de celui d'annuler ou d'expirer ; expirer et annuler exigent un motif. Audit avant et après.
  */
 @Injectable()

@@ -4,7 +4,7 @@
 |---|---|
 | **Session** | `correctifs-1` |
 | **Recette de référence** | [`SPRINT-CORRECTIFS-1-RECETTE.md`](../../SPRINT-CORRECTIFS-1-RECETTE.md) |
-| **Étiquette** | — |
+| **Étiquette** | `correctifs-1-validated` |
 | **Contexte** | Branche `fix/telephone-fenetres-tableaux` (partie de `main`, après S4.4b) · 2026-11-03 · observations de recette 1 et 2 (`docs/cadrages/OBSERVATIONS-VALIDATION-UX-ET-DONNEES-DE-TEST.md`) et deux demandes du Responsable produit : symbole de tri des tableaux, barres de défilement minimalistes, largeurs de colonnes fixes. Aucun changement d'architecture ni de droits. |
 | **Écrans concernés** | [Entreprises (tableau)](../interfaces/10-entreprises.md), [Fiche d'une entreprise](../interfaces/11-fiche-entreprise.md), [Contacts](../interfaces/12-contacts.md), [Ambassadeurs](../interfaces/17-ambassadeurs.md) |
 

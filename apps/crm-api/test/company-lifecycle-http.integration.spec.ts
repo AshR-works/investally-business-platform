@@ -106,6 +106,17 @@ describeDb('Statuts et propriétaire d’une entreprise (HTTP + PostgreSQL)', ()
     expect((await api.call('GET', `/api/v1/companies/${companyId}`, marie)).body.ownerUserId).toBe(ids.marie);
   }, 120_000);
 
+  it('réattribution : exige un second facteur récent (D41, FD-6) ; périmé, la route répond MFA_STEP_UP_REQUIRED sans rien changer', async () => {
+    const { chef, marie, ids, companyId } = await team();
+    await t.prisma.db.userSession.update({ where: { id: chef.sessionId }, data: { mfaVerifiedAt: new Date(Date.now() - 11 * 60_000) } });
+    const stale = await reassign(chef, companyId, 1, ids.anne);
+    expect([stale.status, stale.body.title]).toEqual([403, 'MFA_STEP_UP_REQUIRED']);
+    expect((await api.call('GET', `/api/v1/companies/${companyId}`, marie)).body).toMatchObject({ ownerUserId: ids.marie, version: 1 });
+    // Le chargé de compte n'a pas le droit : il reçoit un refus net, jamais une invitation à ressaisir un code.
+    await t.prisma.db.userSession.update({ where: { id: marie.sessionId }, data: { mfaVerifiedAt: new Date(Date.now() - 11 * 60_000) } });
+    expect(await reassign(marie, companyId, 1, ids.anne)).toMatchObject({ status: 403, body: expect.not.objectContaining({ title: 'MFA_STEP_UP_REQUIRED' }) });
+  }, 120_000);
+
   it('la liste des destinataires ne montre que l’équipe du Responsable commercial, sans e-mail ; elle est interdite au chargé de compte', async () => {
     const { chef, marie, ids } = await team();
     const owners = await api.call('GET', '/api/v1/companies/owners', chef);

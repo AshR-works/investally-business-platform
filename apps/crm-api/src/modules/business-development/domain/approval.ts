@@ -3,10 +3,12 @@ import { ApprovalReceived } from './events/approval-received';
 import { DEFAULT_CURRENCY } from './commission';
 
 /**
- * Reçu : l'entreprise a signé la promesse de paiement ; honoré : le paiement a été constaté ; expiré (la validité est passée) ou
- * annulé (saisie erronée, renoncement) : toujours avec un motif. Honoré, expiré et annulé sont définitifs.
+ * Demandé (D41, FD-4) : l'agrément est attendu, la promesse n'est pas encore signée ; reçu : l'entreprise a signé la promesse de
+ * paiement ; honoré : le paiement a été constaté (par la finance) ; expiré (la validité est passée) ou annulé (saisie erronée,
+ * renoncement) : toujours avec un motif. Honoré, expiré et annulé sont définitifs.
  */
 export enum ApprovalStatus {
+  Requested = 'REQUESTED',
   Received = 'RECEIVED',
   Honored = 'HONORED',
   Expired = 'EXPIRED',
@@ -14,7 +16,14 @@ export enum ApprovalStatus {
 }
 
 /** États dans lesquels un agrément compte comme « actif » : il couvre l'opportunité et n'en tolère pas un second. */
-export const ACTIVE_APPROVAL_STATUSES: readonly ApprovalStatus[] = [ApprovalStatus.Received, ApprovalStatus.Honored];
+export const ACTIVE_APPROVAL_STATUSES: readonly ApprovalStatus[] = [ApprovalStatus.Requested, ApprovalStatus.Received, ApprovalStatus.Honored];
+
+/** Type d'un payeur tiers (D41, FD-3) : l'employeur de l'apprenant, un organisme financeur, un bailleur. */
+export enum PayerType {
+  Employer = 'EMPLOYER',
+  Organism = 'ORGANISM',
+  Landlord = 'LANDLORD',
+}
 
 export interface ApprovalProps {
   id: string;
@@ -25,8 +34,11 @@ export interface ApprovalProps {
   currency: string;
   /** Nombre de places couvertes ; absent si l'agrément ne couvre qu'une somme. Au moins l'un des deux est renseigné (D1). */
   places: number | null;
-  /** Date de signature ou de réception de l'agrément, « AAAA-MM-JJ ». */
-  receivedOn: string;
+  /** Date de signature ou de réception de l'agrément, « AAAA-MM-JJ » ; absente tant que l'agrément est seulement demandé (ou annulé avant réception). */
+  receivedOn: string | null;
+  /** Payeur tiers (nom et type) ; absent : le client paie lui-même (D41, FD-3). Les deux vont ensemble. */
+  payerName: string | null;
+  payerType: PayerType | null;
   /** Fin de validité, « AAAA-MM-JJ » (facultative, D3). */
   validUntil: string | null;
   status: ApprovalStatus;
@@ -70,6 +82,17 @@ const currencyOf = (raw: string | undefined): string => {
   return currency;
 };
 
+/** Payeur tiers facultatif : le nom et le type vont ensemble ; aucun des deux = le client paie. */
+function payerOf(name: string | null | undefined, type: string | null | undefined): { payerName: string | null; payerType: PayerType | null } {
+  const text = (name ?? '').trim();
+  const typed = (type ?? '').trim();
+  if (text === '' && typed === '') return { payerName: null, payerType: null };
+  if (text === '' || typed === '') throw new DomainError('VALIDATION', 'Un payeur tiers a un nom et un type : renseignez les deux, ou aucun si le client paie');
+  if (text.length > 200) throw new DomainError('VALIDATION', 'Le nom du payeur ne peut dépasser 200 caractères');
+  if (!(Object.values(PayerType) as string[]).includes(typed)) throw new DomainError('VALIDATION', 'Le type de payeur doit être employeur, organisme ou bailleur');
+  return { payerName: text, payerType: typed as PayerType };
+}
+
 /** Motif obligatoire (expiration, annulation) : trois caractères au moins, 500 au plus. */
 function reasonOf(raw: string | undefined, label: string): string {
   const text = (raw ?? '').trim();
@@ -79,7 +102,7 @@ function reasonOf(raw: string | undefined, label: string): string {
 }
 
 /**
- * Agrément : promesse de paiement signée par l'entreprise cliente (payeur : le client seulement, D2) pour une opportunité qui a
+ * Agrément : promesse de paiement signée par l'entreprise cliente (payeur : le client, ou un tiers renseigné, D41) pour une opportunité qui a
  * franchi l'accord de principe. Il couvre une somme, un nombre de places, ou les deux (D1) ; sa validité est facultative et son
  * expiration manuelle (D3). Le document signé est rattaché à l'agrément (module Documents). Le paiement effectif n'est pas suivi
  * ici mais par la finance (D5). Sa visibilité suit celle de l'entreprise.
@@ -89,26 +112,57 @@ export class Approval extends AggregateRoot {
     super();
   }
 
-  /** Enregistre un agrément reçu. La date de réception n'est pas dans le futur ; la validité ne la précède pas. */
-  static register(input: {
+  private static draft(input: {
     id: string; companyId: string; opportunityId: string; amount?: string | number | null; places?: number | null; currency?: string;
-    receivedOn: string; validUntil?: string | null; now: Date;
-  }): Approval {
+    validUntil?: string | null; payerName?: string | null; payerType?: string | null; now: Date;
+  }, receivedOn: string | null, status: ApprovalStatus): Approval {
     if (!input.companyId) throw new DomainError('VALIDATION', 'Un agrément concerne une entreprise');
     if (!input.opportunityId) throw new DomainError('VALIDATION', 'Un agrément concerne une opportunité');
     const amount = amountOf(input.amount);
     const places = placesOf(input.places);
     if (amount === null && places === null) throw new DomainError('VALIDATION', 'Indiquez le montant couvert, le nombre de places, ou les deux');
-    const receivedOn = isoDate(input.receivedOn, 'La date de réception');
-    if (receivedOn > input.now.toISOString().slice(0, 10)) throw new DomainError('VALIDATION', 'La date de réception ne peut pas être dans le futur');
     const validUntil = input.validUntil && input.validUntil.trim() !== '' ? isoDate(input.validUntil, 'La date de fin de validité') : null;
-    if (validUntil !== null && validUntil < receivedOn) throw new DomainError('VALIDATION', 'La fin de validité ne peut pas précéder la réception');
-    const approval = new Approval({
+    if (receivedOn !== null && validUntil !== null && validUntil < receivedOn) throw new DomainError('VALIDATION', 'La fin de validité ne peut pas précéder la réception');
+    return new Approval({
       id: input.id, companyId: input.companyId, opportunityId: input.opportunityId, amount, currency: currencyOf(input.currency), places,
-      receivedOn, validUntil, status: ApprovalStatus.Received, closedReason: null, closedAt: null, createdAt: input.now, version: 1,
+      receivedOn, ...payerOf(input.payerName, input.payerType), validUntil, status, closedReason: null, closedAt: null, createdAt: input.now, version: 1,
     });
+  }
+
+  /** Date de réception « AAAA-MM-JJ » réelle et non future. */
+  private static receptionDate(raw: string, now: Date): string {
+    const receivedOn = isoDate(raw, 'La date de réception');
+    if (receivedOn > now.toISOString().slice(0, 10)) throw new DomainError('VALIDATION', 'La date de réception ne peut pas être dans le futur');
+    return receivedOn;
+  }
+
+  /** Enregistre un agrément reçu. La date de réception n'est pas dans le futur ; la validité ne la précède pas. */
+  static register(input: {
+    id: string; companyId: string; opportunityId: string; amount?: string | number | null; places?: number | null; currency?: string;
+    receivedOn: string; validUntil?: string | null; payerName?: string | null; payerType?: string | null; now: Date;
+  }): Approval {
+    const approval = Approval.draft(input, Approval.receptionDate(input.receivedOn, input.now), ApprovalStatus.Received);
     approval.record(new ApprovalReceived(input.id, input.now, input.companyId, input.opportunityId));
     return approval;
+  }
+
+  /** Enregistre un agrément seulement demandé (D41, FD-4) : la promesse n'est pas encore signée, aucun événement « accordé » n'est émis. */
+  static request(input: {
+    id: string; companyId: string; opportunityId: string; amount?: string | number | null; places?: number | null; currency?: string;
+    validUntil?: string | null; payerName?: string | null; payerType?: string | null; now: Date;
+  }): Approval {
+    return Approval.draft(input, null, ApprovalStatus.Requested);
+  }
+
+  /** La promesse est signée : l'agrément demandé devient reçu à la date donnée (non future, la validité ne la précède pas). */
+  receive(receivedOn: string, now: Date): void {
+    if (this.props.status !== ApprovalStatus.Requested) {
+      throw new DomainError('INVARIANT_VIOLATION', `Un agrément ${this.label()} ne peut plus être déclaré reçu`);
+    }
+    const date = Approval.receptionDate(receivedOn, now);
+    if (this.props.validUntil !== null && this.props.validUntil < date) throw new DomainError('VALIDATION', 'La fin de validité ne peut pas précéder la réception');
+    this.props = { ...this.props, status: ApprovalStatus.Received, receivedOn: date };
+    this.record(new ApprovalReceived(this.props.id, now, this.props.companyId, this.props.opportunityId));
   }
 
   static rehydrate(props: ApprovalProps): Approval {
@@ -122,7 +176,7 @@ export class Approval extends AggregateRoot {
   }
 
   private label(): string {
-    return { RECEIVED: 'reçu', HONORED: 'honoré', EXPIRED: 'expiré', CANCELLED: 'annulé' }[this.props.status];
+    return { REQUESTED: 'demandé', RECEIVED: 'reçu', HONORED: 'honoré', EXPIRED: 'expiré', CANCELLED: 'annulé' }[this.props.status];
   }
 
   /** Constate que la promesse a été tenue (le paiement a eu lieu). Seul un agrément reçu peut être honoré. */
@@ -141,7 +195,7 @@ export class Approval extends AggregateRoot {
   /** Annule l'agrément (saisie erronée, renoncement du client) avec un motif ; il ne revient pas. */
   cancel(reason: string | undefined, now: Date): void {
     const closedReason = reasonOf(reason, "Le motif de l'annulation");
-    this.assertReceived('annulé');
+    if (this.props.status !== ApprovalStatus.Requested) this.assertReceived('annulé');
     this.props = { ...this.props, status: ApprovalStatus.Cancelled, closedReason, closedAt: now };
   }
 
@@ -156,7 +210,9 @@ export class Approval extends AggregateRoot {
   get amount(): string | null { return this.props.amount; }
   get currency(): string { return this.props.currency; }
   get places(): number | null { return this.props.places; }
-  get receivedOn(): string { return this.props.receivedOn; }
+  get receivedOn(): string | null { return this.props.receivedOn; }
+  get payerName(): string | null { return this.props.payerName; }
+  get payerType(): PayerType | null { return this.props.payerType; }
   get validUntil(): string | null { return this.props.validUntil; }
   get status(): ApprovalStatus { return this.props.status; }
   get closedReason(): string | null { return this.props.closedReason; }

@@ -93,7 +93,7 @@ export const ROLE_GRANTS: Record<RoleCode, readonly Grant[]> = {
     g('bd.followup.*', Team), g('bd.appointment.*', Team), g('bd.visit.*', Team),
     g('bd.opportunity.read', All), g('bd.opportunity.create', Team), g('bd.opportunity.update', Team),
     g('bd.opportunity.advance', Team), g('bd.opportunity.close_lost', Team), g('bd.opportunity.close_won', Team), g('bd.opportunity.override', Team), g('bd.opportunity.export', Team),
-    g('bd.approval.read', Team), g('bd.approval.create', Team), g('bd.approval.cancel', Team), g('bd.approval.honor', Team),
+    g('bd.approval.read', Team), g('bd.approval.create', Team), g('bd.approval.cancel', Team),
     g('bd.ambassador.read', All), g('bd.ambassador.create', Team), g('bd.ambassador.update', Team),
     g('bd.facilitator.read', Team), g('bd.facilitator.create', Team), g('bd.commission.read', Team), g('bd.commission.manage', Team),
     g('training.program.read', All), g('training.session.read', All), g('training.enrollment.read', Team),
@@ -146,7 +146,7 @@ export const ROLE_GRANTS: Record<RoleCode, readonly Grant[]> = {
     g('iam.session.read', Own), g('iam.session.revoke', Own),
   ],
   [RoleCode.Finance]: [
-    g('bd.company.read', All), g('bd.facilitator.read', All), g('bd.commission.read', All),
+    g('bd.company.read', All), g('bd.approval.read', All), g('bd.approval.honor', All), g('bd.facilitator.read', All), g('bd.commission.read', All),
     g('training.enrollment.read', All), g('training.session.read', All),
     g('reporting.kpi.read', All),
     g('iam.session.read', Own), g('iam.session.revoke', Own),

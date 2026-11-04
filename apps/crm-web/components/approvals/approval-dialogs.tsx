@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useState } from 'react';
 import { api, ApiError } from '../../lib/api';
-import { APPROVAL_ACTION_LABEL, type ApprovalAction, type ApprovalField, type ApprovalForm, buildApprovalBody, coverageText, eligibleOpportunities, EMPTY_APPROVAL_FORM, validateApprovalFields, validateReason } from '../../lib/approvals';
+import { APPROVAL_ACTION_LABEL, type ApprovalAction, type ApprovalPanelAction, PAYER_TYPES, type ApprovalField, type ApprovalForm, buildApprovalBody, coverageText, eligibleOpportunities, EMPTY_APPROVAL_FORM, validateApprovalFields, validateReason, validateReceivedOn } from '../../lib/approvals';
 import { formatDate, precheckFile } from '../../lib/format';
 import { todayIso } from '../../lib/receipts';
 import type { Approval, Opportunity, Page, UploadRules } from '../../lib/types';
@@ -16,13 +16,14 @@ const PREFIX = 'approval';
 export type ApprovalDialogState =
   | { kind: 'register'; company: { id: string; name: string } }
   | { kind: 'document'; approval: Approval }
-  | { kind: ApprovalAction; approval: Approval };
+  | { kind: ApprovalPanelAction; approval: Approval };
 
 /** Toutes les fenêtres du cycle d'un agrément, rendues UNE fois par le panneau hôte, hors du tableau. */
 export function ApprovalDialogs({ dialog, onClose, onDone }: { dialog: ApprovalDialogState | null; onClose: () => void; onDone: () => Promise<void> }) {
   if (!dialog) return null;
   if (dialog.kind === 'register') return <RegisterApprovalDialog company={dialog.company} onClose={onClose} onDone={onDone} />;
   if (dialog.kind === 'document') return <DocumentDialog approval={dialog.approval} onClose={onClose} />;
+  if (dialog.kind === 'receive') return <ReceiveApprovalDialog approval={dialog.approval} onClose={onClose} onDone={onDone} />;
   return <CloseApprovalDialog approval={dialog.approval} action={dialog.kind} onClose={onClose} onDone={onDone} />;
 }
 
@@ -37,8 +38,9 @@ function DocumentDialog({ approval, onClose }: { approval: Approval; onClose: ()
 }
 
 /**
- * Enregistrement d'un agrément : l'opportunité (accord de principe obtenu), le montant et/ou les places, la devise, les dates et le
- * document signé. Le fichier est un document rattaché à l'agrément : envoyé juste après l'enregistrement ; si l'envoi échoue,
+ * Enregistrement d'un agrément : l'opportunité (accord de principe obtenu), le montant et/ou les places, la devise, les dates, le
+ * payeur s'il est un tiers et le document signé. Une promesse pas encore signée s'enregistre comme « demandée » (sans date ni fichier).
+ * Le document signé Le fichier est un document rattaché à l'agrément : envoyé juste après l'enregistrement ; si l'envoi échoue,
  * l'agrément reste enregistré et le fichier peut être ajouté depuis « Document ».
  */
 function RegisterApprovalDialog({ company, onClose, onDone }: { company: { id: string; name: string }; onClose: () => void; onDone: () => Promise<void> }) {
@@ -58,7 +60,7 @@ function RegisterApprovalDialog({ company, onClose, onDone }: { company: { id: s
   }, [company.id]);
 
   const errors = submitted ? validateApprovalFields(form, { today: todayIso() }) : {};
-  const fileProblem = submitted ? (file ? (rules ? precheckFile(file, rules) : null) : 'Joignez l’agrément signé (PDF, image ou document).') : null;
+  const fileProblem = submitted && !form.requested ? (file ? (rules ? precheckFile(file, rules) : null) : 'Joignez l’agrément signé (PDF, image ou document).') : null;
   const props = (name: ApprovalField) => fieldProps(PREFIX, name, errors[name]);
   const set = <K extends keyof ApprovalForm>(key: K, value: ApprovalForm[K]) => setForm((f) => ({ ...f, [key]: value }));
 
@@ -68,7 +70,7 @@ function RegisterApprovalDialog({ company, onClose, onDone }: { company: { id: s
     setSubmitted(true);
     const problems = validateApprovalFields(form, { today: todayIso() });
     const first = Object.keys(problems)[0];
-    const noFile = !file || (rules ? precheckFile(file, rules) : null);
+    const noFile = !form.requested && (!file || (rules ? precheckFile(file, rules) : null));
     if (first || noFile) {
       setTimeout(() => document.getElementById(first ? `${PREFIX}-${first}` : `${PREFIX}-file`)?.focus(), 0);
       return;
@@ -80,6 +82,10 @@ function RegisterApprovalDialog({ company, onClose, onDone }: { company: { id: s
     } catch (e) {
       setBusy(false);
       setError(e instanceof ApiError ? e.message : "Échec de l'enregistrement");
+      return;
+    }
+    if (form.requested || !file) {
+      await onDone();
       return;
     }
     try {
@@ -98,7 +104,7 @@ function RegisterApprovalDialog({ company, onClose, onDone }: { company: { id: s
   return (
     <Modal title="Enregistrer un agrément" onClose={onClose} size="wide">
       <form onSubmit={(e) => void submit(e)} noValidate>
-        <p className="m-0 mb-3 text-ink-2">Entreprise : <strong>{company.name}</strong>. L’entreprise devient « Cliente » à l’enregistrement.</p>
+        <p className="m-0 mb-3 text-ink-2">Entreprise : <strong>{company.name}</strong>. {form.requested ? 'L’entreprise deviendra « Cliente » à la réception de la promesse signée.' : 'L’entreprise devient « Cliente » à l’enregistrement.'}</p>
         {submitted && (problems.length > 0 || fileProblem) && (
           <div role="alert" className="error">
             <p className="m-0 font-semibold">Corrigez les champs suivants :</p>
@@ -122,17 +128,34 @@ function RegisterApprovalDialog({ company, onClose, onDone }: { company: { id: s
         <FormField prefix={PREFIX} name="currency" label="Devise" error={errors.currency}>
           <input {...props('currency')} value={form.currency} onChange={(e) => set('currency', e.target.value)} maxLength={5} />
         </FormField>
-        <FormField prefix={PREFIX} name="receivedOn" label="Date de réception" error={errors.receivedOn}>
-          <input {...props('receivedOn')} type="date" value={form.receivedOn} max={todayIso()} onChange={(e) => set('receivedOn', e.target.value)} required aria-required="true" />
-        </FormField>
+        <div className="field">
+          <label><input type="checkbox" checked={form.requested} onChange={(e) => set('requested', e.target.checked)} /> La promesse n’est pas encore signée (agrément demandé)</label>
+        </div>
+        {!form.requested && (
+          <FormField prefix={PREFIX} name="receivedOn" label="Date de réception" error={errors.receivedOn}>
+            <input {...props('receivedOn')} type="date" value={form.receivedOn} max={todayIso()} onChange={(e) => set('receivedOn', e.target.value)} required aria-required="true" />
+          </FormField>
+        )}
         <FormField prefix={PREFIX} name="validUntil" label="Valide jusqu’au (facultatif)" error={errors.validUntil}>
           <input {...props('validUntil')} type="date" value={form.validUntil} onChange={(e) => set('validUntil', e.target.value)} />
         </FormField>
+        <FormField prefix={PREFIX} name="payerName" label="Payeur tiers (laisser vide si le client paie)" error={errors.payerName}>
+          <input {...props('payerName')} value={form.payerName} onChange={(e) => set('payerName', e.target.value)} maxLength={200} />
+        </FormField>
         <div className="field">
-          <label htmlFor={`${PREFIX}-file`}>Agrément signé (PDF, image ou document)</label>
-          <input id={`${PREFIX}-file`} type="file" aria-invalid={fileProblem ? true : undefined} aria-describedby={fileProblem ? `${PREFIX}-file-error` : undefined} onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
-          {fileProblem && <p id={`${PREFIX}-file-error`} className="field-error">{fileProblem}</p>}
+          <label htmlFor={`${PREFIX}-payerType`}>Type du payeur tiers</label>
+          <select id={`${PREFIX}-payerType`} value={form.payerType} onChange={(e) => set('payerType', e.target.value)}>
+            <option value="">—</option>
+            {Object.entries(PAYER_TYPES).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+          </select>
         </div>
+        {!form.requested && (
+          <div className="field">
+            <label htmlFor={`${PREFIX}-file`}>Agrément signé (PDF, image ou document)</label>
+            <input id={`${PREFIX}-file`} type="file" aria-invalid={fileProblem ? true : undefined} aria-describedby={fileProblem ? `${PREFIX}-file-error` : undefined} onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
+            {fileProblem && <p id={`${PREFIX}-file-error`} className="field-error">{fileProblem}</p>}
+          </div>
+        )}
         <div className="row end">
           <button type="button" className="secondary" onClick={onClose}>Retour</button>
           <button type="submit" disabled={busy}>Enregistrer l’agrément</button>
@@ -142,7 +165,47 @@ function RegisterApprovalDialog({ company, onClose, onDone }: { company: { id: s
   );
 }
 
-/** Honorer (confirmation), déclarer expiré ou annuler (motif obligatoire) un agrément reçu. */
+/** La promesse est signée : l'agrément demandé devient reçu à la date saisie ; l'entreprise devient « Cliente ». */
+function ReceiveApprovalDialog({ approval, onClose, onDone }: { approval: Approval; onClose: () => void; onDone: () => Promise<void> }) {
+  const [receivedOn, setReceivedOn] = useState(() => todayIso());
+  const [tried, setTried] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const problem = tried ? validateReceivedOn(receivedOn.trim(), { today: todayIso(), validUntil: approval.validUntil }) : null;
+
+  async function confirm() {
+    setTried(true);
+    if (validateReceivedOn(receivedOn.trim(), { today: todayIso(), validUntil: approval.validUntil })) {
+      document.getElementById(`${PREFIX}-receivedOn`)?.focus();
+      return;
+    }
+    setBusy(true);
+    setError(null);
+    try {
+      await api(`/approvals/${approval.id}/receive`, { method: 'POST', body: { version: approval.version, receivedOn: receivedOn.trim() } });
+      await onDone();
+    } catch (e) {
+      setBusy(false);
+      setError(e instanceof ApiError ? e.message : 'Action impossible');
+    }
+  }
+
+  return (
+    <Modal title={APPROVAL_ACTION_LABEL.receive} onClose={onClose}>
+      <p className="m-0 mb-3">La promesse de paiement de « <strong>{approval.opportunityTitle}</strong> » ({coverageText(approval)}) est signée : l’agrément devient « reçu » et l’entreprise devient « Cliente ». Pensez à joindre le document signé.</p>
+      <FormField prefix={PREFIX} name="receivedOn" label="Date de réception" error={problem ?? undefined}>
+        <input {...fieldProps(PREFIX, 'receivedOn', problem ?? undefined)} type="date" value={receivedOn} max={todayIso()} onChange={(e) => setReceivedOn(e.target.value)} required aria-required="true" />
+      </FormField>
+      {error && <p role="alert" className="error">{error}</p>}
+      <div className="row end">
+        <button type="button" className="secondary" onClick={onClose}>Retour</button>
+        <button type="button" disabled={busy} onClick={() => void confirm()}>{APPROVAL_ACTION_LABEL.receive}</button>
+      </div>
+    </Modal>
+  );
+}
+
+/** Honorer (confirmation, par la finance), déclarer expiré ou annuler (motif obligatoire) un agrément. */
 function CloseApprovalDialog({ approval, action, onClose, onDone }: { approval: Approval; action: ApprovalAction; onClose: () => void; onDone: () => Promise<void> }) {
   const [reason, setReason] = useState('');
   const [tried, setTried] = useState(false);
@@ -175,7 +238,7 @@ function CloseApprovalDialog({ approval, action, onClose, onDone }: { approval: 
       : 'sera annulé. Cette action est définitive ; une nouvelle opportunité ou un nouvel agrément pourra être enregistré.';
   return (
     <Modal title={APPROVAL_ACTION_LABEL[action]} onClose={onClose}>
-      <p className="m-0 mb-3">L’agrément de « <strong>{approval.opportunityTitle}</strong> » ({coverageText(approval)}, reçu le {formatDate(`${approval.receivedOn}T00:00:00Z`)}) {intro}</p>
+      <p className="m-0 mb-3">L’agrément de « <strong>{approval.opportunityTitle}</strong> » ({coverageText(approval)}{approval.receivedOn ? `, reçu le ${formatDate(`${approval.receivedOn}T00:00:00Z`)}` : ', seulement demandé'}) {intro}</p>
       {needsReason && (
         <FormField prefix={PREFIX} name="reason" label="Motif" error={problem ?? undefined}>
           <textarea {...fieldProps(PREFIX, 'reason', problem ?? undefined)} value={reason} onChange={(e) => setReason(e.target.value)} rows={3} maxLength={500} />

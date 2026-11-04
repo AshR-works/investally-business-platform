@@ -99,10 +99,10 @@ export class CompaniesController {
     return this.changeStatus.execute({ id, version: dto.version, status: dto.status as CompanyStatus, access, actor: actorContextFrom(req, actor) });
   }
 
-  /** Confie l'entreprise à un autre propriétaire de la portée de l'appelant (D17). */
+  /** Confie l'entreprise à un autre propriétaire de la portée de l'appelant (D17) ; second facteur récent exigé (D41, FD-6). */
   @Post(':id/owner')
   @HttpCode(200)
-  @Protected('bd.company.reassign')
+  @Protected('bd.company.reassign', { stepUp: true })
   owner(@Param('id', ParseUUIDPipe) id: string, @Body() dto: ReassignDto, @Access() access: AccessContext, @CurrentActor() actor: AuthenticatedActor, @Req() req: Request) {
     return this.reassign.execute({ id, version: dto.version, ownerUserId: dto.ownerUserId, access, actor: actorContextFrom(req, actor) });
   }

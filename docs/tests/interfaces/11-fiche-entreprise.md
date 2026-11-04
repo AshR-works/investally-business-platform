@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Route** | `/companies/[id]` |
-| **Livrée par** | S3.6, S4.0, S4.0c, S4.1a, S4.2a–d, S4.3a–c, S4.4a |
+| **Livrée par** | S3.6, S4.0, S4.0c, S4.1a, S4.2a–d, S4.3a–c, S4.4a, S4.4a-bis |
 | **Accès** | Utilisateur avec `bd.company.read` sur cette entreprise (hors portée : « introuvable »). |
 | **Droits** | Voir chaque panneau : contacts, offres, opportunités, agréments, rendez-vous, documents. |
 | **Rôles de test** | cc, rc, dir |
@@ -20,16 +20,17 @@ Une entreprise avec un contact, une offre, une opportunité à l'accord de princ
 | 2 | **Identité et responsable** | Lire la fiche. | Statut, secteur, pays, e-mail, téléphone, date de création, **responsable** nommé. | ☐ | |
 | 3 | **Modifier** | Cliquer « Modifier », changer un champ, enregistrer (puis refaire avec une version périmée). | Mise à jour ; conflit annoncé si quelqu'un a modifié entre-temps ; le propriétaire et le statut ne changent pas ici. | ☐ | |
 | 4 | **Statut** | Cliquer « Marquer comme contactée », puis « Qualifier » (avec puis sans contact). | Un cran à la fois ; « Qualifiée » refusée sans contact ; retour d'un cran possible ; « Cliente » et « Archivée » jamais proposées. | ☐ | |
-| 5 | **Changer de responsable** | Responsable commercial : « Changer de responsable », choisir, confirmer. | Liste limitée à l'équipe ; case de confirmation obligatoire ; l'ancien responsable perd la vue. | ☐ | |
+| 5 | **Changer de responsable** | Responsable commercial : « Changer de responsable », choisir, confirmer (code de vérification redemandé si le dernier a plus de 10 minutes). | Liste limitée à l'équipe ; case de confirmation obligatoire ; second facteur récent exigé (D41) ; l'ancien responsable perd la vue. | ☐ | |
 | 6 | **Exporter la fiche** | Cliquer « Exporter la fiche ». | Document imprimable ne contenant que ce que vous voyez ; export tracé. | ☐ | |
 | 7 | **Mise en relation** | Observer le panneau facilitateur / commission. | Facilitateur visible selon les droits ; commission visible du Responsable commercial et du chargé de compte. | ☐ | |
 | 8 | **Contacts** | Créer, modifier un contact ; créer un doublon. | Doublon probable signalé avec la fiche existante proposée. | ☐ | |
 | 9 | **Offres et décharge** | Créer une offre, la déposer, enregistrer la décharge avec un fichier. | Voir la fiche de l'écran Offres. | ☐ | |
 | 10 | **Opportunités** | Lire le panneau. | Étape, montant, état, dérogation ; lecture seule ; lien vers le pipeline. | ☐ | |
-| 11 | **Agrément** | Enregistrer un agrément (opportunité à l'accord de principe, montant, document signé). | Agrément « Reçu » listé ; l'entreprise devient « Cliente » ; honorer / expirer / annuler avec motif (Responsable commercial). | ☐ | |
-| 12 | **Rendez-vous** | Lire le panneau ; planifier depuis le bouton. | Rendez-vous des 60 derniers et 60 prochains jours ; planification préremplie. | ☐ | |
-| 13 | **Documents** | Ajouter, télécharger, versionner, archiver un document. | Formats et tailles contrôlés ; fichier trompeur refusé ; visible dans la portée seulement. | ☐ | |
-| 14 | **Entreprise archivée** | Ouvrir une entreprise archivée. | Lecture seule : plus de création ni de modification. | ☐ | |
+| 11 | **Agrément** | Enregistrer un agrément (opportunité à l'accord de principe, montant, document signé). | Agrément « Reçu » listé ; l'entreprise devient « Cliente » ; expirer / annuler avec motif (Responsable commercial) ; honorer : Finance. | ☐ | |
+| 12 | **Agrément demandé et payeur** | Enregistrer un agrément en cochant « La promesse n'est pas encore signée », avec un payeur tiers (nom et type) ; puis « Déclarer reçu » ; puis, avec un compte Finance, « Honorer ». | Agrément « Demandé » sans date ni fichier, payeur affiché ; l'entreprise devient « Cliente » à la réception ; seule la Finance honore (le Responsable commercial annule ou expire) ; nom sans type refusé. | ☐ | |
+| 13 | **Rendez-vous** | Lire le panneau ; planifier depuis le bouton. | Rendez-vous des 60 derniers et 60 prochains jours ; planification préremplie. | ☐ | |
+| 14 | **Documents** | Ajouter, télécharger, versionner, archiver un document. | Formats et tailles contrôlés ; fichier trompeur refusé ; visible dans la portée seulement. | ☐ | |
+| 15 | **Entreprise archivée** | Ouvrir une entreprise archivée. | Lecture seule : plus de création ni de modification. | ☐ | |
 
 ## Accessibilité
 - ☐ Clavier seul : Tab et Maj+Tab parcourent tous les contrôles dans un ordre logique ; le focus est toujours visible ; aucun piège de focus hors fenêtre modale.

@@ -30,7 +30,7 @@
 | 16 | [Opportunités (pipeline)](interfaces/16-opportunites.md) | `/opportunities` | S4.3a, S4.3b, S4.3c | |
 | 17 | [Ambassadeurs](interfaces/17-ambassadeurs.md) | `/ambassadors` | S4.4b | |
 
-## Fiches de session (30)
+## Fiches de session (31)
 
 | Session | Intitulé | Étiquette | Vérifications | Dernière exécution |
 |---|---|---|---|---|
@@ -42,7 +42,7 @@
 | [s3-4](sessions/s3-4.md) | Sprint 3.4 — Front de base : connexion, MFA, invitation, administration, mon compte (périmètre et plan de recette) | `s3-4-validated` | 39 | |
 | [s3-5](sessions/s3-5.md) | Sprint 3.5 — « Mot de passe oublié », commentaires du code et livrables (périmètre et plan de recette) | `s3-5-validated` | 36 | |
 | [a11y-1](sessions/a11y-1.md) | Accessibilité 1 — vérification « lecteurs d'écran » | `a11y-1-validated` | 0 | |
-| [correctifs-1](sessions/correctifs-1.md) | Correctifs de recette n° 1 : téléphones, fenêtres, barres de défilement, tableaux | — | 7 | |
+| [correctifs-1](sessions/correctifs-1.md) | Correctifs de recette n° 1 : téléphones, fenêtres, barres de défilement, tableaux | `correctifs-1-validated` | 7 | |
 | [h1](sessions/h1.md) | H1 et H1b — Habillage, hub et composants de données | `h1-validated`, `h1b-validated` | 8 | |
 | [h2a](sessions/h2a.md) | H2a — Écrans d'accès au nouveau style | `h2a-validated` | 12 | |
 | [h2b](sessions/h2b.md) | H2b — Sessions et historique des connexions | `h2b-validated` | 2 | |
@@ -62,6 +62,7 @@
 | [s4-3a](sessions/s4-3a.md) | S4.3a — opportunités : le pipeline commercial | `s4-3a-validated` | 6 | |
 | [s4-3b](sessions/s4-3b.md) | S4.3b — statuts d'entreprise, responsable, fiche 360° | `s4-3b-validated` | 8 | |
 | [s4-3c](sessions/s4-3c.md) | S4.3c — valeur des opportunités et lien rendez-vous ↔ opportunité | `s4-3c-validated` | 7 | |
+| [s4-4a-bis](sessions/s4-4a-bis.md) | S4.4a-bis — agréments : demandé, payeur tiers, constat par la Finance ; second facteur à la réattribution | — | 7 | |
 | [s4-4a](sessions/s4-4a.md) | S4.4a — agréments : la promesse de paiement signée | `s4-4a-validated` | 8 | |
 | [s4-4b](sessions/s4-4b.md) | S4.4b — ambassadeurs : clients ou apprenants devenus relais commerciaux | `s4-4b-validated` | 9 | |
 

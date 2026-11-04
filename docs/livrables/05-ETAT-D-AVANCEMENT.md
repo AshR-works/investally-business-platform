@@ -86,6 +86,7 @@ Légende : ✅ validé · 🟦 livré, validation attendue · ⏳ à faire
 | Agenda : rendez-vous et visites, conflit d'horaire, report, tenue, annulation ; lien à une opportunité | ✅ | recettes S4.2d, S4.3c |
 | Opportunités : pipeline en cinq étapes, accord de principe (rendez-vous décideur ou dérogation), clôtures | ✅ | recette S4.3a |
 | Agréments : promesse de paiement signée, entreprise « Cliente », honorer / expirer / annuler | ✅ | recette S4.4a |
+| Agrément demandé puis reçu, payeur tiers, constat du paiement par la Finance, second facteur à la réattribution (D41) | ✅ *validation en attente* | recette S4.4a-bis |
 | Envoyer de vrais e-mails (Microsoft 365) | ❌ **non testé** | en attente d'accès |
 | Ambassadeurs : création manuelle, origine client ou apprenant, liste | ✅ | recette S4.4b |
 | Commissions à verser (due, déblocage, versement) | ⏳ | S4.4c |
