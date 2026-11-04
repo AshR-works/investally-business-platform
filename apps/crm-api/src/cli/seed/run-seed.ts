@@ -1,14 +1,14 @@
 import { AppointmentTransition, PlanAppointmentUseCase, TransitionAppointmentUseCase } from '../../modules/business-development/application/appointment-use-cases';
 import { AmbassadorOrigin } from '../../modules/business-development/domain/ambassador';
-import { RegisterAmbassadorUseCase } from '../../modules/business-development/application/ambassador-use-cases';
+import { RegisterAmbassadorUseCase, UpdateAmbassadorUseCase } from '../../modules/business-development/application/ambassador-use-cases';
 import { CloseApprovalUseCase, ReceiveApprovalUseCase, RegisterApprovalUseCase } from '../../modules/business-development/application/approval-use-cases';
-import { ChangeCompanyStatusUseCase, CompanyStatus } from '../../modules/business-development/application/company-lifecycle-use-cases';
+import { ChangeCompanyStatusUseCase, CompanyStatus, ReassignCompanyUseCase } from '../../modules/business-development/application/company-lifecycle-use-cases';
 import { RegisterContactUseCase } from '../../modules/business-development/application/contact-use-cases';
 import { CloseFollowupUseCase, PlanFollowupUseCase } from '../../modules/business-development/application/followup-use-cases';
 import { ChangeOfferStatusUseCase, RegisterOfferUseCase } from '../../modules/business-development/application/offer-use-cases';
 import { AdvanceOpportunityUseCase, CloseOpportunityUseCase, CreateOpportunityUseCase, GrantWaiverUseCase } from '../../modules/business-development/application/opportunity-use-cases';
 import { RegisterCompanyUseCase } from '../../modules/business-development/application/register-company.use-case';
-import { RegisterReceiptUseCase } from '../../modules/business-development/application/receipt-use-cases';
+import { CancelReceiptUseCase, RegisterReceiptUseCase } from '../../modules/business-development/application/receipt-use-cases';
 import { UpdateCompanyUseCase } from '../../modules/business-development/application/update-company.use-case';
 import { AuthorizationService } from '../../modules/iam/application/authorization.service';
 import type { AccessContext } from '../../modules/iam';
@@ -63,7 +63,7 @@ export async function runSeed(app: ProviderSource, events: readonly SeedEvent[],
     if (!found) throw new Error(`Objet « ${key} » introuvable : le plan est incohérent`);
     return found;
   };
-  const versionOf = async (kind: 'company' | 'offer' | 'followup' | 'appointment' | 'opportunity' | 'approval', key: string): Promise<number> => {
+  const versionOf = async (kind: 'company' | 'offer' | 'followup' | 'appointment' | 'opportunity' | 'approval' | 'receipt' | 'ambassador', key: string): Promise<number> => {
     const where = { id: id(key) };
     const row = await (prisma.db[kind] as unknown as { findUniqueOrThrow(args: { where: { id: string }; select: { version: true } }): Promise<{ version: number }> }).findUniqueOrThrow({ where, select: { version: true } });
     return row.version;
@@ -114,8 +114,19 @@ export async function runSeed(app: ProviderSource, events: readonly SeedEvent[],
           case 'offerAction':
             await use(ChangeOfferStatusUseCase).execute({ id: id(op.offer), version: await versionOf('offer', op.offer), action: op.action, reason: op.reason, access, actor });
             break;
-          case 'receipt':
-            await use(RegisterReceiptUseCase).execute({ offerId: id(op.offer), receivedOn: at.toISOString().slice(0, 10), receivedBy: op.receivedBy, access, actor });
+          case 'receipt': {
+            const view = await use(RegisterReceiptUseCase).execute({ offerId: id(op.offer), receivedOn: at.toISOString().slice(0, 10), receivedBy: op.receivedBy, access, actor });
+            ids.set(`receipt:${op.offer}`, (view as { id: string }).id);
+            break;
+          }
+          case 'receiptCancel':
+            await use(CancelReceiptUseCase).execute({ id: id(`receipt:${op.offer}`), version: await versionOf('receipt', `receipt:${op.offer}`), reason: op.reason, access, actor });
+            break;
+          case 'reassign':
+            await use(ReassignCompanyUseCase).execute({ id: id(op.company), version: await versionOf('company', op.company), ownerUserId: options.users[op.to], access, actor });
+            break;
+          case 'ambassadorUpdate':
+            await use(UpdateAmbassadorUseCase).execute({ id: id(op.ambassador), version: await versionOf('ambassador', op.ambassador), note: op.note, access, actor });
             break;
           case 'followupPlan': {
             const view = await use(PlanFollowupUseCase).execute({ offerId: id(op.offer), dueOn: op.dueOn, channel: op.channel, note: op.note, access, actor });

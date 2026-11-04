@@ -225,8 +225,8 @@ Trois profils : **minimal** (les 25 entreprises génériques actuelles, pour les
 | **T3.1** | Inventaire des écarts au Design System (grille + captures claires et sombres) | P2 | — | Grille remplie, écarts E1 à E6 confirmés ou écartés |
 | **T3.2** | Réalignement par lots + garde-fou contre les valeurs en dur | P2 | T3.1 | Pages conformes aux trois gabarits |
 | **T4.1** | Squelette du seed (commande, garde-fous, validation du plan) : **fait** (le profil « minimal » reste les 25 entreprises génériques des tests ; le profil « volume » n'est pas fait) | P1 | T1.1 | Charge, rejoue sans doublon, refuse la production et toute base non locale |
-| **T4.2** | Plan des entreprises, contacts, facilitateurs : **fait** (40 entreprises, 84 contacts, facilitateurs et commissions) | P1 | T4.1 | Couverture 5.6 |
-| **T4.3** | Plan commercial (offres, relances, rendez-vous, opportunités, agréments, ambassadeurs), dates relatives, 12 mois : **fait** (559 événements) | P1 | T4.2 | Tous les états présents ; totaux crédibles |
+| **T4.2** | Plan des entreprises, contacts, facilitateurs : **fait** (40 entreprises, 96 contacts dont des doublons probables, facilitateurs et commissions) | P1 | T4.1 | Couverture 5.6 |
+| **T4.3** | Plan commercial (offres, relances, rendez-vous, opportunités, agréments, ambassadeurs), dates relatives, 12 mois : **fait** (617 événements, enrichi le 2026-11-04) | P1 | T4.2 | Tous les états présents ; totaux crédibles |
 | **T4.4** | Intégration : `local-stack --demo` **fait** ; `test-db --seed demo` non fait (D135) ; scénarios de recette par persona non faits | P1 | T4.3 | Chaque rôle parcourt son espace avec des données |
 | **T4.5** | Fixtures Investudy et finance, chargées avec leurs modules | P3 | S5, module finance | Spécification livrée maintenant, chargement plus tard |
 

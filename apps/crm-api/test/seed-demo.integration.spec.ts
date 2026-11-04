@@ -75,6 +75,15 @@ describeDb('Jeu de données de démonstration (cas d’usage + PostgreSQL)', () 
     for (const s of ['DRAFT', 'SUBMITTED', 'RECEIPT_RECEIVED', 'ACCEPTED', 'REFUSED', 'WITHDRAWN']) expect([s, offers.has(s)]).toEqual([s, true]);
     const followups = await statuses(db.followup.findMany({ select: { status: true }, distinct: ['status'] }));
     expect(followups.has('PLANNED')).toBe(true);
+    expect(followups.has('CANCELLED')).toBe(true);
+    const byOffer = await db.followup.groupBy({ by: ['offerId'], _count: true });
+    expect(Math.max(...byOffer.map((g) => g._count))).toBeGreaterThanOrEqual(2);
+    expect((await db.receipt.findMany({ select: { status: true }, distinct: ['status'] })).map((r) => r.status).sort()).toEqual(['CANCELLED', 'VALID']);
+    const reassigned = await db.$queryRaw<{ n: bigint }[]>`SELECT count(*) AS n FROM audit.audit_logs WHERE entity_type = 'Company' AND action = 'UPDATE' AND old_value->>'ownerUserId' IS DISTINCT FROM new_value->>'ownerUserId'`;
+    expect(Number(reassigned[0]!.n)).toBeGreaterThanOrEqual(3);
+    const duplicates = await db.contact.groupBy({ by: ['companyId', 'firstName', 'lastName'], _count: true, having: { companyId: { _count: { gt: 1 } } } });
+    expect(duplicates.length).toBeGreaterThanOrEqual(3);
+    expect(await db.ambassador.count({ where: { version: { gt: 1 } } })).toBeGreaterThanOrEqual(2);
     expect(followups.has('DONE')).toBe(true);
     const overdue = await db.followup.count({ where: { status: 'PLANNED', dueOn: { lt: new Date(Date.now() - 86_400_000) } } });
     const upcoming = await db.followup.count({ where: { status: 'PLANNED', dueOn: { gt: new Date() } } });
@@ -84,6 +93,7 @@ describeDb('Jeu de données de démonstration (cas d’usage + PostgreSQL)', () 
     expect(appointments.has('HELD')).toBe(true);
     expect(appointments.has('PLANNED')).toBe(true);
     expect(appointments.has('CANCELLED')).toBe(true);
+    expect(await db.appointment.count({ where: { status: 'PLANNED', startsAt: { gt: new Date() } } })).toBeGreaterThanOrEqual(6);
     expect(await db.appointment.count({ where: { status: 'PLANNED', startsAt: { gt: new Date() } } })).toBeGreaterThan(0);
     const opportunities = await db.opportunity.findMany({ select: { stage: true, status: true } });
     expect(new Set(opportunities.map((o) => o.stage)).size).toBeGreaterThanOrEqual(4);
