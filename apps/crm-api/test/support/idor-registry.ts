@@ -64,6 +64,13 @@ export const IDOR_ROUTES: Record<string, IdorClass> = {
   'POST /approvals/:id/honor': 'objet',
   'POST /approvals/:id/expire': 'objet',
   'POST /approvals/:id/cancel': 'objet',
+  'GET /commissions': 'objet',
+  'GET /commissions/:id': 'objet',
+  'POST /commissions/:id/release': 'objet',
+  'POST /commissions/:id/hold': 'objet',
+  'POST /commissions/:id/pay': 'objet',
+  'POST /commissions/:id/cancel': 'objet',
+  'POST /commissions/:id/amount': 'objet',
   'GET /ambassadors/:id': 'objet',
   'PUT /ambassadors/:id': 'objet',
   'GET /documents': 'objet',
@@ -86,4 +93,4 @@ export const IDOR_ROUTES: Record<string, IdorClass> = {
 };
 
 /** Routes qui reçoivent un identifiant d'objet dans la requête sans le mettre dans le chemin (`?ownerId=`). */
-export const OBJECT_ID_IN_QUERY = ['GET /documents', 'POST /documents', 'GET /contacts', 'POST /contacts', 'GET /offers', 'POST /offers', 'GET /receipts', 'POST /receipts', 'GET /followups', 'POST /followups', 'GET /appointments', 'POST /appointments', 'GET /opportunities', 'POST /opportunities', 'GET /approvals', 'POST /approvals'];
+export const OBJECT_ID_IN_QUERY = ['GET /documents', 'POST /documents', 'GET /contacts', 'POST /contacts', 'GET /offers', 'POST /offers', 'GET /receipts', 'POST /receipts', 'GET /followups', 'POST /followups', 'GET /appointments', 'POST /appointments', 'GET /opportunities', 'POST /opportunities', 'GET /approvals', 'POST /approvals', 'GET /commissions'];

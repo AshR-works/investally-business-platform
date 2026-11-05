@@ -67,7 +67,7 @@ export const ACTION_LABELS: Record<string, string> = {
   read: 'Consulter', create: 'Créer', update: 'Modifier', delete: 'Supprimer', archive: 'Archiver', export: 'Exporter',
   disable: 'Désactiver', assign_role: 'Attribuer des rôles', reset_mfa: 'Réinitialiser le MFA', reset_password: 'Réinitialiser le mot de passe',
   manage: 'Gérer', revoke: 'Révoquer', download: 'Télécharger', withdraw: 'Retirer', complete: 'Terminer', cancel: 'Annuler',
-  advance: 'Faire avancer', close: 'Clore', close_lost: 'Clore : perdue', close_won: 'Clore : gagnée', reassign: 'Changer de responsable', honor: 'Honorer', override: 'Accorder une dérogation', record: 'Enregistrer', issue: 'Délivrer',
+  advance: 'Faire avancer', close: 'Clore', close_lost: 'Clore : perdue', close_won: 'Clore : gagnée', reassign: 'Changer de responsable', honor: 'Honorer', release: 'Débloquer les fonds', pay: 'Constater le versement', override: 'Accorder une dérogation', record: 'Enregistrer', issue: 'Délivrer',
   account_manager: 'Chargé de compte', head_of_sales: 'Responsable commercial', training: 'Formation', direction: 'Direction', security: 'Sécurité', admin: 'Administration',
 };
 export const actionLabel = (action: string): string => ACTION_LABELS[action] ?? action;

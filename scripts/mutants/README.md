@@ -20,6 +20,7 @@ Chaque lot du module commercial a son script. Les résultats (nombre de mutants 
 | `s43b-statuts-responsable.py` | S4.3b | statuts d'entreprise et responsable |
 | `s43c-valeur-lien-rdv.py` | S4.3c | valeur des opportunités et lien rendez-vous |
 | `s44a-agrements.py` | S4.4a | agréments |
+| `s44c-commissions.py` | S4.4c | commissions à verser |
 | `s44b-ambassadeurs.py` | S4.4b | ambassadeurs |
 | `s44abis-correctifs-agrements.py` | S4.4a-bis | agrément demandé, payeur tiers, constat par la Finance, second facteur |
 | `correctifs-recette-1.py` | Correctifs 1 | téléphones, fenêtres, barres de défilement, tableaux |

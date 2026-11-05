@@ -861,6 +861,7 @@ try {
   }
   await clickText('Enregistrer l’agrément', "document.querySelector('[role=dialog]')");
   await waitFor("!document.querySelector('[role=dialog]') && document.querySelector('#approvals-title').closest('section').querySelectorAll('tbody tr').length > 0", 'agrément enregistré', 25000);
+  await waitFor("document.querySelector('main').textContent.includes('Reçu') && document.querySelector('main').textContent.includes('Cliente')", 'agrément reçu et entreprise cliente affichés', 25000);
   await expectThat('l’agrément est listé « Reçu », avec ce qu’il couvre, et l’entreprise est devenue « Cliente »', `(() => { const t = document.querySelector('main').textContent.replace(/[\\u202f\\u00a0]/g, ' '); return t.includes('Reçu') && t.includes('4 000 000') && t.includes('12 places') && t.includes('Cliente'); })()`);
   await audit('Agrément — liste sur la fiche', 'agrément reçu, entreprise cliente');
   await shot('agrement-liste');
@@ -910,6 +911,66 @@ try {
   await clickText('Honorer', "document.querySelector('[role=dialog]')");
   await waitFor("!document.querySelector('[role=dialog]') && document.querySelector('#approvals-title').closest('section').textContent.includes('Honoré')", 'agrément honoré', 25000);
   await audit('Agrément — honoré', 'état Honoré, plus aucune action de clôture');
+  // ---- S4.4c : commissions (l'agrément honoré rend due la commission du facilitateur : 7,5 % de 2 500 000 = 187 500).
+  await go('/commissions');
+  await waitFor("document.querySelector('main h1') && document.querySelector('main').textContent.includes('Commissions')", 'page Commissions', 25000);
+  await waitFor("document.querySelector('main tbody tr') && document.querySelector('main tbody tr').textContent.includes('À verser')", 'commission due listée', 25000);
+  await expectThat('la commission née de l’agrément honoré est listée « À verser », avec son montant figé (7,5 % de 2 500 000) et son facilitateur', `(() => { const t = document.querySelector('main tbody tr').textContent.replace(/[\\u202f\\u00a0]/g, ' '); return t.includes('Mbarga') && t.includes('187 500') && t.includes('7,5 %') && t.includes('À verser'); })()`);
+  await expectThat('la page propose le filtre par état et annonce le nombre de commissions', `(() => { const m = document.querySelector('main'); return Boolean(m.querySelector('select')) && /1 commission/.test(m.textContent); })()`);
+  await audit('Commissions — liste', 'état À verser, montant et commission figée');
+  await shot('commissions-liste');
+  const openCommissionMenu = () => js("document.querySelector('main tbody tr summary[aria-label^=\"Actions pour la commission\"]').click()");
+  await openCommissionMenu();
+  await sleep(300);
+  await clickText('Débloquer les fonds');
+  await waitFor("document.querySelector('[role=dialog]') && document.querySelector('[role=dialog]').textContent.includes('sera débloquée')", 'fenêtre de déblocage');
+  await audit('Commissions — débloquer les fonds', 'confirmation, décision tracée');
+  await clickText('Débloquer les fonds', "document.querySelector('[role=dialog]')");
+  await waitFor("!document.querySelector('[role=dialog]') && document.querySelector('main tbody tr').textContent.includes('Fonds débloqués')", 'fonds débloqués', 25000);
+  await openCommissionMenu();
+  await sleep(300);
+  await clickText('Constater le versement');
+  await waitFor("document.querySelector('[role=dialog] #payout-paidOn')", 'fenêtre de versement');
+  await expectThat('la fenêtre de versement propose le justificatif et la date du versement', `(() => { const d = document.querySelector('[role=dialog]'); return d.textContent.includes('justificatif') && Boolean(d.querySelector('#payout-paidOn')); })()`);
+  await audit('Commissions — constater le versement', 'justificatif à déposer, date du versement');
+  await shot('commissions-versement');
+  await clickText('Constater le versement', "document.querySelector('[role=dialog]')");
+  await waitFor("document.querySelector('[role=dialog] [role=alert]') && document.querySelector('[role=dialog] [role=alert]').textContent.toLowerCase().includes('justificatif')", 'refus sans justificatif annoncé', 25000);
+  await expectThat('sans justificatif, le versement est refusé par le serveur, l’alerte est annoncée et la fenêtre reste ouverte', `Boolean(document.querySelector('[role=dialog]'))`);
+  await audit('Commissions — versement refusé sans justificatif', 'alerte annoncée, fenêtre toujours ouverte');
+  // Le justificatif (catégorie « Justificatif ») est déposé dans la fenêtre de versement ; le versement est alors constaté.
+  const topDialog = "[...document.querySelectorAll('[role=dialog]')].at(-1)";
+  const proofDir = mkdtempSync(join(tmpdir(), 'a11y-proof-'));
+  const proofPdf = join(proofDir, 'Recu-virement.pdf');
+  writeFileSync(proofPdf, '%PDF-1.7\nreçu de virement\n%%EOF');
+  await clickText('Ajouter un document', "document.querySelector('[role=dialog]')");
+  await waitFor("document.querySelector('[role=dialog] [role=dialog] input[type=file]')", 'fenêtre d’ajout du justificatif', 25000);
+  await js(`(() => { const label = [...document.querySelectorAll('[role=dialog] [role=dialog] label')].find((l) => l.textContent.trim().startsWith('Catégorie')); const el = label.control; Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value').set.call(el, 'JUSTIFICATIF'); el.dispatchEvent(new Event('change', { bubbles: true })); })()`);
+  {
+    const { root } = await send('DOM.getDocument', { depth: -1 });
+    const { nodeId } = await send('DOM.querySelector', { nodeId: root.nodeId, selector: '[role=dialog] [role=dialog] input[type=file]' });
+    await send('DOM.setFileInputFiles', { files: [proofPdf], nodeId });
+    await sleep(400);
+  }
+  await clickText('Envoyer', topDialog);
+  await waitFor("document.querySelectorAll('[role=dialog]').length === 1 && document.querySelector('[role=dialog]').textContent.includes('Recu-virement')", 'justificatif déposé', 25000);
+  await expectThat('le justificatif déposé apparaît dans la fenêtre de versement, catégorie « Justificatif »', `(() => { const t = document.querySelector('[role=dialog]').textContent; return t.includes('Recu-virement') && t.includes('Justificatif'); })()`);
+  await audit('Commissions — justificatif déposé', 'document listé dans la fenêtre de versement');
+  await shot('commissions-justificatif');
+  await clickText('Constater le versement', "document.querySelector('[role=dialog]')");
+  await waitFor("!document.querySelector('[role=dialog]') && document.querySelector('main tbody tr').textContent.includes('Versée')", 'commission versée', 25000);
+  await expectThat('la commission est « Versée » avec sa date de versement (jj/mm/aaaa), et sa ligne ne propose plus que le justificatif', `(() => { const r = document.querySelector('main tbody tr'); return r.textContent.includes('Versée') && /\\d{2}\\/\\d{2}\\/\\d{4}/.test(r.textContent) && !r.textContent.includes('À verser'); })()`);
+  await openCommissionMenu();
+  await sleep(300);
+  await expectThat('une commission versée ne propose ni versement, ni annulation, ni déblocage : seulement « Justificatif »', `(() => { const items = [...document.querySelectorAll('main tbody tr [role=menuitem], main tbody tr details button')].map((b) => b.textContent.trim()); return items.includes('Justificatif') && !items.some((x) => /Constater|Annuler|Débloquer|Mettre en attente|Fixer/.test(x)); })()`);
+  await audit('Commissions — versée', 'état Versée, plus aucune action de clôture');
+  await shot('commissions-versee');
+  await js("document.querySelector('main tbody tr details').open = false");
+  await sleep(300);
+  await js("(() => { const s = document.querySelector('main select'); Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value').set.call(s, 'DUE'); s.dispatchEvent(new Event('change', { bubbles: true })); })()");
+  await waitFor("document.querySelector('main tbody tr') && document.querySelector('main tbody tr').textContent.includes('Aucune commission dans cet état')", 'filtre par état sans résultat', 25000);
+  await expectThat('le filtre « À verser » ne montre plus la commission débloquée et annonce un état vide lisible', `document.querySelector('main tbody').textContent.includes('Aucune commission dans cet état')`);
+  await audit('Commissions — filtre sans résultat', 'état vide lisible');
   // ---- S4.4b : ambassadeurs (création manuelle, origine, entreprise, e-mail unique).
   await go('/ambassadors');
   await waitFor("document.querySelector('main h1') && document.querySelector('main').textContent.includes('Nouvel ambassadeur')", 'page Ambassadeurs', 25000);

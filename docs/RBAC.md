@@ -166,6 +166,8 @@ Cellule : **O**, **É**, **T** = portée accordée ; vide = non accordée.
 | `bd.facilitator.create` | T |  | E | O |  |  |  |  |  |  |
 | `bd.commission.read` | T | T | E | O |  |  |  | T |  |  |
 | `bd.commission.manage` | T |  | E |  |  |  |  |  |  |  |
+| `bd.commission.release` | T |  |  |  |  |  |  | T |  |  |
+| `bd.commission.pay` | T |  | E | O |  |  |  |  |  |  |
 
 ### Investudy (`training`)
 

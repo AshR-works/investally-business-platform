@@ -13,7 +13,7 @@ const pdf = () => Buffer.from('%PDF-1.7\ncontrat idor\n%%EOF');
 
 interface As { token: string; ip: string }
 /** Identifiants visés par une sonde : les vrais (objet de Marie) ou inexistants (tous `NIL`). */
-interface Ids { company: string; doc: string; session: string; facilitator: string; contact: string; offer: string; offerSent: string; offerPending: string; offerReceipt: string; receipt: string; followup: string; appointment: string; appointmentDue: string; opportunity: string; opportunityAgreed: string; teammate: string; opportunityReady: string; approval: string; approvalRequested: string; ambassador: string }
+interface Ids { company: string; doc: string; session: string; facilitator: string; contact: string; offer: string; offerSent: string; offerPending: string; offerReceipt: string; receipt: string; followup: string; appointment: string; appointmentDue: string; opportunity: string; opportunityAgreed: string; teammate: string; opportunityReady: string; approval: string; approvalRequested: string; commission: string; commissionCompany: string; ambassador: string }
 
 /**
  * Une sonde par route « objet » : elle appelle la route avec les identifiants donnés, en tant que `as`.
@@ -68,6 +68,13 @@ const PROBES: Record<string, (api: Api, as: As, ids: Ids) => Promise<ApiResponse
   'GET /approvals': (api, as, ids) => api.call('GET', `/api/v1/approvals?companyId=${ids.company}`, as),
   'POST /approvals': (api, as, ids) => api.call('POST', '/api/v1/approvals', { ...as, body: { opportunityId: ids.opportunityReady, amount: '1000', receivedOn: new Date().toISOString().slice(0, 10) } }),
   'GET /approvals/:id': (api, as, ids) => api.call('GET', `/api/v1/approvals/${ids.approval}`, as),
+  'GET /commissions': (api, as, ids) => api.call('GET', `/api/v1/commissions?companyId=${ids.commissionCompany}`, as),
+  'GET /commissions/:id': (api, as, ids) => api.call('GET', `/api/v1/commissions/${ids.commission}`, as),
+  'POST /commissions/:id/release': (api, as, ids) => api.call('POST', `/api/v1/commissions/${ids.commission}/release`, { ...as, body: { version: 1 } }),
+  'POST /commissions/:id/hold': (api, as, ids) => api.call('POST', `/api/v1/commissions/${ids.commission}/hold`, { ...as, body: { version: 1, reason: 'Mise en attente piratée' } }),
+  'POST /commissions/:id/pay': (api, as, ids) => api.call('POST', `/api/v1/commissions/${ids.commission}/pay`, { ...as, body: { version: 1, paidOn: new Date().toISOString().slice(0, 10) } }),
+  'POST /commissions/:id/cancel': (api, as, ids) => api.call('POST', `/api/v1/commissions/${ids.commission}/cancel`, { ...as, body: { version: 1, reason: 'Annulée par un pirate' } }),
+  'POST /commissions/:id/amount': (api, as, ids) => api.call('POST', `/api/v1/commissions/${ids.commission}/amount`, { ...as, body: { version: 1, amount: '1000' } }),
   'POST /approvals/:id/receive': (api, as, ids) => api.call('POST', `/api/v1/approvals/${ids.approvalRequested}/receive`, { ...as, body: { version: 1, receivedOn: new Date().toISOString().slice(0, 10) } }),
   'POST /approvals/:id/honor': (api, as, ids) => api.call('POST', `/api/v1/approvals/${ids.approval}/honor`, { ...as, body: { version: 1 } }),
   'POST /approvals/:id/expire': (api, as, ids) => api.call('POST', `/api/v1/approvals/${ids.approval}/expire`, { ...as, body: { version: 1, reason: 'Expiré par un pirate' } }),
@@ -179,16 +186,32 @@ describeDb('Contrat anti-IDOR : un acteur sans portée reçoit la réponse d\'un
     const approvalRequested = await api.call('POST', '/api/v1/approvals', { ...m, body: { opportunityId: opportunityAsked.body.id, amount: '2600000', requested: true } });
     expect(approvalRequested.status).toBe(201);
     expect(approvalRequested.body.status).toBe('REQUESTED');
+    // Une commission due : entreprise de Marie avec un facilitateur, la commission définie par son chef, l'agrément reçu puis honoré par la Finance.
+    const financeSession = await login(await createUserWithRoles(t, [RoleCode.Finance]));
+    const company3 = await api.call('POST', '/api/v1/companies', { ...m, body: { name: `Société IDOR commission ${Math.random().toString(36).slice(2, 8)}`, facilitation: { newFacilitator: { lastName: 'Secret-FACILITATEUR-IDOR', firstName: 'Paul', phone: '+237699001122' }, contactMethod: 'PHONE_CALL' } } });
+    expect(company3.status).toBe(201);
+    const withCommission = await api.call('PUT', `/api/v1/companies/${company3.body.id}`, { ...chefSession, body: { version: company3.body.version, facilitation: { commission: { type: 'FIXED', value: '150000', currency: 'XAF' } } } });
+    expect(withCommission.status).toBe(200);
+    const opportunityPaid = await api.call('POST', '/api/v1/opportunities', { ...m, body: { companyId: company3.body.id, title: 'Secret-OPPORTUNITE-IDOR commission', amount: '4000000', source: 'EVENT' } });
+    expect(opportunityPaid.status).toBe(201);
+    await t.prisma.db.opportunity.update({ where: { id: opportunityPaid.body.id }, data: { stage: 'AGREEMENT_IN_PRINCIPLE' } });
+    const approvalPaid = await api.call('POST', '/api/v1/approvals', { ...m, body: { opportunityId: opportunityPaid.body.id, amount: '4000000', receivedOn: new Date().toISOString().slice(0, 10) } });
+    expect(approvalPaid.status).toBe(201);
+    expect((await api.call('POST', `/api/v1/approvals/${approvalPaid.body.id}/honor`, { ...financeSession, body: { version: 1 } })).status).toBe(200);
+    const commissions = await api.call('GET', `/api/v1/commissions?companyId=${company3.body.id}`, financeSession);
+    expect(commissions.status).toBe(200);
+    expect(commissions.body.items).toHaveLength(1);
+    const commission = commissions.body.items[0];
     const ambassador = await api.call('POST', '/api/v1/ambassadors', { ...m, body: { lastName: 'Secret-AMBASSADEUR-IDOR', firstName: 'Alain', origin: 'LEARNER', appointedOn: new Date().toISOString().slice(0, 10) } });
     expect(ambassador.status).toBe(201);
     const second = await login(marie);
     return {
       marie: m,
       chef: chefSession,
-      finance: await login(await createUserWithRoles(t, [RoleCode.Finance])),
+      finance: financeSession,
       attackers: { paul: await login(paul), autreChef: await login(autreChef) },
-      real: { company: company.body.id as string, doc: doc.body.id as string, session: second.sessionId, facilitator: facilitator.body.id as string, contact: contact.body.id as string, offer: offer.body.id as string, offerSent: offerSent.body.id as string, offerPending: offerPending.body.id as string, offerReceipt: offerReceipt.body.id as string, receipt: receipt.body.id as string, followup: followup.body.id as string, appointment: appointment.body.id as string, appointmentDue: appointmentDue.body.id as string, opportunity: opportunity.body.id as string, opportunityAgreed: opportunityAgreed.body.id as string, teammate: anne.id, opportunityReady: opportunityReady.body.id as string, approval: approval.body.id as string, approvalRequested: approvalRequested.body.id as string, ambassador: ambassador.body.id as string } satisfies Ids,
-      nil: { company: NIL, doc: NIL, session: NIL, facilitator: NIL, contact: NIL, offer: NIL, offerSent: NIL, offerPending: NIL, offerReceipt: NIL, receipt: NIL, followup: NIL, appointment: NIL, appointmentDue: NIL, opportunity: NIL, opportunityAgreed: NIL, teammate: NIL, opportunityReady: NIL, approval: NIL, approvalRequested: NIL, ambassador: NIL } satisfies Ids,
+      real: { company: company.body.id as string, doc: doc.body.id as string, session: second.sessionId, facilitator: facilitator.body.id as string, contact: contact.body.id as string, offer: offer.body.id as string, offerSent: offerSent.body.id as string, offerPending: offerPending.body.id as string, offerReceipt: offerReceipt.body.id as string, receipt: receipt.body.id as string, followup: followup.body.id as string, appointment: appointment.body.id as string, appointmentDue: appointmentDue.body.id as string, opportunity: opportunity.body.id as string, opportunityAgreed: opportunityAgreed.body.id as string, teammate: anne.id, opportunityReady: opportunityReady.body.id as string, approval: approval.body.id as string, approvalRequested: approvalRequested.body.id as string, commission: commission.id as string, commissionCompany: company3.body.id as string, ambassador: ambassador.body.id as string } satisfies Ids,
+      nil: { company: NIL, doc: NIL, session: NIL, facilitator: NIL, contact: NIL, offer: NIL, offerSent: NIL, offerPending: NIL, offerReceipt: NIL, receipt: NIL, followup: NIL, appointment: NIL, appointmentDue: NIL, opportunity: NIL, opportunityAgreed: NIL, teammate: NIL, opportunityReady: NIL, approval: NIL, approvalRequested: NIL, commission: NIL, commissionCompany: NIL, ambassador: NIL } satisfies Ids,
       secondSession: second,
     };
   }
@@ -224,9 +247,13 @@ describeDb('Contrat anti-IDOR : un acteur sans portée reçoit la réponse d\'un
     // L'archivage exige le droit de suppression, que Marie n'a pas : c'est son chef (même équipe) qui l'exerce.
     // La dérogation et la clôture « gagnée » (D28) relèvent du Responsable commercial.
     // Constater le paiement relève de la Finance (D41, FD-4), pas du Responsable commercial.
-    const owner = key === 'POST /approvals/:id/honor' ? w.finance : ['POST /documents/:id/archive', 'DELETE /contacts/:id', 'POST /opportunities/:id/waiver', 'POST /opportunities/:id/close-won', 'POST /companies/:id/owner', 'PUT /ambassadors/:id', 'POST /approvals/:id/expire', 'POST /approvals/:id/cancel'].includes(key) ? w.chef : w.marie;
+    // Débloquer et mettre en attente relèvent de la Finance ; verser, du chargé de compte ; annuler et fixer le montant, du Responsable commercial.
+    const financeKeys = ['POST /approvals/:id/honor', 'POST /commissions/:id/release', 'POST /commissions/:id/hold'];
+    const owner = financeKeys.includes(key) ? w.finance : ['POST /commissions/:id/cancel', 'POST /commissions/:id/amount'].includes(key) ? w.chef : ['POST /documents/:id/archive', 'DELETE /contacts/:id', 'POST /opportunities/:id/waiver', 'POST /opportunities/:id/close-won', 'POST /companies/:id/owner', 'PUT /ambassadors/:id', 'POST /approvals/:id/expire', 'POST /approvals/:id/cancel'].includes(key) ? w.chef : w.marie;
     const ok = await probe(api, owner, w.real);
-    expect([key, ok.status < 300]).toEqual([key, true]);
+    // Payer une commission non débloquée, ou fixer le montant d'une commission déjà chiffrée, est refusé (422) : le refus d'une règle métier prouve que la portée est franchie.
+    const businessRefusal = ['POST /commissions/:id/pay', 'POST /commissions/:id/amount'].includes(key);
+    expect([key, businessRefusal ? ok.status === 422 : ok.status < 300]).toEqual([key, true]);
   }, 60_000);
 
   it('aucune écriture n\'a lieu quand l\'attaquant échoue : ni version, ni archivage, ni révocation', async () => {

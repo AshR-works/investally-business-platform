@@ -113,20 +113,20 @@
 - **Acteur** : Responsable commercial (ou Super administrateur). **Scénario** : 1. Il ouvre la fiche, « Modifier » (écran 5). 2. Il choisit montant fixe (devise XAF par défaut) ou pourcentage. 3. Il enregistre ; l'ancienne et la nouvelle valeur sont tracées.
 - **Variantes** : le chargé de compte tente de la définir → refus ; sa propre modification conserve la commission. **Droits** : `bd.commission.manage`. **État** : **réalisé**.
 
-### CU-F3-03 — Constater qu'une commission est due
-- **Acteur** : système. **Déclencheur** : « affaire conclue ». **Résultat** : la commission passe « à verser » et apparaît dans la liste du chargé de compte (écran 25).
-- **À trancher** : l'événement déclencheur (agrément reçu, agrément honoré, paiement du client encaissé). **État** : à venir.
+### CU-F3-03 — Constater qu'une commission est due *(réalisé, S4.4c ; défauts à confirmer, D44)*
+- **Acteur** : système. **Déclencheur** : l'agrément de l'entreprise est **honoré** (D41, FD-1 B ; l'encaissement constaté par la Finance viendra avec le module Finance, FD-1 C). **Résultat** : si l'entreprise a un facilitateur avec une commission définie, un versement « à verser » est créé dans la même transaction, **une seule fois par agrément**, et apparaît dans la page « Commissions ». Le montant est **figé** : montant fixe tel quel, ou pourcentage du montant de l'agrément arrondi au centime ; un pourcentage sur un agrément sans montant (places seules) laisse le montant « à fixer » par le Responsable commercial. Sans facilitateur commissionné, rien n'est dû.
+- **Droits** : aucun (action du système déclenchée par le constat du paiement). **État** : **réalisé**.
 
-### CU-F3-04 — Débloquer les fonds
-- **Acteur** : DAF. **Scénario** : 1. Il consulte les commissions à verser. 2. Il débloque les fonds, ou met en attente avec un motif.
-- **Résultat** : état « fonds débloqués » ; le chargé de compte est prévenu. **Droits** : **à créer** (par exemple `bd.commission.release`). **À trancher** : plafond ou double validation. **État** : à venir.
+### CU-F3-04 — Débloquer les fonds *(réalisé, S4.4c ; défauts à confirmer, D44)*
+- **Acteur** : DAF (rôle Finance). **Scénario** : 1. Il consulte la page « Commissions » (toutes). 2. Il **débloque les fonds**, ou **met en attente avec un motif** (le dossier reste ouvert, il peut débloquer ensuite).
+- **Règles** : le DAF **seul** débloque, **sans seconde validation ni seuil** (D41, FD-2 A) ; un montant « à fixer » bloque le déblocage. **Résultat** : état « fonds débloqués ». **Droits** : `bd.commission.release` (Finance, Super administrateur). **État** : **réalisé** ; le chargé de compte n'est pas prévenu par message (aucun envoi, D137).
 
-### CU-F3-05 — Verser la commission et déposer le justificatif
-- **Acteur** : chargé de compte. **Préconditions** : fonds débloqués.
-- **Scénario** : 1. Il verse la commission au facilitateur. 2. Il dépose le justificatif (reçu ou ordre de versement) via les documents. 3. Le DAF contrôle et clôture ; l'état passe « versée » avec la date.
-- **Variantes** : justificatif manquant → clôture refusée. **À trancher** : le document attendu. **État** : à venir.
+### CU-F3-05 — Verser la commission et déposer le justificatif *(réalisé, S4.4c ; défauts à confirmer, D44)*
+- **Acteur** : chargé de compte (ou Responsable commercial pour son équipe). **Préconditions** : fonds débloqués.
+- **Scénario** : 1. Il verse la commission au facilitateur. 2. Il dépose le **justificatif** (reçu de virement ou ordre de versement, document de catégorie « Justificatif ») depuis la fenêtre « Constater le versement ». 3. Il indique la date du versement (réelle, jamais future). 4. L'état passe « versée » avec la date.
+- **Variantes** : justificatif manquant (ou d'une autre catégorie) → versement refusé ; fonds non débloqués → refusé ; **annulation motivée** par le Responsable commercial tant que la commission n'est pas versée (c'est le seul moyen de corriger un montant, qui est figé : D41, FD-2.2 a). **Droits** : `bd.commission.pay` (chargé de compte Propre, Responsable commercial Équipe), `bd.commission.manage` pour annuler et fixer un montant manquant. **État** : **réalisé** ; le DAF ne « clôture » pas après coup (D138).
 
-**À trancher pour F3** : événement déclencheur ; qui change chaque état ; document ; commission modifiable après déblocage.
+**Décidé pour F3** (D41) : déclencheur = agrément honoré ; le DAF seul débloque ; justificatif = reçu de virement ou ordre de versement ; commission figée dès qu'elle est due.
 
 ---
 
@@ -214,7 +214,7 @@
 | Accorder une dérogation | F1 | `bd.opportunity.override` : Responsable commercial (Équipe), Super administrateur |
 | Gérer les agréments | F1, F2 | ressource `bd.approval` : lecture, création, mise à jour (chargé de compte Propre, Responsable commercial Équipe) |
 | Débloquer les fonds d'une commission | F3 | `bd.commission.release` : DAF (Finance), Super administrateur |
-| Verser et justifier une commission | F3 | `bd.commission.pay` : chargé de compte (Propre) |
+| Verser et justifier une commission | F3 | `bd.commission.pay` : chargé de compte (Propre), Responsable commercial (Équipe), Super administrateur |
 | Émettre une facture, enregistrer un paiement | F4 | ressource `finance.invoice` : DAF (Finance) |
 | Exporter une liste entière | F5 | lecture + confirmation récente du second facteur (option C) |
 

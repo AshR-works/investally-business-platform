@@ -64,6 +64,7 @@ describe('plan du jeu de données de démonstration', () => {
         case 'offer': need(op.company, 'entreprise'); created.add(op.key); break;
         case 'offerAction': case 'receipt': case 'receiptCancel': need(op.offer, 'offre'); break;
         case 'reassign': need(op.company, 'entreprise'); break;
+        case 'payout': need(op.approval, 'agrément'); break;
         case 'ambassadorUpdate': need(op.ambassador, 'ambassadeur'); break;
         case 'followupPlan': need(op.offer, 'offre'); created.add(op.key); break;
         case 'followupClose': need(op.followup, 'relance'); break;
@@ -105,6 +106,16 @@ describe('plan du jeu de données de démonstration', () => {
     expect(ofKind('ambassador').map((a) => a.origin)).toEqual(expect.arrayContaining(['CLIENT', 'LEARNER']));
     expect(ofKind('contact').map((c) => c.role)).toEqual(expect.arrayContaining(['FINANCE_DIRECTOR', 'DECISION_MAKER', 'OTHER']));
     expect(ofKind('companyStatus').map((c) => c.status)).toEqual(expect.arrayContaining(['CONTACTED', 'QUALIFIED']));
+  });
+
+  it('prévoit des commissions dues, débloquées, en attente et annulées (flux F3)', () => {
+    const payouts = ofKind('payout');
+    expect(payouts.map((p) => p.action).sort()).toEqual(['cancel', 'hold', 'release']);
+    expect(plan.filter((e) => e.op.k === 'payout' && (e.op.action === 'release' || e.op.action === 'hold')).every((e) => e.who === 'finance')).toBe(true);
+    expect(plan.filter((e) => e.op.k === 'payout' && e.op.action === 'cancel').every((e) => e.who === 'commercial')).toBe(true);
+    // Chaque agrément honoré d'une entreprise commissionnée a son facilitateur et sa commission définis avant l'honneur.
+    const honored = plan.filter((e) => e.op.k === 'approvalClose' && e.op.action === 'honor').length;
+    expect(honored).toBeGreaterThanOrEqual(3);
   });
 
   it('enrichit l’agenda, les relances, les contacts et les ambassadeurs (observations de recette)', () => {

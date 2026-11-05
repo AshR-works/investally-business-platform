@@ -27,6 +27,7 @@ describeDb('Jeu de données de démonstration (cas d’usage + PostgreSQL)', () 
     const owners = Object.values(users);
     const companies = (await db.company.findMany({ where: { ownerUserId: { in: owners } }, select: { id: true } })).map((c) => c.id);
     const offers = (await db.offer.findMany({ where: { companyId: { in: companies } }, select: { id: true } })).map((o) => o.id);
+    await db.commissionPayout.deleteMany({ where: { companyId: { in: companies } } });
     await db.approval.deleteMany({ where: { companyId: { in: companies } } });
     await db.appointment.deleteMany({ where: { companyId: { in: companies } } });
     await db.followup.deleteMany({ where: { offerId: { in: offers } } });
@@ -106,6 +107,8 @@ describeDb('Jeu de données de démonstration (cas d’usage + PostgreSQL)', () 
     const ambassadors = await db.ambassador.findMany({ select: { origin: true } });
     expect(new Set(ambassadors.map((a) => a.origin))).toEqual(new Set(['CLIENT', 'LEARNER']));
     expect(await db.facilitator.count()).toBeGreaterThanOrEqual(3);
+    const payouts = await statuses(db.commissionPayout.findMany({ select: { status: true }, distinct: ['status'] }));
+    for (const s of ['DUE', 'ON_HOLD', 'RELEASED', 'CANCELLED']) expect([s, payouts.has(s)]).toEqual([s, true]);
     expect(await db.companyFacilitation.count({ where: { commissionType: { not: null } } })).toBeGreaterThan(0);
   });
 

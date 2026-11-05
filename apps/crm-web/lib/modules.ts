@@ -21,6 +21,7 @@ export interface AppModule {
  */
 export const MODULES: readonly AppModule[] = [
   { id: 'agenda', label: 'Agenda', description: 'Rendez-vous et visites', icon: 'cal', group: 'Espace de travail', href: '/agenda', permission: 'bd.appointment.read' },
+  { id: 'commissions', label: 'Commissions', description: 'Commissions des facilitateurs à verser', icon: 'card', group: 'Espace de travail', href: '/commissions', permission: 'bd.commission.read' },
   { id: 'ambassadors', label: 'Ambassadeurs', description: 'Clients et apprenants relais commerciaux', icon: 'users', group: 'Espace de travail', href: '/ambassadors', permission: 'bd.ambassador.read' },
   { id: 'companies', label: 'Entreprises', description: 'Entreprises cibles et clientes', icon: 'building', group: 'Espace de travail', href: '/companies', permission: 'bd.company.read' },
   { id: 'contacts', label: 'Contacts', description: 'Interlocuteurs des entreprises', icon: 'user', group: 'Espace de travail', href: '/contacts', permission: 'bd.contact.read' },

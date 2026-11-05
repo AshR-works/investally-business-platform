@@ -63,9 +63,9 @@ const ITEMS = [
     { name: 'S4.4a — agréments', start: '2026-11-02', end: '2026-11-02', state: 'done', tag: 's4-4a-validated' },
     { name: 'S4.4b — ambassadeurs', start: '2026-11-02', end: '2026-11-02', state: 'done', tag: 's4-4b-validated' },
     { name: 'Correctifs 1 — téléphones, fenêtres, barres de défilement, tableaux', start: '2026-11-03', end: '2026-11-03', state: 'done', tag: 'correctifs-1-validated' },
-    { name: 'S4.4a-bis — correctifs D41 (agrément demandé, payeur, Finance, second facteur)', start: '2026-11-03', end: '2026-11-03', state: 'wait' },
-    { name: 'Jeu de données de démonstration (module commercial)', start: '2026-11-03', end: '2026-11-03', state: 'wait' },
-    { name: 'S4.4c — commissions à verser', start: '2026-11-18', end: '2026-11-19', state: 'plan' },
+    { name: 'S4.4a-bis — correctifs D41 (agrément demandé, payeur, Finance, second facteur)', start: '2026-11-03', end: '2026-11-03', state: 'done', tag: 's4-4a-bis-validated' },
+    { name: 'Jeu de données de démonstration (module commercial)', start: '2026-11-03', end: '2026-11-04', state: 'done', tag: 'jeu-de-donnees-enrichi-validated' },
+    { name: 'S4.4c — commissions à verser', start: '2026-11-04', end: '2026-11-04', state: 'wait' },
   ] },
   { phase: 'Module Investudy (formation)', rows: [
     { name: 'S5.1 — catalogue, salles, formateurs', start: '2026-11-20', end: '2026-11-23', state: 'plan' },
@@ -204,7 +204,7 @@ const md = `# Diagramme de Gantt du projet
 | Fin de la fondation et du design | 22/10/2026 |
 | Module commercial : dernier lot validé (correctifs de recette 1, après S4.4b) | 03/11/2026 |
 | Lots réalisés et validés au ${frFull(TODAY)} | ${done.length} (dont ${done.filter((r) => r.tag).length} étiquetés) |
-| **Prochaine session** | S4.4a-bis (correctifs D41, en attente de validation) puis S4.4c (commissions à verser), prévues du 17/11 au 19/11/2026 |
+| **Prochaine session** | S4.4c (commissions à verser, terminée, en attente de validation) puis S5 (Investudy) |
 | Fin du module commercial (prévision) | 19/11/2026 |
 | Fin d'Investudy (prévision) | 30/11/2026 |
 | **Mise en production du CRM, prévision prudente** | **23/12/2026** |
