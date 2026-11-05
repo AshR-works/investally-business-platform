@@ -30,8 +30,8 @@ Ordre retenu le 2026-10-21 (DEC-005) : module commercial, puis Investudy, puis p
 | **S4.3c** Valeur et lien rendez-vous | *Validé* : colonne « Valeur » du tableau des entreprises ; lien d'un rendez-vous à une opportunité (D93, D104) | — | Votre « Je valide » ; défauts D38 |
 | **S4.4a** Agréments | *Validé* : agrément (promesse de paiement signée), entreprise « Cliente », honorer / expirer / annuler | — | Défauts D39 à confirmer |
 | **S4.4b** Ambassadeurs | *Validé* : création manuelle avec origine (client ou apprenant), liste, modification (les suggestions attendent les certifications d'Investudy) | — | Défauts D40 à confirmer |
-| **S4.4a-bis** Correctifs décidés (D41) | *Livré, validation en attente* : état « demandé » et payeur tiers sur l'agrément, constat du paiement par la Finance (le DAF), second facteur récent sur le changement de responsable | — | Défauts D42 à confirmer |
-| **S4.4c** Commissions à verser | *Livré, validation en attente* : commission due à l'honneur de l'agrément, déblocage par le DAF seul, versement avec justificatif (reçu ou ordre de versement), commission figée (flux F3) | — | Défauts D44 à confirmer |
+| **S4.4a-bis** Correctifs décidés (D41) | *Validé* : état « demandé » et payeur tiers sur l'agrément, constat du paiement par la Finance (le DAF), second facteur récent sur le changement de responsable | — | Défauts D42 à confirmer |
+| **S4.4c** Commissions à verser | *Validé* : commission due à l'honneur de l'agrément, déblocage par le DAF seul, versement avec justificatif (reçu ou ordre de versement), commission figée (flux F3) | — | Défauts D44 à confirmer |
 | **S5.1** Catalogue Investudy | Programmes, formations, salles, formateurs ; modèle de données du module | 1 session | S4.4 ; cas d'usage validés |
 | **S5.2** Sessions et inscriptions | Sessions, apprenants, inscriptions liées à l'agrément, annulation et report | 1,5 session | S5.1 ; D31 (confirmation, liste d'attente) |
 | **S5.3** Suivi pédagogique | Présences, évaluations, clôture, certificats et attestations, suggestion d'ambassadeur | 1 à 1,5 session | S5.2 ; seuils de certification |
@@ -103,6 +103,6 @@ Ordre retenu le 2026-10-21 (DEC-005) : module commercial, puis Investudy, puis p
 ## 7. Prochaine session proposée
 **S4.4b — Ambassadeurs.** Créer un ambassadeur à la main, avec son origine (client ou apprenant) ; liste et fiche. Les suggestions après une certification attendent Investudy.
 
-**S4.4c — Commissions à verser.** Commission « due », déblocage par le DAF, versement et justificatif (flux F3).
+**S4.4c — Commissions à verser.** *Livré et validé.* Commission due à l'honneur de l'agrément, déblocage par le DAF seul, versement avec justificatif (flux F3). Le module commercial est complet.
 
-Avant de commencer S4.4a-bis puis S4.4c, il n'y a plus de validation en attente. Les décisions FD-1 à FD-6 sont prises (D41). Les valeurs par défaut D36 à D40 restent à confirmer (FD-7), ainsi que FD-8 à FD-11.
+Le module commercial est **terminé** (S4.4c validé) : il n'y a plus de validation en attente. Les décisions FD-1 à FD-6 sont prises (D41). Les valeurs par défaut D36 à D40, D42 à D44 restent à confirmer (FD-7), ainsi que FD-8 à FD-11. **Avant S5 (Investudy)** : réponses sur FD-9 (cas d'usage, apprenant distinct, droits de la Finance) et FD-11 (formateurs externes, responsable Investudy).

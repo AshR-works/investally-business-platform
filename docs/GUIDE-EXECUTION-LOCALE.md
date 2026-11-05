@@ -71,7 +71,7 @@ node apps/crm-api/scripts/test-db.mjs     # intégration, base jetable (TEST_DB_
 12. Portée et droits : `compte2` ne voit rien de `compte1`, `commercial@` voit son équipe, `direction@` lit sans écrire ; tout accès hors périmètre répond « introuvable ».
 
 ## Limites connues
-- Modules livrés : identité et accès, entreprises (statuts, responsable, fiche 360°), contacts, offres, décharges signées, relances, agenda (rendez-vous et visites), opportunités, agréments, documents. Les ambassadeurs et les commissions à verser (S4.4b, S4.4c), Investudy, le pilotage et les stocks arrivent ensuite.
+- Modules livrés : identité et accès, entreprises (statuts, responsable, fiche 360°), contacts, offres, décharges signées, relances, agenda (rendez-vous et visites), opportunités, agréments (demandé, reçu, honoré par la Finance, payeur tiers), ambassadeurs, commissions des facilitateurs à verser (déblocage par la Finance, versement avec justificatif), documents. Le module commercial est complet ; Investudy, le pilotage et les stocks arrivent ensuite.
 - La démonstration (`--demo`) charge un jeu complet pour tout le module commercial (voir l'étape 5). **Investudy, la finance et le reporting n'ont pas de données : ces modules n'existent pas encore** (leur jeu est spécifié dans `docs/cadrages/OBSERVATIONS-VALIDATION-UX-ET-DONNEES-DE-TEST.md`). Aucun document, contrat, attestation, facture ni fichier joint n'est généré.
 - Rappels de rendez-vous : aucun envoi (ni e-mail ni notification) ; synchronisation Outlook absente.
 - Non testé : enrôlement MFA dans un navigateur, `--dev`. Node 22 : testé le 2026-10-29 (183 tests d'intégration et 159 tests de l'interface réussis, voir « Node 22 » ci-dessous).
