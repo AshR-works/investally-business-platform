@@ -35,7 +35,7 @@ Monolithe modulaire, Clean Architecture ; règles testées par `pnpm arch` (doma
 |---|---|---|
 | `iam` | connexion, MFA, rôles (10), permissions (plus de 100), sessions, invitations | livré (S3.1–S3.5, H2, S3.7–S3.8) |
 | `audit` | journal transactionnel, historique des connexions | livré |
-| `business-development` | entreprises (statuts, responsable, fiche 360°), facilitateurs et commissions, contacts, offres, décharges, relances, agenda, opportunités, agréments | livré (S1, S4.0 à S4.4b, ambassadeurs compris ; correctifs D41 S4.4a-bis en attente de validation) ; commissions à verser (S4.4c) : à venir |
+| `business-development` | entreprises (statuts, responsable, fiche 360°), facilitateurs et commissions, contacts, offres, décharges, relances, agenda, opportunités, agréments | livré et complet (S1, S4.0 à S4.4c : ambassadeurs, correctifs D41 et commissions à verser compris) |
 | `documents` | pièces jointes versionnées, stockage derrière un port | livré (S3.6) |
 | Investudy, Stocks, Reporting, ERP | | à venir (S5, S6, S7) |
 
@@ -46,7 +46,7 @@ ADR-0001 monolithe modulaire · 0002 Prisma confiné à l'infrastructure · 0003
 `apps/crm-api/` (API) · `apps/crm-web/` (interface) · `docs/` (documentation, `cadrages/`, `design/`, `accessibilite/`, `daily-reports/`, `livrables/`) · `scripts/` (audit d'accessibilité, lancement local, rapports journaliers, conversion HTML).
 
 ## Roadmap et backlog (résumé)
-Ordre décidé (DEC-005) : cadrage UX (fait) → S4.1 à S4.4 (S4.1 à S4.4b livrés ; reste **S4.4c commissions à verser**) → S5 (Investudy) → S6 (reporting) → Stocks → S7 (production). Sources : `docs/GANTT-PROJET.md`, `docs/RESTE-A-FAIRE-DEVELOPPEMENT.md`, `docs/livrables/05-ETAT-D-AVANCEMENT.md`.
+Ordre décidé (DEC-005) : cadrage UX (fait) → S4.1 à S4.4 (S4.1 à S4.4c livrés : module commercial terminé) → S5 (Investudy) → S6 (reporting) → Stocks → S7 (production). Sources : `docs/GANTT-PROJET.md`, `docs/RESTE-A-FAIRE-DEVELOPPEMENT.md`, `docs/livrables/05-ETAT-D-AVANCEMENT.md`.
 
 ## Standards spécifiques
 - **Tests** : suivre `docs/CHARTE-DE-TESTS.md` (définition de « terminé » d'un lot) ; une fiche de test par écran (`docs/tests/interfaces/`) et par session (`docs/tests/sessions/`), à tenir à jour à chaque lot ; mutants versionnés dans `scripts/mutants/` (un par lot).

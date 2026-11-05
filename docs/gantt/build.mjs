@@ -65,7 +65,7 @@ const ITEMS = [
     { name: 'Correctifs 1 — téléphones, fenêtres, barres de défilement, tableaux', start: '2026-11-03', end: '2026-11-03', state: 'done', tag: 'correctifs-1-validated' },
     { name: 'S4.4a-bis — correctifs D41 (agrément demandé, payeur, Finance, second facteur)', start: '2026-11-03', end: '2026-11-03', state: 'done', tag: 's4-4a-bis-validated' },
     { name: 'Jeu de données de démonstration (module commercial)', start: '2026-11-03', end: '2026-11-04', state: 'done', tag: 'jeu-de-donnees-enrichi-validated' },
-    { name: 'S4.4c — commissions à verser', start: '2026-11-04', end: '2026-11-04', state: 'wait' },
+    { name: 'S4.4c — commissions à verser', start: '2026-11-04', end: '2026-11-04', state: 'done', tag: 's4-4c-validated' },
   ] },
   { phase: 'Module Investudy (formation)', rows: [
     { name: 'S5.1 — catalogue, salles, formateurs', start: '2026-11-20', end: '2026-11-23', state: 'plan' },
@@ -202,10 +202,10 @@ const md = `# Diagramme de Gantt du projet
 | **Lancement** (Sprint 0) | 20/10/2026 |
 | Premier jalon de code validé (S1 à S3.3) | 20/10/2026 (le même jour) |
 | Fin de la fondation et du design | 22/10/2026 |
-| Module commercial : dernier lot validé (correctifs de recette 1, après S4.4b) | 03/11/2026 |
+| Module commercial : dernier lot validé (S4.4c, commissions à verser) | 05/11/2026 |
 | Lots réalisés et validés au ${frFull(TODAY)} | ${done.length} (dont ${done.filter((r) => r.tag).length} étiquetés) |
-| **Prochaine session** | S4.4c (commissions à verser, terminée, en attente de validation) puis S5 (Investudy) |
-| Fin du module commercial (prévision) | 19/11/2026 |
+| **Prochaine session** | S5 (Investudy), après vos réponses sur FD-9 et FD-11 |
+| Fin du module commercial | **Terminé le 05/11/2026** (S4.4c validé) |
 | Fin d'Investudy (prévision) | 30/11/2026 |
 | **Mise en production du CRM, prévision prudente** | **23/12/2026** |
 | Mise en production du CRM au rythme observé la semaine du 28/10 (un lot par jour ouvré) | vers le 26/11/2026 |
