@@ -37,7 +37,8 @@ Monolithe modulaire, Clean Architecture ; règles testées par `pnpm arch` (doma
 | `audit` | journal transactionnel, historique des connexions | livré |
 | `business-development` | entreprises (statuts, responsable, fiche 360°), facilitateurs et commissions, contacts, offres, décharges, relances, agenda, opportunités, agréments | livré et complet (S1, S4.0 à S4.4c : ambassadeurs, correctifs D41 et commissions à verser compris) |
 | `documents` | pièces jointes versionnées, stockage derrière un port | livré (S3.6) |
-| Investudy, Stocks, Reporting, ERP | | à venir (S5, S6, S7) |
+| `training` | catalogue Investudy : programmes, certificats, modules, salles, formateurs, rythmes | livré (S5.1) ; sessions et inscriptions (S5.2), suivi pédagogique (S5.3) : à venir |
+| Stocks, Reporting, ERP | | à venir (S6, S7) |
 
 ## Décisions techniques structurantes
 ADR-0001 monolithe modulaire · 0002 Prisma confiné à l'infrastructure · 0003 domaine distinct de la persistance · 0004 stratégie d'audit · 0005 CRM séparé de l'ERP · 0006 accès et sécurité · 0007 Stocks autonome hébergé · 0008 stockage des documents derrière un port. Liste complète : `docs/adr/`.
@@ -46,7 +47,7 @@ ADR-0001 monolithe modulaire · 0002 Prisma confiné à l'infrastructure · 0003
 `apps/crm-api/` (API) · `apps/crm-web/` (interface) · `docs/` (documentation, `cadrages/`, `design/`, `accessibilite/`, `daily-reports/`, `livrables/`) · `scripts/` (audit d'accessibilité, lancement local, rapports journaliers, conversion HTML).
 
 ## Roadmap et backlog (résumé)
-Ordre décidé (DEC-005) : cadrage UX (fait) → S4.1 à S4.4 (S4.1 à S4.4c livrés : module commercial terminé) → S5 (Investudy) → S6 (reporting) → Stocks → S7 (production). Sources : `docs/GANTT-PROJET.md`, `docs/RESTE-A-FAIRE-DEVELOPPEMENT.md`, `docs/livrables/05-ETAT-D-AVANCEMENT.md`.
+Ordre décidé (DEC-005) : cadrage UX (fait) → S4.1 à S4.4 (S4.1 à S4.4c livrés : module commercial terminé) → S5 (Investudy : S5.1 catalogue livré) → S6 (reporting) → Stocks → S7 (production). Sources : `docs/GANTT-PROJET.md`, `docs/RESTE-A-FAIRE-DEVELOPPEMENT.md`, `docs/livrables/05-ETAT-D-AVANCEMENT.md`.
 
 ## Standards spécifiques
 - **Tests** : suivre `docs/CHARTE-DE-TESTS.md` (définition de « terminé » d'un lot) ; une fiche de test par écran (`docs/tests/interfaces/`) et par session (`docs/tests/sessions/`), à tenir à jour à chaque lot ; mutants versionnés dans `scripts/mutants/` (un par lot).

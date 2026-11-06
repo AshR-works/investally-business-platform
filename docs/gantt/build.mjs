@@ -68,7 +68,7 @@ const ITEMS = [
     { name: 'S4.4c — commissions à verser', start: '2026-11-04', end: '2026-11-04', state: 'done', tag: 's4-4c-validated' },
   ] },
   { phase: 'Module Investudy (formation)', rows: [
-    { name: 'S5.1 — catalogue (programmes, certificats, modules, salles, formateurs, rythmes)', start: '2026-11-05', end: '2026-11-05', state: 'wait' },
+    { name: 'S5.1 — catalogue (programmes, certificats, modules, salles, formateurs, rythmes)', start: '2026-11-05', end: '2026-11-06', state: 'done', tag: 's5-1-validated' },
     { name: 'S5.2 — sessions, apprenants, inscriptions', start: '2026-11-24', end: '2026-11-26', state: 'plan' },
     { name: 'S5.3 — présences, évaluations, certifications', start: '2026-11-27', end: '2026-11-30', state: 'plan' },
   ] },
@@ -202,9 +202,9 @@ const md = `# Diagramme de Gantt du projet
 | **Lancement** (Sprint 0) | 20/10/2026 |
 | Premier jalon de code validé (S1 à S3.3) | 20/10/2026 (le même jour) |
 | Fin de la fondation et du design | 22/10/2026 |
-| Module commercial : dernier lot validé (S4.4c, commissions à verser) | 05/11/2026 |
+| Dernier lot validé (S5.1, catalogue Investudy) | 06/11/2026 |
 | Lots réalisés et validés au ${frFull(TODAY)} | ${done.length} (dont ${done.filter((r) => r.tag).length} étiquetés) |
-| **Prochaine session** | S5 (Investudy), après vos réponses sur FD-9 et FD-11 |
+| **Prochaine session** | S5.2 (sessions et inscriptions), après vos réponses sur FD-9, FD-11 et D-FORM |
 | Fin du module commercial | **Terminé le 05/11/2026** (S4.4c validé) |
 | Fin d'Investudy (prévision) | 30/11/2026 |
 | **Mise en production du CRM, prévision prudente** | **23/12/2026** |
