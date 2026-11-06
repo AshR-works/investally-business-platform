@@ -93,7 +93,7 @@
 ### Module Investudy (formation)
 | Lot | Début | Fin | État | Étiquette |
 |---|---|---|---|---|
-| S5.1 — catalogue, salles, formateurs | 20/11/2026 | 23/11/2026 | Prévu | — |
+| S5.1 — catalogue (programmes, certificats, modules, salles, formateurs, rythmes) | 05/11/2026 | 05/11/2026 | Terminé, validation en attente | — |
 | S5.2 — sessions, apprenants, inscriptions | 24/11/2026 | 26/11/2026 | Prévu | — |
 | S5.3 — présences, évaluations, certifications | 27/11/2026 | 30/11/2026 | Prévu | — |
 

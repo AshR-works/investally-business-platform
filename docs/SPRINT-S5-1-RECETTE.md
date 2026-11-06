@@ -1,0 +1,53 @@
+# S5.1 — catalogue Investudy : recette
+
+*Branche `sprint/s5-1-catalogue` (partie de `main`, après S4.4c) · 2026-11-06 · DDR-0028 ; décision D46 (valeurs par défaut, à confirmer). Première session du bloc « Formation » : le catalogue est un **référentiel partagé**, sans propriétaire ; les sessions, inscriptions et plannings viennent ensuite (S5.2 et suivantes).*
+
+## Ce qui est livré
+| Demande | Réponse |
+|---|---|
+| **Module « Formation »** | Nouveau module du hub, six rubriques selon les droits de lecture : Programmes, Certificats, Modules, Salles, Formateurs, Rythmes. Recherche, filtre d'état (actifs par défaut), pagination par 20 |
+| **Programmes et certificats** | Un programme regroupe des **certificats** (le « certificat » du catalogue réel est l'unité vendue). Nom de programme unique, titre de certificat unique par programme (sans tenir compte de la casse). Un certificat porte ses **tarifs** (prix complet et prix par module, devise sur trois lettres, XAF par défaut) et **jusqu'à 20 modules ordonnés** (monter, descendre, retirer). Pas de durée : elle vient du rythme de la session |
+| **Modules partagés** | Un module peut servir plusieurs certificats ; il est « magistral » ou « pratique sur poste de travail ». Un module archivé n'est plus proposé à l'ajout |
+| **Salles** | Deux types : **avec postes de travail** et **salle de cours**. Places apprenants (1 à 1000), dont **hors service** (postes en panne), places formateur (0 à 10) ; **places utiles = places apprenants − hors service**, annoncées en direct dans le formulaire. Cas réel : salle de marchés (14 postes apprenants dont 1 en panne, 1 poste formateur → 13 places utiles) et salle de réunion (16 places, écran 65 pouces, cours magistral) |
+| **Formateurs** | Internes (liés à un compte, un compte pour un seul formateur) ou externes ; e-mail unique ; téléphone selon la règle commune (extraite dans le noyau partagé `contact-format`) |
+| **Rythmes de session** | Deux rythmes en lecture seule : **jour** (1 semaine, lundi–vendredi, 9h–12h et 13h–17h, 7 h par jour, 35 h, ouvert) et **soir** (2 semaines, 18h–21h, 3 h par soir, 30 h, **en préparation**, non ouvert) |
+| **Archivage, jamais de suppression** | Archiver / désactiver et réactiver (confirmation non destructive) ; un élément archivé ne se modifie plus ; un certificat ne s'ajoute pas à un programme archivé et ne se réactive pas sous un programme archivé |
+| **Concurrence et audit** | Verrou optimiste (`version`) : le second enregistrement concurrent est refusé ; chaque changement est tracé dans la même transaction (ancienne et nouvelle valeur, session) |
+| **Droits** | Lecture large (programmes et rythmes : chargés de compte, Responsable commercial, Direction, Formateur…) ; **écriture : Responsable Investudy et Super administrateur**. L'archivage d'un certificat ou d'un module utilise `training.training.update` (il n'existe pas de permission de suppression) |
+| **Base de données** | Migration `20261112000000_s5_1_catalogue` : schéma `training`, 6 tables, 2 types énumérés, contraintes (prix et devise cohérents, plages de places, positions ≥ 1 et uniques par certificat, clés d'unicité insensibles à la casse) |
+| **Jeu de démonstration par blocs** | Trois blocs indépendants — `crm`, `catalogue`, `formateurs` — repérés par un marqueur ; seuls les blocs absents sont chargés. Une démo **ancienne** reçoit donc le catalogue (1 programme, 7 modules, 5 certificats, 2 salles) et 5 formateurs externes fictifs sans toucher au reste. Données fictives (noms inventés, e-mails en `.test`) |
+
+## Preuves
+| Contrôle | Résultat |
+|---|---|
+| Types (`tsc`, API et web), architecture (`pnpm arch`) | 0 erreur · **262 modules, aucune violation** |
+| Tests unitaires de l'API | **970 réussis**, 1 ignoré (57 suites) ; cas d'usage du catalogue : 28 scénarios (modules, types de salle, rythmes, tarifs, archivage) ; plan du jeu de données : trois blocs, cinq formateurs, clés propres à chaque bloc |
+| **Tests d'intégration (PostgreSQL jetable)** | **383 tests, 27 suites** : passe complète, lancée seule sur une base neuve : **375 réussis, 8 en échec (dépassement du délai de 5 s dans `core-schema`), 26 suites sur 27 vertes**. Cette suite, relancée seule, donne **20 / 20** : les 383 tests sont donc verts, mais **pas en une seule passe** (voir les réserves). Nouveaux : catalogue de bout en bout (7 scénarios : programmes, certificats et modules ordonnés, salles par type, formateurs, archivage, verrou optimiste, audit, règles de la base), jeu de démonstration par blocs (6 scénarios dont la démo ancienne qui reçoit le catalogue), contrat IDOR (7) |
+| IDOR | Nouvelle classe **« référentiel »** : la donnée est partagée et sans propriétaire, la permission suffit (portée « Toutes »). Un test de structure vérifie que toute route de cette classe exige une permission `training.*` détenue uniquement avec la portée « Toutes » ; 15 routes (programmes, certificats, salles, formateurs, modules) classées |
+| Tests de l'interface | **536 / 536** (26 fichiers) ; 18 nouveaux : validateurs **comparés au domaine réel du serveur**, déplacement des modules, libellés de places et de tarifs, contrôle du tableau |
+| **Mutants** | **49 / 49 tués** (script `scripts/mutants/s51-catalogue.py` : unicité insensible à la casse, plages de places, places utiles, tarifs et devise, ordre et plafond des modules, archivage et réactivation sous programme archivé, verrou, droits, type de salle, blocs du jeu de démonstration, règles de l'interface…). Un survivant a été trouvé en cours de route (R43 : le type de salle n'était pas relu depuis la base) : assertion de relecture ajoutée, mutant tué |
+| **Navigateur réel (Edge + axe-core)** | **69 contrôles réussis, 0 violation** dont **48 propres au catalogue** (13 audits axe + 35 comportements) : six rubriques, filtres, création d'un programme (échec sans nom puis succès), module magistral et pratique, certificat avec modules ordonnés et tarifs, salle avec postes (13 places utiles annoncées) et salle de cours, formateur externe (téléphone refusé puis accepté), archivage et réactivation, rythmes sans bouton de création. Résultats `docs/accessibilite/resultats/axe-2026-11-06-s51.json`, captures `docs/accessibilite/s51-captures/` |
+| Fiches de test | Fiche d'interface 19 « Catalogue de formation » (13 scénarios) ; fiche de session S5.1 |
+
+## Défauts trouvés par la recette et corrigés
+- **Tableau trop large sur téléphone (320 px)** — trouvé par l'audit navigateur : les en-têtes réservés aux lecteurs d'écran (positionnés en absolu) sortaient du conteneur et élargissaient la page. **Touchait aussi la page Commissions** (S4.4c). Corrigé dans le composant commun `DataTable` (conteneur en position relative) : tous les tableaux profitent de la correction.
+- **Collision de nom dans Swagger** (« Duplicate DTO ChangeStatusDto ») : le DTO du catalogue a été renommé.
+- **Retrait du dernier prix d'un certificat** : la mise à jour échouait quand une devise existait encore ; la devise n'est transmise que si elle est explicite ou si un prix subsiste. Corrigé et couvert par un test.
+- **Lacune de test (mutant R43)** : voir plus haut.
+- **Erreur de procédure de ma part** : la migration a été modifiée **après** avoir été appliquée sur votre base locale (les pages Certificats et Modules affichaient « Une erreur est survenue » et les programmes étaient vides). Règle désormais tenue : une migration appliquée n'est jamais modifiée, seulement complétée par une nouvelle. Le chargement du jeu de démonstration par blocs corrige aussi le fait qu'une démo existante ne recevait jamais le catalogue.
+- Côté outils : droit de suppression inexistant (403) remplacé par `training.training.update` ; un second chargement de la démo avec un bloc manquant n'était pas couvert (test ajouté).
+
+## Réserves sur la recette
+- **Navigateur** : seul le parcours du **Super administrateur** est joué ; Responsable Investudy, Direction, chargé de compte et Support sont couverts par les tests d'intégration, l'IDOR, les mutants et la matrice de l'interface, pas par l'audit navigateur. Pas de passage au lecteur d'écran réel.
+- **Tests d'intégration sous charge** : lors des passes précédentes, 7 tests (opportunités, enregistrement d'entreprise, schéma) dépassaient le délai quand plusieurs lots tournaient en même temps ; ils passent seuls. **Dans la dernière passe complète, `core-schema` a échoué (8 tests, tous « Exceeded timeout of 5000 ms », en cascade à partir du chargement initial) ; seule, elle passe 20 / 20.** Ce n'est pas un défaut du catalogue (la suite ne touche pas au module Formation) mais c'est une fragilité des tests : à traiter en donnant un délai plus large au chargement de cette suite (à proposer, non fait ici pour ne pas modifier du code pendant la recette).
+- Des processus PostgreSQL de test orphelins subsistent sur certains ports (arrêt refusé par l'environnement) : sans effet sur le code, à fermer dans le Gestionnaire des tâches ou au redémarrage.
+- Testé sous Node 26.7, pas rejoué sous Node 22. Le prototype et les wireframes ne montrent pas le catalogue (D49).
+
+## Dette et à confirmer
+- **D142 à D149** (`docs/TECH-DEBT.md`) : compte du formateur non proposé dans l'interface ; aucun contrôle d'usage à l'archivage (les sessions n'existent pas encore) ; tarifs informatifs seulement ; pas d'export ni de tri ; pas d'historique visible ; rythmes codés en dur ; planification module par module reportée à S5.2 ; suite `core-schema` fragile sous charge (D149).
+- **D46 — à confirmer** : modèle « programme → certificat → modules » sans durée propre ; tarifs complet et par module ; modules partagés magistral / pratique ; salles de deux types avec places hors service ; formateurs internes ou externes ; rythmes jour (ouvert) et soir (en préparation) en dur ; archivage sans suppression ; écriture réservée au Responsable Investudy et au Super administrateur.
+
+## À valider
+1. Les écrans (six rubriques, formulaires, archivage) et les valeurs par défaut de D46.
+2. Après rechargement de la démo (`node scripts/local-stack.mjs --demo --rebuild`, avec une réinitialisation si votre base porte l'ancienne version de la migration), vérifier que Programmes, Certificats, Modules, Salles et Formateurs sont remplis.
+3. « Je valide S5.1 » → fusion avec commit de fusion et étiquette `s5-1-validated`.

@@ -1,0 +1,60 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fiche de test — Catalogue de formation</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="../../INDEX.html">Index</a> · <a href="../../GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="../../ARCHITECTURE.html">Architecture</a> · <a href="../../SECURITY.html">Sécurité</a> · <a href="../../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../../QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="../../TECH-DEBT.html">Dette</a> · <a href="../../CHARTE-DE-TESTS.html">Charte de tests</a> · <a href="../../tests/README.html">Fiches de test</a> · <a href="../../design/README.html">Design</a> · <a href="../../livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>Fiche de test — Catalogue de formation</h1>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td><strong>Route</strong></td><td><code>/training</code></td></tr>
+<tr><td><strong>Livrée par</strong></td><td>S5.1</td></tr>
+<tr><td><strong>Accès</strong></td><td>Utilisateur avec <code>training.program.read</code> (le module « Formation » du hub). Chaque rubrique n'apparaît que si le profil peut la lire.</td></tr>
+<tr><td><strong>Droits</strong></td><td>Lire : programmes et rythmes (chargé de compte, Responsable commercial, Direction, Formateur…), certificats et modules (<code>training.training.read</code>), salles, formateurs. <strong>Écrire : Responsable Investudy et Super administrateur</strong> (création, modification, archivage et réactivation). Les rythmes sont en lecture seule.</td></tr>
+<tr><td><strong>Rôles de test</strong></td><td>sa, inv, dir, cc, sup</td></tr>
+</tbody></table></div>
+<p><em>Fiche d'interface de la <a href="../../CHARTE-DE-TESTS.html">charte de tests</a>. À rejouer à chaque changement de l'écran. Cocher, dater, signer ; tout écart devient un défaut.</em></p>
+<h2>Préconditions</h2>
+<p>Pile locale avec le jeu de démonstration (programme « Certificats Marchés financiers », 7 modules, 5 certificats, 2 salles, 5 formateurs, 2 rythmes) ; un compte Responsable Investudy, un compte Direction, un chargé de compte, un compte Support.</p>
+<h2>Scénarios</h2>
+<div class="table-wrap"><table><thead><tr><th>N°</th><th>Scénario</th><th>Étapes</th><th>Résultat attendu</th><th>Constaté (✔ / ✘)</th><th>Date et initiales</th></tr></thead><tbody>
+<tr><td>1</td><td><strong>Six rubriques selon les droits</strong></td><td>Ouvrir « Formation » avec chaque rôle.</td><td>Super administrateur et Responsable Investudy : Programmes, Certificats, Modules, Salles, Formateurs, Rythmes ; chargé de compte : Programmes et Rythmes seulement ; Support : message « Votre profil n'a pas accès au catalogue ».</td><td>☐</td><td></td></tr>
+<tr><td>2</td><td><strong>Liste, recherche, filtre d'état</strong></td><td>Chaque rubrique : taper un mot, filtrer « Actifs », « Archivés », « Tous ».</td><td>Résultats annoncés (« n résultats ») ; état vide lisible ; actifs affichés par défaut ; pagination par 20.</td><td>☐</td><td></td></tr>
+<tr><td>3</td><td><strong>Créer un programme</strong></td><td>« Nouveau programme » : valider sans nom, puis avec un nom.</td><td>Sans nom : champ en surbrillance, message annoncé, fenêtre ouverte. Avec nom : programme listé « Actif ». Un nom déjà pris (même casse différente) est refusé (conflit).</td><td>☐</td><td></td></tr>
+<tr><td>4</td><td><strong>Créer un module</strong></td><td>« Nouveau module » ; cocher « Pratique sur poste de travail » pour un module de trading.</td><td>Colonne « Nature » : « Pratique sur poste » ou « Magistral » ; titre unique (sans casse).</td><td>☐</td><td></td></tr>
+<tr><td>5</td><td><strong>Créer un certificat avec ses modules</strong></td><td>« Nouveau certificat » : programme, titre, prix complet, prix par module, devise ; ajouter des modules, les monter, les descendre, en retirer un.</td><td>Les modules suivent l'ordre choisi ; le premier ne monte pas, le dernier ne descend pas ; la liste affiche « 750 000 FCFA ou 125 000 FCFA par module » et le nombre de modules ; un module archivé ne se propose pas à l'ajout.</td><td>☐</td><td></td></tr>
+<tr><td>6</td><td><strong>Tarifs</strong></td><td>Saisir un prix nul, négatif, à trois décimales, une devise sans prix.</td><td>Refus avec message précis ; XAF par défaut ; devise sur trois lettres.</td><td>☐</td><td></td></tr>
+<tr><td>7</td><td><strong>Créer une salle avec postes</strong></td><td>« Nouvelle salle » : 14 postes apprenants, 1 hors service, 1 poste formateur.</td><td>« Places utiles : 13 » annoncé en direct ; liste : « 13 places utiles (14 postes, 1 hors service) », type « Avec postes de travail ».</td><td>☐</td><td></td></tr>
+<tr><td>8</td><td><strong>Créer une salle de cours</strong></td><td>Type « Salle de cours », 16 places, 0 poste formateur, équipement « Écran 65 pouces ».</td><td>Libellés « Places apprenants » et « Dont places hors service » ; liste : « 16 places utiles », type « Salle de cours ».</td><td>☐</td><td></td></tr>
+<tr><td>9</td><td><strong>Créer un formateur externe</strong></td><td>« Nouveau formateur » avec un numéro commençant par 0, puis un numéro valide.</td><td>Le 0 initial est refusé avec le message de la règle commune ; le numéro valide est enregistré sans espace ; type « Externe ».</td><td>☐</td><td></td></tr>
+<tr><td>10</td><td><strong>Archiver et réactiver</strong></td><td>Menu de la ligne : « Archiver le module » (ou « Désactiver la salle »), confirmer ; filtre « Archivés » ; réactiver.</td><td>Confirmation non destructive (réversible) ; l'élément quitte la liste des actifs ; un élément archivé ne se modifie plus ; réactiver le rend modifiable. Un certificat ne se réactive pas si son programme est archivé.</td><td>☐</td><td></td></tr>
+<tr><td>11</td><td><strong>Rythmes</strong></td><td>Rubrique « Rythmes ».</td><td>Deux rythmes : jour (1 semaine, 9h–12h et 13h–17h, 35 h, ouvert) et soir (2 semaines, 18h–21h, 30 h, en préparation) ; aucun bouton de création.</td><td>☐</td><td></td></tr>
+<tr><td>12</td><td><strong>Modification et conflit de version</strong></td><td>Ouvrir un élément dans deux onglets, modifier dans l'un, puis dans l'autre.</td><td>Le second enregistrement est refusé : « modifié par un autre utilisateur » (aucun écrasement silencieux).</td><td>☐</td><td></td></tr>
+<tr><td>13</td><td><strong>Droits de lecture seule</strong></td><td>Direction ou chargé de compte : ouvrir une rubrique lisible.</td><td>Aucun bouton « Nouveau… » ni menu d'actions de ligne.</td><td>☐</td><td></td></tr>
+</tbody></table></div>
+<h2>Accessibilité</h2>
+<ul><li>☐ Clavier seul : Tab et Maj+Tab parcourent tous les contrôles dans un ordre logique ; le focus est toujours visible ; aucun piège de focus hors fenêtre modale.</li><li>☐ Un seul titre de niveau 1 ; pas de saut de niveau (h2 avant h3).</li><li>☐ Chaque champ a un libellé relié ; un champ non conforme est en surbrillance <strong>et</strong> accompagné d'un message écrit relié (<code>aria-describedby</code>), jamais la couleur seule ; le focus va au premier champ en erreur.</li><li>☐ Les messages d'état et d'erreur sont annoncés (<code>role=alert</code> ou <code>aria-live</code>).</li><li>☐ Fenêtres modales : le focus entre dans la fenêtre, Échap la ferme, le focus revient à l'élément d'origine, l'arrière-plan est inerte.</li><li>☐ Lisible à 200 % de zoom et à 375 px de large, sans défilement horizontal de la page.</li><li>☐ Le tableau a un titre (caption) ; chaque menu d'actions de ligne porte le nom de l'élément ; les filtres (rubrique, état) sont des boutons à bascule dans un groupe nommé ; le nombre de résultats est annoncé (<code>aria-live</code>) ; les boutons « Monter », « Descendre » et « Retirer » portent le nom du module ; les erreurs de saisie sont annoncées et la fenêtre reste ouverte.</li></ul>
+<h2>Tests automatisés qui couvrent cet écran</h2>
+<ul><li>API : <code>catalogue-use-cases.spec</code> (26 scénarios), <code>catalogue-http.integration</code> (7 scénarios), <code>idor-contract</code> (classe « référentiel »)</li><li>Web : <code>s55-catalogue</code> (17 scénarios, dont la comparaison avec le domaine réel du serveur) ; audit navigateur : <code>scripts/a11y-audit.mjs</code> (parcours complet du catalogue)</li></ul>
+<h2>Limites connues</h2>
+<ul><li>Pas de fiche détaillée par élément (décision D-FORM-3) ; pas de suppression (archivage seulement, D-FORM-1) ; rythmes non administrables (D-FORM-2, D147) ; le compte d'un formateur n'est pas proposé dans l'interface (D142) ; pas d'export ni de tri personnalisé (D145) ; pas de sessions (S5.2).</li></ul>
+<h2>Écarts constatés</h2>
+<div class="table-wrap"><table><thead><tr><th>Date</th><th>Scénario</th><th>Description</th><th>Défaut ouvert (D…)</th></tr></thead><tbody>
+<tr><td></td><td></td><td></td><td></td></tr>
+</tbody></table></div></main></body></html>

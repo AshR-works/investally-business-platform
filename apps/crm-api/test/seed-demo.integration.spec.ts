@@ -2,7 +2,7 @@ import 'reflect-metadata';
 import { RoleCode } from '../src/modules/iam/domain/roles';
 import { CLOCK } from '../src/shared-kernel';
 import { buildPlan, Who } from '../src/cli/seed/seed-plan';
-import { runSeed, SEED_MARKER } from '../src/cli/seed/run-seed';
+import { CATALOGUE_MARKER, runSeed, SEED_MARKER, TRAINERS_MARKER } from '../src/cli/seed/run-seed';
 import { createUserWithRoles } from './support/rbac-http';
 import { startTestApp, TestApp } from './support/test-app';
 
@@ -39,16 +39,46 @@ describeDb('Jeu de données de démonstration (cas d’usage + PostgreSQL)', () 
     await db.companyFacilitation.deleteMany({ where: { companyId: { in: companies } } });
     await db.facilitator.deleteMany({ where: { ownerUserId: { in: owners } } });
     await db.company.deleteMany({ where: { id: { in: companies } } });
+    // Catalogue Investudy posé par le jeu : certificats (et leurs modules liés), modules, programme, salle.
+    const programs = (await db.program.findMany({ where: { name: 'Certificats Marchés financiers' }, select: { id: true } })).map((p) => p.id);
+    await db.training.deleteMany({ where: { programId: { in: programs } } });
+    await db.program.deleteMany({ where: { id: { in: programs } } });
+    await db.courseModule.deleteMany({ where: { trainings: { none: {} }, title: { in: ['Fondations Économiques & Architecture de la Place Financière', 'Ingénierie des Instruments Financiers, Données & Acteurs de Marché', 'Asset Management, Construction & Évaluation de Portefeuille', 'Pratique du Trading, Décision d’Investissement & Analyse Quantitative', 'Ingénierie Financière, IPO & Levées de Fonds en Zone CEMAC', 'Réglementation des Marchés Financiers en Zone CEMAC & Pouvoirs de la COSUMAF', 'Portfolio Engineering, Asset Allocation & Live Trading (Capstone Project)'] } } });
+    await db.room.deleteMany({ where: { name: { in: ['Salle de marchés', 'Salle de réunion'] } } });
+    await db.trainer.deleteMany({ where: { emailKey: { endsWith: TRAINERS_MARKER } } });
     await t.close();
   });
 
   it('charge tout le plan par les cas d’usage, sans erreur, puis refuse de recharger (idempotent)', async () => {
     const first = await runSeed(t.app as never, plan, { users });
-    expect(first).toMatchObject({ skipped: false, executed: plan.length });
+    expect(first).toMatchObject({ skipped: false, executed: plan.length, loaded: ['crm', 'catalogue', 'formateurs'] });
     const second = await runSeed(t.app as never, plan, { users });
     expect(second).toMatchObject({ skipped: true, executed: 0 });
     expect(await t.prisma.db.company.count({ where: { name: SEED_MARKER } })).toBe(1);
   }, 600_000);
+
+  it('une démo ANCIENNE (sans catalogue ni formateurs) reçoit ces blocs sans que le reste soit touché ; un nouveau passage ne fait rien', async () => {
+    const db = t.prisma.db;
+    // On simule une base chargée avant l'arrivée du catalogue : on retire les deux blocs récents.
+    await db.training.deleteMany({ where: { program: { name: CATALOGUE_MARKER } } });
+    await db.program.deleteMany({ where: { name: CATALOGUE_MARKER } });
+    await db.courseModule.deleteMany({ where: { trainings: { none: {} } } });
+    await db.room.deleteMany({ where: { name: { in: ['Salle de marchés', 'Salle de réunion'] } } });
+    await db.trainer.deleteMany({ where: { emailKey: { endsWith: TRAINERS_MARKER } } });
+    const companiesBefore = await db.company.count();
+    const auditBefore = await db.auditLog.count({ where: { entityType: 'Company' } });
+
+    const reload = await runSeed(t.app as never, plan, { users });
+    expect(reload).toMatchObject({ skipped: false, loaded: ['catalogue', 'formateurs'], executed: 1 + 7 + 5 + 2 + 5 });
+    expect(reload.counts).toMatchObject({ program: 1, module: 7, training: 5, room: 2, trainer: 5 });
+    expect(reload.counts.company).toBeUndefined();
+    expect(await db.company.count()).toBe(companiesBefore);
+    expect(await db.auditLog.count({ where: { entityType: 'Company' } })).toBe(auditBefore);
+    expect(await db.program.count({ where: { name: CATALOGUE_MARKER } })).toBe(1);
+    expect(await db.trainer.count({ where: { emailKey: { endsWith: TRAINERS_MARKER } } })).toBe(5);
+
+    expect(await runSeed(t.app as never, plan, { users })).toMatchObject({ skipped: true, executed: 0, loaded: [] });
+  }, 300_000);
 
   it('l’horloge est rendue à son état normal après le chargement', () => {
     const clock = t.get(CLOCK as never) as unknown as { now(): Date };
@@ -110,6 +140,20 @@ describeDb('Jeu de données de démonstration (cas d’usage + PostgreSQL)', () 
     const payouts = await statuses(db.commissionPayout.findMany({ select: { status: true }, distinct: ['status'] }));
     for (const s of ['DUE', 'ON_HOLD', 'RELEASED', 'CANCELLED']) expect([s, payouts.has(s)]).toEqual([s, true]);
     expect(await db.companyFacilitation.count({ where: { commissionType: { not: null } } })).toBeGreaterThan(0);
+
+    // Catalogue Investudy : cinq certificats, sept modules partagés, ordre propre à chaque certificat, tarifs, salle de marchés.
+    const certificates = await db.training.findMany({ where: { program: { name: 'Certificats Marchés financiers' } }, include: { modules: { orderBy: { position: 'asc' } } }, orderBy: { title: 'asc' } });
+    expect(certificates).toHaveLength(5);
+    expect(await db.courseModule.count({ where: { title: { contains: 'Zone CEMAC' } } })).toBeGreaterThanOrEqual(2);
+    const expert = certificates.find((c) => c.title.includes('Expert'))!;
+    expect([expert.priceAmount?.toFixed(2), expert.modulePriceAmount?.toFixed(2), expert.priceCurrency, expert.modules.length]).toEqual(['750000.00', '125000.00', 'XAF', 7]);
+    const students = certificates.find((c) => c.title.includes('Étudiants'))!;
+    expect([students.priceAmount?.toFixed(2), students.modulePriceAmount?.toFixed(2), students.modules.length]).toEqual(['250000.00', '75000.00', 5]);
+    const room = await db.room.findFirstOrThrow({ where: { name: 'Salle de marchés' } });
+    expect([room.kind, room.learnerSeats, room.unavailableSeats, room.trainerSeats]).toEqual(['WORKSTATIONS', 14, 1, 1]);
+    const meeting = await db.room.findFirstOrThrow({ where: { name: 'Salle de réunion' } });
+    expect([meeting.kind, meeting.learnerSeats, meeting.equipment]).toEqual(['CLASSROOM', 16, 'Écran 65 pouces (pas de vidéoprojecteur).']);
+    expect((await db.courseModule.findMany({ where: { requiresWorkstations: true }, select: { title: true } })).map((m) => m.title.split(' ')[0]).sort()).toEqual(expect.arrayContaining(['Pratique', 'Portfolio']));
   });
 
   it('tous les numéros enregistrés respectent la règle, et le journal d’audit raconte le chargement', async () => {

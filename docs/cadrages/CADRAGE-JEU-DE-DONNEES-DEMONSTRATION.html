@@ -1,0 +1,134 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Cadrage — Jeu de données de démonstration complet</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — cadrages · <a href="README.html">Index des cadrages</a> · <a href="../INDEX.html">Documentation</a> · <a href="../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../design/05-AIDE-A-LA-DECISION.html">Aide à la décision</a></nav><h1>Cadrage — Jeu de données de démonstration complet</h1>
+<p><strong>Date</strong> : 2026-11-05 · <strong>Statut</strong> : <strong>proposition, à valider par la direction produit</strong> · <strong>Origine</strong> : « jeu de données complet pour les tests » (revue du prompt d'observations) · <strong>Complète</strong> : <a href="CADRAGE-FORMATION-ADMINISTRATION-ET-OBSERVATIONS.html">CADRAGE-FORMATION-ADMINISTRATION-ET-OBSERVATIONS.md</a> · Décisions de départ : D45 de la méthode et jeu enrichi du lot « jeu de données ».</p>
+<blockquote><p>Méthode : <a href="../METHODE-D-ARBITRAGE.html">METHODE-D-ARBITRAGE.md</a>. Les faits vérifiés sont distingués des hypothèses (<em>hypothèse</em>). <strong>Aucune décision n'est prise ici.</strong></p></blockquote>
+<h2>1. Principe directeur</h2>
+<p>Le jeu de données <strong>est rejoué à travers les vrais cas d'usage</strong> de l'application (mêmes validations, mêmes états, mêmes versions, mêmes portées, même audit), jamais inséré directement en base. Conséquence directe : <strong>on ne peut charger que ce qui est construit.</strong> Un jeu « complet pour toute l'application » ne se livre donc pas d'un bloc aujourd'hui ; il se constitue <strong>lot après lot</strong>, chaque lot livrant son propre bloc.</p>
+<h2>2. Couverture : ce qui existe et ce qui reste</h2>
+<div class="table-wrap"><table><thead><tr><th>Domaine demandé</th><th>État aujourd'hui</th><th>Bloc de données</th><th>Livré avec</th></tr></thead><tbody>
+<tr><td><strong>Entreprises</strong></td><td><strong>Fait</strong> : 40 entreprises (banques, assurances, microfinance, télécoms, industrie, négoce…), pays d'Afrique centrale et de l'Ouest</td><td>Existant</td><td>—</td></tr>
+<tr><td><strong>Contacts</strong></td><td><strong>Fait</strong> pour les contacts d'entreprise (dirigeants, responsables financiers)</td><td>Existant</td><td>—</td></tr>
+<tr><td><strong>CRM</strong> : offres, relances, rendez-vous, opportunités, agréments, ambassadeurs, commissions</td><td><strong>Fait</strong>, sur douze mois, avec <strong>tous les états métier</strong></td><td>Existant</td><td>—</td></tr>
+<tr><td><strong>Administration</strong> : utilisateurs, rôles</td><td><strong>Fait</strong> : 11 comptes de démonstration, un par rôle (direction, responsable commercial, trois chargés de compte, responsable Investudy, formateur, support, finance, RH, fiscalité)</td><td>Existant</td><td>—</td></tr>
+<tr><td>Administration : équipes</td><td>Fait par le lien « responsable » entre comptes</td><td>Existant</td><td>—</td></tr>
+<tr><td>Administration : <strong>départements</strong></td><td><strong>N'existent pas</strong> dans l'application</td><td><strong>Aucun</strong></td><td><em>Décision D-DATA-4</em></td></tr>
+<tr><td><strong>Catalogue Investudy</strong> : programme, certificats, modules, salles</td><td><strong>Fait</strong></td><td>Bloc <code>catalogue</code></td><td>S5.1</td></tr>
+<tr><td>Investudy : <strong>rythmes</strong></td><td>Valeurs de référence</td><td>Bloc <code>catalogue</code> (puis table en S5.2)</td><td>S5.2</td></tr>
+<tr><td>Investudy : <strong>formateurs</strong></td><td>Écran livré, <strong>pas de données de démonstration</strong></td><td>Bloc <code>formateurs</code></td><td>S5.1 (à ajouter, §4)</td></tr>
+<tr><td>Investudy : <strong>sessions, participants, inscriptions</strong></td><td><strong>Pas construits</strong></td><td>Bloc <code>sessions</code></td><td><strong>S5.2</strong></td></tr>
+<tr><td>Investudy : <strong>présences, résultats, certifications obtenues, attestations (données seulement)</strong></td><td><strong>Pas construits</strong></td><td>Bloc <code>resultats</code></td><td><strong>S5.3</strong></td></tr>
+<tr><td><strong>Finance</strong> : devis, paiements, revenus, dépenses, centres de coûts</td><td><strong>Module inexistant</strong></td><td>Bloc <code>finance</code></td><td>Lot Finance</td></tr>
+<tr><td><strong>Reporting</strong> : KPI, tableaux de bord, graphiques, comparaisons mensuelles</td><td><strong>Module inexistant</strong> ; il <strong>s'alimente des données ci-dessus</strong></td><td>Aucun bloc propre</td><td>S6</td></tr>
+<tr><td>« Tâches » et « activités »</td><td>Pas des entités distinctes : <strong>relances</strong> et <strong>rendez-vous</strong> les couvrent</td><td>Existant</td><td>—</td></tr>
+</tbody></table></div>
+<p>Ce qui est écarté sur demande : contrats, factures, fichiers joints, certificats et attestations <strong>comme documents</strong>. Seules les <strong>données</strong> sont générées.</p>
+<h2>3. Règles de conception des données</h2>
+<h3>3.1 Réalisme sans vraies marques</h3>
+<ul><li><strong>Noms d'entreprises et de personnes inventés mais vraisemblables</strong> (consonances d'Afrique centrale et de l'Ouest, villes et pays réels). Le dépôt est <strong>public</strong> ; un test automatique refuse déjà les marques réelles du secteur (banques, opérateurs, assureurs connus). Utiliser de vraies sociétés exposerait à une confusion, voire à un litige de marque.</li><li>E-mails en <code>.test</code>, téléphones du <strong>motif réservé</strong> (deux zéros avant les quatre derniers chiffres), aucun identifiant réel.</li><li>Le <strong>catalogue</strong> de formation est l'exception assumée : il reprend l'offre publique d'Investudy (certificats, modules, tarifs affichés), sans donnée personnelle.</li></ul>
+<h3>3.2 Cohérence et dates</h3>
+<ul><li>Dates <strong>relatives à aujourd'hui</strong>, réparties sur douze mois : retards, échéances et graphiques restent parlants quel que soit le jour du chargement. Rien dans le futur, sauf rendez-vous, relances et <strong>sessions planifiées</strong>.</li><li>Plan <strong>déterministe</strong> (graine fixe) : mêmes entrées, mêmes événements.</li><li>L'ordre de création respecte les dépendances (entreprise avant offre, certificat avant session, session avant inscription).</li></ul>
+<h3>3.3 Volumétrie (propositions, <em>hypothèses</em> à ajuster)</h3>
+<div class="table-wrap"><table><thead><tr><th>Bloc</th><th>Volume</th><th>Couverture des états</th></tr></thead><tbody>
+<tr><td>Formateurs</td><td>5, <strong>tous externes</strong> (sans compte, comme les formateurs réels d’Investudy)</td><td>Actifs ; un désactivé à ajouter avec S5.2</td></tr>
+<tr><td>Sessions (S5.2)</td><td>~14 sur 12 mois : 10 terminées, 2 en cours ou ouvertes, 2 à venir ; <strong>aucune du soir</strong> (non ouvert) ; une <strong>annulée</strong> ; une <strong>déplacée</strong> vers la salle de réunion</td><td>Tous les statuts</td></tr>
+<tr><td>Participants (S5.2)</td><td>~70 personnes <strong>fictives</strong>, rattachées à des entreprises de la démo (payeur) ou indépendantes</td><td>Étudiants, cadres, juristes, banque-assurance</td></tr>
+<tr><td>Inscriptions (S5.2)</td><td>~90 : confirmées, en attente, annulées, <strong>liste d'attente</strong> quand la capacité utile (13 ou 16) est atteinte</td><td>Tous les statuts</td></tr>
+<tr><td>Présences, résultats (S5.3)</td><td>Une présence par demi-journée ; résultats par module ; réussite, échec, rattrapage</td><td>Cohérent avec les inscriptions</td></tr>
+<tr><td>Certifications obtenues (S5.3)</td><td>~35 : une par réussite complète, avec numéro et date, <strong>sans document</strong></td><td>Valides, une révoquée</td></tr>
+<tr><td>Finance (lot Finance)</td><td>Devis, paiements partiels et soldés, impayés ; dépenses sur 4 à 5 centres de coûts ; revenus mensuels</td><td>Cohérent avec les inscriptions et les agréments</td></tr>
+</tbody></table></div>
+<p>Les <strong>liens entre domaines</strong> font la valeur du jeu : un agrément honoré (CRM) finance des inscriptions (Investudy) puis un paiement (Finance) et alimente un KPI (reporting).</p>
+<h2>4. Structure des seeds : le chargement par blocs</h2>
+<p><strong>Constat (fait vérifié, défaut à corriger).</strong> Le chargement actuel est « tout ou rien » : s'il trouve l'entreprise repère, il ne fait <strong>rien</strong>, y compris pour les nouveaux blocs. Une base déjà peuplée ne reçoit donc jamais les ajouts. C'est la cause de l'absence du catalogue chez un utilisateur ayant une démo antérieure.</p>
+<p><strong>Cible.</strong> Un <strong>marqueur par bloc</strong> (par exemple : <code>crm</code> = l'entreprise repère, <code>catalogue</code> = le programme « Certificats Marchés financiers », <code>formateurs</code>, <code>sessions</code>…). Le chargement exécute <strong>uniquement les blocs dont le marqueur est absent</strong>, dans l'ordre des dépendances, et ne touche à aucune donnée existante.</p>
+<div class="table-wrap"><table><thead><tr><th>Propriété</th><th>Règle</th></tr></thead><tbody>
+<tr><td>Idempotence</td><td>Rejouer ne crée jamais de doublon (marqueur par bloc)</td></tr>
+<tr><td>Ordre</td><td>Chaque bloc déclare ses dépendances (le bloc <code>sessions</code> exige <code>catalogue</code> et <code>formateurs</code>)</td></tr>
+<tr><td>Isolement</td><td>Un bloc ne modifie jamais un objet d'un autre bloc</td></tr>
+<tr><td>Passage par les cas d'usage</td><td>Obligatoire ; l'horloge est avancée de date en date pour dater chaque objet</td></tr>
+<tr><td>Garde-fou</td><td>Refus de charger hors d'une base locale (<code>assertLocalDatabase</code>), jamais sur une base de production</td></tr>
+</tbody></table></div>
+<h2>5. Stratégie de validation des données</h2>
+<div class="table-wrap"><table><thead><tr><th>Niveau</th><th>Contrôle</th><th>Où</th></tr></thead><tbody>
+<tr><td>Plan</td><td>Déterminisme ; ordre des dépendances ; <strong>couverture de chaque état métier</strong> ; numéros au motif réservé ; aucune marque réelle ; aucun futur illégitime</td><td>Test unitaire du plan (<code>seed-plan.spec.ts</code>)</td></tr>
+<tr><td>Exécution</td><td>Le plan s'exécute <strong>sans erreur</strong> par les vrais cas d'usage ; idempotence ; l'horloge est rendue à son état normal</td><td>Test d'intégration (<code>seed-demo.integration.spec.ts</code>)</td></tr>
+<tr><td>Cohérence inter-domaines</td><td>Chaque inscription pointe une session et un participant existants ; chaque paiement un devis ; chaque certification une inscription réussie</td><td>Tests d'intégration par bloc</td></tr>
+<tr><td>Règles de base</td><td>Contraintes de la base respectées (le jeu ne peut pas les contourner puisqu'il passe par les cas d'usage)</td><td>Contraintes SQL</td></tr>
+<tr><td>Visuel</td><td>Parcours des écrans avec la démo, par rôle</td><td>Audit navigateur (limite connue D136 : les lignes ne sont pas toutes vérifiées à l'œil)</td></tr>
+<tr><td>Nettoyage</td><td>La base jetable des tests automatiques retire le jeu à la fin de chaque suite pour ne pas fausser les autres</td><td>Suites d'intégration</td></tr>
+</tbody></table></div>
+<h2>6. Intégration dans les environnements</h2>
+<div class="table-wrap"><table><thead><tr><th>Environnement</th><th>Chargement</th><th>Règle</th></tr></thead><tbody>
+<tr><td>Tests automatiques (base jetable)</td><td><strong>Non chargé</strong> par défaut (25 entreprises génériques) ; chargé par la suite dédiée puis retiré (D135)</td><td>Jamais de démo en prod</td></tr>
+<tr><td>Pile locale (<code>local-stack.mjs --demo</code>)</td><td><strong>Oui</strong>, par blocs, à chaque démarrage avec <code>--demo</code></td><td>La base locale reçoit les nouveaux blocs sans reset</td></tr>
+<tr><td>Recette / pré-production</td><td><em>Hypothèse</em> : à définir quand l'environnement existera ; mêmes commandes, base dédiée</td><td>Garde-fou local-seulement à adapter</td></tr>
+<tr><td><strong>Production</strong></td><td><strong>Jamais</strong></td><td>Le garde-fou refuse</td></tr>
+</tbody></table></div>
+<p>Procédure de mise à jour d'une démo : arrêter la pile, relancer avec <code>--demo --rebuild</code>. Un <strong>reset</strong> n'est jamais requis par un nouveau bloc.</p>
+<h2>7. Décisions à prendre</h2>
+<h3>D-DATA-1 — Rythme de livraison du jeu complet</h3>
+<div class="table-wrap"><table><thead><tr><th>Option</th><th>Description</th><th>Réversibilité</th></tr></thead><tbody>
+<tr><td>A. <strong>Lot après lot</strong></td><td>Chaque lot (S5.2, S5.3, Finance, S6) livre son bloc</td><td>🟢</td></tr>
+<tr><td>B. Jeu « maquette » d'avance</td><td>Insérer directement en base des sessions, finances, KPI fictifs avant que les modules existent</td><td>🔴</td></tr>
+<tr><td>C. Jeu complet en fin de projet</td><td>Tout produire à la fin</td><td>🟡</td></tr>
+<tr><td>Critère (poids)</td><td>A</td><td>B</td><td>C</td></tr>
+<tr><td>---</td><td>---</td><td>---</td><td>---</td></tr>
+<tr><td>Valeur métier (5)</td><td>4</td><td>3</td><td>2</td></tr>
+<tr><td>Risque (5)</td><td>5</td><td>1</td><td>3</td></tr>
+<tr><td>Cohérence (4)</td><td>5</td><td>1</td><td>3</td></tr>
+<tr><td>Réversibilité (4)</td><td>5</td><td>1</td><td>3</td></tr>
+<tr><td>Coût et délai (3)</td><td>4</td><td>3</td><td>2</td></tr>
+<tr><td>Maintenance (3)</td><td>4</td><td>1</td><td>3</td></tr>
+<tr><td>Expérience utilisateur (4)</td><td>4</td><td>3</td><td>2</td></tr>
+<tr><td>Accessibilité et sécurité (4)</td><td>4</td><td>3</td><td>4</td></tr>
+<tr><td><strong>Score pondéré (sur 160)</strong></td><td><strong>141</strong></td><td><strong>64</strong></td><td><strong>88</strong></td></tr>
+</tbody></table></div>
+<p><em>Risque de B</em> : un jeu inséré hors des cas d'usage contourne les règles métier, devient faux à la première évolution et fausse les tests de rôles ; il faudrait le jeter. <strong>Recommandation : A.</strong> <em>Ce qui ferait changer d'avis</em> : une démonstration externe imminente imposant des écrans de reporting remplis avant S6 (on construirait alors des maquettes <strong>marquées</strong> comme telles, pas du faux jeu de données). <strong>Décision</strong> : <em>à prendre.</em></p>
+<h3>D-DATA-2 — Chargement par blocs</h3>
+<div class="table-wrap"><table><thead><tr><th>Option</th><th>Description</th><th>Réversibilité</th></tr></thead><tbody>
+<tr><td>A. Statu quo</td><td>Tout ou rien ; un reset à chaque nouveau bloc</td><td>🟢</td></tr>
+<tr><td>B. <strong>Marqueur par bloc</strong></td><td>Chaque bloc s'ajoute seul à une démo existante</td><td>🟢</td></tr>
+</tbody></table></div>
+<p><strong>Recommandation : B</strong> (déjà en cours : correctif du chargement). Valeur : plus aucun reset pour recevoir un bloc ; coût : une demi-journée. <strong>Décision</strong> : <em>à prendre</em> (travail déjà lancé sur recommandation de l'équipe).</p>
+<h3>D-DATA-3 — Noms réalistes</h3>
+<p>Noms <strong>inventés vraisemblables</strong> (recommandé) <strong>ou</strong> vraies entreprises africaines. Le dépôt étant public, je recommande les noms inventés ; les vraies marques ne seraient envisageables que dans un environnement privé, avec accord écrit. <strong>Décision</strong> : <em>à prendre.</em></p>
+<h3>D-DATA-4 — Départements</h3>
+<p>La demande cite des « départements ». Ils n'existent pas dans l'application ; les <strong>équipes</strong> passent par le lien « responsable ». Créer des départements serait une évolution du modèle d'administration (hors du périmètre « ne pas modifier l'architecture »). <strong>Recommandation : ne pas en créer</strong> ; couvrir le besoin par les équipes et les rôles. <strong>Décision</strong> : <em>à prendre.</em></p>
+<h2>8. Feuille de route de la donnée</h2>
+<div class="table-wrap"><table><thead><tr><th>Étape</th><th>Contenu</th><th>Dépend de</th></tr></thead><tbody>
+<tr><td>1</td><td><strong>Chargement par blocs</strong> et bloc <code>formateurs</code> (5 formateurs fictifs)</td><td>Fin de la régression de S5.1</td></tr>
+<tr><td>2</td><td>Bloc <code>sessions</code> : sessions, participants, inscriptions, liste d'attente, déplacement de salle</td><td>S5.2</td></tr>
+<tr><td>3</td><td>Bloc <code>resultats</code> : présences, résultats, certifications obtenues, attestations (données)</td><td>S5.3</td></tr>
+<tr><td>4</td><td>Bloc <code>finance</code> : devis, paiements, dépenses, centres de coûts</td><td>Lot Finance</td></tr>
+<tr><td>5</td><td>Vérification des tableaux de bord et KPI sur la démo complète</td><td>S6</td></tr>
+</tbody></table></div>
+<p>Chaque étape ajoute ses <strong>tests de plan et d'intégration</strong>, ses mutants sur les règles de cohérence, une section de la recette et la mise à jour de ce document.</p>
+<h2>9. Décisions en attente (récapitulatif)</h2>
+<div class="table-wrap"><table><thead><tr><th>N°</th><th>Question</th><th>Recommandation</th></tr></thead><tbody>
+<tr><td>D-DATA-1</td><td>Rythme de livraison du jeu</td><td>A : lot après lot</td></tr>
+<tr><td>D-DATA-2</td><td>Chargement par blocs</td><td>B : marqueur par bloc (en cours)</td></tr>
+<tr><td>D-DATA-3</td><td>Noms réalistes</td><td>Noms inventés vraisemblables</td></tr>
+<tr><td>D-DATA-4</td><td>Départements</td><td>Ne pas en créer</td></tr>
+</tbody></table></div></main></body></html>

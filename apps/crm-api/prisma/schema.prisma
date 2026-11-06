@@ -13,7 +13,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  schemas  = ["bd", "audit", "iam", "docs"]
+  schemas  = ["bd", "audit", "iam", "docs", "training"]
 }
 
 // ───────────────────────────── bd (tranche S1) ─────────────────────────────
@@ -902,4 +902,133 @@ model CommissionPayout {
   @@index([status])
   @@map("commission_payouts")
   @@schema("bd")
+}
+
+
+// ───────────────────────────── training (S5.1 : catalogue Investudy) ─────────────────────────────
+
+enum CatalogueStatus {
+  ACTIVE
+  ARCHIVED
+
+  @@schema("training")
+}
+
+/// Type de salle : avec postes de travail (salle de marchés) ou salle de cours (places assises, cours magistral).
+enum RoomKind {
+  WORKSTATIONS
+  CLASSROOM
+
+  @@schema("training")
+}
+
+/// Programme : regroupement de formations. Référentiel partagé (sans propriétaire) ; archivé, jamais supprimé.
+model Program {
+  id          String          @id @db.Uuid
+  name        String          @db.VarChar(150)
+  nameKey     String          @unique @map("name_key") @db.VarChar(150)
+  description String?         @db.VarChar(2000)
+  audience    String?         @db.VarChar(500)
+  status      CatalogueStatus @default(ACTIVE)
+  version     Int             @default(1)
+  createdAt   DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime        @updatedAt @map("updated_at") @db.Timestamptz(6)
+  trainings   Training[]
+
+  @@map("programs")
+  @@schema("training")
+}
+
+/// Certificat (formation vendable et planifiable) : appartient à un seul programme ; objectifs, prérequis (texte libre), prix complet et prix par module (même devise), modules ordonnés.
+model Training {
+  id            String          @id @db.Uuid
+  programId     String          @map("program_id") @db.Uuid
+  title         String          @db.VarChar(150)
+  titleKey      String          @map("title_key") @db.VarChar(150)
+  objectives    String?         @db.VarChar(2000)
+  prerequisites String?         @db.VarChar(1000)
+  priceAmount   Decimal?        @map("price_amount") @db.Decimal(12, 2)
+  modulePriceAmount Decimal?    @map("module_price_amount") @db.Decimal(12, 2)
+  priceCurrency String?         @map("price_currency") @db.Char(3)
+  status        CatalogueStatus @default(ACTIVE)
+  version       Int             @default(1)
+  createdAt     DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime        @updatedAt @map("updated_at") @db.Timestamptz(6)
+  program       Program         @relation(fields: [programId], references: [id])
+  modules       TrainingModule[]
+
+  @@unique([programId, titleKey])
+  @@map("trainings")
+  @@schema("training")
+}
+
+/// Salle de formation : capacité et équipements ; désactivée (jamais supprimée) pour rester visible sur les sessions passées.
+model Room {
+  id        String          @id @db.Uuid
+  name      String          @db.VarChar(100)
+  nameKey   String          @unique @map("name_key") @db.VarChar(100)
+  kind      RoomKind        @default(WORKSTATIONS)
+  learnerSeats     Int  @map("learner_seats")
+  unavailableSeats Int  @default(0) @map("unavailable_seats")
+  trainerSeats     Int  @default(1) @map("trainer_seats")
+  equipment String?         @db.VarChar(1000)
+  status    CatalogueStatus @default(ACTIVE)
+  version   Int             @default(1)
+  createdAt DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime        @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@map("rooms")
+  @@schema("training")
+}
+
+/// Formateur : interne (compte utilisateur lié, référence SANS clé étrangère) ou externe (sans compte).
+model Trainer {
+  id          String          @id @db.Uuid
+  lastName    String          @map("last_name") @db.VarChar(100)
+  firstName   String          @map("first_name") @db.VarChar(100)
+  specialties String?         @db.VarChar(500)
+  email       String?         @db.VarChar(200)
+  emailKey    String?         @unique @map("email_key") @db.VarChar(200)
+  phone       String?         @db.VarChar(40)
+  userId      String?         @unique @map("user_id") @db.Uuid
+  status      CatalogueStatus @default(ACTIVE)
+  version     Int             @default(1)
+  createdAt   DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime        @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@map("trainers")
+  @@schema("training")
+}
+
+/// Module : chapitre partagé entre plusieurs certificats (un titre ; ni durée ni prix, portés par le certificat et le rythme de session).
+model CourseModule {
+  id          String           @id @db.Uuid
+  title       String           @db.VarChar(150)
+  titleKey    String           @unique @map("title_key") @db.VarChar(150)
+  description String?          @db.VarChar(1000)
+  /// Pratique sur poste de travail (ne se donne pas dans une salle de cours) ou cours magistral.
+  requiresWorkstations Boolean @default(false) @map("requires_workstations")
+  status      CatalogueStatus  @default(ACTIVE)
+  version     Int              @default(1)
+  createdAt   DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime         @updatedAt @map("updated_at") @db.Timestamptz(6)
+  trainings   TrainingModule[]
+
+  @@map("modules")
+  @@schema("training")
+}
+
+/// Place d'un module dans un certificat (ordre 1, 2, 3…).
+model TrainingModule {
+  trainingId String       @map("training_id") @db.Uuid
+  moduleId   String       @map("module_id") @db.Uuid
+  position   Int
+  training   Training     @relation(fields: [trainingId], references: [id], onDelete: Cascade)
+  module     CourseModule @relation(fields: [moduleId], references: [id])
+
+  @@id([trainingId, moduleId])
+  @@unique([trainingId, position])
+  @@index([moduleId])
+  @@map("training_modules")
+  @@schema("training")
 }

@@ -9,8 +9,10 @@
  *   le test vérifie que personne d'autre ne la détient.
  * - `portee-tous` : agit sur n'importe quel utilisateur avec une permission que d'autres rôles détiennent en portée « propre »
  *   (ex. `iam.session.revoke`) ; la garde doit alors exiger la portée Tous (`minScope: 'ALL'`).
+ * - `referentiel` : catalogue partagé sans propriétaire (programmes, formations, salles, formateurs). Aucun objet n'est « à soi » : tous les
+ *   rôles qui détiennent la permission l'ont en portée Tous (le test le vérifie) ; il n'y a donc pas d'objet hors portée à masquer.
  */
-export type IdorClass = 'objet' | 'admin' | 'portee-tous';
+export type IdorClass = 'objet' | 'admin' | 'portee-tous' | 'referentiel';
 
 export const IDOR_ROUTES: Record<string, IdorClass> = {
   'GET /companies/:id': 'objet',
@@ -80,6 +82,22 @@ export const IDOR_ROUTES: Record<string, IdorClass> = {
   'POST /documents/:id/versions': 'objet',
   'POST /documents/:id/archive': 'objet',
   'DELETE /auth/sessions/:id': 'objet',
+
+  'GET /programs/:id': 'referentiel',
+  'PUT /programs/:id': 'referentiel',
+  'POST /programs/:id/status': 'referentiel',
+  'GET /trainings/:id': 'referentiel',
+  'PUT /trainings/:id': 'referentiel',
+  'POST /trainings/:id/status': 'referentiel',
+  'GET /modules/:id': 'referentiel',
+  'PUT /modules/:id': 'referentiel',
+  'POST /modules/:id/status': 'referentiel',
+  'GET /rooms/:id': 'referentiel',
+  'PUT /rooms/:id': 'referentiel',
+  'POST /rooms/:id/status': 'referentiel',
+  'GET /trainers/:id': 'referentiel',
+  'PUT /trainers/:id': 'referentiel',
+  'POST /trainers/:id/status': 'referentiel',
 
   'GET /admin/users/:id': 'admin',
   'PATCH /admin/users/:id': 'admin',

@@ -62,6 +62,19 @@ describe('Contrat anti-IDOR : classement de toutes les routes (structurel)', () 
     }
   });
 
+  it('les routes « référentiel » (catalogue partagé) exigent une permission du module training, détenue en portée Tous par tous les rôles qui la détiennent', () => {
+    const shared = routes.filter((r) => IDOR_ROUTES[r.key] === 'referentiel');
+    expect(shared.length).toBeGreaterThanOrEqual(12);
+    for (const route of shared) {
+      expect([route.key, route.permission]).toEqual([route.key, expect.stringMatching(/^training\./)]);
+      for (const role of Object.values(RoleCode)) {
+        for (const grant of resolveGrants(role).filter((g) => g.permission === route.permission)) {
+          expect([route.key, role, grant.scope]).toEqual([route.key, role, Scope.All]);
+        }
+      }
+    }
+  });
+
   it('les routes « objet » exigent toutes une permission du catalogue (le contrôle par objet vient en plus)', () => {
     for (const route of routes.filter((r) => IDOR_ROUTES[r.key] === 'objet')) {
       expect([route.key, Boolean(route.permission)]).toEqual([route.key, true]);

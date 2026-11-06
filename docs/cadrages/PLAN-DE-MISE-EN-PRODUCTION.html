@@ -1,0 +1,236 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Plan de mise en production — Investally Business Platform</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — cadrages · <a href="README.html">Index des cadrages</a> · <a href="../INDEX.html">Documentation</a> · <a href="../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../design/05-AIDE-A-LA-DECISION.html">Aide à la décision</a></nav><h1>Plan de mise en production — Investally Business Platform</h1>
+<p><strong>Date</strong> : 2026-11-05 · <strong>Statut</strong> : <strong>proposition, à valider par la direction produit</strong> · <strong>Origine</strong> : demande de stratégie de mise en production · <strong>Complète</strong> : <a href="CADRAGE-FORMATION-ADMINISTRATION-ET-OBSERVATIONS.html">CADRAGE-FORMATION-ADMINISTRATION-ET-OBSERVATIONS.md</a>, <a href="CADRAGE-JEU-DE-DONNEES-DEMONSTRATION.html">CADRAGE-JEU-DE-DONNEES-DEMONSTRATION.md</a>, <a href="../RESTE-A-FAIRE-DEVELOPPEMENT.html">RESTE-A-FAIRE-DEVELOPPEMENT.md</a>, <a href="../SECURITY.html">SECURITY.md</a>, <a href="../RELIABILITY.html">RELIABILITY.md</a>.</p>
+<blockquote><p>Méthode : <a href="../METHODE-D-ARBITRAGE.html">METHODE-D-ARBITRAGE.md</a>. <strong>Aucune décision n'est prise ici.</strong> Les faits vérifiés dans le dépôt sont distingués des <strong>hypothèses</strong> (<em>hypothèse</em>), qui portent surtout sur l'hébergement, les volumes de données et les disponibilités des équipes : elles sont à confirmer. Ce document nomme les <strong>fonctions</strong> (DG, DGA, DAF…), jamais les personnes : le dépôt est public.</p></blockquote>
+<h2>1. Analyse de l'état actuel</h2>
+<h3>1.1 Fonctionnalités</h3>
+<div class="table-wrap"><table><thead><tr><th>Domaine</th><th>État</th><th>Verdict de déploiement</th></tr></thead><tbody>
+<tr><td>Authentification, MFA obligatoire, sessions, rôles et permissions, journal d'audit, administration des utilisateurs</td><td><strong>Livré et testé</strong> (S1 à S3)</td><td>Prêt</td></tr>
+<tr><td>Documents (versions, empreinte, téléchargement tracé)</td><td>Livré ; <strong>stockage sur disque local</strong>, <strong>pas d'antivirus</strong></td><td><strong>Prêt sous condition</strong> : stockage objet et antivirus (D41, D42 bloquant)</td></tr>
+<tr><td><strong>CRM commercial</strong> : entreprises, contacts, offres, reçus, relances, rendez-vous, opportunités, agréments, ambassadeurs, commissions</td><td><strong>Complet et validé</strong> (S4), anti-IDOR, mutants, audit navigateur</td><td><strong>Prêt</strong> (avec les prérequis d'exploitation du §6)</td></tr>
+<tr><td><strong>Investudy</strong> : catalogue (programmes, certificats, modules, salles, formateurs, rythmes)</td><td>S5.1 en cours de validation</td><td>Prêt <strong>après</strong> validation de S5.1</td></tr>
+<tr><td>Investudy : sessions, apprenants, inscriptions, présences, évaluations, certifications</td><td><strong>Non construit</strong> (S5.2, S5.3)</td><td><strong>Ne pas déployer</strong></td></tr>
+<tr><td>Tableaux de bord, reporting, KPI</td><td><strong>Non construits</strong> (S6) ; le hub n'a pas de page de pilotage</td><td><strong>Ne pas déployer</strong></td></tr>
+<tr><td>Finance, RH, Fiscalité, Stocks (ERP)</td><td><strong>Non construits</strong> ; la Finance n'existe que par ses <strong>droits</strong> dans le CRM (honorer un agrément, débloquer une commission)</td><td><strong>Hors périmètre initial</strong></td></tr>
+<tr><td>Notifications, e-mail réel</td><td><strong>Absents</strong> (D137) ; l'e-mail réel dépend des accès Microsoft 365 (D9)</td><td><strong>Bloquant</strong> pour invitations et réinitialisations</td></tr>
+<tr><td>Import de données existantes</td><td><strong>N'existe pas</strong></td><td>À créer (§7)</td></tr>
+</tbody></table></div>
+<h3>1.2 Qualité du produit (faits vérifiés)</h3>
+<p>Tests automatiques : plus de 950 tests unitaires et 380 d'intégration côté API, plus de 530 côté interface ; mutations injectées sur chaque lot (dernier lot : 45 sur 45 détectées) ; contrat anti-IDOR ; audit d'accessibilité par navigateur réel. <strong>Limites connues</strong> : aucune écoute avec lecteur d'écran réel (D31), pas de tests de bout en bout automatisés (D22), Docker et intégration continue jamais exécutés « pour de vrai », pas de test de charge.</p>
+<h3>1.3 Ce qui n'existe pas du tout (voir aussi la réponse précédente)</h3>
+<p>Décision d'hébergement, plan d'environnements, image de l'interface web, procédures de déploiement, de retour arrière et de restauration, supervision, nom de domaine et certificat, gestion des secrets en production, livraison continue.</p>
+<h2>2. Les données</h2>
+<div class="table-wrap"><table><thead><tr><th>Catégorie</th><th>Définition</th><th>Règle</th></tr></thead><tbody>
+<tr><td><strong>Démonstration</strong></td><td>Jeu fictif (entreprises inventées, e-mails <code>.test</code>, téléphones au motif réservé) ; catalogue d'Investudy issu de l'offre publique</td><td>Jamais en production ; le garde-fou de chargement refuse hors base locale</td></tr>
+<tr><td><strong>Production</strong></td><td>Données réelles saisies ou importées par l'entreprise</td><td>Seules données autorisées en production</td></tr>
+<tr><td><strong>Référence</strong></td><td>Rôles, permissions, catalogue de permissions, rythmes, <strong>catalogue Investudy réel</strong></td><td>Chargés par migration ou par script contrôlé, identiques à tous les environnements</td></tr>
+</tbody></table></div>
+<p><strong>Règle d'or</strong> : un environnement contient <strong>soit</strong> de la démonstration, <strong>soit</strong> de la production, <strong>jamais les deux</strong>. La démonstration vit dans les environnements de démonstration et de recette uniquement.</p>
+<p><strong>Qualité des données</strong> : les règles sont déjà garanties par l'application et la base (téléphone au format commun, e-mails uniques, noms d'entreprise uniques sans casse, statuts, montants positifs). Le plan de migration (§7) ajoute le nettoyage <strong>avant</strong> chargement.</p>
+<h2>3. Les utilisateurs et leurs besoins</h2>
+<div class="table-wrap"><table><thead><tr><th>Fonction</th><th>Rôle dans l'application</th><th>Besoin principal</th><th>Priorité de mise en service</th></tr></thead><tbody>
+<tr><td><strong>DG</strong> (CEO, qui dirige aussi Investudy)</td><td>Direction ; Super administrateur selon décision</td><td>Vue d'ensemble, lecture de tout, supervision de l'activité commerciale et de la formation</td><td>Vague 1 (lecture)</td></tr>
+<tr><td><strong>DGA</strong> (Deputy Managing Director, fonctions RH)</td><td>Direction + RH</td><td>Supervision, rôles et personnel</td><td>Vague 1 (lecture)</td></tr>
+<tr><td><strong>Head of Sales and Marketing</strong></td><td>Responsable commercial</td><td>Pilote de l'équipe, pipeline global, réattribution, annulation de commissions</td><td><strong>Vague 1</strong></td></tr>
+<tr><td><strong>Équipe commerciale</strong> (chargé de compte, marketing digital)</td><td>Chargé de compte ; marketing : à préciser (<em>hypothèse</em> : lecture ou Support)</td><td>Entreprises, contacts, offres, relances, rendez-vous, opportunités</td><td><strong>Vague 1</strong></td></tr>
+<tr><td><strong>Équipe Investudy</strong> et support IT des formations</td><td>Responsable Investudy (<em>poste de fait à désigner</em>), Support</td><td>Catalogue, puis sessions et inscriptions</td><td>Vague 2</td></tr>
+<tr><td><strong>Formateurs</strong></td><td><strong>Externes, sans accès</strong> à l'application ; seulement enregistrés comme fiches</td><td>Aucun accès au départ</td><td>Aucun (le rôle Formateur n'est pas ouvert)</td></tr>
+<tr><td><strong>Finance</strong> (DAF, responsable conformité et contrôle interne, investor relations)</td><td>Finance (DAF) ; contrôle interne : droit de lecture d'audit à décider (FD-10)</td><td><strong>Honorer les agréments, débloquer les commissions</strong> : indispensable au flux commercial</td><td>Vague 1 (utilisateur Finance limité)</td></tr>
+<tr><td><strong>Administration / IT</strong></td><td>Super administrateur</td><td>Comptes, rôles, sauvegardes, supervision</td><td>Dès le premier jour</td></tr>
+</tbody></table></div>
+<p>Point d'attention : <strong>le module commercial ne fonctionne pas sans la Finance</strong> (c'est elle qui constate le paiement d'un agrément et débloque les commissions). La vague 1 inclut donc au moins le DAF.</p>
+<h2>4. Stratégie recommandée</h2>
+<h3>4.1 Arbitrage : comment déployer ?</h3>
+<div class="table-wrap"><table><thead><tr><th>Option</th><th>Description</th><th>Réversibilité</th></tr></thead><tbody>
+<tr><td><strong>A. Progressif par module, avec pilote</strong></td><td>Vague 1 : CRM commercial (pilote restreint, puis toute l'équipe) ; vague 2 : Investudy ; vague 3 : pilotage ; ERP ensuite</td><td>🟢</td></tr>
+<tr><td>B. Complet en une fois</td><td>Tout lancer ensemble, y compris ce qui n'est pas construit</td><td>🔴</td></tr>
+<tr><td>C. Statu quo : démonstration seulement</td><td>Ne rien mettre en production avant que tout soit livré</td><td>🟢</td></tr>
+<tr><td>Critère (poids)</td><td>A</td><td>B</td><td>C</td></tr>
+<tr><td>---</td><td>---</td><td>---</td><td>---</td></tr>
+<tr><td>Valeur métier (5)</td><td>4</td><td>3</td><td>1</td></tr>
+<tr><td>Risque (5)</td><td>5</td><td>1</td><td>5</td></tr>
+<tr><td>Cohérence avec les décisions passées (4)</td><td>5</td><td>2</td><td>3</td></tr>
+<tr><td>Réversibilité (4)</td><td>4</td><td>1</td><td>5</td></tr>
+<tr><td>Coût et délai (3)</td><td>3</td><td>2</td><td>5</td></tr>
+<tr><td>Maintenance (3)</td><td>4</td><td>2</td><td>4</td></tr>
+<tr><td>Expérience et adoption (4)</td><td>5</td><td>2</td><td>1</td></tr>
+<tr><td>Accessibilité et sécurité (4)</td><td>4</td><td>2</td><td>4</td></tr>
+<tr><td><strong>Score pondéré (sur 160)</strong></td><td><strong>138</strong></td><td><strong>60</strong></td><td><strong>109</strong></td></tr>
+</tbody></table></div>
+<p><em>Risque de B</em> : un lancement général simultané noie les utilisateurs, mélange les incidents et expose des fonctions inachevées. <em>Risque de C</em> : l'adoption n'est pas préparée et les retours réels arrivent trop tard ; un « tout ou rien » en fin de projet est plus risqué qu'un lancement progressif. <strong>Recommandation : A.</strong> Il correspond à l'ordre de réalisation déjà décidé (commercial, puis Investudy, puis pilotage) et protège l'adoption : chaque vague est apprise avant la suivante. <em>Ce qui ferait changer d'avis</em> : une obligation externe imposant Investudy avant le CRM.</p>
+<h3>4.2 Arbitrage : où héberger ?</h3>
+<p><em>Les notes sont <strong>indicatives</strong> : budget, compétences d'exploitation et contraintes réglementaires ne sont pas connus (*hypothèses</em>).*</p>
+<div class="table-wrap"><table><thead><tr><th>Option</th><th>Description</th><th>Réversibilité</th></tr></thead><tbody>
+<tr><td><strong>A. Cloud géré</strong></td><td>Application en conteneurs et base PostgreSQL gérée (sauvegardes, haute disponibilité fournies)</td><td>🟡</td></tr>
+<tr><td>B. Serveur virtuel unique</td><td>Une machine louée, Docker, base sur la machine, sauvegardes à notre charge</td><td>🟡</td></tr>
+<tr><td>C. Serveur sur site</td><td>Machine dans les locaux</td><td>🔴</td></tr>
+<tr><td>Critère (poids)</td><td>A</td><td>B</td><td>C</td></tr>
+<tr><td>---</td><td>---</td><td>---</td><td>---</td></tr>
+<tr><td>Valeur métier (5)</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>Risque (5)</td><td>4</td><td>3</td><td>2</td></tr>
+<tr><td>Cohérence (4)</td><td>4</td><td>4</td><td>3</td></tr>
+<tr><td>Réversibilité (4)</td><td>4</td><td>4</td><td>3</td></tr>
+<tr><td>Coût et délai (3)</td><td>3</td><td>5</td><td>2</td></tr>
+<tr><td>Maintenance (3)</td><td>5</td><td>3</td><td>2</td></tr>
+<tr><td>Expérience utilisateur (4)</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>Accessibilité et sécurité (4)</td><td>5</td><td>3</td><td>2</td></tr>
+<tr><td><strong>Score pondéré (sur 160)</strong></td><td><strong>132</strong></td><td><strong>110</strong></td><td><strong>81</strong></td></tr>
+</tbody></table></div>
+<p><strong>Recommandation : A</strong>, si le budget le permet : les sauvegardes, les mises à jour de sécurité et la reprise sont gérées, ce qui compte pour une équipe d'exploitation réduite. B est une solution de repli acceptable pour un <strong>pilote</strong>. C est déconseillée (une seule coupure d'électricité ou de connexion suffit à rendre l'outil indisponible). <em>Point à vérifier</em> : région d'hébergement et latence depuis l'Afrique centrale.</p>
+<h2>5. Risques de mise en production</h2>
+<div class="table-wrap"><table><thead><tr><th>Risque</th><th>Probabilité</th><th>Impact</th><th>Parade</th></tr></thead><tbody>
+<tr><td>Perte de données faute de sauvegarde testée</td><td>Moyenne</td><td><strong>Critique</strong></td><td>S7.1 : sauvegardes chiffrées, archivage continu, <strong>test de restauration avant pilote</strong></td></tr>
+<tr><td>Fichier malveillant déposé dans Documents</td><td>Moyenne</td><td>Élevé</td><td>Antivirus (D42, <strong>bloquant</strong>) ; en attendant, dépôts restreints</td></tr>
+<tr><td>Aucun e-mail (invitations, réinitialisation)</td><td>Certaine tant que M365 manque</td><td>Élevé</td><td>Accès M365 (D9) à lancer <strong>maintenant</strong> ; en pilote, comptes créés et mots de passe transmis par l'administrateur</td></tr>
+<tr><td>Faible adoption (retour au tableur)</td><td>Élevée</td><td><strong>Critique</strong></td><td>Pilote, formation par rôle, référent par équipe, hypercare</td></tr>
+<tr><td>Données de départ de mauvaise qualité</td><td>Élevée</td><td>Élevé</td><td>Nettoyage et chargement contrôlé (§7), rapport de rejets</td></tr>
+<tr><td>Contrainte juridique non traitée (conservation, données d'apprenants et de contacts)</td><td>Moyenne</td><td>Élevé</td><td>Avis juridique (D11) avant production</td></tr>
+<tr><td>Connaissance concentrée sur une personne (exploitation)</td><td>Élevée</td><td>Élevé</td><td>Procédures écrites, second administrateur, documentation</td></tr>
+<tr><td>Retard de la vague suivante</td><td>Moyenne</td><td>Moyen</td><td>Vagues indépendantes : la vague 1 n'attend pas Investudy</td></tr>
+<tr><td>Un défaut critique en production</td><td>Moyenne</td><td>Élevé</td><td>Retour arrière documenté, migrations sans rupture (expand/contract), hypercare</td></tr>
+</tbody></table></div>
+<h2>6. Plan par phases</h2>
+<h3>Phase 1 — Stabilisation</h3>
+<div class="table-wrap"><table><thead><tr><th>Sujet</th><th>Contenu</th><th>État</th></tr></thead><tbody>
+<tr><td>Validation du lot en cours</td><td>Fin de S5.1 (régression, audit navigateur, recette, validation)</td><td>En cours</td></tr>
+<tr><td>Chargement de la démo par blocs</td><td>Évite le piège d'une base déjà peuplée (cadrage du jeu de données)</td><td>À faire (P0)</td></tr>
+<tr><td>Numéros de téléphone</td><td><strong>Livré</strong> ; compléter le jeu d'essai (T-VAL-1)</td><td>Quasi terminé</td></tr>
+<tr><td>Fenêtres et barres de défilement</td><td><strong>Livré</strong> ; mesurer à quatre largeurs (T-UX-2)</td><td>À faire</td></tr>
+<tr><td>Cohérence du Design System</td><td>Audit de conformité sur écrans réels (T-UX-1)</td><td>À faire</td></tr>
+<tr><td>CRUD du module Formation</td><td>Catalogue <strong>livré</strong> ; rythmes administrables et sessions en S5.2 (D-FORM)</td><td>Partiel</td></tr>
+<tr><td>Dette technique de sécurité</td><td>Antivirus, rotation des clés, CSP à nonce, liste de mots de passe, limitation de débit partagée, IP réelle derrière le proxy (D42, D10, D12, D20, D7, D8, D40)</td><td>S7.1 et S7.2</td></tr>
+</tbody></table></div>
+<p><strong>Sortie de phase</strong> : plus aucune anomalie bloquante ouverte ; tous les tests verts ; dette de sécurité de la vague 1 soldée.</p>
+<h3>Phase 2 — Données</h3>
+<ol><li><strong>Séparer</strong> démonstration, référence et production (§2).</li><li><strong>Inventorier les sources réelles</strong> (<em>hypothèse</em> : tableurs des équipes commerciales ; fichier d'inscrits d'Investudy) : volume, colonnes, qualité.</li><li><strong>Créer l'outil de chargement initial</strong> (§7) : il passe par les cas d'usage, a un mode simulation et produit un rapport de rejets.</li><li><strong>Charger d'abord en recette</strong>, valider avec les utilisateurs, puis en production.</li></ol>
+<p><strong>Sortie de phase</strong> : rapport de rejets traité, taux de rejet accepté par les métiers.</p>
+<h3>Phase 3 — Recette fonctionnelle</h3>
+<p>Scénarios détaillés au §9. Recette <strong>en deux temps</strong> : par l'équipe projet (automatisée et manuelle), puis par des <strong>utilisateurs métier</strong> sur la recette chargée de leurs données. <strong>Sortie de phase</strong> : tous les scénarios critiques réussis, anomalies bloquantes à zéro, procès-verbal signé par la direction produit.</p>
+<h3>Phase 4 — Préproduction</h3>
+<p>Environnement <strong>identique à la production</strong> (même version, mêmes réglages), avec :</p>
+<div class="table-wrap"><table><thead><tr><th>Domaine</th><th>Exigence</th></tr></thead><tbody>
+<tr><td>Environnement</td><td>Conteneurs construits par l'intégration continue ; base PostgreSQL séparée ; variables et secrets hors du dépôt</td></tr>
+<tr><td>Sécurité</td><td>HTTPS obligatoire, secrets tournants (JWT, MFA), compte SQL applicatif à droits limités, CSP, pare-feu, accès d'administration restreint et tracé</td></tr>
+<tr><td>Sauvegardes</td><td>Quotidiennes et chiffrées, archivage continu, <strong>restauration testée et chronométrée</strong> (objectifs : perte ≤ 15 min, reprise ≤ 4 h)</td></tr>
+<tr><td>Supervision</td><td>Disponibilité, erreurs, temps de réponse, espace disque, alertes à une personne de garde</td></tr>
+<tr><td>Journalisation</td><td>Journaux d'application centralisés et conservés, sans secret ni donnée personnelle superflue</td></tr>
+<tr><td>Documents</td><td>Stockage objet, antivirus actif</td></tr>
+<tr><td>E-mail</td><td>Accès Microsoft 365, SPF, DKIM, DMARC</td></tr>
+</tbody></table></div>
+<p><strong>Checklist de préproduction</strong> : voir §8.1.</p>
+<h3>Phase 5 — Production, par vagues</h3>
+<div class="table-wrap"><table><thead><tr><th>Vague</th><th>Périmètre</th><th>Condition d'entrée</th></tr></thead><tbody>
+<tr><td><strong>0. Démonstration interne</strong></td><td>Tout ce qui existe, <strong>données fictives</strong></td><td>Validation de S5.1</td></tr>
+<tr><td><strong>1. CRM commercial</strong></td><td>Entreprises, contacts, offres, relances, rendez-vous, opportunités, agréments, ambassadeurs, commissions ; utilisateurs : Head of Sales, chargé de compte, DAF (Finance), DG et DGA en lecture ; <strong>d'abord en pilote</strong> (2 à 3 utilisateurs, 2 à 4 semaines), puis élargissement</td><td>S7.1 et S7.2 terminés, formation, hypercare prête</td></tr>
+<tr><td><strong>2. Investudy</strong></td><td>Catalogue, sessions, inscriptions, présences, certifications</td><td>S5.2 et S5.3 livrés et validés ; bloc de données de formation</td></tr>
+<tr><td><strong>3. Pilotage</strong></td><td>Tableaux de bord et reporting</td><td>S6 livré</td></tr>
+<tr><td><strong>4. ERP et Stocks</strong></td><td>Finance, RH, Fiscalité, Stocks</td><td>Lots dédiés, non planifiés</td></tr>
+</tbody></table></div>
+<p><strong>Peut attendre sans risque</strong> : ERP complet, Stocks, modules futurs, notifications avancées.</p>
+<h3>Phase 6 — Formation des utilisateurs</h3>
+<p>Voir §10.</p>
+<h3>Phase 7 — Mise en ligne (go live)</h3>
+<p>Voir §8.2.</p>
+<h3>Phase 8 — Hypercare</h3>
+<p>Voir §11.</p>
+<h2>7. Plan de migration des données</h2>
+<p><strong>Constat</strong> : aucun import n'existe ; un fichier saisi à la main ne se charge pas. <strong>Recommandation</strong> : un <strong>script de chargement initial</strong> qui réutilise les cas d'usage, exactement comme le jeu de démonstration, pour que <strong>toutes les règles métier s'appliquent</strong> (jamais d'insertion directe en base).</p>
+<div class="table-wrap"><table><thead><tr><th>Étape</th><th>Contenu</th></tr></thead><tbody>
+<tr><td>1. Extraire</td><td>Récupérer les sources (tableurs) ; figer une copie datée</td></tr>
+<tr><td>2. Cartographier</td><td>Associer chaque colonne à un champ de l'application ; décider quoi abandonner</td></tr>
+<tr><td>3. Nettoyer <strong>avant</strong></td><td>Corriger numéros (format international), e-mails, pays, secteurs ; dédoublonner les entreprises (nom unique sans casse) ; vérifier les responsables (chaque entreprise a un propriétaire)</td></tr>
+<tr><td>4. Simuler</td><td>Mode « simulation » : exécute les contrôles et produit un <strong>rapport de rejets</strong> (ligne, motif) sans rien écrire</td></tr>
+<tr><td>5. Charger en recette</td><td>Chargement réel dans la recette, relu par les métiers</td></tr>
+<tr><td>6. Corriger et recharger</td><td>Les rejets sont corrigés à la source, pas dans l'application</td></tr>
+<tr><td>7. Charger en production</td><td>Une seule fois, <strong>après sauvegarde</strong>, par un administrateur, avec compte rendu (nombre lu, chargé, rejeté)</td></tr>
+<tr><td>8. Contrôler</td><td>Comptage et échantillon vérifiés par les métiers ; archive du rapport</td></tr>
+</tbody></table></div>
+<p><strong>Règles de qualité</strong> : une entreprise sans responsable est rejetée ; un contact sans entreprise est rejeté ; pas de donnée personnelle superflue ; toute donnée sensible est signalée à l'avis juridique ; le chargement est <strong>tracé dans l'audit</strong>. <strong>Retour arrière</strong> : restauration de la sauvegarde d'avant chargement.</p>
+<h2>8. Checklists</h2>
+<h3>8.1 Préproduction</h3>
+<ul><li>[ ] Hébergement décidé, environnement de préproduction identique à la production</li><li>[ ] Construction des images (API <strong>et</strong> interface web) par l'intégration continue, exécutée pour de vrai</li><li>[ ] Migrations appliquées automatiquement, <strong>jamais modifiées après application</strong></li><li>[ ] HTTPS, secrets hors du dépôt, rotation des clés testée</li><li>[ ] Compte SQL applicatif à droits limités</li><li>[ ] Sauvegardes quotidiennes + archivage continu ; <strong>restauration réussie et chronométrée</strong></li><li>[ ] Supervision et alertes ; personne de garde désignée</li><li>[ ] Antivirus actif sur les dépôts de fichiers ; stockage objet</li><li>[ ] E-mail réel (M365, SPF, DKIM, DMARC) ou procédure de repli documentée</li><li>[ ] Revue de sécurité (OWASP, secrets, dépendances) et correction des écarts critiques</li><li>[ ] Recette métier signée ; anomalies bloquantes = 0</li><li>[ ] Avis juridique sur la conservation et les données personnelles</li></ul>
+<h3>8.2 Mise en ligne (go live)</h3>
+<ul><li>[ ] <strong>Sauvegarde complète</strong> de l'état précédent et <strong>plan de retour arrière</strong> relu</li><li>[ ] <strong>DNS</strong> : nom de domaine, enregistrements, TTL abaissé à l'avance</li><li>[ ] <strong>Certificat SSL</strong> valide, renouvellement automatique, redirection HTTPS</li><li>[ ] <strong>Comptes administrateurs</strong> : au moins deux administrateurs, mot de passe fort et MFA actif, comptes de démonstration <strong>supprimés</strong></li><li>[ ] Données de production chargées et contrôlées ; <strong>aucune donnée fictive</strong></li><li>[ ] Supervision active, alertes testées, canal d'incident ouvert</li><li>[ ] Paramètres de sécurité de production (CSP, en-têtes, limitation de débit)</li><li>[ ] Parcours critique rejoué en production par un utilisateur métier (connexion, MFA, création d'une entreprise, offre, déconnexion)</li><li>[ ] <strong>Décision go / no-go</strong> signée par la direction produit, avec heure de bascule hors des pics d'activité</li><li>[ ] Communication aux utilisateurs envoyée (date, accès, aide, contact)</li></ul>
+<h2>9. Plan de recette</h2>
+<div class="table-wrap"><table><thead><tr><th>Domaine</th><th>Scénarios critiques</th></tr></thead><tbody>
+<tr><td><strong>Accès et sécurité</strong></td><td>Connexion, MFA obligatoire, verrouillage après échecs, réinitialisation de mot de passe, expiration de session, <strong>aucun accès sans permission</strong> (chargé de compte A ne voit pas les entreprises d'un collègue d'une autre équipe)</td></tr>
+<tr><td><strong>Entreprises</strong></td><td>Création (nom unique), modification, doublon refusé, statuts, changement de responsable, archivage, fiche 360°, export</td></tr>
+<tr><td><strong>Contacts</strong></td><td>Création, rattachement, e-mail et téléphone au format, doublon signalé</td></tr>
+<tr><td><strong>Offres et relances</strong></td><td>Création, soumission, acceptation, refus, retrait, reçu, relance à faire, en retard, clôture</td></tr>
+<tr><td><strong>Rendez-vous et opportunités</strong></td><td>Planification, report, annulation ; pipeline en cinq étapes, règle du rendez-vous décideur, dérogation, clôture gagnée ou perdue</td></tr>
+<tr><td><strong>Agréments et commissions</strong></td><td>Demande, réception, constat du paiement par la Finance, commission due, déblocage, versement avec justificatif, annulation motivée</td></tr>
+<tr><td><strong>Investudy</strong> (vague 2)</td><td>Programmes, certificats avec modules ordonnés et tarifs, salles (capacité utile, poste en panne), formateurs externes ; puis sessions (rythme jour, déplacement de salle), inscriptions (capacité, liste d'attente), présences, résultats, certifications</td></tr>
+<tr><td><strong>Administration</strong></td><td>Création d'un utilisateur, attribution et retrait de rôles, désactivation, réinitialisation du MFA, révocation de sessions, consultation de l'audit</td></tr>
+<tr><td><strong>Rôles</strong></td><td>Chaque rôle parcourt ses écrans : tout ce qui est permis fonctionne, tout ce qui est interdit répond « introuvable » ou « interdit »</td></tr>
+<tr><td><strong>Données</strong></td><td>Comptages après chargement ; cohérence (aucun orphelin) ; téléphones et e-mails conformes</td></tr>
+<tr><td><strong>Non fonctionnel</strong></td><td>Temps de réponse sur le volume réel, accessibilité (clavier), responsive, navigateurs utilisés par l'entreprise</td></tr>
+</tbody></table></div>
+<p><strong>Critères de sortie</strong> : 100 % des scénarios critiques réussis ; aucune anomalie bloquante ni majeure ouverte ; procès-verbal signé.</p>
+<h2>10. Plan de formation</h2>
+<div class="table-wrap"><table><thead><tr><th>Public</th><th>Contenu</th><th>Format</th><th>Durée (<em>hypothèse</em>)</th></tr></thead><tbody>
+<tr><td><strong>DG et DGA</strong></td><td>Lecture de l'activité, filtres, droits, sécurité (MFA)</td><td>Séance courte, démonstration sur leurs données</td><td>1 h</td></tr>
+<tr><td><strong>Head of Sales and Marketing</strong></td><td>Pipeline, réattribution, commissions, droits d'équipe</td><td>Atelier pratique</td><td>2 h</td></tr>
+<tr><td><strong>Équipe commerciale</strong></td><td>Cycle complet entreprise → contact → offre → relance → rendez-vous → opportunité</td><td>Atelier pratique, cas réels</td><td>3 h + permanence</td></tr>
+<tr><td><strong>Finance (DAF)</strong></td><td>Honorer un agrément, débloquer une commission, comprendre les justificatifs</td><td>Atelier ciblé</td><td>1 h 30</td></tr>
+<tr><td><strong>Équipe Investudy</strong></td><td>Catalogue, puis sessions et inscriptions (vague 2)</td><td>Atelier pratique</td><td>3 h (vague 2)</td></tr>
+<tr><td><strong>Administration / IT</strong></td><td>Comptes, rôles, audit, sauvegardes, incidents</td><td>Atelier technique + procédures</td><td>4 h</td></tr>
+</tbody></table></div>
+<p><strong>Supports</strong> : guide par rôle d'une à deux pages avec captures, aide-mémoire des cinq gestes essentiels, vidéo courte de chaque parcours, foire aux questions mise à jour pendant l'hypercare. <strong>Accompagnement</strong> : un <strong>référent par équipe</strong> (relais de premier niveau), permanence en présentiel ou en ligne la première semaine, canal de discussion dédié. <strong>Conduite du changement</strong> : annoncer la date et le « pourquoi » par la direction ; fixer une <strong>date d'arrêt</strong> des tableurs parallèles pour éviter deux sources de vérité ; mesurer l'adoption (connexions, entreprises mises à jour, relances traitées).</p>
+<h2>11. Hypercare et support post-production</h2>
+<div class="table-wrap"><table><thead><tr><th>Élément</th><th>Proposition (<em>hypothèses</em>)</th></tr></thead><tbody>
+<tr><td>Durée</td><td>4 semaines après chaque vague</td></tr>
+<tr><td>Support</td><td>Plage horaire renforcée, un administrateur disponible, un second en relais</td></tr>
+<tr><td><strong>Niveaux d'incident</strong></td><td><strong>P1</strong> : indisponibilité ou perte de données (réaction immédiate, arrêt de la mise en production si nécessaire) ; <strong>P2</strong> : fonction critique dégradée (même jour) ; <strong>P3</strong> : gêne (sous une semaine) ; <strong>P4</strong> : amélioration (backlog)</td></tr>
+<tr><td>Canal</td><td>Un seul point d'entrée (formulaire ou messagerie), ticket numéroté, accusé de réception</td></tr>
+<tr><td>Suivi</td><td>Revue quotidienne la première semaine, puis hebdomadaire ; tableau des incidents, temps de résolution, adoption</td></tr>
+<tr><td>Améliorations rapides</td><td>Lot court « correctifs » par semaine, déployé hors des pics, avec retour arrière prêt</td></tr>
+<tr><td>Clôture</td><td>Revue de sortie d'hypercare, décisions de la direction produit, passage au support courant</td></tr>
+<tr><td>Après l'hypercare</td><td>Support courant, revues de sécurité trimestrielles, <strong>test de restauration trimestriel</strong>, mises à jour de dépendances planifiées</td></tr>
+</tbody></table></div>
+<h2>12. Feuille de route</h2>
+<div class="table-wrap"><table><thead><tr><th>Étape</th><th>Contenu</th><th>Durée indicative (<em>hypothèse</em>)</th><th>Dépend de</th></tr></thead><tbody>
+<tr><td>0</td><td><strong>Lancer maintenant</strong> : accès Microsoft 365, avis juridique, <strong>décision d'hébergement</strong>, désignation du responsable Investudy et du second administrateur</td><td>En parallèle, sans développement</td><td>Direction produit</td></tr>
+<tr><td>1</td><td>Valider S5.1, chargement de la démo par blocs, correctifs 2 (design, fenêtres, téléphones)</td><td>1 à 2 semaines</td><td>—</td></tr>
+<tr><td>2</td><td><strong>S7.1 Durcissement</strong> : sauvegardes, supervision, stockage objet, rôle SQL, rotation des clés</td><td>1,5 session</td><td>Hébergement</td></tr>
+<tr><td>3</td><td><strong>S7.2 Mise en production</strong> : antivirus, e-mail réel, revue de sécurité, tests de bout en bout, images pour de vrai</td><td>1,5 session</td><td>Accès M365</td></tr>
+<tr><td>4</td><td>Données : outil de chargement initial, nettoyage, recette chargée</td><td>1 semaine</td><td>Sources fournies</td></tr>
+<tr><td>5</td><td>Recette métier et formation vague 1</td><td>1 à 2 semaines</td><td>Étapes 2 à 4</td></tr>
+<tr><td>6</td><td><strong>Pilote vague 1</strong> (2 à 3 utilisateurs)</td><td>2 à 4 semaines</td><td>Étape 5</td></tr>
+<tr><td>7</td><td>Élargissement vague 1 à toute l'équipe commerciale + hypercare</td><td>4 semaines</td><td>Pilote concluant</td></tr>
+<tr><td>8</td><td><strong>S5.2 puis S5.3</strong> (Investudy complet), recette, formation, vague 2</td><td>6 à 8 semaines</td><td>En parallèle de 6 et 7</td></tr>
+<tr><td>9</td><td>S6 (pilotage), vague 3</td><td>À planifier</td><td>S5</td></tr>
+</tbody></table></div>
+<p>Les étapes 2 et 3 peuvent démarrer <strong>avant</strong> la fin de S5.2 : la vague 1 ne dépend pas d'Investudy.</p>
+<h2>13. Recommandations finales du CTO</h2>
+<ol><li><strong>Déployer par vagues, en commençant par le CRM commercial</strong>, avec un pilote : c'est le seul module complet et validé, c'est celui qui apporte une valeur immédiate à la direction commerciale.</li><li><strong>Ne rien mettre en production avant d'avoir une sauvegarde restaurée et chronométrée.</strong> C'est le critère le plus simple et le plus décisif pour un système central.</li><li><strong>Décider l'hébergement maintenant</strong> : tout le reste (coût, sauvegardes, domaine, accès, délais) en dépend.</li><li><strong>Lancer les dépendances externes immédiatement</strong> : accès Microsoft 365 et avis juridique ne se règlent pas par du développement et retardent le plus souvent la production.</li><li><strong>Une seule source de vérité</strong> : fixer la date d'arrêt des tableurs, sinon l'adoption échoue et les données divergent.</li><li><strong>Ne jamais charger de données de démonstration en production</strong>, ni modifier une migration déjà appliquée.</li><li><strong>Réduire la dépendance à une personne</strong> : un second administrateur, des procédures écrites et un test de reprise avant le pilote.</li><li><strong>Mesurer l'adoption</strong>, pas seulement la disponibilité : le succès se juge à l'usage réel par les équipes.</li></ol>
+<h2>14. Décisions en attente</h2>
+<div class="table-wrap"><table><thead><tr><th>N°</th><th>Question</th><th>Recommandation</th></tr></thead><tbody>
+<tr><td>D-PROD-1</td><td>Stratégie de déploiement</td><td>A : progressif par module, avec pilote (score 138 sur 160)</td></tr>
+<tr><td>D-PROD-2</td><td>Hébergement</td><td>A : cloud géré, B en repli pour un pilote (scores indicatifs : budget et compétences non connus)</td></tr>
+<tr><td>D-PROD-3</td><td>Composition du pilote de la vague 1</td><td>Head of Sales, chargé de compte, DAF ; DG et DGA en lecture</td></tr>
+<tr><td>D-PROD-4</td><td>Responsable de l'exploitation et second administrateur</td><td>À désigner avant S7.1</td></tr>
+<tr><td>D-PROD-5</td><td>Désignation du responsable Investudy et du rôle du marketing digital</td><td>À préciser avant la vague 2</td></tr>
+<tr><td>FD-9, FD-10, FD-11</td><td>Droits de la Finance, lecture d'audit pour le contrôle interne, formateurs externes</td><td>Réponses toujours attendues</td></tr>
+</tbody></table></div></main></body></html>

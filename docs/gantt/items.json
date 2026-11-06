@@ -333,10 +333,10 @@
       "phase": "Module Investudy (formation)",
       "rows": [
         {
-          "name": "S5.1 — catalogue, salles, formateurs",
-          "start": "2026-11-20",
-          "end": "2026-11-23",
-          "state": "plan"
+          "name": "S5.1 — catalogue (programmes, certificats, modules, salles, formateurs, rythmes)",
+          "start": "2026-11-05",
+          "end": "2026-11-05",
+          "state": "wait"
         },
         {
           "name": "S5.2 — sessions, apprenants, inscriptions",

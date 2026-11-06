@@ -36,6 +36,7 @@ async function main() {
       users[who] = user.id;
     }
     const result = await runSeed(app, buildPlan({ anchor: new Date() }), { users, log: (line) => console.log(line) });
+    if (!result.skipped) console.log(`Blocs chargés : ${result.loaded.join(', ')}.`);
     if (!result.skipped) console.log(`Détail : ${Object.entries(result.counts).map(([kind, n]) => `${kind} ${n}`).join(', ')}`);
   } finally {
     await app.close();

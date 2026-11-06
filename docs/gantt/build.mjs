@@ -68,7 +68,7 @@ const ITEMS = [
     { name: 'S4.4c — commissions à verser', start: '2026-11-04', end: '2026-11-04', state: 'done', tag: 's4-4c-validated' },
   ] },
   { phase: 'Module Investudy (formation)', rows: [
-    { name: 'S5.1 — catalogue, salles, formateurs', start: '2026-11-20', end: '2026-11-23', state: 'plan' },
+    { name: 'S5.1 — catalogue (programmes, certificats, modules, salles, formateurs, rythmes)', start: '2026-11-05', end: '2026-11-05', state: 'wait' },
     { name: 'S5.2 — sessions, apprenants, inscriptions', start: '2026-11-24', end: '2026-11-26', state: 'plan' },
     { name: 'S5.3 — présences, évaluations, certifications', start: '2026-11-27', end: '2026-11-30', state: 'plan' },
   ] },

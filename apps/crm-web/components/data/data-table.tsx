@@ -66,8 +66,10 @@ export function DataTable<T>({
   const widths = columnWidths(columns.map((column) => column.weight), !!selection);
   const cell = 'border-b border-line px-4 py-3 align-middle [overflow-wrap:anywhere]';
 
+  // « relative » : le cadre est le repère de position des textes réservés aux lecteurs d'écran (position absolue), qui sinon sortent du cadre défilant
+  // et élargissent toute la page sur téléphone.
   return (
-    <div className="overflow-x-auto" aria-busy={busy}>
+    <div className="relative overflow-x-auto" aria-busy={busy}>
       <table className="w-full min-w-[48rem] table-fixed border-collapse text-[length:var(--text-sm)]">
         <caption className="sr-only">{caption}</caption>
         <colgroup>

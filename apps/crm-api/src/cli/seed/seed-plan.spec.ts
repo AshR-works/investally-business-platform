@@ -1,5 +1,5 @@
 import { phoneProblem } from '../../modules/business-development/domain/contact-info';
-import { buildPlan, COMPANIES, isDemoPhone, SeedEvent, SeedOp } from './seed-plan';
+import { blockOf, buildPlan, COMPANIES, isDemoPhone, SEED_BLOCKS, SeedEvent, SeedOp } from './seed-plan';
 
 const anchor = new Date('2026-11-03T12:00:00Z');
 const plan = buildPlan({ anchor });
@@ -75,6 +75,8 @@ describe('plan du jeu de données de démonstration', () => {
         case 'approval': need(op.opportunity, 'opportunité'); created.add(op.key); break;
         case 'approvalReceive': case 'approvalClose': need(op.approval, 'agrément'); break;
         case 'ambassador': if (op.company) need(op.company, 'entreprise'); created.add(op.key); break;
+        case 'program': case 'module': case 'room': created.add(op.key); break;
+        case 'training': need(op.program, 'programme'); op.modules.forEach((m) => need(m, 'module')); created.add(op.key); break;
       }
     }
   });
@@ -175,6 +177,45 @@ describe('plan du jeu de données de démonstration', () => {
       if (op.k === 'close' && op.outcome === 'won') expect(stages.get(op.opportunity) ?? 0).toBeGreaterThanOrEqual(3);
     });
     expect(waivers.size).toBeGreaterThan(0);
+  });
+
+  it('contient le catalogue Investudy : cinq certificats bâtis sur sept modules partagés, leurs tarifs et la salle de marchés', () => {
+    const certificates = ofKind('training');
+    expect(ofKind('program')).toHaveLength(1);
+    expect(ofKind('module')).toHaveLength(7);
+    expect(certificates.map((c) => [c.key, c.modules.length, c.priceAmount, c.modulePriceAmount])).toEqual([
+      ['expert', 7, '750000', '125000'], ['etudiants', 5, '250000', '75000'], ['dirigeants', 5, '500000', '125000'], ['avocats', 4, '500000', '125000'], ['banque', 5, '500000', '125000'],
+    ]);
+    // Un module est partagé par plusieurs certificats ; aucun certificat n'en répète un.
+    for (const c of certificates) expect(new Set(c.modules).size).toBe(c.modules.length);
+    expect(certificates.filter((c) => c.modules.includes('m1'))).toHaveLength(5);
+    const [room, meeting] = [ofKind('room')[0]!, ofKind('room')[1]!];
+    expect([room.kind, room.learnerSeats, room.unavailableSeats, room.trainerSeats]).toEqual(['WORKSTATIONS', 14, 1, 1]);
+    expect([meeting.kind, meeting.learnerSeats, meeting.trainerSeats]).toEqual(['CLASSROOM', 16, 0]);
+    expect(ofKind('module').filter((m) => m.requiresWorkstations).map((m) => m.key)).toEqual(['m4', 'm7']);
+    expect(plan.filter((e) => ['program', 'module', 'training', 'room'].includes(e.op.k)).every((e) => e.at.getTime() < anchor.getTime())).toBe(true);
+  });
+
+  it('contient cinq formateurs externes fictifs, aux e-mails uniques en « .test » ; le plan se partage en trois blocs', () => {
+    const trainers = ofKind('trainer');
+    expect(trainers).toHaveLength(5);
+    expect(new Set(trainers.map((t) => t.email)).size).toBe(5);
+    for (const t of trainers) expect(t.email).toMatch(/@formateurs\.investudy\.test$/);
+    // Chaque événement appartient à un bloc, et les trois blocs sont tous présents : un bloc se charge seul sur une démo existante.
+    const byBlock = new Map<string, number>();
+    for (const e of plan) byBlock.set(blockOf(e.op), (byBlock.get(blockOf(e.op)) ?? 0) + 1);
+    expect([...byBlock.keys()].sort()).toEqual([...SEED_BLOCKS].sort());
+    expect(byBlock.get('formateurs')).toBe(5);
+    expect(byBlock.get('catalogue')).toBe(1 + 7 + 5 + 2);
+    // Aucun bloc ne dépend d'un objet d'un autre : le catalogue et les formateurs n'utilisent que leurs propres clés.
+    const keysOf = (block: string) => new Set(plan.filter((e) => blockOf(e.op) === block && 'key' in e.op).map((e) => (e.op as { key: string }).key));
+    const catalogueKeys = keysOf('catalogue');
+    for (const e of plan) {
+      if (e.op.k === 'training') {
+        expect(catalogueKeys.has(e.op.program)).toBe(true);
+        for (const m of e.op.modules) expect(catalogueKeys.has(m)).toBe(true);
+      }
+    }
   });
 
   it('ne reprend aucune marque réelle connue du secteur', () => {

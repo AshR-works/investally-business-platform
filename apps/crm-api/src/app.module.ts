@@ -6,6 +6,7 @@ import { BusinessDevelopmentModule } from './modules/business-development/busine
 import { DocumentsModule } from './modules/documents/documents.module';
 import { IamModule } from './modules/iam/iam.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
+import { TrainingModule } from './modules/training/training.module';
 import { AppThrottlerGuard } from './platform/app-throttler.guard';
 import { OriginGuard } from './platform/origin.guard';
 import { PlatformModule } from './platform/platform.module';
@@ -20,6 +21,7 @@ import { PlatformModule } from './platform/platform.module';
     NotificationsModule,
     DocumentsModule,
     BusinessDevelopmentModule,
+    TrainingModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: OriginGuard },
