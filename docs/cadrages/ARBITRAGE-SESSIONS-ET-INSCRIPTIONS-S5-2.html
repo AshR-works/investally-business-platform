@@ -1,0 +1,196 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Arbitrage — S5.2 : sessions de formation, apprenants et inscriptions</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — cadrages · <a href="README.html">Index des cadrages</a> · <a href="../INDEX.html">Documentation</a> · <a href="../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../design/05-AIDE-A-LA-DECISION.html">Aide à la décision</a></nav><h1>Arbitrage — S5.2 : sessions de formation, apprenants et inscriptions</h1>
+<p><em>2026-11-06 · Préparé après la validation de S5.1 (catalogue). Méthode : <a href="../METHODE-D-ARBITRAGE.html">METHODE-D-ARBITRAGE</a> — options dont le statu quo, grille pondérée sur 160, recommandation, <strong>décision laissée à la Direction produit</strong>. <strong>Décidé le 2026-11-06 : recommandations appliquées (D47).</strong> S5.2a démarre à votre signal.</em></p>
+<h2>1. Contexte et contraintes</h2>
+<p><strong>Question.</strong> Comment représenter une session de formation (un certificat, un rythme, une salle, un formateur), les apprenants et leurs inscriptions, de façon que les contrôles réels de l'école (places, postes, agrément) soient tenus par le système ?</p>
+<p><strong>Acquis de S5.1 (à respecter, non rediscutés ici).</strong></p>
+<ul><li>Une session concerne <strong>un certificat</strong> ; elle suit un <strong>rythme</strong> codé en dur : <em>jour</em> (1 semaine, lundi–vendredi, 9h–12h et 13h–17h, 35 h, ouvert) ou <em>soir</em> (2 semaines, 18h–21h, 30 h, <strong>en préparation, non ouvert</strong>).</li><li><strong>Places utiles d'une salle = places apprenants − postes hors service</strong> (salle de marchés : 13 ; salle de réunion : 16). Un module peut exiger des postes de travail (<code>requiresWorkstations</code>).</li><li>Archivage sans suppression ; verrou optimiste ; audit dans la transaction ; erreurs métier → HTTP (400/404/409/422).</li><li>Permissions déjà au catalogue : <code>training.session.{read,create,update,delete,cancel,close}</code>, <code>training.learner.<em></code>, <code>training.enrollment.</em></code>. Le Responsable Investudy a tout ; le formateur lit ses sessions (portée <strong>Propre</strong>) ; chargé de compte, Responsable commercial et Direction lisent.</li><li><strong>Sécurité</strong> : une inscription est rattachée à une <strong>entreprise</strong> ; elle suit donc la portée de l'entreprise (Propre / Équipe / Tous) et entre dans le contrat anti-IDOR comme toute route « objet ». Les sessions sont un référentiel partagé (classe « référentiel »), sauf la lecture du formateur.</li><li>Cas d'usage de départ : <a href="../CAS-D-USAGE-MODULE-INVESTUDY.html">CAS-D-USAGE-MODULE-INVESTUDY</a> (CU-I-20 à CU-I-45), antérieur au catalogue réel : <strong>trois points sont à réaligner</strong> (dates, capacité, modules pratiques) et rejoignent les décisions ci-dessous.</li></ul>
+<p><strong>Exigence en tension.</strong> Le cas d'usage prévoyait des dates saisies librement et une capacité saisie. Le catalogue réel fixe la durée par le <strong>rythme</strong> et la capacité par la <strong>salle</strong> : saisir les deux librement permettrait des sessions que l'école ne peut pas tenir.</p>
+<h2>2. Valeurs par défaut proposées (hors arbitrage — à confirmer)</h2>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Valeur</th><th>Raison</th></tr></thead><tbody>
+<tr><td>V1</td><td>On saisit la <strong>date de début</strong> ; la <strong>date de fin se calcule</strong> d'après le rythme (jours ouvrés du lundi au vendredi). Les <strong>jours fériés ne sont pas pris en compte</strong> (D147), la fin peut être corrigée par le Responsable Investudy avec trace</td><td>Évite des durées incohérentes</td></tr>
+<tr><td>V2</td><td>États d'une session : <strong>Planifiée → Ouverte → Clôturée</strong>, et <strong>Annulée</strong> (depuis Planifiée ou Ouverte) ; « en cours » se déduit des dates, ce n'est pas un état saisi</td><td>Peu d'états, pas de désaccord possible entre état et dates</td></tr>
+<tr><td>V3</td><td>La session exige un <strong>certificat actif</strong>, une <strong>salle active</strong>, un <strong>formateur actif</strong> ; <strong>aucune session</strong> sur un rythme <em>non ouvert</em> (le soir tant qu'il est « en préparation »)</td><td>Cohérence avec S5.1</td></tr>
+<tr><td>V4</td><td><strong>Chevauchement</strong> : une salle ou un formateur ne peut tenir deux sessions aux dates qui se recouvrent ; refus avec la session en conflit</td><td>CU-I-20</td></tr>
+<tr><td>V5</td><td>Une inscription exige une <strong>session ouverte</strong>, un <strong>agrément valide</strong> de l'entreprise, une place libre et un apprenant non déjà inscrit</td><td>CU-I-40</td></tr>
+<tr><td>V6</td><td>Annuler une session <strong>ne supprime aucune inscription</strong> : elles passent « À replacer » ; une session clôturée ne s'annule pas</td><td>CU-I-23</td></tr>
+<tr><td>V7</td><td>Le <strong>paiement</strong> n'est jamais saisi : l'état « réglé » arrive de la Finance par événement (lecture seule) ; <strong>S5.2 ne l'affiche pas encore</strong> (la Finance n'existe pas)</td><td>CU-I-45</td></tr>
+<tr><td>V8</td><td><strong>Aucune notification</strong> en S5.2 (comme D137 pour les commissions)</td><td>Reporté</td></tr>
+</tbody></table></div>
+<h2>3. Les sept décisions</h2>
+<p>Poids (fixés avant de noter) : valeur métier 5 · risque 5 · cohérence 4 · réversibilité 4 · coût et délai 3 · maintenance 3 · expérience utilisateur 4 · accessibilité et sécurité 4 (<strong>total 160</strong>).</p>
+<h3>D-SESS-1 — Qui confirme une inscription ?</h3>
+<p><strong>Contexte.</strong> Une inscription créée par le chargé de compte consomme une place et déclenchera la demande de paiement. La capacité est un contrôle de l'école.</p>
+<div class="table-wrap"><table><thead><tr><th>Option</th><th>Description</th><th>Réversibilité</th></tr></thead><tbody>
+<tr><td><strong>A. Statu quo (proposition D31)</strong></td><td>Le chargé de compte inscrit (« En attente »), le <strong>Responsable Investudy seul</strong> confirme</td><td>🟢</td></tr>
+<tr><td>B. Confirmation par le chargé de compte</td><td>L'inscription est confirmée dès sa création ; le Responsable Investudy peut l'annuler</td><td>🟢</td></tr>
+<tr><td>C. Confirmation automatique</td><td>Confirmée dès que l'agrément et la place sont vérifiés, sans validation humaine</td><td>🟡</td></tr>
+</tbody></table></div>
+<div class="table-wrap"><table><thead><tr><th>Critère (poids)</th><th>A</th><th>B</th><th>C</th></tr></thead><tbody>
+<tr><td>Valeur métier (5)</td><td>4</td><td>4</td><td>3</td></tr>
+<tr><td>Risque (5)</td><td>5</td><td>3</td><td>2</td></tr>
+<tr><td>Cohérence (4)</td><td>5</td><td>3</td><td>2</td></tr>
+<tr><td>Réversibilité (4)</td><td>4</td><td>4</td><td>3</td></tr>
+<tr><td>Coût et délai (3)</td><td>3</td><td>4</td><td>4</td></tr>
+<tr><td>Maintenance (3)</td><td>4</td><td>4</td><td>3</td></tr>
+<tr><td>Expérience utilisateur (4)</td><td>3</td><td>5</td><td>5</td></tr>
+<tr><td>Accessibilité et sécurité (4)</td><td>5</td><td>4</td><td>4</td></tr>
+<tr><td><strong>Score pondéré (sur 160)</strong></td><td><strong>134</strong></td><td><strong>123</strong></td><td><strong>102</strong></td></tr>
+</tbody></table></div>
+<p><em>Risques de A</em> : un goulot si le Responsable Investudy est absent. <em>Dette</em> : file de confirmation à écrire (une page). <strong>Recommandation : A.</strong> <em>Ce qui ferait changer d'avis</em> : un volume d'inscriptions où l'étape de confirmation devient un frein réel (alors B). <strong>Décision (2026-11-06, Direction produit) : A</strong> — recommandation appliquée (D47).</p>
+<h3>D-SESS-2 — Liste d'attente quand la session est complète</h3>
+<p><strong>Contexte.</strong> Les salles ont 13 à 16 places utiles. Le cas d'usage laisse la liste d'attente « à trancher ».</p>
+<div class="table-wrap"><table><thead><tr><th>Option</th><th>Description</th><th>Réversibilité</th></tr></thead><tbody>
+<tr><td><strong>A. Statu quo</strong></td><td>Pas de liste : session complète = inscription refusée</td><td>🟢</td></tr>
+<tr><td>B. Liste manuelle</td><td>« En liste d'attente » avec un rang ; le Responsable Investudy <strong>promeut</strong></td><td>🟡</td></tr>
+<tr><td>C. Liste automatique</td><td>Promotion automatique au premier rang quand une place se libère</td><td>🔴</td></tr>
+</tbody></table></div>
+<div class="table-wrap"><table><thead><tr><th>Critère (poids)</th><th>A</th><th>B</th><th>C</th></tr></thead><tbody>
+<tr><td>Valeur métier (5)</td><td>3</td><td>4</td><td>4</td></tr>
+<tr><td>Risque (5)</td><td>5</td><td>4</td><td>2</td></tr>
+<tr><td>Cohérence (4)</td><td>5</td><td>4</td><td>3</td></tr>
+<tr><td>Réversibilité (4)</td><td>5</td><td>4</td><td>2</td></tr>
+<tr><td>Coût et délai (3)</td><td>5</td><td>3</td><td>2</td></tr>
+<tr><td>Maintenance (3)</td><td>5</td><td>3</td><td>2</td></tr>
+<tr><td>Expérience utilisateur (4)</td><td>3</td><td>4</td><td>4</td></tr>
+<tr><td>Accessibilité et sécurité (4)</td><td>5</td><td>4</td><td>3</td></tr>
+<tr><td><strong>Score pondéré (sur 160)</strong></td><td><strong>142</strong></td><td><strong>122</strong></td><td><strong>90</strong></td></tr>
+</tbody></table></div>
+<p><em>Risques de A</em> : le chargé de compte ne peut pas « réserver » une place pour un client en attente ; il doit revenir plus tard. <em>Dette</em> : aucune ; B reste ajoutable ensuite sans refonte (un état de plus). <strong>Recommandation : A maintenant, B si le besoin apparaît.</strong> C est écartée (une promotion automatique agit sur un agrément et une facturation sans personne qui décide). <strong>Décision (2026-11-06, Direction produit) : A</strong> — recommandation appliquée (D47).</p>
+<h3>D-SESS-3 — Reporter une session</h3>
+<p><strong>Contexte.</strong> Le flux I5 prévoit annulation et report. Un report simple (même session, autre date) est plus fréquent qu'une annulation.</p>
+<div class="table-wrap"><table><thead><tr><th>Option</th><th>Description</th><th>Réversibilité</th></tr></thead><tbody>
+<tr><td><strong>A. Statu quo</strong></td><td>Pas de report dédié : on <strong>annule</strong> (inscriptions « À replacer »), puis on <strong>recrée</strong> une session</td><td>🟢</td></tr>
+<tr><td>B. Report = modification de la date de début</td><td>Les inscrits sont <strong>conservés</strong>, motif obligatoire, confirmation, trace de l'ancienne et de la nouvelle date</td><td>🟢</td></tr>
+<tr><td>C. Les deux</td><td>Report et annulation, avec choix à chaque fois</td><td>🟡</td></tr>
+</tbody></table></div>
+<div class="table-wrap"><table><thead><tr><th>Critère (poids)</th><th>A</th><th>B</th><th>C</th></tr></thead><tbody>
+<tr><td>Valeur métier (5)</td><td>3</td><td>5</td><td>5</td></tr>
+<tr><td>Risque (5)</td><td>5</td><td>4</td><td>3</td></tr>
+<tr><td>Cohérence (4)</td><td>4</td><td>4</td><td>3</td></tr>
+<tr><td>Réversibilité (4)</td><td>4</td><td>4</td><td>3</td></tr>
+<tr><td>Coût et délai (3)</td><td>4</td><td>3</td><td>2</td></tr>
+<tr><td>Maintenance (3)</td><td>4</td><td>4</td><td>2</td></tr>
+<tr><td>Expérience utilisateur (4)</td><td>2</td><td>5</td><td>4</td></tr>
+<tr><td>Accessibilité et sécurité (4)</td><td>4</td><td>4</td><td>4</td></tr>
+<tr><td><strong>Score pondéré (sur 160)</strong></td><td><strong>120</strong></td><td><strong>134</strong></td><td><strong>108</strong></td></tr>
+</tbody></table></div>
+<p><em>Risques de B</em> : une salle ou un formateur indisponible à la nouvelle date (le contrôle de chevauchement s'applique, V4) ; un agrément expiré entre-temps (l'inscription conservée n'est pas recontrôlée : <strong>à trancher</strong> — proposé : avertissement seulement). <em>Dette</em> : conséquences financières d'un report (délai, remboursement) renvoyées à la Finance. <strong>Recommandation : B</strong> (l'annulation reste disponible pour les cas où la session ne se tient plus). <strong>Décision (2026-11-06, Direction produit) : B</strong> — recommandation appliquée (D47).</p>
+<h3>D-SESS-4 — Apprenant et contact</h3>
+<p><strong>Contexte.</strong> Un apprenant peut être un contact de l'entreprise (qui a signé l'agrément) ou une autre personne. FD-9 propose de le confirmer distinct.</p>
+<div class="table-wrap"><table><thead><tr><th>Option</th><th>Description</th><th>Réversibilité</th></tr></thead><tbody>
+<tr><td>A. Statu quo</td><td>Pas d'entité apprenant : on réutilise les <strong>contacts</strong></td><td>🔴</td></tr>
+<tr><td><strong>B. Entité distincte, lien facultatif</strong></td><td>Fiche apprenant (nom, prénom, entreprise, e-mail, téléphone) avec <strong>lien facultatif</strong> vers un contact ; <strong>doublon probable</strong> signalé (même entreprise et même nom ou e-mail)</td><td>🟡</td></tr>
+<tr><td>C. Entité distincte, sans lien</td><td>Aucun rapprochement avec les contacts</td><td>🟡</td></tr>
+</tbody></table></div>
+<div class="table-wrap"><table><thead><tr><th>Critère (poids)</th><th>A</th><th>B</th><th>C</th></tr></thead><tbody>
+<tr><td>Valeur métier (5)</td><td>2</td><td>5</td><td>3</td></tr>
+<tr><td>Risque (5)</td><td>3</td><td>4</td><td>3</td></tr>
+<tr><td>Cohérence (4)</td><td>3</td><td>5</td><td>3</td></tr>
+<tr><td>Réversibilité (4)</td><td>2</td><td>4</td><td>3</td></tr>
+<tr><td>Coût et délai (3)</td><td>5</td><td>3</td><td>4</td></tr>
+<tr><td>Maintenance (3)</td><td>5</td><td>3</td><td>3</td></tr>
+<tr><td>Expérience utilisateur (4)</td><td>3</td><td>4</td><td>2</td></tr>
+<tr><td>Accessibilité et sécurité (4)</td><td>4</td><td>4</td><td>4</td></tr>
+<tr><td><strong>Score pondéré (sur 160)</strong></td><td><strong>103</strong></td><td><strong>131</strong></td><td><strong>99</strong></td></tr>
+</tbody></table></div>
+<p><em>Risques de B</em> : doublons apprenant / contact, et deux fiches à tenir à jour. <em>Dette</em> : les suggestions d'ambassadeur après certification (S5.3) partent de l'apprenant. <strong>Recommandation : B.</strong> <strong>Décision (2026-11-06, Direction produit) : B</strong> — recommandation appliquée (D47).</p>
+<h3>D-SESS-5 — Capacité d'une session et places de la salle</h3>
+<p><strong>Contexte.</strong> Salle de marchés : 14 postes apprenants dont 1 en panne → 13 places utiles. Le cas d'usage laissait la capacité libre avec un simple avertissement.</p>
+<div class="table-wrap"><table><thead><tr><th>Option</th><th>Description</th><th>Réversibilité</th></tr></thead><tbody>
+<tr><td>A. Statu quo</td><td>Capacité saisie librement, <strong>avertissement</strong> si elle dépasse la salle</td><td>🟢</td></tr>
+<tr><td><strong>B. Plafond bloquant, ajustable à la baisse</strong></td><td>Capacité saisie, <strong>refusée au-delà des places utiles</strong> de la salle ; peut être réduite (jamais sous le nombre d'inscrits confirmés)</td><td>🟢</td></tr>
+<tr><td>C. Capacité imposée</td><td>Capacité = places utiles, non saisie</td><td>🟡</td></tr>
+</tbody></table></div>
+<div class="table-wrap"><table><thead><tr><th>Critère (poids)</th><th>A</th><th>B</th><th>C</th></tr></thead><tbody>
+<tr><td>Valeur métier (5)</td><td>3</td><td>5</td><td>4</td></tr>
+<tr><td>Risque (5)</td><td>2</td><td>5</td><td>5</td></tr>
+<tr><td>Cohérence (4)</td><td>2</td><td>5</td><td>4</td></tr>
+<tr><td>Réversibilité (4)</td><td>4</td><td>4</td><td>4</td></tr>
+<tr><td>Coût et délai (3)</td><td>4</td><td>4</td><td>5</td></tr>
+<tr><td>Maintenance (3)</td><td>4</td><td>4</td><td>4</td></tr>
+<tr><td>Expérience utilisateur (4)</td><td>3</td><td>4</td><td>3</td></tr>
+<tr><td>Accessibilité et sécurité (4)</td><td>4</td><td>4</td><td>4</td></tr>
+<tr><td><strong>Score pondéré (sur 160)</strong></td><td><strong>101</strong></td><td><strong>142</strong></td><td><strong>132</strong></td></tr>
+</tbody></table></div>
+<p><em>Risques de B</em> : un poste tombe en panne <strong>après</strong> la création de la session (les places utiles baissent sous la capacité ou sous les inscrits) : la modification de la salle n'est pas bloquée mais <strong>signale</strong> les sessions touchées (proposé), sans désinscrire personne. <em>Dette</em> : aucune. <strong>Recommandation : B.</strong> <strong>Décision (2026-11-06, Direction produit) : B</strong> — recommandation appliquée (D47).</p>
+<h3>D-SESS-6 — Modules pratiques et type de salle</h3>
+<p><strong>Contexte.</strong> Les modules de trading exigent des postes ; un cours magistral peut se tenir en salle de réunion. S5.1 n'a pas planifié module par module (D148).</p>
+<div class="table-wrap"><table><thead><tr><th>Option</th><th>Description</th><th>Réversibilité</th></tr></thead><tbody>
+<tr><td>A. Statu quo</td><td>Aucun contrôle entre les modules du certificat et la salle</td><td>🟢</td></tr>
+<tr><td><strong>B. Salle principale avec postes si un module en exige</strong></td><td><strong>Bloquant</strong> : un certificat contenant au moins un module pratique ne peut se tenir que dans une salle « avec postes de travail ». Le déplacement ponctuel d'un cours en salle de réunion reste hors du système tant que D148 n'est pas traité</td><td>🟢</td></tr>
+<tr><td>C. Avertissement seulement</td><td>Même règle que B, mais <strong>passage possible</strong> après confirmation tracée</td><td>🟢</td></tr>
+</tbody></table></div>
+<div class="table-wrap"><table><thead><tr><th>Critère (poids)</th><th>A</th><th>B</th><th>C</th></tr></thead><tbody>
+<tr><td>Valeur métier (5)</td><td>2</td><td>4</td><td>4</td></tr>
+<tr><td>Risque (5)</td><td>2</td><td>4</td><td>3</td></tr>
+<tr><td>Cohérence (4)</td><td>2</td><td>5</td><td>4</td></tr>
+<tr><td>Réversibilité (4)</td><td>5</td><td>4</td><td>5</td></tr>
+<tr><td>Coût et délai (3)</td><td>5</td><td>4</td><td>4</td></tr>
+<tr><td>Maintenance (3)</td><td>5</td><td>4</td><td>4</td></tr>
+<tr><td>Expérience utilisateur (4)</td><td>3</td><td>4</td><td>4</td></tr>
+<tr><td>Accessibilité et sécurité (4)</td><td>4</td><td>4</td><td>4</td></tr>
+<tr><td><strong>Score pondéré (sur 160)</strong></td><td><strong>106</strong></td><td><strong>132</strong></td><td><strong>127</strong></td></tr>
+</tbody></table></div>
+<p><em>Écart de 5 points seulement entre B et C</em> : B est plus strict, C reflète que l'école <strong>déplace parfois un cours</strong> vers la salle de réunion. <strong>Recommandation : B</strong>, car le déplacement d'un cours n'est de toute façon pas représentable avant D148 et un contrôle bloquant est plus simple à assouplir (vers C) que l'inverse. <em>Ce qui ferait changer d'avis</em> : des sessions entières régulièrement tenues hors salle de marchés (alors C). <strong>Décision (2026-11-06, Direction produit) : B</strong> — recommandation appliquée (D47).</p>
+<h3>D-SESS-7 — Données personnelles des apprenants</h3>
+<p><strong>Contexte.</strong> Conservation et suppression : le sujet est ouvert depuis D11, D55 et D65. Il faut une règle minimale avant d'enregistrer des apprenants.</p>
+<div class="table-wrap"><table><thead><tr><th>Option</th><th>Description</th><th>Réversibilité</th></tr></thead><tbody>
+<tr><td>A. Statu quo</td><td>Aucune suppression : tout est conservé, indéfiniment</td><td>🟢</td></tr>
+<tr><td><strong>B. Suppression logique encadrée</strong></td><td>Le Responsable Investudy supprime (logiquement, avec confirmation et trace) un apprenant <strong>sans inscription confirmée ni certification</strong> ; durée de conservation à fixer plus tard</td><td>🟡</td></tr>
+<tr><td>C. Purge automatique</td><td>Effacement après N ans, sans action humaine</td><td>🔴</td></tr>
+</tbody></table></div>
+<div class="table-wrap"><table><thead><tr><th>Critère (poids)</th><th>A</th><th>B</th><th>C</th></tr></thead><tbody>
+<tr><td>Valeur métier (5)</td><td>3</td><td>4</td><td>4</td></tr>
+<tr><td>Risque (5)</td><td>2</td><td>4</td><td>3</td></tr>
+<tr><td>Cohérence (4)</td><td>3</td><td>5</td><td>3</td></tr>
+<tr><td>Réversibilité (4)</td><td>5</td><td>4</td><td>2</td></tr>
+<tr><td>Coût et délai (3)</td><td>5</td><td>4</td><td>2</td></tr>
+<tr><td>Maintenance (3)</td><td>4</td><td>4</td><td>2</td></tr>
+<tr><td>Expérience utilisateur (4)</td><td>2</td><td>4</td><td>3</td></tr>
+<tr><td>Accessibilité et sécurité (4)</td><td>3</td><td>4</td><td>4</td></tr>
+<tr><td><strong>Score pondéré (sur 160)</strong></td><td><strong>104</strong></td><td><strong>132</strong></td><td><strong>95</strong></td></tr>
+</tbody></table></div>
+<p><em>Risques de B</em> : une suppression logique n'est pas un effacement légal (les données restent en base) ; la durée et la base légale sont <strong>à faire valider par le conseil juridique</strong> avant la mise en production (plan de mise en production). <em>Dette</em> : politique de conservation (D11, D65). <strong>Recommandation : B</strong>, avec la mention explicite que le juridique reste ouvert. C est écartée tant que la durée n'est pas fixée. <strong>Décision (2026-11-06, Direction produit) : B</strong> — recommandation appliquée (D47).</p>
+<h2>4. Découpage proposé (à confirmer)</h2>
+<p>S5.2 est annoncé à 1,5 session. Je propose <strong>deux lots validables séparément</strong>, comme S4.4a/b/c :</p>
+<div class="table-wrap"><table><thead><tr><th>Lot</th><th>Contenu</th><th>Preuves attendues</th></tr></thead><tbody>
+<tr><td><strong>S5.2a — Sessions</strong></td><td>Planifier (début + rythme → fin), ouvrir, modifier, annuler / reporter, clôture exclue (S5.3), liste et calendrier ; contrôles V3, V4, D-SESS-5 et D-SESS-6 ; jeu de démonstration (sessions passée, en cours, à venir)</td><td>Tests unitaires, intégration, IDOR, mutants, audit navigateur, recette</td></tr>
+<tr><td><strong>S5.2b — Apprenants et inscriptions</strong></td><td>Fiche apprenant (doublon, lien contact), inscription avec contrôle d'agrément, de capacité et de doublon, confirmation, annulation, replacement ; suppression logique</td><td>Idem ; cas d'usage F1 (agrément) rejoué de bout en bout</td></tr>
+</tbody></table></div>
+<p><em>Ordre</em> : S5.2a d'abord (les inscriptions ont besoin de sessions).</p>
+<h2>5. Récapitulatif des recommandations</h2>
+<div class="table-wrap"><table><thead><tr><th>Décision</th><th>Recommandation</th><th>Score</th><th>Alternative la plus proche</th></tr></thead><tbody>
+<tr><td>D-SESS-1 Confirmation</td><td><strong>A</strong> — le Responsable Investudy seul</td><td>134</td><td>B (123)</td></tr>
+<tr><td>D-SESS-2 Liste d'attente</td><td><strong>A</strong> — pas de liste (B plus tard)</td><td>142</td><td>B (122)</td></tr>
+<tr><td>D-SESS-3 Report</td><td><strong>B</strong> — modification de la date de début</td><td>134</td><td>A (120)</td></tr>
+<tr><td>D-SESS-4 Apprenant</td><td><strong>B</strong> — entité distincte, lien facultatif</td><td>131</td><td>A (103)</td></tr>
+<tr><td>D-SESS-5 Capacité</td><td><strong>B</strong> — plafond bloquant</td><td>142</td><td>C (132)</td></tr>
+<tr><td>D-SESS-6 Modules pratiques</td><td><strong>B</strong> — salle avec postes obligatoire</td><td>132</td><td>C (127)</td></tr>
+<tr><td>D-SESS-7 Données apprenants</td><td><strong>B</strong> — suppression logique encadrée</td><td>132</td><td>A (104)</td></tr>
+</tbody></table></div>
+<h2>6. Décision</h2>
+<p><strong>« Applique les recommandations »</strong> (2026-11-06) : D-SESS-1 A ; 2 A ; 3 B ; 4 B ; 5 B ; 6 B ; 7 B ; V1 à V8 confirmées ; découpage S5.2a puis S5.2b. Consignée en <strong>D47</strong> (<code>QUESTIONS-ET-DECISIONS</code>). Prochaine étape : <strong>S5.2a</strong> à votre signal.</p>
+<p><em>Points hors S5.2, déjà ouverts :</em> seuils de certification, barème des évaluations, numérotation des certificats (S5.3) ; FD-9 et FD-11 (confirmation du périmètre Investudy et des formateurs externes) ; D-FORM-1 à 3 du cadrage formation.</p></main></body></html>
