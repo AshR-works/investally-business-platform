@@ -32,6 +32,11 @@ export type SeedOp =
   | { k: 'reassign'; company: string; to: Who }
   | { k: 'payout'; approval: string; action: 'release' | 'hold' | 'cancel'; reason?: string }
   | { k: 'ambassadorUpdate'; ambassador: string; note: string }
+  | { k: 'trainer'; key: string; lastName: string; firstName: string; specialties: string; email: string; phone: string }
+  | { k: 'program'; key: string; name: string; audience: string; description: string }
+  | { k: 'module'; key: string; title: string; requiresWorkstations: boolean }
+  | { k: 'training'; key: string; program: string; title: string; objectives: string; priceAmount: string; modulePriceAmount: string; modules: string[] }
+  | { k: 'room'; key: string; name: string; kind: 'WORKSTATIONS' | 'CLASSROOM'; learnerSeats: number; unavailableSeats: number; trainerSeats: number; equipment: string }
   | { k: 'ambassador'; key: string; lastName: string; firstName: string; origin: 'CLIENT' | 'LEARNER'; company?: string; email: string; phone: string; appointedOn: string; note: string };
 
 export interface SeedEvent {
@@ -132,6 +137,59 @@ const PAYERS: readonly [string, string][] = [['Groupe Meridien Holding', 'EMPLOY
 const OWNERS: readonly Who[] = ['compte1', 'compte2', 'compte3'];
 
 const slug = (text: string) => text.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
+/**
+ * Catalogue de démonstration, repris du catalogue public d'Investudy : cinq certificats « Marchés financiers » bâtis sur sept modules partagés
+ * (un même module revient dans plusieurs certificats, dans un ordre qui varie), avec un prix complet et un prix par module. Aucune donnée personnelle.
+ */
+const MODULE_TITLES: readonly [string, string][] = [
+  ['m1', 'Fondations Économiques & Architecture de la Place Financière'],
+  ['m2', 'Ingénierie des Instruments Financiers, Données & Acteurs de Marché'],
+  ['m3', 'Asset Management, Construction & Évaluation de Portefeuille'],
+  ['m4', 'Pratique du Trading, Décision d’Investissement & Analyse Quantitative'],
+  ['m5', 'Ingénierie Financière, IPO & Levées de Fonds en Zone CEMAC'],
+  ['m6', 'Réglementation des Marchés Financiers en Zone CEMAC & Pouvoirs de la COSUMAF'],
+  ['m7', 'Portfolio Engineering, Asset Allocation & Live Trading (Capstone Project)'],
+];
+const CERTIFICATES: readonly { key: string; title: string; objectives: string; price: string; perModule: string; modules: string[] }[] = [
+  { key: 'expert', title: 'Certificat Expert(e) Marchés financiers', objectives: 'Le parcours complet pour maîtriser l’ensemble de la chaîne de valeur des marchés de capitaux.', price: '750000', perModule: '125000', modules: ['m1', 'm2', 'm3', 'm4', 'm5', 'm6', 'm7'] },
+  { key: 'etudiants', title: 'Certificat Marchés financiers Étudiants', objectives: 'Le tremplin idéal pour acquérir les compétences techniques indispensables et réussir son insertion professionnelle.', price: '250000', perModule: '75000', modules: ['m1', 'm2', 'm3', 'm4', 'm6'] },
+  { key: 'dirigeants', title: 'Certificat Marchés financiers Dirigeants & cadres d’entreprise', objectives: 'Conçu pour les décideurs souhaitant optimiser la gestion de leur trésorerie et actionner les leviers du marché de capitaux.', price: '500000', perModule: '125000', modules: ['m1', 'm2', 'm4', 'm6', 'm5'] },
+  { key: 'avocats', title: 'Certificat Marchés financiers Avocats & métiers du droit', objectives: 'Une formation axée sur la structuration juridique des opérations de marché et la conformité.', price: '500000', perModule: '125000', modules: ['m1', 'm2', 'm6', 'm5'] },
+  { key: 'banque', title: 'Certificat Marchés financiers Banque, assurance & microfinance', objectives: 'Un parcours orienté vers les professionnels du secteur financier et institutionnel.', price: '500000', perModule: '125000', modules: ['m1', 'm2', 'm3', 'm6', 'm5'] },
+];
+const CATALOGUE: SeedOp[] = [
+  { k: 'program', key: 'programme-marches', name: 'Certificats Marchés financiers', audience: 'Étudiants, dirigeants et cadres, juristes, professionnels de la banque, de l’assurance et de la microfinance', description: 'Parcours certifiants sur les marchés de capitaux et leur réglementation en zone CEMAC.' },
+  // Les modules de pratique sur poste (trading, live trading) exigent la salle de marchés ; les autres sont magistraux.
+  ...MODULE_TITLES.map(([key, title]): SeedOp => ({ k: 'module', key, title, requiresWorkstations: key === 'm4' || key === 'm7' })),
+  ...CERTIFICATES.map((c): SeedOp => ({ k: 'training', key: c.key, program: 'programme-marches', title: c.title, objectives: c.objectives, priceAmount: c.price, modulePriceAmount: c.perModule, modules: c.modules })),
+  { k: 'room', key: 'salle-marches', name: 'Salle de marchés', kind: 'WORKSTATIONS', learnerSeats: 14, unavailableSeats: 1, trainerSeats: 1, equipment: 'Salle de marchés : 14 postes apprenants (dont 1 en panne) et 1 poste formateur.' },
+  { k: 'room', key: 'salle-reunion', name: 'Salle de réunion', kind: 'CLASSROOM', learnerSeats: 16, unavailableSeats: 0, trainerSeats: 0, equipment: 'Écran 65 pouces (pas de vidéoprojecteur).' },
+];
+
+/**
+ * Formateurs de démonstration : cinq formateurs **externes** (sans compte, comme les formateurs réels d'Investudy), chacun spécialisé dans
+ * un sujet des modules. Noms inventés, e-mails en `.test`, téléphones du motif réservé.
+ */
+const TRAINERS: readonly [string, string, string, string, 'Cameroun' | "Côte d'Ivoire" | 'Sénégal' | 'Gabon' | 'RDC'][] = [
+  ['Nkoulou', 'Aïcha', 'Réglementation des marchés financiers en zone CEMAC, pouvoirs de la COSUMAF', 'aicha.nkoulou', 'Cameroun'],
+  ['Essomba', 'Parfait', 'Pratique du trading et analyse quantitative', 'parfait.essomba', 'Cameroun'],
+  ['Mbassi', 'Colette', 'Asset management, construction et évaluation de portefeuille', 'colette.mbassi', 'Gabon'],
+  ['Sidibé', 'Adama', 'Ingénierie financière, introductions en bourse et levées de fonds', 'adama.sidibe', "Côte d'Ivoire"],
+  ['Ewané', 'Landry', 'Fondations économiques et architecture de la place financière', 'landry.ewane', 'Sénégal'],
+];
+const FORMATEURS: SeedOp[] = TRAINERS.map(([lastName, firstName, specialties, local, country], index): SeedOp => ({
+  k: 'trainer', key: `formateur-${index + 1}`, lastName, firstName, specialties, email: `${local}@formateurs.investudy.test`, phone: demoPhone(country, 4200 + index),
+}));
+
+/** Les blocs du jeu : chacun se charge seul sur une démo existante (marqueur propre), dans l'ordre des dépendances. */
+export type SeedBlock = 'crm' | 'catalogue' | 'formateurs';
+export const SEED_BLOCKS: readonly SeedBlock[] = ['crm', 'catalogue', 'formateurs'];
+export function blockOf(op: SeedOp): SeedBlock {
+  if (op.k === 'program' || op.k === 'module' || op.k === 'training' || op.k === 'room') return 'catalogue';
+  if (op.k === 'trainer') return 'formateurs';
+  return 'crm';
+}
 
 export interface PlanOptions {
   anchor: Date;
@@ -378,6 +436,12 @@ export function buildPlan({ anchor, seed = 2026 }: PlanOptions): SeedEvent[] {
     events.push({ at: when, who: OWNERS[index % OWNERS.length]!, op: { k: 'ambassador', key: `apprenant-${index + 1}`, lastName: last, firstName: first, origin: 'LEARNER', email: `${slug(first)}.${slug(last)}@apprenants.test`, phone: demoPhone('Cameroun', 9000 + index), appointedOn: isoDay(when), note: 'Ancien apprenant devenu relais auprès de son réseau.' } });
     if (index === 0) events.push({ at: new Date(when.getTime() + 20 * DAY), who: 'commercial', op: { k: 'ambassadorUpdate', ambassador: 'apprenant-1', note: 'Anime un club d’investisseurs : à inviter aux prochaines sessions.' } });
   });
+
+  // Catalogue Investudy : le programme, ses sept modules partagés, ses cinq certificats (tarifs publics) et la salle de marchés. Posés un an avant la
+  // date de référence par le Responsable commercial (les cas d'usage du catalogue n'ont pas de portée : seule la permission compte).
+  const catalogueAt = new Date(day0.getTime() - 365 * DAY + 9 * 3_600_000);
+  CATALOGUE.forEach((op, index) => events.push({ at: new Date(catalogueAt.getTime() + index * 60_000), who: 'commercial', op }));
+  FORMATEURS.forEach((op, index) => events.push({ at: new Date(catalogueAt.getTime() + (CATALOGUE.length + index) * 60_000), who: 'commercial', op }));
 
   // Ordre chronologique stable (à date égale, l'ordre de construction est conservé).
   return events.map((event, order) => ({ event, order })).sort((a, b) => a.event.at.getTime() - b.event.at.getTime() || a.order - b.order).map((x) => x.event);

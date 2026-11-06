@@ -1,0 +1,172 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Cadrage — Observations de validation, cohérence UX et administration du module Formation</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — cadrages · <a href="README.html">Index des cadrages</a> · <a href="../INDEX.html">Documentation</a> · <a href="../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../design/05-AIDE-A-LA-DECISION.html">Aide à la décision</a></nav><h1>Cadrage — Observations de validation, cohérence UX et administration du module Formation</h1>
+<p><strong>Date</strong> : 2026-11-05 · <strong>Statut</strong> : <strong>proposition, à valider par la direction produit</strong> · <strong>Origine</strong> : revue du prompt « observations fonctionnelles, UX/UI et qualité des données » · <strong>Périmètre</strong> : aucune modification de l'architecture ; validations, cohérence visuelle, module Formation. Le jeu de données fait l'objet du document <a href="CADRAGE-JEU-DE-DONNEES-DEMONSTRATION.html">CADRAGE-JEU-DE-DONNEES-DEMONSTRATION.md</a>.</p>
+<blockquote><p>Méthode : <a href="../METHODE-D-ARBITRAGE.html">METHODE-D-ARBITRAGE.md</a>. <strong>Aucune décision n'est prise ici</strong> : les recommandations sont des avis, la décision est celle de la direction produit. Les faits vérifiés dans le dépôt sont distingués des hypothèses (étiquetées <em>hypothèse</em>).</p></blockquote>
+<h2>1. Synthèse</h2>
+<div class="table-wrap"><table><thead><tr><th>Sujet</th><th>État réel</th><th>Action proposée</th></tr></thead><tbody>
+<tr><td>Obs. 1 — numéros de téléphone</td><td><strong>Livré</strong> (correctifs 1, migration <code>20261110000000</code>, règle serveur et interface comparées sur le même jeu d'essai)</td><td>Aucune. Étendre le jeu d'essai aux exemples de la direction produit (§2.1)</td></tr>
+<tr><td>Obs. 2 — barre de défilement dans les fenêtres</td><td><strong>Livré</strong> (correctifs 1 : cadre fixe, défilement interne, barres discrètes)</td><td>Vérifier sur les nouvelles fenêtres du catalogue (audit navigateur de S5.1)</td></tr>
+<tr><td>Obs. 3 — cohérence des interfaces</td><td><strong>Partiellement traité</strong> ; l'audit de conformité au Design System n'a <strong>jamais été mené</strong> (point T3.1 ouvert)</td><td>Mener l'audit sur captures réelles (§2.3, tâche T-UX-1)</td></tr>
+<tr><td>Obs. 4 — administration du module Formation</td><td><strong>Pour moitié livré</strong> (S5.1 : programmes, certificats, modules, salles, formateurs) ; sessions non construites (S5.2) ; rythmes codés (D147)</td><td>§3 à §6</td></tr>
+</tbody></table></div>
+<h2>2. Observations 1 à 3</h2>
+<h3>2.1 Observation 1 — numéros de téléphone</h3>
+<p><strong>Fait vérifié.</strong> La règle existe : seuls chiffres, espaces et « + » en première position ; premier chiffre (après le « + ») différent de 0 ; de 8 à 15 chiffres ; espaces tolérés à la saisie, retirés à l'enregistrement. Serveur (<code>shared-kernel/contact-format.ts</code>), interface (<code>lib/phone.ts</code>) et base (contrainte <code>*_phone_format</code>) l'appliquent ; un test compare serveur et interface sur le même jeu.</p>
+<div class="table-wrap"><table><thead><tr><th>Exemple de la direction produit</th><th>Décision de la règle</th></tr></thead><tbody>
+<tr><td><code>+237 699 12 34 56</code>, <code>+33 6 12 34 56 78</code>, <code>237699123456</code></td><td>Accepté</td></tr>
+<tr><td><code>+225 0701234567</code></td><td>Accepté : le 0 vient <strong>après l'indicatif</strong>, il n'est pas en première position (cohérent avec l'énoncé « ne jamais commencer par 0 »)</td></tr>
+<tr><td><code>0699123456</code></td><td>Refusé : « ne doit pas commencer par 0 : indiquez l'indicatif du pays »</td></tr>
+<tr><td><code>++237699123456</code>, <code>+237-699123456</code>, <code>+237(699)123456</code></td><td>Refusés : « + » unique et en tête ; chiffres, espaces et « + » seulement</td></tr>
+</tbody></table></div>
+<p><em>Limite connue</em> (hypothèse à confirmer) : la règle ne vérifie pas que l'indicatif existe ni que la longueur correspond au pays. Un contrôle par pays (bibliothèque dédiée) serait une évolution, pas une correction ; aucun besoin exprimé à ce jour. <strong>Tâche</strong> : T-VAL-1 — ajouter les huit exemples ci-dessus au jeu d'essai commun (<code>phone-cases.ts</code>) s'ils n'y figurent pas déjà (vérification de 15 minutes).</p>
+<h3>2.2 Observation 2 — débordement dans les fenêtres</h3>
+<p><strong>Fait vérifié.</strong> Les fenêtres ont un cadre fixe, la zone de contenu défile, la ligne d'actions reste visible ; les barres de défilement sont minimalistes. La mesure de <strong>toutes</strong> les fenêtres à quatre largeurs (tâche T2.2) n'a pas été faite. <strong>Diagnostic probable d'un débordement résiduel</strong> (<em>hypothèse</em>) : un contrôle de largeur fixe ou un contenu long sans retour à la ligne. Les nouvelles fenêtres du catalogue (certificat avec sa liste de modules, salle) sont les plus à risque. <strong>Tâche</strong> : T-UX-2 — mesurer chaque fenêtre à 320, 375, 768 et 1280 px, corriger au cas par cas dans <code>app/globals.css</code> ou le composant fautif, sans nouveau mécanisme.</p>
+<h3>2.3 Observation 3 — cohérence avec le Design System</h3>
+<p><strong>Méthode proposée</strong> : relever chaque écran livré sur trois critères — structure (en-tête de page, carte, barre d'outils, tableau, pagination), hiérarchie (titres, étiquettes, boutons primaires) et comportements (filtres, actions de ligne, confirmations) — et la comparer à la référence <strong>Entreprises</strong>. <strong>Écarts déjà identifiés</strong> (faits) :</p>
+<ul><li>Le <strong>catalogue</strong> présente six rubriques dans <strong>une seule page</strong> avec filtres rapides ; les Entreprises ont une page par entité et une <strong>fiche détaillée</strong>. Choix de S5.1 à confirmer (décision D-FORM-3).</li><li>Les rubriques du catalogue n'ont <strong>pas de fiche détaillée</strong> ; l'édition se fait en fenêtre.</li><li>Certains écrans ont un libellé d'action en tête de ligne (« Nouveau … »), d'autres dans la barre d'outils : à uniformiser.</li></ul>
+<p><strong>Tâche</strong> : T-UX-1 — audit complet sur captures (livrable : tableau d'écarts par écran, classés bloquant, gênant, cosmétique), puis plan de réalignement par lots de trois écrans.</p>
+<h2>3. Observation 4 — analyse de l'existant</h2>
+<h3>3.1 Ce que S5.1 couvre déjà, par rapport à la demande</h3>
+<div class="table-wrap"><table><thead><tr><th>Entité demandée</th><th>Création</th><th>Consultation</th><th>Modification</th><th>Suppression</th><th>Archivage</th><th>Autre</th></tr></thead><tbody>
+<tr><td>Programmes</td><td>Oui</td><td>Liste</td><td>Oui</td><td><strong>Non (voulu)</strong></td><td>Oui, réversible</td><td>Aucun programme ↔ module direct</td></tr>
+<tr><td>Certificats</td><td>Oui</td><td>Liste (modules et tarifs)</td><td>Oui</td><td><strong>Non (voulu)</strong></td><td>Oui</td><td>Modules ordonnés, deux tarifs</td></tr>
+<tr><td>Modules</td><td>Oui</td><td>Liste</td><td>Oui</td><td><strong>Non (voulu)</strong></td><td>Oui</td><td>« Pratique sur poste », partagés</td></tr>
+<tr><td>Rythmes</td><td><strong>Non</strong></td><td>Liste (lecture seule)</td><td><strong>Non</strong></td><td><strong>Non</strong></td><td>Non</td><td>Valeurs codées (D147)</td></tr>
+<tr><td>Sessions</td><td><strong>Non</strong></td><td><strong>Non</strong></td><td><strong>Non</strong></td><td><strong>Non</strong></td><td><strong>Non</strong></td><td>S5.2</td></tr>
+<tr><td>Salles, formateurs</td><td>Oui</td><td>Liste</td><td>Oui</td><td>Non (voulu)</td><td>Désactivation</td><td>Type de salle, capacité utile</td></tr>
+</tbody></table></div>
+<h3>3.2 Écart avec le CRUD Entreprises</h3>
+<div class="table-wrap"><table><thead><tr><th>Fonction du CRUD Entreprises</th><th>Catalogue actuel</th><th>Écart</th></tr></thead><tbody>
+<tr><td>Liste, recherche, filtre d'état, pagination</td><td>Présents</td><td>Aucun</td></tr>
+<tr><td>Tri par colonne, colonnes réglables</td><td><strong>Absents</strong></td><td>Moyen</td></tr>
+<tr><td>Sélection multiple et actions groupées</td><td>Absentes</td><td>Faible</td></tr>
+<tr><td><strong>Fiche détaillée</strong> (<code>/companies/[id]</code>) avec panneau Documents, historique</td><td><strong>Absente</strong></td><td><strong>Principal</strong></td></tr>
+<tr><td>Création / édition en fenêtre, validation à l'envoi, focus sur le premier champ fautif</td><td>Présents</td><td>Aucun</td></tr>
+<tr><td>Confirmation des actions sensibles</td><td>Présente (archivage)</td><td>Aucun</td></tr>
+<tr><td>Export, import</td><td>Absents</td><td>Faible, hors demande</td></tr>
+</tbody></table></div>
+<p><strong>Conclusion</strong> : l'écart structurant est la <strong>fiche détaillée</strong> ; le reste est secondaire. Les composants de liste (tableau, barre d'outils, filtres rapides, recherche, pagination, actions de ligne), de formulaire (champ, validation) et de fenêtre sont <strong>déjà réutilisés</strong> : aucun nouveau composant n'est nécessaire, sauf une page de fiche générique.</p>
+<h2>4. Décisions à prendre (méthode d'arbitrage)</h2>
+<h3>D-FORM-1 — Suppression d'un élément du catalogue</h3>
+<p><strong>Contexte.</strong> La demande cite « suppression ». Une session passée doit toujours retrouver son certificat, sa salle et son formateur ; un élément archivé reste lisible, un élément supprimé disparaît (ou casse l'historique).</p>
+<div class="table-wrap"><table><thead><tr><th>Option</th><th>Description</th><th>Réversibilité</th></tr></thead><tbody>
+<tr><td>A. Statu quo</td><td>Archiver seulement, jamais supprimer</td><td>🟢</td></tr>
+<tr><td>B. <strong>Suppression d'un élément jamais utilisé</strong>, archivage sinon</td><td>Le bouton « Supprimer » n'apparaît que si aucune session, inscription, ni certificat n'y est rattaché ; l'action est confirmée et tracée dans l'audit</td><td>🟡</td></tr>
+<tr><td>C. Suppression libre</td><td>Supprimer même ce qui est utilisé</td><td>🔴</td></tr>
+<tr><td>Critère (poids)</td><td>A</td><td>B</td><td>C</td></tr>
+<tr><td>---</td><td>---</td><td>---</td><td>---</td></tr>
+<tr><td>Valeur métier (5)</td><td>3</td><td>4</td><td>4</td></tr>
+<tr><td>Risque (5)</td><td>5</td><td>4</td><td>1</td></tr>
+<tr><td>Cohérence avec décisions passées (4)</td><td>5</td><td>4</td><td>2</td></tr>
+<tr><td>Réversibilité (4)</td><td>5</td><td>3</td><td>1</td></tr>
+<tr><td>Coût et délai (3)</td><td>5</td><td>3</td><td>4</td></tr>
+<tr><td>Maintenance (3)</td><td>5</td><td>3</td><td>2</td></tr>
+<tr><td>Expérience utilisateur (4)</td><td>3</td><td>4</td><td>4</td></tr>
+<tr><td>Accessibilité et sécurité (4)</td><td>5</td><td>4</td><td>2</td></tr>
+<tr><td><strong>Score pondéré (sur 160)</strong></td><td><strong>142</strong></td><td><strong>118</strong></td><td><strong>79</strong></td></tr>
+</tbody></table></div>
+<p><em>Risques</em> : B suppose un calcul fiable de « jamais utilisé » (dépend de S5.2) ; une erreur supprimerait de l'historique. <em>Dette</em> : B laisse la règle « utilisé » à maintenir à chaque nouveau module. <strong>Recommandation : A maintenant, B après S5.2</strong> (quand « utilisé » est mesurable). C est écartée. <em>Ce qui ferait changer d'avis</em> : un besoin récurrent de corriger des saisies erronées de test en production. <strong>Décision</strong> : <em>à prendre par la direction produit.</em></p>
+<h3>D-FORM-2 — Rythmes de formation</h3>
+<p><strong>Contexte.</strong> Valeurs actuelles : Jour (1 semaine, 9h–12h et 13h–17h, ouvert) et Soir (2 semaines, 18h–21h, en préparation). La demande évoque temps plein, temps partiel, week-end, soirée, personnalisé. <em>Hypothèse</em> : ces cinq termes sont un exemple, pas le besoin réel.</p>
+<div class="table-wrap"><table><thead><tr><th>Option</th><th>Description</th><th>Réversibilité</th></tr></thead><tbody>
+<tr><td>A. Statu quo</td><td>Deux rythmes codés</td><td>🟢</td></tr>
+<tr><td>B. <strong>Rythmes administrables</strong></td><td>Table de référence (nom, semaines, jours par semaine, créneaux, ouvert/fermé), écran d'administration réservé au Responsable Investudy ; on part des deux rythmes réels</td><td>🟡</td></tr>
+<tr><td>C. Rythme libre par session</td><td>Chaque session définit ses horaires</td><td>🟡</td></tr>
+<tr><td>Critère (poids)</td><td>A</td><td>B</td><td>C</td></tr>
+<tr><td>---</td><td>---</td><td>---</td><td>---</td></tr>
+<tr><td>Valeur métier (5)</td><td>2</td><td>5</td><td>4</td></tr>
+<tr><td>Risque (5)</td><td>4</td><td>4</td><td>3</td></tr>
+<tr><td>Cohérence (4)</td><td>4</td><td>5</td><td>3</td></tr>
+<tr><td>Réversibilité (4)</td><td>5</td><td>4</td><td>3</td></tr>
+<tr><td>Coût et délai (3)</td><td>5</td><td>3</td><td>2</td></tr>
+<tr><td>Maintenance (3)</td><td>3</td><td>4</td><td>2</td></tr>
+<tr><td>Expérience utilisateur (4)</td><td>2</td><td>5</td><td>3</td></tr>
+<tr><td>Accessibilité et sécurité (4)</td><td>4</td><td>4</td><td>3</td></tr>
+<tr><td><strong>Score pondéré (sur 160)</strong></td><td><strong>114</strong></td><td><strong>138</strong></td><td><strong>95</strong></td></tr>
+</tbody></table></div>
+<p><strong>Recommandation : B</strong>, en créant uniquement Jour et Soir ; l'équipe métier ajoute ensuite les rythmes qu'elle utilise réellement. <em>Risque</em> : la session (S5.2) doit figer le rythme au moment de sa création (copie), pour qu'un changement ultérieur ne réécrive pas le passé. <strong>Décision</strong> : <em>à prendre.</em></p>
+<h3>D-FORM-3 — Fiche détaillée des éléments du catalogue</h3>
+<p><strong>Contexte.</strong> Les Entreprises ont une fiche détaillée ; le catalogue édite en fenêtre depuis un tableau.</p>
+<div class="table-wrap"><table><thead><tr><th>Option</th><th>Description</th><th>Réversibilité</th></tr></thead><tbody>
+<tr><td>A. Statu quo</td><td>Tableau et fenêtres</td><td>🟢</td></tr>
+<tr><td>B. <strong>Fiche pour le certificat seulement</strong></td><td>Page <code>/training/certificates/[id]</code> : modules, tarifs, sessions à venir et passées (dès S5.2), historique d'audit</td><td>🟢</td></tr>
+<tr><td>C. Fiche pour chaque entité</td><td>Programmes, modules, salles, formateurs, certificats</td><td>🟡</td></tr>
+<tr><td>Critère (poids)</td><td>A</td><td>B</td><td>C</td></tr>
+<tr><td>---</td><td>---</td><td>---</td><td>---</td></tr>
+<tr><td>Valeur métier (5)</td><td>3</td><td>4</td><td>4</td></tr>
+<tr><td>Risque (5)</td><td>5</td><td>4</td><td>3</td></tr>
+<tr><td>Cohérence (4)</td><td>3</td><td>4</td><td>5</td></tr>
+<tr><td>Réversibilité (4)</td><td>5</td><td>5</td><td>3</td></tr>
+<tr><td>Coût et délai (3)</td><td>5</td><td>3</td><td>1</td></tr>
+<tr><td>Maintenance (3)</td><td>5</td><td>4</td><td>2</td></tr>
+<tr><td>Expérience utilisateur (4)</td><td>3</td><td>4</td><td>4</td></tr>
+<tr><td>Accessibilité et sécurité (4)</td><td>4</td><td>4</td><td>4</td></tr>
+<tr><td><strong>Score pondéré (sur 160)</strong></td><td><strong>130</strong></td><td><strong>129</strong></td><td><strong>108</strong></td></tr>
+</tbody></table></div>
+<p><strong>Recommandation : B, à construire avec S5.2.</strong> Le score <strong>ne départage pas</strong> A et B (130 contre 129) : la recommandation repose sur le jugement, pas sur le calcul. Une fiche de certificat n'a de valeur que lorsqu'elle montre ses sessions, donc elle n'a aucun intérêt avant S5.2 ; et elle rapproche le catalogue de la logique des Entreprises. Si vous préférez ne pas ajouter d'écran, A reste défendable. <strong>Décision</strong> : <em>à prendre.</em></p>
+<h2>5. Modèle de données, écrans, routes, permissions</h2>
+<h3>5.1 Modèle recommandé (ajouts à l'existant, sans le modifier)</h3>
+<div class="table-wrap"><table><thead><tr><th>Entité</th><th>Statut</th><th>Champs essentiels</th></tr></thead><tbody>
+<tr><td>Programme, certificat, module, salle, formateur</td><td><strong>Existants</strong></td><td>Voir DDR-0028</td></tr>
+<tr><td><strong>Rythme</strong> (nouveau, D-FORM-2)</td><td>À créer en S5.2</td><td>nom unique, semaines, jours par semaine, créneaux, ouvert</td></tr>
+<tr><td><strong>Session</strong> (S5.2)</td><td>À créer</td><td>certificat, rythme (copié), dates, salle, capacité utile copiée, statut (préparée, ouverte, en cours, terminée, annulée), formateur principal</td></tr>
+<tr><td><strong>Trame de modules d'une session</strong> (S5.2, facultative)</td><td>À créer</td><td>module, formateur, créneau, salle de repli</td></tr>
+<tr><td>Lien session–formateur</td><td>À créer</td><td>formateur, rôle</td></tr>
+</tbody></table></div>
+<p>Règles reprises : le rythme et la capacité sont <strong>copiés</strong> dans la session ; une salle sans poste ne reçoit pas de module « pratique sur poste » ; les inscriptions sont limitées à la capacité utile.</p>
+<h3>5.2 Écrans</h3>
+<div class="table-wrap"><table><thead><tr><th>Écran</th><th>Lot</th><th>Réutilise</th></tr></thead><tbody>
+<tr><td>Catalogue (six rubriques)</td><td>S5.1, livré</td><td>Tableau, barre d'outils, fenêtres</td></tr>
+<tr><td>Rubrique <strong>Rythmes</strong> éditable</td><td>S5.2</td><td>Même modèle que Salles</td></tr>
+<tr><td><strong>Sessions</strong> : liste, filtres (statut, certificat, période), création, planification</td><td>S5.2</td><td>Liste des Entreprises</td></tr>
+<tr><td><strong>Fiche session</strong> : onglets Informations, Modules, Inscrits</td><td>S5.2</td><td>Fiche entreprise</td></tr>
+<tr><td><strong>Fiche certificat</strong> (D-FORM-3 B)</td><td>S5.2</td><td>Fiche entreprise</td></tr>
+</tbody></table></div>
+<h3>5.3 API</h3>
+<p>Mêmes conventions que le catalogue : <code>GET/POST /rhythms</code>, <code>GET/PUT/POST status /rhythms/:id</code> ; <code>GET/POST /sessions</code>, <code>GET/PUT /sessions/:id</code>, <code>POST /sessions/:id/{open,cancel,close,room,trainers}</code> ; classement du contrat anti-IDOR : « référentiel » pour les rythmes, « objet » pour les sessions si une portée par formateur (Propre) s'applique (le rôle Formateur voit ses sessions).</p>
+<h3>5.4 Permissions (existantes, aucune création)</h3>
+<p><code>training.session.{read,create,update,delete,cancel,close}</code> ; Responsable Investudy : tout ; Formateur : lecture de ses sessions (Propre) ; Chargé de compte, Responsable commercial, Direction : lecture. La suppression d'une session (D-FORM-1 B) utilise <code>training.session.delete</code>, déjà au catalogue.</p>
+<h2>6. Priorisation et tâches de développement</h2>
+<div class="table-wrap"><table><thead><tr><th>Priorité</th><th>Tâche</th><th>Lot</th><th>Estimation</th></tr></thead><tbody>
+<tr><td><strong>P0</strong></td><td>T-DATA-1 — chargement de la démo par <strong>blocs</strong> : ajouter le catalogue à une démo existante</td><td>Maintenant</td><td>0,5 jour</td></tr>
+<tr><td><strong>P0</strong></td><td>Finir S5.1 : audit navigateur, recette, fiches</td><td>Maintenant</td><td>0,5 jour</td></tr>
+<tr><td><strong>P1</strong></td><td>T-UX-1 — audit de conformité au Design System, plan de réalignement</td><td>Après S5.1</td><td>1 jour</td></tr>
+<tr><td><strong>P1</strong></td><td>T-UX-2 — mesure des fenêtres à quatre largeurs</td><td>Après S5.1</td><td>0,5 jour</td></tr>
+<tr><td><strong>P1</strong></td><td>T-VAL-1 — compléter le jeu d'essai téléphone</td><td>Après S5.1</td><td>0,1 jour</td></tr>
+<tr><td><strong>P1</strong></td><td>T-FORM-1 — rythmes administrables (D-FORM-2 B)</td><td>S5.2</td><td>1 jour</td></tr>
+<tr><td><strong>P1</strong></td><td>T-FORM-2 — sessions : modèle, cas d'usage, écrans, fiche, trame, déplacement de salle</td><td>S5.2</td><td>4 à 5 jours</td></tr>
+<tr><td><strong>P2</strong></td><td>T-FORM-3 — fiche certificat (D-FORM-3 B)</td><td>S5.2</td><td>1 jour</td></tr>
+<tr><td><strong>P2</strong></td><td>T-FORM-4 — suppression d'un élément jamais utilisé (D-FORM-1 B)</td><td>Après S5.2</td><td>1 jour</td></tr>
+<tr><td><strong>P3</strong></td><td>Tri par colonne et sélection multiple dans le catalogue</td><td>Selon demande</td><td>1 jour</td></tr>
+</tbody></table></div>
+<h2>7. Feuille de route</h2>
+<ol><li><strong>Maintenant</strong> : T-DATA-1, fin de S5.1, validation de S5.1.</li><li><strong>Ensuite</strong> : T-UX-1, T-UX-2, T-VAL-1 (un lot « correctifs 2 », sans fonction nouvelle).</li><li><strong>S5.2</strong> : sessions, apprenants, inscriptions, rythmes administrables, fiches certificat et session, avec leur jeu de données.</li><li><strong>S5.3</strong> : présences, évaluations, certifications.</li><li><strong>Suite</strong> : Finance, puis reporting (S6).</li></ol>
+<h2>8. Décisions en attente (récapitulatif)</h2>
+<div class="table-wrap"><table><thead><tr><th>N°</th><th>Question</th><th>Recommandation</th></tr></thead><tbody>
+<tr><td>D-FORM-1</td><td>Suppression d'un élément du catalogue</td><td>A maintenant, B après S5.2</td></tr>
+<tr><td>D-FORM-2</td><td>Rythmes administrables</td><td>B (Jour et Soir au départ)</td></tr>
+<tr><td>D-FORM-3</td><td>Fiche détaillée</td><td>B (certificat seulement, en S5.2)</td></tr>
+<tr><td>FD-9, FD-11</td><td>Droits Finance, apprenant distinct ; formateurs externes ; responsable Investudy</td><td>Réponses toujours attendues</td></tr>
+</tbody></table></div></main></body></html>

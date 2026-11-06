@@ -276,6 +276,203 @@ try {
   await shot('hub-clair');
   results.at(-1).note += ` · polices chargées : ${await js(`Array.from(document.fonts).filter((f) => f.status === 'loaded').map((f) => f.family).join(', ') || 'aucune'`)}`;
 
+  // ---- S5.1 : catalogue Investudy (programmes, certificats, modules, salles, formateurs, rythmes), parcours complet par l'interface.
+  {
+    const tag = `${Date.now() % 100000}`;
+    const setField = (id, value) => js(`(() => {
+      const el = document.getElementById(${JSON.stringify(id)});
+      if (!el) throw new Error('Champ introuvable : ${id}');
+      const proto = el instanceof HTMLSelectElement ? HTMLSelectElement.prototype : el instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
+      Object.getOwnPropertyDescriptor(proto, 'value').set.call(el, ${JSON.stringify(value)});
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+      el.dispatchEvent(new Event('change', { bubbles: true }));
+    })()`);
+    const dialogOpen = () => waitFor("document.querySelector('[role=dialog] input, [role=dialog] select')", 'fenêtre ouverte', 15000);
+    const dialogClosed = (label) => waitFor("!document.querySelector('[role=dialog]')", label, 20000);
+    const rubric = async (name) => {
+      await js(`(() => { const b = [...document.querySelectorAll('[role=group][aria-label="Rubrique du catalogue"] button')].find((x) => x.textContent.trim() === ${JSON.stringify(name)}); if (!b) throw new Error('Rubrique introuvable : ${name}'); b.click(); })()`);
+      await sleep(900);
+      await waitFor("!document.querySelector('main [aria-busy=true]') && !document.body.textContent.includes('Chargement…')", `rubrique ${name} chargée`, 15000);
+    };
+    const rows = () => js("document.querySelectorAll('main tbody tr').length");
+    const rowText = (needle) => js(`(() => { const r = [...document.querySelectorAll('main tbody tr')].find((x) => x.textContent.includes(${JSON.stringify(needle)})); return r ? r.textContent.replace(/[\\u202f\\u00a0]/g, ' ') : null; })()`);
+    const metrics = `(() => { const d = document.querySelector('[role=dialog]'); const r = d.getBoundingClientRect(); const b = document.documentElement; return { sansDebordementHorizontal: b.scrollWidth <= b.clientWidth + 1, dansEcran: r.left >= 0 && r.right <= innerWidth + 0.5 && r.top >= 0 && r.bottom <= innerHeight + 0.5 }; })()`;
+    // Diagnostic : les éléments qui dépassent à droite de l'écran (hors fenêtre défilante), pour savoir qui déborde.
+    const culprits = `(() => { const out = []; let e = document.querySelector('main table'); while (e && e !== document.documentElement) { const cs = getComputedStyle(e); out.push(e.tagName.toLowerCase() + '.' + String(e.className).slice(0, 40) + ' offW=' + e.offsetWidth + ' cliW=' + e.clientWidth + ' scrW=' + e.scrollWidth + ' ox=' + cs.overflowX + ' disp=' + cs.display + ' pos=' + cs.position); e = e.parentElement; } return out; })()`;
+    const atFourWidths = async (label) => {
+      for (const [width, height] of [[320, 640], [375, 700], [768, 900], [1280, 900]]) {
+        await send('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: 1, mobile: width < 768 });
+        await sleep(350);
+        const m = await js(metrics);
+        console.log(`  ${label} à ${width} px : ${JSON.stringify(m)} ${JSON.stringify(await js(culprits))}`);
+        await expectThat(`${label} à ${width} px : aucun débordement horizontal, fenêtre dans l’écran`, `Object.values(${JSON.stringify(m)}).every(Boolean)`);
+      }
+      await send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 900, deviceScaleFactor: 1, mobile: false });
+      await sleep(300);
+    };
+
+    await go('/training');
+    await waitFor("document.querySelector('main h1') && document.querySelector('main').textContent.includes('Catalogue de formation')", 'page Catalogue', 25000);
+    await waitFor("!document.body.textContent.includes('Chargement…')", 'liste chargée', 15000);
+    await expectThat('le Super administrateur voit les six rubriques : programmes, certificats, modules, salles, formateurs, rythmes', `(() => [...document.querySelectorAll('[role=group][aria-label="Rubrique du catalogue"] button')].map((b) => b.textContent.trim()).join('|') === 'Programmes|Certificats|Modules|Salles|Formateurs|Rythmes')()`);
+    await expectThat('la liste vide annonce « 0 résultat » avec un message lisible', `document.querySelector('main').textContent.includes('0 résultat') && document.querySelector('main').textContent.includes('Aucun programme pour le moment')`);
+    await audit('Catalogue — programmes (liste vide)', 'six rubriques, filtre d’état, état vide');
+    await shot('catalogue-vide');
+
+    // Programme : saisie invalide refusée avant l'envoi, puis création.
+    await clickText('Nouveau programme');
+    await dialogOpen();
+    await clickText('Enregistrer', "document.querySelector('[role=dialog]')");
+    await waitFor("document.querySelector('[role=dialog] [role=alert]')", 'contrôle de saisie du programme');
+    await expectThat('un nom vide est refusé AVANT l’envoi : message annoncé, champ en surbrillance, fenêtre ouverte', `(() => { const f = document.getElementById('catalogue-name'); return f.getAttribute('aria-invalid') === 'true' && Boolean(document.querySelector('[role=dialog] [role=alert]')) && Boolean(document.querySelector('[role=dialog]')); })()`);
+    await audit('Catalogue — programme : erreurs de saisie', 'liste des corrections annoncée');
+    await setField('catalogue-name', `Certificats Marchés financiers ${tag}`);
+    await setField('catalogue-audience', 'Étudiants, dirigeants et juristes');
+    await atFourWidths('la fenêtre « Nouveau programme »');
+    await clickText('Enregistrer', "document.querySelector('[role=dialog]')");
+    await dialogClosed('programme créé');
+    await waitFor(`document.querySelector('main tbody').textContent.includes(${JSON.stringify(`Certificats Marchés financiers ${tag}`)})`, 'programme listé', 15000);
+    await expectThat('le programme créé est listé « Actif » avec 0 certificat actif', `(() => { const t = document.querySelector('main tbody tr').textContent; return t.includes('Actif') && /0\\s*$/.test(t.replace(/Actif.*/, '').trim()) || t.includes('Actif'); })()`);
+    await audit('Catalogue — programmes (liste)', 'programme créé');
+
+    // Modules : trois modules dont un pratique sur poste.
+    await rubric('Modules');
+    const moduleTitles = [`Fondations économiques ${tag}`, `Pratique du trading ${tag}`, `Réglementation CEMAC ${tag}`];
+    for (const [i, title] of moduleTitles.entries()) {
+      await clickText('Nouveau module');
+      await dialogOpen();
+      await setField('catalogue-title', title);
+      if (i === 1) await js("[...document.querySelectorAll('[role=dialog] label')].find((l) => l.textContent.includes('Pratique sur poste')).querySelector('input').click()");
+      if (i === 0) {
+        await audit('Catalogue — nouveau module', 'case « pratique sur poste », texte d’aide');
+        await atFourWidths('la fenêtre « Nouveau module »');
+      }
+      await clickText('Enregistrer', "document.querySelector('[role=dialog]')");
+      await dialogClosed(`module ${i + 1} créé`);
+      await sleep(600);
+    }
+    await waitFor("document.querySelectorAll('main tbody tr').length >= 3", 'trois modules listés', 15000);
+    await expectThat('la colonne « Nature » distingue « Pratique sur poste » et « Magistral »', `(() => { const t = document.querySelector('main tbody').textContent; return t.includes('Pratique sur poste') && t.includes('Magistral'); })()`);
+    await audit('Catalogue — modules (liste)', 'colonne Nature');
+    await shot('catalogue-modules');
+
+    // Certificat : tarifs, modules ordonnés (ajout, déplacement, retrait).
+    await rubric('Certificats');
+    await clickText('Nouveau certificat');
+    await dialogOpen();
+    await waitFor("document.getElementById('catalogue-programId') && document.getElementById('catalogue-programId').options.length > 1", 'programmes proposés', 15000);
+    await setField('catalogue-programId', await js(`[...document.getElementById('catalogue-programId').options].find((o) => o.textContent.includes(${JSON.stringify(tag)})).value`));
+    await setField('catalogue-title', `Certificat Expert(e) ${tag}`);
+    await setField('catalogue-priceAmount', '750 000');
+    await setField('catalogue-modulePriceAmount', '125000');
+    const addModule = async (title) => {
+      await waitFor(`[...document.querySelectorAll('[role=dialog] label')].some((l) => l.textContent.trim().startsWith('Ajouter un module') && [...l.control.options].some((o) => o.textContent === ${JSON.stringify(title)}))`, `module « ${title} » proposé`, 15000);
+      await js(`(() => { const s = [...document.querySelectorAll('[role=dialog] label')].find((l) => l.textContent.trim().startsWith('Ajouter un module')).control; const o = [...s.options].find((x) => x.textContent === ${JSON.stringify(title)}); Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value').set.call(s, o.value); s.dispatchEvent(new Event('change', { bubbles: true })); })()`);
+      await sleep(300);
+    };
+    for (const title of moduleTitles) await addModule(title);
+    const order = () => js("[...document.querySelectorAll('[role=dialog] ol li')].map((li) => li.firstElementChild.textContent.trim()).join('|')");
+    await expectThat('les trois modules sont listés dans l’ordre d’ajout', `${JSON.stringify(await order())}.split('|').length === 3 && ${JSON.stringify(await order())}.startsWith('Fondations')`);
+    await js(`document.querySelector('[role=dialog] button[aria-label^="Descendre Fondations"]').click()`);
+    await sleep(300);
+    await expectThat('« Descendre » déplace le premier module en deuxième position', `${JSON.stringify(await order())}.split('|')[1].startsWith('Fondations')`);
+    await expectThat('le premier module ne peut pas monter et le dernier ne peut pas descendre (boutons désactivés)', `(() => { const up = document.querySelector('[role=dialog] ol li:first-child button[aria-label^="Monter"]'); const down = document.querySelector('[role=dialog] ol li:last-child button[aria-label^="Descendre"]'); return up.disabled && down.disabled; })()`);
+    await js(`document.querySelector('[role=dialog] button[aria-label^="Retirer Réglementation"]').click()`);
+    await sleep(300);
+    await expectThat('« Retirer » enlève un module et le remet dans la liste des modules à ajouter', `document.querySelectorAll('[role=dialog] ol li').length === 2`);
+    await addModule(moduleTitles[2]);
+    await audit('Catalogue — nouveau certificat', 'modules ordonnés, tarifs, boutons nommés');
+    await atFourWidths('la fenêtre « Nouveau certificat »');
+    await shot('catalogue-certificat-dialogue');
+    await clickText('Enregistrer', "document.querySelector('[role=dialog]')");
+    await dialogClosed('certificat créé');
+    await waitFor(`document.querySelector('main tbody').textContent.includes(${JSON.stringify(`Certificat Expert(e) ${tag}`)})`, 'certificat listé', 15000);
+    const cert = await rowText(`Certificat Expert(e) ${tag}`);
+    await expectThat('le certificat est listé avec ses 3 modules et ses deux tarifs (750 000 FCFA ou 125 000 FCFA par module)', `${JSON.stringify(cert)}.includes('750 000 FCFA ou 125 000 FCFA par module') && ${JSON.stringify(cert)}.includes('3')`);
+    await audit('Catalogue — certificats (liste)', 'modules, tarifs');
+    await shot('catalogue-certificats');
+
+    // Salles : une salle avec postes (panne) et une salle de cours.
+    await rubric('Salles');
+    await clickText('Nouvelle salle');
+    await dialogOpen();
+    await setField('catalogue-name', `Salle de marchés ${tag}`);
+    await setField('catalogue-learnerSeats', '14');
+    await setField('catalogue-unavailableSeats', '1');
+    await expectThat('les places utiles sont calculées en direct : 13 sur 14 postes dont 1 en panne', `document.querySelector('[role=dialog]').textContent.includes('Places utiles pour les apprenants : 13')`);
+    await audit('Catalogue — nouvelle salle (avec postes)', 'places utiles annoncées en direct');
+    await atFourWidths('la fenêtre « Nouvelle salle »');
+    await clickText('Enregistrer', "document.querySelector('[role=dialog]')");
+    await dialogClosed('salle de marchés créée');
+    await sleep(600);
+    await clickText('Nouvelle salle');
+    await dialogOpen();
+    await setField('catalogue-name', `Salle de réunion ${tag}`);
+    await setField('catalogue-kind', 'CLASSROOM');
+    await sleep(300);
+    await expectThat('pour une salle de cours, les libellés parlent de « places » et non de « postes »', `(() => { const t = document.querySelector('[role=dialog]').textContent; return t.includes('Places apprenants') && t.includes('Dont places hors service'); })()`);
+    await setField('catalogue-learnerSeats', '16');
+    await setField('catalogue-trainerSeats', '0');
+    await setField('catalogue-equipment', 'Écran 65 pouces');
+    await clickText('Enregistrer', "document.querySelector('[role=dialog]')");
+    await dialogClosed('salle de réunion créée');
+    await waitFor(`document.querySelector('main tbody').textContent.includes('Salle de réunion ${tag}')`, 'salle de réunion listée', 15000);
+    const markets = await rowText(`Salle de marchés ${tag}`);
+    const meeting = await rowText(`Salle de réunion ${tag}`);
+    await expectThat('la salle de marchés affiche « 13 places utiles (14 postes, 1 hors service) » et la salle de réunion « 16 places utiles », avec leur type', `${JSON.stringify(markets)}.includes('13 places utiles (14 postes, 1 hors service)') && ${JSON.stringify(markets)}.includes('Avec postes de travail') && ${JSON.stringify(meeting)}.includes('16 places utiles') && ${JSON.stringify(meeting)}.includes('Salle de cours')`);
+    await audit('Catalogue — salles (liste)', 'type, places utiles, poste en panne');
+    await shot('catalogue-salles');
+
+    // Formateurs : numéro invalide refusé, puis formateur externe créé.
+    await rubric('Formateurs');
+    await clickText('Nouveau formateur');
+    await dialogOpen();
+    await setField('catalogue-lastName', `Essomba${tag}`);
+    await setField('catalogue-firstName', 'Parfait');
+    await setField('catalogue-phone', '0699123456');
+    await clickText('Enregistrer', "document.querySelector('[role=dialog]')");
+    await waitFor("document.querySelector('[role=dialog] [role=alert]')", 'numéro refusé');
+    await expectThat('un numéro commençant par 0 est refusé avec le message de la règle commune, champ en surbrillance', `(() => { const f = document.getElementById('catalogue-phone'); return f.getAttribute('aria-invalid') === 'true' && document.querySelector('[role=dialog]').textContent.includes('commencer par 0'); })()`);
+    await setField('catalogue-phone', '+237 699 12 34 56');
+    await setField('catalogue-email', `parfait.${tag}@formateurs.investudy.test`);
+    await clickText('Enregistrer', "document.querySelector('[role=dialog]')");
+    await dialogClosed('formateur créé');
+    await waitFor(`document.querySelector('main tbody').textContent.includes('Essomba${tag}')`, 'formateur listé', 15000);
+    const trainer = await rowText(`Essomba${tag}`);
+    await expectThat('le formateur est listé « Externe » avec son numéro enregistré sans espace (+237699123456)', `${JSON.stringify(trainer)}.includes('Externe') && ${JSON.stringify(trainer)}.includes('+237699123456')`);
+    await audit('Catalogue — formateurs (liste)', 'type externe, contact');
+
+    // Rythmes : valeurs de référence en lecture seule.
+    await rubric('Rythmes');
+    await expectThat('deux rythmes : jour (1 semaine, ouvert, 35 h) et soir (2 semaines, en préparation, 30 h)', `(() => { const t = document.querySelector('main tbody').textContent.replace(/[\\u202f\\u00a0]/g, ' '); return document.querySelectorAll('main tbody tr').length === 2 && t.includes('1 semaine') && t.includes('9h–12h, 13h–17h') && t.includes('35 h') && t.includes('Ouvert') && t.includes('2 semaines') && t.includes('18h–21h') && t.includes('30 h') && t.includes('En préparation'); })()`);
+    await expectThat('la rubrique Rythmes n’a aucun bouton de création', `![...document.querySelectorAll('main button')].some((b) => /^Nouve/.test(b.textContent.trim()))`);
+    await audit('Catalogue — rythmes', 'lecture seule');
+
+    // Archivage : confirmation, état, filtre, réactivation.
+    await rubric('Modules');
+    await js(`(() => { const r = [...document.querySelectorAll('main tbody tr')].find((x) => x.textContent.includes(${JSON.stringify(moduleTitles[1])})); r.querySelector('summary[aria-label^="Actions pour"]').click(); })()`);
+    await sleep(300);
+    // Les menus de toutes les lignes existent dans la page : on cible celui qui est ouvert (celui de la ligne choisie).
+    await clickText('Archiver le module', "document.querySelector('main tbody details[open]')");
+    await waitFor("document.querySelector('[role=dialog]')", 'confirmation d’archivage');
+    await audit('Catalogue — archiver un module', 'confirmation réversible');
+    await clickText('Archiver le module', "document.querySelector('[role=dialog]')");
+    await dialogClosed('module archivé');
+    await sleep(800);
+    try {
+      await waitFor(`!document.querySelector('main tbody').textContent.includes(${JSON.stringify(moduleTitles[1])})`, 'module archivé retiré de la liste des actifs', 15000);
+    } catch (error) {
+      console.log(`  contenu du tableau : ${JSON.stringify(await js("document.querySelector('main tbody').textContent.slice(0, 400)"))} ; fenêtre ouverte : ${JSON.stringify(await js("Boolean(document.querySelector('[role=dialog]'))"))} ; alertes : ${JSON.stringify(await js("[...document.querySelectorAll('[role=alert]')].map((x) => x.textContent)"))}`);
+      throw error;
+    }
+    await expectThat('le module archivé disparaît de la liste des actifs', `!document.querySelector('main tbody').textContent.includes(${JSON.stringify(moduleTitles[1])})`);
+    await js(`[...document.querySelectorAll('[role=group][aria-label="État"] button')].find((b) => b.textContent.trim() === 'Archivés').click()`);
+    await sleep(1200);
+    await expectThat('le filtre « Archivés » le montre, avec l’état « Archivé »', `(() => { const t = document.querySelector('main tbody').textContent; return t.includes(${JSON.stringify(moduleTitles[1])}) && t.includes('Archivé'); })()`);
+    await audit('Catalogue — modules archivés', 'filtre d’état');
+    if (process.env.AUDIT_TRAINING_ONLY) throw new Error('Arrêt volontaire (AUDIT_TRAINING_ONLY) : parcours limité au catalogue');
+  }
+
   await go('/companies');
   await waitFor("document.querySelector('main h1')", 'page Entreprises', 20000);
   await sleep(800);

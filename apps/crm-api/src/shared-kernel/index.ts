@@ -5,3 +5,4 @@ export * from './ports';
 export * from './actor-context';
 export * from './app-config';
 export * from './request-context';
+export * from './contact-format';

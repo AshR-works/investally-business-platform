@@ -4,7 +4,7 @@ REPO = Path(__file__).resolve().parents[2]
 import subprocess, os, sys
 api = str(REPO / 'apps' / 'crm-api')
 web = str(REPO / 'apps' / 'crm-web')
-info = os.path.join(api, 'src', 'modules', 'business-development', 'domain', 'contact-info.ts')
+info = os.path.join(api, 'src', 'shared-kernel', 'contact-format.ts')
 mig = os.path.join(api, 'prisma', 'migrations', '20261110000000_phone_format', 'migration.sql')
 wphone = os.path.join(web, 'lib', 'phone.ts')
 wtable = os.path.join(web, 'components', 'data', 'data-table.tsx')

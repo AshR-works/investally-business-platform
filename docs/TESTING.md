@@ -49,6 +49,7 @@ Mis à jour **à chaque lot**, en même temps que le code (règle posée le 2026
 | S4.4b — ambassadeurs | 856 réussis | 348 / 348 (24 suites) | 458 / 458 | 17 / 17 | 58 contrôles, 0 échec (parcours ciblé sur la page Ambassadeurs) |
 | S4.4a-bis — agrément demandé, payeur, constat par la Finance, second facteur | 867 réussis | 352 / 352 (24 suites) | 467 / 467 | 23 / 23 | 64 contrôles, 0 échec (parcours ciblé sur la fiche entreprise et les ambassadeurs) |
 | S4.4c — commissions à verser | 939 réussis | 375 / 375 (26 suites) | 518 / 518 | 28 / 28 | 86 contrôles, 0 échec, 0 violation (parcours ciblé sur la fiche entreprise, les agréments et la page Commissions, du justificatif au versement) |
+| S5.1 — catalogue Investudy | 970 réussis | 375 / 383 en une passe (8 dépassements de délai dans `core-schema`) ; `core-schema` seule 20 / 20 (27 suites) | 536 / 536 | 49 / 49 | 69 contrôles, 0 échec, 0 violation (48 propres au catalogue) |
 | Jeu de données de démonstration (module commercial) | 906 réussis | 358 / 358 (25 suites) | 508 / 508 | — (plan et couverture testés) | — (non rejoué : données vérifiées en base) |
 | Correctifs 1 — téléphones, fenêtres, barres de défilement, tableaux | 879 réussis | 349 / 349 (24 suites) | 499 / 499 | 24 / 24 | 65 contrôles, 0 échec, 0 violation (parcours ciblé sur la fiche entreprise, les agréments et les ambassadeurs) |
 

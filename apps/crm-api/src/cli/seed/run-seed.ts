@@ -11,11 +11,12 @@ import { RegisterCompanyUseCase } from '../../modules/business-development/appli
 import { ChangePayoutUseCase } from '../../modules/business-development/application/commission-payout-use-cases';
 import { CancelReceiptUseCase, RegisterReceiptUseCase } from '../../modules/business-development/application/receipt-use-cases';
 import { UpdateCompanyUseCase } from '../../modules/business-development/application/update-company.use-case';
+import { CreateModuleUseCase, CreateProgramUseCase, CreateRoomUseCase, CreateTrainerUseCase, CreateTrainingUseCase } from '../../modules/training/application/catalogue-use-cases';
 import { AuthorizationService } from '../../modules/iam/application/authorization.service';
 import type { AccessContext } from '../../modules/iam';
 import { PrismaService } from '../../platform/prisma.service';
 import { ActorContext, CLOCK } from '../../shared-kernel';
-import { COMPANIES, SeedEvent, SeedOp, Who } from './seed-plan';
+import { blockOf, COMPANIES, SEED_BLOCKS, SeedBlock, SeedEvent, SeedOp, Who } from './seed-plan';
 
 /** Ce dont le chargeur a besoin de l'application : retrouver un service, sans en dépendre autrement (l'application complète ou un test). */
 export interface ProviderSource {
@@ -30,25 +31,42 @@ export interface SeedOptions {
 
 export interface SeedResult {
   executed: number;
+  /** Vrai si rien n'a été chargé : tous les blocs étaient déjà là. */
   skipped: boolean;
+  /** Blocs chargés par cet appel. */
+  loaded: SeedBlock[];
   counts: Record<string, number>;
 }
 
-/** Nom de la première entreprise du plan : sa présence indique que le jeu est déjà chargé. */
+/** Nom de la première entreprise du plan : sa présence indique que le bloc commercial est déjà chargé. */
 export const SEED_MARKER = COMPANIES[0]!.name;
+/** Nom du programme du catalogue : sa présence indique que le bloc « catalogue » est déjà chargé. */
+export const CATALOGUE_MARKER = 'Certificats Marchés financiers';
+/** Domaine des e-mails de formateurs de démonstration : sa présence indique que le bloc « formateurs » est déjà chargé. */
+export const TRAINERS_MARKER = '@formateurs.investudy.test';
 
 /**
  * Charge le jeu de données de démonstration en rejouant le plan à travers les VRAIS cas d'usage de l'application : mêmes règles
  * (validation, états, versions, portée, audit) que l'interface. L'horloge est avancée de date en date, ce qui donne à chaque objet sa vraie
  * date de création ; elle est rendue à son état normal à la fin. Idempotent : si le jeu est déjà là, rien n'est fait.
  */
-export async function runSeed(app: ProviderSource, events: readonly SeedEvent[], options: SeedOptions): Promise<SeedResult> {
+export async function runSeed(app: ProviderSource, allEvents: readonly SeedEvent[], options: SeedOptions): Promise<SeedResult> {
+  let events = allEvents;
   const log = options.log ?? (() => undefined);
   const prisma = app.get<PrismaService>(PrismaService, { strict: false });
-  if ((await prisma.db.company.count({ where: { name: SEED_MARKER } })) > 0) {
-    log(`Le jeu de démonstration est déjà chargé (« ${SEED_MARKER} » existe) : rien à faire.`);
-    return { executed: 0, skipped: true, counts: {} };
+  // Chaque bloc a son marqueur : seuls les blocs absents sont chargés, sans toucher à ce qui existe (une démo ancienne reçoit les nouveaux blocs).
+  const present: Record<SeedBlock, boolean> = {
+    crm: (await prisma.db.company.count({ where: { name: SEED_MARKER } })) > 0,
+    catalogue: (await prisma.db.program.count({ where: { name: CATALOGUE_MARKER } })) > 0,
+    formateurs: (await prisma.db.trainer.count({ where: { emailKey: { endsWith: TRAINERS_MARKER } } })) > 0,
+  };
+  const toLoad = SEED_BLOCKS.filter((block) => !present[block]);
+  if (toLoad.length === 0) {
+    log('Le jeu de démonstration est déjà chargé (tous les blocs sont présents) : rien à faire.');
+    return { executed: 0, skipped: true, loaded: [], counts: {} };
   }
+  for (const block of SEED_BLOCKS) log(`  bloc « ${block} » : ${present[block] ? 'déjà présent' : 'à charger'}`);
+  events = events.filter((event) => toLoad.includes(blockOf(event.op)));
 
   const clock = app.get<{ now: () => Date }>(CLOCK, { strict: false });
   const realNow = clock.now.bind(clock);
@@ -181,6 +199,26 @@ export async function runSeed(app: ProviderSource, events: readonly SeedEvent[],
           case 'approvalClose':
             await use(CloseApprovalUseCase).execute({ id: id(op.approval), version: await versionOf('approval', op.approval), action: op.action, reason: op.reason, access, actor });
             break;
+          case 'trainer':
+            ids.set(op.key, (await use(CreateTrainerUseCase).execute({ lastName: op.lastName, firstName: op.firstName, specialties: op.specialties, email: op.email, phone: op.phone, actor })).id);
+            break;
+          case 'program':
+            ids.set(op.key, (await use(CreateProgramUseCase).execute({ name: op.name, audience: op.audience, description: op.description, actor })).id);
+            break;
+          case 'module':
+            ids.set(op.key, (await use(CreateModuleUseCase).execute({ title: op.title, requiresWorkstations: op.requiresWorkstations, actor })).id);
+            break;
+          case 'training':
+            ids.set(op.key, (await use(CreateTrainingUseCase).execute({
+              programId: id(op.program), title: op.title, objectives: op.objectives, priceAmount: op.priceAmount, modulePriceAmount: op.modulePriceAmount,
+              moduleIds: op.modules.map(id), actor,
+            })).id);
+            break;
+          case 'room':
+            ids.set(op.key, (await use(CreateRoomUseCase).execute({
+              name: op.name, kind: op.kind, learnerSeats: op.learnerSeats, unavailableSeats: op.unavailableSeats, trainerSeats: op.trainerSeats, equipment: op.equipment, actor,
+            })).id);
+            break;
           case 'ambassador': {
             const view = await use(RegisterAmbassadorUseCase).execute({
               lastName: op.lastName, firstName: op.firstName, origin: op.origin as AmbassadorOrigin, companyId: op.company ? id(op.company) : null, email: op.email, phone: op.phone,
@@ -201,5 +239,5 @@ export async function runSeed(app: ProviderSource, events: readonly SeedEvent[],
     clock.now = realNow;
   }
   log(`Jeu de démonstration chargé : ${executed} événements.`);
-  return { executed, skipped: false, counts };
+  return { executed, skipped: false, loaded: [...toLoad], counts };
 }
