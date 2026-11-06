@@ -14,7 +14,7 @@
 | **Cadrage fonctionnel** : 45 écrans de référence (wireframes), flux transverses F1 à F7, module commercial C1 à C5, module Investudy I1 à I5 | **Validé** (propositions à confirmer, voir § 4) |
 | **Reste de l'application** | À construire (voir § 2) |
 
-Chiffres au 2026-11-04 : 729 tests unitaires, 286 tests d'intégration sur base jetable, 357 tests de l'interface, 24 mutants sur 24 tués au dernier lot, audit d'accessibilité automatique sur le navigateur réel, test d'architecture sans violation.
+Chiffres au 2026-11-06 : 970 tests unitaires, 383 tests d'intégration sur base jetable (dont 8 de `core-schema` fragiles sous charge, D149), 536 tests de l'interface, 49 mutants sur 49 tués au dernier lot, audit d'accessibilité automatique sur le navigateur réel, test d'architecture sans violation.
 
 ## 2. Feuille de route restante
 Ordre retenu le 2026-10-21 (DEC-005) : module commercial, puis Investudy, puis pilotage, puis Stocks, puis durcissement et mise en production, puis l'ERP.
@@ -32,7 +32,7 @@ Ordre retenu le 2026-10-21 (DEC-005) : module commercial, puis Investudy, puis p
 | **S4.4b** Ambassadeurs | *Validé* : création manuelle avec origine (client ou apprenant), liste, modification (les suggestions attendent les certifications d'Investudy) | — | Défauts D40 à confirmer |
 | **S4.4a-bis** Correctifs décidés (D41) | *Validé* : état « demandé » et payeur tiers sur l'agrément, constat du paiement par la Finance (le DAF), second facteur récent sur le changement de responsable | — | Défauts D42 à confirmer |
 | **S4.4c** Commissions à verser | *Validé* : commission due à l'honneur de l'agrément, déblocage par le DAF seul, versement avec justificatif (reçu ou ordre de versement), commission figée (flux F3) | — | Défauts D44 à confirmer |
-| **S5.1** Catalogue Investudy | *Livré, validation en attente* : programmes, **certificats** (tarifs complet et par module, modules ordonnés), **modules partagés** (magistral ou pratique sur poste), **salles** (avec postes ou de cours, postes en panne, capacité utile), formateurs (internes ou externes), **rythmes** de session (jour ouvert, soir en préparation) ; référentiel sans propriétaire, archivage sans suppression (D46, DDR-0028) ; jeu de démonstration chargé **par blocs** | 1 session | S4.4 ; cas d'usage validés |
+| **S5.1** Catalogue Investudy | *Validé* : programmes, **certificats** (tarifs complet et par module, modules ordonnés), **modules partagés** (magistral ou pratique sur poste), **salles** (avec postes ou de cours, postes en panne, capacité utile), formateurs (internes ou externes), **rythmes** de session (jour ouvert, soir en préparation) ; référentiel sans propriétaire, archivage sans suppression (D46, DDR-0028) ; jeu de démonstration chargé **par blocs** | 1 session | S4.4 ; cas d'usage validés |
 | **S5.2** Sessions et inscriptions | Sessions, apprenants, inscriptions liées à l'agrément, annulation et report | 1,5 session | S5.1 ; D31 (confirmation, liste d'attente) |
 | **S5.3** Suivi pédagogique | Présences, évaluations, clôture, certificats et attestations, suggestion d'ambassadeur | 1 à 1,5 session | S5.2 ; seuils de certification |
 | **S6.1** Tableaux de bord commerciaux | Indicateurs du chargé de compte et du Responsable commercial | 1 session | S4.3 ; liste fermée des pays (D57) |
@@ -105,4 +105,4 @@ Ordre retenu le 2026-10-21 (DEC-005) : module commercial, puis Investudy, puis p
 
 **S4.4c — Commissions à verser.** *Livré et validé.* Commission due à l'honneur de l'agrément, déblocage par le DAF seul, versement avec justificatif (flux F3). Le module commercial est complet.
 
-Le module commercial est **terminé** (S4.4c validé) : il n'y a plus de validation en attente. Les décisions FD-1 à FD-6 sont prises (D41). Les valeurs par défaut D36 à D40, D42 à D44 restent à confirmer (FD-7), ainsi que FD-8 à FD-11. **Avant S5 (Investudy)** : réponses sur FD-9 (cas d'usage, apprenant distinct, droits de la Finance) et FD-11 (formateurs externes, responsable Investudy).
+Le module commercial est **terminé** (S4.4c validé) : il n'y a plus de validation en attente. Les décisions FD-1 à FD-6 sont prises (D41). Les valeurs par défaut D36 à D40, D42 à D44 restent à confirmer (FD-7), ainsi que FD-8 à FD-11. **S5.1 (catalogue Investudy) est validé** ; D46 reste à confirmer. **Avant S5.2 (sessions et inscriptions)** : réponses sur FD-9 (cas d'usage, apprenant distinct, droits de la Finance), FD-11 (formateurs externes, responsable Investudy) et les décisions D-FORM-1 à 3 des cadrages. La session S5.2 reprend le rythme de session (jour / soir), les salles et les places utiles du catalogue ; le sort de la planification module par module est à trancher (D148).

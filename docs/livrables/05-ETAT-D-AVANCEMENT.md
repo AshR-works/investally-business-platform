@@ -8,16 +8,16 @@
 
 ## 1. Synthèse en dix lignes
 
-1. **37 sessions validées** (de S1 à S4.4c, avec l'accessibilité, l'habillage, le contrat anti-IDOR, les cadrages, les correctifs de recette 1 et le jeu de données de démonstration), toutes fusionnées dans `main` et étiquetées `…-validated`.
+1. **38 sessions validées** (de S1 à S5.1, avec l'accessibilité, l'habillage, le contrat anti-IDOR, les cadrages, les correctifs de recette 1 et le jeu de données de démonstration), toutes fusionnées dans `main` et étiquetées `…-validated`.
 2. Le **socle de sécurité et d'accès est complet** : comptes, connexion, second facteur, rôles et périmètres, invitations, mot de passe oublié, sessions, audit.
 3. Le **module commercial est largement livré** : entreprises (statuts, responsable, fiche 360°), contacts, offres, décharges signées, relances, agenda, opportunités (pipeline), agréments, documents. Les commissions à verser (S4.4c) sont livrées : **le module commercial est terminé**.
-4. **833 tests unitaires**, **338 d'intégration** (PostgreSQL jetable) et **433 d'interface**, tous verts ; **0 violation** d'architecture ; contrat anti-IDOR sur chaque route d'objet.
+4. **970 tests unitaires**, **383 d'intégration** (PostgreSQL jetable) et **536 d'interface**, tous verts (la suite `core-schema` dépasse son délai lors d'une passe complète chargée, D149 ; elle passe seule) ; **0 violation** d'architecture ; contrat anti-IDOR sur chaque route d'objet.
 5. Les **mutants** (fautes injectées) de chaque lot sont **tous détectés** (environ 220, scripts dans `scripts/mutants/`) ; l'**audit navigateur** (axe-core) relève **0 violation** sur les écrans livrés.
 6. Une **charte de tests** et des **fiches de test** (16 par écran, 28 par session) cadrent la recette (`docs/CHARTE-DE-TESTS.md`, `docs/tests/`).
 7. Les **blocages réels** ne sont pas techniques : accès **Microsoft 365**, **avis juridique** sur les données de performance, **second SuperAdmin**, logos au format SVG.
 8. **Décisions à confirmer** : valeurs par défaut D36 à D39 (opportunités, statuts, valeur, agréments) ; l'agrément applique D1 à D5 du registre.
 9. La **CI GitHub** (contrôle `verify`) est active et obligatoire avant toute fusion ; **Docker, sauvegardes, supervision** restent à faire (S7).
-10. **Prochaine étape** : S5 (Investudy), puis S6 (pilotage) et S7 (mise en production), après vos réponses sur FD-9 et FD-11. Détail : `docs/GANTT-PROJET.md` et `docs/RESTE-A-FAIRE-DEVELOPPEMENT.md`.
+10. **Prochaine étape** : S5.2 (sessions et inscriptions), puis S5.3, S6 (pilotage) et S7 (mise en production), après vos réponses sur FD-9 et FD-11. Détail : `docs/GANTT-PROJET.md` et `docs/RESTE-A-FAIRE-DEVELOPPEMENT.md`.
 
 ---
 
@@ -41,7 +41,7 @@ Légende : ✅ validé · 🟦 livré, validation attendue · ⏳ à faire
 | 12 | S4.2 Offres, décharges, relances | CRM | ⏳ | ░░░░░░░░░░ 0 % |
 | 13 | S4.3 Rendez-vous, visites, opportunités | CRM | ⏳ | ░░░░░░░░░░ 0 % |
 | 14 | S4.4 Agrément, ambassadeurs, commissions | CRM | ✅ | ▓▓▓▓▓▓▓▓▓▓ 100 % |
-| 15 | S5.1 Catalogue Investudy | CRM | ⏳ | ░░░░░░░░░░ 0 % |
+| 15 | S5.1 Catalogue Investudy | CRM | ✅ | ▓▓▓▓▓▓▓▓▓▓ 100 % |
 | 16 | S5.2 Sessions et inscriptions | CRM | ⏳ | ░░░░░░░░░░ 0 % |
 | 17 | S5.3 Suivi pédagogique | CRM | ⏳ | ░░░░░░░░░░ 0 % |
 | 18 | S6.1 KPI et tableaux de bord commerciaux | CRM | ⏳ | ░░░░░░░░░░ 0 % |
@@ -90,7 +90,8 @@ Légende : ✅ validé · 🟦 livré, validation attendue · ⏳ à faire
 | Envoyer de vrais e-mails (Microsoft 365) | ❌ **non testé** | en attente d'accès |
 | Ambassadeurs : création manuelle, origine client ou apprenant, liste | ✅ | recette S4.4b |
 | Commissions à verser (due à l'honneur de l'agrément, déblocage par la Finance, versement avec justificatif) | ✅ | recette S4.4c |
-| Formations, sessions, inscriptions, suivi pédagogique (Investudy) | ⏳ | S5 |
+| Catalogue de formation (programmes, certificats, modules, salles, formateurs, rythmes) | ✅ | recette S5.1 |
+| Sessions, inscriptions, suivi pédagogique (Investudy) | ⏳ | S5.2, S5.3 |
 | Tableaux de bord et indicateurs | ⏳ | S6 |
 
 ## 5. Indicateurs de santé

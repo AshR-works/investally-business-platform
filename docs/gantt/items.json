@@ -335,8 +335,9 @@
         {
           "name": "S5.1 — catalogue (programmes, certificats, modules, salles, formateurs, rythmes)",
           "start": "2026-11-05",
-          "end": "2026-11-05",
-          "state": "wait"
+          "end": "2026-11-06",
+          "state": "done",
+          "tag": "s5-1-validated"
         },
         {
           "name": "S5.2 — sessions, apprenants, inscriptions",
