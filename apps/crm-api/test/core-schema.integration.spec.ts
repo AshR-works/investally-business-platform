@@ -11,9 +11,6 @@ import { UuidV7Generator } from '../src/platform/uuid-v7-generator';
 const describeDb = process.env.DATABASE_URL && process.env.RUN_DB_TESTS === '1' ? describe : describe.skip;
 
 describeDb('Schéma Core (PostgreSQL)', () => {
-  // Le premier test charge tout le seed Core : au-delà de 5 s lors d'une passe complète chargée (D149).
-  jest.setTimeout(60_000);
-
   const prisma = new PrismaService();
   const ids = new UuidV7Generator();
   const db = () => prisma.db;
