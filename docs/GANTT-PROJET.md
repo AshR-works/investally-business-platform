@@ -12,9 +12,9 @@
 | **Lancement** (Sprint 0) | 20/10/2026 |
 | Premier jalon de code validé (S1 à S3.3) | 20/10/2026 (le même jour) |
 | Fin de la fondation et du design | 22/10/2026 |
-| Dernier lot validé (S5.1, catalogue Investudy) | 06/11/2026 |
-| Lots réalisés et validés au 01/11/2026 | 46 (dont 37 étiquetés) |
-| **Prochaine session** | S5.2b (apprenants et inscriptions) ; S5.2a (sessions) en attente de validation |
+| Dernier lot validé (S5.2a, sessions de formation) | 07/11/2026 |
+| Lots réalisés et validés au 01/11/2026 | 47 (dont 38 étiquetés) |
+| **Prochaine session** | S5.2b (apprenants et inscriptions) |
 | Fin du module commercial | **Terminé le 05/11/2026** (S4.4c validé) |
 | Fin d'Investudy (prévision) | 30/11/2026 |
 | **Mise en production du CRM, prévision prudente** | **23/12/2026** |
@@ -94,7 +94,7 @@
 | Lot | Début | Fin | État | Étiquette |
 |---|---|---|---|---|
 | S5.1 — catalogue (programmes, certificats, modules, salles, formateurs, rythmes) | 05/11/2026 | 06/11/2026 | Validé | `s5-1-validated` |
-| S5.2a — sessions de formation | 07/11/2026 | 07/11/2026 | Terminé, validation en attente | — |
+| S5.2a — sessions de formation | 07/11/2026 | 07/11/2026 | Validé | `s5-2a-validated` |
 | S5.2b — apprenants et inscriptions | 24/11/2026 | 26/11/2026 | Prévu | — |
 | S5.3 — présences, évaluations, certifications | 27/11/2026 | 30/11/2026 | Prévu | — |
 
