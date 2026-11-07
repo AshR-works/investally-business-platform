@@ -98,6 +98,8 @@ try {
     run('tests d\'intégration', [
       join(root, 'node_modules/jest/bin/jest.js'),
       '--runInBand',
+      // Délai commun de 60 s par test et par crochet : en passe complète sur une machine chargée, le délai par défaut (5 s) fait échouer des suites au hasard (D149). Un délai propre à un test reste prioritaire.
+      '--testTimeout=60000',
       '--testPathPatterns',
       // Cibler un fichier : `node scripts/test-db.mjs --tests=rbac-http` (par défaut, toute la suite d'intégration).
       process.argv.find((a) => a.startsWith('--tests='))?.slice('--tests='.length) ?? 'integration',
