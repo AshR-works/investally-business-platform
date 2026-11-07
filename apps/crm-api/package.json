@@ -8,7 +8,7 @@
     "start": "node dist/src/main.js",
     "typecheck": "tsc --noEmit",
     "test": "jest --runInBand --testPathIgnorePatterns integration",
-    "test:integration": "RUN_DB_TESTS=1 jest --testPathPatterns integration --runInBand",
+    "test:integration": "RUN_DB_TESTS=1 jest --testPathPatterns integration --runInBand --testTimeout=60000",
     "seed:core": "node dist/src/cli/seed-core.js",
     "docs:rbac": "node scripts/gen-rbac-doc.mjs",
     "check:upgrade": "node scripts/check-upgrade.mjs",
