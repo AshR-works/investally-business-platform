@@ -470,7 +470,123 @@ try {
     await sleep(1200);
     await expectThat('le filtre « Archivés » le montre, avec l’état « Archivé »', `(() => { const t = document.querySelector('main tbody').textContent; return t.includes(${JSON.stringify(moduleTitles[1])}) && t.includes('Archivé'); })()`);
     await audit('Catalogue — modules archivés', 'filtre d’état');
-    if (process.env.AUDIT_TRAINING_ONLY) throw new Error('Arrêt volontaire (AUDIT_TRAINING_ONLY) : parcours limité au catalogue');
+    // ---- S5.2a : sessions de formation (planifier, ouvrir, reporter, annuler ; chevauchement refusé), avec le catalogue créé ci-dessus.
+    const isoOf = (date) => date.toISOString().slice(0, 10);
+    const mondayAhead = (weeks) => { const d = new Date(); d.setUTCDate(d.getUTCDate() + weeks * 7); d.setUTCDate(d.getUTCDate() + ((8 - d.getUTCDay()) % 7 || 7)); return isoOf(d); };
+    const addIsoDays = (iso, days) => isoOf(new Date(new Date(`${iso}T00:00:00Z`).getTime() + days * 86400000));
+    const sessionStart = mondayAhead(4);
+    const certificateTitle = `Certificat Expert(e) ${tag}`;
+    const sessionMenu = async (action) => {
+      await js(`(() => { const r = [...document.querySelectorAll('main tbody tr')].find((x) => x.textContent.includes(${JSON.stringify(certificateTitle)})); r.querySelector('summary[aria-label^="Actions pour"]').click(); })()`);
+      await sleep(300);
+      await clickText(action, "document.querySelector('main tbody details[open]')");
+    };
+
+    await go('/training/sessions');
+    await waitFor("document.querySelector('main h1') && document.querySelector('main').textContent.includes('Sessions de formation')", 'page Sessions', 25000);
+    await waitFor("!document.body.textContent.includes('Chargement…')", 'sessions chargées', 15000);
+    await expectThat('la page Sessions propose « Nouvelle session » au Super administrateur et un lien vers le catalogue', `[...document.querySelectorAll('main button')].some((b) => b.textContent.trim() === 'Nouvelle session') && [...document.querySelectorAll('main a')].some((a) => a.textContent.includes('Catalogue de formation'))`);
+    await audit('Sessions — liste', 'filtres, tableau, bouton de création');
+    await shot('sessions-liste');
+
+    // Planifier : les erreurs sont annoncées avant l'envoi, puis les règles de salle et de capacité.
+    await clickText('Nouvelle session');
+    await dialogOpen();
+    await waitFor(`document.getElementById('catalogue-trainingId') && [...document.getElementById('catalogue-trainingId').options].some((o) => o.textContent.includes(${JSON.stringify(certificateTitle)}))`, 'certificat proposé', 15000);
+    await waitFor(`[...document.getElementById('catalogue-roomId').options].some((o) => o.textContent.includes('Salle de marchés ${tag}')) && [...document.getElementById('catalogue-trainerId').options].some((o) => o.textContent.includes('Essomba${tag}'))`, 'salle et formateur proposés', 15000);
+    await clickText('Enregistrer', "document.querySelector('[role=dialog]')");
+    await sleep(400);
+    await expectThat('une saisie vide est refusée AVANT l’envoi : champs en surbrillance, messages annoncés, fenêtre ouverte', `(() => { const f = document.getElementById('catalogue-trainingId'); return f.getAttribute('aria-invalid') === 'true' && Boolean(document.querySelector('[role=dialog] [role=alert]')) && document.getElementById('catalogue-capacity').getAttribute('aria-invalid') === 'true'; })()`);
+    await setField('catalogue-trainingId', await js(`[...document.getElementById('catalogue-trainingId').options].find((o) => o.textContent.includes(${JSON.stringify(certificateTitle)})).value`));
+    await setField('catalogue-startDate', addIsoDays(sessionStart, -2)); // un samedi
+    await setField('catalogue-roomId', await js(`[...document.getElementById('catalogue-roomId').options].find((o) => o.textContent.includes('Salle de réunion ${tag}')).value`));
+    await setField('catalogue-trainerId', await js(`[...document.getElementById('catalogue-trainerId').options].find((o) => o.textContent.includes('Essomba${tag}')).value`));
+    await setField('catalogue-capacity', '10');
+    await clickText('Enregistrer', "document.querySelector('[role=dialog]')");
+    await sleep(400);
+    await expectThat('un week-end est refusé comme date de début, et une salle de cours est refusée pour un certificat à module pratique', `(() => { const t = document.querySelector('[role=dialog]').textContent; return t.includes('jour de cours') && t.includes('module pratique'); })()`);
+    await setField('catalogue-startDate', sessionStart);
+    await setField('catalogue-roomId', await js(`[...document.getElementById('catalogue-roomId').options].find((o) => o.textContent.includes('Salle de marchés ${tag}')).value`));
+    await setField('catalogue-capacity', '14');
+    await clickText('Enregistrer', "document.querySelector('[role=dialog]')");
+    await sleep(400);
+    await expectThat('une capacité de 14 est refusée : la salle n’a que 13 places utiles (un poste en panne)', `document.querySelector('[role=dialog]').textContent.includes('places utiles de la salle (13)')`);
+    await setField('catalogue-capacity', '13');
+    await sleep(300);
+    await expectThat('la date de fin est annoncée en direct d’après le rythme (vendredi de la même semaine)', `document.querySelector('[role=dialog]').textContent.replace(/[\\u202f\\u00a0]/g, ' ').includes('Dernier jour de cours')`);
+    await audit('Sessions — nouvelle session', 'date de fin annoncée, salle et capacité contrôlées');
+    await atFourWidths('la fenêtre « Nouvelle session »');
+    await shot('sessions-planifier');
+    await clickText('Enregistrer', "document.querySelector('[role=dialog]')");
+    await dialogClosed('session planifiée');
+    await waitFor(`document.querySelector('main tbody').textContent.includes(${JSON.stringify(certificateTitle)})`, 'session listée', 15000);
+    const planned = await rowText(certificateTitle);
+    await expectThat('la session est listée « Planifiée » avec sa capacité (13 places sur 13 utiles), sa salle et son formateur', `${JSON.stringify(planned)}.includes('Planifiée') && ${JSON.stringify(planned)}.includes('13 places sur 13 utiles') && ${JSON.stringify(planned)}.includes('Salle de marchés ${tag}') && ${JSON.stringify(planned)}.includes('Essomba${tag}')`);
+    await audit('Sessions — session planifiée', 'état, dates, capacité');
+
+    // Chevauchement : la même salle et le même formateur sur les mêmes dates sont refusés, avec la session en conflit.
+    await clickText('Nouvelle session');
+    await dialogOpen();
+    await waitFor(`document.getElementById('catalogue-trainingId') && [...document.getElementById('catalogue-trainingId').options].some((o) => o.textContent.includes(${JSON.stringify(certificateTitle)}))`, 'certificat proposé', 15000);
+    await waitFor(`[...document.getElementById('catalogue-roomId').options].some((o) => o.textContent.includes('Salle de marchés ${tag}'))`, 'salle proposée', 15000);
+    await setField('catalogue-trainingId', await js(`[...document.getElementById('catalogue-trainingId').options].find((o) => o.textContent.includes(${JSON.stringify(certificateTitle)})).value`));
+    await setField('catalogue-startDate', addIsoDays(sessionStart, 1));
+    await setField('catalogue-roomId', await js(`[...document.getElementById('catalogue-roomId').options].find((o) => o.textContent.includes('Salle de marchés ${tag}')).value`));
+    await setField('catalogue-trainerId', await js(`[...document.getElementById('catalogue-trainerId').options].find((o) => o.textContent.includes('Essomba${tag}')).value`));
+    await setField('catalogue-capacity', '8');
+    await clickText('Enregistrer', "document.querySelector('[role=dialog]')");
+    await waitFor("document.querySelector('[role=dialog] [role=alert]')", 'conflit annoncé', 15000);
+    await expectThat('une salle déjà prise est refusée avec un message qui nomme la salle et la session en conflit ; la fenêtre reste ouverte', `(() => { const t = document.querySelector('[role=dialog] [role=alert]').textContent; return t.includes('est déjà prise') && t.includes(${JSON.stringify(certificateTitle)}); })()`);
+    await audit('Sessions — conflit de salle', 'message annoncé');
+    await clickText('Annuler', "document.querySelector('[role=dialog]')");
+    await dialogClosed('fenêtre de planification fermée');
+
+    // Ouvrir aux inscriptions.
+    await sessionMenu('Ouvrir aux inscriptions');
+    await waitFor("document.querySelector('[role=dialog]')", 'confirmation d’ouverture');
+    await audit('Sessions — ouvrir aux inscriptions', 'confirmation');
+    await clickText('Ouvrir aux inscriptions', "document.querySelector('[role=dialog]')");
+    await dialogClosed('session ouverte');
+    await waitFor("document.querySelector('main tbody').textContent.includes('Ouverte aux inscriptions')", 'état Ouverte affiché', 15000);
+    await expectThat('la session passe « Ouverte aux inscriptions » et « À venir »', `(() => { const t = document.querySelector('main tbody').textContent; return t.includes('Ouverte aux inscriptions') && t.includes('À venir'); })()`);
+
+    // Reporter : motif obligatoire, nouvelle date de début, la fin suit.
+    await sessionMenu('Reporter');
+    await dialogOpen();
+    const reportedStart = addIsoDays(sessionStart, 7);
+    await setField('catalogue-startDate', reportedStart);
+    await clickText('Enregistrer', "document.querySelector('[role=dialog]')");
+    await sleep(400);
+    await expectThat('le report sans motif est refusé avant l’envoi (motif en surbrillance)', `document.getElementById('catalogue-reason').getAttribute('aria-invalid') === 'true'`);
+    await setField('catalogue-reason', 'Le formateur n’est pas disponible cette semaine-là');
+    await audit('Sessions — reporter', 'nouvelle date, motif');
+    await clickText('Enregistrer', "document.querySelector('[role=dialog]')");
+    await dialogClosed('session reportée');
+    await sleep(800);
+    const postponed = await rowText(certificateTitle);
+    const reportedFr = await js(`new Intl.DateTimeFormat('fr-FR', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' }).format(new Date('${reportedStart}T00:00:00Z')).replace(/[\\u202f\\u00a0]/g, ' ')`);
+    await expectThat('la session reportée affiche sa nouvelle date de début et reste « Ouverte aux inscriptions »', `${JSON.stringify(postponed)}.includes(${JSON.stringify(reportedFr)}) && ${JSON.stringify(postponed)}.includes('Ouverte aux inscriptions')`);
+
+    // Annuler : motif obligatoire, la session reste listée avec son motif.
+    await sessionMenu('Annuler la session');
+    await dialogOpen();
+    await clickText('Enregistrer', "document.querySelector('[role=dialog]')");
+    await sleep(400);
+    await expectThat('l’annulation sans motif est refusée avant l’envoi', `document.getElementById('catalogue-reason').getAttribute('aria-invalid') === 'true'`);
+    await setField('catalogue-reason', 'Pas assez d’inscrits');
+    await audit('Sessions — annuler', 'motif obligatoire');
+    await clickText('Enregistrer', "document.querySelector('[role=dialog]')");
+    await dialogClosed('session annulée');
+    await sleep(800);
+    const cancelled = await rowText(certificateTitle);
+    await expectThat('la session annulée affiche « Annulée » et son motif, et n’offre plus aucune action', `${JSON.stringify(cancelled)}.includes('Annulée') && ${JSON.stringify(cancelled)}.includes('Motif : Pas assez d’inscrits') && ${JSON.stringify(await js(`(() => { const r = [...document.querySelectorAll('main tbody tr')].find((x) => x.textContent.includes(${JSON.stringify(certificateTitle)})); return r.querySelector('summary') === null; })()`))}`);
+    await js(`[...document.querySelectorAll('[role=group][aria-label="État de la session"] button')].find((b) => b.textContent.trim() === 'Annulées').click()`);
+    await sleep(1200);
+    await expectThat('le filtre « Annulées » montre la session annulée', `document.querySelector('main tbody').textContent.includes(${JSON.stringify(certificateTitle)})`);
+    await audit('Sessions — annulées', 'filtre d’état');
+    await shot('sessions-annulee');
+
+    if (process.env.AUDIT_TRAINING_ONLY) throw new Error('Arrêt volontaire (AUDIT_TRAINING_ONLY) : parcours limité au catalogue et aux sessions');
   }
 
   await go('/companies');

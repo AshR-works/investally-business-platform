@@ -37,6 +37,10 @@ export type SeedOp =
   | { k: 'module'; key: string; title: string; requiresWorkstations: boolean }
   | { k: 'training'; key: string; program: string; title: string; objectives: string; priceAmount: string; modulePriceAmount: string; modules: string[] }
   | { k: 'room'; key: string; name: string; kind: 'WORKSTATIONS' | 'CLASSROOM'; learnerSeats: number; unavailableSeats: number; trainerSeats: number; equipment: string }
+  | { k: 'session'; key: string; training: string; room: string; trainer: string; startDate: string; capacity: number }
+  | { k: 'sessionOpen'; session: string }
+  | { k: 'sessionPostpone'; session: string; startDate: string; reason: string }
+  | { k: 'sessionCancel'; session: string; reason: string }
   | { k: 'ambassador'; key: string; lastName: string; firstName: string; origin: 'CLIENT' | 'LEARNER'; company?: string; email: string; phone: string; appointedOn: string; note: string };
 
 export interface SeedEvent {
@@ -183,11 +187,12 @@ const FORMATEURS: SeedOp[] = TRAINERS.map(([lastName, firstName, specialties, lo
 }));
 
 /** Les blocs du jeu : chacun se charge seul sur une démo existante (marqueur propre), dans l'ordre des dépendances. */
-export type SeedBlock = 'crm' | 'catalogue' | 'formateurs';
-export const SEED_BLOCKS: readonly SeedBlock[] = ['crm', 'catalogue', 'formateurs'];
+export type SeedBlock = 'crm' | 'catalogue' | 'formateurs' | 'sessions';
+export const SEED_BLOCKS: readonly SeedBlock[] = ['crm', 'catalogue', 'formateurs', 'sessions'];
 export function blockOf(op: SeedOp): SeedBlock {
   if (op.k === 'program' || op.k === 'module' || op.k === 'training' || op.k === 'room') return 'catalogue';
   if (op.k === 'trainer') return 'formateurs';
+  if (op.k === 'session' || op.k === 'sessionOpen' || op.k === 'sessionPostpone' || op.k === 'sessionCancel') return 'sessions';
   return 'crm';
 }
 
@@ -442,6 +447,34 @@ export function buildPlan({ anchor, seed = 2026 }: PlanOptions): SeedEvent[] {
   const catalogueAt = new Date(day0.getTime() - 365 * DAY + 9 * 3_600_000);
   CATALOGUE.forEach((op, index) => events.push({ at: new Date(catalogueAt.getTime() + index * 60_000), who: 'commercial', op }));
   FORMATEURS.forEach((op, index) => events.push({ at: new Date(catalogueAt.getTime() + (CATALOGUE.length + index) * 60_000), who: 'commercial', op }));
+
+  // Sessions de formation : sept sessions autour de la date de référence, toutes dans la salle de marchés, une semaine après l'autre (aucun chevauchement).
+  // Deux terminées, une en cours (si la date de référence est un jour de cours), une ouverte, une planifiée, une reportée, une annulée. Les sessions sont
+  // posées trois semaines avant leur début (jamais dans le futur) ; elles désignent le catalogue et les formateurs par leur nom, ce qui permet de les
+  // charger seules sur une démo qui a déjà le catalogue.
+  let monday0 = day0.getTime();
+  while (new Date(monday0).getUTCDay() !== 1) monday0 -= DAY;
+  const weekStart = (weeks: number) => isoDay(new Date(monday0 + weeks * 7 * DAY));
+  const certificate = (key: string) => CERTIFICATES.find((c) => c.key === key)!.title;
+  const trainerMail = (index: number) => `${TRAINERS[index]![3]}@formateurs.investudy.test`;
+  const salle = 'Salle de marchés';
+  const SESSIONS: readonly { key: string; certificate: string; trainer: number; week: number; capacity: number; open: boolean; postponeTo?: number; cancelReason?: string }[] = [
+    { key: 'session-expert-passee', certificate: 'expert', trainer: 1, week: -5, capacity: 13, open: true },
+    { key: 'session-etudiants-passee', certificate: 'etudiants', trainer: 4, week: -3, capacity: 12, open: true },
+    { key: 'session-dirigeants-en-cours', certificate: 'dirigeants', trainer: 2, week: 0, capacity: 10, open: true },
+    { key: 'session-banque-ouverte', certificate: 'banque', trainer: 3, week: 1, capacity: 13, open: true },
+    { key: 'session-avocats-planifiee', certificate: 'avocats', trainer: 0, week: 2, capacity: 10, open: false },
+    { key: 'session-expert-reportee', certificate: 'expert', trainer: 1, week: 3, capacity: 13, open: false, postponeTo: 4 },
+    { key: 'session-etudiants-annulee', certificate: 'etudiants', trainer: 4, week: 5, capacity: 12, open: false, cancelReason: 'Pas assez d’inscrits : la session est reprogrammée au prochain cycle.' },
+  ];
+  SESSIONS.forEach((s) => {
+    const start = weekStart(s.week);
+    const plannedAt = Math.min(new Date(`${start}T00:00:00.000Z`).getTime() - 21 * DAY, day0.getTime() - 3 * DAY) + 10 * 3_600_000;
+    events.push({ at: new Date(plannedAt), who: 'commercial', op: { k: 'session', key: s.key, training: certificate(s.certificate), room: salle, trainer: trainerMail(s.trainer), startDate: start, capacity: s.capacity } });
+    if (s.open) events.push({ at: new Date(plannedAt + DAY), who: 'commercial', op: { k: 'sessionOpen', session: s.key } });
+    if (s.postponeTo !== undefined) events.push({ at: new Date(plannedAt + 2 * DAY), who: 'commercial', op: { k: 'sessionPostpone', session: s.key, startDate: weekStart(s.postponeTo), reason: 'Le formateur n’est pas disponible la semaine prévue.' } });
+    if (s.cancelReason) events.push({ at: new Date(plannedAt + 2 * DAY), who: 'commercial', op: { k: 'sessionCancel', session: s.key, reason: s.cancelReason } });
+  });
 
   // Ordre chronologique stable (à date égale, l'ordre de construction est conservé).
   return events.map((event, order) => ({ event, order })).sort((a, b) => a.event.at.getTime() - b.event.at.getTime() || a.order - b.order).map((x) => x.event);

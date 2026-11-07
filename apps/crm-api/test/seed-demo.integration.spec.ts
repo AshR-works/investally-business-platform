@@ -41,6 +41,7 @@ describeDb('Jeu de données de démonstration (cas d’usage + PostgreSQL)', () 
     await db.company.deleteMany({ where: { id: { in: companies } } });
     // Catalogue Investudy posé par le jeu : certificats (et leurs modules liés), modules, programme, salle.
     const programs = (await db.program.findMany({ where: { name: 'Certificats Marchés financiers' }, select: { id: true } })).map((p) => p.id);
+    await db.trainingSession.deleteMany({ where: { trainer: { emailKey: { endsWith: TRAINERS_MARKER } } } });
     await db.training.deleteMany({ where: { programId: { in: programs } } });
     await db.program.deleteMany({ where: { id: { in: programs } } });
     await db.courseModule.deleteMany({ where: { trainings: { none: {} }, title: { in: ['Fondations Économiques & Architecture de la Place Financière', 'Ingénierie des Instruments Financiers, Données & Acteurs de Marché', 'Asset Management, Construction & Évaluation de Portefeuille', 'Pratique du Trading, Décision d’Investissement & Analyse Quantitative', 'Ingénierie Financière, IPO & Levées de Fonds en Zone CEMAC', 'Réglementation des Marchés Financiers en Zone CEMAC & Pouvoirs de la COSUMAF', 'Portfolio Engineering, Asset Allocation & Live Trading (Capstone Project)'] } } });
@@ -51,7 +52,7 @@ describeDb('Jeu de données de démonstration (cas d’usage + PostgreSQL)', () 
 
   it('charge tout le plan par les cas d’usage, sans erreur, puis refuse de recharger (idempotent)', async () => {
     const first = await runSeed(t.app as never, plan, { users });
-    expect(first).toMatchObject({ skipped: false, executed: plan.length, loaded: ['crm', 'catalogue', 'formateurs'] });
+    expect(first).toMatchObject({ skipped: false, executed: plan.length, loaded: ['crm', 'catalogue', 'formateurs', 'sessions'] });
     const second = await runSeed(t.app as never, plan, { users });
     expect(second).toMatchObject({ skipped: true, executed: 0 });
     expect(await t.prisma.db.company.count({ where: { name: SEED_MARKER } })).toBe(1);
@@ -60,6 +61,7 @@ describeDb('Jeu de données de démonstration (cas d’usage + PostgreSQL)', () 
   it('une démo ANCIENNE (sans catalogue ni formateurs) reçoit ces blocs sans que le reste soit touché ; un nouveau passage ne fait rien', async () => {
     const db = t.prisma.db;
     // On simule une base chargée avant l'arrivée du catalogue : on retire les deux blocs récents.
+    await db.trainingSession.deleteMany({ where: { trainer: { emailKey: { endsWith: TRAINERS_MARKER } } } });
     await db.training.deleteMany({ where: { program: { name: CATALOGUE_MARKER } } });
     await db.program.deleteMany({ where: { name: CATALOGUE_MARKER } });
     await db.courseModule.deleteMany({ where: { trainings: { none: {} } } });
@@ -69,8 +71,8 @@ describeDb('Jeu de données de démonstration (cas d’usage + PostgreSQL)', () 
     const auditBefore = await db.auditLog.count({ where: { entityType: 'Company' } });
 
     const reload = await runSeed(t.app as never, plan, { users });
-    expect(reload).toMatchObject({ skipped: false, loaded: ['catalogue', 'formateurs'], executed: 1 + 7 + 5 + 2 + 5 });
-    expect(reload.counts).toMatchObject({ program: 1, module: 7, training: 5, room: 2, trainer: 5 });
+    expect(reload).toMatchObject({ skipped: false, loaded: ['catalogue', 'formateurs', 'sessions'], executed: 1 + 7 + 5 + 2 + 5 + 13 });
+    expect(reload.counts).toMatchObject({ program: 1, module: 7, training: 5, room: 2, trainer: 5, session: 7, sessionOpen: 4, sessionPostpone: 1, sessionCancel: 1 });
     expect(reload.counts.company).toBeUndefined();
     expect(await db.company.count()).toBe(companiesBefore);
     expect(await db.auditLog.count({ where: { entityType: 'Company' } })).toBe(auditBefore);

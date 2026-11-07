@@ -75,6 +75,19 @@ describe('Contrat anti-IDOR : classement de toutes les routes (structurel)', () 
     }
   });
 
+  it('les routes « lecture-formateur » (sessions) : seul le formateur lit en portée Propre, tous les autres rôles en portée Tous', () => {
+    const reads = routes.filter((r) => IDOR_ROUTES[r.key] === 'lecture-formateur');
+    expect(reads.map((r) => r.key)).toEqual(['GET /sessions/:id']);
+    for (const route of reads) {
+      expect([route.key, route.permission]).toEqual([route.key, 'training.session.read']);
+      for (const role of Object.values(RoleCode)) {
+        for (const grant of resolveGrants(role).filter((g) => g.permission === route.permission)) {
+          expect([route.key, role, grant.scope]).toEqual([route.key, role, role === RoleCode.Trainer ? Scope.Own : Scope.All]);
+        }
+      }
+    }
+  });
+
   it('les routes « objet » exigent toutes une permission du catalogue (le contrôle par objet vient en plus)', () => {
     for (const route of routes.filter((r) => IDOR_ROUTES[r.key] === 'objet')) {
       expect([route.key, Boolean(route.permission)]).toEqual([route.key, true]);

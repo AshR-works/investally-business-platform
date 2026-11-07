@@ -11,8 +11,11 @@
  *   (ex. `iam.session.revoke`) ; la garde doit alors exiger la portée Tous (`minScope: 'ALL'`).
  * - `referentiel` : catalogue partagé sans propriétaire (programmes, formations, salles, formateurs). Aucun objet n'est « à soi » : tous les
  *   rôles qui détiennent la permission l'ont en portée Tous (le test le vérifie) ; il n'y a donc pas d'objet hors portée à masquer.
+ * - `lecture-formateur` : lecture d'un référentiel partagé dont la portée est réduite pour un seul rôle : le formateur (« Propre ») ne voit que les
+ *   sessions dont le formateur est lié à son compte ; tous les autres rôles lisent en portée Tous. Hors portée = « introuvable » (même réponse que
+ *   pour un objet inexistant), vérifié par `sessions-http.integration.spec.ts`.
  */
-export type IdorClass = 'objet' | 'admin' | 'portee-tous' | 'referentiel';
+export type IdorClass = 'objet' | 'admin' | 'portee-tous' | 'referentiel' | 'lecture-formateur';
 
 export const IDOR_ROUTES: Record<string, IdorClass> = {
   'GET /companies/:id': 'objet',
@@ -98,6 +101,11 @@ export const IDOR_ROUTES: Record<string, IdorClass> = {
   'GET /trainers/:id': 'referentiel',
   'PUT /trainers/:id': 'referentiel',
   'POST /trainers/:id/status': 'referentiel',
+  'GET /sessions/:id': 'lecture-formateur',
+  'PUT /sessions/:id': 'referentiel',
+  'POST /sessions/:id/open': 'referentiel',
+  'POST /sessions/:id/postpone': 'referentiel',
+  'POST /sessions/:id/cancel': 'referentiel',
 
   'GET /admin/users/:id': 'admin',
   'PATCH /admin/users/:id': 'admin',

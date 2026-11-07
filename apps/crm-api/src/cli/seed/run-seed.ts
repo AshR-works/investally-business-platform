@@ -12,6 +12,7 @@ import { ChangePayoutUseCase } from '../../modules/business-development/applicat
 import { CancelReceiptUseCase, RegisterReceiptUseCase } from '../../modules/business-development/application/receipt-use-cases';
 import { UpdateCompanyUseCase } from '../../modules/business-development/application/update-company.use-case';
 import { CreateModuleUseCase, CreateProgramUseCase, CreateRoomUseCase, CreateTrainerUseCase, CreateTrainingUseCase } from '../../modules/training/application/catalogue-use-cases';
+import { CancelSessionUseCase, OpenSessionUseCase, PlanSessionUseCase, PostponeSessionUseCase } from '../../modules/training/application/session-use-cases';
 import { AuthorizationService } from '../../modules/iam/application/authorization.service';
 import type { AccessContext } from '../../modules/iam';
 import { PrismaService } from '../../platform/prisma.service';
@@ -59,6 +60,7 @@ export async function runSeed(app: ProviderSource, allEvents: readonly SeedEvent
     crm: (await prisma.db.company.count({ where: { name: SEED_MARKER } })) > 0,
     catalogue: (await prisma.db.program.count({ where: { name: CATALOGUE_MARKER } })) > 0,
     formateurs: (await prisma.db.trainer.count({ where: { emailKey: { endsWith: TRAINERS_MARKER } } })) > 0,
+    sessions: (await prisma.db.trainingSession.count({ where: { trainer: { emailKey: { endsWith: TRAINERS_MARKER } } } })) > 0,
   };
   const toLoad = SEED_BLOCKS.filter((block) => !present[block]);
   if (toLoad.length === 0) {
@@ -87,6 +89,7 @@ export async function runSeed(app: ProviderSource, allEvents: readonly SeedEvent
     const row = await (prisma.db[kind] as unknown as { findUniqueOrThrow(args: { where: { id: string }; select: { version: true } }): Promise<{ version: number }> }).findUniqueOrThrow({ where, select: { version: true } });
     return row.version;
   };
+  const sessionVersion = async (key: string): Promise<number> => (await prisma.db.trainingSession.findUniqueOrThrow({ where: { id: id(key) }, select: { version: true } })).version;
   const counts: Record<string, number> = {};
 
   let executed = 0;
@@ -218,6 +221,27 @@ export async function runSeed(app: ProviderSource, allEvents: readonly SeedEvent
             ids.set(op.key, (await use(CreateRoomUseCase).execute({
               name: op.name, kind: op.kind, learnerSeats: op.learnerSeats, unavailableSeats: op.unavailableSeats, trainerSeats: op.trainerSeats, equipment: op.equipment, actor,
             })).id);
+            break;
+          case 'session': {
+            // Le catalogue et les formateurs se désignent par leur nom : le bloc des sessions se charge seul sur une démo qui les a déjà.
+            const [training, room, trainer] = await Promise.all([
+              prisma.db.training.findFirstOrThrow({ where: { title: op.training, program: { name: CATALOGUE_MARKER } }, select: { id: true } }),
+              prisma.db.room.findFirstOrThrow({ where: { name: op.room }, select: { id: true } }),
+              prisma.db.trainer.findFirstOrThrow({ where: { emailKey: op.trainer.toLowerCase() }, select: { id: true } }),
+            ]);
+            ids.set(op.key, (await use(PlanSessionUseCase).execute({
+              trainingId: training.id, rhythm: 'DAY', startDate: op.startDate, roomId: room.id, trainerId: trainer.id, capacity: op.capacity, actor,
+            })).id);
+            break;
+          }
+          case 'sessionOpen':
+            await use(OpenSessionUseCase).execute({ id: id(op.session), version: await sessionVersion(op.session), actor });
+            break;
+          case 'sessionPostpone':
+            await use(PostponeSessionUseCase).execute({ id: id(op.session), version: await sessionVersion(op.session), startDate: op.startDate, reason: op.reason, actor });
+            break;
+          case 'sessionCancel':
+            await use(CancelSessionUseCase).execute({ id: id(op.session), version: await sessionVersion(op.session), reason: op.reason, actor });
             break;
           case 'ambassador': {
             const view = await use(RegisterAmbassadorUseCase).execute({

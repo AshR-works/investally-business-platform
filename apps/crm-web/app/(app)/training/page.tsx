@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import Link from 'next/link';
 import { Badge } from '../../../components/data/badge';
 import { Card } from '../../../components/data/card';
 import { DataTable, type Column } from '../../../components/data/data-table';
@@ -182,6 +183,7 @@ export default function TrainingCatalogPage() {
         description="Programmes, certificats, modules, salles, formateurs et rythmes de session. Un élément s’archive (ou se désactive) et se réactive ; il ne se supprime jamais."
         actions={canWrite && listed ? <button type="button" onClick={() => setDialog(newDialog())}>{NEW_LABEL[listed]}</button> : undefined}
       />
+      {can(profile, 'training.session.read') && <p className="m-0 mb-3"><Link href="/training/sessions">Sessions de formation →</Link></p>}
       {loadError && <p role="alert" className="error">{loadError}</p>}
       <Card>
         <Toolbar>
