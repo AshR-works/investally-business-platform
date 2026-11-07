@@ -1,0 +1,57 @@
+# S5.2a — sessions de formation : recette
+
+*Branche `sprint/s5-2a-sessions` (partie de `main`, après S5.1) · 2026-11-07 · arbitrage [ARBITRAGE-SESSIONS-ET-INSCRIPTIONS-S5-2](cadrages/ARBITRAGE-SESSIONS-ET-INSCRIPTIONS-S5-2.md) (décisions D-SESS-1 à D-SESS-7 prises le 2026-11-06 : « applique les recommandations ») ; cas d'usage CU-I-20 à CU-I-24. Première des deux parties de S5.2 : **les sessions** ; les apprenants et les inscriptions sont en S5.2b.*
+
+## Ce qui est livré
+| Demande | Réponse |
+|---|---|
+| **Page « Sessions de formation »** | Nouveau module du hub (`/training/sessions`) et lien depuis le catalogue : tableau (certificat et rythme, dates, salle, formateur, capacité, état avec phase et motif d'annulation), filtres par état, salle, formateur et période, pagination par 20, actions de ligne selon l'état, les dates et les droits |
+| **Planifier une session** | Un certificat, un rythme (jour ; le soir est « en préparation » donc refusé), une **date de début** (un jour de cours du lundi au vendredi, pas dans le passé), une salle, un formateur, une capacité. **La date de fin se déduit du rythme** (cinq jours de cours pour le rythme du jour, en sautant les week-ends) et s'affiche en direct dans le formulaire |
+| **Capacité plafonnée par la salle** (D-SESS-5 B) | La capacité ne peut pas dépasser les **places utiles** de la salle (salle de marchés : 13 et non 14 puisqu'un poste est en panne), à la planification comme à la modification |
+| **Module pratique, salle avec postes** (D-SESS-6 B) | Un certificat contenant au moins un module pratique sur poste exige une salle « avec postes de travail » (bloquant) ; un certificat théorique peut se tenir en salle de cours |
+| **Aucun chevauchement** | Une salle ou un formateur déjà pris pendant la période est refusé (409), avec le nom de la session en conflit. Les sessions annulées libèrent leurs dates. Deux planifications simultanées de la même salle : une seule réussit (la salle et le formateur sont verrouillés dans la transaction, dans un ordre fixe) |
+| **Modifier** | Salle, formateur, capacité, tant que la session n'a pas commencé ; une fois commencée, seule la capacité change. Version lue contrôlée |
+| **Ouvrir aux inscriptions** | Planifiée → Ouverte, une seule fois (confirmation) |
+| **Reporter** (D-SESS-3 B) | Nouvelle **date de début** (la fin suit le rythme), **motif obligatoire**, les inscrits seront conservés ; refusé une fois la session commencée, à la même date, un week-end ou dans le passé ; le chevauchement est recontrôlé à la nouvelle date |
+| **Annuler** | Motif obligatoire, conservé et affiché ; une session annulée (ou clôturée) ne se modifie plus ; une session clôturée ne s'annule pas |
+| **Phase déduite des dates** | « À venir », « En cours », « Terminée » ne sont jamais saisies |
+| **Lecture et portée** | Responsable Investudy et Super administrateur écrivent ; Direction, Responsable commercial, chargé de compte, Support et Finance lisent (portée Tous) ; **le formateur ne voit que les sessions dont le formateur est lié à son compte** ; une session d'un autre est « introuvable » (même réponse qu'une session inexistante) ; RH et Fiscalité n'ont aucun accès |
+| **Audit** | Création et chaque changement (ancienne et nouvelle valeur, motif du report) tracés dans la même transaction |
+| **Base de données** | Migration `20261113000000_s5_2a_sessions` : table, deux types d'état, quatre index (salle, formateur, certificat, état), clés étrangères **sans cascade** (une salle, un formateur ou un certificat utilisé ne se supprime pas), contraintes : capacité de 1 à 1000, fin non antérieure au début, motif présent exactement quand la session est annulée, version positive |
+| **Jeu de démonstration** | Nouveau bloc **« sessions »** chargé seul sur une démo qui a déjà le catalogue : 7 sessions (deux terminées, une en cours si la date de référence est un jour de cours, une ouverte, une planifiée, une reportée, une annulée), toutes dans la salle de marchés, une semaine après l'autre |
+
+## Preuves
+| Contrôle | Résultat |
+|---|---|
+| Types (`tsc`, API et web), architecture (`pnpm arch`) | 0 erreur · **270 modules, aucune violation** |
+| Tests unitaires de l'API | **1005 réussis**, 1 ignoré (59 suites) ; 35 nouveaux : dates et règles du domaine (15), cas d'usage des sessions (18 : planifier, capacité, salle à postes, chevauchements, modifier, ouvrir, reporter, annuler, portée du formateur, phase), plan du jeu de démonstration (1), contrat anti-IDOR structurel (1) |
+| **Tests d'intégration (PostgreSQL jetable)** | **392 tests, 28 suites** : passe complète lancée seule sur une base neuve : **371 réussis, 21 en échec, 24 suites vertes sur 28**. Les 21 échecs sont tous des **dépassements de délai** (5 s par défaut, ou 60 à 120 s pour les plus longs) dans quatre suites sans lien avec les sessions : `ambassadors-http`, `offers-http`, `core-schema`, `login-history`. Ces quatre suites, rejouées ensemble (avec une cinquième du même motif) : **58 / 58**. Les 392 tests sont donc verts, **mais pas en une seule passe** (voir les réserves). Nouveaux : sessions de bout en bout (9 scénarios : cycle de vie et audit, règles croisées, chevauchements, **deux planifications simultanées**, droits par rôle, **portée du formateur**, liste filtrée, verrou optimiste de la base, contraintes de la base) ; jeu de démonstration par blocs (6 scénarios dont la démo ancienne qui reçoit les sessions) ; contrat IDOR (8) |
+| IDOR | Nouvelle classe **« lecture-formateur »** pour la lecture d'une session (le formateur en portée « Propre », tous les autres en portée « Tous », vérifié rôle par rôle) ; les cinq routes d'écriture sont classées « référentiel » (permission détenue en portée « Tous » seulement). La portée du formateur est prouvée de bout en bout : sa liste ne contient que ses sessions, la session d'un autre renvoie **exactement la réponse d'une session inexistante** et ne fuit aucun identifiant |
+| Tests de l'interface | **555 / 555** (27 fichiers) ; 19 nouveaux : dates et durée **comparées au domaine réel du serveur**, validations de planification, de modification, de report et d'annulation, actions possibles selon l'état, les dates et les droits, module du hub |
+| **Mutants** | **50 / 50 tués** (script `scripts/mutants/s52a-sessions.py` : week-end, durée, bornes de chevauchement, date passée, rythme du soir, capacité, salle et formateur après le début, report et annulation sans motif, report à la même date, fin non recalculée, états, places utiles, module pratique en salle de cours, chevauchement et verrou absents, salle ou formateur ou certificat désactivés, portée du formateur (lecture et liste, serveur et base), verrou optimiste (cas d'usage et base), trois droits permutés, quatre contraintes de la base, sept règles de l'interface, chargement par blocs). Un survivant a été trouvé en cours de route (S34 : le verrou optimiste de la base n'était pas prouvé quand le cas d'usage le contrôle déjà) : test ajouté (deux lectures de la même version, la seconde écriture est refusée), mutant tué |
+| **Navigateur réel (Edge + axe-core)** | **Non rejoué dans cette recette** : le lancement du parcours a été refusé par l'environnement (il arrête des processus et monte une pile). Le parcours est écrit dans `scripts/a11y-audit.mjs` (planifier avec erreurs annoncées, salle de cours refusée, capacité de 14 refusée, conflit de salle, ouvrir, reporter, annuler, filtre, quatre largeurs) mais n'a pas encore tourné : voir les réserves |
+| Fiches de test | Fiche d'interface 20 « Sessions de formation » ; fiche de session S5.2a |
+
+## Défauts trouvés par la recette et corrigés
+- **Accord du message de conflit** : « La salle … est déjà **pris** » (masculin) ; corrigé « est déjà **prise** » pour une salle, « pris » pour un formateur. Trouvé par un test.
+- **Lacune de test (mutant S34)** : voir plus haut.
+- Côté outils : l'hypothèse de départ « le Support n'a aucun accès aux sessions » était fausse (Support et Finance lisent en portée Tous) ; les tests de droits sont corrigés en conséquence (RH n'a aucun accès).
+
+## Réserves sur la recette
+- **Parcours navigateur non rejoué** : les écrans (liste, quatre fenêtres, filtres) sont couverts par les tests de l'interface (validations, actions, cohérence avec le serveur) et par les tests d'intégration de l'API, **mais pas par un navigateur réel ni par l'audit d'accessibilité automatique** ; aucun passage au lecteur d'écran. À rejouer dès que la pile locale est arrêtée.
+- **Pas de vue calendrier** (CU-I-24) : la liste filtrée par période en tient lieu (D150).
+- **Aucun contrôle sur les inscriptions** : la capacité n'est pas encore comparée au nombre d'inscrits confirmés, et annuler ou reporter une session ne touche aucune inscription (elles n'existent pas encore) : S5.2b (D151).
+- **Une salle dont un poste tombe en panne après la planification** ne signale pas les sessions touchées (D152).
+- **« Aujourd'hui » se compte en UTC** (le Cameroun est en UTC+1 : une session « aujourd'hui » planifiée juste après minuit locale peut être refusée comme passée) ; jours fériés non pris en compte (D147) (D153).
+- Aucune notification (V8, comme D137) ; le formateur interne n'a pas encore d'écran de ses sessions à lui au-delà de la liste.
+- **Passe d'intégration complète instable sur cette machine** : 21 dépassements de délai dans quatre suites étrangères aux sessions ; chacune passe seule. C'est la dette **D149**, dont le délai commun de 60 s (PR #47) a été fusionné dans `main` **après** cette passe : il n'était pas encore dans cette branche. La cause de la lenteur n'est pas trouvée.
+- Testé sous Node 26.7, pas rejoué sous Node 22.
+
+## Dette et à confirmer
+- **D150 à D153** (`docs/TECH-DEBT.md`). **D149** (passes d'intégration complètes instables sur cette machine) est traitée à part, dans la PR du délai commun.
+- **D48 — à confirmer** : valeurs par défaut appliquées en plus de D47 (états Planifiée / Ouverte / Clôturée / Annulée, fin déduite du rythme en cinq jours de cours, jours fériés ignorés, une session commencée ne change plus de salle ni de formateur, une session ne se supprime pas, vue sans calendrier).
+
+## À valider
+1. Les écrans (liste, planifier, modifier, ouvrir, reporter, annuler) et les valeurs par défaut de D48.
+2. Après rechargement de la démo (`node scripts/local-stack.mjs --demo --rebuild`, avec **une réinitialisation de la base** : nouvelle migration `20261113000000_s5_2a_sessions`), vérifier que la page Sessions montre les 7 sessions de démonstration.
+3. « Je valide S5.2a » → fusion avec commit de fusion et étiquette `s5-2a-validated`.

@@ -38,7 +38,7 @@ export function CatalogueDialogs({ dialog, onClose, onDone }: { dialog: Catalogu
 }
 
 /** Squelette commun : validation à la première tentative d'envoi, premier champ fautif pris en focus, erreur serveur annoncée. */
-function FormDialog<F extends Record<string, string>>({ title, intro, errors, submit, onClose, children }: {
+export function FormDialog<F extends Record<string, string>>({ title, intro, errors, submit, onClose, children }: {
   title: string; intro: string; errors: Partial<Record<keyof F, string>>; submit: () => Promise<void>; onClose: () => void; children: (props: { submitted: boolean }) => ReactNode;
 }) {
   const [submitted, setSubmitted] = useState(false);

@@ -25,7 +25,7 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <p><em>Application de la <a href="../CHARTE-DE-TESTS.html">charte de tests</a> : une fiche par <strong>interface</strong> (écran) et une fiche par <strong>session</strong> (lot). Elles servent à la recette utilisateur et à la non-régression.</em></p>
 <h2>Comment s'en servir</h2>
 <ol><li><strong>Avant une validation</strong> : ouvrir les fiches de la session et des écrans concernés, les rejouer avec les rôles indiqués, cocher, dater, signer.</li><li><strong>Après un changement d'écran</strong> : rejouer sa fiche d'interface en entier (non-régression).</li><li><strong>Un écart</strong> : le noter dans la section « Écarts constatés » de la fiche ; il devient un défaut (charte, § 10).</li><li><strong>Mise à jour</strong> : un lot qui modifie un écran met à jour sa fiche d'interface ; la fiche de session d'un nouveau lot est créée à partir de sa recette (<code>docs/SPRINT-*-RECETTE.md</code>).</li></ol>
-<h2>Fiches d'interface (19)</h2>
+<h2>Fiches d'interface (20)</h2>
 <div class="table-wrap"><table><thead><tr><th>N°</th><th>Écran</th><th>Route</th><th>Lots</th><th>Dernière exécution</th></tr></thead><tbody>
 <tr><td>01</td><td><a href="interfaces/01-connexion.html">Connexion</a></td><td><code>/login</code></td><td>S3.1, S3.4, H2a, S3.7</td><td></td></tr>
 <tr><td>02</td><td><a href="interfaces/02-second-facteur.html">Second facteur (MFA)</a></td><td><code>/mfa</code></td><td>S3.2, S3.4, H2a, S3.7</td><td></td></tr>
@@ -46,8 +46,9 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td>17</td><td><a href="interfaces/17-ambassadeurs.html">Ambassadeurs</a></td><td><code>/ambassadors</code></td><td>S4.4b</td><td></td></tr>
 <tr><td>18</td><td><a href="interfaces/18-commissions.html">Commissions</a></td><td><code>/commissions</code></td><td>S4.4c</td><td></td></tr>
 <tr><td>19</td><td><a href="interfaces/19-catalogue-formation.html">Catalogue de formation</a></td><td><code>/training</code></td><td>S5.1</td><td></td></tr>
+<tr><td>20</td><td><a href="interfaces/20-sessions-formation.html">Sessions de formation</a></td><td><code>/training/sessions</code></td><td>S5.2a</td><td></td></tr>
 </tbody></table></div>
-<h2>Fiches de session (34)</h2>
+<h2>Fiches de session (35)</h2>
 <div class="table-wrap"><table><thead><tr><th>Session</th><th>Intitulé</th><th>Étiquette</th><th>Vérifications</th><th>Dernière exécution</th></tr></thead><tbody>
 <tr><td><a href="sessions/s1.html">s1</a></td><td>Sprint 1 — Plan de recette (validation avant clôture)</td><td><code>s1-validated</code></td><td>29</td><td></td></tr>
 <tr><td><a href="sessions/s2.html">s2</a></td><td>Sprint 2 — Plan de recette (Sécurité et données Core du CRM)</td><td><code>s2-validated</code></td><td>27</td><td></td></tr>
@@ -83,6 +84,7 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td><a href="sessions/s4-4b.html">s4-4b</a></td><td>S4.4b — ambassadeurs : clients ou apprenants devenus relais commerciaux</td><td><code>s4-4b-validated</code></td><td>9</td><td></td></tr>
 <tr><td><a href="sessions/s4-4c.html">s4-4c</a></td><td>S4.4c — commissions des facilitateurs à verser</td><td><code>s4-4c-validated</code></td><td>11</td><td></td></tr>
 <tr><td><a href="sessions/s5-1.html">s5-1</a></td><td>S5.1 — catalogue Investudy</td><td><code>s5-1-validated</code></td><td>11</td><td></td></tr>
+<tr><td><a href="sessions/s5-2a.html">s5-2a</a></td><td>S5.2a — sessions de formation</td><td>—</td><td>14</td><td></td></tr>
 </tbody></table></div>
 <h2>Remarques</h2>
 <ul><li>Les fiches de session sont <strong>dérivées des recettes</strong> : en cas de doute, la recette fait foi. Celles des premiers sprints (S1 à S3.5) sont surtout des tests automatisés ; leurs « vérifications » rappellent ce que chaque contrôle prouve.</li><li>Les fiches d'interface ne couvrent que les écrans <strong>existants</strong> ; les modules à venir (Formation, Finance, RH, Fiscalité, Stocks, Reporting, Sécurité) n'ont pas encore de fiche.</li><li>Les captures et résultats d'accessibilité sont dans <code>docs/accessibilite/</code>.</li></ul></main></body></html>

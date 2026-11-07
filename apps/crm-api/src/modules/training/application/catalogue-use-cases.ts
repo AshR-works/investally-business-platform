@@ -17,13 +17,13 @@ import {
 } from './catalogue-view';
 
 const MAX_PAGE_SIZE = 100;
-const normalizePage = (query: { page: number; pageSize: number }) => ({
+export const normalizePage = (query: { page: number; pageSize: number }) => ({
   page: Math.max(1, Math.floor(query.page)),
   pageSize: Math.min(MAX_PAGE_SIZE, Math.max(1, Math.floor(query.pageSize))),
 });
 
 /** Une version périmée (la fiche a changé depuis que l'appelant l'a lue) est un conflit. */
-function assertVersion(current: number, expected: number, label: string): void {
+export function assertVersion(current: number, expected: number, label: string): void {
   if (current !== expected) throw new DomainError('CONFLICT', `${label} a été modifié par un autre utilisateur : rechargez la fiche avant de la modifier`);
 }
 

@@ -1,0 +1,61 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fiche de test — Sessions de formation</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="../../INDEX.html">Index</a> · <a href="../../GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="../../ARCHITECTURE.html">Architecture</a> · <a href="../../SECURITY.html">Sécurité</a> · <a href="../../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../../QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="../../TECH-DEBT.html">Dette</a> · <a href="../../CHARTE-DE-TESTS.html">Charte de tests</a> · <a href="../../tests/README.html">Fiches de test</a> · <a href="../../design/README.html">Design</a> · <a href="../../livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>Fiche de test — Sessions de formation</h1>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td><strong>Route</strong></td><td><code>/training/sessions</code></td></tr>
+<tr><td><strong>Livrée par</strong></td><td>S5.2a</td></tr>
+<tr><td><strong>Accès</strong></td><td>Utilisateur avec <code>training.session.read</code> (module « Sessions de formation » du hub, et lien depuis le catalogue).</td></tr>
+<tr><td><strong>Droits</strong></td><td><strong>Lire</strong> : Direction, Responsable commercial, chargé de compte, Support, Finance (toutes les sessions), <strong>formateur : seulement les siennes</strong> (formateur lié à son compte). <strong>Écrire</strong> (planifier, modifier, ouvrir, reporter, annuler) : Responsable Investudy et Super administrateur. RH et Fiscalité : aucun accès.</td></tr>
+<tr><td><strong>Rôles de test</strong></td><td>sa, inv, dir, cc, sup</td></tr>
+</tbody></table></div>
+<p><em>Fiche d'interface de la <a href="../../CHARTE-DE-TESTS.html">charte de tests</a>. À rejouer à chaque changement de l'écran. Cocher, dater, signer ; tout écart devient un défaut.</em></p>
+<h2>Préconditions</h2>
+<p>Pile locale avec le jeu de démonstration (7 sessions de démonstration : deux terminées, une en cours, une ouverte, une planifiée, une reportée, une annulée) ; un compte Responsable Investudy, un compte Direction, un formateur lié à un compte.</p>
+<h2>Scénarios</h2>
+<div class="table-wrap"><table><thead><tr><th>N°</th><th>Scénario</th><th>Étapes</th><th>Résultat attendu</th><th>Constaté (✔ / ✘)</th><th>Date et initiales</th></tr></thead><tbody>
+<tr><td>1</td><td><strong>Liste et filtres</strong></td><td>Ouvrir « Sessions de formation » ; filtrer par état, salle, formateur et période.</td><td>Nombre de sessions annoncé ; chaque ligne montre certificat et rythme, dates, salle, formateur, capacité (« 13 places sur 13 utiles »), état et phase ; état vide lisible ; période à l'envers refusée avec un message.</td><td>☐</td><td></td></tr>
+<tr><td>2</td><td><strong>Planifier : erreurs avant l'envoi</strong></td><td>Valider « Nouvelle session » sans rien saisir.</td><td>Champs en surbrillance, messages annoncés, fenêtre ouverte, premier champ fautif pris en focus.</td><td>☐</td><td></td></tr>
+<tr><td>3</td><td><strong>Date de début</strong></td><td>Saisir un samedi, une date passée, une date correcte.</td><td>Samedi : « jour de cours (du lundi au vendredi) » ; passé refusé ; date correcte : le dernier jour de cours s'affiche en direct (une semaine : le vendredi).</td><td>☐</td><td></td></tr>
+<tr><td>4</td><td><strong>Capacité plafonnée</strong></td><td>Choisir la salle de marchés (14 postes dont 1 en panne) et saisir 14.</td><td>Refusé : la capacité dépasse les places utiles de la salle (13) ; 13 accepté.</td><td>☐</td><td></td></tr>
+<tr><td>5</td><td><strong>Module pratique, salle avec postes</strong></td><td>Choisir un certificat à module pratique et une salle de cours.</td><td>Refusé : « module pratique : choisissez une salle avec postes de travail » ; un certificat théorique est accepté en salle de cours.</td><td>☐</td><td></td></tr>
+<tr><td>6</td><td><strong>Rythme du soir</strong></td><td>Ouvrir la liste des rythmes de la fenêtre.</td><td>Seul le rythme du jour est proposé (le soir est en préparation).</td><td>☐</td><td></td></tr>
+<tr><td>7</td><td><strong>Chevauchement</strong></td><td>Planifier une seconde session dans la même salle ou avec le même formateur sur des dates qui se recouvrent.</td><td>Refus avec un message qui nomme la salle (« est déjà prise ») ou le formateur (« est déjà pris ») et la session en conflit ; fenêtre ouverte ; une session annulée libère ses dates.</td><td>☐</td><td></td></tr>
+<tr><td>8</td><td><strong>Ouvrir aux inscriptions</strong></td><td>Menu de la ligne : « Ouvrir aux inscriptions », confirmer.</td><td>La session passe « Ouverte aux inscriptions » ; l'action n'est plus proposée.</td><td>☐</td><td></td></tr>
+<tr><td>9</td><td><strong>Modifier</strong></td><td>Menu : « Modifier » ; changer la capacité, le formateur, la salle.</td><td>Mêmes plafonds qu'à la planification ; une session commencée : salle et formateur grisés, seule la capacité change.</td><td>☐</td><td></td></tr>
+<tr><td>10</td><td><strong>Reporter</strong></td><td>Menu : « Reporter » ; saisir une nouvelle date de début, sans motif puis avec motif.</td><td>Sans motif : refusé avant l'envoi ; avec motif : nouvelle date, fin recalculée, état conservé, inscrits conservés ; pas de report après le début.</td><td>☐</td><td></td></tr>
+<tr><td>11</td><td><strong>Annuler</strong></td><td>Menu : « Annuler la session » ; sans motif puis avec motif.</td><td>Motif obligatoire ; la session reste listée « Annulée » avec son motif et n'offre plus aucune action ; le filtre « Annulées » la montre.</td><td>☐</td><td></td></tr>
+<tr><td>12</td><td><strong>Portée du formateur</strong></td><td>Se connecter comme formateur lié à un compte.</td><td>Il ne voit que les sessions dont le formateur est lui ; il n'a aucun bouton d'écriture.</td><td>☐</td><td></td></tr>
+<tr><td>13</td><td><strong>Droits de lecture seule</strong></td><td>Direction ou chargé de compte.</td><td>Aucun bouton « Nouvelle session » ni menu d'actions de ligne.</td><td>☐</td><td></td></tr>
+<tr><td>14</td><td><strong>Modification concurrente</strong></td><td>Ouvrir une session dans deux onglets, la modifier dans l'un, puis dans l'autre.</td><td>Le second enregistrement est refusé : « modifiée par un autre utilisateur » (aucun écrasement silencieux).</td><td>☐</td><td></td></tr>
+</tbody></table></div>
+<h2>Accessibilité</h2>
+<ul><li>☐ Clavier seul : Tab et Maj+Tab parcourent tous les contrôles dans un ordre logique ; le focus est toujours visible ; aucun piège de focus hors fenêtre modale.</li><li>☐ Un seul titre de niveau 1 ; pas de saut de niveau (h2 avant h3).</li><li>☐ Chaque champ a un libellé relié ; un champ non conforme est en surbrillance <strong>et</strong> accompagné d'un message écrit relié (<code>aria-describedby</code>), jamais la couleur seule ; le focus va au premier champ en erreur.</li><li>☐ Les messages d'état et d'erreur sont annoncés (<code>role=alert</code> ou <code>aria-live</code>).</li><li>☐ Fenêtres modales : le focus entre dans la fenêtre, Échap la ferme, le focus revient à l'élément d'origine, l'arrière-plan est inerte.</li><li>☐ Lisible à 200 % de zoom et à 375 px de large, sans défilement horizontal de la page.</li><li>☐ Le tableau a un titre (caption) ; chaque menu d'actions de ligne porte le nom de la session ; les filtres d'état forment un groupe de boutons à bascule nommé ; le nombre de sessions est annoncé (<code>aria-live</code>) ; la date de fin calculée est annoncée en direct ; les erreurs de saisie sont annoncées et la fenêtre reste ouverte.</li></ul>
+<h2>Tests automatisés qui couvrent cet écran</h2>
+<ul><li>API : <code>training-session.spec</code> (15 scénarios), <code>session-use-cases.spec</code> (18 scénarios), <code>sessions-http.integration</code> (9 scénarios dont la concurrence et la portée du formateur), <code>idor-contract</code> (classe « lecture-formateur »)</li><li>Web : <code>s56-sessions</code> (19 scénarios, dont la comparaison avec le domaine réel du serveur) ; audit navigateur : parcours écrit dans <code>scripts/a11y-audit.mjs</code>, non rejoué</li></ul>
+<h2>Limites connues</h2>
+<ul><li>Pas de vue calendrier (D150) ; pas d'inscriptions ni de contrôle sur le nombre d'inscrits (S5.2b, D151) ; pas de signalement quand une panne réduit les places utiles (D152) ; « aujourd'hui » compté en UTC et jours fériés ignorés (D153, D147).</li></ul>
+<h2>Écarts constatés</h2>
+<div class="table-wrap"><table><thead><tr><th>Date</th><th>Scénario</th><th>Description</th><th>Défaut ouvert (D…)</th></tr></thead><tbody>
+<tr><td></td><td></td><td></td><td></td></tr>
+</tbody></table></div></main></body></html>

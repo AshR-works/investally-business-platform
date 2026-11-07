@@ -207,6 +207,7 @@ describe('plan du jeu de données de démonstration', () => {
     expect([...byBlock.keys()].sort()).toEqual([...SEED_BLOCKS].sort());
     expect(byBlock.get('formateurs')).toBe(5);
     expect(byBlock.get('catalogue')).toBe(1 + 7 + 5 + 2);
+    expect(byBlock.get('sessions')).toBe(7 + 4 + 1 + 1); // sept sessions, quatre ouvertures, un report, une annulation
     // Aucun bloc ne dépend d'un objet d'un autre : le catalogue et les formateurs n'utilisent que leurs propres clés.
     const keysOf = (block: string) => new Set(plan.filter((e) => blockOf(e.op) === block && 'key' in e.op).map((e) => (e.op as { key: string }).key));
     const catalogueKeys = keysOf('catalogue');
@@ -216,6 +217,32 @@ describe('plan du jeu de données de démonstration', () => {
         for (const m of e.op.modules) expect(catalogueKeys.has(m)).toBe(true);
       }
     }
+  });
+
+  it('planifie sept sessions sans chevauchement, un jour de cours, dans la salle de marchés, avec leur histoire (terminées, en cours, ouverte, planifiée, reportée, annulée)', () => {
+    const sessions = ofKind('session');
+    expect(sessions).toHaveLength(7);
+    for (const s of sessions) {
+      expect([s.key, s.room]).toEqual([s.key, 'Salle de marchés']);
+      expect([s.key, [1, 2, 3, 4, 5].includes(new Date(`${s.startDate}T00:00:00Z`).getUTCDay())]).toEqual([s.key, true]);
+      expect(s.capacity).toBeLessThanOrEqual(13);
+    }
+    // Les dates de début (lundis) sont toutes différentes : une semaine par session, donc aucun chevauchement de salle ni de formateur.
+    expect(new Set(sessions.map((s) => s.startDate)).size).toBe(7);
+    const keys = new Set(sessions.map((s) => s.key));
+    for (const e of plan) {
+      if (e.op.k === 'sessionOpen' || e.op.k === 'sessionPostpone' || e.op.k === 'sessionCancel') expect(keys.has(e.op.session)).toBe(true);
+    }
+    expect(ofKind('sessionOpen')).toHaveLength(4);
+    expect(ofKind('sessionPostpone')).toHaveLength(1);
+    expect(ofKind('sessionCancel')).toHaveLength(1);
+    // Aucune action n'a lieu avant la planification de sa session, et rien n'est daté dans le futur (jamais après la date de référence).
+    const plannedAt = new Map(plan.filter((e) => e.op.k === 'session').map((e) => [(e.op as { key: string }).key, e.at.getTime()]));
+    for (const e of plan) {
+      if (e.op.k === 'sessionOpen' || e.op.k === 'sessionPostpone' || e.op.k === 'sessionCancel') expect(e.at.getTime()).toBeGreaterThan(plannedAt.get(e.op.session)!);
+    }
+    const reported = ofKind('sessionPostpone')[0]!;
+    expect(sessions.find((s) => s.key === reported.session)!.startDate < reported.startDate).toBe(true);
   });
 
   it('ne reprend aucune marque réelle connue du secteur', () => {

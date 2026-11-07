@@ -956,6 +956,7 @@ model Training {
   updatedAt     DateTime        @updatedAt @map("updated_at") @db.Timestamptz(6)
   program       Program         @relation(fields: [programId], references: [id])
   modules       TrainingModule[]
+  sessions      TrainingSession[]
 
   @@unique([programId, titleKey])
   @@map("trainings")
@@ -976,6 +977,7 @@ model Room {
   version   Int             @default(1)
   createdAt DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt DateTime        @updatedAt @map("updated_at") @db.Timestamptz(6)
+  sessions  TrainingSession[]
 
   @@map("rooms")
   @@schema("training")
@@ -995,6 +997,7 @@ model Trainer {
   version     Int             @default(1)
   createdAt   DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt   DateTime        @updatedAt @map("updated_at") @db.Timestamptz(6)
+  sessions    TrainingSession[]
 
   @@map("trainers")
   @@schema("training")
@@ -1030,5 +1033,52 @@ model TrainingModule {
   @@unique([trainingId, position])
   @@index([moduleId])
   @@map("training_modules")
+  @@schema("training")
+}
+
+/// État d'une session de formation (S5.2a). « En cours » se déduit des dates ; CLOSED est posé par la clôture (S5.3).
+enum SessionStatus {
+  PLANNED
+  OPEN
+  CLOSED
+  CANCELLED
+
+  @@schema("training")
+}
+
+/// Rythme d'une session : valeurs de référence codées (jour, soir), voir `domain/rhythms.ts`.
+enum SessionRhythm {
+  DAY
+  EVENING
+
+  @@schema("training")
+}
+
+/// Session de formation : un certificat, un rythme, une salle, un formateur, des dates (début saisi, fin calculée), une capacité.
+/// Jamais supprimée : annulée avec un motif. Pas de propriétaire (référentiel), mais le formateur lié ne voit que les siennes.
+model TrainingSession {
+  id           String        @id @db.Uuid
+  trainingId   String        @map("training_id") @db.Uuid
+  roomId       String        @map("room_id") @db.Uuid
+  trainerId    String        @map("trainer_id") @db.Uuid
+  rhythm       SessionRhythm
+  startDate    DateTime      @map("start_date") @db.Date
+  endDate      DateTime      @map("end_date") @db.Date
+  capacity     Int
+  status       SessionStatus @default(PLANNED)
+  cancelReason String?       @map("cancel_reason") @db.VarChar(500)
+  version      Int           @default(1)
+  createdAt    DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime      @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  training Training @relation(fields: [trainingId], references: [id], onDelete: Restrict)
+  room     Room     @relation(fields: [roomId], references: [id], onDelete: Restrict)
+  trainer  Trainer  @relation(fields: [trainerId], references: [id], onDelete: Restrict)
+
+  @@index([roomId, startDate, endDate])
+  @@index([trainerId, startDate, endDate])
+  @@index([trainingId])
+  @@index([status, startDate])
+  @@map("sessions")
   @@schema("training")
 }

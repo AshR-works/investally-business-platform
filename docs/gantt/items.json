@@ -340,7 +340,13 @@
           "tag": "s5-1-validated"
         },
         {
-          "name": "S5.2 — sessions, apprenants, inscriptions",
+          "name": "S5.2a — sessions de formation",
+          "start": "2026-11-07",
+          "end": "2026-11-07",
+          "state": "wait"
+        },
+        {
+          "name": "S5.2b — apprenants et inscriptions",
           "start": "2026-11-24",
           "end": "2026-11-26",
           "state": "plan"
