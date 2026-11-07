@@ -343,7 +343,8 @@
           "name": "S5.2a — sessions de formation",
           "start": "2026-11-07",
           "end": "2026-11-07",
-          "state": "wait"
+          "state": "done",
+          "tag": "s5-2a-validated"
         },
         {
           "name": "S5.2b — apprenants et inscriptions",
