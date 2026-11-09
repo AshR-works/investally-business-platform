@@ -32,7 +32,7 @@ const form = (over: Partial<PlanForm> = {}): PlanForm => ({ trainingId: 't1', rh
 const session = (over: Partial<Session> = {}): Session => ({
   id: 's1', trainingId: 't1', trainingTitle: 'Certificat trading', programName: 'Marchés financiers', rhythm: { code: 'DAY', label: 'Cours du jour', weeks: 1, totalHours: 35 },
   startDate: '2026-11-16', endDate: '2026-11-20', roomId: 'r1', roomName: 'Salle de marchés', roomKind: 'WORKSTATIONS', roomUsableSeats: 13, trainerId: 'f1', trainerName: 'Ida Interne',
-  capacity: 13, status: 'PLANNED', phase: 'UPCOMING', cancelReason: null, needsWorkstations: true, version: 1, createdAt: '2026-11-06T09:00:00.000Z', ...over,
+  capacity: 13, enrolled: 0, status: 'PLANNED', phase: 'UPCOMING', cancelReason: null, needsWorkstations: true, version: 1, createdAt: '2026-11-06T09:00:00.000Z', ...over,
 });
 
 describe('sessions : dates', () => {

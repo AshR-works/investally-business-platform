@@ -103,11 +103,12 @@ export default function SessionsPage() {
   };
 
   const columns: Column<Session>[] = [
-    { id: 'training', weight: 3.2, header: 'Certificat', cell: (s) => <><strong>{s.trainingTitle}</strong><br /><span className="text-ink-2">{s.rhythm.label}</span></> },
+    { id: 'training', weight: 3.2, header: 'Certificat', cell: (s) => <><Link href={`/training/sessions/${s.id}`}><strong>{s.trainingTitle}</strong></Link><br /><span className="text-ink-2">{s.rhythm.label}</span></> },
     { id: 'period', weight: 3.4, header: 'Dates', cell: (s) => <>{dateText(s.startDate)}<br />→ {dateText(s.endDate)}</> },
     { id: 'room', weight: 2.4, header: 'Salle', cell: (s) => s.roomName },
     { id: 'trainer', weight: 2.2, header: 'Formateur', cell: (s) => s.trainerName },
     { id: 'capacity', weight: 2.4, header: 'Capacité', cell: (s) => capacityText(s) },
+    { id: 'enrolled', weight: 1.6, header: 'Inscrits', align: 'right', cell: (s) => `${s.enrolled} / ${s.capacity}` },
     {
       id: 'status', weight: 2.8, header: 'État',
       cell: (s) => (
@@ -129,7 +130,7 @@ export default function SessionsPage() {
         description="Une session est un certificat donné dans une salle par un formateur, selon un rythme (jour ou soir). La salle et le formateur doivent être libres pendant toute la session. Une session ne se supprime pas : elle s’annule avec un motif."
         actions={canCreate ? <button type="button" onClick={() => setDialog({ kind: 'plan' })}>Nouvelle session</button> : undefined}
       />
-      <p className="m-0 mb-3"><Link href="/training">← Catalogue de formation</Link></p>
+      <p className="m-0 mb-3"><Link href="/training">← Catalogue de formation</Link>{can(profile, 'training.enrollment.read') && <> · <Link href="/training/enrollments">Inscriptions</Link></>}{can(profile, 'training.learner.read') && <> · <Link href="/training/learners">Apprenants</Link></>}</p>
       {loadError && <p role="alert" className="error">{loadError}</p>}
       <Card>
         <Toolbar>

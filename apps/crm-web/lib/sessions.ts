@@ -21,6 +21,8 @@ export interface Session {
   trainerId: string;
   trainerName: string;
   capacity: number;
+  /** Places occupées : inscriptions en attente ou confirmées. */
+  enrolled: number;
   status: SessionStatus;
   phase: SessionPhase;
   cancelReason: string | null;

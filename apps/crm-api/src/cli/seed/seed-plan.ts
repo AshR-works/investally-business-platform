@@ -6,7 +6,7 @@
  */
 
 /** Qui exécute l'événement : un chargé de compte, le Responsable commercial ou la Finance (chacun avec ses droits et sa portée). */
-export type Who = 'compte1' | 'compte2' | 'compte3' | 'commercial' | 'finance';
+export type Who = 'compte1' | 'compte2' | 'compte3' | 'commercial' | 'finance' | 'investudy';
 
 export type SeedOp =
   | { k: 'company'; key: string; name: string; sector: string; country: string; email: string; phone: string; facilitator?: { key: string; lastName: string; firstName: string; phone: string; comment: string; contactMethod: string; isCompanyEmployee: boolean } }
@@ -38,6 +38,11 @@ export type SeedOp =
   | { k: 'training'; key: string; program: string; title: string; objectives: string; priceAmount: string; modulePriceAmount: string; modules: string[] }
   | { k: 'room'; key: string; name: string; kind: 'WORKSTATIONS' | 'CLASSROOM'; learnerSeats: number; unavailableSeats: number; trainerSeats: number; equipment: string }
   | { k: 'session'; key: string; training: string; room: string; trainer: string; startDate: string; capacity: number }
+  | { k: 'learner'; key: string; company: string; lastName: string; firstName: string; email: string; phone: string }
+  | { k: 'enroll'; key: string; learner: string; session: string }
+  | { k: 'enrollConfirm'; enrollment: string }
+  | { k: 'enrollCancel'; enrollment: string; reason: string }
+  | { k: 'enrollReplace'; enrollment: string; session: string }
   | { k: 'sessionOpen'; session: string }
   | { k: 'sessionPostpone'; session: string; startDate: string; reason: string }
   | { k: 'sessionCancel'; session: string; reason: string }
@@ -187,11 +192,21 @@ const FORMATEURS: SeedOp[] = TRAINERS.map(([lastName, firstName, specialties, lo
 }));
 
 /** Les blocs du jeu : chacun se charge seul sur une démo existante (marqueur propre), dans l'ordre des dépendances. */
-export type SeedBlock = 'crm' | 'catalogue' | 'formateurs' | 'sessions';
-export const SEED_BLOCKS: readonly SeedBlock[] = ['crm', 'catalogue', 'formateurs', 'sessions'];
+export type SeedBlock = 'crm' | 'catalogue' | 'formateurs' | 'sessions' | 'inscriptions';
+export const SEED_BLOCKS: readonly SeedBlock[] = ['crm', 'catalogue', 'formateurs', 'sessions', 'inscriptions'];
+/** Entreprises clientes de formation du bloc « inscriptions » : la première sert de repère au chargement par blocs. */
+export const FORMATION_CLIENTS: readonly [string, 'Cameroun' | "Côte d'Ivoire" | 'Sénégal' | 'Gabon' | 'RDC'][] = [
+  ['Académie Wouri Finance', 'Cameroun'], ['Cabinet Libreville Conseil', 'Gabon'], ['Institut Dakar Marchés', 'Sénégal'], ['Groupe Abidjan Capital', "Côte d'Ivoire"], ['Fonds Kinshasa Épargne', 'RDC'],
+];
+/** Les entreprises clientes de formation du bloc « inscriptions » (avec leur opportunité et leur agrément) portent cette racine de clé. */
+export const FORMATION_CLIENT = 'client-formation-';
+const isFormationClient = (key: string | undefined): boolean => key?.startsWith(FORMATION_CLIENT) ?? false;
 export function blockOf(op: SeedOp): SeedBlock {
+  if ((op.k === 'company' || op.k === 'opportunity' || op.k === 'approval') && isFormationClient(op.key)) return 'inscriptions';
+  if ((op.k === 'advance' || op.k === 'waiver') && isFormationClient(op.opportunity)) return 'inscriptions';
   if (op.k === 'program' || op.k === 'module' || op.k === 'training' || op.k === 'room') return 'catalogue';
   if (op.k === 'trainer') return 'formateurs';
+  if (op.k === 'learner' || op.k === 'enroll' || op.k === 'enrollConfirm' || op.k === 'enrollCancel' || op.k === 'enrollReplace') return 'inscriptions';
   if (op.k === 'session' || op.k === 'sessionOpen' || op.k === 'sessionPostpone' || op.k === 'sessionCancel') return 'sessions';
   return 'crm';
 }
@@ -465,7 +480,7 @@ export function buildPlan({ anchor, seed = 2026 }: PlanOptions): SeedEvent[] {
     { key: 'session-banque-ouverte', certificate: 'banque', trainer: 3, week: 1, capacity: 13, open: true },
     { key: 'session-avocats-planifiee', certificate: 'avocats', trainer: 0, week: 2, capacity: 10, open: false },
     { key: 'session-expert-reportee', certificate: 'expert', trainer: 1, week: 3, capacity: 13, open: false, postponeTo: 4 },
-    { key: 'session-etudiants-annulee', certificate: 'etudiants', trainer: 4, week: 5, capacity: 12, open: false, cancelReason: 'Pas assez d’inscrits : la session est reprogrammée au prochain cycle.' },
+    { key: 'session-etudiants-annulee', certificate: 'etudiants', trainer: 4, week: 5, capacity: 12, open: true, cancelReason: 'Pas assez d’inscrits : la session est reprogrammée au prochain cycle.' },
   ];
   SESSIONS.forEach((s) => {
     const start = weekStart(s.week);
@@ -475,6 +490,54 @@ export function buildPlan({ anchor, seed = 2026 }: PlanOptions): SeedEvent[] {
     if (s.postponeTo !== undefined) events.push({ at: new Date(plannedAt + 2 * DAY), who: 'commercial', op: { k: 'sessionPostpone', session: s.key, startDate: weekStart(s.postponeTo), reason: 'Le formateur n’est pas disponible la semaine prévue.' } });
     if (s.cancelReason) events.push({ at: new Date(plannedAt + 2 * DAY), who: 'commercial', op: { k: 'sessionCancel', session: s.key, reason: s.cancelReason } });
   });
+
+  // Apprenants et inscriptions : douze apprenants répartis sur cinq entreprises qui ont un agrément reçu ou honoré (l'entreprise se désigne par son rang
+  // parmi celles-ci, à l'exécution), inscrits aux sessions ci-dessus. Les inscrits des sessions passées sont confirmés ; une session ouverte garde des inscrits
+  // en attente, une inscription annulée et un replacement ; les inscrits de la session annulée passent « à replacer ». Posés par le Responsable Investudy.
+  const sessionAtDay = (key: string) => SESSIONS.find((s) => s.key === key)!;
+  const startOfSession = (key: string) => new Date(`${weekStart(sessionAtDay(key).week)}T00:00:00.000Z`).getTime();
+  const enrolledAt = (key: string, hours: number) => Math.min(startOfSession(key) - 20 * DAY, day0.getTime() - 2 * DAY) + 24 * 3_600_000 + hours * 3_600_000;
+  // Cinq entreprises clientes de formation, propres à ce bloc (il se charge donc seul, même sur une démo dont les agréments ont expiré) : chacune a son
+  // opportunité menée à l'accord de principe et un agrément reçu, valable plus d'un an après la date de référence (somme pour trois, places pour deux).
+  const clientsBase = Math.min(startOfSession('session-expert-passee') - 25 * DAY, day0.getTime() - 3 * DAY) - 60 * DAY;
+  const clientValidUntil = isoDay(new Date(day0.getTime() + 400 * DAY));
+  FORMATION_CLIENTS.forEach(([name, country], i) => {
+    const key = `${FORMATION_CLIENT}${i + 1}`;
+    const owner = OWNERS[i % OWNERS.length]!;
+    const at = (days: number, who: Who, op: SeedOp) => events.push({ at: new Date(clientsBase + days * DAY + i * 60_000 + 9 * 3_600_000), who, op });
+    at(0, owner, { k: 'company', key, name, sector: 'Services financiers', country, email: `contact@${key}.test`, phone: demoPhone(country, 6000 + i) });
+    at(1, owner, { k: 'opportunity', key: `${key}-opp`, company: key, title: `Plan de formation ${name}`, amount: '6000000', currency: 'XAF', source: 'REFERRAL' });
+    at(2, 'commercial', { k: 'waiver', opportunity: `${key}-opp`, reason: 'Le client est connu de la direction commerciale : le rendez-vous décideur est remplacé par un échange direct.' });
+    [6, 14, 24].forEach((day) => at(day, owner, { k: 'advance', opportunity: `${key}-opp` }));
+    at(28, owner, i < 3
+      ? { k: 'approval', key: `${key}-agrement`, opportunity: `${key}-opp`, amount: '6000000', currency: 'XAF', receivedOn: isoDay(new Date(clientsBase + 28 * DAY)), validUntil: clientValidUntil }
+      : { k: 'approval', key: `${key}-agrement`, opportunity: `${key}-opp`, places: 12, currency: 'XAF', receivedOn: isoDay(new Date(clientsBase + 28 * DAY)), validUntil: clientValidUntil });
+  });
+  const formationLearners = Array.from({ length: 12 }, (_, i) => {
+    const first = FIRST[(i * 3 + 2) % FIRST.length]!;
+    const last = LAST[(i * 5 + 1) % LAST.length]!;
+    return { key: `apprenant-formation-${i + 1}`, company: `${FORMATION_CLIENT}${(i % 5) + 1}`, first, last };
+  });
+  const learnerAt = Math.min(startOfSession('session-expert-passee') - 25 * DAY, day0.getTime() - 3 * DAY);
+  formationLearners.forEach((l, i) => events.push({ at: new Date(learnerAt + i * 60_000), who: 'investudy', op: { k: 'learner', key: l.key, company: l.company, lastName: l.last, firstName: l.first, email: `${slug(l.first)}.${slug(l.last)}.${i + 1}@apprenants.test`, phone: demoPhone('Cameroun', 7000 + i) } }));
+  const enroll = (key: string, learnerIndex: number, session: string, hours: number, confirm: boolean) => {
+    const at = enrolledAt(session, hours);
+    events.push({ at: new Date(at), who: 'investudy', op: { k: 'enroll', key, learner: formationLearners[learnerIndex - 1]!.key, session } });
+    if (confirm) events.push({ at: new Date(at + 3_600_000), who: 'investudy', op: { k: 'enrollConfirm', enrollment: key } });
+    return at;
+  };
+  [1, 2, 3].forEach((n, i) => enroll(`inscription-${n}`, n, 'session-expert-passee', i, true));
+  [4, 5].forEach((n, i) => enroll(`inscription-${n}`, n, 'session-etudiants-passee', i, true));
+  [6, 7, 8].forEach((n, i) => enroll(`inscription-${n}`, n, 'session-dirigeants-en-cours', i, true));
+  enroll('inscription-9', 9, 'session-banque-ouverte', 0, true);
+  enroll('inscription-10', 10, 'session-banque-ouverte', 1, true);
+  enroll('inscription-11', 11, 'session-banque-ouverte', 2, false);
+  const withdrawn = enroll('inscription-12', 12, 'session-banque-ouverte', 3, false);
+  events.push({ at: new Date(withdrawn + 5 * 3_600_000), who: 'investudy', op: { k: 'enrollCancel', enrollment: 'inscription-12', reason: 'Le client a renoncé : le collaborateur est remplacé.' } });
+  // Deux inscrits de la session annulée (des apprenants déjà passés par une session terminée) : l'un est replacé sur la session ouverte, l'autre reste « à replacer ».
+  enroll('inscription-13', 1, 'session-etudiants-annulee', 0, false);
+  enroll('inscription-14', 2, 'session-etudiants-annulee', 1, false);
+  events.push({ at: new Date(enrolledAt('session-etudiants-annulee', 0) + 12 * 3_600_000), who: 'investudy', op: { k: 'enrollReplace', enrollment: 'inscription-13', session: 'session-banque-ouverte' } });
 
   // Ordre chronologique stable (à date égale, l'ordre de construction est conservé).
   return events.map((event, order) => ({ event, order })).sort((a, b) => a.event.at.getTime() - b.event.at.getTime() || a.order - b.order).map((x) => x.event);

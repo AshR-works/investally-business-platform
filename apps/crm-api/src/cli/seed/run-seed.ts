@@ -13,11 +13,13 @@ import { CancelReceiptUseCase, RegisterReceiptUseCase } from '../../modules/busi
 import { UpdateCompanyUseCase } from '../../modules/business-development/application/update-company.use-case';
 import { CreateModuleUseCase, CreateProgramUseCase, CreateRoomUseCase, CreateTrainerUseCase, CreateTrainingUseCase } from '../../modules/training/application/catalogue-use-cases';
 import { CancelSessionUseCase, OpenSessionUseCase, PlanSessionUseCase, PostponeSessionUseCase } from '../../modules/training/application/session-use-cases';
+import { CancelEnrollmentUseCase, ConfirmEnrollmentUseCase, EnrollLearnerUseCase, ListApprovalOptionsHandler, ReplaceEnrollmentUseCase } from '../../modules/training/application/enrollment-use-cases';
+import { RegisterLearnerUseCase } from '../../modules/training/application/learner-use-cases';
 import { AuthorizationService } from '../../modules/iam/application/authorization.service';
 import type { AccessContext } from '../../modules/iam';
 import { PrismaService } from '../../platform/prisma.service';
 import { ActorContext, CLOCK } from '../../shared-kernel';
-import { blockOf, COMPANIES, SEED_BLOCKS, SeedBlock, SeedEvent, SeedOp, Who } from './seed-plan';
+import { blockOf, COMPANIES, FORMATION_CLIENTS, SEED_BLOCKS, SeedBlock, SeedEvent, SeedOp, Who } from './seed-plan';
 
 /** Ce dont le chargeur a besoin de l'application : retrouver un service, sans en dépendre autrement (l'application complète ou un test). */
 export interface ProviderSource {
@@ -44,6 +46,8 @@ export const SEED_MARKER = COMPANIES[0]!.name;
 /** Nom du programme du catalogue : sa présence indique que le bloc « catalogue » est déjà chargé. */
 export const CATALOGUE_MARKER = 'Certificats Marchés financiers';
 /** Domaine des e-mails de formateurs de démonstration : sa présence indique que le bloc « formateurs » est déjà chargé. */
+/** Domaine des e-mails des apprenants de démonstration (fictif, réservé) : repère le bloc des inscriptions. */
+export const LEARNERS_MARKER = '@apprenants.test';
 export const TRAINERS_MARKER = '@formateurs.investudy.test';
 
 /**
@@ -61,6 +65,7 @@ export async function runSeed(app: ProviderSource, allEvents: readonly SeedEvent
     catalogue: (await prisma.db.program.count({ where: { name: CATALOGUE_MARKER } })) > 0,
     formateurs: (await prisma.db.trainer.count({ where: { emailKey: { endsWith: TRAINERS_MARKER } } })) > 0,
     sessions: (await prisma.db.trainingSession.count({ where: { trainer: { emailKey: { endsWith: TRAINERS_MARKER } } } })) > 0,
+    inscriptions: (await prisma.db.company.count({ where: { name: FORMATION_CLIENTS[0]![0] } })) > 0,
   };
   const toLoad = SEED_BLOCKS.filter((block) => !present[block]);
   if (toLoad.length === 0) {
@@ -90,6 +95,30 @@ export async function runSeed(app: ProviderSource, allEvents: readonly SeedEvent
     return row.version;
   };
   const sessionVersion = async (key: string): Promise<number> => (await prisma.db.trainingSession.findUniqueOrThrow({ where: { id: id(key) }, select: { version: true } })).version;
+  const enrollmentVersion = async (key: string): Promise<number> => (await prisma.db.enrollment.findUniqueOrThrow({ where: { id: id(key) }, select: { version: true } })).version;
+  // Une session du plan se retrouve par son certificat et sa date de début, qu'elle ait été créée dans ce chargement ou dans un précédent.
+  const planSessions = new Map(allEvents.flatMap((e) => (e.op.k === 'session' ? [[e.op.key, e.op] as const] : [])));
+  const sessionIdOf = async (key: string): Promise<string> => {
+    const known = ids.get(key);
+    if (known) return known;
+    const op = planSessions.get(key);
+    if (!op) throw new Error(`Session « ${key} » inconnue du plan`);
+    const exact = await prisma.db.trainingSession.findFirst({ where: { training: { title: op.training }, startDate: new Date(`${op.startDate}T00:00:00.000Z`) }, select: { id: true } });
+    if (exact) {
+      ids.set(key, exact.id);
+      return exact.id;
+    }
+    // Les sessions d'une démo plus ancienne ont d'autres dates (le plan se cale sur la date du chargement) : on retrouve la session par son rang parmi celles du même
+    // certificat, dans l'ordre des dates, comme dans le plan.
+    const rank = [...planSessions.values()].filter((s) => s.training === op.training).sort((a, b) => a.startDate.localeCompare(b.startDate)).findIndex((s) => s.startDate === op.startDate);
+    const stored = await prisma.db.trainingSession.findMany({ where: { training: { title: op.training } }, select: { id: true }, orderBy: [{ startDate: 'asc' }, { id: 'asc' }] });
+    const found = stored[rank];
+    if (!found) throw new Error(`Session « ${key} » introuvable dans la base : rechargez le jeu de démonstration`);
+    ids.set(key, found.id);
+    return found.id;
+  };
+  /** Inscriptions que le jeu n'a pas pu créer (aucun agrément ne les couvrait) : les actions qui en dépendent sont sautées. */
+  const missing = new Set<string>();
   const counts: Record<string, number> = {};
 
   let executed = 0;
@@ -243,6 +272,47 @@ export async function runSeed(app: ProviderSource, allEvents: readonly SeedEvent
           case 'sessionCancel':
             await use(CancelSessionUseCase).execute({ id: id(op.session), version: await sessionVersion(op.session), reason: op.reason, actor });
             break;
+          case 'learner': {
+            ids.set(op.key, (await use(RegisterLearnerUseCase).execute({ companyId: id(op.company), lastName: op.lastName, firstName: op.firstName, email: op.email, phone: op.phone, access, actor })).id);
+            break;
+          }
+          case 'enroll': {
+            const sessionId = await sessionIdOf(op.session);
+            // Chargé seul sur une démo dont les sessions existent déjà, le bloc trouve la session annulée déjà annulée : ses inscrits d'avant l'annulation ne peuvent plus être créés.
+            if ((await prisma.db.trainingSession.findUniqueOrThrow({ where: { id: sessionId }, select: { status: true } })).status === 'CANCELLED') {
+              missing.add(op.key);
+              log(`  inscription « ${op.key} » non créée : la session est déjà annulée dans cette démo`);
+              break;
+            }
+            const options = await use(ListApprovalOptionsHandler).execute({ learnerId: id(op.learner), sessionId, access });
+            const approval = options.find((o) => o.eligible);
+            if (!approval) {
+              missing.add(op.key);
+              log(`  inscription « ${op.key} » non créée : aucun agrément de l'entreprise ne la couvre (${options.map((o) => o.reason ?? o.status).join(' | ') || 'aucun agrément'})`);
+              break;
+            }
+            ids.set(op.key, (await use(EnrollLearnerUseCase).execute({ sessionId, learnerId: id(op.learner), approvalId: approval.id, access, actor })).id);
+            break;
+          }
+          case 'enrollConfirm':
+          case 'enrollCancel':
+          case 'enrollReplace': {
+            if (missing.has(op.enrollment)) break;
+            const base = { id: id(op.enrollment), version: await enrollmentVersion(op.enrollment), access, actor };
+            if (op.k === 'enrollConfirm') await use(ConfirmEnrollmentUseCase).execute(base);
+            else if (op.k === 'enrollCancel') await use(CancelEnrollmentUseCase).execute({ ...base, reason: op.reason });
+            else {
+              const sessionId = await sessionIdOf(op.session);
+              const learnerId = (await prisma.db.enrollment.findUniqueOrThrow({ where: { id: base.id }, select: { learnerId: true } })).learnerId;
+              const approval = (await use(ListApprovalOptionsHandler).execute({ learnerId, sessionId, access })).find((o) => o.eligible);
+              if (!approval) {
+                log(`  replacement de « ${op.enrollment} » non fait : aucun agrément ne couvre la nouvelle session`);
+                break;
+              }
+              await use(ReplaceEnrollmentUseCase).execute({ ...base, sessionId, approvalId: approval.id });
+            }
+            break;
+          }
           case 'ambassador': {
             const view = await use(RegisterAmbassadorUseCase).execute({
               lastName: op.lastName, firstName: op.firstName, origin: op.origin as AmbassadorOrigin, companyId: op.company ? id(op.company) : null, email: op.email, phone: op.phone,

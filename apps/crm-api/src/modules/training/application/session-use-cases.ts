@@ -7,6 +7,7 @@ import {
   MODULE_REPOSITORY, ModuleRepository, PROGRAM_REPOSITORY, ProgramRepository, ROOM_REPOSITORY, RoomRepository, TRAINER_REPOSITORY, TrainerRepository, TRAINING_REPOSITORY,
   TrainingRepository,
 } from '../domain/catalogue-repositories';
+import { ENROLLMENT_REPOSITORY, EnrollmentRepository } from '../domain/enrollment-repositories';
 import { IsoDate, parseIsoDate, toIsoDate } from '../domain/session-dates';
 import { SESSION_REPOSITORY, SessionRepository } from '../domain/session-repositories';
 import { SessionStatus, TrainingSession } from '../domain/training-session';
@@ -28,10 +29,12 @@ export class SessionViews {
     @Inject(ROOM_REPOSITORY) private readonly rooms: RoomRepository,
     @Inject(TRAINER_REPOSITORY) private readonly trainers: TrainerRepository,
     @Inject(CLOCK) private readonly clock: Clock,
+    @Inject(ENROLLMENT_REPOSITORY) private readonly enrollments: EnrollmentRepository,
   ) {}
 
   async many(sessions: readonly TrainingSession[]): Promise<SessionView[]> {
     const today = toIsoDate(this.clock.now());
+    const seats = await this.enrollments.countSeatsBySession(sessions.map((s) => s.id));
     const trainingContext = new Map<string, Promise<Pick<SessionContext, 'trainingTitle' | 'programName' | 'needsWorkstations'>>>();
     const roomContext = new Map<string, Promise<Pick<SessionContext, 'roomName' | 'roomKind' | 'roomUsableSeats'>>>();
     const trainerContext = new Map<string, Promise<string>>();
@@ -69,7 +72,7 @@ export class SessionViews {
     const views: SessionView[] = [];
     for (const session of sessions) {
       const [training, room, trainerName] = await Promise.all([trainingOf(session.trainingId), roomOf(session.roomId), trainerOf(session.trainerId)]);
-      views.push(toSessionView(session, { ...training, ...room, trainerName }, today));
+      views.push(toSessionView(session, { ...training, ...room, trainerName, enrolled: seats.get(session.id) ?? 0 }, today));
     }
     return views;
   }
@@ -101,6 +104,7 @@ export class SessionRules {
     @Inject(ROOM_REPOSITORY) private readonly rooms: RoomRepository,
     @Inject(TRAINER_REPOSITORY) private readonly trainers: TrainerRepository,
     @Inject(SESSION_REPOSITORY) private readonly sessions: SessionRepository,
+    @Inject(ENROLLMENT_REPOSITORY) private readonly enrollments: EnrollmentRepository,
   ) {}
 
   async check(session: TrainingSession, changes: Changes): Promise<void> {
@@ -119,10 +123,21 @@ export class SessionRules {
     if ((changes.created || changes.capacity || changes.room) && session.capacity > room.usableSeats) {
       throw new DomainError('INVARIANT_VIOLATION', `La capacité (${session.capacity}) dépasse les places utiles de la salle « ${room.name} » (${room.usableSeats})`);
     }
+    if (changes.capacity) {
+      const taken = await this.enrollments.countSeats(session.id);
+      if (session.capacity < taken) throw new DomainError('INVARIANT_VIOLATION', `La capacité (${session.capacity}) est inférieure au nombre d'inscrits (${taken})`);
+    }
     if (changes.created || changes.room) {
       const modules = await this.modules.findByIds(training.moduleIds);
       if (modules.some((m) => m.requiresWorkstations) && room.kind !== 'WORKSTATIONS') {
         throw new DomainError('INVARIANT_VIOLATION', `Ce certificat contient un module pratique sur poste de travail : la salle « ${room.name} » n'a pas de postes de travail`);
+      }
+    }
+    if (changes.dates) {
+      // Les inscrits sont conservés par un report : aucun ne doit se retrouver inscrit à deux sessions qui se recouvrent.
+      for (const learnerId of await this.enrollments.seatLearnerIds(session.id)) {
+        const overlap = await this.enrollments.findOverlap({ learnerId, start: session.startDate, end: session.endDate, excludeSessionId: session.id });
+        if (overlap) throw new DomainError('CONFLICT', `Un apprenant inscrit à cette session est déjà inscrit à une autre session du ${overlap.sessionStart} au ${overlap.sessionEnd}, qui recouvre les nouvelles dates`);
       }
     }
     if (changes.created || changes.room || changes.trainer || changes.dates) {
@@ -267,6 +282,7 @@ export class PostponeSessionUseCase {
 export class CancelSessionUseCase {
   constructor(
     @Inject(SESSION_REPOSITORY) private readonly sessions: SessionRepository,
+    @Inject(ENROLLMENT_REPOSITORY) private readonly enrollments: EnrollmentRepository,
     private readonly views: SessionViews,
     @Inject(AUDIT_RECORDER) private readonly audit: AuditRecorder,
     @Inject(UNIT_OF_WORK) private readonly unitOfWork: UnitOfWork,
@@ -274,10 +290,22 @@ export class CancelSessionUseCase {
 
   execute(command: CancelSessionCommand): Promise<SessionView> {
     return this.unitOfWork.run(async () => {
+      // La session est verrouillée : une inscription simultanée est vue ou attend, jamais perdue.
+      await this.enrollments.lockSession(command.id);
       const session = await loadForWrite(this.sessions, command.id, command.version);
       const before = await this.views.of(session);
       session.cancel(command.reason);
       await this.sessions.save(session);
+      // Les inscriptions (en attente ou confirmées) ne sont pas supprimées : elles passent « à replacer », libèrent la place et l'agrément (V12).
+      for (const enrollment of await this.enrollments.listSeats(session.id)) {
+        const previous = enrollment.status;
+        enrollment.markToReplace();
+        await this.enrollments.save(enrollment);
+        await this.audit.record({
+          actor: command.actor, module: 'training', entityType: 'Enrollment', entityId: enrollment.id, action: AuditAction.Update,
+          oldValue: { status: previous }, newValue: { status: 'TO_REPLACE', reason: 'Session annulée' },
+        });
+      }
       const after = await this.views.of((await this.sessions.findById(session.id)) ?? session);
       await this.audit.record({ actor: command.actor, module: 'training', entityType: 'TrainingSession', entityId: session.id, action: AuditAction.Update, oldValue: { ...before }, newValue: { ...after } });
       return after;

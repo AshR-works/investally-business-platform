@@ -52,6 +52,8 @@ import { DECISION_MAKER_MEETINGS, OPPORTUNITY_REPOSITORY } from './domain/opport
 import { RECEIPT_REPOSITORY } from './domain/receipt-repository';
 import { PrismaAppointmentRepository } from './infrastructure/prisma-appointment.repository';
 import { PrismaCompanyOverviewReader } from './infrastructure/prisma-company-overview.reader';
+import { COMPANY_DIRECTORY } from './application/company-directory';
+import { PrismaCompanyDirectory } from './infrastructure/prisma-company-directory';
 import { PrismaCompanyRepository } from './infrastructure/prisma-company.repository';
 import { PrismaContactRepository } from './infrastructure/prisma-contact.repository';
 import { PrismaFacilitatorRepository } from './infrastructure/prisma-facilitator.repository';
@@ -146,7 +148,9 @@ import { ReceiptsController } from './presentation/receipts.controller';
     { provide: APPOINTMENT_REPOSITORY, useClass: PrismaAppointmentRepository },
     { provide: OPPORTUNITY_REPOSITORY, useClass: PrismaOpportunityRepository },
     { provide: DECISION_MAKER_MEETINGS, useClass: PrismaDecisionMakerMeetings },
+    { provide: COMPANY_DIRECTORY, useClass: PrismaCompanyDirectory },
   ],
+  exports: [COMPANY_DIRECTORY],
 })
 /** Module « Développement commercial » : entreprises cibles et facilitateurs (premières briques du pipeline commercial). */
 export class BusinessDevelopmentModule {}

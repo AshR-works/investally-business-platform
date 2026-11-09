@@ -1,8 +1,8 @@
 import 'reflect-metadata';
 import { RoleCode } from '../src/modules/iam/domain/roles';
 import { CLOCK } from '../src/shared-kernel';
-import { buildPlan, Who } from '../src/cli/seed/seed-plan';
-import { CATALOGUE_MARKER, runSeed, SEED_MARKER, TRAINERS_MARKER } from '../src/cli/seed/run-seed';
+import { buildPlan, FORMATION_CLIENTS, Who } from '../src/cli/seed/seed-plan';
+import { CATALOGUE_MARKER, LEARNERS_MARKER, runSeed, SEED_MARKER, TRAINERS_MARKER } from '../src/cli/seed/run-seed';
 import { createUserWithRoles } from './support/rbac-http';
 import { startTestApp, TestApp } from './support/test-app';
 
@@ -19,7 +19,8 @@ describeDb('Jeu de données de démonstration (cas d’usage + PostgreSQL)', () 
     const commercial = await createUserWithRoles(t, [RoleCode.HeadOfSales], { name: 'Hugo Responsable Commercial' });
     const am = async (n: number) => (await createUserWithRoles(t, [RoleCode.AccountManager], { managerId: commercial.id, name: `Chargé de compte ${n}` })).id;
     const finance = await createUserWithRoles(t, [RoleCode.Finance], { name: 'Félix Finance' });
-    users = { compte1: await am(1), compte2: await am(2), compte3: await am(3), commercial: commercial.id, finance: finance.id };
+    const investudy = await createUserWithRoles(t, [RoleCode.TrainingManager], { name: 'Inès Investudy' });
+    users = { compte1: await am(1), compte2: await am(2), compte3: await am(3), commercial: commercial.id, finance: finance.id, investudy: investudy.id };
   }, 120_000);
   afterAll(async () => {
     // La base est partagée avec les autres suites : le jeu est retiré (dans l'ordre des dépendances) pour ne pas fausser leurs listes.
@@ -28,6 +29,8 @@ describeDb('Jeu de données de démonstration (cas d’usage + PostgreSQL)', () 
     const companies = (await db.company.findMany({ where: { ownerUserId: { in: owners } }, select: { id: true } })).map((c) => c.id);
     const offers = (await db.offer.findMany({ where: { companyId: { in: companies } }, select: { id: true } })).map((o) => o.id);
     await db.commissionPayout.deleteMany({ where: { companyId: { in: companies } } });
+    await db.enrollment.deleteMany({ where: { OR: [{ companyId: { in: companies } }, { learner: { emailKey: { endsWith: LEARNERS_MARKER } } }] } });
+    await db.learner.deleteMany({ where: { OR: [{ companyId: { in: companies } }, { emailKey: { endsWith: LEARNERS_MARKER } }] } });
     await db.approval.deleteMany({ where: { companyId: { in: companies } } });
     await db.appointment.deleteMany({ where: { companyId: { in: companies } } });
     await db.followup.deleteMany({ where: { offerId: { in: offers } } });
@@ -52,7 +55,7 @@ describeDb('Jeu de données de démonstration (cas d’usage + PostgreSQL)', () 
 
   it('charge tout le plan par les cas d’usage, sans erreur, puis refuse de recharger (idempotent)', async () => {
     const first = await runSeed(t.app as never, plan, { users });
-    expect(first).toMatchObject({ skipped: false, executed: plan.length, loaded: ['crm', 'catalogue', 'formateurs', 'sessions'] });
+    expect(first).toMatchObject({ skipped: false, executed: plan.length, loaded: ['crm', 'catalogue', 'formateurs', 'sessions', 'inscriptions'] });
     const second = await runSeed(t.app as never, plan, { users });
     expect(second).toMatchObject({ skipped: true, executed: 0 });
     expect(await t.prisma.db.company.count({ where: { name: SEED_MARKER } })).toBe(1);
@@ -61,6 +64,12 @@ describeDb('Jeu de données de démonstration (cas d’usage + PostgreSQL)', () 
   it('une démo ANCIENNE (sans catalogue ni formateurs) reçoit ces blocs sans que le reste soit touché ; un nouveau passage ne fait rien', async () => {
     const db = t.prisma.db;
     // On simule une base chargée avant l'arrivée du catalogue : on retire les deux blocs récents.
+    await db.enrollment.deleteMany({ where: { learner: { emailKey: { endsWith: LEARNERS_MARKER } } } });
+    await db.learner.deleteMany({ where: { emailKey: { endsWith: LEARNERS_MARKER } } });
+    const clients = (await db.company.findMany({ where: { name: { in: FORMATION_CLIENTS.map(([name]) => name) } }, select: { id: true } })).map((c) => c.id);
+    await db.approval.deleteMany({ where: { companyId: { in: clients } } });
+    await db.opportunity.deleteMany({ where: { companyId: { in: clients } } });
+    await db.company.deleteMany({ where: { id: { in: clients } } });
     await db.trainingSession.deleteMany({ where: { trainer: { emailKey: { endsWith: TRAINERS_MARKER } } } });
     await db.training.deleteMany({ where: { program: { name: CATALOGUE_MARKER } } });
     await db.program.deleteMany({ where: { name: CATALOGUE_MARKER } });
@@ -70,16 +79,46 @@ describeDb('Jeu de données de démonstration (cas d’usage + PostgreSQL)', () 
     const companiesBefore = await db.company.count();
     const auditBefore = await db.auditLog.count({ where: { entityType: 'Company' } });
 
-    const reload = await runSeed(t.app as never, plan, { users });
-    expect(reload).toMatchObject({ skipped: false, loaded: ['catalogue', 'formateurs', 'sessions'], executed: 1 + 7 + 5 + 2 + 5 + 13 });
-    expect(reload.counts).toMatchObject({ program: 1, module: 7, training: 5, room: 2, trainer: 5, session: 7, sessionOpen: 4, sessionPostpone: 1, sessionCancel: 1 });
-    expect(reload.counts.company).toBeUndefined();
-    expect(await db.company.count()).toBe(companiesBefore);
-    expect(await db.auditLog.count({ where: { entityType: 'Company' } })).toBe(auditBefore);
+    const logs: string[] = [];
+    const reload = await runSeed(t.app as never, plan, { users, log: (line) => logs.push(line) });
+    expect(reload).toMatchObject({ skipped: false, loaded: ['catalogue', 'formateurs', 'sessions', 'inscriptions'], executed: 1 + 7 + 5 + 2 + 5 + 14 + 73 });
+    expect(reload.counts).toMatchObject({ program: 1, module: 7, training: 5, room: 2, trainer: 5, session: 7, sessionOpen: 5, sessionPostpone: 1, sessionCancel: 1, learner: 12, enroll: 14, company: 5, approval: 5 });
+    // Les inscriptions du jeu : confirmées pour les sessions passées, en attente et annulée sur la session ouverte, deux à replacer ou replacées sur la session annulée.
+    const byStatus = await t.prisma.db.enrollment.groupBy({ by: ['status'], where: { learner: { emailKey: { endsWith: LEARNERS_MARKER } } }, _count: { _all: true } });
+    expect(Object.fromEntries(byStatus.map((r) => [r.status, r._count._all]))).toMatchObject({ CONFIRMED: expect.any(Number), PENDING: expect.any(Number) });
+    expect(await t.prisma.db.learner.count({ where: { emailKey: { endsWith: LEARNERS_MARKER } } })).toBe(12);
+    expect(logs.filter((line) => /non créée|non fait/.test(line))).toEqual([]);
+    // Quatorze inscriptions plus le replacement : aucune n'a manqué d'agrément.
+    expect(await t.prisma.db.enrollment.count({ where: { learner: { emailKey: { endsWith: LEARNERS_MARKER } } } })).toBe(15);
+    expect(await t.prisma.db.enrollment.count({ where: { status: 'TO_REPLACE', learner: { emailKey: { endsWith: LEARNERS_MARKER } } } })).toBe(1);
+    expect(reload.counts.company).toBe(5); // seules les cinq entreprises clientes de formation du bloc « inscriptions » sont créées : le reste du jeu n'est pas touché
+    expect(await db.company.count()).toBe(companiesBefore + 5);
+    expect(await db.auditLog.count({ where: { entityType: 'Company' } })).toBeGreaterThan(auditBefore); // les cinq créations
     expect(await db.program.count({ where: { name: CATALOGUE_MARKER } })).toBe(1);
     expect(await db.trainer.count({ where: { emailKey: { endsWith: TRAINERS_MARKER } } })).toBe(5);
 
     expect(await runSeed(t.app as never, plan, { users })).toMatchObject({ skipped: true, executed: 0, loaded: [] });
+  }, 300_000);
+
+  it('le bloc des inscriptions se charge seul sur une démo plus ancienne dont les sessions ont d’autres dates (retrouvées par leur rang)', async () => {
+    const db = t.prisma.db;
+    // On retire le bloc des inscriptions, puis on décale de deux semaines les sessions déjà en base, comme dans une démo chargée plus tôt.
+    await db.enrollment.deleteMany({ where: { learner: { emailKey: { endsWith: LEARNERS_MARKER } } } });
+    await db.learner.deleteMany({ where: { emailKey: { endsWith: LEARNERS_MARKER } } });
+    const clients = (await db.company.findMany({ where: { name: { in: FORMATION_CLIENTS.map(([name]) => name) } }, select: { id: true } })).map((c) => c.id);
+    await db.approval.deleteMany({ where: { companyId: { in: clients } } });
+    await db.opportunity.deleteMany({ where: { companyId: { in: clients } } });
+    await db.company.deleteMany({ where: { id: { in: clients } } });
+    await db.$executeRaw`UPDATE training.sessions SET start_date = start_date + 14, end_date = end_date + 14 WHERE trainer_id IN (SELECT id FROM training.trainers WHERE email_key LIKE ${'%' + TRAINERS_MARKER})`;
+
+    const logs: string[] = [];
+    const reload = await runSeed(t.app as never, plan, { users, log: (line) => logs.push(line) });
+    expect(reload).toMatchObject({ skipped: false, loaded: ['inscriptions'] });
+    // La session annulée l'est déjà dans cette démo : ses deux inscrits (et le replacement) ne sont pas recréés ; tout le reste l'est, sans autre manque.
+    expect(logs.filter((line) => /non créée|non fait/.test(line)).filter((line) => !/inscription-1[34]|déjà annulée/.test(line))).toEqual([]);
+    expect(logs.filter((line) => /déjà annulée/.test(line))).toHaveLength(2);
+    expect(await db.enrollment.count({ where: { learner: { emailKey: { endsWith: LEARNERS_MARKER } } } })).toBe(12);
+    expect(await runSeed(t.app as never, plan, { users })).toMatchObject({ skipped: true, loaded: [] });
   }, 300_000);
 
   it('l’horloge est rendue à son état normal après le chargement', () => {
