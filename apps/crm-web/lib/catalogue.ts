@@ -102,6 +102,17 @@ export const CATALOGUE_SECTIONS: readonly { id: CatalogueSection; label: string;
   { id: 'rhythms', label: 'Rythmes', read: 'training.program.read' },
 ];
 
+/** Adresse d'une rubrique du catalogue : `/training?rubrique=rooms` (partageable, retour arrière du navigateur). */
+export const catalogueHref = (section: CatalogueSection): string => `/training?rubrique=${section}`;
+
+/**
+ * Rubrique ouverte selon l'adresse : celle de `?rubrique=` si elle existe ET si l'utilisateur peut la lire, sinon la première rubrique
+ * qu'il peut lire (une valeur inconnue ou interdite n'ouvre jamais rien d'autre). `undefined` si aucune n'est lisible.
+ */
+export function sectionFromQuery<T extends { id: string }>(raw: string | null, allowed: readonly T[]): T | undefined {
+  return allowed.find((s) => s.id === raw) ?? allowed[0];
+}
+
 /** Le droit qui archive ou réactive un élément de chaque rubrique (D46). */
 export const ARCHIVE_PERMISSION: Partial<Record<CatalogueSection, string>> = {
   programs: 'training.program.archive',

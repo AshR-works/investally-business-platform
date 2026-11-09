@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Badge } from '../../../components/data/badge';
 import { Card } from '../../../components/data/card';
 import { DataTable, type Column } from '../../../components/data/data-table';
@@ -14,7 +15,7 @@ import { CatalogueDialogs, type CatalogueDialogState } from '../../../components
 import { api, ApiError } from '../../../lib/api';
 import { useAuth } from '../../../lib/auth-context';
 import {
-  ARCHIVE_LABEL, ARCHIVE_PERMISSION, ROOM_KIND_LABEL, CATALOGUE_SECTIONS, CATALOGUE_STATUS, CATALOGUE_STATUS_OPTIONS, type CatalogueSection, type CourseModule, type Program, pricingText,
+  ARCHIVE_LABEL, ARCHIVE_PERMISSION, ROOM_KIND_LABEL, CATALOGUE_SECTIONS, CATALOGUE_STATUS, CATALOGUE_STATUS_OPTIONS, catalogueHref, type CatalogueSection, sectionFromQuery, type CourseModule, type Program, pricingText,
   type Rhythm, type Room, seatsText, slotsText, type Trainer, type Training, UPDATE_PERMISSION, weeksText,
 } from '../../../lib/catalogue';
 import { can } from '../../../lib/permissions';
@@ -39,8 +40,9 @@ const NEW_LABEL: Record<Listed, string> = { programs: 'Nouveau programme', train
 export default function TrainingCatalogPage() {
   const { profile } = useAuth();
   const sections = CATALOGUE_SECTIONS.filter((s) => can(profile, s.read));
-  const [section, setSection] = useState<CatalogueSection>('programs');
-  const current = sections.find((s) => s.id === section) ?? sections[0];
+  const router = useRouter();
+  // La rubrique est portée par l'adresse (`?rubrique=`) : un lien peut ouvrir directement les salles ou les formateurs.
+  const current = sectionFromQuery(useSearchParams().get('rubrique'), sections);
   const [status, setStatus] = useState('ACTIVE');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
@@ -187,7 +189,7 @@ export default function TrainingCatalogPage() {
       {loadError && <p role="alert" className="error">{loadError}</p>}
       <Card>
         <Toolbar>
-          <QuickFilters label="Rubrique du catalogue" value={current.id} options={sections.map((s) => ({ value: s.id, label: s.label }))} onChange={(v) => { setSection(v as CatalogueSection); setPage(1); setSearch(''); setProgramId(''); setData({ items: [], total: 0 }); }} />
+          <QuickFilters label="Rubrique du catalogue" value={current.id} options={sections.map((s) => ({ value: s.id, label: s.label }))} onChange={(v) => { router.replace(catalogueHref(v as CatalogueSection)); setPage(1); setSearch(''); setProgramId(''); setData({ items: [], total: 0 }); }} />
           {listed && <SearchField key={current.id} label={`Rechercher un ${noun}`} onSearch={(v) => { setPage(1); setSearch(v); }} />}
         </Toolbar>
         {listed ? (
