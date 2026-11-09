@@ -1,4 +1,5 @@
 import 'reflect-metadata';
+import { PrismaEmployeeRepository } from '../src/modules/hr/infrastructure/prisma-employee.repository';
 import { RoleCode } from '../src/modules/iam/domain/roles';
 import { Api, createUserWithRoles, mfaSession, startRbacApp } from './support/rbac-http';
 import { TestApp } from './support/test-app';
@@ -197,6 +198,19 @@ describeDb('Personnel (HTTP + PostgreSQL)', () => {
     const results = await Promise.all([update(hr, e.body.id, { version: 1, jobTitle: 'Poste A' }), update(hr, e.body.id, { version: 1, jobTitle: 'Poste B' })]);
     expect(results.map((r) => r.status).sort()).toEqual([200, 409]);
     expect((await get(hr, e.body.id)).body.version).toBe(2);
+  }, 120_000);
+
+  it('verrou optimiste AU NIVEAU DE LA BASE : deux fiches lues à la même version, la seconde sauvegarde est refusée (sans passer par le contrôle du cas d’usage)', async () => {
+    const { hr } = await world();
+    const e = await create(hr);
+    const repository = new PrismaEmployeeRepository(t.prisma);
+    const first = (await repository.findById(e.body.id))!;
+    const second = (await repository.findById(e.body.id))!;
+    first.update({ jobTitle: 'Première' });
+    second.update({ jobTitle: 'Seconde' });
+    await repository.save(first);
+    await expect(repository.save(second)).rejects.toMatchObject({ code: 'CONFLICT' });
+    expect((await repository.findById(e.body.id))!.jobTitle).toBe('Première');
   }, 120_000);
 
   it('audit : création, modification et archivage tracés avec l’ancienne et la nouvelle valeur ; chaque lecture détaillée est tracée', async () => {
