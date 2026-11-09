@@ -9,8 +9,8 @@ export interface LearnerListQuery {
   pageSize: number;
   search?: string;
   companyId?: string;
-  /** Restreint aux apprenants dont l'entreprise appartient à l'un de ces propriétaires (liste vide = aucun) ; absent = pas de restriction. */
-  ownerIds?: readonly string[];
+  /** Restreint aux apprenants de ces entreprises (la portée de l'utilisateur, résolue par l'annuaire du module commercial ; liste vide = aucun) ; absent = pas de restriction. */
+  companyIds?: readonly string[];
 }
 
 export interface LearnerRepository {
@@ -31,7 +31,8 @@ export interface EnrollmentListQuery {
   learnerId?: string;
   companyId?: string;
   status?: EnrollmentStatus;
-  ownerIds?: readonly string[];
+  /** Restreint aux inscriptions de ces entreprises (liste vide = aucune) ; absent = pas de restriction. */
+  companyIds?: readonly string[];
 }
 
 export interface EnrollmentRepository {

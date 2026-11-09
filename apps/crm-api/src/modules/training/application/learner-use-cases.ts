@@ -158,7 +158,7 @@ export class ListLearnersHandler {
     if (query.companyId) await companyInScope(this.directory, query.companyId, query.access, 'training.learner.read');
     const visibility = visibilityFor(query.access, 'training.learner.read');
     const result = await this.learners.list({
-      ...normalizePage(query), search: query.search?.trim() || undefined, companyId: query.companyId, ownerIds: visibility.unrestricted ? undefined : visibility.ownerIds,
+      ...normalizePage(query), search: query.search?.trim() || undefined, companyId: query.companyId, companyIds: visibility.unrestricted ? undefined : await this.directory.companyIdsOwnedBy(visibility.ownerIds),
     });
     const names = new Map<string, string>();
     for (const learner of result.items) {

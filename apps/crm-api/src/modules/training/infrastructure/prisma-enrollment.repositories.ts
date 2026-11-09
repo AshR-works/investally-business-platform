@@ -57,7 +57,7 @@ export class PrismaLearnerRepository implements LearnerRepository {
     const where: Prisma.LearnerWhereInput = {
       deletedAt: null,
       ...(query.companyId ? { companyId: query.companyId } : {}),
-      ...(query.ownerIds ? { company: { ownerUserId: { in: [...query.ownerIds] } } } : {}),
+      ...(query.companyIds ? { companyId: { in: [...query.companyIds] } } : {}),
       ...(search
         ? { OR: [{ lastName: { contains: search, mode: 'insensitive' } }, { firstName: { contains: search, mode: 'insensitive' } }, { email: { contains: search, mode: 'insensitive' } }] }
         : {}),
@@ -167,7 +167,7 @@ export class PrismaEnrollmentRepository implements EnrollmentRepository {
       ...(query.learnerId ? { learnerId: query.learnerId } : {}),
       ...(query.companyId ? { companyId: query.companyId } : {}),
       ...(query.status ? { status: query.status } : {}),
-      ...(query.ownerIds ? { company: { ownerUserId: { in: [...query.ownerIds] } } } : {}),
+      ...(query.companyIds ? { companyId: { in: [...query.companyIds] } } : {}),
     };
     const [rows, total] = await Promise.all([
       this.prisma.db.enrollment.findMany({ where, orderBy: [{ createdAt: 'desc' }, { id: 'asc' }], skip: (query.page - 1) * query.pageSize, take: query.pageSize }),

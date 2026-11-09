@@ -30,6 +30,8 @@ export interface ApprovalRef {
 
 export interface CompanyDirectory {
   company(id: string): Promise<CompanyRef | null>;
+  /** Identifiants des entreprises dont le propriétaire est l'un de ces utilisateurs (la portée « Propre » ou « Équipe » d'un apprenant ou d'une inscription). */
+  companyIdsOwnedBy(ownerIds: readonly string[]): Promise<string[]>;
   /** Le contact (non supprimé) appartient-il bien à cette entreprise ? */
   contactBelongsTo(contactId: string, companyId: string): Promise<boolean>;
   approval(id: string): Promise<ApprovalRef | null>;
