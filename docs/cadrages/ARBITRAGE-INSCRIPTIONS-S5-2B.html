@@ -1,0 +1,109 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Arbitrage — S5.2b : apprenants et inscriptions</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — cadrages · <a href="README.html">Index des cadrages</a> · <a href="../INDEX.html">Documentation</a> · <a href="../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../design/05-AIDE-A-LA-DECISION.html">Aide à la décision</a></nav><h1>Arbitrage — S5.2b : apprenants et inscriptions</h1>
+<p><em>2026-11-07 · Complète l'arbitrage <a href="ARBITRAGE-SESSIONS-ET-INSCRIPTIONS-S5-2.html">ARBITRAGE-SESSIONS-ET-INSCRIPTIONS-S5-2</a> (D47, déjà décidé) : il reste <strong>trois questions</strong> que ce document n'avait pas tranchées, parce qu'elles dépendent du modèle réel de l'agrément. Méthode : <a href="../METHODE-D-ARBITRAGE.html">METHODE-D-ARBITRAGE</a> — options dont le statu quo, grille pondérée sur 160, recommandation, <strong>décision laissée à la Direction produit</strong>. <strong>Décidé le 2026-11-09 : recommandations appliquées (D49).</strong> S5.2b est lancé.</em></p>
+<h2>1. Contexte et contraintes</h2>
+<p><strong>Question.</strong> Comment inscrire un apprenant à une session en tenant les contrôles réels de l'école : agrément de l'entreprise, places de la session, doublons ?</p>
+<p><strong>Déjà décidé (D47, non rediscuté).</strong></p>
+<ul><li>Le <strong>Responsable Investudy seul confirme</strong> une inscription ; le chargé de compte inscrit (« En attente de confirmation »).</li><li><strong>Pas de liste d'attente</strong> : une session complète refuse l'inscription.</li><li>Un report de session <strong>conserve les inscrits</strong> ; une annulation <strong>ne supprime aucune inscription</strong> (elles passent « À replacer »).</li><li><strong>Apprenant = entité distincte</strong>, lien facultatif vers un contact, <strong>doublon probable signalé</strong> (même entreprise et même nom ou e-mail) ; <strong>suppression logique</strong> par le Responsable Investudy seulement, refusée avec une inscription confirmée ou une certification ; durée de conservation à fixer avec le juridique (D11, D65).</li><li>Le paiement n'est jamais saisi : l'état « réglé » viendra de la Finance (rien à afficher en S5.2b).</li></ul>
+<p><strong>Faits du modèle réel qui posent les trois questions.</strong></p>
+<ul><li>Un <strong>agrément</strong> (module commercial) est rattaché à une entreprise et porte <strong>une somme globale, un nombre de places, ou les deux</strong> (au moins l'un des deux), une devise, une date de réception, une <strong>fin de validité facultative</strong>, et un <strong>état</strong> : <em>Demandé</em> (promesse pas encore signée), <em>Reçu</em> (promesse signée), <em>Honoré</em> (paiement constaté par la Finance), <em>Expiré</em>, <em>Annulé</em>.</li><li>Un <strong>certificat</strong> porte un prix complet et un prix par module, <strong>tous deux facultatifs</strong> et jusqu'ici <strong>purement informatifs</strong> (dette D144).</li><li>Une session a une <strong>capacité</strong> plafonnée par les places utiles de sa salle (13 en salle de marchés).</li><li>Une inscription est rattachée à une <strong>entreprise</strong> : elle suit sa portée (chargé de compte : les siennes ; Responsable commercial : son équipe ; Investudy, Direction, Support, Finance : lecture « Tous ») et entre dans le contrat anti-IDOR.</li></ul>
+<p>Poids (fixés avant de noter) : valeur métier 5 · risque 5 · cohérence 4 · réversibilité 4 · coût et délai 3 · maintenance 3 · expérience utilisateur 4 · accessibilité et sécurité 4 (<strong>total 160</strong>).</p>
+<h2>2. Les trois décisions</h2>
+<h3>D-INS-1 — Quel agrément autorise une inscription ?</h3>
+<p><strong>Contexte.</strong> L'inscription est conditionnée par un agrément « valide » de l'entreprise (CU-I-40). Un agrément seulement demandé n'engage pas encore le client ; un agrément honoré a été payé.</p>
+<div class="table-wrap"><table><thead><tr><th>Option</th><th>Description</th><th>Réversibilité</th></tr></thead><tbody>
+<tr><td><strong>A. Strict</strong></td><td>Agrément <strong>Reçu ou Honoré</strong>, dont la <strong>fin de validité</strong> (si elle existe) couvre la date de début de la session ; refus avec un message qui dit pourquoi</td><td>🟢</td></tr>
+<tr><td>B. Souple</td><td>Accepte aussi un agrément <strong>Demandé</strong> (la promesse n'est pas encore signée)</td><td>🟢</td></tr>
+<tr><td>C. Statu quo</td><td>Aucun contrôle d'agrément à l'inscription : seule l'entreprise de l'apprenant compte</td><td>🟢</td></tr>
+</tbody></table></div>
+<div class="table-wrap"><table><thead><tr><th>Critère (poids)</th><th>A</th><th>B</th><th>C</th></tr></thead><tbody>
+<tr><td>Valeur métier (5)</td><td>5</td><td>4</td><td>2</td></tr>
+<tr><td>Risque (5)</td><td>5</td><td>3</td><td>1</td></tr>
+<tr><td>Cohérence (4)</td><td>5</td><td>3</td><td>1</td></tr>
+<tr><td>Réversibilité (4)</td><td>4</td><td>4</td><td>5</td></tr>
+<tr><td>Coût et délai (3)</td><td>3</td><td>3</td><td>5</td></tr>
+<tr><td>Maintenance (3)</td><td>4</td><td>4</td><td>5</td></tr>
+<tr><td>Expérience utilisateur (4)</td><td>3</td><td>4</td><td>5</td></tr>
+<tr><td>Accessibilité et sécurité (4)</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td><strong>Score pondéré (sur 160)</strong></td><td><strong>135</strong></td><td><strong>112</strong></td><td><strong>101</strong></td></tr>
+</tbody></table></div>
+<p><em>Risques de A</em> : un chargé de compte voudra inscrire avant la signature ; il devra attendre l'état « Reçu » (ou saisir la réception). <em>Dette</em> : le sens d'« expiré » pendant une session déjà commencée (on ne contrôle que la date de début). <strong>Recommandation : A.</strong> <em>Ce qui ferait changer d'avis</em> : un usage courant d'inscriptions « sous réserve » avant signature (alors B, avec avertissement). <strong>Décision (2026-11-09, Direction produit) : A</strong> — recommandation appliquée (D49).</p>
+<h3>D-INS-2 — Que consomme une inscription sur l'agrément ?</h3>
+<p><strong>Contexte.</strong> « Cumul des inscriptions dans le montant ou le nombre de places de l'agrément » (CU-I-40). Un agrément en places se compte facilement ; un agrément en somme suppose de valoriser chaque inscription, donc d'utiliser le <strong>prix du certificat</strong>, aujourd'hui informatif.</p>
+<div class="table-wrap"><table><thead><tr><th>Option</th><th>Description</th><th>Réversibilité</th></tr></thead><tbody>
+<tr><td><strong>A. Compter les deux</strong></td><td>Chaque inscription (en attente ou confirmée) consomme <strong>1 place</strong> d'un agrément en places et le <strong>prix complet du certificat</strong> d'un agrément en somme ; si l'agrément porte les deux, <strong>les deux plafonds</strong> s'appliquent. Un certificat <strong>sans prix complet</strong> ne peut pas s'inscrire sous un agrément en somme (message explicite)</td><td>🟡</td></tr>
+<tr><td>B. Places seulement</td><td>Le <strong>nombre de places</strong> est contrôlé ; la <strong>somme est informative</strong> (aucun contrôle de montant)</td><td>🟢</td></tr>
+<tr><td>C. Statu quo</td><td>Aucun cumul : l'agrément valide autorise d'inscrire sans limite</td><td>🟢</td></tr>
+</tbody></table></div>
+<div class="table-wrap"><table><thead><tr><th>Critère (poids)</th><th>A</th><th>B</th><th>C</th></tr></thead><tbody>
+<tr><td>Valeur métier (5)</td><td>5</td><td>4</td><td>2</td></tr>
+<tr><td>Risque (5)</td><td>5</td><td>3</td><td>1</td></tr>
+<tr><td>Cohérence (4)</td><td>5</td><td>3</td><td>2</td></tr>
+<tr><td>Réversibilité (4)</td><td>3</td><td>4</td><td>5</td></tr>
+<tr><td>Coût et délai (3)</td><td>2</td><td>4</td><td>5</td></tr>
+<tr><td>Maintenance (3)</td><td>3</td><td>4</td><td>5</td></tr>
+<tr><td>Expérience utilisateur (4)</td><td>3</td><td>4</td><td>5</td></tr>
+<tr><td>Accessibilité et sécurité (4)</td><td>4</td><td>4</td><td>4</td></tr>
+<tr><td><strong>Score pondéré (sur 160)</strong></td><td><strong>125</strong></td><td><strong>119</strong></td><td><strong>109</strong></td></tr>
+</tbody></table></div>
+<p><em>Risques de A</em> : les prix du catalogue deviennent <strong>contraignants</strong> (D144 change) ; une saisie de prix manquante ou erronée bloque des inscriptions légitimes ; un agrément en somme ne dit rien du prix par module. L'écart avec B est de 6 points seulement. <em>Dette</em> : valorisation d'une inscription à un seul module (prix par module), remises, devise différente de celle de l'agrément (refusée). <strong>Recommandation : A</strong>, parce que le cumul en somme est l'objet même du flux F1 ; si vous jugez les prix du catalogue pas assez fiables aujourd'hui, <strong>B</strong> est une base saine à laquelle on ajoute le contrôle en somme plus tard sans refonte. <strong>Décision (2026-11-09, Direction produit) : A</strong> — recommandation appliquée (D49).</p>
+<h3>D-INS-3 — À quel moment une place est-elle prise ?</h3>
+<p><strong>Contexte.</strong> Le cas d'usage de départ décompte la place <strong>à la confirmation</strong> (CU-I-41) ; D47 (pas de liste d'attente) suppose qu'une session complète <strong>refuse</strong> l'inscription, ce qui se joue à la création.</p>
+<div class="table-wrap"><table><thead><tr><th>Option</th><th>Description</th><th>Réversibilité</th></tr></thead><tbody>
+<tr><td><strong>A. Dès la création</strong></td><td>Une inscription <strong>en attente ou confirmée</strong> occupe une place ; refus à la création quand la session est pleine ; annulée ou « à replacer », elle libère la place</td><td>🟢</td></tr>
+<tr><td>B. À la confirmation</td><td>On peut inscrire au-delà de la capacité ; la <strong>confirmation</strong> est refusée si la session est pleine</td><td>🟢</td></tr>
+<tr><td>C. Statu quo</td><td>Capacité non contrôlée aux inscriptions</td><td>🟢</td></tr>
+</tbody></table></div>
+<div class="table-wrap"><table><thead><tr><th>Critère (poids)</th><th>A</th><th>B</th><th>C</th></tr></thead><tbody>
+<tr><td>Valeur métier (5)</td><td>5</td><td>3</td><td>1</td></tr>
+<tr><td>Risque (5)</td><td>5</td><td>3</td><td>1</td></tr>
+<tr><td>Cohérence (4)</td><td>5</td><td>3</td><td>1</td></tr>
+<tr><td>Réversibilité (4)</td><td>4</td><td>4</td><td>5</td></tr>
+<tr><td>Coût et délai (3)</td><td>4</td><td>3</td><td>5</td></tr>
+<tr><td>Maintenance (3)</td><td>4</td><td>3</td><td>5</td></tr>
+<tr><td>Expérience utilisateur (4)</td><td>4</td><td>3</td><td>3</td></tr>
+<tr><td>Accessibilité et sécurité (4)</td><td>4</td><td>4</td><td>3</td></tr>
+<tr><td><strong>Score pondéré (sur 160)</strong></td><td><strong>142</strong></td><td><strong>104</strong></td><td><strong>88</strong></td></tr>
+</tbody></table></div>
+<p><em>Risques de A</em> : des inscriptions « en attente » jamais confirmées bloquent des places (le Responsable Investudy les voit dans la file et peut les annuler). Les deux inscriptions simultanées sur la dernière place sont départagées par un verrou sur la session. <em>Dette</em> : aucune ; B reste ajoutable ensuite. <strong>Recommandation : A.</strong> <strong>Décision (2026-11-09, Direction produit) : A</strong> — recommandation appliquée (D49).</p>
+<h2>3. Valeurs par défaut proposées (hors arbitrage — à confirmer)</h2>
+<div class="table-wrap"><table><thead><tr><th>#</th><th>Valeur</th></tr></thead><tbody>
+<tr><td>V9</td><td>États d'une inscription : <strong>En attente de confirmation → Confirmée</strong>, <strong>Annulée</strong> (motif obligatoire) et <strong>À replacer</strong> (session annulée)</td></tr>
+<tr><td>V10</td><td>On inscrit à une session <strong>Ouverte</strong> ; l'apprenant doit appartenir à <strong>la même entreprise que l'agrément</strong> ; un apprenant n'est inscrit qu'<strong>une fois</strong> par session (hors inscription annulée) ; il ne peut pas être inscrit à <strong>deux sessions qui se recouvrent</strong></td></tr>
+<tr><td>V11</td><td>Annuler une inscription libère la place et l'agrément ; <strong>impossible une fois la session clôturée</strong></td></tr>
+<tr><td>V12</td><td><strong>Annuler une session</strong> place ses inscriptions (en attente ou confirmées) « à replacer », dans la même transaction ; <strong>reporter</strong> une session les conserve</td></tr>
+<tr><td>V13</td><td><strong>Replacer</strong> une inscription crée une nouvelle inscription sur une autre session ouverte (mêmes contrôles) ; l'ancienne est annulée avec le lien vers la nouvelle</td></tr>
+<tr><td>V14</td><td>La <strong>capacité d'une session ne descend pas sous le nombre d'inscrits</strong> (en attente ou confirmés)</td></tr>
+<tr><td>V15</td><td>Fiche apprenant : nom, prénom, entreprise, e-mail et téléphone facultatifs (règles communes) ; <strong>lien facultatif vers un contact de la même entreprise</strong> ; l'entreprise d'un apprenant <strong>ne change pas</strong> ; aucune notification</td></tr>
+<tr><td>V16</td><td>Droits : le chargé de compte crée et modifie <strong>ses</strong> apprenants et inscriptions (portée de l'entreprise) ; le Responsable commercial voit son équipe ; <strong>Investudy</strong> confirme, annule, replace, supprime logiquement ; Direction, Support et Finance lisent</td></tr>
+</tbody></table></div>
+<h2>4. Récapitulatif</h2>
+<div class="table-wrap"><table><thead><tr><th>Décision</th><th>Recommandation</th><th>Score</th><th>Alternative la plus proche</th></tr></thead><tbody>
+<tr><td>D-INS-1 Agrément éligible</td><td><strong>A</strong> — Reçu ou Honoré, validité couvrant le début</td><td>135</td><td>B (112)</td></tr>
+<tr><td>D-INS-2 Consommation de l'agrément</td><td><strong>A</strong> — places et somme (prix complet du certificat)</td><td>125</td><td>B (119)</td></tr>
+<tr><td>D-INS-3 Place prise</td><td><strong>A</strong> — dès la création</td><td>142</td><td>B (104)</td></tr>
+</tbody></table></div>
+<h2>5. Décision</h2>
+<p><strong>« Applique les recommandations »</strong> (2026-11-09) : D-INS-1 A ; D-INS-2 A ; D-INS-3 A ; V9 à V16 confirmées. Consignée en <strong>D49</strong> (<code>QUESTIONS-ET-DECISIONS</code>). S5.2b : apprenants, inscriptions, contrôles, annulation et report de session reliés aux inscriptions, écran, jeu de démonstration, tests, mutants, recette.</p></main></body></html>

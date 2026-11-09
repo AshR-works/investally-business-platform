@@ -22,6 +22,8 @@ export interface SessionView {
   trainerId: string;
   trainerName: string;
   capacity: number;
+  /** Places occupées : inscriptions en attente ou confirmées. */
+  enrolled: number;
   status: SessionStatus;
   phase: SessionPhase;
   cancelReason: string | null;
@@ -39,6 +41,7 @@ export interface SessionContext {
   roomUsableSeats: number;
   trainerName: string;
   needsWorkstations: boolean;
+  enrolled: number;
 }
 
 export function phaseOf(session: Pick<TrainingSession, 'startDate' | 'endDate'>, today: IsoDate): SessionPhase {
@@ -63,6 +66,7 @@ export function toSessionView(session: TrainingSession, context: SessionContext,
     trainerId: session.trainerId,
     trainerName: context.trainerName,
     capacity: session.capacity,
+    enrolled: context.enrolled,
     status: session.status,
     phase: phaseOf(session, today),
     cancelReason: session.cancelReason,

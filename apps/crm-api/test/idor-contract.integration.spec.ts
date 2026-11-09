@@ -13,7 +13,7 @@ const pdf = () => Buffer.from('%PDF-1.7\ncontrat idor\n%%EOF');
 
 interface As { token: string; ip: string }
 /** Identifiants visés par une sonde : les vrais (objet de Marie) ou inexistants (tous `NIL`). */
-interface Ids { company: string; doc: string; session: string; facilitator: string; contact: string; offer: string; offerSent: string; offerPending: string; offerReceipt: string; receipt: string; followup: string; appointment: string; appointmentDue: string; opportunity: string; opportunityAgreed: string; teammate: string; opportunityReady: string; approval: string; approvalRequested: string; commission: string; commissionCompany: string; ambassador: string }
+interface Ids { company: string; doc: string; session: string; facilitator: string; contact: string; offer: string; offerSent: string; offerPending: string; offerReceipt: string; receipt: string; followup: string; appointment: string; appointmentDue: string; opportunity: string; opportunityAgreed: string; teammate: string; opportunityReady: string; approval: string; approvalRequested: string; commission: string; commissionCompany: string; ambassador: string; learnerCompany: string; learner: string; learner2: string; enrollment: string; trainingSession: string; trainingSession2: string }
 
 /**
  * Une sonde par route « objet » : elle appelle la route avec les identifiants donnés, en tant que `as`.
@@ -91,6 +91,18 @@ const PROBES: Record<string, (api: Api, as: As, ids: Ids) => Promise<ApiResponse
   'POST /documents/:id/versions': (api, as, ids) =>
     api.call('POST', `/api/v1/documents/${ids.doc}/versions?fileName=b.pdf`, { ...as, raw: { type: 'application/octet-stream', data: pdf() } }),
   'POST /documents/:id/archive': (api, as, ids) => api.call('POST', `/api/v1/documents/${ids.doc}/archive`, as),
+  'GET /learners': (api, as, ids) => api.call('GET', `/api/v1/learners?companyId=${ids.learnerCompany}`, as),
+  'POST /learners': (api, as, ids) => api.call('POST', '/api/v1/learners', { ...as, body: { companyId: ids.learnerCompany, lastName: 'Piège', firstName: 'Pierre' } }),
+  'GET /learners/:id': (api, as, ids) => api.call('GET', `/api/v1/learners/${ids.learner}`, as),
+  'PUT /learners/:id': (api, as, ids) => api.call('PUT', `/api/v1/learners/${ids.learner}`, { ...as, body: { version: 1, firstName: 'Piraté' } }),
+  'DELETE /learners/:id': (api, as, ids) => api.call('DELETE', `/api/v1/learners/${ids.learner}`, { ...as, body: { version: 1 } }),
+  'GET /enrollments': (api, as, ids) => api.call('GET', `/api/v1/enrollments?companyId=${ids.learnerCompany}`, as),
+  'POST /enrollments': (api, as, ids) => api.call('POST', '/api/v1/enrollments', { ...as, body: { sessionId: ids.trainingSession, learnerId: ids.learner2, approvalId: ids.approval } }),
+  'GET /enrollments/approval-options': (api, as, ids) => api.call('GET', `/api/v1/enrollments/approval-options?learnerId=${ids.learner}&sessionId=${ids.trainingSession}`, as),
+  'GET /enrollments/:id': (api, as, ids) => api.call('GET', `/api/v1/enrollments/${ids.enrollment}`, as),
+  'POST /enrollments/:id/confirm': (api, as, ids) => api.call('POST', `/api/v1/enrollments/${ids.enrollment}/confirm`, { ...as, body: { version: 1 } }),
+  'POST /enrollments/:id/cancel': (api, as, ids) => api.call('POST', `/api/v1/enrollments/${ids.enrollment}/cancel`, { ...as, body: { version: 1, reason: 'Annulée par un pirate' } }),
+  'POST /enrollments/:id/replace': (api, as, ids) => api.call('POST', `/api/v1/enrollments/${ids.enrollment}/replace`, { ...as, body: { version: 1, sessionId: ids.trainingSession2 } }),
   'DELETE /auth/sessions/:id': (api, as, ids) => api.call('DELETE', `/api/v1/auth/sessions/${ids.session}`, as),
 };
 
@@ -204,14 +216,42 @@ describeDb('Contrat anti-IDOR : un acteur sans portée reçoit la réponse d\'un
     const commission = commissions.body.items[0];
     const ambassador = await api.call('POST', '/api/v1/ambassadors', { ...m, body: { lastName: 'Secret-AMBASSADEUR-IDOR', firstName: 'Alain', origin: 'LEARNER', appointedOn: new Date().toISOString().slice(0, 10) } });
     expect(ambassador.status).toBe(201);
+    // Formation : une session ouverte (Responsable Investudy), deux apprenants de Marie sur sa seconde entreprise et une inscription sous son agrément reçu.
+    const manager = await login(await createUserWithRoles(t, [RoleCode.TrainingManager]));
+    const tag = Math.random().toString(36).slice(2, 8);
+    const mondayIn = (weeks: number) => { const d = new Date(); d.setUTCDate(d.getUTCDate() + weeks * 7); d.setUTCDate(d.getUTCDate() + ((8 - d.getUTCDay()) % 7 || 7)); return d.toISOString().slice(0, 10); };
+    const programIdor = await api.call('POST', '/api/v1/programs', { ...manager, body: { name: `Programme IDOR ${tag}` } });
+    expect(programIdor.status).toBe(201);
+    const trainingIdor = await api.call('POST', '/api/v1/trainings', { ...manager, body: { programId: programIdor.body.id, title: `Certificat IDOR ${tag}`, priceAmount: '100000' } });
+    expect(trainingIdor.status).toBe(201);
+    const roomIdor = await api.call('POST', '/api/v1/rooms', { ...manager, body: { name: `Salle IDOR ${tag}`, kind: 'CLASSROOM', learnerSeats: 10, trainerSeats: 0 } });
+    expect(roomIdor.status).toBe(201);
+    const trainerIdor = await api.call('POST', '/api/v1/trainers', { ...manager, body: { lastName: `Formateur${tag}`, firstName: 'Eli' } });
+    expect(trainerIdor.status).toBe(201);
+    const openSession = async (weeks: number) => {
+      const planned = await api.call('POST', '/api/v1/sessions', { ...manager, body: { trainingId: trainingIdor.body.id, rhythm: 'DAY', startDate: mondayIn(weeks), roomId: roomIdor.body.id, trainerId: trainerIdor.body.id, capacity: 5 } });
+      expect(planned.status).toBe(201);
+      const opened = await api.call('POST', `/api/v1/sessions/${planned.body.id}/open`, { ...manager, body: { version: 1 } });
+      expect(opened.status).toBe(200);
+      return planned.body.id as string;
+    };
+    const trainingSession = await openSession(40);
+    const trainingSession2 = await openSession(41);
+    const learner = await api.call('POST', '/api/v1/learners', { ...m, body: { companyId: company2.body.id, lastName: 'Secret-APPRENANT-IDOR', firstName: 'Alain' } });
+    expect(learner.status).toBe(201);
+    const learner2 = await api.call('POST', '/api/v1/learners', { ...m, body: { companyId: company2.body.id, lastName: 'Secret-APPRENANT-IDOR', firstName: 'Brice' } });
+    expect(learner2.status).toBe(201);
+    const enrollment = await api.call('POST', '/api/v1/enrollments', { ...m, body: { sessionId: trainingSession, learnerId: learner.body.id, approvalId: approval.body.id } });
+    expect(enrollment.status).toBe(201);
     const second = await login(marie);
     return {
+      manager,
       marie: m,
       chef: chefSession,
       finance: financeSession,
       attackers: { paul: await login(paul), autreChef: await login(autreChef) },
-      real: { company: company.body.id as string, doc: doc.body.id as string, session: second.sessionId, facilitator: facilitator.body.id as string, contact: contact.body.id as string, offer: offer.body.id as string, offerSent: offerSent.body.id as string, offerPending: offerPending.body.id as string, offerReceipt: offerReceipt.body.id as string, receipt: receipt.body.id as string, followup: followup.body.id as string, appointment: appointment.body.id as string, appointmentDue: appointmentDue.body.id as string, opportunity: opportunity.body.id as string, opportunityAgreed: opportunityAgreed.body.id as string, teammate: anne.id, opportunityReady: opportunityReady.body.id as string, approval: approval.body.id as string, approvalRequested: approvalRequested.body.id as string, commission: commission.id as string, commissionCompany: company3.body.id as string, ambassador: ambassador.body.id as string } satisfies Ids,
-      nil: { company: NIL, doc: NIL, session: NIL, facilitator: NIL, contact: NIL, offer: NIL, offerSent: NIL, offerPending: NIL, offerReceipt: NIL, receipt: NIL, followup: NIL, appointment: NIL, appointmentDue: NIL, opportunity: NIL, opportunityAgreed: NIL, teammate: NIL, opportunityReady: NIL, approval: NIL, approvalRequested: NIL, commission: NIL, commissionCompany: NIL, ambassador: NIL } satisfies Ids,
+      real: { company: company.body.id as string, doc: doc.body.id as string, session: second.sessionId, facilitator: facilitator.body.id as string, contact: contact.body.id as string, offer: offer.body.id as string, offerSent: offerSent.body.id as string, offerPending: offerPending.body.id as string, offerReceipt: offerReceipt.body.id as string, receipt: receipt.body.id as string, followup: followup.body.id as string, appointment: appointment.body.id as string, appointmentDue: appointmentDue.body.id as string, opportunity: opportunity.body.id as string, opportunityAgreed: opportunityAgreed.body.id as string, teammate: anne.id, opportunityReady: opportunityReady.body.id as string, approval: approval.body.id as string, approvalRequested: approvalRequested.body.id as string, commission: commission.id as string, commissionCompany: company3.body.id as string, ambassador: ambassador.body.id as string, learnerCompany: company2.body.id as string, learner: learner.body.id as string, learner2: learner2.body.id as string, enrollment: enrollment.body.id as string, trainingSession, trainingSession2 } satisfies Ids,
+      nil: { company: NIL, doc: NIL, session: NIL, facilitator: NIL, contact: NIL, offer: NIL, offerSent: NIL, offerPending: NIL, offerReceipt: NIL, receipt: NIL, followup: NIL, appointment: NIL, appointmentDue: NIL, opportunity: NIL, opportunityAgreed: NIL, teammate: NIL, opportunityReady: NIL, approval: NIL, approvalRequested: NIL, commission: NIL, commissionCompany: NIL, ambassador: NIL, learnerCompany: NIL, learner: NIL, learner2: NIL, enrollment: NIL, trainingSession: NIL, trainingSession2: NIL } satisfies Ids,
       secondSession: second,
     };
   }
@@ -241,6 +281,7 @@ describeDb('Contrat anti-IDOR : un acteur sans portée reçoit la réponse d\'un
       expect(onForeign.bytes.toString('utf8')).not.toContain('Secret-OPPORTUNITE-IDOR');
       expect(onForeign.bytes.toString('utf8')).not.toContain('2500000');
       expect(onForeign.bytes.toString('utf8')).not.toContain('Secret-AMBASSADEUR-IDOR');
+      expect(onForeign.bytes.toString('utf8')).not.toContain('Secret-APPRENANT-IDOR');
       expect(onForeign.bytes.toString('utf8')).not.toContain('Offre en attente de décharge');
     }
     // Contrôle positif : le propriétaire, lui, réussit (le test n'est pas vide), puis les dégâts éventuels sont vérifiés.
@@ -249,7 +290,8 @@ describeDb('Contrat anti-IDOR : un acteur sans portée reçoit la réponse d\'un
     // Constater le paiement relève de la Finance (D41, FD-4), pas du Responsable commercial.
     // Débloquer et mettre en attente relèvent de la Finance ; verser, du chargé de compte ; annuler et fixer le montant, du Responsable commercial.
     const financeKeys = ['POST /approvals/:id/honor', 'POST /commissions/:id/release', 'POST /commissions/:id/hold'];
-    const owner = financeKeys.includes(key) ? w.finance : ['POST /commissions/:id/cancel', 'POST /commissions/:id/amount'].includes(key) ? w.chef : ['POST /documents/:id/archive', 'DELETE /contacts/:id', 'POST /opportunities/:id/waiver', 'POST /opportunities/:id/close-won', 'POST /companies/:id/owner', 'PUT /ambassadors/:id', 'POST /approvals/:id/expire', 'POST /approvals/:id/cancel'].includes(key) ? w.chef : w.marie;
+    const trainingManagerKeys = ['DELETE /learners/:id', 'POST /enrollments/:id/confirm', 'POST /enrollments/:id/cancel', 'POST /enrollments/:id/replace'];
+    const owner = trainingManagerKeys.includes(key) ? w.manager : financeKeys.includes(key) ? w.finance : ['POST /commissions/:id/cancel', 'POST /commissions/:id/amount'].includes(key) ? w.chef : ['POST /documents/:id/archive', 'DELETE /contacts/:id', 'POST /opportunities/:id/waiver', 'POST /opportunities/:id/close-won', 'POST /companies/:id/owner', 'PUT /ambassadors/:id', 'POST /approvals/:id/expire', 'POST /approvals/:id/cancel'].includes(key) ? w.chef : w.marie;
     const ok = await probe(api, owner, w.real);
     // Payer une commission non débloquée, ou fixer le montant d'une commission déjà chiffrée, est refusé (422) : le refus d'une règle métier prouve que la portée est franchie.
     const businessRefusal = ['POST /commissions/:id/pay', 'POST /commissions/:id/amount'].includes(key);

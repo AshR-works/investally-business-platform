@@ -1,69 +1,15 @@
-import { InMemoryModules, InMemoryPrograms, InMemoryRooms, InMemoryTrainers, InMemoryTrainings } from '../../../../test/support/in-memory-catalogue';
-import { InMemorySessions } from '../../../../test/support/in-memory-sessions';
-import { ActorContext, DomainError } from '../../../shared-kernel';
-import { AuditAction, AuditRecord } from '../../audit';
+import { buildTrainingWorld } from '../../../../test/support/training-world';
+import { DomainError } from '../../../shared-kernel';
+import { AuditAction } from '../../audit';
 import type { AccessContext } from '../../iam';
 import { RoleCode, resolveGrants } from '../../iam/domain/roles';
-import { CreateModuleUseCase, CreateProgramUseCase, CreateRoomUseCase, CreateTrainerUseCase, CreateTrainingUseCase, TrainingViews, UpdateRoomUseCase, ChangeRoomStatusUseCase, ChangeTrainerStatusUseCase, ChangeTrainingStatusUseCase, UpdateTrainerUseCase } from './catalogue-use-cases';
-import {
-  CancelSessionUseCase, GetSessionHandler, ListSessionsHandler, OpenSessionUseCase, PlanSessionUseCase, PostponeSessionUseCase, SessionRules, SessionViews, UpdateSessionUseCase,
-} from './session-use-cases';
 
-const actor: ActorContext = { userId: 'u1', sessionId: 's1', ipAddress: '10.0.0.1', device: 'jest' };
+const actor = { userId: 'u1', sessionId: 's1', ipAddress: '10.0.0.1', device: 'jest' };
 let currentNow = new Date('2026-11-06T09:00:00Z'); // vendredi
 
 const as = (role: RoleCode, actorId: string): AccessContext => ({ actorId, grants: resolveGrants(role), teamMemberIds: [] });
 
-async function build() {
-  const programs = new InMemoryPrograms();
-  const trainings = new InMemoryTrainings(programs);
-  programs.trainings = trainings;
-  const modules = new InMemoryModules();
-  const rooms = new InMemoryRooms();
-  const trainers = new InMemoryTrainers();
-  const sessions = new InMemorySessions(trainers);
-  const audit: AuditRecord[] = [];
-  let seq = 0;
-  const recorder = { record: async (r: AuditRecord) => { audit.push(r); } };
-  const unitOfWork = { run: <T>(work: () => Promise<T>) => work() };
-  const clock = { now: () => currentNow };
-  const ids = { next: () => `id-${++seq}` };
-  const trainingViews = new TrainingViews(programs, modules);
-  const views = new SessionViews(trainings, programs, modules, rooms, trainers, clock);
-  const rules = new SessionRules(trainings, modules, rooms, trainers, sessions);
-
-  const createProgram = new CreateProgramUseCase(programs, recorder, unitOfWork, clock, ids);
-  const createModule = new CreateModuleUseCase(modules, recorder, unitOfWork, clock, ids);
-  const createTraining = new CreateTrainingUseCase(trainings, programs, modules, trainingViews, recorder, unitOfWork, clock, ids);
-  const createRoom = new CreateRoomUseCase(rooms, recorder, unitOfWork, clock, ids);
-  const createTrainer = new CreateTrainerUseCase(trainers, recorder, unitOfWork, clock, ids);
-
-  const program = await createProgram.execute({ name: 'Marchés financiers', actor });
-  const magistral = await createModule.execute({ title: 'Introduction aux marchés', requiresWorkstations: false, actor });
-  const pratique = await createModule.execute({ title: 'Trading sur poste', requiresWorkstations: true, actor });
-  const certTheory = await createTraining.execute({ programId: program.id, title: 'Certificat théorique', moduleIds: [magistral.id], actor });
-  const certTrading = await createTraining.execute({ programId: program.id, title: 'Certificat trading', moduleIds: [magistral.id, pratique.id], actor });
-  const salleMarches = await createRoom.execute({ name: 'Salle de marchés', kind: 'WORKSTATIONS', learnerSeats: 14, unavailableSeats: 1, trainerSeats: 1, actor });
-  const salleCours = await createRoom.execute({ name: 'Salle de réunion', kind: 'CLASSROOM', learnerSeats: 16, trainerSeats: 0, actor });
-  const interne = await createTrainer.execute({ lastName: 'Interne', firstName: 'Ida', userId: 'user-ida', actor });
-  const externe = await createTrainer.execute({ lastName: 'Externe', firstName: 'Eli', email: 'eli@formateurs.test', actor });
-
-  return {
-    audit, sessions, certTheory, certTrading, salleMarches, salleCours, interne, externe, rooms, trainers, trainings,
-    plan: new PlanSessionUseCase(sessions, rules, views, recorder, unitOfWork, clock, ids),
-    update: new UpdateSessionUseCase(sessions, rules, views, recorder, unitOfWork, clock),
-    open: new OpenSessionUseCase(sessions, views, recorder, unitOfWork),
-    postpone: new PostponeSessionUseCase(sessions, rules, views, recorder, unitOfWork, clock),
-    cancel: new CancelSessionUseCase(sessions, views, recorder, unitOfWork),
-    get: new GetSessionHandler(sessions, trainers, views),
-    list: new ListSessionsHandler(sessions, views),
-    updateRoom: new UpdateRoomUseCase(rooms, recorder, unitOfWork),
-    statusRoom: new ChangeRoomStatusUseCase(rooms, recorder, unitOfWork),
-    statusTrainer: new ChangeTrainerStatusUseCase(trainers, recorder, unitOfWork),
-    statusTraining: new ChangeTrainingStatusUseCase(trainings, programs, trainingViews, recorder, unitOfWork),
-    updateTrainer: new UpdateTrainerUseCase(trainers, recorder, unitOfWork),
-  };
-}
+const build = () => buildTrainingWorld({ now: () => currentNow });
 type World = Awaited<ReturnType<typeof build>>;
 
 const rejects = async (promise: Promise<unknown>, code: string, message?: RegExp) => {

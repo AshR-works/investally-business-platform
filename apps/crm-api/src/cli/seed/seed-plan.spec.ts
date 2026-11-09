@@ -3,6 +3,7 @@ import { blockOf, buildPlan, COMPANIES, isDemoPhone, SEED_BLOCKS, SeedEvent, See
 
 const anchor = new Date('2026-11-03T12:00:00Z');
 const plan = buildPlan({ anchor });
+const isoDayPlus = (iso: string, days: number) => new Date(new Date(`${iso}T00:00:00Z`).getTime() + days * 86_400_000).toISOString().slice(0, 10);
 const ofKind = <K extends SeedOp['k']>(k: K) => plan.filter((e) => e.op.k === k).map((e) => e.op as Extract<SeedOp, { k: K }>);
 const dayDiff = (iso: string) => Math.round((new Date(iso).getTime() - anchor.getTime()) / 86_400_000);
 
@@ -207,7 +208,9 @@ describe('plan du jeu de données de démonstration', () => {
     expect([...byBlock.keys()].sort()).toEqual([...SEED_BLOCKS].sort());
     expect(byBlock.get('formateurs')).toBe(5);
     expect(byBlock.get('catalogue')).toBe(1 + 7 + 5 + 2);
-    expect(byBlock.get('sessions')).toBe(7 + 4 + 1 + 1); // sept sessions, quatre ouvertures, un report, une annulation
+    expect(byBlock.get('sessions')).toBe(7 + 5 + 1 + 1); // sept sessions, cinq ouvertures, un report, une annulation
+    // cinq entreprises clientes (7 opérations chacune), douze apprenants, quatorze inscriptions, dix confirmations, une annulation, un replacement
+    expect(byBlock.get('inscriptions')).toBe(5 * 7 + 12 + 14 + 10 + 1 + 1);
     // Aucun bloc ne dépend d'un objet d'un autre : le catalogue et les formateurs n'utilisent que leurs propres clés.
     const keysOf = (block: string) => new Set(plan.filter((e) => blockOf(e.op) === block && 'key' in e.op).map((e) => (e.op as { key: string }).key));
     const catalogueKeys = keysOf('catalogue');
@@ -233,7 +236,7 @@ describe('plan du jeu de données de démonstration', () => {
     for (const e of plan) {
       if (e.op.k === 'sessionOpen' || e.op.k === 'sessionPostpone' || e.op.k === 'sessionCancel') expect(keys.has(e.op.session)).toBe(true);
     }
-    expect(ofKind('sessionOpen')).toHaveLength(4);
+    expect(ofKind('sessionOpen')).toHaveLength(5);
     expect(ofKind('sessionPostpone')).toHaveLength(1);
     expect(ofKind('sessionCancel')).toHaveLength(1);
     // Aucune action n'a lieu avant la planification de sa session, et rien n'est daté dans le futur (jamais après la date de référence).
@@ -243,6 +246,50 @@ describe('plan du jeu de données de démonstration', () => {
     }
     const reported = ofKind('sessionPostpone')[0]!;
     expect(sessions.find((s) => s.key === reported.session)!.startDate < reported.startDate).toBe(true);
+  });
+
+  it('apprenants et inscriptions : chaque inscription désigne un apprenant et une session du plan, et rien n\'est fait sur une inscription avant sa création', () => {
+    const learners = ofKind('learner');
+    expect(learners).toHaveLength(12);
+    expect(new Set(learners.map((l) => l.email)).size).toBe(12);
+    for (const l of learners) {
+      expect(l.email).toMatch(/@apprenants\.test$/);
+      expect(isDemoPhone(l.phone)).toBe(true);
+      expect(l.company).toMatch(/^client-formation-[1-5]$/);
+    }
+    const learnerKeys = new Set(learners.map((l) => l.key));
+    // Les entreprises des apprenants sont créées par le même bloc, avec un agrément reçu qui vaut encore plus d'un an après la date de référence.
+    const clients = ofKind('company').filter((c) => c.key.startsWith('client-formation-'));
+    expect(clients).toHaveLength(5);
+    for (const l of learners) expect(clients.some((c) => c.key === l.company)).toBe(true);
+    const approvals = ofKind('approval').filter((a) => a.key.startsWith('client-formation-'));
+    expect(approvals).toHaveLength(5);
+    const lastStart = ofKind('session').map((s) => s.startDate).sort().at(-1)!;
+    for (const a of approvals) expect([a.key, a.validUntil! > isoDayPlus(lastStart, 300)]).toEqual([a.key, true]);
+    const sessionKeys = new Set(ofKind('session').map((s) => s.key));
+    const enrollments = ofKind('enroll');
+    expect(enrollments).toHaveLength(14);
+    for (const e of enrollments) {
+      expect([e.key, learnerKeys.has(e.learner)]).toEqual([e.key, true]);
+      expect([e.key, sessionKeys.has(e.session)]).toEqual([e.key, true]);
+    }
+    const createdAt = new Map(plan.filter((e) => e.op.k === 'enroll').map((e) => [(e.op as { key: string }).key, e.at.getTime()]));
+    for (const e of plan) {
+      if (e.op.k === 'enrollConfirm' || e.op.k === 'enrollCancel' || e.op.k === 'enrollReplace') expect(e.at.getTime()).toBeGreaterThan(createdAt.get(e.op.enrollment)!);
+    }
+    // Les apprenants ne sont inscrits qu'à des sessions qui ouvrent avant leur inscription, et jamais à une session qui n'est pas ouverte.
+    const opened = new Map(plan.filter((e) => e.op.k === 'sessionOpen').map((e) => [(e.op as { session: string }).session, e.at.getTime()]));
+    for (const e of plan) {
+      if (e.op.k === 'enroll') expect([e.op.session, e.at.getTime() > (opened.get(e.op.session) ?? Infinity)]).toEqual([e.op.session, true]);
+    }
+    // La session annulée reçoit ses inscrits avant son annulation ; le replacement a lieu après.
+    const cancelledAt = plan.find((e) => e.op.k === 'sessionCancel')!.at.getTime();
+    const forCancelled = plan.filter((e) => e.op.k === 'enroll' && e.op.session === 'session-etudiants-annulee');
+    expect(forCancelled).toHaveLength(2);
+    for (const e of forCancelled) expect(e.at.getTime()).toBeLessThan(cancelledAt);
+    expect(plan.find((e) => e.op.k === 'enrollReplace')!.at.getTime()).toBeGreaterThan(cancelledAt);
+    // Aucune action de bloc ne dépend d'un autre bloc par clé : les inscriptions désignent leurs entreprises par rang, les sessions par clé du plan.
+    expect(blockOf(learners[0]!)).toBe('inscriptions');
   });
 
   it('ne reprend aucune marque réelle connue du secteur', () => {

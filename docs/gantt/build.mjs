@@ -70,7 +70,7 @@ const ITEMS = [
   { phase: 'Module Investudy (formation)', rows: [
     { name: 'S5.1 — catalogue (programmes, certificats, modules, salles, formateurs, rythmes)', start: '2026-11-05', end: '2026-11-06', state: 'done', tag: 's5-1-validated' },
     { name: 'S5.2a — sessions de formation', start: '2026-11-07', end: '2026-11-07', state: 'done', tag: 's5-2a-validated' },
-    { name: 'S5.2b — apprenants et inscriptions', start: '2026-11-24', end: '2026-11-26', state: 'plan' },
+    { name: 'S5.2b — apprenants et inscriptions', start: '2026-11-09', end: '2026-11-09', state: 'wait' },
     { name: 'S5.3 — présences, évaluations, certifications', start: '2026-11-27', end: '2026-11-30', state: 'plan' },
   ] },
   { phase: 'Pilotage, stocks, production', rows: [
@@ -205,7 +205,7 @@ const md = `# Diagramme de Gantt du projet
 | Fin de la fondation et du design | 22/10/2026 |
 | Dernier lot validé (S5.2a, sessions de formation) | 07/11/2026 |
 | Lots réalisés et validés au ${frFull(TODAY)} | ${done.length} (dont ${done.filter((r) => r.tag).length} étiquetés) |
-| **Prochaine session** | S5.2b (apprenants et inscriptions) |
+| **Prochaine session** | Validation de S5.2b, puis le chantier de navigation et le sprint MVP |
 | Fin du module commercial | **Terminé le 05/11/2026** (S4.4c validé) |
 | Fin d'Investudy (prévision) | 30/11/2026 |
 | **Mise en production du CRM, prévision prudente** | **23/12/2026** |

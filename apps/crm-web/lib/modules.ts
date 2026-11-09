@@ -29,6 +29,8 @@ export const MODULES: readonly AppModule[] = [
   { id: 'offers', label: 'Offres', description: 'Offres faites aux entreprises', icon: 'doc', group: 'Espace de travail', href: '/offers', permission: 'bd.offer.read' },
   { id: 'opportunities', label: 'Opportunités', description: 'Pipeline commercial', icon: 'target', group: 'Espace de travail', href: '/opportunities', permission: 'bd.opportunity.read' },
   { id: 'training', label: 'Formation', description: 'Catalogue Investudy : programmes, certificats, salles, formateurs', icon: 'cap', group: 'Espace de travail', href: '/training', permission: 'training.program.read' },
+  { id: 'learners', label: 'Apprenants', description: 'Personnes inscrites aux formations, par entreprise', icon: 'users', group: 'Espace de travail', href: '/training/learners', permission: 'training.learner.read' },
+  { id: 'enrollments', label: 'Inscriptions', description: 'Inscriptions aux sessions : confirmer, annuler, replacer', icon: 'doc', group: 'Espace de travail', href: '/training/enrollments', permission: 'training.enrollment.read' },
   { id: 'sessions', label: 'Sessions de formation', description: 'Planifier, ouvrir, reporter et annuler les sessions', icon: 'cal', group: 'Espace de travail', href: '/training/sessions', permission: 'training.session.read' },
   { id: 'finance', label: 'Finance', description: 'Facturation et suivi des paiements', icon: 'card', group: 'Opérations' },
   { id: 'hr', label: 'Ressources humaines', description: 'Personnel et organisation', icon: 'brief', group: 'Opérations' },
