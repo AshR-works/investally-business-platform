@@ -368,7 +368,7 @@ export class ListEnrollmentsHandler {
     const visibility = visibilityFor(query.access, 'training.enrollment.read');
     const result = await this.enrollments.list({
       ...normalizePage(query), sessionId: query.sessionId, learnerId: query.learnerId, companyId: query.companyId, status: query.status,
-      ownerIds: visibility.unrestricted ? undefined : visibility.ownerIds,
+      companyIds: visibility.unrestricted ? undefined : await this.directory.companyIdsOwnedBy(visibility.ownerIds),
     });
     return { ...result, items: await this.views.many(result.items) };
   }

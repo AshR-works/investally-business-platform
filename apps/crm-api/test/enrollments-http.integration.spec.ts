@@ -282,7 +282,7 @@ describeDb('Apprenants et inscriptions (HTTP + PostgreSQL)', () => {
     expect((await api.call('GET', `/api/v1/enrollments/${e.body.id}`, w.manager)).body).toMatchObject({ cancelReason: 'Premier désistement', version: 2 });
   });
 
-  it('règles garanties par la base : une inscription vivante par apprenant et par session, motif d\'annulation, confirmation, montant, clés étrangères', async () => {
+  it('règles garanties par la base : une inscription vivante par apprenant et par session, motif d\'annulation, confirmation, montant, clés internes au module', async () => {
     const w = await world();
     const s = await w.sessionAt(22);
     const a = await w.learnerOf(`A${unique()}`);
@@ -298,10 +298,11 @@ describeDb('Apprenants et inscriptions (HTTP + PostgreSQL)', () => {
     await refuses({ version: 0 }, /enrollments_version_positive/);
     // Deux inscriptions vivantes du même apprenant à la même session : refusées par l'index unique (même en contournant l'application).
     await expect(db.enrollment.create({ data: { id: '0198a1b2-0000-7000-8000-00000000aa01', sessionId: s.id, learnerId: a.id, companyId: w.company, approvalId: w.places } })).rejects.toThrow();
-    // Jamais de suppression physique d'un apprenant, d'une session ou d'un agrément qui a des inscriptions.
+    // Jamais de suppression physique d'un apprenant ou d'une session qui a des inscriptions (clés internes au module Formation). Les références vers
+    // le module commercial (entreprise, contact, agrément) n'ont PAS de clé étrangère (invariant des frontières entre schémas, D161) : l'application ne
+    // supprime jamais une entreprise ni un agrément, et aucune route ne le permet.
     await expect(db.learner.delete({ where: { id: a.id } })).rejects.toThrow();
     await expect(db.trainingSession.delete({ where: { id: s.id } })).rejects.toThrow();
-    await expect(db.approval.delete({ where: { id: w.sum } })).rejects.toThrow();
     await expect(db.learner.update({ where: { id: a.id }, data: { phone: '0699' } })).rejects.toThrow(/learners_phone_format/);
     // Un doublon vivant est possible une fois l'inscription annulée.
     await api.call('POST', `/api/v1/enrollments/${e.body.id}/cancel`, { ...w.manager, body: { version: 1, reason: 'Désistement' } });

@@ -27,6 +27,12 @@ export class PrismaCompanyDirectory implements CompanyDirectory {
     return row ? { id: row.id, name: row.name, ownerUserId: row.ownerUserId, archived: row.status === 'ARCHIVED' } : null;
   }
 
+  async companyIdsOwnedBy(ownerIds: readonly string[]): Promise<string[]> {
+    if (ownerIds.length === 0) return [];
+    const rows = await this.prisma.db.company.findMany({ where: { ownerUserId: { in: [...ownerIds] } }, select: { id: true } });
+    return rows.map((r) => r.id);
+  }
+
   async contactBelongsTo(contactId: string, companyId: string): Promise<boolean> {
     return (await this.prisma.db.contact.count({ where: { id: contactId, companyId, deletedAt: null } })) > 0;
   }

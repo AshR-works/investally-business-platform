@@ -51,8 +51,6 @@ model Company {
   appointments Appointment[]
   opportunities Opportunity[]
   approvals    Approval[]
-  learners     Learner[]
-  enrollments  Enrollment[]
   ambassadors  Ambassador[]
   payouts      CommissionPayout[]
 
@@ -88,7 +86,6 @@ model Contact {
   deletedAt DateTime?   @map("deleted_at") @db.Timestamptz(6)
   company   Company     @relation(fields: [companyId], references: [id])
   appointments Appointment[]
-  learners     Learner[]
 
   @@index([companyId])
   @@index([companyId, nameKey])
@@ -819,7 +816,6 @@ model Approval {
   company       Company        @relation(fields: [companyId], references: [id])
   opportunity   Opportunity    @relation(fields: [opportunityId], references: [id])
   payout        CommissionPayout?
-  enrollments   Enrollment[]
 
   @@index([companyId])
   @@index([opportunityId])
@@ -1128,8 +1124,6 @@ model Learner {
   updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
 
-  company     Company      @relation(fields: [companyId], references: [id], onDelete: Restrict)
-  contact     Contact?     @relation(fields: [contactId], references: [id], onDelete: SetNull)
   enrollments Enrollment[]
 
   @@index([companyId])
@@ -1162,8 +1156,6 @@ model Enrollment {
 
   session  TrainingSession @relation(fields: [sessionId], references: [id], onDelete: Restrict)
   learner  Learner         @relation(fields: [learnerId], references: [id], onDelete: Restrict)
-  company  Company         @relation(fields: [companyId], references: [id], onDelete: Restrict)
-  approval Approval        @relation(fields: [approvalId], references: [id], onDelete: Restrict)
 
   @@index([sessionId, status])
   @@index([learnerId, status])

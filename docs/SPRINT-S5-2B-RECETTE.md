@@ -36,6 +36,8 @@
 - **Données de test laissées dans la base partagée** : le nettoyage du jeu ne retirait que les inscriptions des entreprises du jeu ; il retire maintenant aussi celles repérées par leur domaine d'e-mail.
 - Hypothèse fausse corrigée dans les tests : la **Finance ne lit pas les fiches d'apprenants** (elle lit les inscriptions) ; la matrice des droits était juste, pas le test.
 
+- **Quatre clés étrangères entre schémas, trouvées par la CI de la PR #51** : le test d'invariant `core-schema` (« aucune clé étrangère entre deux schémas PostgreSQL ») refusait `learners_company_id_fkey`, `learners_contact_id_fkey`, `enrollments_company_id_fkey` et `enrollments_approval_id_fkey`. Je ne l'avais pas vu : **cette suite n'était pas dans les quatre rejouées** et je rangeais ses échecs sous l'instabilité D149. **Corrigé** : migration `20261114000001_s5_2b_no_cross_schema_fk` (les quatre clés sont supprimées, les index conservés), schéma sans relation entre les deux modules, portée des apprenants et des inscriptions résolue par l'annuaire (`companyIdsOwnedBy`). **Coût** : la base ne protège plus la suppression physique d'une entreprise, d'un contact ou d'un agrément qui a des apprenants ou des inscriptions (D161).
+
 ## Réserves sur la recette
 - **Écrans non contrôlés dans un navigateur réel**, ni par l'audit d'accessibilité automatique, ni au lecteur d'écran : couverts par les tests de l'interface (validations comparées au domaine réel du serveur, actions selon l'état et les droits) et par les tests d'intégration de l'API (D160).
 - **Les prix du catalogue deviennent contraignants** (D154, D144 modifiée) : un certificat sans prix complet ne s'inscrit pas sous un agrément en somme. À surveiller dès que la direction maintient le catalogue.

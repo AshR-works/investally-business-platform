@@ -20,6 +20,7 @@ export class InMemoryDirectory implements CompanyDirectory {
   locks = 0;
 
   async company(id: string) { return this.companies.get(id) ?? null; }
+  async companyIdsOwnedBy(ownerIds: readonly string[]) { return [...this.companies.values()].filter((c) => ownerIds.includes(c.ownerUserId ?? '')).map((c) => c.id); }
   async contactBelongsTo(contactId: string, companyId: string) { return this.contacts.get(contactId) === companyId; }
   async approval(id: string) { return this.approvals.get(id) ?? null; }
   async approvalsOf(companyId: string) { return [...this.approvals.values()].filter((a) => a.companyId === companyId); }
@@ -43,7 +44,7 @@ export class InMemoryLearners implements LearnerRepository {
     const rows = this.items
       .filter((l) => !l.deleted)
       .filter((l) => !query.companyId || l.companyId === query.companyId)
-      .filter((l) => !query.ownerIds || query.ownerIds.includes(this.directory.companies.get(l.companyId)?.ownerUserId ?? ''))
+      .filter((l) => !query.companyIds || query.companyIds.includes(l.companyId))
       .filter((l) => !query.search || l.fullName.toLowerCase().includes(query.search.toLowerCase()));
     return pageOf(rows, query);
   }
@@ -88,7 +89,7 @@ export class InMemoryEnrollments implements EnrollmentRepository {
       .filter((e) => !query.learnerId || e.learnerId === query.learnerId)
       .filter((e) => !query.companyId || e.companyId === query.companyId)
       .filter((e) => !query.status || e.status === query.status)
-      .filter((e) => !query.ownerIds || query.ownerIds.includes(this.directory.companies.get(e.companyId)?.ownerUserId ?? ''));
+      .filter((e) => !query.companyIds || query.companyIds.includes(e.companyId));
     return pageOf(rows, query);
   }
 }
