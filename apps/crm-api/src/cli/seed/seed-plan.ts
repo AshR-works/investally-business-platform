@@ -6,7 +6,7 @@
  */
 
 /** Qui exécute l'événement : un chargé de compte, le Responsable commercial ou la Finance (chacun avec ses droits et sa portée). */
-export type Who = 'compte1' | 'compte2' | 'compte3' | 'commercial' | 'finance' | 'investudy';
+export type Who = 'compte1' | 'compte2' | 'compte3' | 'commercial' | 'finance' | 'investudy' | 'rh';
 
 export type SeedOp =
   | { k: 'company'; key: string; name: string; sector: string; country: string; email: string; phone: string; facilitator?: { key: string; lastName: string; firstName: string; phone: string; comment: string; contactMethod: string; isCompanyEmployee: boolean } }
@@ -46,6 +46,8 @@ export type SeedOp =
   | { k: 'sessionOpen'; session: string }
   | { k: 'sessionPostpone'; session: string; startDate: string; reason: string }
   | { k: 'sessionCancel'; session: string; reason: string }
+  | { k: 'employee'; key: string; matricule: string; lastName: string; firstName: string; jobTitle: string; department: string; manager?: string; account?: Who; workEmail: string; workPhone: string; hiredOn: string }
+  | { k: 'employeeLeave'; employee: string; leftOn: string; reason: string }
   | { k: 'ambassador'; key: string; lastName: string; firstName: string; origin: 'CLIENT' | 'LEARNER'; company?: string; email: string; phone: string; appointedOn: string; note: string };
 
 export interface SeedEvent {
@@ -192,20 +194,23 @@ const FORMATEURS: SeedOp[] = TRAINERS.map(([lastName, firstName, specialties, lo
 }));
 
 /** Les blocs du jeu : chacun se charge seul sur une démo existante (marqueur propre), dans l'ordre des dépendances. */
-export type SeedBlock = 'crm' | 'catalogue' | 'formateurs' | 'sessions' | 'inscriptions';
-export const SEED_BLOCKS: readonly SeedBlock[] = ['crm', 'catalogue', 'formateurs', 'sessions', 'inscriptions'];
+export type SeedBlock = 'crm' | 'catalogue' | 'formateurs' | 'sessions' | 'inscriptions' | 'rh';
+export const SEED_BLOCKS: readonly SeedBlock[] = ['crm', 'catalogue', 'formateurs', 'sessions', 'inscriptions', 'rh'];
 /** Entreprises clientes de formation du bloc « inscriptions » : la première sert de repère au chargement par blocs. */
 export const FORMATION_CLIENTS: readonly [string, 'Cameroun' | "Côte d'Ivoire" | 'Sénégal' | 'Gabon' | 'RDC'][] = [
   ['Académie Wouri Finance', 'Cameroun'], ['Cabinet Libreville Conseil', 'Gabon'], ['Institut Dakar Marchés', 'Sénégal'], ['Groupe Abidjan Capital', "Côte d'Ivoire"], ['Fonds Kinshasa Épargne', 'RDC'],
 ];
 /** Les entreprises clientes de formation du bloc « inscriptions » (avec leur opportunité et leur agrément) portent cette racine de clé. */
 export const FORMATION_CLIENT = 'client-formation-';
+/** Domaine (fictif, réservé) des e-mails professionnels du personnel de démonstration : repère le bloc « rh ». */
+export const RH_EMAIL_DOMAIN = '@staff.investally.test';
 const isFormationClient = (key: string | undefined): boolean => key?.startsWith(FORMATION_CLIENT) ?? false;
 export function blockOf(op: SeedOp): SeedBlock {
   if ((op.k === 'company' || op.k === 'opportunity' || op.k === 'approval') && isFormationClient(op.key)) return 'inscriptions';
   if ((op.k === 'advance' || op.k === 'waiver') && isFormationClient(op.opportunity)) return 'inscriptions';
   if (op.k === 'program' || op.k === 'module' || op.k === 'training' || op.k === 'room') return 'catalogue';
   if (op.k === 'trainer') return 'formateurs';
+  if (op.k === 'employee' || op.k === 'employeeLeave') return 'rh';
   if (op.k === 'learner' || op.k === 'enroll' || op.k === 'enrollConfirm' || op.k === 'enrollCancel' || op.k === 'enrollReplace') return 'inscriptions';
   if (op.k === 'session' || op.k === 'sessionOpen' || op.k === 'sessionPostpone' || op.k === 'sessionCancel') return 'sessions';
   return 'crm';
@@ -538,6 +543,34 @@ export function buildPlan({ anchor, seed = 2026 }: PlanOptions): SeedEvent[] {
   enroll('inscription-13', 1, 'session-etudiants-annulee', 0, false);
   enroll('inscription-14', 2, 'session-etudiants-annulee', 1, false);
   events.push({ at: new Date(enrolledAt('session-etudiants-annulee', 0) + 12 * 3_600_000), who: 'investudy', op: { k: 'enrollReplace', enrollment: 'inscription-13', session: 'session-banque-ouverte' } });
+
+  // Bloc « rh » : le personnel fictif (des FONCTIONS, aux noms inventés), créé par la RH. La hiérarchie des fiches suit celle des comptes de démonstration, sauf la
+  // Finance (responsable RH : la DGA ; compte sans responsable) : un écart volontaire, pour montrer son signalement. Un ancien chargé de compte est sorti du personnel.
+  const staffAt = (minute: number) => new Date(day0.getTime() - 20 * DAY + 9 * 3_600_000 + minute * 60_000);
+  const hired = (daysAgo: number) => isoDay(new Date(day0.getTime() - daysAgo * DAY));
+  let staffPhone = 7000;
+  const staff = (
+    index: number, key: string, first: string, last: string, jobTitle: string, department: string, daysAgo: number, extra: { manager?: string; account?: Who } = {},
+  ) => events.push({
+    at: staffAt(index),
+    who: 'rh',
+    op: {
+      k: 'employee', key, matricule: `INV-${String(index + 1).padStart(3, '0')}`, lastName: last, firstName: first, jobTitle, department, ...extra,
+      workEmail: `${slug(first)}.${slug(last)}${RH_EMAIL_DOMAIN}`, workPhone: demoPhone('Cameroun', ++staffPhone), hiredOn: hired(daysAgo),
+    },
+  });
+  staff(0, 'personnel-dg', 'Samuel', 'Ekambi', 'Directeur général', 'Direction', 1500);
+  staff(1, 'personnel-dga', 'Nadège', 'Tchoumi', 'Directrice générale adjointe (finances et ressources humaines)', 'Direction', 1300, { manager: 'personnel-dg', account: 'rh' });
+  staff(2, 'personnel-daf', 'Félix', 'Nkodo', 'Directeur administratif et financier', 'Finance', 1100, { manager: 'personnel-dga', account: 'finance' });
+  staff(3, 'personnel-commercial', 'Hugo', 'Mballa', 'Responsable commercial', 'Commercial', 1200, { manager: 'personnel-dg', account: 'commercial' });
+  staff(4, 'personnel-compte1', 'Camille', 'Ngono', 'Chargée de compte', 'Commercial', 700, { manager: 'personnel-commercial', account: 'compte1' });
+  staff(5, 'personnel-compte2', 'Karim', 'Biya', 'Chargé de compte', 'Commercial', 600, { manager: 'personnel-commercial', account: 'compte2' });
+  staff(6, 'personnel-compte3', 'Estelle', 'Fouda', 'Chargée de compte', 'Commercial', 500, { manager: 'personnel-commercial', account: 'compte3' });
+  staff(7, 'personnel-investudy', 'Inès', 'Abena', 'Responsable Investudy', 'Investudy', 900, { manager: 'personnel-dg', account: 'investudy' });
+  staff(8, 'personnel-assistant-formation', 'Joël', 'Essomba', 'Assistant de formation', 'Investudy', 400, { manager: 'personnel-investudy' });
+  staff(9, 'personnel-support', 'Sonia', 'Manga', 'Agente de support', 'Support', 450, { manager: 'personnel-dga' });
+  staff(10, 'personnel-ancien', 'Patrick', 'Owona', 'Chargé de compte', 'Commercial', 800, { manager: 'personnel-commercial' });
+  events.push({ at: new Date(day0.getTime() - 5 * DAY + 9 * 3_600_000), who: 'rh', op: { k: 'employeeLeave', employee: 'personnel-ancien', leftOn: hired(60), reason: 'Fin de contrat (donnée de démonstration)' } });
 
   // Ordre chronologique stable (à date égale, l'ordre de construction est conservé).
   return events.map((event, order) => ({ event, order })).sort((a, b) => a.event.at.getTime() - b.event.at.getTime() || a.order - b.order).map((x) => x.event);

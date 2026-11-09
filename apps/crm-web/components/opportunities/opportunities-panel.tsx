@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { EntityLink } from '../entity-link';
 import { useEffect, useState } from 'react';
 import { api, ApiError } from '../../lib/api';
 import { formatDate } from '../../lib/format';
@@ -38,7 +39,7 @@ export function OpportunitiesPanel({ company }: { company: { id: string; name: s
       <section aria-labelledby="opportunities-title" className="p-5">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <h2 id="opportunities-title" className="m-0 text-[length:var(--text-md)]">Opportunités</h2>
-          <Link href="/opportunities" className="text-ink">Ouvrir le pipeline</Link>
+          <Link href={`/opportunities?companyId=${company.id}`} className="text-ink">Ouvrir le pipeline de l’entreprise</Link>
         </div>
         {error && <p role="alert" className="error">{error}</p>}
         {items === null && !error && <p role="status" className="m-0 text-ink-2">Chargement…</p>}
@@ -53,7 +54,7 @@ export function OpportunitiesPanel({ company }: { company: { id: string; name: s
                   const style = statusStyle(OPPORTUNITY_STATUS, o.status);
                   return (
                     <tr key={o.id}>
-                      <td><strong>{o.title}</strong></td>
+                      <td><EntityLink kind="opportunity" id={o.id} label={o.title}><strong>{o.title}</strong></EntityLink></td>
                       <td>{formatAmount(o.amount, o.currency)}</td>
                       <td>{stageLabel(o.stage)}</td>
                       <td><Badge tone={style.tone}>{style.label}</Badge>{o.waivedAt && <> <Badge tone="warn">Dérogation</Badge></>}</td>

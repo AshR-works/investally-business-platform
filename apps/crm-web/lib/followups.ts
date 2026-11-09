@@ -109,9 +109,10 @@ export const FOLLOWUP_FILTERS = [
 export type FollowupFilter = (typeof FOLLOWUP_FILTERS)[number]['value'];
 
 /** Paramètres de la liste : page, taille, filtre rapide et offre éventuelle. */
-export function followupListParams(filter: FollowupFilter, page: number, pageSize: number, offerId?: string): URLSearchParams {
+export function followupListParams(filter: FollowupFilter, page: number, pageSize: number, offerId?: string, companyId?: string): URLSearchParams {
   const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize) });
   for (const [key, value] of Object.entries(FOLLOWUP_FILTERS.find((f) => f.value === filter)?.params ?? {})) params.set(key, value);
   if (offerId) params.set('offerId', offerId);
+  if (companyId) params.set('companyId', companyId);
   return params;
 }

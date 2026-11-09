@@ -5,6 +5,11 @@ export function can(profile: Profile | null, permission: string): boolean {
   return !!profile?.permissions.some((grant) => grant.code === permission);
 }
 
+/** Informatif seulement : la permission est accordée en portée « Tous » (la RH et la Direction voient tout le personnel, les autres seulement leur périmètre). */
+export function canAll(profile: Profile | null, permission: string): boolean {
+  return !!profile?.permissions.some((grant) => grant.code === permission && grant.scope === 'ALL');
+}
+
 /** Code de rôle de l'API → libellé affiché. Les rôles inconnus gardent leur code. */
 export const ROLE_LABELS: Record<string, string> = {
   SUPER_ADMIN: 'Super administrateur',

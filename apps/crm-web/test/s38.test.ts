@@ -56,7 +56,7 @@ describe('aperçu des droits par module', () => {
     const rights = effectiveRights(serverRoles, ['SUPER_ADMIN']);
     expect(rights.permissionCount).toBe(resolveGrants(ROLES.find((r) => r.code === 'SUPER_ADMIN')!.code).length);
     expect(rights.modules.reduce((n, m) => n + m.permissionCount, 0)).toBe(rights.permissionCount);
-    expect(rights.modules.map((m) => m.module)).toEqual(['bd', 'training', 'docs', 'reporting', 'audit', 'iam'].filter((m) => rights.modules.some((x) => x.module === m)));
+    expect(rights.modules.map((m) => m.module)).toEqual(['bd', 'training', 'hr', 'docs', 'reporting', 'audit', 'iam'].filter((m) => rights.modules.some((x) => x.module === m)));
   });
   it('un rôle étroit ne voit pas les modules qu\'il n\'a pas', () => {
     const modules = effectiveRights(serverRoles, ['HR']).modules.map((m) => m.module);

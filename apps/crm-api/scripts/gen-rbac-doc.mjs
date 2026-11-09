@@ -14,7 +14,7 @@ const SCOPE = { OWN: 'O', TEAM: 'E', ALL: 'T' };
 const READ_ACTIONS = new Set(['read', 'download', 'export', 'account_manager', 'head_of_sales', 'training', 'direction', 'security', 'admin']);
 const grants = Object.fromEntries(ROLES.map((r) => [r.code, new Map(resolveGrants(r.code).map((g) => [g.permission, g.scope]))]));
 const modules = [...new Set(PERMISSIONS.map((p) => p.module))];
-const MODULE_LABEL = { iam: 'Identité et accès', audit: 'Audit', docs: 'Documents', bd: 'Business Development', training: 'Investudy', reporting: 'Reporting' };
+const MODULE_LABEL = { iam: 'Identité et accès', audit: 'Audit', docs: 'Documents', bd: 'Business Development', training: 'Investudy', reporting: 'Reporting', hr: 'Ressources humaines' };
 const rank = { OWN: 1, TEAM: 2, ALL: 3 };
 
 const row = (cells) => `| ${cells.join(' | ')} |`;
@@ -117,6 +117,7 @@ lines.push('3. **Nul ne modifie ni ne supprime le journal d\'audit** : le catalo
 lines.push('4. La **Direction** est en lecture seule (consulter, télécharger, exporter) sur le métier. Test automatisé.');
 lines.push("5. Un utilisateur **ne peut pas modifier ses propres rôles**, SuperAdmin compris (règle à implémenter dans l'attribution de rôle en S3, avec test).");
 lines.push('6. Tout changement de rôle est audité (`ROLE_CHANGE`) et exige un MFA récent (step-up).');
+lines.push("6 bis. Le changement de responsable d'une entreprise (`bd.company.reassign`) exige aussi un MFA récent (step-up, décision D41, FD-6).");
 lines.push('7. Aucun export massif pour les rôles chargé de compte, support et formateur. Test automatisé.');
 lines.push('8. Droits de base **implicites** pour tout utilisateur authentifié, hors catalogue : consulter son profil, changer son mot de passe, gérer son MFA et voir/révoquer ses propres sessions.');
 lines.push('');

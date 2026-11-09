@@ -13,7 +13,7 @@ const pdf = () => Buffer.from('%PDF-1.7\ncontrat idor\n%%EOF');
 
 interface As { token: string; ip: string }
 /** Identifiants visés par une sonde : les vrais (objet de Marie) ou inexistants (tous `NIL`). */
-interface Ids { company: string; doc: string; session: string; facilitator: string; contact: string; offer: string; offerSent: string; offerPending: string; offerReceipt: string; receipt: string; followup: string; appointment: string; appointmentDue: string; opportunity: string; opportunityAgreed: string; teammate: string; opportunityReady: string; approval: string; approvalRequested: string; commission: string; commissionCompany: string; ambassador: string; learnerCompany: string; learner: string; learner2: string; enrollment: string; trainingSession: string; trainingSession2: string }
+interface Ids { company: string; doc: string; session: string; facilitator: string; contact: string; offer: string; offerSent: string; offerPending: string; offerReceipt: string; receipt: string; followup: string; appointment: string; appointmentDue: string; opportunity: string; opportunityAgreed: string; teammate: string; opportunityReady: string; approval: string; approvalRequested: string; commission: string; commissionCompany: string; ambassador: string; employee: string; learnerCompany: string; learner: string; learner2: string; enrollment: string; trainingSession: string; trainingSession2: string }
 
 /**
  * Une sonde par route « objet » : elle appelle la route avec les identifiants donnés, en tant que `as`.
@@ -37,6 +37,7 @@ const PROBES: Record<string, (api: Api, as: As, ids: Ids) => Promise<ApiResponse
   'POST /offers': (api, as, ids) => api.call('POST', '/api/v1/offers', { ...as, body: { companyId: ids.company, subject: 'Offre piège', amount: '1000' } }),
   'GET /offers/:id': (api, as, ids) => api.call('GET', `/api/v1/offers/${ids.offer}`, as),
   'PUT /offers/:id': (api, as, ids) => api.call('PUT', `/api/v1/offers/${ids.offer}`, { ...as, body: { version: 1, subject: 'Offre piratée' } }),
+  'POST /offers/:id/clone': (api, as, ids) => api.call('POST', `/api/v1/offers/${ids.offer}/clone`, { ...as }),
   'POST /offers/:id/submit': (api, as, ids) => api.call('POST', `/api/v1/offers/${ids.offer}/submit`, { ...as, body: { version: 1 } }),
   'POST /offers/:id/accept': (api, as, ids) => api.call('POST', `/api/v1/offers/${ids.offerSent}/accept`, { ...as, body: { version: 2 } }),
   'POST /offers/:id/refuse': (api, as, ids) => api.call('POST', `/api/v1/offers/${ids.offerSent}/refuse`, { ...as, body: { version: 2 } }),
@@ -81,6 +82,11 @@ const PROBES: Record<string, (api: Api, as: As, ids: Ids) => Promise<ApiResponse
   'POST /approvals/:id/cancel': (api, as, ids) => api.call('POST', `/api/v1/approvals/${ids.approval}/cancel`, { ...as, body: { version: 1, reason: 'Annulé par un pirate' } }),
   'GET /ambassadors/:id': (api, as, ids) => api.call('GET', `/api/v1/ambassadors/${ids.ambassador}`, as),
   'PUT /ambassadors/:id': (api, as, ids) => api.call('PUT', `/api/v1/ambassadors/${ids.ambassador}`, { ...as, body: { version: 1, lastName: 'Piraté' } }),
+  'POST /hr/employees': (api, as, ids) => api.call('POST', '/api/v1/hr/employees', { ...as, body: { lastName: 'Piège', firstName: 'Paul', jobTitle: 'Piège', department: 'Piège', hiredOn: '2026-01-01', managerEmployeeId: ids.employee } }),
+  'GET /hr/employees/:id': (api, as, ids) => api.call('GET', `/api/v1/hr/employees/${ids.employee}`, as),
+  'PUT /hr/employees/:id': (api, as, ids) => api.call('PUT', `/api/v1/hr/employees/${ids.employee}`, { ...as, body: { version: 1, jobTitle: 'Piraté' } }),
+  'POST /hr/employees/:id/status': (api, as, ids) => api.call('POST', `/api/v1/hr/employees/${ids.employee}/status`, { ...as, body: { version: 1, status: 'ARCHIVED', reason: 'Piraté' } }),
+  'POST /ambassadors/:id/status': (api, as, ids) => api.call('POST', `/api/v1/ambassadors/${ids.ambassador}/status`, { ...as, body: { version: 1, status: 'ARCHIVED', reason: 'Piraté' } }),
   'POST /offers/:id/withdraw': (api, as, ids) => api.call('POST', `/api/v1/offers/${ids.offerSent}/withdraw`, { ...as, body: { version: 2, reason: 'Retrait piraté' } }),
   'GET /facilitators/:id': (api, as, ids) => api.call('GET', `/api/v1/facilitators/${ids.facilitator}`, as),
   'GET /documents': (api, as, ids) => api.call('GET', `/api/v1/documents?ownerType=company&ownerId=${ids.company}`, as),
@@ -214,6 +220,10 @@ describeDb('Contrat anti-IDOR : un acteur sans portée reçoit la réponse d\'un
     expect(commissions.status).toBe(200);
     expect(commissions.body.items).toHaveLength(1);
     const commission = commissions.body.items[0];
+    // Personnel : un employé créé par la RH, lié à aucun compte des attaquants (la fiche n'est ni la leur ni celle de leur équipe).
+    const hrSession = await login(await createUserWithRoles(t, [RoleCode.Hr]));
+    const employee = await api.call('POST', '/api/v1/hr/employees', { ...hrSession, body: { lastName: 'Secret-EMPLOYE-IDOR', firstName: 'Alain', jobTitle: 'Analyste', department: 'Finance', hiredOn: '2026-01-05' } });
+    expect(employee.status).toBe(201);
     const ambassador = await api.call('POST', '/api/v1/ambassadors', { ...m, body: { lastName: 'Secret-AMBASSADEUR-IDOR', firstName: 'Alain', origin: 'LEARNER', appointedOn: new Date().toISOString().slice(0, 10) } });
     expect(ambassador.status).toBe(201);
     // Formation : une session ouverte (Responsable Investudy), deux apprenants de Marie sur sa seconde entreprise et une inscription sous son agrément reçu.
@@ -249,9 +259,10 @@ describeDb('Contrat anti-IDOR : un acteur sans portée reçoit la réponse d\'un
       marie: m,
       chef: chefSession,
       finance: financeSession,
+      hr: hrSession,
       attackers: { paul: await login(paul), autreChef: await login(autreChef) },
-      real: { company: company.body.id as string, doc: doc.body.id as string, session: second.sessionId, facilitator: facilitator.body.id as string, contact: contact.body.id as string, offer: offer.body.id as string, offerSent: offerSent.body.id as string, offerPending: offerPending.body.id as string, offerReceipt: offerReceipt.body.id as string, receipt: receipt.body.id as string, followup: followup.body.id as string, appointment: appointment.body.id as string, appointmentDue: appointmentDue.body.id as string, opportunity: opportunity.body.id as string, opportunityAgreed: opportunityAgreed.body.id as string, teammate: anne.id, opportunityReady: opportunityReady.body.id as string, approval: approval.body.id as string, approvalRequested: approvalRequested.body.id as string, commission: commission.id as string, commissionCompany: company3.body.id as string, ambassador: ambassador.body.id as string, learnerCompany: company2.body.id as string, learner: learner.body.id as string, learner2: learner2.body.id as string, enrollment: enrollment.body.id as string, trainingSession, trainingSession2 } satisfies Ids,
-      nil: { company: NIL, doc: NIL, session: NIL, facilitator: NIL, contact: NIL, offer: NIL, offerSent: NIL, offerPending: NIL, offerReceipt: NIL, receipt: NIL, followup: NIL, appointment: NIL, appointmentDue: NIL, opportunity: NIL, opportunityAgreed: NIL, teammate: NIL, opportunityReady: NIL, approval: NIL, approvalRequested: NIL, commission: NIL, commissionCompany: NIL, ambassador: NIL, learnerCompany: NIL, learner: NIL, learner2: NIL, enrollment: NIL, trainingSession: NIL, trainingSession2: NIL } satisfies Ids,
+      real: { company: company.body.id as string, doc: doc.body.id as string, session: second.sessionId, facilitator: facilitator.body.id as string, contact: contact.body.id as string, offer: offer.body.id as string, offerSent: offerSent.body.id as string, offerPending: offerPending.body.id as string, offerReceipt: offerReceipt.body.id as string, receipt: receipt.body.id as string, followup: followup.body.id as string, appointment: appointment.body.id as string, appointmentDue: appointmentDue.body.id as string, opportunity: opportunity.body.id as string, opportunityAgreed: opportunityAgreed.body.id as string, teammate: anne.id, opportunityReady: opportunityReady.body.id as string, approval: approval.body.id as string, approvalRequested: approvalRequested.body.id as string, commission: commission.id as string, commissionCompany: company3.body.id as string, ambassador: ambassador.body.id as string, employee: employee.body.id as string, learnerCompany: company2.body.id as string, learner: learner.body.id as string, learner2: learner2.body.id as string, enrollment: enrollment.body.id as string, trainingSession, trainingSession2 } satisfies Ids,
+      nil: { company: NIL, doc: NIL, session: NIL, facilitator: NIL, contact: NIL, offer: NIL, offerSent: NIL, offerPending: NIL, offerReceipt: NIL, receipt: NIL, followup: NIL, appointment: NIL, appointmentDue: NIL, opportunity: NIL, opportunityAgreed: NIL, teammate: NIL, opportunityReady: NIL, approval: NIL, approvalRequested: NIL, commission: NIL, commissionCompany: NIL, ambassador: NIL, employee: NIL, learnerCompany: NIL, learner: NIL, learner2: NIL, enrollment: NIL, trainingSession: NIL, trainingSession2: NIL } satisfies Ids,
       secondSession: second,
     };
   }
@@ -281,6 +292,7 @@ describeDb('Contrat anti-IDOR : un acteur sans portée reçoit la réponse d\'un
       expect(onForeign.bytes.toString('utf8')).not.toContain('Secret-OPPORTUNITE-IDOR');
       expect(onForeign.bytes.toString('utf8')).not.toContain('2500000');
       expect(onForeign.bytes.toString('utf8')).not.toContain('Secret-AMBASSADEUR-IDOR');
+      expect(onForeign.bytes.toString('utf8')).not.toContain('Secret-EMPLOYE-IDOR');
       expect(onForeign.bytes.toString('utf8')).not.toContain('Secret-APPRENANT-IDOR');
       expect(onForeign.bytes.toString('utf8')).not.toContain('Offre en attente de décharge');
     }
@@ -290,8 +302,9 @@ describeDb('Contrat anti-IDOR : un acteur sans portée reçoit la réponse d\'un
     // Constater le paiement relève de la Finance (D41, FD-4), pas du Responsable commercial.
     // Débloquer et mettre en attente relèvent de la Finance ; verser, du chargé de compte ; annuler et fixer le montant, du Responsable commercial.
     const financeKeys = ['POST /approvals/:id/honor', 'POST /commissions/:id/release', 'POST /commissions/:id/hold'];
+    const hrKeys = ['POST /hr/employees', 'GET /hr/employees/:id', 'PUT /hr/employees/:id', 'POST /hr/employees/:id/status'];
     const trainingManagerKeys = ['DELETE /learners/:id', 'POST /enrollments/:id/confirm', 'POST /enrollments/:id/cancel', 'POST /enrollments/:id/replace'];
-    const owner = trainingManagerKeys.includes(key) ? w.manager : financeKeys.includes(key) ? w.finance : ['POST /commissions/:id/cancel', 'POST /commissions/:id/amount'].includes(key) ? w.chef : ['POST /documents/:id/archive', 'DELETE /contacts/:id', 'POST /opportunities/:id/waiver', 'POST /opportunities/:id/close-won', 'POST /companies/:id/owner', 'PUT /ambassadors/:id', 'POST /approvals/:id/expire', 'POST /approvals/:id/cancel'].includes(key) ? w.chef : w.marie;
+    const owner = hrKeys.includes(key) ? w.hr : trainingManagerKeys.includes(key) ? w.manager : financeKeys.includes(key) ? w.finance : ['POST /commissions/:id/cancel', 'POST /commissions/:id/amount'].includes(key) ? w.chef : ['POST /documents/:id/archive', 'DELETE /contacts/:id', 'POST /opportunities/:id/waiver', 'POST /opportunities/:id/close-won', 'POST /companies/:id/owner', 'PUT /ambassadors/:id', 'POST /ambassadors/:id/status', 'POST /approvals/:id/expire', 'POST /approvals/:id/cancel'].includes(key) ? w.chef : w.marie;
     const ok = await probe(api, owner, w.real);
     // Payer une commission non débloquée, ou fixer le montant d'une commission déjà chiffrée, est refusé (422) : le refus d'une règle métier prouve que la portée est franchie.
     const businessRefusal = ['POST /commissions/:id/pay', 'POST /commissions/:id/amount'].includes(key);

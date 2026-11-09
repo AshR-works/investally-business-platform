@@ -156,4 +156,63 @@ describeDb('Ambassadeurs (HTTP + PostgreSQL)', () => {
     expect((logs[1]!.oldValue as { lastName: string }).lastName).toBe(a.body.lastName);
     expect((logs[1]!.newValue as { lastName: string }).lastName).toBe('Tracé');
   }, 120_000);
+
+  const setStatus = (as: As, id: string, body: Record<string, unknown>) => api.call('POST', `/api/v1/ambassadors/${id}/status`, { ...as, body });
+
+  it('N5 archivage réversible : le Responsable commercial archive et réactive, rien n’est supprimé, l’archivé est gelé et garde son e-mail', async () => {
+    const { am, chef, companyId } = await team();
+    const email = `eve.${unique()}@exemple.cm`;
+    const a = await create(am, { origin: 'CLIENT', companyId, email });
+    const archived = await setStatus(chef, a.body.id, { version: 1, status: 'ARCHIVED', reason: '  A quitté le réseau ' });
+    expect(archived.status).toBe(200);
+    expect(archived.body).toMatchObject({ status: 'ARCHIVED', archiveReason: 'A quitté le réseau', version: 2 });
+    expect(typeof archived.body.archivedAt).toBe('string');
+    expect((await api.call('GET', `/api/v1/ambassadors/${a.body.id}`, am)).body.status).toBe('ARCHIVED');
+    // Gelé : la modification est refusée ; l'e-mail reste réservé.
+    expect((await update(chef, a.body.id, { version: 2, lastName: 'Autre' })).status).toBe(409);
+    expect((await create(am, { email })).status).toBe(409);
+    expect((await setStatus(chef, a.body.id, { version: 2, status: 'ARCHIVED' })).status).toBe(409);
+    const back = await setStatus(chef, a.body.id, { version: 2, status: 'ACTIVE' });
+    expect(back.body).toMatchObject({ status: 'ACTIVE', archivedAt: null, archiveReason: null, version: 3 });
+    expect((await update(chef, a.body.id, { version: 3, lastName: 'Autre' })).status).toBe(200);
+  });
+
+  it('N5 liste : filtre par état et par entreprise d’origine ; entreprise hors portée ou inconnue = 404, identifiant mal écrit = 400', async () => {
+    const { am, chef, other, companyId } = await team();
+    const kept = await create(am, { origin: 'CLIENT', companyId, lastName: `Gardé${unique()}` });
+    const gone = await create(am, { origin: 'CLIENT', companyId, lastName: `Archivé${unique()}` });
+    await setStatus(chef, gone.body.id, { version: 1, status: 'ARCHIVED' });
+    const ids = async (query: string, as: As = chef) => (await api.call('GET', `/api/v1/ambassadors?${query}`, as)).body.items.map((i: { id: string }) => i.id);
+    expect(await ids(`companyId=${companyId}`)).toEqual(expect.arrayContaining([kept.body.id, gone.body.id]));
+    expect(await ids(`companyId=${companyId}&status=ACTIVE`)).toEqual([kept.body.id]);
+    expect(await ids(`companyId=${companyId}&status=ARCHIVED`)).toEqual([gone.body.id]);
+    expect((await api.call('GET', `/api/v1/ambassadors?companyId=${companyId}`, other)).status).toBe(404);
+    expect((await api.call('GET', '/api/v1/ambassadors?companyId=00000000-0000-4000-8000-000000000000', chef)).status).toBe(404);
+    expect((await api.call('GET', '/api/v1/ambassadors?companyId=pas-un-uuid', chef)).status).toBe(400);
+    expect((await api.call('GET', '/api/v1/ambassadors?status=DELETED', chef)).status).toBe(400);
+  });
+
+  it('N5 droits et règles de la base : le chargé de compte, un collègue et le Support ne peuvent pas archiver ; état et date restent cohérents', async () => {
+    const { am, chef, other, support } = await team();
+    const a = await create(am);
+    for (const who of [am, other, support]) expect([403, 404]).toContain((await setStatus(who, a.body.id, { version: 1, status: 'ARCHIVED' })).status);
+    expect((await setStatus(chef, a.body.id, { version: 9, status: 'ARCHIVED' })).status).toBe(409);
+    expect((await setStatus(chef, a.body.id, { version: 1, status: 'DELETED' })).status).toBe(400);
+    expect((await setStatus(chef, a.body.id, { version: 1, status: 'ARCHIVED', reason: 'x'.repeat(501) })).status).toBe(400);
+    expect((await setStatus(chef, a.body.id, { version: 1, status: 'ARCHIVED', unknown: true })).status).toBe(400);
+    const db = t.prisma.db;
+    expect((await api.call('GET', `/api/v1/ambassadors/${a.body.id}`, chef)).body.status).toBe('ACTIVE');
+    await expect(db.$executeRawUnsafe(`UPDATE bd.ambassadors SET status = 'ARCHIVED' WHERE id = '${a.body.id}'::uuid`)).rejects.toThrow();
+    await expect(db.$executeRawUnsafe(`UPDATE bd.ambassadors SET archive_reason = 'x' WHERE id = '${a.body.id}'::uuid`)).rejects.toThrow();
+  }, 120_000);
+
+  it('N5 audit : l’archivage et la réactivation sont tracés avec l’ancien et le nouvel état', async () => {
+    const { am, chef } = await team();
+    const a = await create(am);
+    await setStatus(chef, a.body.id, { version: 1, status: 'ARCHIVED', reason: 'Test' });
+    await setStatus(chef, a.body.id, { version: 2, status: 'ACTIVE' });
+    const logs = await t.prisma.db.auditLog.findMany({ where: { entityId: a.body.id, action: 'UPDATE' }, orderBy: { createdAt: 'asc' } });
+    expect(logs.map((l) => [(l.oldValue as { status: string }).status, (l.newValue as { status: string }).status])).toEqual([['ACTIVE', 'ARCHIVED'], ['ARCHIVED', 'ACTIVE']]);
+  });
 });
+

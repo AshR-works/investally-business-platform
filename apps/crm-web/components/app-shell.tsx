@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { ReactNode, useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../lib/auth-context';
-import { availableModules, type AppModule } from '../lib/modules';
+import { activeModule, availableModules, byDomain, type Domain } from '../lib/modules';
 import { roleLabel } from '../lib/permissions';
 import { applyTheme, effectiveTheme, readTheme } from '../lib/theme';
 import { Icon, type IconName } from './icon';
@@ -13,7 +13,8 @@ import { Icon, type IconName } from './icon';
 export const FOCUS_SEARCH_EVENT = 'investally:focus-search';
 
 const NAV_KEY = 'investally-nav';
-const GROUPS: AppModule['group'][] = ['Espace de travail', 'Opérations', 'Pilotage', 'Gouvernance'];
+/** Domaines ouverts ou fermés à la main (D51), mémorisés dans le navigateur. */
+const DOMAINS_KEY = 'investally-nav-domains';
 
 /**
  * Coque de toutes les pages connectées (EXD-01, EXD-05, EXD-10, EXD-11) :
@@ -76,6 +77,34 @@ export function AppShell({ children }: { children: ReactNode }) {
   }, [openSearch]);
 
   const modules = availableModules(profile);
+  const active = activeModule(modules, pathname);
+  // Domaines du menu (D51) : celui de la page courante est ouvert ; les autres le sont si l'utilisateur les a ouverts (choix mémorisé). L'utilisateur peut
+  // fermer le domaine courant le temps de la page : il se rouvre en changeant de page.
+  const [opened, setOpened] = useState<Partial<Record<Domain, boolean>>>({});
+  const [closedHere, setClosedHere] = useState<Domain | null>(null);
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(DOMAINS_KEY);
+      if (raw) setOpened(JSON.parse(raw) as Partial<Record<Domain, boolean>>);
+    } catch {
+      /* préférence illisible : seul le domaine courant est ouvert */
+    }
+  }, []);
+  useEffect(() => setClosedHere(null), [pathname]);
+  const isOpen = (domain: Domain) => (domain === active?.group ? closedHere !== domain : opened[domain] === true);
+  const toggleDomain = (domain: Domain) => {
+    if (domain === active?.group) {
+      setClosedHere((current) => (current === domain ? null : domain));
+      return;
+    }
+    const next = { ...opened, [domain]: !isOpen(domain) };
+    setOpened(next);
+    try {
+      localStorage.setItem(DOMAINS_KEY, JSON.stringify(next));
+    } catch {
+      /* préférence non mémorisable */
+    }
+  };
   const initials = (profile?.displayName ?? '?').split(/\s+/).map((part) => part[0]).slice(0, 2).join('').toUpperCase();
   const railOnly = 'group-data-[nav=rail]/shell:min-[901px]:sr-only';
   const centered = 'group-data-[nav=rail]/shell:min-[901px]:justify-center';
@@ -103,15 +132,28 @@ export function AppShell({ children }: { children: ReactNode }) {
 
         <nav aria-label="Navigation principale" className="flex w-full flex-1 flex-col gap-0.5">
           <ShellLink href="/" icon="grid" label="Vue d’ensemble" current={pathname === '/'} railOnly={railOnly} centered={centered} rail={mode === 'rail'} />
-          {GROUPS.map((group) => {
-            const items = modules.filter((m) => m.group === group);
-            if (items.length === 0) return null;
+          {byDomain(modules).map(({ domain, items }) => {
+            const open = isOpen(domain);
+            const listId = `nav-${domain.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, '-').toLowerCase()}`;
             return (
-              <div key={group} className="flex flex-col gap-0.5">
-                <p className={`px-3 pb-2 pt-5 text-xs font-semibold uppercase tracking-[0.14em] text-ink-2 ${railOnly}`}>{group}</p>
-                {items.map((m) => (
-                  <ShellLink key={m.id} href={m.href!} icon={m.icon} label={m.label} current={pathname.startsWith(m.href!)} railOnly={railOnly} centered={centered} rail={mode === 'rail'} />
-                ))}
+              <div key={domain} className="flex flex-col gap-0.5">
+                {/* Rail replié (bureau) : pas de bouton, le domaine n'est qu'un séparateur lu par les lecteurs d'écran et toutes les entrées restent visibles. */}
+                <p className={`hidden px-3 pb-2 pt-5 text-xs font-semibold uppercase tracking-[0.14em] text-ink-2 ${railOnly} group-data-[nav=rail]/shell:min-[901px]:block`}>{domain}</p>
+                <button
+                  type="button"
+                  aria-expanded={open}
+                  aria-controls={listId}
+                  onClick={() => toggleDomain(domain)}
+                  className="flex w-full cursor-pointer items-center justify-between rounded-control border-0 bg-transparent px-3 pb-2 pt-5 text-left text-xs font-semibold uppercase tracking-[0.14em] text-ink-2 hover:text-ink group-data-[nav=rail]/shell:min-[901px]:hidden"
+                >
+                  <span>{domain}</span>
+                  <Icon name="chevron-down" className={`size-4 transition-transform ${open ? 'rotate-180' : ''}`} />
+                </button>
+                <div id={listId} className={open ? 'flex flex-col gap-0.5' : 'hidden flex-col gap-0.5 group-data-[nav=rail]/shell:min-[901px]:flex'}>
+                  {items.map((m) => (
+                    <ShellLink key={m.id} href={m.href!} icon={m.icon} label={m.label} current={active?.id === m.id} railOnly={railOnly} centered={centered} rail={mode === 'rail'} />
+                  ))}
+                </div>
               </div>
             );
           })}

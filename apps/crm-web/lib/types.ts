@@ -222,9 +222,13 @@ export interface Ambassador {
   /** Depuis quand la personne est ambassadeur, « AAAA-MM-JJ ». */
   appointedOn: string;
   note: string | null;
+  /** `ACTIVE` ou `ARCHIVED` (archivage réversible, jamais de suppression). */
+  status: string;
+  archivedAt: string | null;
+  archiveReason: string | null;
   ownerUserId: string;
   createdAt: string;
-  /** Verrou optimiste : renvoyé tel quel pour modifier l'ambassadeur. */
+  /** Verrou optimiste : renvoyé tel quel pour modifier, archiver ou réactiver l'ambassadeur. */
   version: number;
 }
 

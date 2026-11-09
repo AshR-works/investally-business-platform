@@ -25,7 +25,7 @@ const serverAccepts = (f: AmbassadorForm): boolean => {
 };
 const view = (patch: Partial<AmbassadorView> = {}): AmbassadorView => ({
   id: 'a1', lastName: 'Fotso', firstName: 'Alain', origin: 'CLIENT', companyId: 'c1', companyName: 'Atlas', email: 'alain@exemple.cm', phone: null,
-  appointedOn: '2026-03-10', note: null, ownerUserId: 'u1', createdAt: '2026-11-08T10:00:00Z', version: 2, ...patch,
+  appointedOn: '2026-03-10', note: null, status: 'ACTIVE', archivedAt: null, archiveReason: null, ownerUserId: 'u1', createdAt: '2026-11-08T10:00:00Z', version: 2, ...patch,
 });
 
 describe('ambassadeur : saisie', () => {

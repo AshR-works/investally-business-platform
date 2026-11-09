@@ -1,0 +1,210 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Cadrage — navigation, cohérence entre modules et complétude des écrans (MVP)</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — cadrages · <a href="README.html">Index des cadrages</a> · <a href="../INDEX.html">Documentation</a> · <a href="../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../design/05-AIDE-A-LA-DECISION.html">Aide à la décision</a></nav><h1>Cadrage — navigation, cohérence entre modules et complétude des écrans (MVP)</h1>
+<p><em>2026-11-09 · Réponse aux six observations de la Direction produit sur l'état de l'application. Méthode : <a href="../METHODE-D-ARBITRAGE.html">METHODE-D-ARBITRAGE</a> pour les décisions structurantes (options dont le statu quo, grille sur 160, recommandation, <strong>décision laissée à la Direction produit</strong>). Rien n'est modifié dans l'application tant que vous n'avez pas répondu. Les constats ci-dessous sont <strong>vérifiés dans le code</strong> (routes de l'API, pages et composants de l'interface), pas déduits.</em></p>
+<h2>0. En dix lignes</h2>
+<ol><li><strong>Quatre des six observations sont fondées</strong> : menu surchargé (1), liens entre modules sans contexte (4), références non cliquables et absence de fiches détaillées (5), quelques écrans de création ou d'action manquants (6).</li><li><strong>Deux reposent sur une lecture inexacte</strong> et sont corrigées ici : le module <strong>Offres a déjà un cycle de vie complet</strong> (créer, modifier, déposer, enregistrer l'acceptation ou le refus, retirer, décharge, relances), à l'API comme à l'écran (3) ; le module <strong>Ambassadeurs a bien</strong> créer, lister, lire et modifier, à l'API comme à l'écran ; il manque <strong>l'archivage</strong> (2).</li><li>La <strong>navigation contextuelle (4) est presque entièrement un chantier d'interface</strong> : l'API filtre déjà par entreprise pour les rendez-vous, opportunités, offres, contacts, agréments et commissions ; seules les <strong>relances</strong> et les <strong>ambassadeurs</strong> n'ont pas ce filtre.</li><li>Aucune fiche détaillée n'existe en dehors de <strong>l'entreprise</strong> et de <strong>la session</strong>. Les <code>GET /…/:id</code> existent pourtant pour toutes les entités : <strong>les fiches sont un chantier d'écrans, sans nouvelle route d'API</strong>.</li><li>Le menu actuel est une liste de <strong>13 entrées livrées</strong> réparties dans quatre rubriques génériques (« Espace de travail », « Opérations », « Pilotage », « Gouvernance »), dont <strong>12 dans la seule première</strong> ; six autres entrées sont affichées « à venir » sur le hub.</li><li>Recommandation : <strong>regrouper par domaine métier</strong> (CRM, Investudy, Finance, Ressources humaines, Reporting, Administration) avec sous-menus repliables, et <strong>le compte de l'utilisateur en pied de menu</strong> (décision D-NAV-1).</li><li>Recommandation : <strong>un filtre d'entreprise porté par l'adresse</strong> (<code>?companyId=…</code>) avec une pastille retirable, plutôt que des onglets complets dans la fiche entreprise (D-NAV-2).</li><li>Recommandation : <strong>des fiches dédiées</strong> pour contact, offre, opportunité, agrément, ambassadeur et apprenant, reliées par <strong>un seul composant de lien</strong> (D-NAV-3).</li><li>Reste hors de ces observations mais au programme du sprint MVP : la section <strong>Ressources humaines</strong> n'a <strong>aucun code</strong> aujourd'hui ; le <strong>Compte</strong> (connexion, second facteur, sessions) est livré.</li><li><strong>S5.2b</strong> (apprenants et inscriptions) est terminé côté code et en attente de validation : je recommande de le <strong>commiter avant</strong> ce chantier, car il touche les mêmes fichiers de navigation (§ 8).</li></ol>
+<h2>1. Ce que le code montre, observation par observation</h2>
+<h3>Observation 1 — le menu</h3>
+<ul><li><strong>Constat vérifié</strong> : <code>lib/modules.ts</code> déclare les entrées ; <code>components/app-shell.tsx</code> les range dans quatre rubriques fixes. Sont affichées à plat sous « Espace de travail » : Agenda, Commissions, Ambassadeurs, Entreprises, Contacts, Relances, Offres, Opportunités, Formation, Sessions de formation, Apprenants, Inscriptions… (12 entrées au total, selon les droits). Le hub (<code>/</code>) montre les mêmes modules sous forme de cartes.</li><li><strong>Analyse</strong> : le regroupement est la bonne réponse, mais il faut décider deux points que l'observation ne tranche pas : la place des <strong>Commissions</strong> (CRM ou Finance, vous les citez dans les deux) et ce que veut dire « Formations / Certifications » (le catalogue réel est <em>programme → certificat → modules</em>, voir § 3.2).</li></ul>
+<h3>Observation 2 — Ambassadeurs</h3>
+<ul><li><strong>Constat vérifié</strong> : l'API expose <code>POST /ambassadors</code>, <code>GET /ambassadors</code> (liste filtrable par origine et recherche), <code>GET /ambassadors/:id</code>, <code>PUT /ambassadors/:id</code>. L'écran propose « Nouvel ambassadeur » et « Modifier ». <strong>Il n'y a ni archivage ni suppression</strong>, ni fiche détaillée, ni filtre par entreprise.</li><li><strong>Pertinence métier</strong> : confirmée. Un ambassadeur est un client ou un apprenant devenu <strong>relais commercial</strong> (cas d'usage F… ; suggestion d'ambassadeur après une certification, S5.3). Son statut de décision manuelle est assumé (« créer un ambassadeur est toujours une décision manuelle »).</li><li><strong>Écart avec l'observation</strong> : le CRUD n'est pas absent, il est <strong>incomplet sur un point</strong> : l'archivage. Je recommande l'<strong>archivage réversible</strong> plutôt que la suppression (on ne perd pas l'origine d'une recommandation).</li></ul>
+<h3>Observation 3 — Offres</h3>
+<ul><li><strong>Constat vérifié</strong> : l'API expose créer, lister, lire, modifier, <strong>déposer</strong> (<code>submit</code>), <strong>accepter</strong>, <strong>refuser</strong>, <strong>retirer</strong> (<code>withdraw</code>, avec motif) ; l'écran, les actions de ligne correspondantes, la <strong>décharge</strong> (reçu), les <strong>relances</strong> et les <strong>rendez-vous</strong> liés à l'offre. Le cycle de vie est donc <strong>complet</strong>.</li><li><strong>Ce qui manque réellement</strong> : <strong>cloner</strong> une offre (utile pour une offre refusée ou retirée que l'on relance), une <strong>fiche détaillée</strong>, un <strong>filtre par entreprise depuis la fiche entreprise</strong> (le panneau de la fiche entreprise liste les offres de l'entreprise ; la page Offres, elle, ne sait pas se filtrer par adresse).</li></ul>
+<h3>Observation 4 — navigation contextuelle</h3>
+<ul><li><strong>Constat vérifié</strong> : dans la fiche entreprise, les panneaux « Rendez-vous » et « Opportunités » contiennent des liens <strong>« Ouvrir l'agenda »</strong> et <strong>« Ouvrir le pipeline »</strong> vers <code>/agenda</code> et <code>/opportunities</code> <strong>sans aucun paramètre</strong> ; les boutons du haut de la fiche ouvrent <strong>la fenêtre de création</strong> préremplie (<code>/agenda?plan=1&amp;companyId=…</code>, <code>/opportunities?new=1&amp;companyId=…</code>), pas une liste filtrée. Les pages Agenda et Opportunités lisent <code>companyId</code> <strong>uniquement pour préremplir une création</strong>.</li><li><strong>Côté API</strong> : <code>GET /appointments</code>, <code>/opportunities</code>, <code>/offers</code>, <code>/contacts</code>, <code>/approvals</code>, <code>/commissions</code> acceptent déjà <code>companyId</code>. <strong>Manquent</strong> : <code>/followups</code> (filtre par offre seulement) et <code>/ambassadors</code>.</li></ul>
+<h3>Observation 5 — références cliquables</h3>
+<ul><li><strong>Constat vérifié</strong> : seuls trois liens existent aujourd'hui entre entités : le nom d'<strong>entreprise</strong> dans les listes (vers <code>/companies/:id</code>), le <strong>certificat</strong> d'une session (vers la fiche de session, S5.2b) et le <strong>certificat</strong> d'une inscription. Contacts, offres, opportunités, agréments, rendez-vous, relances, ambassadeurs, apprenants et commissions <strong>n'ont pas de page de fiche</strong> : il n'y a donc nulle part où mener un lien.</li><li><strong>Bonne nouvelle</strong> : les <code>GET /…/:id</code> existent déjà pour <strong>toutes</strong> ces entités. Le chantier est un chantier d'écrans.</li></ul>
+<h3>Observation 6 — création rapide</h3>
+<ul><li><strong>Constat vérifié</strong> : le bouton de création existe déjà sur <strong>Entreprises, Contacts, Offres, Opportunités, Relances, Agenda, Ambassadeurs, Apprenants, Sessions</strong> et dans le catalogue. Les écarts réels sont dans le § 6.</li></ul>
+<h2>2. Décisions structurantes</h2>
+<p>Poids (fixés avant de noter) : valeur métier 5 · risque 5 · cohérence avec l'existant 4 · réversibilité 4 · coût et délai 3 · maintenance 3 · expérience utilisateur 4 · accessibilité et sécurité 4 (<strong>total 160</strong>).</p>
+<h3>D-NAV-1 — Structure du menu latéral</h3>
+<div class="table-wrap"><table><thead><tr><th>Option</th><th>Description</th><th>Réversibilité</th></tr></thead><tbody>
+<tr><td>A. Statu quo</td><td>Liste plate de 13 entrées sous quatre rubriques génériques (12 dans la première)</td><td>🟢</td></tr>
+<tr><td><strong>B. Domaines métier avec sous-menus repliables</strong></td><td>Six domaines (CRM, Investudy, Finance, Ressources humaines, Reporting, Administration), chacun repliable ; le domaine de la page courante est ouvert ; le <strong>compte</strong> (profil, sécurité, sessions, déconnexion) en pied de menu ; un domaine sans entrée visible pour le profil n'apparaît pas</td><td>🟢</td></tr>
+<tr><td>C. B + accès personnalisés</td><td>B, plus des favoris et les derniers écrans consultés</td><td>🟡</td></tr>
+</tbody></table></div>
+<div class="table-wrap"><table><thead><tr><th>Critère (poids)</th><th>A</th><th>B</th><th>C</th></tr></thead><tbody>
+<tr><td>Valeur métier (5)</td><td>2</td><td>5</td><td>5</td></tr>
+<tr><td>Risque (5)</td><td>4</td><td>4</td><td>3</td></tr>
+<tr><td>Cohérence (4)</td><td>4</td><td>5</td><td>4</td></tr>
+<tr><td>Réversibilité (4)</td><td>5</td><td>4</td><td>3</td></tr>
+<tr><td>Coût et délai (3)</td><td>5</td><td>4</td><td>2</td></tr>
+<tr><td>Maintenance (3)</td><td>5</td><td>4</td><td>2</td></tr>
+<tr><td>Expérience utilisateur (4)</td><td>1</td><td>5</td><td>5</td></tr>
+<tr><td>Accessibilité et sécurité (4)</td><td>3</td><td>4</td><td>3</td></tr>
+<tr><td><strong>Score pondéré (sur 160)</strong></td><td><strong>112</strong></td><td><strong>141</strong></td><td><strong>112</strong></td></tr>
+</tbody></table></div>
+<p><em>Risques de B</em> : un sous-menu replié cache des écrans (atténué : le domaine courant est ouvert, le hub reste la vue d'ensemble) ; accessibilité à tenir (boutons <code>aria-expanded</code>, navigation au clavier). <em>Dette</em> : la table des modules devient hiérarchique. <strong>Recommandation : B.</strong> <em>Ce qui ferait changer d'avis</em> : un usage où chacun ne voit que deux ou trois entrées (alors A suffit). <strong>Décision (2026-11-09, Direction produit) : B</strong> — recommandation appliquée (D51).</p>
+<h3>D-NAV-2 — Navigation contextuelle depuis une fiche</h3>
+<div class="table-wrap"><table><thead><tr><th>Option</th><th>Description</th><th>Réversibilité</th></tr></thead><tbody>
+<tr><td>A. Statu quo</td><td>Liens sans contexte ; le contexte ne sert qu'à préremplir une création</td><td>🟢</td></tr>
+<tr><td><strong>B. Filtre porté par l'adresse</strong></td><td>« Ouvrir l'agenda / le pipeline / les offres » mène à <code>/agenda?companyId=…</code> etc. ; la page lit le paramètre, <strong>filtre</strong> et affiche une <strong>pastille retirable</strong> « Entreprise : Banque X ✕ » ; « Nouveau… » préremplit l'entreprise ; un fil d'Ariane « Entreprises › Banque X › Offres » ramène à la fiche</td><td>🟢</td></tr>
+<tr><td>C. Onglets complets dans la fiche entreprise</td><td>Les listes complètes (avec toutes leurs actions) deviennent des onglets de la fiche entreprise</td><td>🟡</td></tr>
+</tbody></table></div>
+<div class="table-wrap"><table><thead><tr><th>Critère (poids)</th><th>A</th><th>B</th><th>C</th></tr></thead><tbody>
+<tr><td>Valeur métier (5)</td><td>1</td><td>5</td><td>4</td></tr>
+<tr><td>Risque (5)</td><td>5</td><td>4</td><td>3</td></tr>
+<tr><td>Cohérence (4)</td><td>2</td><td>5</td><td>3</td></tr>
+<tr><td>Réversibilité (4)</td><td>5</td><td>5</td><td>3</td></tr>
+<tr><td>Coût et délai (3)</td><td>5</td><td>4</td><td>2</td></tr>
+<tr><td>Maintenance (3)</td><td>5</td><td>4</td><td>2</td></tr>
+<tr><td>Expérience utilisateur (4)</td><td>1</td><td>5</td><td>4</td></tr>
+<tr><td>Accessibilité et sécurité (4)</td><td>3</td><td>4</td><td>3</td></tr>
+<tr><td><strong>Score pondéré (sur 160)</strong></td><td><strong>104</strong></td><td><strong>145</strong></td><td><strong>99</strong></td></tr>
+</tbody></table></div>
+<p><em>Risques de B</em> : une adresse avec un <code>companyId</code> hors de la portée de l'utilisateur doit répondre « introuvable » comme le reste de l'application (le serveur le fait déjà) et la page doit l'expliquer, non rester vide. <em>Dette</em> : deux endpoints à compléter (relances, ambassadeurs). <strong>Recommandation : B.</strong> L'adresse partageable (copier-coller d'une vue filtrée) est un gain de plus. <strong>Décision (2026-11-09, Direction produit) : B</strong> — recommandation appliquée (D52).</p>
+<h3>D-NAV-3 — Fiches détaillées des entités</h3>
+<div class="table-wrap"><table><thead><tr><th>Option</th><th>Description</th><th>Réversibilité</th></tr></thead><tbody>
+<tr><td>A. Statu quo</td><td>Listes et fenêtres seulement, pas de fiche</td><td>🟢</td></tr>
+<tr><td><strong>B. Pages de fiche dédiées</strong></td><td><code>/offers/:id</code>, <code>/contacts/:id</code>, <code>/opportunities/:id</code>, <code>/approvals/:id</code>, <code>/ambassadors/:id</code>, <code>/learners/:id</code> sur le modèle de la fiche entreprise et de la fiche de session : résumé, actions, éléments liés ; un composant de lien unique pour toute l'application</td><td>🟡</td></tr>
+<tr><td>C. Volet latéral de consultation</td><td>Un volet qui s'ouvre au clic sur n'importe quelle référence, sans quitter la page</td><td>🟡</td></tr>
+</tbody></table></div>
+<div class="table-wrap"><table><thead><tr><th>Critère (poids)</th><th>A</th><th>B</th><th>C</th></tr></thead><tbody>
+<tr><td>Valeur métier (5)</td><td>1</td><td>5</td><td>4</td></tr>
+<tr><td>Risque (5)</td><td>5</td><td>4</td><td>4</td></tr>
+<tr><td>Cohérence (4)</td><td>2</td><td>5</td><td>4</td></tr>
+<tr><td>Réversibilité (4)</td><td>5</td><td>4</td><td>4</td></tr>
+<tr><td>Coût et délai (3)</td><td>5</td><td>2</td><td>3</td></tr>
+<tr><td>Maintenance (3)</td><td>5</td><td>3</td><td>3</td></tr>
+<tr><td>Expérience utilisateur (4)</td><td>1</td><td>4</td><td>5</td></tr>
+<tr><td>Accessibilité et sécurité (4)</td><td>3</td><td>5</td><td>3</td></tr>
+<tr><td><strong>Score pondéré (sur 160)</strong></td><td><strong>104</strong></td><td><strong>132</strong></td><td><strong>122</strong></td></tr>
+</tbody></table></div>
+<p><em>Risques de B</em> : le plus gros volume d'écrans ; on procède par ordre d'usage (§ 8). <em>Pourquoi pas C</em> : un volet est agréable mais plus difficile à rendre accessible, et ne donne pas d'adresse partageable ni de retour arrière par le navigateur. <strong>Recommandation : B</strong>, avec une mise en page commune pour ne pas refaire six fois le même écran. <strong>Décision (2026-11-09, Direction produit) : B</strong> — recommandation appliquée (D53).</p>
+<h3>D-NAV-4 — Où vivent les Commissions ? (point que l'observation 1 ne tranche pas)</h3>
+<p>Vous les citez sous CRM <strong>et</strong> sous Finance. Un même écran à deux endroits est une source de confusion. <strong>Recommandation : une seule entrée, sous Finance</strong> (« Commissions à verser ») : c'est le travail du DAF (déblocage) et du chargé de compte (versement) ; le <strong>lien depuis la fiche entreprise</strong> vers les commissions de l'entreprise (<code>/commissions?companyId=…</code>) suffit côté CRM. Alternative : l'entrée sous CRM tant que Finance n'a qu'elle (un domaine à une seule entrée est peu utile). <em>Décision à prendre</em> : <strong>A</strong> sous Finance, ou <strong>B</strong> sous CRM avec renvoi depuis Finance. <strong>Décision (2026-11-09, Direction produit) : A</strong> — recommandation appliquée (D54).</p>
+<h2>3. Structure recommandée du menu (D-NAV-1 B et D-NAV-4 A)</h2>
+<h3>3.1 Vue d'ensemble</h3>
+<pre><code>Vue d&#x27;ensemble                         (le hub, /)
+CRM  ▾
+   Entreprises            /companies
+   Contacts               /contacts
+   Opportunités           /opportunities     (le pipeline)
+   Offres                 /offers
+   Agréments              /approvals         (nouvelle liste, § 6)
+   Relances               /followups
+   Agenda                 /agenda
+   Ambassadeurs           /ambassadors
+Investudy  ▾
+   Catalogue  ▸ Programmes · Certificats · Modules · Salles · Formateurs · Rythmes   /training?rubrique=…
+   Sessions               /training/sessions
+   Inscriptions           /training/enrollments
+   Apprenants             /training/learners
+Finance  ▾
+   Commissions à verser   /commissions
+   (Paiements, Revenus : à venir)
+Ressources humaines  ▾                (sprint MVP : voir le cadrage à produire)
+Reporting  ▾                          (Tableaux de bord, Indicateurs, Rapports : à venir, S6)
+Administration  ▾
+   Utilisateurs           /admin/users
+   (Rôles et permissions : lecture seule à produire ; Paramètres, Journal d&#x27;audit : à venir)
+─────────────
+Compte  (pied de menu)
+   Mon profil et sécurité   /account
+   Mes sessions             /account/sessions
+   Se déconnecter</code></pre>
+<h3>3.2 Investudy : ce qui diffère de votre liste</h3>
+<p>Votre liste (Formations, Programmes, Certifications, Modules, Sessions, Inscriptions, Apprenants) recouvre le <strong>catalogue réel</strong> décidé en S5.1 : <strong>Programme → Certificat → Modules</strong> (le « certificat » est la formation vendue, il n'y a pas de rubrique « Formations » à part). Je propose donc <strong>un seul « Catalogue »</strong> dont les six rubriques (Programmes, Certificats, Modules, Salles, Formateurs, Rythmes) deviennent des <strong>entrées de sous-menu</strong> adressables (<code>?rubrique=certificats</code>), plutôt que de multiplier les entrées de premier niveau.</p>
+<h3>3.3 Administration : ce qui diffère de votre liste</h3>
+<p>Vous citez Utilisateurs, Rôles, Permissions, Paramètres. Aujourd'hui <strong>seuls les Utilisateurs existent</strong>. Les <strong>rôles et permissions sont définis dans le code</strong> (catalogue de 108 permissions, 10 rôles) : un écran de <strong>consultation</strong> de la matrice (qui peut quoi) est utile et peu coûteux ; leur <strong>modification par l'interface</strong> est un autre sujet (sécurité, traçabilité) et n'est <strong>pas</strong> dans ce chantier. « Paramètres » n'a pas de contenu défini : je ne crée pas d'entrée vide.</p>
+<h3>3.4 Effets sur l'usage</h3>
+<div class="table-wrap"><table><thead><tr><th>Situation</th><th>Aujourd'hui</th><th>Après</th></tr></thead><tbody>
+<tr><td>Voir les offres d'une entreprise</td><td>fiche → panneau, ou menu → Offres → chercher l'entreprise</td><td>fiche → « Ouvrir les offres » : 1 clic, liste déjà filtrée</td></tr>
+<tr><td>Ouvrir un contact depuis une entreprise</td><td>impossible (pas de fiche)</td><td>1 clic sur son nom</td></tr>
+<tr><td>Inscrire un apprenant</td><td>Apprenants → ligne → menu → Inscrire, ou fiche de session</td><td>idem + bouton « Nouvelle inscription » sur la page Inscriptions</td></tr>
+<tr><td>Trouver un écran</td><td>parcourir 12 entrées d'une même rubrique</td><td>ouvrir le domaine (6 choix), puis 4 à 8 entrées</td></tr>
+</tbody></table></div>
+<h2>4. Navigation contextuelle : mécanisme (D-NAV-2 B)</h2>
+<p><strong>Contrat d'adresse</strong> (identique partout) : <code>?companyId=</code> (entreprise), <code>?offerId=</code>, <code>?opportunityId=</code>, <code>?status=</code>, <code>?q=</code> ; <code>?new=1</code> et <code>?plan=1</code> restent réservés à l'ouverture d'une création préremplie.</p>
+<p><strong>Composants</strong> (nouveaux, partagés) :</p>
+<ul><li><code>ContextFilter</code> : pastille « Entreprise : Banque X ✕ » (retire le paramètre de l'adresse, annoncée au lecteur d'écran) et message clair si l'entreprise est « introuvable » (hors portée).</li><li><code>useUrlFilters</code> : lit et écrit les filtres dans l'adresse (liste, page, recherche, état), de façon à <strong>conserver l'état</strong> au retour arrière du navigateur.</li><li><code>Breadcrumbs</code> : « Entreprises › Banque X › Offres », ramène à la fiche.</li></ul>
+<p><strong>Pages à modifier</strong> : Agenda, Opportunités, Offres, Contacts, Relances, Commissions, Agréments (nouvelle liste), Ambassadeurs (après l'ajout du filtre) : chacune lit <code>companyId</code> et le transmet à son appel d'API.</p>
+<p><strong>Côté serveur</strong> : <strong>deux</strong> compléments seulement : <code>GET /followups?companyId=</code> (via l'offre de l'entreprise) et <code>GET /ambassadors?companyId=</code>. La portée de l'utilisateur est <strong>déjà</strong> appliquée par le serveur : un <code>companyId</code> hors portée renvoie « introuvable », jamais les données d'un autre.</p>
+<h2>5. Références cliquables : stratégie (D-NAV-3 B)</h2>
+<p><strong>Un composant, un tableau de correspondance</strong> : <code>EntityLink</code> (type + identifiant + libellé) et <code>lib/entity-links.ts</code> (type → adresse de la fiche, droit de lecture requis). Un lien n'est affiché <strong>que si l'utilisateur a le droit de lire la cible</strong> ; sinon le libellé reste du texte (pas de lien menant à un « interdit »).</p>
+<div class="table-wrap"><table><thead><tr><th>Entité</th><th>Où elle apparaît aujourd'hui</th><th>Fiche</th><th>Travail</th></tr></thead><tbody>
+<tr><td>Entreprise</td><td>listes, fiches</td><td><strong>existe</strong> (<code>/companies/:id</code>)</td><td>utiliser <code>EntityLink</code> partout</td></tr>
+<tr><td>Contact</td><td>fiche entreprise (panneau), apprenants</td><td>à créer</td><td><code>/contacts/:id</code></td></tr>
+<tr><td>Offre</td><td>fiche entreprise, relances, rendez-vous</td><td>à créer</td><td><code>/offers/:id</code></td></tr>
+<tr><td>Opportunité</td><td>fiche entreprise, rendez-vous, agréments</td><td>à créer</td><td><code>/opportunities/:id</code> (étapes, valeur, rendez-vous décideur, agrément)</td></tr>
+<tr><td>Agrément</td><td>fiche entreprise, commissions, inscriptions</td><td>à créer</td><td><code>/approvals/:id</code> (+ consommation par les inscriptions)</td></tr>
+<tr><td>Rendez-vous</td><td>agenda, fiche entreprise</td><td>fenêtre existante</td><td>ouvrir la fenêtre de détail depuis le lien (pas de page)</td></tr>
+<tr><td>Relance</td><td>page Relances, offre</td><td>fenêtre existante</td><td>idem</td></tr>
+<tr><td>Ambassadeur</td><td>page Ambassadeurs</td><td>à créer</td><td><code>/ambassadors/:id</code></td></tr>
+<tr><td>Commission</td><td>page Commissions</td><td>à créer (plus tard)</td><td>basse priorité</td></tr>
+<tr><td>Apprenant</td><td>Apprenants, inscriptions</td><td>à créer</td><td><code>/learners/:id</code> (inscriptions, entreprise, contact lié)</td></tr>
+<tr><td>Session</td><td>sessions, inscriptions</td><td><strong>existe</strong></td><td>utiliser <code>EntityLink</code></td></tr>
+</tbody></table></div>
+<p><strong>Mise en page commune</strong> (<code>EntitySheet</code>) : en-tête (titre, état, actions), carte de résumé, panneaux d'éléments liés, et plus tard l'historique d'audit. Chaque fiche est une page, donc <strong>adressable, accessible au clavier et rejouable au retour arrière</strong>.</p>
+<h2>6. Écarts de complétude (vérifiés)</h2>
+<div class="table-wrap"><table><thead><tr><th>Entité</th><th>Créer</th><th>Lister / filtrer</th><th>Fiche</th><th>Modifier</th><th>Archiver / supprimer</th><th>Actions métier</th><th><strong>Manque</strong></th></tr></thead><tbody>
+<tr><td>Entreprises</td><td>✔</td><td>✔</td><td>✔</td><td>✔</td><td>archiver ✔ (statuts)</td><td>statut, responsable, export</td><td>—</td></tr>
+<tr><td>Contacts</td><td>✔</td><td>✔ (entreprise, fonction)</td><td>✘</td><td>✔</td><td>supprimer ✔</td><td>—</td><td><strong>fiche</strong></td></tr>
+<tr><td>Opportunités</td><td>✔</td><td>✔ (entreprise, étape)</td><td>✘</td><td>✔</td><td>—</td><td>avancer, dérogation, clore</td><td><strong>fiche</strong></td></tr>
+<tr><td>Offres</td><td>✔</td><td>✔ (entreprise, état)</td><td>✘</td><td>✔</td><td>retirer ✔</td><td>déposer, accepter, refuser, décharge</td><td><strong>fiche, cloner</strong></td></tr>
+<tr><td>Agréments</td><td>✔ (depuis l'opportunité)</td><td>✔ API ; <strong>pas de page de liste</strong></td><td>✘</td><td>—</td><td>annuler ✔</td><td>recevoir, honorer, expirer</td><td><strong>page liste, fiche</strong></td></tr>
+<tr><td>Relances</td><td>✔</td><td>✔ (offre, état)</td><td>fenêtre</td><td>✔</td><td>annuler ✔</td><td>terminer</td><td><strong>filtre entreprise</strong></td></tr>
+<tr><td>Agenda</td><td>✔</td><td>✔</td><td>fenêtre</td><td>✔</td><td>annuler ✔</td><td>tenu, reporter</td><td>filtre entreprise par l'adresse</td></tr>
+<tr><td>Ambassadeurs</td><td>✔</td><td>✔ (origine, recherche)</td><td>✘</td><td>✔</td><td><strong>✘</strong></td><td>—</td><td><strong>archiver, fiche, filtre entreprise</strong></td></tr>
+<tr><td>Commissions</td><td>(née d'un agrément)</td><td>✔</td><td>✘</td><td>—</td><td>annuler ✔</td><td>débloquer, attente, verser, montant</td><td>fiche (basse priorité)</td></tr>
+<tr><td>Apprenants</td><td>✔</td><td>✔</td><td>✘</td><td>✔</td><td>supprimer ✔</td><td>inscrire</td><td><strong>fiche</strong></td></tr>
+<tr><td>Inscriptions</td><td>✔ (depuis apprenant ou session)</td><td>✔</td><td>✘</td><td><strong>pas de modification</strong> (par conception)</td><td>annuler ✔</td><td>confirmer, replacer</td><td><strong>bouton « Nouvelle inscription » sur la page Inscriptions</strong></td></tr>
+<tr><td>Sessions</td><td>✔</td><td>✔</td><td>✔</td><td>✔</td><td>annuler ✔</td><td>ouvrir, reporter</td><td><strong>clôturer (S5.3)</strong></td></tr>
+<tr><td>Catalogue</td><td>✔</td><td>✔</td><td>—</td><td>✔</td><td>archiver ✔</td><td>—</td><td>rubriques adressables</td></tr>
+</tbody></table></div>
+<p>Deux remarques de fond :</p>
+<ul><li><strong>« Modifier une inscription »</strong> : volontairement absent. Une inscription engage une place et un agrément ; la corriger = <strong>l'annuler</strong> ou la <strong>replacer</strong>. Je recommande de ne pas ajouter de modification libre.</li><li><strong>« Clôturer une session »</strong> : c'est S5.3 (présences, évaluations, certifications) ; ce n'est pas un simple bouton.</li></ul>
+<h2>7. Travail à produire</h2>
+<h3>7.1 Écrans à créer</h3>
+<p>Fiches : contact, offre, opportunité, agrément, ambassadeur, apprenant · page <strong>Agréments</strong> (liste) · page <strong>Droits</strong> (matrice rôles et permissions, lecture seule) · bouton <strong>Nouvelle inscription</strong> · menu hiérarchique et pied de menu « Compte ».</p>
+<h3>7.2 Écrans à modifier</h3>
+<p>Menu latéral · hub · fiche entreprise (liens contextuels, noms cliquables) · Agenda, Opportunités, Offres, Contacts, Relances, Commissions, Ambassadeurs (filtres par l'adresse, pastille) · Catalogue (rubriques adressables) · listes où figure une référence (inscriptions, relances, rendez-vous, agréments).</p>
+<h3>7.3 Composants réutilisables</h3>
+<p><code>EntityLink</code>, <code>EntitySheet</code>, <code>ContextFilter</code>, <code>Breadcrumbs</code>, <code>useUrlFilters</code>, <code>NavGroup</code> (domaine repliable accessible).</p>
+<h3>7.4 Endpoints à créer ou compléter</h3>
+<div class="table-wrap"><table><thead><tr><th>Endpoint</th><th>Pourquoi</th><th>Droit</th></tr></thead><tbody>
+<tr><td><code>GET /followups?companyId=</code></td><td>filtre contextuel</td><td><code>bd.followup.read</code> (déjà)</td></tr>
+<tr><td><code>GET /ambassadors?companyId=</code></td><td>filtre contextuel</td><td><code>bd.ambassador.read</code> (déjà)</td></tr>
+<tr><td><code>POST /ambassadors/:id/status</code> (archiver, réactiver)</td><td>archivage réversible</td><td><code>bd.ambassador.update</code> (déjà), ou un droit dédié si vous le souhaitez</td></tr>
+<tr><td><code>POST /offers/:id/clone</code></td><td>cloner une offre</td><td><code>bd.offer.create</code> (déjà)</td></tr>
+<tr><td><code>GET /access/matrix</code> (lecture seule)</td><td>page Droits</td><td><code>iam.role.read</code> (à vérifier au catalogue)</td></tr>
+</tbody></table></div>
+<p><strong>Aucune nouvelle table</strong> pour ce chantier, hormis un statut d'archivage sur les ambassadeurs.</p>
+<h2>8. Priorités et feuille de route</h2>
+<p><strong>Préalable (hors chantier, 1 à 2 h)</strong> : valider et commiter <strong>S5.2b</strong>. Le menu et la page Sessions/Inscriptions changent dans les deux chantiers ; les enchaîner dans cet ordre évite des conflits.</p>
+<div class="table-wrap"><table><thead><tr><th>Priorité</th><th>Lot</th><th>Contenu</th><th>Durée estimée</th></tr></thead><tbody>
+<tr><td><strong>P0</strong></td><td><strong>N1 — Menu par domaines et compte en pied</strong></td><td>D-NAV-1, D-NAV-4 ; hub aligné ; tests de droits (un domaine vide n'apparaît pas) ; accessibilité au clavier</td><td>0,5 jour</td></tr>
+<tr><td><strong>P0</strong></td><td><strong>N2 — Filtres contextuels</strong></td><td>D-NAV-2 ; <code>ContextFilter</code>, <code>useUrlFilters</code>, <code>Breadcrumbs</code> ; 8 pages ; 2 endpoints (relances, ambassadeurs) ; liens de la fiche entreprise</td><td>1 jour</td></tr>
+<tr><td><strong>P1</strong></td><td><strong>N3 — Fiches contact, offre, opportunité</strong> + <code>EntityLink</code>/<code>EntitySheet</code></td><td>D-NAV-3 pour les trois entités les plus utilisées ; noms cliquables partout</td><td>1,5 jour</td></tr>
+<tr><td><strong>P1</strong></td><td><strong>N4 — Agréments : page liste et fiche</strong> ; <strong>Nouvelle inscription</strong></td><td>colmate la seule rupture de parcours CRM → Investudy</td><td>0,5 jour</td></tr>
+<tr><td><strong>P2</strong></td><td><strong>N5 — Ambassadeurs</strong> (archivage, fiche) et <strong>Offres</strong> (cloner) ; fiche apprenant</td><td>observations 2, 3, 6</td><td>1 jour</td></tr>
+<tr><td><strong>P2</strong></td><td><strong>N6 — Catalogue adressable</strong>, <strong>page Droits</strong></td><td>confort et transparence</td><td>0,5 jour</td></tr>
+<tr><td><strong>P3</strong></td><td>Fiche commission ; volet latéral éventuel ; favoris</td><td>à reconsidérer après usage</td><td>—</td></tr>
+</tbody></table></div>
+<p><strong>Capacité</strong> : P0 + P1 représentent <strong>environ 3,5 jours</strong>. Le sprint MVP de la semaine porte aussi sur <strong>Ressources humaines</strong> (aucun code aujourd'hui) et le <strong>Compte</strong>. Pour tenir <strong>RH + Compte + CRM fonctionnel</strong> dans la semaine, je propose : <strong>N1 et N2 dès le jour 1</strong> (ils changent le plus l'impression d'ensemble pour le moins de travail), <strong>N3 et N4 ensuite</strong>, et le <strong>cadrage RH en parallèle</strong> (il faut vos règles métier avant d'écrire du code). <strong>Le déploiement n'est pas décidé</strong> (hébergement en suspens) : c'est le risque principal pour une « MVP à déployer » cette semaine.</p>
+<h2>9. Décision</h2>
+<p><strong>« Applique les recommandations »</strong> (2026-11-09) : D-NAV-1 B, D-NAV-2 B, D-NAV-3 B, D-NAV-4 A, consignées en <strong>D51 à D54</strong>. Précisions de la Direction produit : <strong>S5.2b commité d'abord</strong> (fait : <code>ac2ab0b</code>) ; <strong>les ambassadeurs intègrent un archivage réversible</strong> (archiver et réactiver, jamais de suppression) ; <strong>la section Ressources humaines vient après</strong> ce chantier.</p>
+<p>Ordre d'exécution : N1 (menu) → N2 (filtres contextuels) → N3 (fiches contact, offre, opportunité) → N4 (agréments, nouvelle inscription) → N5 (ambassadeurs, clonage d'offre, fiche apprenant) → N6 (catalogue adressable, page Droits) → <strong>Ressources humaines</strong>.</p></main></body></html>

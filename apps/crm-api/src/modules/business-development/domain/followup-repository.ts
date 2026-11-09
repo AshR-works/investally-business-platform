@@ -27,7 +27,7 @@ export interface FollowupRepository {
   /** Relances de l'offre encore à faire (pour les annuler quand l'offre n'est plus en cours). */
   listPlannedByOffer(offerId: string): Promise<Followup[]>;
   /** `today` : « AAAA-MM-JJ » (UTC) pour situer les échéances. Tri : échéance, puis création. */
-  list(query: { page: number; pageSize: number; status?: FollowupStatus; due?: FollowupDue; today: string; offerId?: string; ownerIds?: readonly string[] }): Promise<Page<FollowupListItem>>;
+  list(query: { page: number; pageSize: number; status?: FollowupStatus; due?: FollowupDue; today: string; offerId?: string; companyId?: string; ownerIds?: readonly string[] }): Promise<Page<FollowupListItem>>;
 }
 
 export const FOLLOWUP_REPOSITORY = Symbol('FollowupRepository');

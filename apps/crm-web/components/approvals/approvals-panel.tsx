@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { api, ApiError } from '../../lib/api';
 import { useAuth } from '../../lib/auth-context';
@@ -9,6 +10,7 @@ import { can } from '../../lib/permissions';
 import type { Approval, Page } from '../../lib/types';
 import { Badge } from '../data/badge';
 import { Card } from '../data/card';
+import { EntityLink } from '../entity-link';
 import { RowAction, RowActions } from '../data/row-actions';
 import { ApprovalDialogs, type ApprovalDialogState } from './approval-dialogs';
 
@@ -43,6 +45,7 @@ export function ApprovalsPanel({ company, archived, onChanged }: { company: { id
       <section aria-labelledby="approvals-title" className="p-5">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <h2 id="approvals-title" className="m-0 text-[length:var(--text-md)]">Agréments</h2>
+          <Link href={`/approvals?companyId=${company.id}`} className="text-ink">Ouvrir les agréments de l’entreprise</Link>
           {canRegister && <button type="button" className="secondary" onClick={() => setDialog({ kind: 'register', company })}>Enregistrer un agrément</button>}
         </div>
         {error && <p role="alert" className="error">{error}</p>}
@@ -59,7 +62,7 @@ export function ApprovalsPanel({ company, archived, onChanged }: { company: { id
                   const actions = approvalActions(a, rights);
                   return (
                     <tr key={a.id}>
-                      <td><strong>{a.opportunityTitle}</strong>{a.closedReason && <span className="block text-[length:var(--text-sm)] text-ink-2">Motif : {a.closedReason}</span>}</td>
+                      <td><EntityLink kind="approval" id={a.id} label={a.opportunityTitle}><strong>{a.opportunityTitle}</strong></EntityLink>{a.closedReason && <span className="block text-[length:var(--text-sm)] text-ink-2">Motif : {a.closedReason}</span>}</td>
                       <td>{coverageText(a)}</td>
                       <td>{payerText(a)}</td>
                       <td>{a.receivedOn ? formatDate(`${a.receivedOn}T00:00:00Z`) : '—'}</td>

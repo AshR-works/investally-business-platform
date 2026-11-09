@@ -14,6 +14,8 @@ import {
   localDay, plannableTypes, shiftAnchor, timeRange,
 } from '../../../lib/appointments';
 import { api, ApiError } from '../../../lib/api';
+import { CompanyContextBar } from '../../../components/company-context-bar';
+import { useCompanyContext } from '../../../lib/company-context';
 import { useAuth } from '../../../lib/auth-context';
 import { can } from '../../../lib/permissions';
 import { statusStyle } from '../../../lib/status';
@@ -52,12 +54,13 @@ function AgendaContent() {
   const window = useMemo(() => agendaWindow(mode, anchor), [mode, anchor]);
   const today = localDay(new Date());
 
+  const ctx = useCompanyContext();
   const load = useCallback(async () => {
     if (!canRead) return;
     // Une réponse qui n'est plus la dernière demandée (l'utilisateur a changé de période entre-temps) est ignorée.
     const request = ++latest.current;
     try {
-      const page = await api<Page<Appointment>>(`/appointments?${agendaParams(window, type)}`);
+      const page = await api<Page<Appointment>>(`/appointments?${agendaParams(window, type, ctx.companyId)}`);
       if (request !== latest.current) return;
       setItems(page.items);
       setLoadError(null);
@@ -66,7 +69,7 @@ function AgendaContent() {
     } finally {
       if (request === latest.current) setLoading(false);
     }
-  }, [canRead, window, type]);
+  }, [canRead, window, type, ctx.companyId]);
   useEffect(() => {
     setLoading(true);
     void load();
@@ -116,6 +119,7 @@ function AgendaContent() {
           </button>
         )}
       />
+      <CompanyContextBar ctx={ctx} section="Agenda" />
       {loadError && <p role="alert" className="error">{loadError}</p>}
       <Card>
         <Toolbar>

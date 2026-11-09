@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { api, ApiError } from '../../lib/api';
 import { formatAmount, type OfferAction } from '../../lib/offers';
@@ -15,7 +16,7 @@ export type OfferDialogState =
   | { kind: 'create'; company?: { id: string; name: string } }
   | { kind: Exclude<OfferAction, 'followups' | 'appointment'>; offer: Offer };
 
-const SENTENCE: Record<Exclude<OfferAction, 'edit' | 'withdraw' | 'receipt' | 'documents' | 'followups' | 'appointment'>, { title: string; confirm: string; text: string; path: string }> = {
+const SENTENCE: Record<Exclude<OfferAction, 'edit' | 'withdraw' | 'clone' | 'receipt' | 'documents' | 'followups' | 'appointment'>, { title: string; confirm: string; text: string; path: string }> = {
   submit: { title: 'Déposer l’offre', confirm: 'Déposer', text: 'sera déposée chez l’entreprise : elle ne pourra plus être modifiée.', path: 'submit' },
   accept: { title: 'Enregistrer l’acceptation', confirm: 'Enregistrer l’acceptation', text: 'sera marquée comme acceptée par l’entreprise. Cet état est définitif.', path: 'accept' },
   refuse: { title: 'Enregistrer le refus', confirm: 'Enregistrer le refus', text: 'sera marquée comme refusée par l’entreprise. Cet état est définitif.', path: 'refuse' },
@@ -37,13 +38,14 @@ export function OfferDialogs({ dialog, onClose, onDone, onRefresh }: {
   if (!dialog) return null;
   if (dialog.kind === 'create') return <OfferDialog company={dialog.company} onClose={onClose} onDone={onDone} />;
   if (dialog.kind === 'edit') return <OfferDialog offer={dialog.offer} onClose={onClose} onDone={onDone} />;
+  if (dialog.kind === 'clone') return <CloneDialog offer={dialog.offer} onClose={onClose} />;
   if (dialog.kind === 'withdraw') return <WithdrawDialog offer={dialog.offer} onClose={onClose} onDone={onDone} />;
   if (dialog.kind === 'receipt') return <ReceiptDialog offer={dialog.offer} onClose={onClose} onChanged={onRefresh ?? (async () => {})} />;
   if (dialog.kind === 'documents') return <OfferDocumentsDialog offer={dialog.offer} onClose={onClose} />;
   return <TransitionDialog offer={dialog.offer} action={dialog.kind} onClose={onClose} onDone={onDone} />;
 }
 
-function TransitionDialog({ offer, action, onClose, onDone }: { offer: Offer; action: Exclude<OfferAction, 'edit' | 'withdraw' | 'receipt' | 'documents' | 'followups' | 'appointment'>; onClose: () => void; onDone: () => Promise<void> }) {
+function TransitionDialog({ offer, action, onClose, onDone }: { offer: Offer; action: Exclude<OfferAction, 'edit' | 'withdraw' | 'clone' | 'receipt' | 'documents' | 'followups' | 'appointment'>; onClose: () => void; onDone: () => Promise<void> }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const sentence = SENTENCE[action];
@@ -63,6 +65,34 @@ function TransitionDialog({ offer, action, onClose, onDone }: { offer: Offer; ac
       <p className="m-0">L’offre <strong>{offer.reference}</strong> ({formatAmount(offer.amount, offer.currency)}, {offer.companyName}) {sentence.text} Cette action est enregistrée dans l’audit.</p>
       {error && <p role="alert" className="error mt-3">{error}</p>}
     </ConfirmDialog>
+  );
+}
+
+/** Cloner une offre : un nouveau brouillon pour la même entreprise (objet, montant, devise, note) ; on arrive sur sa fiche. */
+function CloneDialog({ offer, onClose }: { offer: Offer; onClose: () => void }) {
+  const router = useRouter();
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  async function confirm() {
+    setBusy(true);
+    setError(null);
+    try {
+      const created = await api<Offer>(`/offers/${offer.id}/clone`, { method: 'POST' });
+      router.push(`/offers/${created.id}`);
+    } catch (e) {
+      setBusy(false);
+      setError(e instanceof ApiError ? e.message : 'Clonage impossible');
+    }
+  }
+  return (
+    <Modal title="Cloner l’offre" onClose={onClose}>
+      <p className="m-0 mb-3">Un nouveau <strong>brouillon</strong> sera créé pour {offer.companyName} à partir de l’offre <strong>{offer.reference}</strong> : même objet, même montant ({formatAmount(offer.amount, offer.currency)}) et même note. L’état, les dates, la décharge et les relances ne sont pas repris ; l’offre d’origine ne change pas.</p>
+      {error && <p role="alert" className="error">{error}</p>}
+      <div className="row end">
+        <button type="button" className="secondary" onClick={onClose}>Retour</button>
+        <button type="button" disabled={busy} onClick={() => void confirm()}>Créer le brouillon</button>
+      </div>
+    </Modal>
   );
 }
 

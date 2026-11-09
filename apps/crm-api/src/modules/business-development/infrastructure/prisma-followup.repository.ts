@@ -69,7 +69,7 @@ export class PrismaFollowupRepository implements FollowupRepository {
     return rows.map(toDomain);
   }
 
-  async list(query: { page: number; pageSize: number; status?: FollowupStatus; due?: FollowupDue; today: string; offerId?: string; ownerIds?: readonly string[] }): Promise<Page<FollowupListItem>> {
+  async list(query: { page: number; pageSize: number; status?: FollowupStatus; due?: FollowupDue; today: string; offerId?: string; companyId?: string; ownerIds?: readonly string[] }): Promise<Page<FollowupListItem>> {
     const today = day(query.today);
     const dueFilter: Prisma.FollowupWhereInput =
       query.due === 'overdue' ? { status: 'PLANNED', dueOn: { lt: today } }
@@ -77,7 +77,7 @@ export class PrismaFollowupRepository implements FollowupRepository {
       : query.due === 'upcoming' ? { status: 'PLANNED', dueOn: { gt: today } }
       : {};
     const where: Prisma.FollowupWhereInput = {
-      offer: { company: { deletedAt: null, ...(query.ownerIds ? { ownerUserId: { in: [...query.ownerIds] } } : {}) } },
+      offer: { ...(query.companyId ? { companyId: query.companyId } : {}), company: { deletedAt: null, ...(query.ownerIds ? { ownerUserId: { in: [...query.ownerIds] } } : {}) } },
       ...(query.offerId ? { offerId: query.offerId } : {}),
       ...(query.status ? { status: query.status } : {}),
       ...dueFilter,

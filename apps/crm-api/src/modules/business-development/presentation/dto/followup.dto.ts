@@ -57,6 +57,9 @@ export class ListFollowupsDto {
   @ApiPropertyOptional({ format: 'uuid' }) @IsOptional() @IsUUID()
   offerId?: string;
 
+  @ApiPropertyOptional({ format: 'uuid', description: "Relances des offres de cette entreprise (navigation contextuelle depuis la fiche entreprise)" }) @IsOptional() @IsUUID()
+  companyId?: string;
+
   @ApiPropertyOptional({ enum: STATUSES }) @IsOptional() @IsIn(STATUSES)
   status?: string;
 

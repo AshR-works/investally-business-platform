@@ -1,7 +1,7 @@
 import type { Offer } from './types';
 
 /** Actions possibles sur une offre ; la disponibilité dépend de son état ET des droits (le serveur re-contrôle tout). */
-export type OfferAction = 'edit' | 'submit' | 'receipt' | 'followups' | 'appointment' | 'accept' | 'refuse' | 'withdraw' | 'documents';
+export type OfferAction = 'edit' | 'submit' | 'receipt' | 'followups' | 'appointment' | 'accept' | 'refuse' | 'withdraw' | 'clone' | 'documents';
 
 export const OFFER_ACTION_LABEL: Record<OfferAction, string> = {
   edit: 'Modifier',
@@ -12,6 +12,7 @@ export const OFFER_ACTION_LABEL: Record<OfferAction, string> = {
   accept: 'Enregistrer l’acceptation',
   refuse: 'Enregistrer le refus',
   withdraw: 'Retirer l’offre',
+  clone: 'Cloner en nouveau brouillon',
   documents: 'Documents de l’offre',
 };
 
@@ -19,6 +20,8 @@ export const OFFER_ACTION_LABEL: Record<OfferAction, string> = {
 export interface OfferRights {
   update: boolean;
   withdraw: boolean;
+  /** Droit de créer une offre : cloner en crée une. */
+  create?: boolean;
   receiptRead?: boolean;
   followupRead?: boolean;
   appointmentCreate?: boolean;
@@ -39,6 +42,7 @@ export function availableActions(status: string, rights: OfferRights): OfferActi
   if (open && rights.appointmentCreate) actions.push('appointment');
   if (open && rights.update) actions.push('accept', 'refuse');
   if ((status === 'DRAFT' || open) && rights.withdraw) actions.push('withdraw');
+  if (rights.create) actions.push('clone');
   if (rights.documentsRead) actions.push('documents');
   return actions;
 }

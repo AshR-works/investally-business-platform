@@ -8,7 +8,7 @@ import { Company } from '../domain/company';
 import { CompanyName } from '../domain/company-name';
 import { CompanyRepository } from '../domain/company-repository';
 import { PlannedFollowupsCloser } from './followup-closer';
-import { ChangeOfferStatusUseCase, GetOfferHandler, ListOffersHandler, OfferAction, RegisterOfferUseCase, UpdateOfferUseCase } from './offer-use-cases';
+import { ChangeOfferStatusUseCase, CloneOfferUseCase, GetOfferHandler, ListOffersHandler, OfferAction, RegisterOfferUseCase, UpdateOfferUseCase } from './offer-use-cases';
 
 class InMemoryCompanies implements CompanyRepository {
   readonly items: Company[] = [];
@@ -40,6 +40,7 @@ function build() {
   return {
     companies, offers, followups, audit, company,
     register: new RegisterOfferUseCase(offers, companies, recorder, unitOfWork, clock, ids),
+    clone: new CloneOfferUseCase(offers, companies, recorder, unitOfWork, clock, ids),
     update: new UpdateOfferUseCase(offers, companies, recorder, unitOfWork),
     change: new ChangeOfferStatusUseCase(offers, companies, recorder, unitOfWork, clock, new PlannedFollowupsCloser(followups, recorder)),
     get: new GetOfferHandler(offers, companies),
@@ -229,5 +230,56 @@ describe('Offres — lecture et liste', () => {
   it('filtrer par l’entreprise d’un collègue est « introuvable » (pas de liste vide qui trahirait son existence)', async () => {
     const w = build(); w.company('c2', 'am2');
     await expect(w.list.execute({ page: 1, pageSize: 20, companyId: 'c2', access: am1, visibility: visibilityFor(am1, 'bd.offer.read') })).rejects.toMatchObject({ code: 'NOT_FOUND' });
+  });
+});
+
+describe('Offres — clonage (N5)', () => {
+  it('crée un nouveau brouillon pour la même entreprise : objet, montant, devise et note repris, nouvelle référence, offre d’origine intacte, audit avec l’origine', async () => {
+    const w = build();
+    const sent = await submitted(w);
+    const before = { ...sent };
+    w.audit.length = 0;
+    const clone = await w.clone.execute({ id: sent.id, access: am1, actor });
+    expect(clone).toMatchObject({ status: 'DRAFT', companyId: 'c1', subject: sent.subject, amount: sent.amount, currency: sent.currency, note: sent.note, version: 1, submittedAt: null, decidedAt: null });
+    expect(clone.id).not.toBe(sent.id);
+    expect(clone.reference).toBe('OFF-2026-0002');
+    expect(await w.get.execute({ id: sent.id, access: am1 })).toMatchObject({ status: before.status, version: before.version, reference: before.reference });
+    expect(w.audit).toHaveLength(1);
+    expect(w.audit[0]).toMatchObject({ action: AuditAction.Create, entityType: 'Offer', entityId: clone.id, newValue: { clonedFromOfferId: sent.id, clonedFromReference: sent.reference } });
+  });
+
+  it('ne reprend ni relances ni décharge : une offre refusée se clone en brouillon vierge', async () => {
+    const w = build();
+    const sent = await submitted(w);
+    const refused = await w.change.execute({ id: sent.id, version: sent.version, action: 'refuse', access: am1, actor });
+    const clone = await w.clone.execute({ id: refused.id, access: am1, actor });
+    expect(clone.status).toBe('DRAFT');
+    expect(w.followups.items.filter((f) => f.offerId === clone.id)).toHaveLength(0);
+  });
+
+  it('IDOR : l’offre d’un collègue est « introuvable », comme un identifiant inexistant, et rien n’est créé', async () => {
+    const w = build();
+    const sent = await submitted(w);
+    await expect(w.clone.execute({ id: sent.id, access: am2, actor })).rejects.toMatchObject({ code: 'NOT_FOUND' });
+    await expect(w.clone.execute({ id: 'inconnue', access: am1, actor })).rejects.toMatchObject({ code: 'NOT_FOUND' });
+    expect(w.offers.items).toHaveLength(1);
+  });
+
+  it('droit de création requis (Direction, Support, Finance lisent sans cloner) ; le Responsable commercial clone pour son équipe', async () => {
+    const w = build();
+    const sent = await submitted(w);
+    for (const role of [RoleCode.Direction, RoleCode.Support, RoleCode.Finance]) {
+      await expect(w.clone.execute({ id: sent.id, access: as(role, 'x'), actor })).rejects.toMatchObject({ code: expect.stringMatching(/NOT_FOUND|FORBIDDEN/) });
+    }
+    expect((await w.clone.execute({ id: sent.id, access: chef, actor })).status).toBe('DRAFT');
+    expect(w.offers.items).toHaveLength(2);
+  });
+
+  it('une entreprise archivée n’accepte plus de clone', async () => {
+    const w = build();
+    const sent = await submitted(w);
+    w.companies.items[0]!.archive();
+    await expect(w.clone.execute({ id: sent.id, access: am1, actor })).rejects.toMatchObject({ code: 'INVARIANT_VIOLATION' });
+    expect(w.offers.items).toHaveLength(1);
   });
 });

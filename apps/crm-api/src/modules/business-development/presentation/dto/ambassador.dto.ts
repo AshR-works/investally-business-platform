@@ -59,7 +59,21 @@ export class UpdateAmbassadorDto {
   note?: string;
 }
 
-/** Paramètres de la liste : pagination (taille ≤ 100), recherche, origine. */
+const STATUSES = ['ACTIVE', 'ARCHIVED'] as const;
+
+/** Archivage (`ARCHIVED`, motif facultatif) ou réactivation (`ACTIVE`) : `version` lue obligatoire. */
+export class SetAmbassadorStatusDto {
+  @ApiProperty({ minimum: 1 }) @IsInt() @Min(1)
+  version!: number;
+
+  @ApiProperty({ enum: STATUSES }) @IsIn(STATUSES)
+  status!: string;
+
+  @ApiPropertyOptional({ maxLength: 500 }) @IsOptional() @IsString() @MaxLength(500)
+  reason?: string;
+}
+
+/** Paramètres de la liste : pagination (taille ≤ 100), recherche, origine, état, entreprise d'origine. */
 export class ListAmbassadorsDto {
   @ApiPropertyOptional({ default: 1 }) @IsOptional() @Type(() => Number) @IsInt() @Min(1)
   page: number = 1;
@@ -72,4 +86,10 @@ export class ListAmbassadorsDto {
 
   @ApiPropertyOptional({ enum: ORIGINS }) @IsOptional() @IsIn(ORIGINS)
   origin?: string;
+
+  @ApiPropertyOptional({ enum: STATUSES, description: 'Absent : actifs et archivés.' }) @IsOptional() @IsIn(STATUSES)
+  status?: string;
+
+  @ApiPropertyOptional({ format: 'uuid' }) @IsOptional() @IsUUID()
+  companyId?: string;
 }

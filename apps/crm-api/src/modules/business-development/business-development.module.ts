@@ -17,7 +17,7 @@ import { GetFacilitatorHandler, ListFacilitatorsHandler } from './application/fa
 import { GetCompanyHandler } from './application/get-company.query';
 import { GetCompanyOverviewHandler } from './application/get-company-overview.query';
 import { ListCompaniesHandler } from './application/list-companies.query';
-import { ChangeOfferStatusUseCase, GetOfferHandler, ListOffersHandler, RegisterOfferUseCase, UpdateOfferUseCase } from './application/offer-use-cases';
+import { ChangeOfferStatusUseCase, CloneOfferUseCase, GetOfferHandler, ListOffersHandler, RegisterOfferUseCase, UpdateOfferUseCase } from './application/offer-use-cases';
 import { CancelReceiptUseCase, GetReceiptHandler, ListReceiptsHandler, RegisterReceiptUseCase } from './application/receipt-use-cases';
 import { RegisterCompanyUseCase } from './application/register-company.use-case';
 import { RegisterFacilitatorUseCase } from './application/register-facilitator.use-case';
@@ -31,7 +31,7 @@ import { OPPORTUNITY_TOTALS } from './domain/opportunity-totals';
 import { APPROVAL_REPOSITORY } from './domain/approval-repository';
 import { AMBASSADOR_REPOSITORY } from './domain/ambassador-repository';
 import { PrismaAmbassadorRepository } from './infrastructure/prisma-ambassador.repository';
-import { GetAmbassadorHandler, ListAmbassadorsHandler, RegisterAmbassadorUseCase, UpdateAmbassadorUseCase } from './application/ambassador-use-cases';
+import { GetAmbassadorHandler, ListAmbassadorsHandler, RegisterAmbassadorUseCase, SetAmbassadorStatusUseCase, UpdateAmbassadorUseCase } from './application/ambassador-use-cases';
 import { AmbassadorsController } from './presentation/ambassadors.controller';
 import { PrismaApprovalRepository } from './infrastructure/prisma-approval.repository';
 import { ApprovalDocumentOwnerResolver } from './application/approval-document-owners';
@@ -82,6 +82,7 @@ import { ReceiptsController } from './presentation/receipts.controller';
     RegisterApprovalUseCase, ReceiveApprovalUseCase,
     RegisterAmbassadorUseCase,
     UpdateAmbassadorUseCase,
+    SetAmbassadorStatusUseCase,
     GetAmbassadorHandler,
     ListAmbassadorsHandler,
     CloseApprovalUseCase,
@@ -106,6 +107,7 @@ import { ReceiptsController } from './presentation/receipts.controller';
     GetContactHandler,
     ListContactsHandler,
     RegisterOfferUseCase,
+    CloneOfferUseCase,
     UpdateOfferUseCase,
     ChangeOfferStatusUseCase,
     GetOfferHandler,

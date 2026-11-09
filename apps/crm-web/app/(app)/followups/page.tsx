@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { Badge } from '../../../components/data/badge';
 import { Card } from '../../../components/data/card';
+import { EntityLink } from '../../../components/entity-link';
 import { DataTable, type Column } from '../../../components/data/data-table';
 import { PageHeader } from '../../../components/data/page-header';
 import { Pagination } from '../../../components/data/pagination';
@@ -15,6 +16,8 @@ import { FollowupDialogs, type FollowupDialogState } from '../../../components/f
 import { Icon } from '../../../components/icon';
 import { PageHeading } from '../../../components/page-heading';
 import { api, ApiError } from '../../../lib/api';
+import { CompanyContextBar } from '../../../components/company-context-bar';
+import { useCompanyContext } from '../../../lib/company-context';
 import { useAuth } from '../../../lib/auth-context';
 import { formatDate } from '../../../lib/format';
 import { channelLabel, FOLLOWUP_ACTION_LABEL, FOLLOWUP_FILTERS, FOLLOWUP_STATUS, followupActions, type FollowupFilter, followupListParams } from '../../../lib/followups';
@@ -48,17 +51,20 @@ function FollowupsContent() {
   const canCreate = can(profile, 'bd.followup.create');
   const rights = useMemo(() => ({ complete: can(profile, 'bd.followup.complete'), update: can(profile, 'bd.followup.update') }), [profile]);
 
+  const ctx = useCompanyContext();
+  // Un autre contexte d'entreprise repart de la première page.
+  useEffect(() => setPage(1), [ctx.companyId]);
   const load = useCallback(async () => {
     if (!canRead) return;
     try {
-      setData(await api<Page<Followup>>(`/followups?${followupListParams(filter, page, PAGE_SIZE, offerId)}`));
+      setData(await api<Page<Followup>>(`/followups?${followupListParams(filter, page, PAGE_SIZE, offerId, ctx.companyId)}`));
       setLoadError(null);
     } catch (e) {
       setLoadError(e instanceof ApiError ? e.message : 'Chargement impossible');
     } finally {
       setLoading(false);
     }
-  }, [canRead, filter, page, offerId]);
+  }, [canRead, filter, page, offerId, ctx.companyId]);
   useEffect(() => {
     void load();
   }, [load]);
@@ -83,7 +89,7 @@ function FollowupsContent() {
       ),
     },
     { id: 'offer', weight: 2, header: 'Offre', cell: (f) => <strong>{f.offerReference}</strong> },
-    { id: 'company', weight: 3, header: 'Entreprise', cell: (f) => <Link href={`/companies/${f.companyId}`} className="text-ink no-underline hover:underline">{f.companyName}</Link> },
+    { id: 'company', weight: 3, header: 'Entreprise', cell: (f) => <EntityLink kind="company" id={f.companyId} label={f.companyName}>{f.companyName}</EntityLink> },
     { id: 'channel', weight: 1.6, header: 'Canal', cell: (f) => channelLabel(f.channel) },
     {
       id: 'note',
@@ -139,6 +145,7 @@ function FollowupsContent() {
         </p>
       )}
       <SelectionBar count={selected.size} onClear={() => setSelected(new Set())} />
+      <CompanyContextBar ctx={ctx} section="Relances" />
       {loadError && <p role="alert" className="error">{loadError}</p>}
       <Card>
         <Toolbar>

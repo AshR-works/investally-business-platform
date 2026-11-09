@@ -12,6 +12,8 @@ import { RowAction, RowActions } from '../../../components/data/row-actions';
 import { Toolbar } from '../../../components/data/toolbar';
 import { PageHeading } from '../../../components/page-heading';
 import { api, ApiError } from '../../../lib/api';
+import { CompanyContextBar } from '../../../components/company-context-bar';
+import { useCompanyContext } from '../../../lib/company-context';
 import { useAuth } from '../../../lib/auth-context';
 import { PAYOUT_ACTION_LABEL, PAYOUT_STATUS, PAYOUT_STATUS_OPTIONS, payoutActions, payoutAmountText, payoutDefinitionText } from '../../../lib/commissions';
 import { formatDate } from '../../../lib/format';
@@ -38,10 +40,14 @@ export default function CommissionsPage() {
   const rights = { release: can(profile, 'bd.commission.release'), pay: can(profile, 'bd.commission.pay'), manage: can(profile, 'bd.commission.manage') };
   const canSeeProof = can(profile, 'docs.document.read');
 
+  const ctx = useCompanyContext();
+  // Un autre contexte d'entreprise repart de la première page.
+  useEffect(() => setPage(1), [ctx.companyId]);
   const load = useCallback(async () => {
     if (!canRead) return;
     const params = new URLSearchParams({ page: String(page), pageSize: String(PAGE_SIZE) });
     if (status) params.set('status', status);
+    if (ctx.companyId) params.set('companyId', ctx.companyId);
     try {
       setData(await api<Page<Payout>>(`/commissions?${params}`));
       setLoadError(null);
@@ -50,7 +56,7 @@ export default function CommissionsPage() {
     } finally {
       setLoading(false);
     }
-  }, [canRead, page, status]);
+  }, [canRead, page, status, ctx.companyId]);
   useEffect(() => {
     void load();
   }, [load]);
@@ -107,6 +113,7 @@ export default function CommissionsPage() {
         title="Commissions"
         description="Commissions dues aux facilitateurs, à partir des agréments honorés. La Finance débloque les fonds ; le chargé de compte verse et dépose le justificatif."
       />
+      <CompanyContextBar ctx={ctx} section="Commissions" />
       {loadError && <p role="alert" className="error">{loadError}</p>}
       <Card>
         <Toolbar>

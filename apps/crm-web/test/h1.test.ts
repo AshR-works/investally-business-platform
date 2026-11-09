@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { MODULES, availableModules, upcomingModules } from '../lib/modules';
+import { DOMAINS, MODULES, availableModules, upcomingModules } from '../lib/modules';
 import type { Profile } from '../lib/types';
 
 vi.mock('../lib/api', () => ({ api: vi.fn() }));
@@ -33,7 +33,7 @@ describe('jetons du design', () => {
 describe('catalogue des modules', () => {
   it('identifiants uniques et groupes connus', () => {
     expect(new Set(MODULES.map((m) => m.id)).size).toBe(MODULES.length);
-    for (const m of MODULES) expect(['Espace de travail', 'Opérations', 'Pilotage', 'Gouvernance']).toContain(m.group);
+    for (const m of MODULES) expect(DOMAINS).toContain(m.group);
   });
   it('un module n\'apparaît dans la navigation que s\'il est livré ET autorisé', () => {
     expect(availableModules(profile([])).map((m) => m.id)).toEqual([]);

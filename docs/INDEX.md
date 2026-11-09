@@ -49,6 +49,7 @@
 | [ADR-0006](adr/0006-access-and-security-decisions.md) | Décisions d'accès et de sécurité |
 | [ADR-0007](adr/0007-stocks-module-autonome-heberge.md) | Module Stocks |
 | [ADR-0008](adr/0008-stockage-des-documents-derriere-un-port.md) | Stockage des documents |
+| [ADR-0009](adr/0009-rh-legere-dans-le-crm.md) | RH légère dans le CRM, RH sensible à l'ERP (amende ADR-0005) |
 
 ## Recettes par session
 | Document | Session |

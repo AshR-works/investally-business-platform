@@ -24,7 +24,7 @@ export class InMemoryFollowups implements FollowupRepository {
   async listPlannedByOffer(offerId: string) {
     return this.items.filter((f) => f.offerId === offerId && f.status === FollowupStatus.Planned);
   }
-  async list(q: { page: number; pageSize: number; status?: FollowupStatus; due?: FollowupDue; today: string; offerId?: string; ownerIds?: readonly string[] }): Promise<Page<FollowupListItem>> {
+  async list(q: { page: number; pageSize: number; status?: FollowupStatus; due?: FollowupDue; today: string; offerId?: string; companyId?: string; ownerIds?: readonly string[] }): Promise<Page<FollowupListItem>> {
     const rows = this.items
       .map((followup) => {
         const offer = this.offers.items.find((o) => o.id === followup.offerId)!;
@@ -32,6 +32,7 @@ export class InMemoryFollowups implements FollowupRepository {
       })
       .filter((r) => !q.ownerIds || q.ownerIds.includes(r.company.ownerUserId ?? ''))
       .filter((r) => !q.offerId || r.followup.offerId === q.offerId)
+      .filter((r) => !q.companyId || r.company.id === q.companyId)
       .filter((r) => !q.status || r.followup.status === q.status)
       .filter((r) => {
         if (!q.due) return true;

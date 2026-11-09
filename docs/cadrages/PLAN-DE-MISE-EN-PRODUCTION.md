@@ -15,7 +15,8 @@
 | **Investudy** : catalogue (programmes, certificats, modules, salles, formateurs, rythmes) | S5.1 en cours de validation | Prêt **après** validation de S5.1 |
 | Investudy : sessions, apprenants, inscriptions, présences, évaluations, certifications | **Non construit** (S5.2, S5.3) | **Ne pas déployer** |
 | Tableaux de bord, reporting, KPI | **Non construits** (S6) ; le hub n'a pas de page de pilotage | **Ne pas déployer** |
-| Finance, RH, Fiscalité, Stocks (ERP) | **Non construits** ; la Finance n'existe que par ses **droits** dans le CRM (honorer un agrément, débloquer une commission) | **Hors périmètre initial** |
+| Finance, Fiscalité, Stocks (ERP) | **Non construits** ; la Finance n'existe que par ses **droits** dans le CRM (honorer un agrément, débloquer une commission) | **Hors périmètre initial** |
+| **RH légère** (annuaire et organigramme, puis absences) | **Décidée dans le CRM le 2026-11-09** (D55 à D58, ADR-0009) ; en construction (RH-1) ; **sans donnée sensible** (paie, salaires, pièces d'identité : ERP) | **Entre dans le périmètre** une fois recettée ; durée de conservation des données du personnel à valider (D11, D65) |
 | Notifications, e-mail réel | **Absents** (D137) ; l'e-mail réel dépend des accès Microsoft 365 (D9) | **Bloquant** pour invitations et réinitialisations |
 | Import de données existantes | **N'existe pas** | À créer (§7) |
 

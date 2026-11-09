@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+import { EntityLink } from '../entity-link';
 import { useCallback, useEffect, useState } from 'react';
 import { api, ApiError } from '../../lib/api';
 import { useAuth } from '../../lib/auth-context';
@@ -58,7 +60,10 @@ export function ContactsPanel({ company }: { company: { id: string; name: string
       <section aria-labelledby="contacts-title" className="p-5">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <h2 id="contacts-title" className="m-0 text-[length:var(--text-md)]">Contacts</h2>
-          {canCreate && <button type="button" className="secondary" onClick={() => setDialog({ kind: 'create' })}>Nouveau contact</button>}
+          <div className="flex flex-wrap items-center gap-3">
+            <Link href={`/contacts?companyId=${company.id}`} className="text-ink">Ouvrir les contacts de l’entreprise</Link>
+            {canCreate && <button type="button" className="secondary" onClick={() => setDialog({ kind: 'create' })}>Nouveau contact</button>}
+          </div>
         </div>
         {error && <p role="alert" className="error">{error}</p>}
         {contacts === null && !error && <p role="status" className="m-0 text-ink-2">Chargement…</p>}
@@ -71,7 +76,7 @@ export function ContactsPanel({ company }: { company: { id: string; name: string
               <tbody>
                 {contacts.map((c) => (
                   <tr key={c.id}>
-                    <td><strong>{c.firstName} {c.lastName}</strong></td>
+                    <td><EntityLink kind="contact" id={c.id} label={`${c.firstName} ${c.lastName}`}><strong>{c.firstName} {c.lastName}</strong></EntityLink></td>
                     <td><Badge tone="neutral">{contactRoleLabel(c.role)}</Badge></td>
                     <td>{c.email ?? '—'}</td>
                     <td>{c.phone ?? '—'}</td>

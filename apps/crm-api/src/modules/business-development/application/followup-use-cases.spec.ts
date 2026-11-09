@@ -233,6 +233,13 @@ describe('Relances — lecture et liste « À faire »', () => {
     await expect(w.list.execute(q(am1, { offerId: 'o2' }))).rejects.toMatchObject({ code: 'NOT_FOUND' });
     expect((await w.list.execute(q(am1, { offerId: 'o1' }))).total).toBe(3);
   });
+  it('filtre par entreprise (navigation contextuelle) : ses relances seulement ; l’entreprise d’un collègue est « introuvable »', async () => {
+    const w = await world();
+    expect((await w.list.execute(q(am1, { companyId: 'c1' }))).items.map((f) => f.companyId)).toEqual(['c1', 'c1', 'c1']);
+    expect((await w.list.execute(q(as(RoleCode.Direction, 'dir'), { companyId: 'c2' }))).total).toBe(1);
+    await expect(w.list.execute(q(am1, { companyId: 'c2' }))).rejects.toMatchObject({ code: 'NOT_FOUND', message: 'Entreprise introuvable' });
+    await expect(w.list.execute(q(am1, { companyId: 'inconnue' }))).rejects.toMatchObject({ code: 'NOT_FOUND' });
+  });
   it('lecture : hors de la portée « introuvable » ; chef et Direction lisent', async () => {
     const w = await world();
     const id = w.followups.items[0]!.id;

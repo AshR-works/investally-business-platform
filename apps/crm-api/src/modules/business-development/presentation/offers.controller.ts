@@ -5,7 +5,7 @@ import { actorContextFrom } from '../../../shared-kernel';
 import { Access, CurrentActor, Protected, visibilityFor } from '../../iam';
 import type { AccessContext, AuthenticatedActor } from '../../iam';
 import {
-  ChangeOfferStatusUseCase, GetOfferHandler, ListOffersHandler, OfferAction, RegisterOfferUseCase, UpdateOfferUseCase,
+  ChangeOfferStatusUseCase, CloneOfferUseCase, GetOfferHandler, ListOffersHandler, OfferAction, RegisterOfferUseCase, UpdateOfferUseCase,
 } from '../application/offer-use-cases';
 import { ListOffersDto, OfferTransitionDto, RegisterOfferDto, UpdateOfferDto } from './dto/offer.dto';
 
@@ -19,6 +19,7 @@ export class OffersController {
   constructor(
     private readonly registerOffer: RegisterOfferUseCase,
     private readonly updateOffer: UpdateOfferUseCase,
+    private readonly cloneOffer: CloneOfferUseCase,
     private readonly changeStatus: ChangeOfferStatusUseCase,
     private readonly getOffer: GetOfferHandler,
     private readonly listOffers: ListOffersHandler,
@@ -47,6 +48,14 @@ export class OffersController {
   @Protected('bd.offer.update')
   update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateOfferDto, @Access() access: AccessContext, @CurrentActor() actor: AuthenticatedActor, @Req() req: Request) {
     return this.updateOffer.execute({ ...dto, id, access, actor: actorContextFrom(req, actor) });
+  }
+
+  /** Cloner l'offre : un nouveau brouillon pour la même entreprise (objet, montant, devise, note) ; l'original ne change pas. */
+  @Post(':id/clone')
+  @HttpCode(201)
+  @Protected('bd.offer.create')
+  clone(@Param('id', ParseUUIDPipe) id: string, @Access() access: AccessContext, @CurrentActor() actor: AuthenticatedActor, @Req() req: Request) {
+    return this.cloneOffer.execute({ id, access, actor: actorContextFrom(req, actor) });
   }
 
   /** Déposer le brouillon chez l'entreprise. */

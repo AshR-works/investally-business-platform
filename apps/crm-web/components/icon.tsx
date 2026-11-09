@@ -32,6 +32,7 @@ const PATHS = {
   'sort-asc': 'M12 19V5.5M6.5 11 12 5.5l5.5 5.5',
   'sort-desc': 'M12 5v13.5M6.5 13 12 18.5l5.5-5.5',
   alert: 'M12 3.5 2.8 19.5h18.4L12 3.5ZM12 10v4.5M12 17.2h.01',
+  'chevron-down': 'M6 9.5l6 6 6-6',
 } as const;
 
 /** Nom d'un pictogramme du jeu. */

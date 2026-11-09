@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Badge } from '../../../components/data/badge';
 import { Card } from '../../../components/data/card';
+import { EntityLink } from '../../../components/entity-link';
 import { PageHeader } from '../../../components/data/page-header';
 import { RowAction, RowActions } from '../../../components/data/row-actions';
 import { QuickFilters, SearchField, Toolbar } from '../../../components/data/toolbar';
@@ -12,6 +13,8 @@ import { Icon } from '../../../components/icon';
 import { OpportunityDialogs, type OpportunityDialogState } from '../../../components/opportunities/opportunity-dialogs';
 import { PageHeading } from '../../../components/page-heading';
 import { api, ApiError } from '../../../lib/api';
+import { CompanyContextBar } from '../../../components/company-context-bar';
+import { useCompanyContext } from '../../../lib/company-context';
 import { useAuth } from '../../../lib/auth-context';
 import { formatDate } from '../../../lib/format';
 import { formatAmount } from '../../../lib/offers';
@@ -53,12 +56,13 @@ function OpportunitiesContent() {
     closeLost: can(profile, 'bd.opportunity.close_lost'), closeWon: can(profile, 'bd.opportunity.close_won'),
   }), [profile]);
 
+  const ctx = useCompanyContext();
   const load = useCallback(async () => {
     if (!canRead) return;
     // Une réponse qui n'est plus la dernière demandée (filtre changé entre-temps) est ignorée.
     const request = ++latest.current;
     try {
-      const page = await api<Page<Opportunity>>(`/opportunities?${opportunityListParams(filter, query)}`);
+      const page = await api<Page<Opportunity>>(`/opportunities?${opportunityListParams(filter, query, ctx.companyId)}`);
       if (request !== latest.current) return;
       setData(page);
       setLoadError(null);
@@ -67,7 +71,7 @@ function OpportunitiesContent() {
     } finally {
       if (request === latest.current) setLoading(false);
     }
-  }, [canRead, filter, query]);
+  }, [canRead, filter, query, ctx.companyId]);
   useEffect(() => {
     setLoading(true);
     void load();
@@ -117,6 +121,7 @@ function OpportunitiesContent() {
           </button>
         )}
       />
+      <CompanyContextBar ctx={ctx} section="Opportunités" />
       {loadError && <p role="alert" className="error">{loadError}</p>}
       <Card>
         <Toolbar>
@@ -173,14 +178,14 @@ function OpportunityCard({ opportunity: o, rights, onAction, compact }: { opport
           ))}
         </RowActions>
       </div>
-      <Link href={`/companies/${o.companyId}`} className="text-ink no-underline hover:underline">{o.companyName}</Link>
+      <EntityLink kind="company" id={o.companyId} label={o.companyName}>{o.companyName}</EntityLink>
       <p className="m-0 font-semibold">{formatAmount(o.amount, o.currency)}</p>
       <p className="m-0 flex flex-wrap items-center gap-2">
         {!compact && <Badge tone="neutral">{stageLabel(o.stage)}</Badge>}
         {o.status !== 'OPEN' && <Badge tone={status.tone}>{status.label}</Badge>}
         {o.waivedAt && <Badge tone="warn">Dérogation</Badge>}
       </p>
-      <p className="m-0 mt-auto text-xs text-ink-2">{compact ? '' : `${sourceLabel(o.source)} · `}Dernière activité le {formatDate(o.lastActivityAt)}</p>
+      <p className="m-0 mt-auto text-xs text-ink-2">{compact ? '' : `${sourceLabel(o.source)} · `}Dernière activité le {formatDate(o.lastActivityAt)} · <EntityLink kind="opportunity" id={o.id} label={o.title}>Fiche</EntityLink></p>
     </article>
   );
 }

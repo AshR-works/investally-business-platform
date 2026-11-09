@@ -14,6 +14,7 @@ import { SessionDialogs, type SessionDialogState } from '../../../../components/
 import { api, ApiError } from '../../../../lib/api';
 import { useAuth } from '../../../../lib/auth-context';
 import type { Room, Trainer } from '../../../../lib/catalogue';
+import { catalogueHref } from '../../../../lib/catalogue';
 import { can } from '../../../../lib/permissions';
 import {
   capacityText, dateText, isIsoDate, SESSION_PERMISSIONS, SESSION_PHASE_LABEL, SESSION_STATUS, SESSION_STATUS_OPTIONS, type Session, sessionActions, todayIso,
@@ -130,7 +131,7 @@ export default function SessionsPage() {
         description="Une session est un certificat donné dans une salle par un formateur, selon un rythme (jour ou soir). La salle et le formateur doivent être libres pendant toute la session. Une session ne se supprime pas : elle s’annule avec un motif."
         actions={canCreate ? <button type="button" onClick={() => setDialog({ kind: 'plan' })}>Nouvelle session</button> : undefined}
       />
-      <p className="m-0 mb-3"><Link href="/training">← Catalogue de formation</Link>{can(profile, 'training.enrollment.read') && <> · <Link href="/training/enrollments">Inscriptions</Link></>}{can(profile, 'training.learner.read') && <> · <Link href="/training/learners">Apprenants</Link></>}</p>
+      <p className="m-0 mb-3"><Link href="/training">← Catalogue de formation</Link>{can(profile, 'training.room.read') && <> · <Link href={catalogueHref('rooms')}>Salles</Link></>}{can(profile, 'training.trainer.read') && <> · <Link href={catalogueHref('trainers')}>Formateurs</Link></>}{can(profile, 'training.enrollment.read') && <> · <Link href="/training/enrollments">Inscriptions</Link></>}{can(profile, 'training.learner.read') && <> · <Link href="/training/learners">Apprenants</Link></>}</p>
       {loadError && <p role="alert" className="error">{loadError}</p>}
       <Card>
         <Toolbar>

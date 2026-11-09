@@ -13,7 +13,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  schemas  = ["bd", "audit", "iam", "docs", "training"]
+  schemas  = ["bd", "audit", "iam", "docs", "training", "hr"]
 }
 
 // ───────────────────────────── bd (tranche S1) ─────────────────────────────
@@ -848,6 +848,13 @@ enum AmbassadorOrigin {
   @@schema("bd")
 }
 
+enum AmbassadorStatus {
+  ACTIVE
+  ARCHIVED
+
+  @@schema("bd")
+}
+
 model Ambassador {
   id          String           @id @db.Uuid
   /// Le chargé de compte qui l'a créé (référence inter-contextes vers iam.users, SANS clé étrangère) : détermine la portée des droits.
@@ -861,6 +868,10 @@ model Ambassador {
   phone       String?          @db.VarChar(40)
   appointedOn DateTime         @map("appointed_on") @db.Date
   note        String?          @db.VarChar(500)
+  /// Archivage réversible (jamais de suppression) : archivé = gelé, retiré des listes courantes, réactivable.
+  status        AmbassadorStatus @default(ACTIVE)
+  archivedAt    DateTime?        @map("archived_at") @db.Timestamptz(6)
+  archiveReason String?          @map("archive_reason") @db.VarChar(500)
   version     Int              @default(1)
   createdAt   DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt   DateTime         @updatedAt @map("updated_at") @db.Timestamptz(6)
@@ -868,6 +879,7 @@ model Ambassador {
 
   @@index([ownerUserId])
   @@index([companyId])
+  @@index([status])
   @@map("ambassadors")
   @@schema("bd")
 }
@@ -1151,4 +1163,46 @@ model Enrollment {
   @@index([companyId])
   @@map("enrollments")
   @@schema("training")
+}
+
+// ───────────── Ressources humaines (RH légère, ADR-0009) : contexte « hr », aucune clé étrangère vers un autre schéma ─────────────
+
+enum EmployeeStatus {
+  ACTIVE
+  ARCHIVED
+
+  @@schema("hr")
+}
+
+/// Employé : identité PROFESSIONNELLE seulement (jamais de salaire, pièce d'identité, adresse personnelle, date de naissance : D57). Distinct du compte (`userId` facultatif, sans clé étrangère).
+model Employee {
+  id                String         @id @db.Uuid
+  /// Matricule de saisie libre, normalisé en majuscules ; unique s'il est renseigné.
+  matricule         String?        @db.VarChar(30)
+  lastName          String         @map("last_name") @db.VarChar(100)
+  firstName         String         @map("first_name") @db.VarChar(100)
+  jobTitle          String         @map("job_title") @db.VarChar(150)
+  department        String         @db.VarChar(100)
+  /// Responsable hiérarchique (donnée RH) ; ne modifie jamais `iam.users.manager_id`.
+  managerEmployeeId String?        @map("manager_employee_id") @db.Uuid
+  /// Compte de la personne (0 ou 1), référence inter-contextes vers iam.users SANS clé étrangère.
+  userId            String?        @map("user_id") @db.Uuid
+  workEmail         String?        @map("work_email") @db.VarChar(200)
+  workPhone         String?        @map("work_phone") @db.VarChar(40)
+  hiredOn           DateTime       @map("hired_on") @db.Date
+  leftOn            DateTime?      @map("left_on") @db.Date
+  status            EmployeeStatus @default(ACTIVE)
+  archivedAt        DateTime?      @map("archived_at") @db.Timestamptz(6)
+  archiveReason     String?        @map("archive_reason") @db.VarChar(500)
+  version           Int            @default(1)
+  createdAt         DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime       @updatedAt @map("updated_at") @db.Timestamptz(6)
+  manager           Employee?      @relation("EmployeeHierarchy", fields: [managerEmployeeId], references: [id], onDelete: Restrict)
+  reports           Employee[]     @relation("EmployeeHierarchy")
+
+  @@index([managerEmployeeId])
+  @@index([status])
+  @@index([department])
+  @@map("employees")
+  @@schema("hr")
 }

@@ -3,11 +3,12 @@ import { ActorContext, CLOCK, Clock, DomainError, ID_GENERATOR, IdGenerator, Pag
 import { AUDIT_RECORDER, AuditAction, AuditRecorder } from '../../audit';
 import { decideFor } from '../../iam';
 import type { AccessContext, Visibility } from '../../iam';
-import { Ambassador, AmbassadorOrigin } from '../domain/ambassador';
+import { Ambassador, AmbassadorOrigin, AmbassadorStatus } from '../domain/ambassador';
 import { AMBASSADOR_REPOSITORY, AmbassadorRepository } from '../domain/ambassador-repository';
 import { Company } from '../domain/company';
 import { COMPANY_REPOSITORY, CompanyRepository } from '../domain/company-repository';
 import { AmbassadorView, toAmbassadorView } from './ambassador-view';
+import { companyInScope } from './offer-use-cases';
 
 const NOT_FOUND = 'Ambassadeur introuvable';
 
@@ -124,6 +125,53 @@ export class UpdateAmbassadorUseCase {
   }
 }
 
+export interface SetAmbassadorStatusCommand {
+  id: string;
+  version: number;
+  /** `ARCHIVED` archive, `ACTIVE` réactive. */
+  status: string;
+  /** Motif de l'archivage (facultatif) ; ignoré à la réactivation. */
+  reason?: string | null;
+  access: AccessContext;
+  actor: ActorContext;
+}
+
+/**
+ * Archiver ou réactiver un ambassadeur (réversible : **jamais de suppression**). Même droit et même portée que la modification, version lue ;
+ * un ambassadeur archivé est gelé (non modifiable) jusqu'à sa réactivation, et garde son e-mail ; audit avant et après.
+ */
+@Injectable()
+export class SetAmbassadorStatusUseCase {
+  constructor(
+    @Inject(AMBASSADOR_REPOSITORY) private readonly ambassadors: AmbassadorRepository,
+    @Inject(COMPANY_REPOSITORY) private readonly companies: CompanyRepository,
+    @Inject(AUDIT_RECORDER) private readonly audit: AuditRecorder,
+    @Inject(UNIT_OF_WORK) private readonly unitOfWork: UnitOfWork,
+    @Inject(CLOCK) private readonly clock: Clock,
+  ) {}
+
+  async execute(command: SetAmbassadorStatusCommand): Promise<AmbassadorView> {
+    if (command.status !== AmbassadorStatus.Archived && command.status !== AmbassadorStatus.Active) {
+      throw new DomainError('VALIDATION', "L'état demandé est inconnu (archivé ou actif)");
+    }
+    return this.unitOfWork.run(async () => {
+      const ambassador = await ambassadorInScope(this.ambassadors, command.id, command.access, 'bd.ambassador.update');
+      if (ambassador.version !== command.version) {
+        throw new DomainError('CONFLICT', "L'ambassadeur a été modifié par un autre utilisateur : rechargez-le avant de continuer");
+      }
+      const company = ambassador.companyId ? await this.companies.findById(ambassador.companyId) : null;
+      const before = toAmbassadorView(ambassador, company?.name.value ?? null);
+      if (command.status === AmbassadorStatus.Archived) ambassador.archive(command.reason, this.clock.now());
+      else ambassador.reactivate();
+      await this.ambassadors.save(ambassador);
+      const saved = (await this.ambassadors.findById(ambassador.id)) ?? ambassador;
+      const after = toAmbassadorView(saved, company?.name.value ?? null);
+      await this.audit.record({ actor: command.actor, module: 'business-development', entityType: 'Ambassador', entityId: ambassador.id, action: AuditAction.Update, oldValue: { ...before }, newValue: { ...after } });
+      return after;
+    });
+  }
+}
+
 /** Lecture d'un ambassadeur : hors de la portée de son créateur, il est « introuvable ». */
 @Injectable()
 export class GetAmbassadorHandler {
@@ -146,21 +194,33 @@ export interface ListAmbassadorsQuery {
   pageSize: number;
   search?: string;
   origin?: string;
+  /** `ACTIVE` ou `ARCHIVED` ; absent = tous. */
+  status?: string;
+  /** Entreprise d'origine : elle doit être visible de l'appelant, sinon « introuvable ». */
+  companyId?: string;
+  access: AccessContext;
   visibility: Visibility;
 }
 
 /** Liste paginée des ambassadeurs visibles : ceux de l'appelant (chargé de compte), de son équipe ou de tous (Responsable commercial, Direction). */
 @Injectable()
 export class ListAmbassadorsHandler {
-  constructor(@Inject(AMBASSADOR_REPOSITORY) private readonly ambassadors: AmbassadorRepository) {}
+  constructor(
+    @Inject(AMBASSADOR_REPOSITORY) private readonly ambassadors: AmbassadorRepository,
+    @Inject(COMPANY_REPOSITORY) private readonly companies: CompanyRepository,
+  ) {}
 
   async execute(query: ListAmbassadorsQuery): Promise<Page<AmbassadorView>> {
     const origin = query.origin && Object.values(AmbassadorOrigin).includes(query.origin as AmbassadorOrigin) ? (query.origin as AmbassadorOrigin) : undefined;
+    const status = query.status && Object.values(AmbassadorStatus).includes(query.status as AmbassadorStatus) ? (query.status as AmbassadorStatus) : undefined;
+    if (query.companyId) await companyInScope(this.companies, query.companyId, query.access, 'bd.company.read');
     const result = await this.ambassadors.list({
       page: Math.max(1, Math.floor(query.page)),
       pageSize: Math.min(MAX_PAGE_SIZE, Math.max(1, Math.floor(query.pageSize))),
       search: query.search?.trim() || undefined,
       origin,
+      status,
+      companyId: query.companyId,
       ownerIds: query.visibility.unrestricted ? undefined : query.visibility.ownerIds,
     });
     return { ...result, items: result.items.map((i) => toAmbassadorView(i.ambassador, i.companyName)) };

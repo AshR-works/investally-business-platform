@@ -1,9 +1,9 @@
 'use client';
 
-import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Badge } from '../../../components/data/badge';
 import { Card } from '../../../components/data/card';
+import { EntityLink } from '../../../components/entity-link';
 import { DataTable, type Column } from '../../../components/data/data-table';
 import { PageHeader } from '../../../components/data/page-header';
 import { Pagination } from '../../../components/data/pagination';
@@ -14,6 +14,8 @@ import { OfferDialogs, type OfferDialogState } from '../../../components/offers/
 import { OfferRowActions, useOfferRights } from '../../../components/offers/offer-row-actions';
 import { PageHeading } from '../../../components/page-heading';
 import { api, ApiError } from '../../../lib/api';
+import { CompanyContextBar } from '../../../components/company-context-bar';
+import { useCompanyContext } from '../../../lib/company-context';
 import { useAuth } from '../../../lib/auth-context';
 import { formatDate } from '../../../lib/format';
 import { formatAmount } from '../../../lib/offers';
@@ -43,11 +45,15 @@ export default function OffersPage() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const canRead = can(profile, 'bd.offer.read');
 
+  const ctx = useCompanyContext();
+  // Un autre contexte d'entreprise repart de la première page.
+  useEffect(() => setPage(1), [ctx.companyId]);
   const load = useCallback(async () => {
     if (!canRead) return;
     const params = new URLSearchParams({ page: String(page), pageSize: String(PAGE_SIZE) });
     if (query) params.set('search', query);
     if (status) params.set('status', status);
+    if (ctx.companyId) params.set('companyId', ctx.companyId);
     try {
       setData(await api<Page<Offer>>(`/offers?${params}`));
       setLoadError(null);
@@ -56,15 +62,15 @@ export default function OffersPage() {
     } finally {
       setLoading(false);
     }
-  }, [canRead, page, query, status]);
+  }, [canRead, page, query, status, ctx.companyId]);
   useEffect(() => {
     void load();
   }, [load]);
 
   const columns = useMemo<Column<Offer>[]>(() => [
-    { id: 'reference', weight: 2, header: 'Référence', cell: (o) => <strong>{o.reference}</strong> },
+    { id: 'reference', weight: 2, header: 'Référence', cell: (o) => <EntityLink kind="offer" id={o.id} label={o.reference}><strong>{o.reference}</strong></EntityLink> },
     { id: 'subject', weight: 4, header: 'Objet', cell: (o) => o.subject },
-    { id: 'company', weight: 3, header: 'Entreprise', cell: (o) => <Link href={`/companies/${o.companyId}`} className="text-ink no-underline hover:underline">{o.companyName}</Link> },
+    { id: 'company', weight: 3, header: 'Entreprise', cell: (o) => <EntityLink kind="company" id={o.companyId} label={o.companyName}>{o.companyName}</EntityLink> },
     { id: 'amount', weight: 2.4, header: 'Montant', align: 'right', cell: (o) => formatAmount(o.amount, o.currency) },
     { id: 'status', weight: 1.8, header: 'État', cell: (o) => { const style = statusStyle(OFFER_STATUS, o.status); return <Badge tone={style.tone}>{style.label}</Badge>; } },
     { id: 'submitted', weight: 2, header: 'Déposée le', cell: (o) => formatDate(o.submittedAt) },
@@ -94,6 +100,7 @@ export default function OffersPage() {
         )}
       />
       <SelectionBar count={selected.size} onClear={() => setSelected(new Set())} />
+      <CompanyContextBar ctx={ctx} section="Offres" />
       {loadError && <p role="alert" className="error">{loadError}</p>}
       <Card>
         <Toolbar>

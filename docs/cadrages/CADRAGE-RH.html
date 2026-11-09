@@ -1,0 +1,100 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Cadrage — section Ressources humaines (RH)</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — cadrages · <a href="README.html">Index des cadrages</a> · <a href="../INDEX.html">Documentation</a> · <a href="../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../design/05-AIDE-A-LA-DECISION.html">Aide à la décision</a></nav><h1>Cadrage — section Ressources humaines (RH)</h1>
+<p><em>2026-11-09 · suite des lots N1 à N6 (D54 : « puis la section Ressources humaines ») · méthode <a href="../METHODE-D-ARBITRAGE.html">METHODE-D-ARBITRAGE</a>. <strong>Aucune ligne de code RH n'existe</strong> : ce document propose, la Direction produit décide. Les valeurs « par défaut » sont des hypothèses à confirmer, jamais des règles métier ni des avis juridiques (D11).</em></p>
+<h2>1. Question</h2>
+<p>Le sprint MVP de la semaine demande une section <strong>Ressources humaines</strong> utilisable. Or, aujourd'hui, la RH est <strong>décidée hors du CRM</strong> : elle appartient à l'ERP, produit séparé avec sa propre base (ADR-0005), et le rôle <code>HR</code> n'a « aucun accès métier » (RBAC). Il faut donc trancher <strong>où elle vit</strong>, <strong>ce qu'elle couvre</strong>, <strong>comment elle se relie aux comptes</strong>, et <strong>quelles données y sont admises</strong>. Quatre décisions (D55 à D58 proposées), puis les règles métier que je ne connais pas.</p>
+<h2>2. Ce qui existe déjà (et contraint)</h2>
+<div class="table-wrap"><table><thead><tr><th>Fait</th><th>Source</th><th>Effet sur RH</th></tr></thead><tbody>
+<tr><td>CRM et ERP sont <strong>deux produits</strong>, une base chacun, échange par événements ; l'ERP regroupe Finance, <strong>RH</strong>, Fiscalité, reporting de direction</td><td>ADR-0005</td><td>Mettre la RH dans le CRM <strong>amende</strong> cet ADR</td></tr>
+<tr><td>« Employé (salarié, RH) <strong>≠</strong> Utilisateur (compte IAM) », nom prévu <code>hr.Employee</code></td><td>ARCHITECTURE (glossaire)</td><td>L'employé est une entité <strong>distincte</strong> du compte</td></tr>
+<tr><td>Le rôle <code>HR</code> : MFA obligatoire, <strong>aucun accès métier CRM</strong> ; la DGA cumule <strong>Direction + RH</strong> (D27)</td><td>RBAC, D27</td><td>Les permissions RH sont à créer ; la DGA les aurait par cumul</td></tr>
+<tr><td><code>users.manager_id</code> existe et <strong>pilote la portée « Équipe »</strong> de tous les droits</td><td>schéma IAM</td><td>Un organigramme RH qui divergerait de ce lien créerait deux vérités</td></tr>
+<tr><td>Suivi de <strong>performance des employés</strong> : seulement après avis juridique et RH</td><td>DEC-006</td><td><strong>Hors périmètre</strong></td></tr>
+<tr><td>Durées de conservation et loi applicable sur les données personnelles <strong>non validées</strong></td><td>D11, D65</td><td>Aucune donnée sensible sans avis ; suppression logique seulement</td></tr>
+<tr><td>RH, Finance, Fiscalité « <strong>non construits, hors périmètre initial</strong> »</td><td>PLAN-DE-MISE-EN-PRODUCTION</td><td>Le sprint MVP <strong>change</strong> ce périmètre : à consigner</td></tr>
+<tr><td>Hébergement et mise en production <strong>non décidés</strong></td><td>D-PROD</td><td>Où seraient stockées des données RH est une question ouverte</td></tr>
+<tr><td>Archivage réversible, jamais de suppression ; verrou de version ; audit avant/après ; IDOR « introuvable »</td><td>N5, S5.x</td><td>Même socle technique, réutilisable tel quel</td></tr>
+</tbody></table></div>
+<h2>3. D55 — Où vit la section RH ?</h2>
+<div class="table-wrap"><table><thead><tr><th></th><th>Option</th><th>Avantages</th><th>Inconvénients</th><th>Impacts</th><th>Réversibilité</th></tr></thead><tbody>
+<tr><td><strong>A</strong></td><td><strong>Statu quo</strong> : RH reste dans l'ERP, non construit</td><td>Aucun écart à l'ADR, aucune donnée RH dans le CRM</td><td><strong>Ne répond pas à la demande du sprint</strong></td><td>Aucun</td><td>Totale</td></tr>
+<tr><td><strong>B</strong></td><td><strong>Module RH dans le CRM</strong>, schéma <code>hr</code> isolé, mêmes base et IAM, frontière de module stricte (comme <code>COMPANY_DIRECTORY</code>)</td><td>Livrable cette semaine ; aucun nouveau déploiement ; un seul menu, un seul compte</td><td>Amende ADR-0005 ; mêmes sauvegardes et même base que le commercial ; la RH grossit dans un produit prévu pour autre chose</td><td>Nouveau module API + écrans, une migration, nouvelles permissions <code>hr.*</code>, un ADR (0009)</td><td>Bonne : la frontière de module permet l'extraction vers l'ERP</td></tr>
+<tr><td><strong>C</strong></td><td><strong>Application ERP séparée dès maintenant</strong> (<code>erp-api</code>, <code>erp-web</code>, base propre)</td><td>Conforme à l'ADR-0005 ; isolement maximal des données RH</td><td>Deux déploiements, IAM à dupliquer ou SSO à construire, hébergement non décidé : <strong>intenable en une semaine</strong></td><td>Deux nouvelles applications, pipeline, authentification</td><td>Bonne, mais très coûteuse à défaire</td></tr>
+</tbody></table></div>
+<p><strong>Grille</strong> (poids de 1 à 5, notes de 1 à 5, maximum 95) :</p>
+<div class="table-wrap"><table><thead><tr><th>Critère</th><th>Poids</th><th>A</th><th>B</th><th>C</th></tr></thead><tbody>
+<tr><td>Répond à la demande du sprint (RH utilisable cette semaine)</td><td>5</td><td>1</td><td>5</td><td>2</td></tr>
+<tr><td>Conformité aux décisions existantes (ADR-0005)</td><td>4</td><td>5</td><td>2</td><td>5</td></tr>
+<tr><td>Protection des données personnelles (isolement)</td><td>4</td><td>5</td><td>3</td><td>5</td></tr>
+<tr><td>Réversibilité et dette</td><td>3</td><td>5</td><td>3</td><td>4</td></tr>
+<tr><td>Coût d'exploitation et d'hébergement</td><td>3</td><td>5</td><td>5</td><td>1</td></tr>
+<tr><td><strong>Total</strong></td><td></td><td><strong>75</strong></td><td><strong>69</strong></td><td><strong>65</strong></td></tr>
+</tbody></table></div>
+<p><em>Calculs : A = 5×1 + 4×5 + 4×5 + 3×5 + 3×5 = 75 ; B = 5×5 + 4×2 + 4×3 + 3×3 + 3×5 = 69 ; C = 5×2 + 4×5 + 4×5 + 3×4 + 3×1 = 65.</em></p>
+<p><strong>Écart entre la grille et la recommandation.</strong> A a le meilleur total parce que ne rien faire ne coûte rien ; mais A échoue sur le critère qui est une <strong>exigence ferme</strong> (RH dans le MVP). Entre les options qui répondent à la demande, <strong>B (69) devance C (65)</strong>.</p>
+<p><strong>Recommandation : B</strong>, <strong>à deux conditions</strong> qui réduisent son défaut principal : (1) <strong>aucune donnée sensible dans le CRM</strong> (D57) ; (2) un <strong>ADR-0009</strong> qui amende l'ADR-0005 : « RH légère (annuaire, organigramme, absences) dans le CRM ; RH sensible (paie, salaires, pièces d'identité, performance) reste à l'ERP ».</p>
+<p><strong>Risques de B</strong> : la RH s'installe dans le CRM et l'extraction n'a jamais lieu (dette) ; une fuite de la base CRM expose l'annuaire du personnel (limité par D57) ; l'hébergement non décidé (D-PROD) s'applique aussi à ces données. <strong>Dette créée</strong> : migration future des données <code>hr</code> vers l'ERP (<strong>D162</strong>).</p>
+<h2>4. D56 — Que couvre la section RH au MVP ?</h2>
+<div class="table-wrap"><table><thead><tr><th></th><th>Périmètre</th><th>Contenu</th></tr></thead><tbody>
+<tr><td><strong>1</strong></td><td><strong>Annuaire et organigramme</strong></td><td>Fiche employé (identité professionnelle, poste, service, responsable, date d'entrée, statut actif / sorti), liste, fiche, organigramme, archivage réversible, lien facultatif vers un compte</td></tr>
+<tr><td><strong>2</strong></td><td><strong>1 + absences et congés</strong></td><td>Demande, validation par le responsable, solde, calendrier d'équipe</td></tr>
+<tr><td><strong>3</strong></td><td><strong>2 + dossier du personnel</strong></td><td>Contrats, période d'essai, documents RH, intégration et départ</td></tr>
+<tr><td><strong>4</strong></td><td><strong>Complet</strong></td><td>Paie, présences, évaluations</td></tr>
+</tbody></table></div>
+<div class="table-wrap"><table><thead><tr><th>Critère</th><th>Poids</th><th>1</th><th>2</th><th>3</th><th>4</th></tr></thead><tbody>
+<tr><td>Valeur pour l'entreprise cette semaine</td><td>5</td><td>3</td><td>4</td><td>4</td><td>5</td></tr>
+<tr><td>Faible risque sur les données personnelles</td><td>4</td><td>5</td><td>4</td><td>2</td><td>1</td></tr>
+<tr><td>Tenable en une semaine</td><td>5</td><td>5</td><td>3</td><td>2</td><td>1</td></tr>
+<tr><td>Peu de règles métier inconnues</td><td>3</td><td>5</td><td>2</td><td>2</td><td>1</td></tr>
+<tr><td>Réversibilité</td><td>2</td><td>5</td><td>4</td><td>3</td><td>1</td></tr>
+<tr><td><strong>Total</strong> (maximum 95)</td><td></td><td><strong>85</strong></td><td><strong>65</strong></td><td><strong>50</strong></td><td><strong>39</strong></td></tr>
+</tbody></table></div>
+<p><em>Calculs : 1 = 15 + 20 + 25 + 15 + 10 = 85 ; 2 = 20 + 16 + 15 + 6 + 8 = 65 ; 3 = 20 + 8 + 10 + 6 + 6 = 50 ; 4 = 25 + 4 + 5 + 3 + 2 = 39.</em> Le périmètre 4 est de toute façon exclu : la performance attend l'avis juridique (DEC-006) et la paie relève de l'ERP.</p>
+<p><strong>Recommandation : 1 cette semaine, puis 2 comme lot suivant</strong> une fois les règles de congés fournies (§ 7). Le périmètre 1 est le seul qui ne dépend d'aucune règle que je ne connaisse pas ; les congés, si, et les inventer serait pire que les différer.</p>
+<h2>5. D57 — Données admises, droits et traces (recommandations, à confirmer)</h2>
+<ul><li><strong>Données admises (par défaut)</strong> : identité <strong>professionnelle</strong> seulement : nom, prénom, matricule, poste, service, responsable, e-mail et téléphone professionnels, date d'entrée, statut, date et motif de sortie. <strong>Exclus</strong> : salaire, rémunération, pièces d'identité, adresse personnelle, date de naissance, situation familiale, données de santé, évaluations. Toute extension attend l'avis juridique (D11, D65).</li><li><strong>Droits</strong> (nouvelles permissions <code>hr.employee.<em></code>, aucune autre) : le rôle <strong>RH</strong> (donc la DGA par cumul) lit, crée, modifie, archive, portée <strong>Tous</strong> ; la <strong>Direction</strong> lit, portée Tous ; le <strong>Super administrateur</strong> par <code>hr.</em></code> ; <strong>tout utilisateur authentifié</strong> lit l'<strong>annuaire restreint</strong> (nom, poste, service, e-mail et téléphone professionnels) ; le responsable d'un employé voit sa fiche d'équipe ; <strong>personne d'autre</strong>. Hors portée : « introuvable », comme partout.</li><li><strong>Traces</strong> : création, modification et archivage audités avant/après ; <strong>export audité</strong> ; la <strong>lecture</strong> d'une fiche détaillée par la RH est tracée (action <code>VIEW</code>) ; archivage réversible, <strong>jamais de suppression</strong>.</li><li><strong>Contrôles d'accès</strong> : MFA déjà obligatoire pour tous les rôles ; hors portée = même réponse qu'un identifiant inexistant (classe IDOR « objet », sonde ajoutée au contrat).</li></ul>
+<h2>6. D58 — Employé, utilisateur et organigramme</h2>
+<div class="table-wrap"><table><thead><tr><th></th><th>Option</th><th>Effet</th></tr></thead><tbody>
+<tr><td><strong>A</strong></td><td>Employé <strong>=</strong> utilisateur (étendre <code>iam.users</code>)</td><td>Une seule table ; mais l'annuaire serait limité aux gens qui ont un compte (les formateurs externes, sans compte, en seraient exclus) et les données RH entreraient dans l'IAM</td></tr>
+<tr><td><strong>B</strong></td><td>Employé <strong>distinct</strong>, <strong>lien facultatif</strong> (0 ou 1) vers un utilisateur</td><td>Conforme au glossaire ; couvre les personnes sans compte ; deux sources à tenir</td></tr>
+<tr><td><strong>C</strong></td><td>Employé distinct, <strong>sans lien</strong></td><td>Simple ; mais on ne peut pas dire « cet utilisateur est telle personne »</td></tr>
+</tbody></table></div>
+<p><strong>Recommandation : B.</strong> <strong>Point de vigilance sur l'organigramme</strong> : <code>users.manager_id</code> pilote la portée « Équipe » de tous les droits. L'<strong>organigramme RH ne le modifie pas et ne le remplace pas</strong> : le responsable d'un employé est une donnée RH (<code>manager_employee_id</code>) ; quand l'employé et son responsable ont tous deux un compte, la page <strong>signale un écart</strong> avec <code>users.manager_id</code> sans le corriger. Synchroniser les deux est une décision ultérieure, car elle changerait qui voit quoi dans tout le CRM.</p>
+<h2>7. Ce que je ne sais pas (questions pour vous)</h2>
+<ol><li><strong>Qui gère le personnel</strong> au quotidien : la DGA seule, ou un ou une assistante RH ? (cela décide du compte à créer et de la portée.)</li><li><strong>Structure</strong> : la liste des services et l'organigramme réels (Direction, Commercial, Investudy, Finance, Support…), la <strong>succursale Investudy</strong> compte-t-elle comme un service distinct ? Un employé a-t-il <strong>un seul</strong> responsable ?</li><li><strong>Types de relation</strong> : CDI, CDD, stagiaire, prestataire ? Les <strong>formateurs externes</strong> (sans compte) sont-ils dans l'annuaire du personnel ou restent-ils dans le catalogue Investudy ?</li><li><strong>Statuts</strong> : actif, période d'essai, absent, sorti : lesquels voulez-vous voir ? Quel motif de sortie ?</li><li><strong>Matricule</strong> : format souhaité, ou saisie libre ?</li><li><strong>Annuaire</strong> : tous les utilisateurs doivent-ils voir tout le personnel (nom, poste, service, contacts professionnels), ou seulement leur service ?</li><li><strong>Congés et absences</strong> (lot suivant) : jours par an, jours fériés applicables, qui valide, report des soldes, types d'absence.</li><li><strong>Reprise de données</strong> : le personnel existe-t-il déjà dans un tableur ? Sinon je pars d'un jeu de démonstration fictif (fonctions, pas de noms réels).</li><li><strong>Données personnelles</strong> : confirmez-vous l'exclusion par défaut du § 5, et savez-vous si un avis juridique est en cours (D11) ?</li><li><strong>Hébergement</strong> : accepter d'avancer sur le module RH alors que le lieu de stockage de ces données n'est pas décidé ?</li></ol>
+<h2>8. Plan proposé (après décision)</h2>
+<div class="table-wrap"><table><thead><tr><th>Lot</th><th>Contenu</th><th>Taille estimée</th></tr></thead><tbody>
+<tr><td><strong>RH-0</strong></td><td>ADR-0009, décisions D55 à D58 au registre, mise à jour d'ARCHITECTURE, RBAC et du plan de production</td><td>court</td></tr>
+<tr><td><strong>RH-1a</strong></td><td>Migration (schéma <code>hr</code>, <code>employees</code>, contraintes, index unique du matricule) ; domaine, cas d'usage, API (liste, fiche, création, modification, archivage), permissions, IDOR, audit</td><td>gros</td></tr>
+<tr><td><strong>RH-1b</strong></td><td>Écrans : annuaire, fiche, organigramme, archivage, signalement d'écart avec la hiérarchie des comptes ; module « Ressources humaines » du menu ; jeu de démonstration fictif</td><td>moyen</td></tr>
+<tr><td><strong>RH-1c</strong></td><td>Recette, tests (unitaires, intégration, mutants cette fois), fiches de test, dossier d'écrans</td><td>moyen</td></tr>
+<tr><td><strong>RH-2</strong></td><td>Absences et congés (après les règles du § 7)</td><td>gros</td></tr>
+</tbody></table></div>
+<h2>9. Décision attendue <em>(prise : voir § 10)</em></h2>
+<p>Réponse courte, par exemple <strong>« D55 B, D56 1 puis 2, D57 recommandations, D58 B »</strong> ou « applique les recommandations ». Je ne commence <strong>aucun code RH</strong> avant votre réponse. Les questions du § 7 peuvent être répondues en une ligne chacune ; les défauts non contredits sont retenus « à confirmer ».</p>
+<p><em>Hors décision, à ne pas oublier : la section RH change le périmètre de la première mise en production (PLAN-DE-MISE-EN-PRODUCTION, ligne 18) ; je le consignerai au registre à la décision.</em></p>
+<h2>10. Décision</h2>
+<p><strong>2026-11-09 — Direction produit : « Applique les recommandations. »</strong> Retenus : <strong>D55 B</strong> (module RH dans le CRM, sans donnée sensible ; <a href="../adr/0009-rh-legere-dans-le-crm.html">ADR-0009</a>), <strong>D56 périmètre 1 puis 2</strong> (absences après les règles de congés), <strong>D57</strong> (données professionnelles seulement, permissions <code>hr.employee.*</code>, annuaire restreint, traces), <strong>D58 B</strong> (employé distinct, lien facultatif, organigramme qui signale les écarts sans toucher à <code>users.manager_id</code>). Les dix questions du § 7 sont restées sans réponse : leurs <strong>défauts sont retenus « à confirmer »</strong> (D59) ; <strong>la question 7 (règles de congés) n'a pas de défaut</strong>, donc RH-2 attend.</p>
+<p><strong>État</strong> : RH-0 (registre D55 à D59, ADR-0009, ARCHITECTURE, RBAC, plan de production, dette D162) fait. <strong>RH-1a</strong> (API, commit <code>a63aba3</code>) et <strong>RH-1b</strong> (écrans Annuaire, Organigramme, Personnel et fiche, API des comptes à lier, bloc de démonstration « rh ») faits ; <strong>RH-1c</strong> (recette, mutants, fiches de test, dossier d'écrans) à lancer sur votre signal.</p></main></body></html>

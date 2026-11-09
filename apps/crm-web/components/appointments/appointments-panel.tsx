@@ -46,7 +46,7 @@ export function AppointmentsPanel({ company }: { company: { id: string; name: st
       <section aria-labelledby="appointments-title" className="p-5">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <h2 id="appointments-title" className="m-0 text-[length:var(--text-md)]">Rendez-vous</h2>
-          <Link href="/agenda" className="text-ink">Ouvrir l’agenda</Link>
+          <Link href={`/agenda?companyId=${company.id}`} className="text-ink">Ouvrir l’agenda de l’entreprise</Link>
         </div>
         {error && <p role="alert" className="error">{error}</p>}
         {items === null && !error && <p role="status" className="m-0 text-ink-2">Chargement…</p>}

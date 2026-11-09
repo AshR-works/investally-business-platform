@@ -171,4 +171,23 @@ describeDb('Offres (HTTP + PostgreSQL)', () => {
       expect([bad, r.status]).toEqual([bad, 400]);
     }
   }, 90_000);
+
+  it('N5 clonage : un nouveau brouillon de la même entreprise, nouvelle référence, original intact ; hors portée = 404 ; sans droit de création refusé', async () => {
+    const { am, other, dir, support, companyId } = await team();
+    const source = await create(am, companyId, { note: 'Reprise' });
+    await act(am, source.id, 'submit', { version: 1 });
+    const cloned = await api.call('POST', `/api/v1/offers/${source.id}/clone`, am);
+    expect(cloned.status).toBe(201);
+    expect(cloned.body).toMatchObject({ status: 'DRAFT', companyId, subject: (await api.call('GET', `/api/v1/offers/${source.id}`, am)).body.subject, amount: '4500000.00', note: 'Reprise', version: 1, submittedAt: null });
+    expect(cloned.body.id).not.toBe(source.id);
+    expect(cloned.body.reference).not.toBe(source.reference);
+    expect((await api.call('GET', `/api/v1/offers/${source.id}`, am)).body).toMatchObject({ status: 'SUBMITTED', reference: source.reference });
+    expect((await api.call('POST', `/api/v1/offers/${source.id}/clone`, other)).status).toBe(404);
+    expect((await api.call('POST', '/api/v1/offers/00000000-0000-4000-8000-000000000000/clone', am)).status).toBe(404);
+    for (const who of [dir, support]) expect([403, 404]).toContain((await api.call('POST', `/api/v1/offers/${source.id}/clone`, who)).status);
+    const logs = await t.prisma.db.auditLog.findMany({ where: { entityId: cloned.body.id } });
+    expect(logs).toHaveLength(1);
+    expect((logs[0]!.newValue as { clonedFromOfferId: string }).clonedFromOfferId).toBe(source.id);
+  }, 120_000);
 });
+

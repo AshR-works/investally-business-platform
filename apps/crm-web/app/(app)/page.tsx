@@ -5,7 +5,7 @@ import { GlobalSearch } from '../../components/global-search';
 import { Icon } from '../../components/icon';
 import { PageHeading } from '../../components/page-heading';
 import { useAuth } from '../../lib/auth-context';
-import { availableModules, upcomingModules } from '../../lib/modules';
+import { availableModules, byDomain, upcomingModules } from '../../lib/modules';
 
 /**
  * Vue d'ensemble : point d'entrée de l'application (EXD-05). Recherche globale, puis les modules disponibles pour le
@@ -32,8 +32,12 @@ export default function HubPage() {
         {available.length === 0 ? (
           <p className="text-ink-2">Votre profil n’a accès à aucun module pour le moment.</p>
         ) : (
-          <ul className="m-0 grid list-none grid-cols-[repeat(auto-fill,minmax(15rem,1fr))] gap-4 p-0">
-            {available.map((m) => (
+          <div className="flex flex-col gap-8">
+            {byDomain(available).map(({ domain, items }) => (
+              <section key={domain} aria-labelledby={`domaine-${domain}`}>
+                <h3 id={`domaine-${domain}`} className="mb-3 text-sm font-semibold uppercase tracking-[0.14em] text-ink-2">{domain}</h3>
+                <ul className="m-0 grid list-none grid-cols-[repeat(auto-fill,minmax(15rem,1fr))] gap-4 p-0">
+            {items.map((m) => (
               <li key={m.id}>
                 <Link href={m.href!} className="flex h-full items-start gap-4 rounded-panel border border-line-strong bg-surface p-5 text-ink no-underline shadow-[var(--shadow-1)] hover:bg-surface-2">
                   <span className="grid size-11 shrink-0 place-items-center rounded-control bg-brand-soft text-brand-strong"><Icon name={m.icon} /></span>
@@ -44,7 +48,10 @@ export default function HubPage() {
                 </Link>
               </li>
             ))}
-          </ul>
+                </ul>
+              </section>
+            ))}
+          </div>
         )}
       </section>
 
