@@ -14,6 +14,8 @@ import { SearchField, Toolbar } from '../../../components/data/toolbar';
 import { Icon } from '../../../components/icon';
 import { PageHeading } from '../../../components/page-heading';
 import { api, ApiError } from '../../../lib/api';
+import { CompanyContextBar } from '../../../components/company-context-bar';
+import { useCompanyContext } from '../../../lib/company-context';
 import { useAuth } from '../../../lib/auth-context';
 import { CONTACT_ROLES, contactRoleLabel } from '../../../lib/contacts';
 import { can } from '../../../lib/permissions';
@@ -46,11 +48,15 @@ export default function ContactsPage() {
   const canRead = can(profile, 'bd.contact.read');
   const canCreate = can(profile, 'bd.contact.create');
 
+  const ctx = useCompanyContext();
+  // Un autre contexte d'entreprise repart de la première page.
+  useEffect(() => setPage(1), [ctx.companyId]);
   const load = useCallback(async () => {
     if (!canRead) return;
     const params = new URLSearchParams({ page: String(page), pageSize: String(PAGE_SIZE) });
     if (query) params.set('search', query);
     if (role) params.set('role', role);
+    if (ctx.companyId) params.set('companyId', ctx.companyId);
     try {
       setData(await api<Page<Contact>>(`/contacts?${params}`));
       setLoadError(null);
@@ -59,7 +65,7 @@ export default function ContactsPage() {
     } finally {
       setLoading(false);
     }
-  }, [canRead, page, query, role]);
+  }, [canRead, page, query, role, ctx.companyId]);
   useEffect(() => {
     void load();
   }, [load]);
@@ -86,6 +92,7 @@ export default function ContactsPage() {
         )}
       />
       <SelectionBar count={selected.size} onClear={() => setSelected(new Set())} />
+      <CompanyContextBar ctx={ctx} section="Contacts" />
       {loadError && <p role="alert" className="error">{loadError}</p>}
       <Card>
         <Toolbar>

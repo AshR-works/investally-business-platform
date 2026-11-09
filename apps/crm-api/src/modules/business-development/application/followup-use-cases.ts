@@ -11,7 +11,7 @@ import { FOLLOWUP_REPOSITORY, FollowupDue, FollowupRepository } from '../domain/
 import { Offer } from '../domain/offer';
 import { OFFER_REPOSITORY, OfferRepository } from '../domain/offer-repository';
 import { FollowupView, toFollowupView } from './followup-view';
-import { offerInScope } from './offer-use-cases';
+import { companyInScope, offerInScope } from './offer-use-cases';
 
 const NOT_FOUND = 'Relance introuvable';
 const STALE = 'La relance a été modifiée par un autre utilisateur : rechargez-la avant de la modifier';
@@ -191,8 +191,10 @@ export class ListFollowupsHandler {
     @Inject(CLOCK) private readonly clock: Clock,
   ) {}
 
-  async execute(query: { page: number; pageSize: number; offerId?: string; status?: string; due?: string; visibility: Visibility; access: AccessContext }): Promise<Page<FollowupView>> {
+  async execute(query: { page: number; pageSize: number; offerId?: string; companyId?: string; status?: string; due?: string; visibility: Visibility; access: AccessContext }): Promise<Page<FollowupView>> {
     if (query.offerId) await offerInScope(this.offers, this.companies, query.offerId, query.access, 'bd.followup.read');
+    // Une entreprise hors de la portée de l'appelant est « introuvable », comme pour une offre.
+    if (query.companyId) await companyInScope(this.companies, query.companyId, query.access, 'bd.followup.read');
     const now = this.clock.now();
     const status = query.status && Object.values(FollowupStatus).includes(query.status as FollowupStatus) ? (query.status as FollowupStatus) : undefined;
     const due = query.due && DUES.includes(query.due) ? (query.due as FollowupDue) : undefined;
@@ -203,6 +205,7 @@ export class ListFollowupsHandler {
       due,
       today: now.toISOString().slice(0, 10),
       offerId: query.offerId,
+      companyId: query.companyId,
       ownerIds: query.visibility.unrestricted ? undefined : query.visibility.ownerIds,
     });
     return { ...result, items: result.items.map((i) => toFollowupView(i.followup, { offerReference: i.offerReference, companyId: i.companyId, companyName: i.companyName }, now)) };

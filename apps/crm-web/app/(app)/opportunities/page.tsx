@@ -12,6 +12,8 @@ import { Icon } from '../../../components/icon';
 import { OpportunityDialogs, type OpportunityDialogState } from '../../../components/opportunities/opportunity-dialogs';
 import { PageHeading } from '../../../components/page-heading';
 import { api, ApiError } from '../../../lib/api';
+import { CompanyContextBar } from '../../../components/company-context-bar';
+import { useCompanyContext } from '../../../lib/company-context';
 import { useAuth } from '../../../lib/auth-context';
 import { formatDate } from '../../../lib/format';
 import { formatAmount } from '../../../lib/offers';
@@ -53,12 +55,13 @@ function OpportunitiesContent() {
     closeLost: can(profile, 'bd.opportunity.close_lost'), closeWon: can(profile, 'bd.opportunity.close_won'),
   }), [profile]);
 
+  const ctx = useCompanyContext();
   const load = useCallback(async () => {
     if (!canRead) return;
     // Une réponse qui n'est plus la dernière demandée (filtre changé entre-temps) est ignorée.
     const request = ++latest.current;
     try {
-      const page = await api<Page<Opportunity>>(`/opportunities?${opportunityListParams(filter, query)}`);
+      const page = await api<Page<Opportunity>>(`/opportunities?${opportunityListParams(filter, query, ctx.companyId)}`);
       if (request !== latest.current) return;
       setData(page);
       setLoadError(null);
@@ -67,7 +70,7 @@ function OpportunitiesContent() {
     } finally {
       if (request === latest.current) setLoading(false);
     }
-  }, [canRead, filter, query]);
+  }, [canRead, filter, query, ctx.companyId]);
   useEffect(() => {
     setLoading(true);
     void load();
@@ -117,6 +120,7 @@ function OpportunitiesContent() {
           </button>
         )}
       />
+      <CompanyContextBar ctx={ctx} section="Opportunités" />
       {loadError && <p role="alert" className="error">{loadError}</p>}
       <Card>
         <Toolbar>

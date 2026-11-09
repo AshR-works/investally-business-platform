@@ -38,7 +38,7 @@ export function OpportunitiesPanel({ company }: { company: { id: string; name: s
       <section aria-labelledby="opportunities-title" className="p-5">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <h2 id="opportunities-title" className="m-0 text-[length:var(--text-md)]">Opportunités</h2>
-          <Link href="/opportunities" className="text-ink">Ouvrir le pipeline</Link>
+          <Link href={`/opportunities?companyId=${company.id}`} className="text-ink">Ouvrir le pipeline de l’entreprise</Link>
         </div>
         {error && <p role="alert" className="error">{error}</p>}
         {items === null && !error && <p role="status" className="m-0 text-ink-2">Chargement…</p>}

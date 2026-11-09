@@ -171,9 +171,10 @@ export const OPPORTUNITY_FILTERS = [
 export type OpportunityFilter = (typeof OPPORTUNITY_FILTERS)[number]['value'];
 
 /** Paramètres de la liste : taille maximale (le pipeline s'affiche en entier), filtre rapide et recherche. */
-export function opportunityListParams(filter: OpportunityFilter, search: string): URLSearchParams {
+export function opportunityListParams(filter: OpportunityFilter, search: string, companyId?: string): URLSearchParams {
   const params = new URLSearchParams({ page: '1', pageSize: '200' });
   for (const [key, value] of Object.entries(OPPORTUNITY_FILTERS.find((f) => f.value === filter)?.params ?? {}) as [string, string][]) params.set(key, value);
   if (search.trim()) params.set('search', search.trim());
+  if (companyId) params.set('companyId', companyId);
   return params;
 }

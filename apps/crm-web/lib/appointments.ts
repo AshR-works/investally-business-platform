@@ -250,8 +250,9 @@ export function groupByDay(items: readonly Appointment[]): Map<string, Appointme
 }
 
 /** Paramètres de la requête d'agenda : la fenêtre, le type éventuel et la taille de page maximale. */
-export function agendaParams(window: Pick<AgendaWindow, 'from' | 'to'>, type: string): URLSearchParams {
+export function agendaParams(window: Pick<AgendaWindow, 'from' | 'to'>, type: string, companyId?: string): URLSearchParams {
   const params = new URLSearchParams({ from: window.from, to: window.to, pageSize: '200' });
   if (type) params.set('type', type);
+  if (companyId) params.set('companyId', companyId);
   return params;
 }

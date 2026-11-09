@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { api, ApiError } from '../../lib/api';
 import { formatDate } from '../../lib/format';
@@ -44,7 +45,10 @@ export function OffersPanel({ company, archived }: { company: { id: string; name
       <section aria-labelledby="offers-title" className="p-5">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <h2 id="offers-title" className="m-0 text-[length:var(--text-md)]">Offres</h2>
-          {canCreate && <button type="button" className="secondary" onClick={() => setDialog({ kind: 'create', company })}>Nouvelle offre</button>}
+          <div className="flex flex-wrap items-center gap-3">
+            <Link href={`/offers?companyId=${company.id}`} className="text-ink">Ouvrir les offres de l’entreprise</Link>
+            {canCreate && <button type="button" className="secondary" onClick={() => setDialog({ kind: 'create', company })}>Nouvelle offre</button>}
+          </div>
         </div>
         {error && <p role="alert" className="error">{error}</p>}
         {offers === null && !error && <p role="status" className="m-0 text-ink-2">Chargement…</p>}

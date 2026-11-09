@@ -14,6 +14,8 @@ import { OfferDialogs, type OfferDialogState } from '../../../components/offers/
 import { OfferRowActions, useOfferRights } from '../../../components/offers/offer-row-actions';
 import { PageHeading } from '../../../components/page-heading';
 import { api, ApiError } from '../../../lib/api';
+import { CompanyContextBar } from '../../../components/company-context-bar';
+import { useCompanyContext } from '../../../lib/company-context';
 import { useAuth } from '../../../lib/auth-context';
 import { formatDate } from '../../../lib/format';
 import { formatAmount } from '../../../lib/offers';
@@ -43,11 +45,15 @@ export default function OffersPage() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const canRead = can(profile, 'bd.offer.read');
 
+  const ctx = useCompanyContext();
+  // Un autre contexte d'entreprise repart de la première page.
+  useEffect(() => setPage(1), [ctx.companyId]);
   const load = useCallback(async () => {
     if (!canRead) return;
     const params = new URLSearchParams({ page: String(page), pageSize: String(PAGE_SIZE) });
     if (query) params.set('search', query);
     if (status) params.set('status', status);
+    if (ctx.companyId) params.set('companyId', ctx.companyId);
     try {
       setData(await api<Page<Offer>>(`/offers?${params}`));
       setLoadError(null);
@@ -56,7 +62,7 @@ export default function OffersPage() {
     } finally {
       setLoading(false);
     }
-  }, [canRead, page, query, status]);
+  }, [canRead, page, query, status, ctx.companyId]);
   useEffect(() => {
     void load();
   }, [load]);
@@ -94,6 +100,7 @@ export default function OffersPage() {
         )}
       />
       <SelectionBar count={selected.size} onClear={() => setSelected(new Set())} />
+      <CompanyContextBar ctx={ctx} section="Offres" />
       {loadError && <p role="alert" className="error">{loadError}</p>}
       <Card>
         <Toolbar>

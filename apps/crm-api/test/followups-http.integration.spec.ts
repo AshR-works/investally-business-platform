@@ -117,6 +117,12 @@ describeDb('Relances (HTTP + PostgreSQL)', () => {
     expect(ids(await api.call('GET', `/api/v1/followups?offerId=${o.id}`, chef))).toEqual([sooner.body.id, later.body.id]);
     expect(ids(await api.call('GET', `/api/v1/followups?offerId=${o.id}`, dir))).toEqual([sooner.body.id, later.body.id]);
     expect((await api.call('GET', `/api/v1/followups?offerId=${o.id}`, other)).status).toBe(404);
+    // Navigation contextuelle (D52) : les relances d'une entreprise, et « introuvable » pour l'entreprise d'un collègue, comme pour une offre.
+    expect(ids(await api.call('GET', `/api/v1/followups?companyId=${companyId}`, am))).toEqual([sooner.body.id, later.body.id]);
+    expect(ids(await api.call('GET', `/api/v1/followups?companyId=${companyId}`, dir))).toEqual([sooner.body.id, later.body.id]);
+    expect((await api.call('GET', `/api/v1/followups?companyId=${companyId}`, other)).status).toBe(404);
+    expect((await api.call('GET', '/api/v1/followups?companyId=00000000-0000-7000-8000-000000000000', am)).status).toBe(404);
+    expect((await api.call('GET', '/api/v1/followups?companyId=pas-un-uuid', am)).status).toBe(400);
     const everything = await api.call('GET', '/api/v1/followups?status=PLANNED&pageSize=100', other);
     expect(ids(everything)).not.toContain(sooner.body.id);
     const offers = await api.call('GET', `/api/v1/offers?search=${encodeURIComponent((await api.call('GET', `/api/v1/offers/${o.id}`, am)).body.reference)}`, am);
