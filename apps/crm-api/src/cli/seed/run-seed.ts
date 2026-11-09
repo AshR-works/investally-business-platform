@@ -15,11 +15,12 @@ import { CreateModuleUseCase, CreateProgramUseCase, CreateRoomUseCase, CreateTra
 import { CancelSessionUseCase, OpenSessionUseCase, PlanSessionUseCase, PostponeSessionUseCase } from '../../modules/training/application/session-use-cases';
 import { CancelEnrollmentUseCase, ConfirmEnrollmentUseCase, EnrollLearnerUseCase, ListApprovalOptionsHandler, ReplaceEnrollmentUseCase } from '../../modules/training/application/enrollment-use-cases';
 import { RegisterLearnerUseCase } from '../../modules/training/application/learner-use-cases';
+import { RegisterEmployeeUseCase, SetEmployeeStatusUseCase } from '../../modules/hr/application/employee-use-cases';
 import { AuthorizationService } from '../../modules/iam/application/authorization.service';
 import type { AccessContext } from '../../modules/iam';
 import { PrismaService } from '../../platform/prisma.service';
 import { ActorContext, CLOCK } from '../../shared-kernel';
-import { blockOf, COMPANIES, FORMATION_CLIENTS, SEED_BLOCKS, SeedBlock, SeedEvent, SeedOp, Who } from './seed-plan';
+import { blockOf, COMPANIES, FORMATION_CLIENTS, RH_EMAIL_DOMAIN, SEED_BLOCKS, SeedBlock, SeedEvent, SeedOp, Who } from './seed-plan';
 
 /** Ce dont le chargeur a besoin de l'application : retrouver un service, sans en dépendre autrement (l'application complète ou un test). */
 export interface ProviderSource {
@@ -66,6 +67,7 @@ export async function runSeed(app: ProviderSource, allEvents: readonly SeedEvent
     formateurs: (await prisma.db.trainer.count({ where: { emailKey: { endsWith: TRAINERS_MARKER } } })) > 0,
     sessions: (await prisma.db.trainingSession.count({ where: { trainer: { emailKey: { endsWith: TRAINERS_MARKER } } } })) > 0,
     inscriptions: (await prisma.db.company.count({ where: { name: FORMATION_CLIENTS[0]![0] } })) > 0,
+    rh: (await prisma.db.employee.count({ where: { workEmail: { endsWith: RH_EMAIL_DOMAIN } } })) > 0,
   };
   const toLoad = SEED_BLOCKS.filter((block) => !present[block]);
   if (toLoad.length === 0) {
@@ -89,7 +91,7 @@ export async function runSeed(app: ProviderSource, allEvents: readonly SeedEvent
     if (!found) throw new Error(`Objet « ${key} » introuvable : le plan est incohérent`);
     return found;
   };
-  const versionOf = async (kind: 'company' | 'offer' | 'followup' | 'appointment' | 'opportunity' | 'approval' | 'receipt' | 'ambassador', key: string): Promise<number> => {
+  const versionOf = async (kind: 'company' | 'offer' | 'followup' | 'appointment' | 'opportunity' | 'approval' | 'receipt' | 'ambassador' | 'employee', key: string): Promise<number> => {
     const where = { id: id(key) };
     const row = await (prisma.db[kind] as unknown as { findUniqueOrThrow(args: { where: { id: string }; select: { version: true } }): Promise<{ version: number }> }).findUniqueOrThrow({ where, select: { version: true } });
     return row.version;
@@ -271,6 +273,17 @@ export async function runSeed(app: ProviderSource, allEvents: readonly SeedEvent
             break;
           case 'sessionCancel':
             await use(CancelSessionUseCase).execute({ id: id(op.session), version: await sessionVersion(op.session), reason: op.reason, actor });
+            break;
+          case 'employee': {
+            const view = await use(RegisterEmployeeUseCase).execute({
+              matricule: op.matricule, lastName: op.lastName, firstName: op.firstName, jobTitle: op.jobTitle, department: op.department, managerEmployeeId: op.manager ? id(op.manager) : undefined,
+              userId: op.account ? options.users[op.account] : undefined, workEmail: op.workEmail, workPhone: op.workPhone, hiredOn: op.hiredOn, access, actor,
+            });
+            ids.set(op.key, view.id);
+            break;
+          }
+          case 'employeeLeave':
+            await use(SetEmployeeStatusUseCase).execute({ id: id(op.employee), version: await versionOf('employee', op.employee), status: 'ARCHIVED', leftOn: op.leftOn, reason: op.reason, access, actor });
             break;
           case 'learner': {
             ids.set(op.key, (await use(RegisterLearnerUseCase).execute({ companyId: id(op.company), lastName: op.lastName, firstName: op.firstName, email: op.email, phone: op.phone, access, actor })).id);

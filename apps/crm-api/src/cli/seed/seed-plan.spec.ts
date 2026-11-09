@@ -211,6 +211,7 @@ describe('plan du jeu de données de démonstration', () => {
     expect(byBlock.get('sessions')).toBe(7 + 5 + 1 + 1); // sept sessions, cinq ouvertures, un report, une annulation
     // cinq entreprises clientes (7 opérations chacune), douze apprenants, quatorze inscriptions, dix confirmations, une annulation, un replacement
     expect(byBlock.get('inscriptions')).toBe(5 * 7 + 12 + 14 + 10 + 1 + 1);
+    expect(byBlock.get('rh')).toBe(11 + 1); // onze fiches du personnel et une sortie
     // Aucun bloc ne dépend d'un objet d'un autre : le catalogue et les formateurs n'utilisent que leurs propres clés.
     const keysOf = (block: string) => new Set(plan.filter((e) => blockOf(e.op) === block && 'key' in e.op).map((e) => (e.op as { key: string }).key));
     const catalogueKeys = keysOf('catalogue');
@@ -298,3 +299,44 @@ describe('plan du jeu de données de démonstration', () => {
     expect(text).not.toMatch(banned);
   });
 });
+
+describe('plan de démonstration — bloc « rh »', () => {
+  const rh = buildPlan({ anchor: new Date('2026-11-09T10:00:00Z') }).filter((e) => blockOf(e.op) === 'rh');
+  const employees = rh.flatMap((e) => (e.op.k === 'employee' ? [e.op] : []));
+
+  it('onze fiches fictives créées par la RH, aux e-mails uniques du domaine réservé, aux téléphones de démonstration et aux matricules uniques', () => {
+    expect(employees).toHaveLength(11);
+    expect(rh.every((e) => e.who === 'rh')).toBe(true);
+    expect(new Set(employees.map((e) => e.workEmail)).size).toBe(11);
+    expect(new Set(employees.map((e) => e.matricule)).size).toBe(11);
+    for (const e of employees) {
+      expect(e.workEmail).toMatch(/@staff\.investally\.test$/);
+      expect(isDemoPhone(e.workPhone)).toBe(true);
+    }
+  });
+
+  it('un responsable est toujours créé avant ses collaborateurs ; un seul n’a pas de responsable ; chaque compte n’est lié qu’une fois', () => {
+    const seen = new Set<string>();
+    for (const e of employees) {
+      if (e.manager) expect(seen.has(e.manager)).toBe(true);
+      seen.add(e.key);
+    }
+    expect(employees.filter((e) => !e.manager)).toHaveLength(1);
+    const accounts = employees.flatMap((e) => (e.account ? [e.account] : []));
+    expect(new Set(accounts).size).toBe(accounts.length);
+  });
+
+  it('la sortie vise une fiche existante, ne précède pas l’entrée, et personne n’a l’ancien employé pour responsable', () => {
+    const leave = rh.flatMap((e) => (e.op.k === 'employeeLeave' ? [e] : []));
+    expect(leave).toHaveLength(1);
+    const person = employees.find((e) => e.key === (leave[0]!.op as { employee: string }).employee)!;
+    expect(person).toBeDefined();
+    expect((leave[0]!.op as { leftOn: string }).leftOn >= person.hiredOn).toBe(true);
+    expect(employees.some((e) => e.manager === person.key)).toBe(false);
+  });
+
+  it('ne contient aucune donnée sensible : ni salaire, ni naissance, ni adresse personnelle', () => {
+    expect(JSON.stringify(rh.map((e) => e.op)).toLowerCase()).not.toMatch(/salaire|salary|naissance|birth|adresse/);
+  });
+});
+

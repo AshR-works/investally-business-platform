@@ -14,6 +14,7 @@ const SEED_USERS: Record<Who, string> = {
   commercial: 'commercial@demo.investally.test',
   finance: 'finance@demo.investally.test',
   investudy: 'investudy@demo.investally.test',
+  rh: 'rh@demo.investally.test',
 };
 
 /**

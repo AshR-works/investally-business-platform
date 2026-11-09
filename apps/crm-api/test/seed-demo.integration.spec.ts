@@ -1,7 +1,9 @@
 import 'reflect-metadata';
 import { RoleCode } from '../src/modules/iam/domain/roles';
 import { CLOCK } from '../src/shared-kernel';
-import { buildPlan, FORMATION_CLIENTS, Who } from '../src/cli/seed/seed-plan';
+import { buildPlan, FORMATION_CLIENTS, RH_EMAIL_DOMAIN, Who } from '../src/cli/seed/seed-plan';
+import { ListHierarchyGapsHandler } from '../src/modules/hr/application/employee-use-cases';
+import { AuthorizationService } from '../src/modules/iam/application/authorization.service';
 import { CATALOGUE_MARKER, LEARNERS_MARKER, runSeed, SEED_MARKER, TRAINERS_MARKER } from '../src/cli/seed/run-seed';
 import { createUserWithRoles } from './support/rbac-http';
 import { startTestApp, TestApp } from './support/test-app';
@@ -20,7 +22,8 @@ describeDb('Jeu de données de démonstration (cas d’usage + PostgreSQL)', () 
     const am = async (n: number) => (await createUserWithRoles(t, [RoleCode.AccountManager], { managerId: commercial.id, name: `Chargé de compte ${n}` })).id;
     const finance = await createUserWithRoles(t, [RoleCode.Finance], { name: 'Félix Finance' });
     const investudy = await createUserWithRoles(t, [RoleCode.TrainingManager], { name: 'Inès Investudy' });
-    users = { compte1: await am(1), compte2: await am(2), compte3: await am(3), commercial: commercial.id, finance: finance.id, investudy: investudy.id };
+    const rh = await createUserWithRoles(t, [RoleCode.Hr], { name: 'Rita Ressources Humaines' });
+    users = { compte1: await am(1), compte2: await am(2), compte3: await am(3), commercial: commercial.id, finance: finance.id, investudy: investudy.id, rh: rh.id };
   }, 120_000);
   afterAll(async () => {
     // La base est partagée avec les autres suites : le jeu est retiré (dans l'ordre des dépendances) pour ne pas fausser leurs listes.
@@ -50,12 +53,14 @@ describeDb('Jeu de données de démonstration (cas d’usage + PostgreSQL)', () 
     await db.courseModule.deleteMany({ where: { trainings: { none: {} }, title: { in: ['Fondations Économiques & Architecture de la Place Financière', 'Ingénierie des Instruments Financiers, Données & Acteurs de Marché', 'Asset Management, Construction & Évaluation de Portefeuille', 'Pratique du Trading, Décision d’Investissement & Analyse Quantitative', 'Ingénierie Financière, IPO & Levées de Fonds en Zone CEMAC', 'Réglementation des Marchés Financiers en Zone CEMAC & Pouvoirs de la COSUMAF', 'Portfolio Engineering, Asset Allocation & Live Trading (Capstone Project)'] } } });
     await db.room.deleteMany({ where: { name: { in: ['Salle de marchés', 'Salle de réunion'] } } });
     await db.trainer.deleteMany({ where: { emailKey: { endsWith: TRAINERS_MARKER } } });
+    await db.employee.updateMany({ where: { workEmail: { endsWith: RH_EMAIL_DOMAIN } }, data: { managerEmployeeId: null } });
+    await db.employee.deleteMany({ where: { workEmail: { endsWith: RH_EMAIL_DOMAIN } } });
     await t.close();
   });
 
   it('charge tout le plan par les cas d’usage, sans erreur, puis refuse de recharger (idempotent)', async () => {
     const first = await runSeed(t.app as never, plan, { users });
-    expect(first).toMatchObject({ skipped: false, executed: plan.length, loaded: ['crm', 'catalogue', 'formateurs', 'sessions', 'inscriptions'] });
+    expect(first).toMatchObject({ skipped: false, executed: plan.length, loaded: ['crm', 'catalogue', 'formateurs', 'sessions', 'inscriptions', 'rh'] });
     const second = await runSeed(t.app as never, plan, { users });
     expect(second).toMatchObject({ skipped: true, executed: 0 });
     expect(await t.prisma.db.company.count({ where: { name: SEED_MARKER } })).toBe(1);
@@ -118,6 +123,29 @@ describeDb('Jeu de données de démonstration (cas d’usage + PostgreSQL)', () 
     expect(logs.filter((line) => /non créée|non fait/.test(line)).filter((line) => !/inscription-1[34]|déjà annulée/.test(line))).toEqual([]);
     expect(logs.filter((line) => /déjà annulée/.test(line))).toHaveLength(2);
     expect(await db.enrollment.count({ where: { learner: { emailKey: { endsWith: LEARNERS_MARKER } } } })).toBe(12);
+    expect(await runSeed(t.app as never, plan, { users })).toMatchObject({ skipped: true, loaded: [] });
+  }, 300_000);
+
+  it('le bloc « rh » : onze fiches fictives (dix en poste, une sortie), hiérarchie et comptes liés, un seul écart voulu ; il se charge seul sur une démo plus ancienne', async () => {
+    const db = t.prisma.db;
+    const rows = await db.employee.findMany({ where: { workEmail: { endsWith: RH_EMAIL_DOMAIN } } });
+    expect(rows).toHaveLength(11);
+    expect(rows.filter((e) => e.status === 'ACTIVE')).toHaveLength(10);
+    const left = rows.filter((e) => e.status === 'ARCHIVED');
+    expect(left).toHaveLength(1);
+    expect(left[0]).toMatchObject({ archiveReason: expect.stringContaining('démonstration') });
+    expect(left[0]!.leftOn).not.toBeNull();
+    expect(rows.filter((e) => e.managerEmployeeId === null)).toHaveLength(1); // le directeur général seul n'a pas de responsable
+    expect(new Set(rows.flatMap((e) => (e.userId ? [e.userId] : [])).sort())).toEqual(new Set([users.rh, users.finance, users.commercial, users.compte1, users.compte2, users.compte3, users.investudy].sort()));
+    // La hiérarchie des comptes n'a pas été touchée ; un seul écart est signalé : la Finance (responsable RH : la DGA, compte sans responsable).
+    const access = await t.get<AuthorizationService>(AuthorizationService as never).contextFor(users.rh);
+    const gaps = await t.get<ListHierarchyGapsHandler>(ListHierarchyGapsHandler as never).execute({ access });
+    expect(gaps).toHaveLength(1);
+    expect(gaps[0]).toMatchObject({ employeeName: expect.stringContaining('Nkodo'), hrManagerName: expect.stringContaining('Tchoumi'), accountManagerName: null });
+    // Chargé seul sur une démo qui n'a pas de bloc RH.
+    await db.employee.updateMany({ where: { workEmail: { endsWith: RH_EMAIL_DOMAIN } }, data: { managerEmployeeId: null } });
+    await db.employee.deleteMany({ where: { workEmail: { endsWith: RH_EMAIL_DOMAIN } } });
+    expect(await runSeed(t.app as never, plan, { users })).toMatchObject({ skipped: false, loaded: ['rh'], executed: 12 });
     expect(await runSeed(t.app as never, plan, { users })).toMatchObject({ skipped: true, loaded: [] });
   }, 300_000);
 
