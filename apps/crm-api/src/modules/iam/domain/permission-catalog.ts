@@ -45,6 +45,9 @@ export const RESOURCES: readonly ResourceDefinition[] = [
   { module: 'training', resource: 'attendance', label: 'Présences', actions: ['read', 'record'] },
   { module: 'training', resource: 'evaluation', label: 'Évaluations', actions: ['read', 'record'] },
   { module: 'training', resource: 'certification', label: 'Certifications et attestations', actions: ['read', 'issue', 'revoke'] },
+  // Ressources humaines (RH légère, ADR-0009) : identité professionnelle seulement
+  { module: 'hr', resource: 'employee', label: 'Personnel', actions: ['read', 'create', 'update', 'archive'] },
+  { module: 'hr', resource: 'directory', label: 'Annuaire du personnel', actions: ['read'] },
   // Reporting
   { module: 'reporting', resource: 'dashboard', label: 'Tableaux de bord', actions: ['account_manager', 'head_of_sales', 'training', 'direction', 'security', 'admin'] },
   { module: 'reporting', resource: 'kpi', label: 'Indicateurs', actions: ['read'] },

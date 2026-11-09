@@ -61,7 +61,7 @@ flowchart TD
 | `TRAINER` | Formateur | oui | Anime ses sessions : présences, évaluations. |
 | `SUPPORT` | Support | oui | Consultation pour assister les utilisateurs et les clients. |
 | `FINANCE` | Finance | oui | Accès CRM limité à la préparation de facturation (l'ERP couvrira le reste). |
-| `HR` | RH | oui | Aucun accès métier commercial ni Investudy. **À venir (D55, D57)** : gère l'annuaire du personnel (`hr.employee.*`, portée Tous) ; la paie et les données sensibles restent à l'ERP. |
+| `HR` | RH | oui | Gère l'annuaire du personnel (identité professionnelle) ; la paie et les données sensibles relèvent de l'ERP. |
 | `TAX` | Fiscalité | oui | Aucun accès métier CRM (l'ERP couvrira le périmètre fiscal). |
 
 ## 3. Matrice d'accès par module et par rôle
@@ -73,8 +73,9 @@ Légende : **L:x** lecture (consulter, télécharger, exporter, tableaux de bord
 | Identité et accès | L:T E:T | L:O E:O | L:O E:O | L:O E:O | L:O E:O | L:O E:O | L:O E:O | L:O E:O | L:O E:O | L:O E:O |
 | Audit | L:T | L:T | — | — | — | — | — | — | — | — |
 | Documents | L:T E:T | L:T | L:E E:E | L:O E:O | L:T E:T | L:O | — | — | — | — |
-| Business Development | L:T E:T | L:T | L:T E:E | L:O E:O | L:T | — | L:T | L:T | — | — |
+| Business Development | L:T E:T | L:T | L:T E:E | L:O E:O | L:T | — | L:T | L:T E:T | — | — |
 | Investudy | L:T E:T | L:T | L:T | L:T E:O | L:T E:T | L:T E:O | L:T | L:T | — | — |
+| Ressources humaines | L:T E:T | L:T | L:T | L:T | L:T | L:T | L:T | L:T | L:T E:T | L:T |
 | Reporting | L:T | L:T | L:T | L:O | L:T | L:O | — | L:T | — | — |
 
 ## 4. Matrice détaillée rôles × permissions
@@ -147,10 +148,6 @@ Cellule : **O**, **É**, **T** = portée accordée ; vide = non accordée.
 | `bd.visit.read` | T | T | E | O |  |  |  |  |  |  |
 | `bd.visit.create` | T |  | E | O |  |  |  |  |  |  |
 | `bd.visit.update` | T |  | E | O |  |  |  |  |  |  |
-| `bd.approval.read` | T | T | E | O |  |  |  | T |  |  |
-| `bd.approval.create` | T |  | E | O |  |  |  |  |  |  |
-| `bd.approval.cancel` | T |  | E |  |  |  |  |  |  |  |
-| `bd.approval.honor` | T |  |  |  |  |  |  | T |  |  |
 | `bd.opportunity.read` | T | T | T | O | T |  |  |  |  |  |
 | `bd.opportunity.create` | T |  | E | O |  |  |  |  |  |  |
 | `bd.opportunity.update` | T |  | E | O |  |  |  |  |  |  |
@@ -159,6 +156,10 @@ Cellule : **O**, **É**, **T** = portée accordée ; vide = non accordée.
 | `bd.opportunity.close_won` | T |  | E |  |  |  |  |  |  |  |
 | `bd.opportunity.override` | T |  | E |  |  |  |  |  |  |  |
 | `bd.opportunity.export` | T | T | E |  |  |  |  |  |  |  |
+| `bd.approval.read` | T | T | E | O |  |  |  | T |  |  |
+| `bd.approval.create` | T |  | E | O |  |  |  |  |  |  |
+| `bd.approval.cancel` | T |  | E |  |  |  |  |  |  |  |
+| `bd.approval.honor` | T |  |  |  |  |  |  | T |  |  |
 | `bd.ambassador.read` | T | T | T | O | T |  |  |  |  |  |
 | `bd.ambassador.create` | T |  | E | O |  |  |  |  |  |  |
 | `bd.ambassador.update` | T |  | E |  |  |  |  |  |  |  |
@@ -204,6 +205,16 @@ Cellule : **O**, **É**, **T** = portée accordée ; vide = non accordée.
 | `training.certification.read` | T | T | E |  | T | O |  |  |  |  |
 | `training.certification.issue` | T |  |  |  | T |  |  |  |  |  |
 | `training.certification.revoke` | T |  |  |  | T |  |  |  |  |  |
+
+### Ressources humaines (`hr`)
+
+| Permission | SUPER_ADMIN | DIRECTION | HEAD_OF_SALES | ACCOUNT_MANAGER | TRAINING_MANAGER | TRAINER | SUPPORT | FINANCE | HR | TAX |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `hr.employee.read` | T | T | E | O | E | O | O | O | T | O |
+| `hr.employee.create` | T |  |  |  |  |  |  |  | T |  |
+| `hr.employee.update` | T |  |  |  |  |  |  |  | T |  |
+| `hr.employee.archive` | T |  |  |  |  |  |  |  | T |  |
+| `hr.directory.read` | T | T | T | T | T | T | T | T | T | T |
 
 ### Reporting (`reporting`)
 

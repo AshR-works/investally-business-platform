@@ -45,7 +45,7 @@ export const ROLES: readonly RoleDefinition[] = [
   { code: RoleCode.Trainer, label: 'Formateur', description: 'Anime ses sessions : présences, évaluations.', mfaRequired: true },
   { code: RoleCode.Support, label: 'Support', description: 'Consultation pour assister les utilisateurs et les clients.', mfaRequired: true },
   { code: RoleCode.Finance, label: 'Finance', description: "Accès CRM limité à la préparation de facturation (l'ERP couvrira le reste).", mfaRequired: true },
-  { code: RoleCode.Hr, label: 'RH', description: "Aucun accès métier CRM (l'ERP couvrira le périmètre RH).", mfaRequired: true },
+  { code: RoleCode.Hr, label: 'RH', description: "Gère l'annuaire du personnel (identité professionnelle) ; la paie et les données sensibles relèvent de l'ERP.", mfaRequired: true },
   { code: RoleCode.Tax, label: 'Fiscalité', description: "Aucun accès métier CRM (l'ERP couvrira le périmètre fiscal).", mfaRequired: true },
 ];
 
@@ -68,10 +68,12 @@ export const ROLE_GRANTS: Record<RoleCode, readonly Grant[]> = {
     g('audit.*', All),
     g('docs.*', All),
     g('bd.*', All),
+    g('hr.*', All),
     g('training.*', All),
     g('reporting.*', All),
   ],
   [RoleCode.Direction]: [
+    g('hr.employee.read', All), g('hr.directory.read', All),
     g('bd.company.read', All), g('bd.company.export', All),
     g('bd.contact.read', All), g('bd.offer.read', All), g('bd.receipt.read', All),
     g('bd.followup.read', All), g('bd.appointment.read', All), g('bd.visit.read', All),
@@ -88,6 +90,7 @@ export const ROLE_GRANTS: Record<RoleCode, readonly Grant[]> = {
     g('iam.session.read', Own), g('iam.session.revoke', Own),
   ],
   [RoleCode.HeadOfSales]: [
+    g('hr.employee.read', Team), g('hr.directory.read', All),
     g('bd.company.read', Team), g('bd.company.create', Team), g('bd.company.update', Team), g('bd.company.archive', Team), g('bd.company.reassign', Team), g('bd.company.export', Team),
     g('bd.contact.*', Team), g('bd.offer.*', Team), g('bd.receipt.*', Team),
     g('bd.followup.*', Team), g('bd.appointment.*', Team), g('bd.visit.*', Team),
@@ -104,6 +107,7 @@ export const ROLE_GRANTS: Record<RoleCode, readonly Grant[]> = {
     g('iam.session.read', Own), g('iam.session.revoke', Own),
   ],
   [RoleCode.AccountManager]: [
+    g('hr.employee.read', Own), g('hr.directory.read', All),
     g('bd.company.read', Own), g('bd.company.create', Own), g('bd.company.update', Own),
     g('bd.contact.read', Own), g('bd.contact.create', Own), g('bd.contact.update', Own),
     g('bd.offer.read', Own), g('bd.offer.create', Own), g('bd.offer.update', Own), g('bd.offer.withdraw', Own),
@@ -123,6 +127,7 @@ export const ROLE_GRANTS: Record<RoleCode, readonly Grant[]> = {
     g('iam.session.read', Own), g('iam.session.revoke', Own),
   ],
   [RoleCode.TrainingManager]: [
+    g('hr.employee.read', Team), g('hr.directory.read', All),
     g('training.*', All),
     g('bd.company.read', All), g('bd.contact.read', All), g('bd.opportunity.read', All), g('bd.ambassador.read', All),
     g('docs.document.read', All), g('docs.document.create', All), g('docs.document.update', All), g('docs.document.download', All),
@@ -131,6 +136,7 @@ export const ROLE_GRANTS: Record<RoleCode, readonly Grant[]> = {
     g('iam.session.read', Own), g('iam.session.revoke', Own),
   ],
   [RoleCode.Trainer]: [
+    g('hr.employee.read', Own), g('hr.directory.read', All),
     g('training.program.read', All), g('training.room.read', All),
     g('training.session.read', Own), g('training.learner.read', Own),
     g('training.attendance.read', Own), g('training.attendance.record', Own),
@@ -141,18 +147,23 @@ export const ROLE_GRANTS: Record<RoleCode, readonly Grant[]> = {
     g('iam.session.read', Own), g('iam.session.revoke', Own),
   ],
   [RoleCode.Support]: [
+    g('hr.employee.read', Own), g('hr.directory.read', All),
     g('bd.company.read', All), g('bd.contact.read', All),
     g('training.session.read', All), g('training.learner.read', All), g('training.enrollment.read', All),
     g('iam.session.read', Own), g('iam.session.revoke', Own),
   ],
   [RoleCode.Finance]: [
+    g('hr.employee.read', Own), g('hr.directory.read', All),
     g('bd.company.read', All), g('bd.approval.read', All), g('bd.approval.honor', All), g('bd.facilitator.read', All), g('bd.commission.read', All), g('bd.commission.release', All),
     g('training.enrollment.read', All), g('training.session.read', All),
     g('reporting.kpi.read', All),
     g('iam.session.read', Own), g('iam.session.revoke', Own),
   ],
-  [RoleCode.Hr]: [g('iam.session.read', Own), g('iam.session.revoke', Own)],
-  [RoleCode.Tax]: [g('iam.session.read', Own), g('iam.session.revoke', Own)],
+  [RoleCode.Hr]: [
+    g('hr.employee.read', All), g('hr.employee.create', All), g('hr.employee.update', All), g('hr.employee.archive', All), g('hr.directory.read', All),
+    g('iam.session.read', Own), g('iam.session.revoke', Own),
+  ],
+  [RoleCode.Tax]: [g('hr.employee.read', Own), g('hr.directory.read', All), g('iam.session.read', Own), g('iam.session.revoke', Own)],
 };
 
 /** Droit élargi : un motif est remplacé par les permissions exactes du catalogue. */

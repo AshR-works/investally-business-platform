@@ -4,6 +4,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { AuditModule } from './modules/audit/audit.module';
 import { BusinessDevelopmentModule } from './modules/business-development/business-development.module';
 import { DocumentsModule } from './modules/documents/documents.module';
+import { HrModule } from './modules/hr/hr.module';
 import { IamModule } from './modules/iam/iam.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { TrainingModule } from './modules/training/training.module';
@@ -22,6 +23,7 @@ import { PlatformModule } from './platform/platform.module';
     DocumentsModule,
     BusinessDevelopmentModule,
     TrainingModule,
+    HrModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: OriginGuard },

@@ -63,10 +63,27 @@ describe('Matrice rôles → permissions', () => {
     }
   });
 
-  it('ne donne aucun droit métier aux rôles RH et Fiscalité dans le CRM', () => {
+  it('ne donne aucun droit commercial ni Investudy aux rôles RH et Fiscalité ; seule la RH gère le personnel (D57)', () => {
     for (const role of [RoleCode.Hr, RoleCode.Tax]) {
-      expect(codesOf(role).filter((c) => !c.startsWith('iam.session.'))).toEqual([]);
+      expect(codesOf(role).filter((c) => !c.startsWith('iam.session.') && !c.startsWith('hr.'))).toEqual([]);
     }
+    expect(codesOf(RoleCode.Tax).filter((c) => c.startsWith('hr.'))).toEqual(['hr.directory.read', 'hr.employee.read']);
+    expect(codesOf(RoleCode.Hr).filter((c) => c.startsWith('hr.'))).toEqual(['hr.directory.read', 'hr.employee.archive', 'hr.employee.create', 'hr.employee.read', 'hr.employee.update']);
+  });
+
+  it('RH légère (D57) : l’annuaire est lisible de tous en portée Tous ; la fiche suit la portée ; seuls la RH et le Super administrateur écrivent', () => {
+    const scope = (role: RoleCode, permission: string) => resolveGrants(role).find((g) => g.permission === permission)?.scope;
+    for (const role of Object.values(RoleCode)) expect([role, scope(role, 'hr.directory.read')]).toEqual([role, Scope.All]);
+    expect(scope(RoleCode.Hr, 'hr.employee.read')).toBe(Scope.All);
+    expect(scope(RoleCode.Direction, 'hr.employee.read')).toBe(Scope.All);
+    expect(scope(RoleCode.SuperAdmin, 'hr.employee.read')).toBe(Scope.All);
+    expect(scope(RoleCode.HeadOfSales, 'hr.employee.read')).toBe(Scope.Team);
+    expect(scope(RoleCode.AccountManager, 'hr.employee.read')).toBe(Scope.Own);
+    for (const role of Object.values(RoleCode).filter((r) => r !== RoleCode.Hr && r !== RoleCode.SuperAdmin)) {
+      expect(codesOf(role).filter((c) => ['hr.employee.create', 'hr.employee.update', 'hr.employee.archive'].includes(c))).toEqual([]);
+    }
+    // Aucune permission de salaire, de paie ou de donnée sensible n'existe dans le catalogue.
+    expect(codesOf(RoleCode.SuperAdmin).filter((c) => c.startsWith('hr.')).sort()).toEqual(['hr.directory.read', 'hr.employee.archive', 'hr.employee.create', 'hr.employee.read', 'hr.employee.update']);
   });
 
   it("n'accorde jamais iam.session.revoke ou read en portée ALL à un rôle autre que SuperAdmin", () => {
