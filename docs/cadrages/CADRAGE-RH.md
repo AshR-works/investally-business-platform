@@ -45,7 +45,7 @@ Le sprint MVP de la semaine demande une section **Ressources humaines** utilisab
 
 **Recommandation : B**, **à deux conditions** qui réduisent son défaut principal : (1) **aucune donnée sensible dans le CRM** (D57) ; (2) un **ADR-0009** qui amende l'ADR-0005 : « RH légère (annuaire, organigramme, absences) dans le CRM ; RH sensible (paie, salaires, pièces d'identité, performance) reste à l'ERP ».
 
-**Risques de B** : la RH s'installe dans le CRM et l'extraction n'a jamais lieu (dette) ; une fuite de la base CRM expose l'annuaire du personnel (limité par D57) ; l'hébergement non décidé (D-PROD) s'applique aussi à ces données. **Dette créée** : migration future des données `hr` vers l'ERP (D161 à ouvrir).
+**Risques de B** : la RH s'installe dans le CRM et l'extraction n'a jamais lieu (dette) ; une fuite de la base CRM expose l'annuaire du personnel (limité par D57) ; l'hébergement non décidé (D-PROD) s'applique aussi à ces données. **Dette créée** : migration future des données `hr` vers l'ERP (**D162**).
 
 ## 4. D56 — Que couvre la section RH au MVP ?
 
@@ -109,8 +109,14 @@ Le sprint MVP de la semaine demande une section **Ressources humaines** utilisab
 | **RH-1c** | Recette, tests (unitaires, intégration, mutants cette fois), fiches de test, dossier d'écrans | moyen |
 | **RH-2** | Absences et congés (après les règles du § 7) | gros |
 
-## 9. Décision attendue
+## 9. Décision attendue *(prise : voir § 10)*
 
 Réponse courte, par exemple **« D55 B, D56 1 puis 2, D57 recommandations, D58 B »** ou « applique les recommandations ». Je ne commence **aucun code RH** avant votre réponse. Les questions du § 7 peuvent être répondues en une ligne chacune ; les défauts non contredits sont retenus « à confirmer ».
 
 *Hors décision, à ne pas oublier : la section RH change le périmètre de la première mise en production (PLAN-DE-MISE-EN-PRODUCTION, ligne 18) ; je le consignerai au registre à la décision.*
+
+## 10. Décision
+
+**2026-11-09 — Direction produit : « Applique les recommandations. »** Retenus : **D55 B** (module RH dans le CRM, sans donnée sensible ; [ADR-0009](../adr/0009-rh-legere-dans-le-crm.md)), **D56 périmètre 1 puis 2** (absences après les règles de congés), **D57** (données professionnelles seulement, permissions `hr.employee.*`, annuaire restreint, traces), **D58 B** (employé distinct, lien facultatif, organigramme qui signale les écarts sans toucher à `users.manager_id`). Les dix questions du § 7 sont restées sans réponse : leurs **défauts sont retenus « à confirmer »** (D59) ; **la question 7 (règles de congés) n'a pas de défaut**, donc RH-2 attend.
+
+**État** : RH-0 (registre D55 à D59, ADR-0009, ARCHITECTURE, RBAC, plan de production, dette D162) fait. **RH-1a, RH-1b, RH-1c : à lancer sur votre signal.**

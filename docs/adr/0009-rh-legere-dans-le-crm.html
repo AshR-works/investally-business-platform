@@ -1,0 +1,35 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ADR-0009 — RH légère dans le CRM, RH sensible à l&#x27;ERP</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="../INDEX.html">Index</a> · <a href="../GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="../ARCHITECTURE.html">Architecture</a> · <a href="../SECURITY.html">Sécurité</a> · <a href="../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="../TECH-DEBT.html">Dette</a> · <a href="../CHARTE-DE-TESTS.html">Charte de tests</a> · <a href="../tests/README.html">Fiches de test</a> · <a href="../design/README.html">Design</a> · <a href="../livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>ADR-0009 — RH légère dans le CRM, RH sensible à l'ERP</h1>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td><strong>Statut</strong></td><td>Accepté (2026-11-09, décisions D55 à D58 de la Direction produit : « applique les recommandations »). <strong>Amende l'ADR-0005.</strong></td></tr>
+<tr><td><strong>Contexte</strong></td><td>L'ADR-0005 range la RH dans l'ERP, produit séparé à base séparée, non construit. Le sprint MVP demande une section Ressources humaines utilisable cette semaine ; l'ERP n'existe pas et l'hébergement n'est pas décidé.</td></tr>
+<tr><td><strong>Lié à</strong></td><td><code>docs/cadrages/CADRAGE-RH.md</code>, ADR-0005, D27 (DGA = Direction + RH), DEC-006 (performance après avis juridique), D11 et D65 (données personnelles)</td></tr>
+</tbody></table></div>
+<h2>Options considérées</h2>
+<ol><li><strong>Statu quo</strong> : RH dans l'ERP, non construit. Conforme à l'ADR-0005, mais <strong>ne répond pas à la demande du sprint</strong>.</li><li><strong>Module RH dans le CRM, schéma <code>hr</code> isolé, sans donnée sensible (retenue)</strong> : livrable cette semaine, aucun nouveau déploiement.</li><li><strong>Application ERP séparée dès maintenant</strong> : conforme à l'ADR-0005, mais deux déploiements et un IAM à dupliquer ou à fédérer, avec un hébergement non décidé : intenable dans le délai.</li></ol>
+<h2>Décision</h2>
+<ul><li>La <strong>RH légère</strong> vit dans le CRM : annuaire du personnel, organigramme, puis absences et congés. Module <code>hr</code> du monolithe modulaire, <strong>schéma PostgreSQL <code>hr</code> propre</strong>, aucune clé étrangère vers un autre schéma (invariant des frontières, test <code>core-schema</code>), références par identifiant, lectures des autres modules par <strong>interface publique</strong> (<code>index.ts</code>).</li><li>La <strong>RH sensible reste à l'ERP</strong> : paie, salaires, pièces d'identité, adresse personnelle, date de naissance, situation familiale, santé, évaluations et performance. <strong>Aucune de ces données n'entre dans le CRM</strong> tant que l'avis juridique (D11, D65) et l'ERP n'existent pas.</li><li>Employé et utilisateur sont <strong>deux entités</strong> (lien facultatif). L'organigramme RH <strong>ne modifie pas</strong> <code>users.manager_id</code> : il signale les écarts.</li><li>Mêmes garde-fous que le reste du CRM : MFA obligatoire, permissions <code>hr.employee.*</code> avec portée, hors portée = « introuvable », audit avant/après, archivage réversible (jamais de suppression), verrou de version.</li></ul>
+<h2>Conséquences</h2>
+<ul><li>(+) La RH est utilisable sans attendre l'ERP ; un seul menu, un seul compte.</li><li>(−) Les données de l'annuaire du personnel partagent la base et les sauvegardes du CRM (limité par l'exclusion des données sensibles).</li><li>(−) <strong>Dette D162</strong> : migrer les données <code>hr</code> vers l'ERP à sa création ; la frontière de module et le schéma propre rendent l'extraction possible, rien ne la garantit.</li><li>À revoir si : une donnée sensible devient nécessaire (alors l'ERP d'abord), ou si l'hébergement impose une séparation des bases de données.</li></ul></main></body></html>

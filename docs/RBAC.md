@@ -61,7 +61,7 @@ flowchart TD
 | `TRAINER` | Formateur | oui | Anime ses sessions : présences, évaluations. |
 | `SUPPORT` | Support | oui | Consultation pour assister les utilisateurs et les clients. |
 | `FINANCE` | Finance | oui | Accès CRM limité à la préparation de facturation (l'ERP couvrira le reste). |
-| `HR` | RH | oui | Aucun accès métier CRM (l'ERP couvrira le périmètre RH). |
+| `HR` | RH | oui | Aucun accès métier commercial ni Investudy. **À venir (D55, D57)** : gère l'annuaire du personnel (`hr.employee.*`, portée Tous) ; la paie et les données sensibles restent à l'ERP. |
 | `TAX` | Fiscalité | oui | Aucun accès métier CRM (l'ERP couvrira le périmètre fiscal). |
 
 ## 3. Matrice d'accès par module et par rôle
