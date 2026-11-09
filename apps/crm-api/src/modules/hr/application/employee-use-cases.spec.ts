@@ -4,7 +4,7 @@ import { AuditAction, AuditRecord } from '../../audit';
 import type { AccessContext } from '../../iam';
 import { RoleCode, resolveGrants } from '../../iam';
 import {
-  GetEmployeeHandler, GetOrgChartHandler, ListDirectoryHandler, ListEmployeesHandler, ListHierarchyGapsHandler, RegisterEmployeeUseCase, SetEmployeeStatusUseCase, UpdateEmployeeUseCase,
+  GetEmployeeHandler, GetOrgChartHandler, ListDirectoryHandler, ListEmployeesHandler, ListHierarchyGapsHandler, ListLinkableUsersHandler, RegisterEmployeeUseCase, SetEmployeeStatusUseCase, UpdateEmployeeUseCase,
 } from './employee-use-cases';
 
 const actor: ActorContext = { userId: 'hr1', sessionId: 's1', ipAddress: '10.0.0.1', device: 'jest' };
@@ -38,6 +38,7 @@ function build() {
     directory: new ListDirectoryHandler(employees),
     chart: new GetOrgChartHandler(employees),
     gaps: new ListHierarchyGapsHandler(employees, users),
+    linkable: new ListLinkableUsersHandler(employees, users),
   };
 }
 type World = ReturnType<typeof build>;
@@ -244,5 +245,22 @@ describe('Personnel — écarts avec la hiérarchie des comptes (D58)', () => {
     expect(await w.gaps.execute({ access: hr })).toEqual([]);
     expect(await w.gaps.execute({ access: direction })).toEqual([]);
     for (const who of [chef, claire, support]) await expect(w.gaps.execute({ access: who })).rejects.toMatchObject({ code: 'FORBIDDEN' });
+  });
+});
+
+describe('Personnel — comptes à lier', () => {
+  it('propose les comptes actifs ou en attente non encore liés, par nom ; le lien (même vers un archivé) retire le compte de la liste', async () => {
+    const w = build();
+    w.users.add('u1', 'Zoé'); w.users.add('u2', 'Alain'); w.users.add('u3', 'Bloqué', null, 'DISABLED'); w.users.add('u4', 'Invité', null, 'PENDING');
+    expect((await w.linkable.execute({ access: hr })).map((u) => u.displayName)).toEqual(['Alain', 'Invité', 'Zoé']);
+    const e = await create(w, { userId: 'u2' });
+    expect((await w.linkable.execute({ access: hr })).map((u) => u.id)).toEqual(['u4', 'u1']);
+    await w.setStatus.execute({ id: e.id, version: 1, status: 'ARCHIVED', access: hr, actor });
+    expect((await w.linkable.execute({ access: hr })).map((u) => u.id)).not.toContain('u2');
+    expect(Object.keys((await w.linkable.execute({ access: hr }))[0]!).sort()).toEqual(['displayName', 'id']);
+  });
+  it('réservé à ceux qui peuvent modifier une fiche', async () => {
+    const w = build();
+    for (const who of [direction, chef, claire, support]) await expect(w.linkable.execute({ access: who })).rejects.toMatchObject({ code: 'FORBIDDEN' });
   });
 });

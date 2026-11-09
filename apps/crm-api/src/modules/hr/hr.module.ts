@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { AuditModule } from '../audit/audit.module';
 import { IamModule } from '../iam/iam.module';
 import {
-  GetEmployeeHandler, GetOrgChartHandler, ListDirectoryHandler, ListEmployeesHandler, ListHierarchyGapsHandler, RegisterEmployeeUseCase, SetEmployeeStatusUseCase, UpdateEmployeeUseCase,
+  GetEmployeeHandler, GetOrgChartHandler, ListDirectoryHandler, ListEmployeesHandler, ListHierarchyGapsHandler, ListLinkableUsersHandler, RegisterEmployeeUseCase, SetEmployeeStatusUseCase, UpdateEmployeeUseCase,
 } from './application/employee-use-cases';
 import { EMPLOYEE_REPOSITORY } from './domain/employee-repository';
 import { USER_DIRECTORY } from './domain/user-directory';
@@ -15,7 +15,7 @@ import { EmployeesController } from './presentation/employees.controller';
   imports: [AuditModule, IamModule],
   controllers: [EmployeesController],
   providers: [
-    RegisterEmployeeUseCase, UpdateEmployeeUseCase, SetEmployeeStatusUseCase, GetEmployeeHandler, ListEmployeesHandler, ListDirectoryHandler, GetOrgChartHandler, ListHierarchyGapsHandler,
+    RegisterEmployeeUseCase, UpdateEmployeeUseCase, SetEmployeeStatusUseCase, GetEmployeeHandler, ListEmployeesHandler, ListDirectoryHandler, GetOrgChartHandler, ListHierarchyGapsHandler, ListLinkableUsersHandler,
     { provide: EMPLOYEE_REPOSITORY, useClass: PrismaEmployeeRepository },
     { provide: USER_DIRECTORY, useClass: PrismaUserDirectory },
   ],

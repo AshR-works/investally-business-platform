@@ -5,7 +5,7 @@ import { actorContextFrom } from '../../../shared-kernel';
 import { Access, CurrentActor, Protected } from '../../iam';
 import type { AccessContext, AuthenticatedActor } from '../../iam';
 import {
-  GetEmployeeHandler, GetOrgChartHandler, ListDirectoryHandler, ListEmployeesHandler, ListHierarchyGapsHandler, RegisterEmployeeUseCase, SetEmployeeStatusUseCase, UpdateEmployeeUseCase,
+  GetEmployeeHandler, GetOrgChartHandler, ListDirectoryHandler, ListEmployeesHandler, ListHierarchyGapsHandler, ListLinkableUsersHandler, RegisterEmployeeUseCase, SetEmployeeStatusUseCase, UpdateEmployeeUseCase,
 } from '../application/employee-use-cases';
 import { ListDirectoryDto, ListEmployeesDto, RegisterEmployeeDto, SetEmployeeStatusDto, UpdateEmployeeDto } from './dto/employee.dto';
 
@@ -26,6 +26,7 @@ export class EmployeesController {
     private readonly listDirectory: ListDirectoryHandler,
     private readonly orgChart: GetOrgChartHandler,
     private readonly gaps: ListHierarchyGapsHandler,
+    private readonly linkable: ListLinkableUsersHandler,
   ) {}
 
   /** Annuaire restreint : employés actifs, champs professionnels. */
@@ -40,6 +41,13 @@ export class EmployeesController {
   @Protected('hr.directory.read')
   chart() {
     return this.orgChart.execute();
+  }
+
+  /** Comptes auxquels on peut encore lier une fiche (nom seulement). */
+  @Get('linkable-users')
+  @Protected('hr.employee.update')
+  linkableUsers(@Access() access: AccessContext) {
+    return this.linkable.execute({ access });
   }
 
   /** Écarts entre l'organigramme RH et la hiérarchie des comptes : signalés, jamais corrigés. Portée Tous exigée dès la garde. */

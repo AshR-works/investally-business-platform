@@ -37,7 +37,7 @@ describe('menu par domaines (D51)', () => {
 
   it('les modules à venir restent hors du menu mais rangés dans leur domaine (hub)', () => {
     const upcoming = upcomingModules();
-    expect(upcoming.map((m) => m.group)).toEqual(expect.arrayContaining(['Finance', 'Ressources humaines', 'Stocks', 'Reporting', 'Administration']));
+    expect(upcoming.map((m) => m.group)).toEqual(expect.arrayContaining(['Finance', 'Stocks', 'Reporting', 'Administration']));
     for (const m of upcoming) expect(m.href).toBeUndefined();
     expect(byDomain(availableModules(profileWith('bd.company.read'))).flatMap((d) => d.items).every((m) => m.href)).toBe(true);
   });

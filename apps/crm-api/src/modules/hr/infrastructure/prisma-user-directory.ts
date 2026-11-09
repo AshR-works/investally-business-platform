@@ -15,6 +15,11 @@ export class PrismaUserDirectory implements UserDirectory {
     return row ? toRef(row) : null;
   }
 
+  async assignable(): Promise<UserRef[]> {
+    const rows = await this.prisma.db.user.findMany({ where: { status: { in: ['ACTIVE', 'PENDING'] } }, select: SELECT, orderBy: [{ displayName: 'asc' }, { id: 'asc' }] });
+    return rows.map(toRef);
+  }
+
   async findMany(ids: readonly string[]): Promise<UserRef[]> {
     if (ids.length === 0) return [];
     return (await this.prisma.db.user.findMany({ where: { id: { in: [...ids] } }, select: SELECT })).map(toRef);

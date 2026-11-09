@@ -277,6 +277,21 @@ export class GetOrgChartHandler {
   }
 }
 
+/** Comptes auxquels on peut encore lier une fiche (nom seulement, jamais d'e-mail) : pour choisir dans la fenêtre de l'employé. Droit de modification. */
+@Injectable()
+export class ListLinkableUsersHandler {
+  constructor(
+    @Inject(EMPLOYEE_REPOSITORY) private readonly employees: EmployeeRepository,
+    @Inject(USER_DIRECTORY) private readonly users: UserDirectory,
+  ) {}
+
+  async execute(query: { access: AccessContext }): Promise<{ id: string; displayName: string }[]> {
+    if (!decideFor(query.access, 'hr.employee.update', null).allowed) throw new DomainError('FORBIDDEN', "Vous n'avez pas le droit de lier un compte");
+    const linked = new Set(await this.employees.linkedUserIds());
+    return (await this.users.assignable()).filter((u) => !linked.has(u.id)).map((u) => ({ id: u.id, displayName: u.displayName }));
+  }
+}
+
 /**
  * Écarts entre l'organigramme RH et la hiérarchie des comptes (`users.manager_id`, qui pilote la portée « Équipe » de tout le CRM). Un employé est
  * signalé quand lui et son responsable RH ont un compte et que le responsable de son compte n'est pas le compte de son responsable RH. **Signalé, jamais

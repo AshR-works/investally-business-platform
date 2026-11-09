@@ -12,6 +12,8 @@ export interface UserRef {
 export interface UserDirectory {
   find(id: string): Promise<UserRef | null>;
   findMany(ids: readonly string[]): Promise<UserRef[]>;
+  /** Les comptes auxquels une fiche d'employé peut encore être liée (ni désactivés ni verrouillés), triés par nom. */
+  assignable(): Promise<UserRef[]>;
 }
 
 export const USER_DIRECTORY = Symbol('UserDirectory');

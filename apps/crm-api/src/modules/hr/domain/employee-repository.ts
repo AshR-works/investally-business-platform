@@ -20,6 +20,8 @@ export interface EmployeeRepository {
   findByMatricule(matricule: string, excludeId?: string): Promise<Employee | null>;
   findByWorkEmail(emailKey: string, excludeId?: string): Promise<Employee | null>;
   findByUserId(userId: string, excludeId?: string): Promise<Employee | null>;
+  /** Identifiants des comptes déjà liés à un employé (actif ou archivé : l'unicité vaut pour tous). */
+  linkedUserIds(): Promise<string[]>;
   list(query: EmployeeListQuery): Promise<Page<Employee>>;
   /** Tous les employés actifs (annuaire et organigramme), triés par nom ; borné par `limit`. */
   listActive(query: { search?: string; department?: string; page?: number; pageSize?: number }): Promise<Page<Employee>>;

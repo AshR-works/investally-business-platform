@@ -38,10 +38,11 @@ export function groupRoles(roles: readonly RoleView[]): GroupedRoles[] {
 }
 
 /** Modules du catalogue, dans l'ordre d'affichage, avec leur libellé. */
-export const MODULE_ORDER = ['bd', 'training', 'docs', 'reporting', 'audit', 'iam'] as const;
+export const MODULE_ORDER = ['bd', 'training', 'hr', 'docs', 'reporting', 'audit', 'iam'] as const;
 export const MODULE_LABELS: Record<string, string> = {
   bd: 'Business Development',
   training: 'Investudy (formation)',
+  hr: 'Ressources humaines',
   docs: 'Documents',
   reporting: 'Reporting',
   audit: 'Audit',
@@ -59,6 +60,7 @@ export const RESOURCE_LABELS: Record<string, string> = {
   'training.program': 'Programmes', 'training.training': 'Formations', 'training.session': 'Sessions', 'training.room': 'Salles',
   'training.trainer': 'Formateurs', 'training.learner': 'Apprenants', 'training.enrollment': 'Inscriptions', 'training.attendance': 'Présences',
   'training.evaluation': 'Évaluations', 'training.certification': 'Certifications et attestations',
+  'hr.employee': 'Personnel', 'hr.directory': 'Annuaire du personnel',
   'reporting.dashboard': 'Tableaux de bord', 'reporting.kpi': 'Indicateurs', 'reporting.report': 'Rapports',
 };
 

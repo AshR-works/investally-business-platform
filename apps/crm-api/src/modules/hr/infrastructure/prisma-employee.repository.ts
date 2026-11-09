@@ -113,6 +113,11 @@ export class PrismaEmployeeRepository implements EmployeeRepository {
     return row ? toDomain(row) : null;
   }
 
+  async linkedUserIds(): Promise<string[]> {
+    const rows = await this.prisma.db.employee.findMany({ where: { userId: { not: null } }, select: { userId: true } });
+    return rows.flatMap((r) => (r.userId ? [r.userId] : []));
+  }
+
   async list(query: EmployeeListQuery): Promise<Page<Employee>> {
     const where: Prisma.EmployeeWhereInput = {
       ...(query.userIds ? { userId: { in: [...query.userIds] } } : {}),

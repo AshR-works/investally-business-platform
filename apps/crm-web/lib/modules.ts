@@ -1,5 +1,5 @@
 import type { IconName } from '../components/icon';
-import { can } from './permissions';
+import { can, canAll } from './permissions';
 import type { Profile } from './types';
 
 /**
@@ -20,6 +20,8 @@ export interface AppModule {
   href?: string;
   /** Droit requis pour voir le module (informatif : le serveur re-contrôle chaque requête). */
   permission?: string;
+  /** Le module n'est proposé qu'à qui détient la permission en portée « Tous » (ex. la gestion du personnel : la RH et la Direction, pas un chargé de compte qui ne voit que sa propre fiche). */
+  allScope?: boolean;
 }
 
 /**
@@ -42,7 +44,9 @@ export const MODULES: readonly AppModule[] = [
   { id: 'commissions', label: 'Commissions', description: 'Commissions des facilitateurs à verser', icon: 'card', group: 'Finance', href: '/commissions', permission: 'bd.commission.read' },
   { id: 'finance', label: 'Facturation et paiements', description: 'Facturation et suivi des paiements', icon: 'card', group: 'Finance' },
   { id: 'tax', label: 'Fiscalité', description: 'Obligations et déclarations', icon: 'doc', group: 'Finance' },
-  { id: 'hr', label: 'Ressources humaines', description: 'Personnel et organisation', icon: 'brief', group: 'Ressources humaines' },
+  { id: 'directory', label: 'Annuaire', description: 'Le personnel : postes, services et contacts professionnels', icon: 'users', group: 'Ressources humaines', href: '/hr', permission: 'hr.directory.read' },
+  { id: 'org-chart', label: 'Organigramme', description: 'Qui rend compte à qui', icon: 'building', group: 'Ressources humaines', href: '/hr/org-chart', permission: 'hr.directory.read' },
+  { id: 'staff', label: 'Personnel', description: 'Fiches du personnel : créer, modifier, enregistrer une sortie', icon: 'brief', group: 'Ressources humaines', href: '/hr/employees', permission: 'hr.employee.read', allScope: true },
   { id: 'stocks', label: 'Stocks', description: 'Articles, mouvements et inventaires', icon: 'box', group: 'Stocks' },
   { id: 'reporting', label: 'Reporting', description: 'Rapports périodiques et incidents', icon: 'chart', group: 'Reporting' },
   { id: 'users', label: 'Utilisateurs', description: 'Comptes, rôles et sessions', icon: 'users', group: 'Administration', href: '/admin/users', permission: 'iam.user.read' },
@@ -52,7 +56,7 @@ export const MODULES: readonly AppModule[] = [
 
 /** Modules livrés et que le profil a le droit d'ouvrir. */
 export function availableModules(profile: Profile | null): AppModule[] {
-  return MODULES.filter((m) => m.href && (!m.permission || can(profile, m.permission)));
+  return MODULES.filter((m) => m.href && (!m.permission || (m.allScope ? canAll(profile, m.permission) : can(profile, m.permission))));
 }
 
 /** Modules pas encore livrés (présentés « À venir » sur le hub). */

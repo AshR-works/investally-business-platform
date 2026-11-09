@@ -58,6 +58,11 @@ describeDb('Personnel (HTTP + PostgreSQL)', () => {
     expect(edited.status).toBe(200);
     expect(edited.body).toMatchObject({ jobTitle: 'Responsable', workPhone: null, managerEmployeeId: null, managerName: null, version: 2 });
     expect((await update(hr, e.body.id, { version: 1, jobTitle: 'Périmé' })).status).toBe(409);
+    // Les comptes à lier : le compte déjà lié n'est plus proposé ; seul le nom est exposé.
+    const linkable = await api.call('GET', '/api/v1/hr/linkable-users', hr);
+    expect(linkable.status).toBe(200);
+    expect(linkable.body.map((u: { id: string }) => u.id)).not.toContain(amUser.id);
+    expect(Object.keys(linkable.body[0]).sort()).toEqual(['displayName', 'id']);
   });
 
   it('refus : champ inconnu ou sensible (400), date irréelle, identifiant mal écrit, responsable ou compte inconnu, boucle, doublon de matricule, e-mail et compte (409)', async () => {
@@ -96,6 +101,7 @@ describeDb('Personnel (HTTP + PostgreSQL)', () => {
     for (const who of [am, other, support, chef]) expect((await get(who, foreign.body.id)).status).toBe(404);
     expect((await get(am, NIL)).status).toBe(404);
     for (const who of [dir, chef, am, other, support]) {
+      expect((await api.call('GET', '/api/v1/hr/linkable-users', who)).status).toBe(403);
       expect((await create(who)).status).toBe(403);
       expect([403, 404]).toContain((await update(who, mine.body.id, { version: 1, jobTitle: 'Piraté' })).status);
       expect([403, 404]).toContain((await setStatus(who, mine.body.id, { version: 1, status: 'ARCHIVED' })).status);

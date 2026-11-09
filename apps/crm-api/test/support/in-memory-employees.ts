@@ -22,6 +22,8 @@ export class InMemoryEmployees implements EmployeeRepository {
   async findByWorkEmail(emailKey: string, excludeId?: string) { return this.items.find((e) => e.workEmail === emailKey && e.id !== excludeId) ?? null; }
   async findByUserId(userId: string, excludeId?: string) { return this.items.find((e) => e.userId === userId && e.id !== excludeId) ?? null; }
 
+  async linkedUserIds() { return this.items.flatMap((e) => (e.userId ? [e.userId] : [])); }
+
   async list(q: EmployeeListQuery): Promise<Page<Employee>> {
     const rows = this.items
       .filter((e) => !q.userIds || (e.userId !== null && q.userIds.includes(e.userId)))
@@ -45,5 +47,6 @@ export class InMemoryUsers implements UserDirectory {
   readonly users = new Map<string, UserRef>();
   add(id: string, displayName: string, managerUserId: string | null = null, status = 'ACTIVE') { this.users.set(id, { id, displayName, status, managerUserId }); }
   async find(id: string) { return this.users.get(id) ?? null; }
+  async assignable() { return [...this.users.values()].filter((u) => u.status === 'ACTIVE' || u.status === 'PENDING').sort((a, b) => a.displayName.localeCompare(b.displayName)); }
   async findMany(ids: readonly string[]) { return ids.flatMap((id) => (this.users.has(id) ? [this.users.get(id)!] : [])); }
 }
