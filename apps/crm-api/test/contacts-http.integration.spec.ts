@@ -154,7 +154,9 @@ describeDb('Contacts (HTTP + PostgreSQL)', () => {
     expect(await names(am)).toContain(mine.lastName);
     expect(await names(chef)).toContain(mine.lastName); // l'équipe du chef
     expect(await names(chef)).not.toContain(theirs.lastName);
-    expect(await names(support)).toEqual(expect.arrayContaining([mine.lastName, theirs.lastName]));
+    // Le Support lit toutes les entreprises : on cherche par nom (la base de test est partagée, la première page peut être remplie par les contacts d'autres suites).
+    expect(await names(support, `&search=${mine.lastName}`)).toEqual([mine.lastName]);
+    expect(await names(support, `&search=${theirs.lastName}`)).toEqual([theirs.lastName]);
     expect(await names(am, `&role=DECISION_MAKER`)).toEqual([mine.lastName]);
     expect(await names(am, `&search=${mine.lastName.slice(0, 6)}`)).toEqual([mine.lastName]);
     expect((await api.call('GET', `/api/v1/contacts?pageSize=1`, am)).body).toMatchObject({ pageSize: 1 });
