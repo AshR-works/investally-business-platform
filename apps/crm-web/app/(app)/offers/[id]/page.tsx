@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { OfferDialogs } from '../../../../components/offers/offer-dialogs';
 import { Badge } from '../../../../components/data/badge';
 import { Card } from '../../../../components/data/card';
 import { EntityLink } from '../../../../components/entity-link';
@@ -22,6 +23,7 @@ export default function OfferSheetPage() {
   const { profile } = useAuth();
   const { entity: offer, error } = useEntity<Offer>('offers');
   const [followups, setFollowups] = useState<Followup[] | null>(null);
+  const [cloning, setCloning] = useState(false);
   const canFollowups = can(profile, 'bd.followup.read');
   const offerId = offer?.id;
   useEffect(() => {
@@ -38,6 +40,7 @@ export default function OfferSheetPage() {
       description={offer.subject}
       listHref="/offers"
       listLabel="Toutes les offres"
+      actions={can(profile, 'bd.offer.create') && <button type="button" className="secondary" onClick={() => setCloning(true)}>Cloner en nouveau brouillon</button>}
       facts={[
         { label: 'État', value: <Badge tone={status.tone}>{status.label}</Badge> },
         { label: 'Entreprise', value: <EntityLink kind="company" id={offer.companyId} label={offer.companyName}>{offer.companyName}</EntityLink> },
@@ -70,6 +73,7 @@ export default function OfferSheetPage() {
           </div>
         </Card>
       )}
+      {cloning && <OfferDialogs dialog={{ kind: 'clone', offer }} onClose={() => setCloning(false)} onDone={async () => setCloning(false)} />}
       <nav aria-label={`Autour de ${offer.companyName}`} className="flex flex-wrap gap-4">
         {can(profile, 'bd.contact.read') && <Link href={listFor('/contacts', offer.companyId)}>Contacts de {offer.companyName}</Link>}
         {can(profile, 'bd.opportunity.read') && <Link href={listFor('/opportunities', offer.companyId)}>Opportunités de {offer.companyName}</Link>}

@@ -76,6 +76,48 @@ export class RegisterOfferUseCase {
   }
 }
 
+export interface CloneOfferCommand {
+  /** L'offre à reprendre. */
+  id: string;
+  access: AccessContext;
+  actor: ActorContext;
+}
+
+/**
+ * Cloner une offre : un **nouveau brouillon** pour la même entreprise, qui reprend l'objet, le montant, la devise et la note (jamais l'état,
+ * les dates, la décharge ni les relances). L'offre source doit être lisible et l'entreprise non archivée ; droit de création ; nouvelle
+ * référence ; audit avec l'offre d'origine.
+ */
+@Injectable()
+export class CloneOfferUseCase {
+  constructor(
+    @Inject(OFFER_REPOSITORY) private readonly offers: OfferRepository,
+    @Inject(COMPANY_REPOSITORY) private readonly companies: CompanyRepository,
+    @Inject(AUDIT_RECORDER) private readonly audit: AuditRecorder,
+    @Inject(UNIT_OF_WORK) private readonly unitOfWork: UnitOfWork,
+    @Inject(CLOCK) private readonly clock: Clock,
+    @Inject(ID_GENERATOR) private readonly ids: IdGenerator,
+  ) {}
+
+  async execute(command: CloneOfferCommand): Promise<OfferView> {
+    return this.unitOfWork.run(async () => {
+      const { offer: source, company } = await offerInScope(this.offers, this.companies, command.id, command.access, 'bd.offer.read');
+      // Le droit de créer s'évalue sur l'entreprise, comme pour une création ordinaire.
+      await companyInScope(this.companies, company.id, command.access, 'bd.offer.create');
+      assertWritable(company);
+      const now = this.clock.now();
+      const clone = Offer.create({
+        id: this.ids.next(), reference: await this.offers.nextReference(now.getUTCFullYear()), companyId: source.companyId,
+        subject: source.subject, amount: source.amount, currency: source.currency, note: source.note, now,
+      });
+      await this.offers.save(clone);
+      const view = toOfferView(clone, company.name.value);
+      await this.audit.record({ actor: command.actor, module: 'business-development', entityType: 'Offer', entityId: clone.id, action: AuditAction.Create, newValue: { ...view, clonedFromOfferId: source.id, clonedFromReference: source.reference } });
+      return view;
+    });
+  }
+}
+
 export interface UpdateOfferCommand {
   id: string;
   version: number;

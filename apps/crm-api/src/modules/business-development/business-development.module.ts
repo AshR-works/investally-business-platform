@@ -17,7 +17,7 @@ import { GetFacilitatorHandler, ListFacilitatorsHandler } from './application/fa
 import { GetCompanyHandler } from './application/get-company.query';
 import { GetCompanyOverviewHandler } from './application/get-company-overview.query';
 import { ListCompaniesHandler } from './application/list-companies.query';
-import { ChangeOfferStatusUseCase, GetOfferHandler, ListOffersHandler, RegisterOfferUseCase, UpdateOfferUseCase } from './application/offer-use-cases';
+import { ChangeOfferStatusUseCase, CloneOfferUseCase, GetOfferHandler, ListOffersHandler, RegisterOfferUseCase, UpdateOfferUseCase } from './application/offer-use-cases';
 import { CancelReceiptUseCase, GetReceiptHandler, ListReceiptsHandler, RegisterReceiptUseCase } from './application/receipt-use-cases';
 import { RegisterCompanyUseCase } from './application/register-company.use-case';
 import { RegisterFacilitatorUseCase } from './application/register-facilitator.use-case';
@@ -107,6 +107,7 @@ import { ReceiptsController } from './presentation/receipts.controller';
     GetContactHandler,
     ListContactsHandler,
     RegisterOfferUseCase,
+    CloneOfferUseCase,
     UpdateOfferUseCase,
     ChangeOfferStatusUseCase,
     GetOfferHandler,

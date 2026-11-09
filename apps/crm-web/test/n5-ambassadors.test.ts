@@ -62,3 +62,37 @@ describe('ambassadeurs : page, filtre d’entreprise et fiche', () => {
     expect(sheet).toContain('Archivé le');
   });
 });
+
+describe('N5 : clonage d\'offre et fiche apprenant', () => {
+  it('cloner est proposé avec le droit de créer, pour tout état ; jamais sans', async () => {
+    const { availableActions, OFFER_ACTION_LABEL } = await import('../lib/offers');
+    const rights = { update: true, withdraw: true };
+    for (const status of ['DRAFT', 'SUBMITTED', 'ACCEPTED', 'REFUSED', 'WITHDRAWN']) {
+      expect(availableActions(status, { ...rights, create: true })).toContain('clone');
+      expect(availableActions(status, rights)).not.toContain('clone');
+      expect(availableActions(status, { ...rights, create: false })).not.toContain('clone');
+    }
+    expect(OFFER_ACTION_LABEL.clone).toBe('Cloner en nouveau brouillon');
+  });
+  it('la fenêtre appelle POST /offers/:id/clone, explique ce qui est repris, puis ouvre la fiche du brouillon', () => {
+    const dialogs = read('components/offers/offer-dialogs.tsx');
+    expect(dialogs).toContain('/offers/${offer.id}/clone');
+    expect(dialogs).toContain('router.push(`/offers/${created.id}`)');
+    expect(dialogs).toContain('même objet, même montant');
+    expect(dialogs).toContain('l’offre d’origine ne change pas');
+    const sheet = read('app/(app)/offers/[id]/page.tsx');
+    expect(sheet).toContain("can(profile, 'bd.offer.create')");
+    expect(sheet).toContain("kind: 'clone'");
+  });
+  it('la fiche apprenant lit l\'apprenant et ses inscriptions (si le droit existe) ; la liste y mène', () => {
+    expect(entityHref('learner', 'x')).toBe('/training/learners/x');
+    const sheet = read('app/(app)/training/learners/[id]/page.tsx');
+    expect(sheet).toContain("useEntity<Learner>('learners')");
+    expect(sheet).toContain('/enrollments?learnerId=');
+    expect(sheet).toContain('if (!learnerId || !canEnrollments) return;');
+    expect(sheet).toContain('<SheetState kind="learner"');
+    const list = read('app/(app)/training/learners/page.tsx');
+    expect(list).toContain('<EntityLink kind="learner"');
+    expect(list).toContain('<EntityLink kind="company"');
+  });
+});

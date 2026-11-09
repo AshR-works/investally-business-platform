@@ -8,6 +8,7 @@ import { PageHeader } from '../../../../components/data/page-header';
 import { Pagination } from '../../../../components/data/pagination';
 import { RowAction, RowActions } from '../../../../components/data/row-actions';
 import { SearchField, Toolbar } from '../../../../components/data/toolbar';
+import { EntityLink } from '../../../../components/entity-link';
 import { PageHeading } from '../../../../components/page-heading';
 import { EnrollmentDialogs, type EnrollmentDialogState } from '../../../../components/training/enrollment-dialogs';
 import { api, ApiError } from '../../../../lib/api';
@@ -78,8 +79,8 @@ export default function LearnersPage() {
     );
   };
   const columns: Column<Learner>[] = [
-    { id: 'name', weight: 3, header: 'Apprenant', cell: (l) => <strong>{l.firstName} {l.lastName}</strong> },
-    { id: 'company', weight: 3, header: 'Entreprise', cell: (l) => l.companyName },
+    { id: 'name', weight: 3, header: 'Apprenant', cell: (l) => <EntityLink kind="learner" id={l.id} label={`${l.firstName} ${l.lastName}`}><strong>{l.firstName} {l.lastName}</strong></EntityLink> },
+    { id: 'company', weight: 3, header: 'Entreprise', cell: (l) => <EntityLink kind="company" id={l.companyId} label={l.companyName}>{l.companyName}</EntityLink> },
     { id: 'contact', weight: 3.4, header: 'Contact', cell: (l) => (l.email || l.phone ? <>{l.email}{l.email && l.phone ? <br /> : null}{l.phone}</> : dash) },
     { id: 'actions', weight: 1, header: 'Actions', srOnlyHeader: true, align: 'right', cell: actionsFor },
   ];
