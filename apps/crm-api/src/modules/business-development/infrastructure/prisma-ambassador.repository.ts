@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Prisma } from '../../../../generated/prisma/client';
 import { PrismaService } from '../../../platform/prisma.service';
 import { DomainError, Page } from '../../../shared-kernel';
-import { Ambassador, AmbassadorOrigin } from '../domain/ambassador';
+import { Ambassador, AmbassadorOrigin, AmbassadorStatus } from '../domain/ambassador';
 import { AmbassadorListItem, AmbassadorListQuery, AmbassadorRepository } from '../domain/ambassador-repository';
 
 type AmbassadorRow = Prisma.AmbassadorGetPayload<object>;
@@ -19,6 +19,9 @@ function toDomain(row: AmbassadorRow): Ambassador {
     phone: row.phone,
     appointedOn: row.appointedOn.toISOString().slice(0, 10),
     note: row.note,
+    status: row.status as AmbassadorStatus,
+    archivedAt: row.archivedAt,
+    archiveReason: row.archiveReason,
     createdAt: row.createdAt,
     version: row.version,
   });
@@ -42,6 +45,9 @@ export class PrismaAmbassadorRepository implements AmbassadorRepository {
       phone: ambassador.phone,
       appointedOn: new Date(`${ambassador.appointedOn}T00:00:00Z`),
       note: ambassador.note,
+      status: ambassador.status,
+      archivedAt: ambassador.archivedAt,
+      archiveReason: ambassador.archiveReason,
     };
     try {
       const updated = await this.prisma.db.ambassador.updateMany({
@@ -77,6 +83,8 @@ export class PrismaAmbassadorRepository implements AmbassadorRepository {
     const where: Prisma.AmbassadorWhereInput = {
       ...(query.ownerIds ? { ownerUserId: { in: [...query.ownerIds] } } : {}),
       ...(query.origin ? { origin: query.origin } : {}),
+      ...(query.status ? { status: query.status } : {}),
+      ...(query.companyId ? { companyId: query.companyId } : {}),
       ...(query.search
         ? {
             OR: [

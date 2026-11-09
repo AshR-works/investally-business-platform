@@ -6,7 +6,7 @@ import { RoleCode, resolveGrants, visibilityFor } from '../../iam';
 import { Company } from '../domain/company';
 import { CompanyName } from '../domain/company-name';
 import { CompanyRepository } from '../domain/company-repository';
-import { GetAmbassadorHandler, ListAmbassadorsHandler, RegisterAmbassadorUseCase, UpdateAmbassadorUseCase } from './ambassador-use-cases';
+import { GetAmbassadorHandler, ListAmbassadorsHandler, RegisterAmbassadorUseCase, SetAmbassadorStatusUseCase, UpdateAmbassadorUseCase } from './ambassador-use-cases';
 
 class InMemoryCompanies implements CompanyRepository {
   readonly items: Company[] = [];
@@ -39,7 +39,8 @@ function build() {
     register: new RegisterAmbassadorUseCase(ambassadors, companies, recorder, unitOfWork, clock, ids),
     update: new UpdateAmbassadorUseCase(ambassadors, companies, recorder, unitOfWork, clock),
     get: new GetAmbassadorHandler(ambassadors, companies),
-    list: new ListAmbassadorsHandler(ambassadors),
+    list: new ListAmbassadorsHandler(ambassadors, companies),
+    setStatus: new SetAmbassadorStatusUseCase(ambassadors, companies, recorder, unitOfWork, clock),
   };
 }
 
@@ -139,7 +140,7 @@ describe('Ambassadeurs — lecture et portée', () => {
     const w = build();
     const a1 = await w.register.execute({ lastName: 'A', firstName: 'A', origin: 'LEARNER', appointedOn: '2026-11-01', access: am1, actor });
     await w.register.execute({ lastName: 'B', firstName: 'B', origin: 'LEARNER', appointedOn: '2026-11-01', access: am2, actor });
-    const listFor = (access: AccessContext) => w.list.execute({ ...first, visibility: visibilityFor(access, 'bd.ambassador.read') });
+    const listFor = (access: AccessContext) => w.list.execute({ ...first, access, visibility: visibilityFor(access, 'bd.ambassador.read') });
     expect((await listFor(am1)).items.map((i) => i.id)).toEqual([a1.id]);
     expect((await listFor(chef)).total).toBe(2);
     expect((await listFor(direction)).total).toBe(2);
@@ -153,9 +154,77 @@ describe('Ambassadeurs — lecture et portée', () => {
     await w.register.execute({ lastName: 'Zola', firstName: 'Ève', origin: 'LEARNER', appointedOn: '2026-11-01', access: am1, actor });
     await w.register.execute({ lastName: 'Atangana', firstName: 'Paul', origin: 'CLIENT', companyId: 'c1', appointedOn: '2026-11-01', access: am1, actor });
     const visibility = visibilityFor(am1, 'bd.ambassador.read');
-    expect((await w.list.execute({ ...first, visibility })).items.map((i) => i.lastName)).toEqual(['Atangana', 'Zola']);
-    expect((await w.list.execute({ ...first, visibility, origin: 'LEARNER' })).items.map((i) => i.lastName)).toEqual(['Zola']);
-    expect((await w.list.execute({ ...first, visibility, search: 'paul' })).total).toBe(1);
-    expect((await w.list.execute({ page: 1, pageSize: 5000, visibility })).pageSize).toBe(100);
+    const list = (extra: object) => w.list.execute({ ...first, access: am1, visibility, ...extra });
+    expect((await list({})).items.map((i) => i.lastName)).toEqual(['Atangana', 'Zola']);
+    expect((await list({ origin: 'LEARNER' })).items.map((i) => i.lastName)).toEqual(['Zola']);
+    expect((await list({ search: 'paul' })).total).toBe(1);
+    expect((await list({ page: 1, pageSize: 5000 })).pageSize).toBe(100);
+  });
+});
+
+describe('Ambassadeurs — archivage réversible (N5)', () => {
+  const learner = { lastName: 'Zola', firstName: 'Ève', origin: 'LEARNER', appointedOn: '2026-11-01', email: 'eve@exemple.cm' };
+
+  it('archive puis réactive : jamais supprimé, motif conservé le temps de l’archivage, version incrémentée, audit avant/après', async () => {
+    const w = build();
+    const created = await w.register.execute({ ...learner, access: am1, actor });
+    const archived = await w.setStatus.execute({ id: created.id, version: created.version, status: 'ARCHIVED', reason: '  A quitté le réseau ', access: chef, actor });
+    expect(archived).toMatchObject({ status: 'ARCHIVED', archiveReason: 'A quitté le réseau', archivedAt: now.toISOString() });
+    expect(w.ambassadors.items).toHaveLength(1);
+    expect(w.audit.at(-1)).toMatchObject({ action: AuditAction.Update, entityType: 'Ambassador', oldValue: { status: 'ACTIVE' }, newValue: { status: 'ARCHIVED' } });
+    const back = await w.setStatus.execute({ id: created.id, version: created.version, status: 'ACTIVE', access: chef, actor });
+    expect(back).toMatchObject({ status: 'ACTIVE', archivedAt: null, archiveReason: null });
+    expect(w.audit).toHaveLength(3);
+  });
+
+  it('un ambassadeur archivé est gelé : modification refusée, double archivage et réactivation d’un actif refusés', async () => {
+    const w = build();
+    const created = await w.register.execute({ ...learner, access: am1, actor });
+    await expect(w.setStatus.execute({ id: created.id, version: 1, status: 'ACTIVE', access: chef, actor })).rejects.toMatchObject({ code: 'CONFLICT' });
+    await w.setStatus.execute({ id: created.id, version: 1, status: 'ARCHIVED', access: chef, actor });
+    await expect(w.setStatus.execute({ id: created.id, version: 1, status: 'ARCHIVED', access: chef, actor })).rejects.toMatchObject({ code: 'CONFLICT' });
+    await expect(w.update.execute({ id: created.id, version: 1, lastName: 'Autre', access: chef, actor })).rejects.toThrow(/archivé/);
+    await w.setStatus.execute({ id: created.id, version: 1, status: 'ACTIVE', access: chef, actor });
+    expect((await w.update.execute({ id: created.id, version: 1, lastName: 'Autre', access: chef, actor })).lastName).toBe('Autre');
+  });
+
+  it('l’e-mail reste réservé pendant l’archivage (la réactivation ne peut pas créer de doublon)', async () => {
+    const w = build();
+    const created = await w.register.execute({ ...learner, access: am1, actor });
+    await w.setStatus.execute({ id: created.id, version: 1, status: 'ARCHIVED', access: chef, actor });
+    await expect(w.register.execute({ ...learner, lastName: 'Bis', access: am1, actor })).rejects.toMatchObject({ code: 'CONFLICT' });
+  });
+
+  it('même droit et même portée que la modification : le chargé de compte, un autre commercial et le Support voient « introuvable » ; le Responsable commercial de l’équipe archive', async () => {
+    const w = build();
+    const created = await w.register.execute({ ...learner, access: am1, actor });
+    await expect(w.setStatus.execute({ id: created.id, version: 1, status: 'ARCHIVED', access: am2, actor })).rejects.toMatchObject({ code: 'NOT_FOUND' });
+    await expect(w.setStatus.execute({ id: created.id, version: 1, status: 'ARCHIVED', access: support, actor })).rejects.toMatchObject({ code: 'NOT_FOUND' });
+    expect((await w.setStatus.execute({ id: created.id, version: 1, status: 'ARCHIVED', access: chef, actor })).status).toBe('ARCHIVED');
+  });
+
+  it('version périmée = conflit ; état inconnu et motif trop long refusés', async () => {
+    const w = build();
+    const created = await w.register.execute({ ...learner, access: am1, actor });
+    await expect(w.setStatus.execute({ id: created.id, version: 9, status: 'ARCHIVED', access: chef, actor })).rejects.toMatchObject({ code: 'CONFLICT' });
+    await expect(w.setStatus.execute({ id: created.id, version: 1, status: 'DELETED', access: chef, actor })).rejects.toMatchObject({ code: 'VALIDATION' });
+    await expect(w.setStatus.execute({ id: created.id, version: 1, status: 'ARCHIVED', reason: 'x'.repeat(501), access: chef, actor })).rejects.toMatchObject({ code: 'VALIDATION' });
+    expect(w.ambassadors.items[0]!.status).toBe('ACTIVE');
+  });
+
+  it('la liste filtre par état et par entreprise d’origine ; une entreprise hors portée est « introuvable »', async () => {
+    const w = build(); w.company('c1', 'am1'); w.company('c2', 'am2');
+    const a = await w.register.execute({ lastName: 'Atangana', firstName: 'Paul', origin: 'CLIENT', companyId: 'c1', appointedOn: '2026-11-01', access: am1, actor });
+    await w.register.execute({ ...learner, access: am1, actor });
+    await w.setStatus.execute({ id: a.id, version: 1, status: 'ARCHIVED', access: chef, actor });
+    const visibility = visibilityFor(am1, 'bd.ambassador.read');
+    const list = (extra: object) => w.list.execute({ ...first, access: am1, visibility, ...extra });
+    expect((await list({})).total).toBe(2);
+    expect((await list({ status: 'ACTIVE' })).items.map((i) => i.lastName)).toEqual(['Zola']);
+    expect((await list({ status: 'ARCHIVED' })).items.map((i) => i.lastName)).toEqual(['Atangana']);
+    expect((await list({ companyId: 'c1' })).items.map((i) => i.lastName)).toEqual(['Atangana']);
+    expect((await list({ status: 'inconnu' })).total).toBe(2);
+    await expect(list({ companyId: 'c2' })).rejects.toMatchObject({ code: 'NOT_FOUND' });
+    await expect(list({ companyId: 'inconnue' })).rejects.toMatchObject({ code: 'NOT_FOUND' });
   });
 });

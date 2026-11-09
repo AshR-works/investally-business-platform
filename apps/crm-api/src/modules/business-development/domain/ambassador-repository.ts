@@ -1,5 +1,5 @@
 import { Page } from '../../../shared-kernel';
-import { Ambassador, AmbassadorOrigin } from './ambassador';
+import { Ambassador, AmbassadorOrigin, AmbassadorStatus } from './ambassador';
 
 /** Un ambassadeur avec le nom de son entreprise d'origine, s'il en a une (pour les listes). */
 export interface AmbassadorListItem {
@@ -12,6 +12,10 @@ export interface AmbassadorListQuery {
   pageSize: number;
   search?: string;
   origin?: AmbassadorOrigin;
+  /** Absent = actifs et archivés. */
+  status?: AmbassadorStatus;
+  /** Entreprise d'origine (contexte d'une fiche entreprise). */
+  companyId?: string;
   /** Restreint aux ambassadeurs créés par ces utilisateurs (liste vide = aucun) ; absent = pas de restriction (portée Tous). */
   ownerIds?: readonly string[];
 }

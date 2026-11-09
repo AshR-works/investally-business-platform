@@ -31,7 +31,7 @@ import { OPPORTUNITY_TOTALS } from './domain/opportunity-totals';
 import { APPROVAL_REPOSITORY } from './domain/approval-repository';
 import { AMBASSADOR_REPOSITORY } from './domain/ambassador-repository';
 import { PrismaAmbassadorRepository } from './infrastructure/prisma-ambassador.repository';
-import { GetAmbassadorHandler, ListAmbassadorsHandler, RegisterAmbassadorUseCase, UpdateAmbassadorUseCase } from './application/ambassador-use-cases';
+import { GetAmbassadorHandler, ListAmbassadorsHandler, RegisterAmbassadorUseCase, SetAmbassadorStatusUseCase, UpdateAmbassadorUseCase } from './application/ambassador-use-cases';
 import { AmbassadorsController } from './presentation/ambassadors.controller';
 import { PrismaApprovalRepository } from './infrastructure/prisma-approval.repository';
 import { ApprovalDocumentOwnerResolver } from './application/approval-document-owners';
@@ -82,6 +82,7 @@ import { ReceiptsController } from './presentation/receipts.controller';
     RegisterApprovalUseCase, ReceiveApprovalUseCase,
     RegisterAmbassadorUseCase,
     UpdateAmbassadorUseCase,
+    SetAmbassadorStatusUseCase,
     GetAmbassadorHandler,
     ListAmbassadorsHandler,
     CloseApprovalUseCase,

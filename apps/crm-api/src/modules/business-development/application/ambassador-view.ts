@@ -13,6 +13,11 @@ export interface AmbassadorView {
   /** Depuis quand la personne est ambassadeur, « AAAA-MM-JJ ». */
   appointedOn: string;
   note: string | null;
+  /** `ACTIVE` ou `ARCHIVED` (réversible). */
+  status: string;
+  /** Instant ISO de l'archivage ; `null` s'il est actif. */
+  archivedAt: string | null;
+  archiveReason: string | null;
   /** Le chargé de compte qui l'a créé. */
   ownerUserId: string;
   createdAt: string;
@@ -32,6 +37,9 @@ export function toAmbassadorView(ambassador: Ambassador, companyName: string | n
     phone: ambassador.phone,
     appointedOn: ambassador.appointedOn,
     note: ambassador.note,
+    status: ambassador.status,
+    archivedAt: ambassador.archivedAt?.toISOString() ?? null,
+    archiveReason: ambassador.archiveReason,
     ownerUserId: ambassador.ownerUserId,
     createdAt: ambassador.createdAt.toISOString(),
     version: ambassador.version,

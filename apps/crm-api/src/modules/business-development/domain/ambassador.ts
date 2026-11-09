@@ -7,6 +7,12 @@ export enum AmbassadorOrigin {
   Learner = 'LEARNER',
 }
 
+/** Un ambassadeur est actif ou archivé : l'archivage est réversible, il ne supprime rien. */
+export enum AmbassadorStatus {
+  Active = 'ACTIVE',
+  Archived = 'ARCHIVED',
+}
+
 const ORIGINS: readonly string[] = Object.values(AmbassadorOrigin);
 
 export interface AmbassadorProps {
@@ -23,6 +29,11 @@ export interface AmbassadorProps {
   /** Date depuis laquelle la personne est ambassadeur, « AAAA-MM-JJ » (pas dans le futur). */
   appointedOn: string;
   note: string | null;
+  status: AmbassadorStatus;
+  /** Quand il a été archivé ; `null` s'il est actif. */
+  archivedAt: Date | null;
+  /** Pourquoi il a été archivé (facultatif) ; `null` s'il est actif. */
+  archiveReason: string | null;
   createdAt: Date;
   version: number;
 }
@@ -56,6 +67,12 @@ const noteOf = (raw: string | null | undefined): string | null => {
   return value === '' ? null : value;
 };
 
+const reasonOf = (raw: string | null | undefined): string | null => {
+  const value = (raw ?? '').trim();
+  if (value.length > 500) throw new DomainError('VALIDATION', 'Le motif ne peut dépasser 500 caractères');
+  return value === '' ? null : value;
+};
+
 /** Un client est toujours rattaché à son entreprise ; un apprenant peut ne l'être à aucune. */
 function assertCompany(origin: AmbassadorOrigin, companyId: string | null): void {
   if (origin === AmbassadorOrigin.Client && !companyId) {
@@ -86,7 +103,7 @@ export class Ambassador extends AggregateRoot {
     return new Ambassador({
       id: input.id, ownerUserId: input.ownerUserId, lastName: name(input.lastName, 'Le nom'), firstName: name(input.firstName, 'Le prénom'),
       origin, companyId, email: normalizeEmail(input.email), phone: normalizePhone(input.phone, { required: false }),
-      appointedOn, note: noteOf(input.note), createdAt: input.now, version: 1,
+      appointedOn, note: noteOf(input.note), status: AmbassadorStatus.Active, archivedAt: null, archiveReason: null, createdAt: input.now, version: 1,
     });
   }
 
@@ -103,6 +120,7 @@ export class Ambassador extends AggregateRoot {
     lastName?: string; firstName?: string; companyId?: string | null; email?: string | null; phone?: string | null;
     appointedOn?: string; note?: string | null;
   }, now: Date): void {
+    this.assertActive();
     const next = { ...this.props };
     if (changes.lastName !== undefined) next.lastName = name(changes.lastName, 'Le nom');
     if (changes.firstName !== undefined) next.firstName = name(changes.firstName, 'Le prénom');
@@ -118,6 +136,26 @@ export class Ambassador extends AggregateRoot {
     this.props = next;
   }
 
+  /** Archive l'ambassadeur (réversible) : il est gelé jusqu'à sa réactivation. Le motif est facultatif, 500 caractères au plus. */
+  archive(reason: string | null | undefined, now: Date): void {
+    if (this.isArchived) throw new DomainError('CONFLICT', "L'ambassadeur est déjà archivé");
+    this.props = { ...this.props, status: AmbassadorStatus.Archived, archivedAt: now, archiveReason: reasonOf(reason) };
+  }
+
+  /** Réactive un ambassadeur archivé : il redevient modifiable, sans motif ni date d'archivage. */
+  reactivate(): void {
+    if (!this.isArchived) throw new DomainError('CONFLICT', "L'ambassadeur n'est pas archivé");
+    this.props = { ...this.props, status: AmbassadorStatus.Active, archivedAt: null, archiveReason: null };
+  }
+
+  private assertActive(): void {
+    if (this.isArchived) throw new DomainError('CONFLICT', "L'ambassadeur est archivé : réactivez-le avant de le modifier");
+  }
+
+  get isArchived(): boolean { return this.props.status === AmbassadorStatus.Archived; }
+  get status(): AmbassadorStatus { return this.props.status; }
+  get archivedAt(): Date | null { return this.props.archivedAt; }
+  get archiveReason(): string | null { return this.props.archiveReason; }
   get id(): string { return this.props.id; }
   get ownerUserId(): string { return this.props.ownerUserId; }
   get lastName(): string { return this.props.lastName; }

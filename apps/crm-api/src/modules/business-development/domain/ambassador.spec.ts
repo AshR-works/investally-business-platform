@@ -80,3 +80,35 @@ describe('Ambassador — modification', () => {
     expect(a.appointedOn).toBe('2026-11-05');
   });
 });
+
+describe('Ambassador — archivage (N5)', () => {
+  const make = () => Ambassador.register({ id: 'a1', ownerUserId: 'u1', lastName: 'Zola', firstName: 'Ève', origin: 'LEARNER', appointedOn: '2026-11-01', now: new Date('2026-11-08T10:00:00Z') });
+  const later = new Date('2026-11-09T08:00:00Z');
+
+  it('naît actif ; archive avec date et motif nettoyé ; réactive sans trace', () => {
+    const a = make();
+    expect(a).toMatchObject({ status: 'ACTIVE', archivedAt: null, archiveReason: null, isArchived: false });
+    a.archive('  trop  tard ', later);
+    expect(a).toMatchObject({ status: 'ARCHIVED', archivedAt: later, archiveReason: 'trop  tard', isArchived: true });
+    a.reactivate();
+    expect(a).toMatchObject({ status: 'ACTIVE', archivedAt: null, archiveReason: null });
+  });
+
+  it('un motif vide devient absent ; 500 caractères au plus', () => {
+    const a = make();
+    a.archive('   ', later);
+    expect(a.archiveReason).toBeNull();
+    const b = make();
+    expect(() => b.archive('x'.repeat(501), later)).toThrow(/500/);
+    expect(b.isArchived).toBe(false);
+  });
+
+  it('refuse un double archivage, la réactivation d’un actif, et toute modification pendant l’archivage', () => {
+    const a = make();
+    expect(() => a.reactivate()).toThrow(/pas archivé/);
+    a.archive(null, later);
+    expect(() => a.archive(null, later)).toThrow(/déjà archivé/);
+    expect(() => a.update({ lastName: 'Autre' }, later)).toThrow(/réactivez/);
+    expect(a.lastName).toBe('Zola');
+  });
+});

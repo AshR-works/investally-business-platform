@@ -24,6 +24,8 @@ export class InMemoryAmbassadors implements AmbassadorRepository {
     const rows = this.items
       .filter((a) => !q.ownerIds || q.ownerIds.includes(a.ownerUserId))
       .filter((a) => !q.origin || a.origin === q.origin)
+      .filter((a) => !q.status || a.status === q.status)
+      .filter((a) => !q.companyId || a.companyId === q.companyId)
       .filter((a) => !q.search || `${a.firstName} ${a.lastName} ${a.email ?? ''}`.toLowerCase().includes(q.search.toLowerCase()))
       .sort((a, b) => a.lastName.localeCompare(b.lastName) || a.firstName.localeCompare(b.firstName));
     const items = rows.slice((q.page - 1) * q.pageSize, q.page * q.pageSize).map((ambassador) => ({

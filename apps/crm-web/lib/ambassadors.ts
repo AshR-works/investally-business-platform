@@ -92,3 +92,21 @@ export function buildAmbassadorBody(form: AmbassadorForm, options: { version?: n
 
 /** « Depuis » : mois et année de la date de début, comme dans le tableau du design (ex. « 03/2026 »). */
 export const sinceLabel = (appointedOn: string): string => `${appointedOn.slice(5, 7)}/${appointedOn.slice(0, 4)}`;
+
+/** Filtre par état : les actifs d'abord (la liste courante), puis les archivés, puis tous. */
+export const AMBASSADOR_STATE_FILTERS = [
+  { value: 'ACTIVE', label: 'Actifs' },
+  { value: 'ARCHIVED', label: 'Archivés' },
+  { value: '', label: 'Tous' },
+] as const;
+
+export const isArchived = (a: Pick<Ambassador, 'status'>): boolean => a.status === 'ARCHIVED';
+
+/** Actions de ligne : un ambassadeur actif se modifie et s'archive, un archivé est gelé et ne peut que se réactiver (réversible, jamais supprimé). */
+export function ambassadorActions(a: Pick<Ambassador, 'status'>, canUpdate: boolean): ('edit' | 'archive' | 'reactivate')[] {
+  if (!canUpdate) return [];
+  return isArchived(a) ? ['reactivate'] : ['edit', 'archive'];
+}
+
+/** Motif d'archivage : facultatif, 500 caractères au plus. */
+export const archiveReasonProblem = (reason: string): string | null => (reason.trim().length > 500 ? 'Le motif ne peut dépasser 500 caractères.' : null);

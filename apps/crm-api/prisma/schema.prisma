@@ -852,6 +852,13 @@ enum AmbassadorOrigin {
   @@schema("bd")
 }
 
+enum AmbassadorStatus {
+  ACTIVE
+  ARCHIVED
+
+  @@schema("bd")
+}
+
 model Ambassador {
   id          String           @id @db.Uuid
   /// Le chargé de compte qui l'a créé (référence inter-contextes vers iam.users, SANS clé étrangère) : détermine la portée des droits.
@@ -865,6 +872,10 @@ model Ambassador {
   phone       String?          @db.VarChar(40)
   appointedOn DateTime         @map("appointed_on") @db.Date
   note        String?          @db.VarChar(500)
+  /// Archivage réversible (jamais de suppression) : archivé = gelé, retiré des listes courantes, réactivable.
+  status        AmbassadorStatus @default(ACTIVE)
+  archivedAt    DateTime?        @map("archived_at") @db.Timestamptz(6)
+  archiveReason String?          @map("archive_reason") @db.VarChar(500)
   version     Int              @default(1)
   createdAt   DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt   DateTime         @updatedAt @map("updated_at") @db.Timestamptz(6)
@@ -872,6 +883,7 @@ model Ambassador {
 
   @@index([ownerUserId])
   @@index([companyId])
+  @@index([status])
   @@map("ambassadors")
   @@schema("bd")
 }
