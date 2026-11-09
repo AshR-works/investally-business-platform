@@ -1,12 +1,12 @@
 'use client';
 
-import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { ContactDialog } from '../../../components/contacts/contact-dialog';
 import { Badge } from '../../../components/data/badge';
 import { Card } from '../../../components/data/card';
 import { DataTable, type Column } from '../../../components/data/data-table';
 import { EntityCell } from '../../../components/data/entity-cell';
+import { EntityLink } from '../../../components/entity-link';
 import { PageHeader } from '../../../components/data/page-header';
 import { Pagination } from '../../../components/data/pagination';
 import { SelectionBar } from '../../../components/data/selection-bar';
@@ -24,9 +24,9 @@ import type { Contact, Page } from '../../../lib/types';
 const PAGE_SIZE = 20;
 
 const COLUMNS: Column<Contact>[] = [
-  { id: 'name', weight: 3, header: 'Contact', cell: (c) => <EntityCell name={`${c.firstName} ${c.lastName}`} /> },
+  { id: 'name', weight: 3, header: 'Contact', cell: (c) => <EntityLink kind="contact" id={c.id} label={`${c.firstName} ${c.lastName}`}><EntityCell name={`${c.firstName} ${c.lastName}`} /></EntityLink> },
   { id: 'role', weight: 2, header: 'Fonction', cell: (c) => <Badge tone="neutral">{contactRoleLabel(c.role)}</Badge> },
-  { id: 'company', weight: 3, header: 'Entreprise', cell: (c) => <Link href={`/companies/${c.companyId}`} className="text-ink no-underline hover:underline">{c.companyName}</Link> },
+  { id: 'company', weight: 3, header: 'Entreprise', cell: (c) => <EntityLink kind="company" id={c.companyId} label={c.companyName}>{c.companyName}</EntityLink> },
   { id: 'email', weight: 3.2, header: 'E-mail', cell: (c) => c.email ?? <span className="text-ink-2">—</span> },
   { id: 'phone', weight: 2.4, header: 'Téléphone', cell: (c) => c.phone ?? <span className="text-ink-2">—</span> },
 ];

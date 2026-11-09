@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { Badge } from '../../../components/data/badge';
 import { Card } from '../../../components/data/card';
+import { EntityLink } from '../../../components/entity-link';
 import { DataTable, type Column } from '../../../components/data/data-table';
 import { PageHeader } from '../../../components/data/page-header';
 import { Pagination } from '../../../components/data/pagination';
@@ -88,7 +89,7 @@ function FollowupsContent() {
       ),
     },
     { id: 'offer', weight: 2, header: 'Offre', cell: (f) => <strong>{f.offerReference}</strong> },
-    { id: 'company', weight: 3, header: 'Entreprise', cell: (f) => <Link href={`/companies/${f.companyId}`} className="text-ink no-underline hover:underline">{f.companyName}</Link> },
+    { id: 'company', weight: 3, header: 'Entreprise', cell: (f) => <EntityLink kind="company" id={f.companyId} label={f.companyName}>{f.companyName}</EntityLink> },
     { id: 'channel', weight: 1.6, header: 'Canal', cell: (f) => channelLabel(f.channel) },
     {
       id: 'note',

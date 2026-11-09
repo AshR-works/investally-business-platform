@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { EntityLink } from '../entity-link';
 import { useCallback, useEffect, useState } from 'react';
 import { api, ApiError } from '../../lib/api';
 import { formatDate } from '../../lib/format';
@@ -63,7 +64,7 @@ export function OffersPanel({ company, archived }: { company: { id: string; name
                   const style = statusStyle(OFFER_STATUS, o.status);
                   return (
                     <tr key={o.id}>
-                      <td><strong>{o.reference}</strong></td>
+                      <td><EntityLink kind="offer" id={o.id} label={o.reference}><strong>{o.reference}</strong></EntityLink></td>
                       <td>{o.subject}{o.withdrawnReason && <span className="block text-[length:var(--text-sm)] text-ink-2">Motif du retrait : {o.withdrawnReason}</span>}</td>
                       <td>{formatAmount(o.amount, o.currency)}</td>
                       <td><Badge tone={style.tone}>{style.label}</Badge></td>

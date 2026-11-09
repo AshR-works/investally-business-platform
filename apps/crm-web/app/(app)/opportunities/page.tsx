@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Badge } from '../../../components/data/badge';
 import { Card } from '../../../components/data/card';
+import { EntityLink } from '../../../components/entity-link';
 import { PageHeader } from '../../../components/data/page-header';
 import { RowAction, RowActions } from '../../../components/data/row-actions';
 import { QuickFilters, SearchField, Toolbar } from '../../../components/data/toolbar';
@@ -177,14 +178,14 @@ function OpportunityCard({ opportunity: o, rights, onAction, compact }: { opport
           ))}
         </RowActions>
       </div>
-      <Link href={`/companies/${o.companyId}`} className="text-ink no-underline hover:underline">{o.companyName}</Link>
+      <EntityLink kind="company" id={o.companyId} label={o.companyName}>{o.companyName}</EntityLink>
       <p className="m-0 font-semibold">{formatAmount(o.amount, o.currency)}</p>
       <p className="m-0 flex flex-wrap items-center gap-2">
         {!compact && <Badge tone="neutral">{stageLabel(o.stage)}</Badge>}
         {o.status !== 'OPEN' && <Badge tone={status.tone}>{status.label}</Badge>}
         {o.waivedAt && <Badge tone="warn">Dérogation</Badge>}
       </p>
-      <p className="m-0 mt-auto text-xs text-ink-2">{compact ? '' : `${sourceLabel(o.source)} · `}Dernière activité le {formatDate(o.lastActivityAt)}</p>
+      <p className="m-0 mt-auto text-xs text-ink-2">{compact ? '' : `${sourceLabel(o.source)} · `}Dernière activité le {formatDate(o.lastActivityAt)} · <EntityLink kind="opportunity" id={o.id} label={o.title}>Fiche</EntityLink></p>
     </article>
   );
 }

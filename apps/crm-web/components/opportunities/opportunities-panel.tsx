@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { EntityLink } from '../entity-link';
 import { useEffect, useState } from 'react';
 import { api, ApiError } from '../../lib/api';
 import { formatDate } from '../../lib/format';
@@ -53,7 +54,7 @@ export function OpportunitiesPanel({ company }: { company: { id: string; name: s
                   const style = statusStyle(OPPORTUNITY_STATUS, o.status);
                   return (
                     <tr key={o.id}>
-                      <td><strong>{o.title}</strong></td>
+                      <td><EntityLink kind="opportunity" id={o.id} label={o.title}><strong>{o.title}</strong></EntityLink></td>
                       <td>{formatAmount(o.amount, o.currency)}</td>
                       <td>{stageLabel(o.stage)}</td>
                       <td><Badge tone={style.tone}>{style.label}</Badge>{o.waivedAt && <> <Badge tone="warn">Dérogation</Badge></>}</td>

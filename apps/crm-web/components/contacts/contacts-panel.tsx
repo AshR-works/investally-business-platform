@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { EntityLink } from '../entity-link';
 import { useCallback, useEffect, useState } from 'react';
 import { api, ApiError } from '../../lib/api';
 import { useAuth } from '../../lib/auth-context';
@@ -75,7 +76,7 @@ export function ContactsPanel({ company }: { company: { id: string; name: string
               <tbody>
                 {contacts.map((c) => (
                   <tr key={c.id}>
-                    <td><strong>{c.firstName} {c.lastName}</strong></td>
+                    <td><EntityLink kind="contact" id={c.id} label={`${c.firstName} ${c.lastName}`}><strong>{c.firstName} {c.lastName}</strong></EntityLink></td>
                     <td><Badge tone="neutral">{contactRoleLabel(c.role)}</Badge></td>
                     <td>{c.email ?? '—'}</td>
                     <td>{c.phone ?? '—'}</td>

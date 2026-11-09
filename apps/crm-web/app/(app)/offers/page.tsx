@@ -1,9 +1,9 @@
 'use client';
 
-import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Badge } from '../../../components/data/badge';
 import { Card } from '../../../components/data/card';
+import { EntityLink } from '../../../components/entity-link';
 import { DataTable, type Column } from '../../../components/data/data-table';
 import { PageHeader } from '../../../components/data/page-header';
 import { Pagination } from '../../../components/data/pagination';
@@ -68,9 +68,9 @@ export default function OffersPage() {
   }, [load]);
 
   const columns = useMemo<Column<Offer>[]>(() => [
-    { id: 'reference', weight: 2, header: 'Référence', cell: (o) => <strong>{o.reference}</strong> },
+    { id: 'reference', weight: 2, header: 'Référence', cell: (o) => <EntityLink kind="offer" id={o.id} label={o.reference}><strong>{o.reference}</strong></EntityLink> },
     { id: 'subject', weight: 4, header: 'Objet', cell: (o) => o.subject },
-    { id: 'company', weight: 3, header: 'Entreprise', cell: (o) => <Link href={`/companies/${o.companyId}`} className="text-ink no-underline hover:underline">{o.companyName}</Link> },
+    { id: 'company', weight: 3, header: 'Entreprise', cell: (o) => <EntityLink kind="company" id={o.companyId} label={o.companyName}>{o.companyName}</EntityLink> },
     { id: 'amount', weight: 2.4, header: 'Montant', align: 'right', cell: (o) => formatAmount(o.amount, o.currency) },
     { id: 'status', weight: 1.8, header: 'État', cell: (o) => { const style = statusStyle(OFFER_STATUS, o.status); return <Badge tone={style.tone}>{style.label}</Badge>; } },
     { id: 'submitted', weight: 2, header: 'Déposée le', cell: (o) => formatDate(o.submittedAt) },
