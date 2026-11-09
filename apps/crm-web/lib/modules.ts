@@ -31,6 +31,7 @@ export const MODULES: readonly AppModule[] = [
   { id: 'contacts', label: 'Contacts', description: 'Interlocuteurs des entreprises', icon: 'user', group: 'CRM', href: '/contacts', permission: 'bd.contact.read' },
   { id: 'opportunities', label: 'Opportunités', description: 'Pipeline commercial', icon: 'target', group: 'CRM', href: '/opportunities', permission: 'bd.opportunity.read' },
   { id: 'offers', label: 'Offres', description: 'Offres faites aux entreprises', icon: 'doc', group: 'CRM', href: '/offers', permission: 'bd.offer.read' },
+  { id: 'approvals', label: 'Agréments', description: 'Promesses de paiement signées par les clients', icon: 'shield', group: 'CRM', href: '/approvals', permission: 'bd.approval.read' },
   { id: 'followups', label: 'Relances', description: 'Relances à faire sur les offres', icon: 'cal', group: 'CRM', href: '/followups', permission: 'bd.followup.read' },
   { id: 'agenda', label: 'Agenda', description: 'Rendez-vous et visites', icon: 'cal', group: 'CRM', href: '/agenda', permission: 'bd.appointment.read' },
   { id: 'ambassadors', label: 'Ambassadeurs', description: 'Clients et apprenants relais commerciaux', icon: 'users', group: 'CRM', href: '/ambassadors', permission: 'bd.ambassador.read' },

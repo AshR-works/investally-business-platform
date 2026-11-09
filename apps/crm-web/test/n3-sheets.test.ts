@@ -77,3 +77,35 @@ describe('les listes et panneaux pointent vers les fiches', () => {
     expect(source).not.toMatch(/href=\{`\/companies\/\$\{[a-z]\.companyId\}`\}/); // plus d'adresse de fiche écrite à la main
   });
 });
+
+describe('N4 : agréments et nouvelle inscription', () => {
+  it('Agréments est un module du CRM, lu avec bd.approval.read, et sa fiche suit la coque commune', () => {
+    expect(entityHref('approval', 'x')).toBe('/approvals/x');
+    const sheet = read('app/(app)/approvals/[id]/page.tsx');
+    expect(sheet).toContain("useEntity<Approval>('approvals')");
+    expect(sheet).toContain('<SheetState kind="approval"');
+    expect(sheet).toContain('<EntityLink kind="company"');
+    expect(sheet).toContain('<EntityLink kind="opportunity"');
+  });
+  it('la liste filtre par état et par entreprise (adresse), propose le cycle selon l\'état et les droits', () => {
+    const list = read('app/(app)/approvals/page.tsx');
+    expect(list).toContain("'bd.approval.read'");
+    expect(list).toContain('useCompanyContext()');
+    expect(list).toContain('<CompanyContextBar ctx={ctx} section="Agréments" />');
+    expect(list).toContain('ctx.companyId]);');
+    expect(list).toContain('approvalActions(a, rights)');
+    expect(list).toContain('<EntityLink kind="approval"');
+  });
+  it('la fiche entreprise renvoie vers la liste filtrée et vers la fiche de chaque agrément', () => {
+    const panel = read('components/approvals/approvals-panel.tsx');
+    expect(panel).toContain('/approvals?companyId=${company.id}');
+    expect(panel).toContain('<EntityLink kind="approval"');
+  });
+  it('la page Inscriptions a un bouton « Nouvelle inscription » réservé au droit de création, qui recharge la file', () => {
+    const page = read('app/(app)/training/enrollments/page.tsx');
+    expect(page).toContain('ENROLLMENT_PERMISSIONS.enroll');
+    expect(page).toContain('Nouvelle inscription');
+    expect(page).toContain("dialog={{ kind: 'enroll' }}");
+    expect(page).toContain('refreshKey={refreshKey}');
+  });
+});
