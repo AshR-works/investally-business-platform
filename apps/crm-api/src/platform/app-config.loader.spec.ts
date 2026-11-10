@@ -3,7 +3,7 @@ import { loadAppConfig } from './app-config.loader';
 const KEYS = { JWT_PRIVATE_KEY_PEM: 'priv', JWT_PUBLIC_KEY_PEM: 'pub' };
 const MFA_KEY = Buffer.alloc(32, 7).toString('base64');
 const M365 = { EMAIL_PROVIDER: 'microsoft365', M365_TENANT_ID: 't', M365_CLIENT_ID: 'c', M365_CLIENT_SECRET: 's', M365_SENDER: 'crm@investally.test' };
-const PROD = { NODE_ENV: 'production', DOCUMENTS_DIR: '/var/lib/investally/documents', ...KEYS, ALLOWED_ORIGINS: 'https://crm.test', MFA_ENCRYPTION_KEY: MFA_KEY, APP_PUBLIC_URL: 'https://crm.test', ...M365 };
+const PROD = { NODE_ENV: 'production', DOCUMENTS_DIR: '/var/lib/investally/documents', ...KEYS, ALLOWED_ORIGINS: 'https://crm.test', MFA_ENCRYPTION_KEY: MFA_KEY, APP_PUBLIC_URL: 'https://crm.test', RELEASED_DOMAINS: 'iam,hr', ...M365 };
 
 describe('loadAppConfig', () => {
   it('autorise le développement sans clé ni configuration (paire éphémère, cookie non sécurisé)', () => {
@@ -104,5 +104,100 @@ describe('loadAppConfig', () => {
   it('en développement, un dossier temporaire par défaut ; DOCUMENTS_DIR le remplace', () => {
     expect(loadAppConfig({}).documents.directory).toMatch(/investally-documents$/);
     expect(loadAppConfig({ DOCUMENTS_DIR: 'C:/tmp/docs' }).documents.directory).toBe('C:/tmp/docs');
+  });
+});
+
+describe('loadAppConfig — relais SMTP de Google Workspace', () => {
+  const RELAY = { EMAIL_PROVIDER: 'google-relay', EMAIL_SENDER: 'no-reply@exemple.test' };
+  const PROD_RELAY = { ...PROD, ...RELAY };
+
+  it('accepte le relais en production et applique les valeurs par défaut (serveur Google, port 587, chiffrement exigé)', () => {
+    const config = loadAppConfig(PROD_RELAY);
+    expect(config.email.provider).toBe('google-relay');
+    expect(config.email.googleRelay).toEqual({ host: 'smtp-relay.gmail.com', port: 587, sender: 'no-reply@exemple.test', security: 'starttls' });
+    expect(config.email.microsoft365).toBeNull();
+  });
+
+  it('ne charge aucun réglage de relais pour les autres fournisseurs', () => {
+    expect(loadAppConfig({}).email.googleRelay).toBeNull();
+    expect(loadAppConfig(PROD).email.googleRelay).toBeNull();
+  });
+
+  it('lit le serveur, le port et le chiffrement quand ils sont donnés', () => {
+    expect(loadAppConfig({ ...PROD_RELAY, SMTP_HOST: 'relais.exemple.test', SMTP_PORT: '2525' }).email.googleRelay).toMatchObject({ host: 'relais.exemple.test', port: 2525, security: 'starttls' });
+    expect(loadAppConfig({ ...RELAY, SMTP_SECURITY: 'none' }).email.googleRelay?.security).toBe('none');
+  });
+
+  it('exige l’adresse d’expédition, valide et unique', () => {
+    for (const sender of [undefined, '', '   ', 'pas une adresse', 'a@b.cm, c@d.cm', 'Nom <a@b.cm>', 'a@b.cm\r\nBcc: x@y.cm']) {
+      expect(() => loadAppConfig({ EMAIL_PROVIDER: 'google-relay', ...(sender === undefined ? {} : { EMAIL_SENDER: sender }) })).toThrow(/EMAIL_SENDER/);
+    }
+  });
+
+  it('refuse un serveur ou un port invalide', () => {
+    for (const host of ['serveur invalide', 'a..b', '-x.test', 'x.test/chemin', 'https://x.test']) {
+      expect(() => loadAppConfig({ ...RELAY, SMTP_HOST: host })).toThrow(/SMTP_HOST/);
+    }
+    for (const port of ['0', '65536', '-1', 'abc', '58.7', '587x', '123456']) {
+      expect(() => loadAppConfig({ ...RELAY, SMTP_PORT: port })).toThrow(/SMTP_PORT/);
+    }
+    expect(loadAppConfig({ ...RELAY, SMTP_PORT: '65535' }).email.googleRelay?.port).toBe(65535);
+    expect(loadAppConfig({ ...RELAY, SMTP_PORT: '1' }).email.googleRelay?.port).toBe(1);
+  });
+
+  it('refuse un mode de chiffrement inconnu, et refuse « none » en production (des liens d’activation ne partent jamais en clair)', () => {
+    expect(() => loadAppConfig({ ...RELAY, SMTP_SECURITY: 'tls' })).toThrow(/SMTP_SECURITY/);
+    expect(() => loadAppConfig({ ...PROD_RELAY, SMTP_SECURITY: 'none' })).toThrow(/SMTP_SECURITY=none/);
+  });
+
+  it('le message du mode « log » en production cite les deux fournisseurs acceptés', () => {
+    const { EMAIL_PROVIDER, ...withoutProvider } = PROD;
+    expect(EMAIL_PROVIDER).toBe('microsoft365');
+    expect(() => loadAppConfig(withoutProvider)).toThrow(/microsoft365 ou google-relay/);
+  });
+
+  it('un fournisseur inconnu est refusé et le message liste les trois valeurs', () => {
+    expect(() => loadAppConfig({ EMAIL_PROVIDER: 'sendgrid' })).toThrow(/google-relay/);
+  });
+});
+
+describe('loadAppConfig — domaines publiés (RELEASED_DOMAINS)', () => {
+  it('hors production, tout est publié par défaut', () => {
+    expect(loadAppConfig({}).releasedDomains).toBeNull();
+    expect(loadAppConfig({ RELEASED_DOMAINS: '' }).releasedDomains).toBeNull();
+    expect(loadAppConfig({ RELEASED_DOMAINS: '   ' }).releasedDomains).toBeNull();
+  });
+
+  it('refuse de démarrer en production sans RELEASED_DOMAINS : un oubli ne doit jamais publier des écrans non validés', () => {
+    const { RELEASED_DOMAINS, ...without } = PROD;
+    expect(RELEASED_DOMAINS).toBeTruthy();
+    expect(() => loadAppConfig(without)).toThrow(/RELEASED_DOMAINS est obligatoire/);
+    expect(() => loadAppConfig({ ...PROD, RELEASED_DOMAINS: '' })).toThrow(/RELEASED_DOMAINS est obligatoire/);
+  });
+
+  it('lit une liste de domaines (espaces, casse et doublons ignorés)', () => {
+    expect(loadAppConfig({ ...PROD, RELEASED_DOMAINS: 'iam,hr' }).releasedDomains).toEqual(['iam', 'hr']);
+    expect(loadAppConfig({ RELEASED_DOMAINS: ' IAM , Hr , iam ' }).releasedDomains).toEqual(['iam', 'hr']);
+  });
+
+  it('« all » publie tout, en production comme ailleurs', () => {
+    expect(loadAppConfig({ ...PROD, RELEASED_DOMAINS: 'all' }).releasedDomains).toBeNull();
+    expect(loadAppConfig({ RELEASED_DOMAINS: 'ALL' }).releasedDomains).toBeNull();
+  });
+
+  it('refuse un domaine inconnu (une faute de frappe ne doit pas masquer ou publier ce qu’on croit)', () => {
+    expect(() => loadAppConfig({ RELEASED_DOMAINS: 'iam,hrr' })).toThrow(/domaine inconnu « hrr »/);
+    expect(() => loadAppConfig({ RELEASED_DOMAINS: 'iam;hr' })).toThrow(/domaine inconnu/);
+  });
+
+  it('exige « iam » : sans lui, personne ne peut se connecter', () => {
+    expect(() => loadAppConfig({ RELEASED_DOMAINS: 'hr' })).toThrow(/iam/);
+    expect(() => loadAppConfig({ ...PROD, RELEASED_DOMAINS: 'bd,training' })).toThrow(/iam/);
+  });
+
+  it('accepte chaque domaine connu', () => {
+    for (const domain of ['audit', 'docs', 'bd', 'hr', 'training', 'reporting']) {
+      expect(loadAppConfig({ RELEASED_DOMAINS: `iam,${domain}` }).releasedDomains).toEqual(['iam', domain]);
+    }
   });
 });

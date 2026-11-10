@@ -1,0 +1,14 @@
+# Point d'entrée HTTPS de la V1 : certificat Let's Encrypt automatique pour APP_DOMAIN, tout le trafic va à l'interface web (qui relaie /api vers l'API).
+# Prérequis : l'enregistrement DNS de APP_DOMAIN pointe vers ce serveur, et les ports 80 et 443 sont ouverts.
+{
+	email {$ACME_EMAIL}
+}
+
+{$APP_DOMAIN} {
+	encode zstd gzip
+	reverse_proxy web:3000
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		-Server
+	}
+}

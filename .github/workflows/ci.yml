@@ -46,3 +46,39 @@ jobs:
           pnpm --filter @investally/crm-api test:integration
       - name: Audit des dépendances
         run: pnpm audit --prod --audit-level high
+
+  # Les images de la V1 se construisent pour de vrai à chaque proposition de changement (jamais exécutées à la main sur la machine de développement).
+  images:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Image de l'API
+        run: docker build -f apps/crm-api/Dockerfile -t investally-api:ci .
+      - name: Image de l'interface web
+        run: docker build -f apps/crm-web/Dockerfile -t investally-web:ci .
+      - name: Composition de production (réglages factices générés, rien de réel)
+        working-directory: deploy
+        run: |
+          node gen-env.mjs --domain ci.exemple.test --acme-email ci@exemple.test --sender no-reply@exemple.test
+          docker compose -f docker-compose.prod.yml config --quiet
+      - name: Démarrage de la pile en mode production (base, migrations, API, interface web)
+        working-directory: deploy
+        run: |
+          docker compose -f docker-compose.prod.yml up -d --wait web
+          # L'API répond et sa base aussi.
+          docker compose -f docker-compose.prod.yml exec -T api wget -qO- http://127.0.0.1:3001/health/ready
+          # L'interface relaie bien vers l'API, et le drapeau de publication est actif : un domaine hors V1 répond 404, un domaine publié répond 401 (non connecté).
+          docker compose -f docker-compose.prod.yml exec -T web node -e "Promise.all(['/api/v1/companies','/api/v1/hr/directory'].map((p) => fetch('http://127.0.0.1:3000' + p).then((r) => r.status))).then((s) => { console.log(s.join(' ')); process.exit(s[0] === 404 && s[1] === 401 ? 0 : 1); })"
+      - name: Sauvegarde puis vérification de restauration, sur une vraie base PostgreSQL 17
+        working-directory: deploy
+        run: |
+          docker compose -f docker-compose.prod.yml run --rm backup
+          docker compose -f docker-compose.prod.yml run --rm backup /scripts/restore-check.sh
+      - name: Journaux de la pile (en cas d'échec seulement)
+        if: failure()
+        working-directory: deploy
+        run: docker compose -f docker-compose.prod.yml logs --no-color --tail=80
+      - name: Nettoyage
+        if: always()
+        working-directory: deploy
+        run: docker compose -f docker-compose.prod.yml down -v

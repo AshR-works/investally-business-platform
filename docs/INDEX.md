@@ -6,6 +6,7 @@
 | Document | Contenu |
 |---|---|
 | [Guide d'exécution locale](GUIDE-EXECUTION-LOCALE.md) | Lancer l'application sur votre poste, comptes de démonstration, scénarios |
+| [Exploitation de la V1](EXPLOITATION-V1.md) | Installer, démarrer, mettre à jour et sauvegarder le serveur de production |
 | [Stratégie d'exécution](EXECUTION-LOCALE.md) | Options comparées, environnements, feuille de route |
 | [Vision](VISION.md) | Produit, périmètre, priorités |
 | [État d'avancement](livrables/05-ETAT-D-AVANCEMENT.md) | Où en est le projet |
@@ -61,6 +62,7 @@
 | [S3.6](SPRINT-S3-6-RECETTE.md) | Documents |
 | [A11Y-1](SPRINT-A11Y-1-RECETTE.md) | Accessibilité |
 | [H1](SPRINT-H1-RECETTE.md), [H2a](SPRINT-H2A-RECETTE.md), [H2b](SPRINT-H2B-RECETTE.md) | Habillage, authentification et sessions |
+| [V1](SPRINT-V1-DEPLOIEMENT-RECETTE.md) | Déploiement : images, e-mails par Google, publication par domaine, sauvegardes |
 
 ## Design et livrables
 | Document | Contenu |

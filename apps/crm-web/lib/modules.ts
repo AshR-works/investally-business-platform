@@ -1,5 +1,5 @@
 import type { IconName } from '../components/icon';
-import { can, canAll } from './permissions';
+import { can, canAll, domainOf, isReleased } from './permissions';
 import type { Profile } from './types';
 
 /**
@@ -59,9 +59,25 @@ export function availableModules(profile: Profile | null): AppModule[] {
   return MODULES.filter((m) => m.href && (!m.permission || (m.allScope ? canAll(profile, m.permission) : can(profile, m.permission))));
 }
 
-/** Modules pas encore livrés (présentés « À venir » sur le hub). */
-export function upcomingModules(): AppModule[] {
-  return MODULES.filter((m) => !m.href);
+/** Le module est publié pour ce profil : son domaine de permission l'est (un module sans permission l'est toujours). */
+export function isModuleReleased(profile: Profile | null, m: AppModule): boolean {
+  return !m.permission || isReleased(profile, domainOf(m.permission));
+}
+
+/** Modules pas encore livrés, ou livrés mais hors de la version publiée (présentés « À venir » sur le hub). */
+export function upcomingModules(profile: Profile | null = null): AppModule[] {
+  return MODULES.filter((m) => !m.href || !isModuleReleased(profile, m));
+}
+
+/** Le module (publié ou non) qui correspond à une adresse de page, ou `null` pour une page sans module (compte, vue d'ensemble). */
+export function pageModule(pathname: string): AppModule | null {
+  return activeModule(MODULES, pathname);
+}
+
+/** Le module qui bloque la page (son domaine n'est pas publié), ou `null` : la page s'affiche. Une page sans module (compte, vue d'ensemble) n'est jamais bloquée. */
+export function blockingModule(profile: Profile | null, pathname: string): AppModule | null {
+  const module = pageModule(pathname);
+  return module && !isModuleReleased(profile, module) ? module : null;
 }
 
 /** Les modules regroupés par domaine, dans l'ordre des domaines ; un domaine sans module n'apparaît pas. */

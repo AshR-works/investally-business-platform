@@ -1,0 +1,11 @@
+# Une sauvegarde par nuit (heure du serveur) ; Persistent=true rattrape un passage manqué si le serveur était éteint.
+[Unit]
+Description=Sauvegarde quotidienne de la plateforme Investally
+
+[Timer]
+OnCalendar=*-*-* 02:30:00
+Persistent=true
+RandomizedDelaySec=300
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,142 @@
+# Composition de PRODUCTION de la V1 (un serveur virtuel). Voir docs/EXPLOITATION-V1.md.
+#
+#   cd deploy && node gen-env.mjs --domain app.exemple.cm --acme-email admin@exemple.cm     # crée deploy/.env (secrets aléatoires, jamais versionné)
+#   docker compose -f docker-compose.prod.yml up -d --build
+#
+# Seul « caddy » publie des ports (80 et 443). La base, l'API et l'interface web ne sont joignables que sur le réseau interne de la composition.
+# Les secrets viennent de deploy/.env (non versionné) : rien n'est écrit dans ce fichier.
+
+x-api-build: &api-build
+  context: ..
+  dockerfile: apps/crm-api/Dockerfile
+
+x-api-env: &api-env
+  NODE_ENV: production
+  DATABASE_URL: postgresql://${POSTGRES_USER:-investally}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD manquant, lancez node gen-env.mjs}@db:5432/${POSTGRES_DB:-investally}
+  PORT: "3001"
+  DOCUMENTS_DIR: /data/documents
+  APP_PUBLIC_URL: https://${APP_DOMAIN:?APP_DOMAIN manquant}
+  ALLOWED_ORIGINS: https://${APP_DOMAIN}
+  # Derrière deux relais de réseau privé (caddy puis l'interface web) : l'adresse du client est la première adresse publique de la chaîne.
+  TRUST_PROXY: uniquelocal
+  # Domaines publiés : la V1 publie l'identité et accès (iam) et les ressources humaines (hr) ; le reste répond « introuvable » côté serveur et est masqué par l'interface.
+  RELEASED_DOMAINS: ${RELEASED_DOMAINS:-iam,hr}
+  JWT_PRIVATE_KEY_PEM: ${JWT_PRIVATE_KEY_PEM:?JWT_PRIVATE_KEY_PEM manquant}
+  JWT_PUBLIC_KEY_PEM: ${JWT_PUBLIC_KEY_PEM:?JWT_PUBLIC_KEY_PEM manquant}
+  MFA_ENCRYPTION_KEY: ${MFA_ENCRYPTION_KEY:?MFA_ENCRYPTION_KEY manquant}
+  EMAIL_PROVIDER: ${EMAIL_PROVIDER:-google-relay}
+  EMAIL_SENDER: ${EMAIL_SENDER:-}
+  SMTP_HOST: ${SMTP_HOST:-smtp-relay.gmail.com}
+  SMTP_PORT: ${SMTP_PORT:-587}
+
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-investally}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD manquant}
+      POSTGRES_DB: ${POSTGRES_DB:-investally}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-investally} -d ${POSTGRES_DB:-investally}"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+  # Migrations puis chargement des rôles et des permissions (idempotent), à chaque démarrage ou mise à jour ; s'arrête quand c'est fini.
+  migrate:
+    build: *api-build
+    image: investally-api:prod
+    restart: "no"
+    environment: *api-env
+    working_dir: /repo/apps/crm-api
+    command: ["sh", "-c", "node node_modules/prisma/build/index.js migrate deploy && node dist/src/cli/seed-core.js"]
+    depends_on:
+      db:
+        condition: service_healthy
+
+  api:
+    build: *api-build
+    image: investally-api:prod
+    restart: unless-stopped
+    environment: *api-env
+    volumes:
+      - documents:/data/documents
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3001/health/ready >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  web:
+    build:
+      context: ..
+      dockerfile: apps/crm-web/Dockerfile
+      args:
+        CRM_API_URL: http://api:3001
+    image: investally-web:prod
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/login >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 15s
+    depends_on:
+      api:
+        condition: service_healthy
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      APP_DOMAIN: ${APP_DOMAIN:?APP_DOMAIN manquant}
+      ACME_EMAIL: ${ACME_EMAIL:?ACME_EMAIL manquant}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      web:
+        condition: service_healthy
+
+  # Sauvegarde et vérification de restauration (profil « tools » : ne démarre pas avec « up -d », se lance à la demande ou par la minuterie du serveur).
+  #   docker compose -f docker-compose.prod.yml run --rm backup                                     # sauvegarde
+  #   docker compose -f docker-compose.prod.yml run --rm backup /scripts/restore-check.sh           # vérifie qu'elle se restaure
+  backup:
+    image: postgres:17-alpine
+    profiles: ["tools"]
+    restart: "no"
+    entrypoint: ["sh"]
+    command: ["/scripts/backup.sh"]
+    environment:
+      PGHOST: db
+      PGUSER: ${POSTGRES_USER:-investally}
+      PGPASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD manquant}
+      PGDATABASE: ${POSTGRES_DB:-investally}
+      BACKUP_DIR: /backups
+      BACKUP_KEEP_DAYS: ${BACKUP_KEEP_DAYS:-14}
+      DOCUMENTS_DIR: /data/documents
+    volumes:
+      - ./backup/backup.sh:/scripts/backup.sh:ro
+      - ./backup/restore-check.sh:/scripts/restore-check.sh:ro
+      - ${BACKUP_HOST_DIR:-./backups}:/backups
+      - documents:/data/documents:ro
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+  documents:
+  caddy-data:
+  caddy-config:

@@ -1,6 +1,7 @@
 import { tmpdir } from 'node:os';
 import { isAbsolute, join } from 'node:path';
 import { AppConfig, AppEnvironment } from '../shared-kernel';
+import { parseReleasedDomains } from './released-domains';
 
 /** Lit l'environnement d'exécution (`production`, `test`, sinon développement). */
 function parseEnvironment(raw: string | undefined): AppEnvironment {
@@ -52,9 +53,9 @@ export function loadAppConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     throw new Error('MFA_ENCRYPTION_KEY est obligatoire en production');
   }
 
-  const provider = env.EMAIL_PROVIDER === 'microsoft365' ? 'microsoft365' : 'log';
-  if (env.EMAIL_PROVIDER && env.EMAIL_PROVIDER !== 'log' && env.EMAIL_PROVIDER !== 'microsoft365') {
-    throw new Error("EMAIL_PROVIDER doit valoir 'log' ou 'microsoft365'");
+  const provider = env.EMAIL_PROVIDER === 'microsoft365' ? 'microsoft365' : env.EMAIL_PROVIDER === 'google-relay' ? 'google-relay' : 'log';
+  if (env.EMAIL_PROVIDER && env.EMAIL_PROVIDER !== 'log' && env.EMAIL_PROVIDER !== 'microsoft365' && env.EMAIL_PROVIDER !== 'google-relay') {
+    throw new Error("EMAIL_PROVIDER doit valoir 'log', 'microsoft365' ou 'google-relay'");
   }
   let microsoft365: AppConfig['email']['microsoft365'] = null;
   if (provider === 'microsoft365') {
@@ -64,9 +65,27 @@ export function loadAppConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     }
     microsoft365 = { tenantId, clientId, clientSecret, sender };
   }
+  let googleRelay: AppConfig['email']['googleRelay'] = null;
+  if (provider === 'google-relay') {
+    const sender = env.EMAIL_SENDER?.trim() ?? '';
+    if (!/^[^\s@<>(),;:"[\]\\]+@[^\s@<>(),;:"[\]\\]+\.[^\s@<>(),;:"[\]\\]{2,}$/.test(sender)) {
+      throw new Error("EMAIL_SENDER (l'adresse d'expédition, une seule adresse) est obligatoire avec EMAIL_PROVIDER=google-relay");
+    }
+    const host = env.SMTP_HOST?.trim() || 'smtp-relay.gmail.com';
+    if (!/^(?=.{1,253}$)([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)*$/i.test(host)) {
+      throw new Error('SMTP_HOST doit être un nom de serveur valide');
+    }
+    const rawPort = env.SMTP_PORT?.trim() || '587';
+    const port = Number(rawPort);
+    if (!/^\d{1,5}$/.test(rawPort) || port < 1 || port > 65535) throw new Error('SMTP_PORT doit être un numéro de port entre 1 et 65535');
+    const security = env.SMTP_SECURITY?.trim() || 'starttls';
+    if (security !== 'starttls' && security !== 'none') throw new Error("SMTP_SECURITY doit valoir 'starttls' ou 'none'");
+    if (production && security === 'none') throw new Error("SMTP_SECURITY=none est interdit en production : les e-mails (liens d'activation) ne doivent jamais partir en clair");
+    googleRelay = { host, port, sender, security };
+  }
   if (production && provider === 'log') {
     // Le mode journal n'envoie rien : en production, des e-mails perdus en silence seraient pire qu'un refus de démarrer.
-    throw new Error("EMAIL_PROVIDER=microsoft365 est obligatoire en production (le mode 'log' est réservé au développement et aux tests)");
+    throw new Error("EMAIL_PROVIDER=microsoft365 ou google-relay est obligatoire en production (le mode 'log' est réservé au développement et aux tests)");
   }
 
   const publicUrl = (env.APP_PUBLIC_URL?.trim() || (production ? '' : 'http://127.0.0.1:3000')).replace(/\/+$/, '');
@@ -92,9 +111,10 @@ export function loadAppConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     cookieSecure,
     allowedOrigins,
     trustProxy: env.TRUST_PROXY?.trim() || null,
+    releasedDomains: parseReleasedDomains(env.RELEASED_DOMAINS, production),
     publicUrl,
     mfa: { encryptionKeyBase64: mfaKey },
-    email: { provider, microsoft365, logContent },
+    email: { provider, microsoft365, googleRelay, logContent },
     documents: { directory: documentsDirectory },
     jwt: { privateKeyPem, publicKeyPem, issuer: 'investally-crm', audience: 'investally-crm-api' },
   };
