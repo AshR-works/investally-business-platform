@@ -77,7 +77,8 @@ describeDb('Facilitateurs et commissions (HTTP + PostgreSQL)', () => {
     expect(seenBySupport.body.facilitation).not.toHaveProperty('commission');
     const text = seenBySupport.bytes.toString('utf8');
     expect(text).not.toContain('Mbarga');
-    expect(text).not.toContain('7.50');
+    // La valeur est une chaîne JSON : avec ses guillemets. Sans eux, « 7.50 » se trouve par hasard dans un horodatage (« …:07.502Z »).
+    expect(text).not.toContain('"7.50"');
     expect(text).not.toContain('commission');
   }, 60_000);
 
