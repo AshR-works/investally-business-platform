@@ -277,7 +277,7 @@ Les étapes 2 et 3 peuvent démarrer **avant** la fin de S5.2 : la vague 1 ne d�
 | N° | Question | Recommandation |
 |---|---|---|
 | D-PROD-1 | Stratégie de déploiement | A : progressif par module, avec pilote (score 138 sur 160) |
-| D-PROD-2 | Hébergement | A : cloud géré, B en repli pour un pilote (scores indicatifs : budget et compétences non connus) |
+| D-PROD-2 | Hébergement | **Décidé le 2026-11-10 (D63, [ADR-0010](../adr/0010-hebergement-v1-serveur-virtuel-et-relais-google.md))** : serveur virtuel + Docker Compose, c'est-à-dire le repli « B » prévu pour un pilote ; le cloud géré reste possible plus tard (la composition est portable) |
 | D-PROD-3 | Composition du pilote de la vague 1 | Head of Sales, chargé de compte, DAF ; DG et DGA en lecture |
 | D-PROD-4 | Responsable de l'exploitation et second administrateur | À désigner avant S7.1 |
 | D-PROD-5 | Désignation du responsable Investudy et du rôle du marketing digital | À préciser avant la vague 2 |

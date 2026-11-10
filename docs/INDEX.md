@@ -50,6 +50,7 @@
 | [ADR-0007](adr/0007-stocks-module-autonome-heberge.md) | Module Stocks |
 | [ADR-0008](adr/0008-stockage-des-documents-derriere-un-port.md) | Stockage des documents |
 | [ADR-0009](adr/0009-rh-legere-dans-le-crm.md) | RH légère dans le CRM, RH sensible à l'ERP (amende ADR-0005) |
+| [ADR-0010](adr/0010-hebergement-v1-serveur-virtuel-et-relais-google.md) | Hébergement de la V1 : serveur virtuel et Docker Compose ; envoi d'e-mails par le relais Google |
 
 ## Recettes par session
 | Document | Session |

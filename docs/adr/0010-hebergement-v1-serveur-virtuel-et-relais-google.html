@@ -1,0 +1,49 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ADR-0010 — Hébergement de la V1 : serveur virtuel et Docker Compose ; envoi d&#x27;e-mails par le relais Google</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="../INDEX.html">Index</a> · <a href="../GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="../ARCHITECTURE.html">Architecture</a> · <a href="../SECURITY.html">Sécurité</a> · <a href="../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="../TECH-DEBT.html">Dette</a> · <a href="../CHARTE-DE-TESTS.html">Charte de tests</a> · <a href="../tests/README.html">Fiches de test</a> · <a href="../design/README.html">Design</a> · <a href="../livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>ADR-0010 — Hébergement de la V1 : serveur virtuel et Docker Compose ; envoi d'e-mails par le relais Google</h1>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td><strong>Statut</strong></td><td>Accepté (2026-11-10, décisions D60 à D63 de la Direction produit). <strong>Précise D-PROD-2</strong> du plan de mise en production : l'hébergement retenu est l'option « serveur virtuel » (le repli pour un pilote), pas le cloud géré. Les valeurs par défaut de l'équipe (fournisseur, sous-domaine, Cloudflare, sauvegardes) sont <strong>à confirmer</strong>.</td></tr>
+<tr><td><strong>Contexte</strong></td><td>La V1 doit être <strong>déployée et fonctionnelle</strong> : accès à la plateforme, sessions, paramètres de compte, RH-1. L'hébergement n'était pas décidé ; l'accès Microsoft 365 est en pause (détenu par la Direction générale) alors que la configuration de production refuse tout fournisseur d'e-mail autre que Microsoft 365.</td></tr>
+<tr><td><strong>Lié à</strong></td><td><code>docs/cadrages/PLAN-DE-MISE-EN-PRODUCTION.md</code> (D-PROD-1 à 5), ADR-0008 (stockage des documents derrière un port), D9 (accès Microsoft 365), R9 (dépendance à une personne), R13 (SuperAdmin unique), D164</td></tr>
+</tbody></table></div>
+<h2>1. Hébergement</h2>
+<h3>Options considérées</h3>
+<div class="table-wrap"><table><thead><tr><th>Option</th><th>Principe</th><th>Total (sur 100)</th></tr></thead><tbody>
+<tr><td><strong>A. Serveur virtuel + Docker Compose (retenue)</strong></td><td>Un serveur virtuel, la pile actuelle dans des conteneurs, certificat automatique, Cloudflare ajouté ensuite</td><td><strong>77</strong></td></tr>
+<tr><td>B. Hébergement mutualisé (cPanel, Node.js via l'outil du fournisseur, PostgreSQL inclus, pas d'accès root, Docker non mentionné)</td><td>Moins d'administration mais la pile doit être adaptée, sans garantie</td><td>60</td></tr>
+<tr><td>C. Vercel pour l'interface, l'API et la base ailleurs</td><td>Les fonctions de Vercel sont limitées par requête (300 s sur le plan Pro selon sa documentation) : elles ne conviennent pas à un serveur NestJS permanent ; licence par utilisateur ; deux hébergeurs</td><td>47</td></tr>
+<tr><td>D. Statu quo (démonstration locale)</td><td>Aucun risque, mais pas de V1 déployée</td><td>60</td></tr>
+</tbody></table></div>
+<p>Critères et poids (fixés par l'équipe) : adéquation à la pile existante (5), tenir vendredi (5), charge d'exploitation pour un seul développeur (4), coût et prévisibilité (3), maîtrise des données et des sauvegardes (3) ; maximum 100. <strong>D</strong> obtient 60 parce qu'elle ne risque rien ; elle échoue sur l'exigence ferme (V1 déployée).</p>
+<h3>Décision</h3>
+<ul><li><strong>Serveur virtuel + Docker Compose.</strong> L'API possède déjà une image ; il faut créer celle de l'interface et exécuter pour de vrai la composition (jamais fait).</li><li>Valeurs par défaut à confirmer : <strong>fournisseur Hostinger</strong> (interchangeable : la composition est portable) ; l'application sur <strong>un sous-domaine dédié</strong>, <strong>sans modifier le DNS du domaine principal</strong> avant la migration de la messagerie ; <strong>certificat automatique</strong> sur le serveur ; <strong>Cloudflare ensuite</strong> (tunnel, protection, stockage d'objets) quand le DNS sera maîtrisé ; <strong>sauvegardes quotidiennes hors du serveur</strong> et test de restauration.</li><li>Cloudflare n'est pas un hébergeur pour cette pile : couche devant le serveur, jamais à la place de la base ou de l'API (compatibilité de NestJS et Prisma avec ses fonctions serverless <strong>non vérifiée</strong>).</li></ul>
+<h2>2. E-mails</h2>
+<h3>Options considérées</h3>
+<ol><li><strong>Attendre Microsoft 365</strong> : en pause, bloque la V1.</li><li><strong>Remise des liens par le SuperAdmin</strong> : du code nouveau sur le chemin le plus sensible, le SuperAdmin voit les liens d'accès des autres, « mot de passe oublié » devient faux ; <strong>écartée</strong>.</li><li><strong>Envoi par Google Workspace, SMTP avec mot de passe d'application</strong> : un secret de plus, plafond d'environ 2 000 messages par jour, validation en deux étapes exigée.</li><li><strong>Envoi par Google Workspace, relais SMTP par adresse IP (retenue)</strong> : aucun mot de passe à stocker si l'IP suffit, plafond plus haut ; demande un super administrateur Google et <strong>une IP fixe en sortie</strong> (ce que le serveur virtuel fournit).</li></ol>
+<h3>Décision</h3>
+<ul><li>Envoi par le <strong>relais SMTP de Google Workspace, autorisé par l'adresse IP du serveur</strong>. Un <strong>adaptateur d'envoi</strong> derrière le port existant (<code>EmailSender</code>), la configuration de production qui l'accepte, des tests ; aucun secret dans le dépôt.</li><li>Les comptes utilisent les <strong>adresses professionnelles du domaine de l'entreprise</strong> : elles resteront valides après la migration vers Microsoft 365 (l'identifiant est une chaîne, pas un lien vers une boîte). Le jour de la migration : changement de configuration et adaptateur Microsoft déjà écrit.</li><li><strong>Prérequis externes</strong> : un super administrateur Google Workspace (configuration du relais, clé DKIM), l'accès au DNS du domaine, l'IP du serveur.</li></ul>
+<h3>Constat sur la délivrabilité (DNS publics, relevé du 2026-11-10)</h3>
+<ul><li>Les MX pointent vers Google (messagerie Google Workspace confirmée).</li><li>Le <strong>SPF ne déclare pas Google</strong> (il déclare un service d'envoi transactionnel et l'hébergeur DNS) ; il n'y a <strong>pas d'enregistrement DMARC</strong> ; aucune clé DKIM sur le sélecteur par défaut de Google (un autre sélecteur peut exister).</li><li>Sans correction, les messages envoyés par Google depuis le domaine risquent d'être signalés ou classés comme indésirables. <strong>À corriger avant la mise en service</strong> : ajouter Google au SPF <strong>sans retirer les entrées existantes</strong>, publier la clé DKIM générée par la console d'administration, ajouter un DMARC en surveillance. La migration vers Microsoft 365 modifiera à nouveau ces enregistrements.</li></ul>
+<h2>Conséquences</h2>
+<ul><li>(+) La pile reste telle quelle ; aucune dépendance à Microsoft 365 pour la V1 ; chaque parcours par e-mail (invitation, mot de passe oublié, réinitialisation) fonctionne comme construit.</li><li>(−) <strong>Exploitation par une seule personne</strong> (R9) : mises à jour du système, pare-feu, sauvegardes, supervision, à écrire et à tester. Le <strong>second SuperAdmin</strong> et un second opérateur deviennent une condition de la V1, pas un risque noté.</li><li>(−) Le fournisseur annonce des tarifs de renouvellement bien supérieurs aux prix d'appel : à vérifier au contrat.</li><li>(−) Deux dépendances externes sur les mêmes personnes : l'administration Google et le DNS.</li><li><strong>Dettes</strong> : D165 (délivrabilité du domaine), D166 (exploitation, sauvegardes et supervision à construire).</li><li>À revoir si : Microsoft 365 est livré (changer d'adaptateur), la charge dépasse un serveur, un second développeur arrive, ou le DNS passe sous Cloudflare.</li></ul></main></body></html>

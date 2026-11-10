@@ -1,0 +1,39 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fiche de rencontre avec la Direction générale — accès Google, DNS et exploitation de la V1</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — cadrages · <a href="README.html">Index des cadrages</a> · <a href="../INDEX.html">Documentation</a> · <a href="../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../design/05-AIDE-A-LA-DECISION.html">Aide à la décision</a></nav><h1>Fiche de rencontre avec la Direction générale — accès Google, DNS et exploitation de la V1</h1>
+<p><em>2026-11-10 · À préparer pour l'échange avec la Direction générale · Ce document nomme des <strong>fonctions</strong>, jamais des personnes ni des secrets : le dépôt est public. Il découle de l'<a href="../adr/0010-hebergement-v1-serveur-virtuel-et-relais-google.html">ADR-0010</a> (décisions D60 à D63).</em></p>
+<h2>Pourquoi cet échange</h2>
+<p>La V1 (accès à la plateforme, sessions, paramètres de compte, RH) envoie des e-mails (invitations, mot de passe oublié) par <strong>Google Workspace</strong> et se déploie sur un <strong>serveur virtuel</strong>. Trois choses ne peuvent pas être faites par l'équipe technique seule : <strong>configurer le côté Google</strong>, <strong>modifier le DNS du domaine</strong>, <strong>engager la dépense du serveur</strong>. Sans elles, la V1 reste une démonstration.</p>
+<h2>Ce qu'on a observé (DNS publics, 2026-11-10)</h2>
+<div class="table-wrap"><table><thead><tr><th>Élément</th><th>Constat</th><th>Conséquence</th></tr></thead><tbody>
+<tr><td>Messagerie</td><td>MX chez Google</td><td>Google Workspace est bien la messagerie actuelle</td></tr>
+<tr><td>Où est le DNS</td><td>Serveurs de noms d'un hébergeur français (pas Google, pas Cloudflare)</td><td>C'est <strong>là</strong> qu'il faut ajouter des enregistrements ; savoir <strong>qui détient ce compte</strong></td></tr>
+<tr><td>SPF</td><td>Déclare un service d'envoi transactionnel et l'hébergeur ; <strong>ne déclare pas Google</strong></td><td>Il faut <strong>ajouter</strong> Google, sans retirer l'existant</td></tr>
+<tr><td>DMARC</td><td>Aucun</td><td>À publier, d'abord en surveillance</td></tr>
+<tr><td>DKIM Google</td><td>Aucune clé sur le sélecteur par défaut</td><td>À générer dans la console d'administration Google, puis à publier</td></tr>
+</tbody></table></div>
+<h2>Ce qu'il faut obtenir</h2>
+<ol><li><strong>Qui est super administrateur de Google Workspace ?</strong> Il doit : autoriser le <strong>relais SMTP par adresse IP</strong> (avec l'IP du serveur, connue après l'achat), créer l'<strong>adresse d'expédition</strong> de la plateforme et <strong>générer la clé DKIM</strong>. <em>À vérifier avec Google : si un rôle délégué suffit à la place du super administrateur.</em></li><li><strong>Qui détient le compte de l'hébergeur DNS du domaine ?</strong> Soit un accès délégué à l'équipe technique, soit une personne qui ajoute les enregistrements que nous lui transmettons : un enregistrement pour le <strong>sous-domaine de la plateforme</strong>, la mise à jour du <strong>SPF</strong>, la <strong>clé DKIM</strong>, le <strong>DMARC</strong>.</li><li><strong>À quoi sert le service d'envoi déjà déclaré dans le SPF ?</strong> (site, lettre d'information ?) Il ne doit pas être cassé.</li><li><strong>Migration vers Microsoft 365</strong> : date prévue, les adresses resteront-elles identiques, qui modifiera le DNS à ce moment ? (Les enregistrements ci-dessus changeront une seconde fois.)</li><li><strong>Le serveur</strong> : accord sur la dépense mensuelle, <strong>qui paie et qui détient le compte</strong> chez le fournisseur (la dépendance à une seule personne est un risque).</li><li><strong>Second administrateur</strong> : qui peut être <strong>second SuperAdmin</strong> de la plateforme, et <strong>second opérateur</strong> du serveur (sauvegardes, reprise) ?</li><li><strong>Données du personnel</strong> : qui valide la durée de conservation et la base légale avant d'y mettre de vraies fiches RH (questions D11, D65) ?</li></ol>
+<h2>Ce que l'équipe technique fera ensuite, dans l'ordre</h2>
+<ol><li>Image de l'interface, composition exécutée pour de vrai, sauvegardes quotidiennes hors serveur.</li><li>Adaptateur d'envoi par le relais Google, essayé avec de vraies adresses.</li><li>Pages « prévu pour les prochaines mises à jour » pour tout ce qui est hors V1.</li><li>Création des vrais comptes et enrôlement du second facteur, un à un.</li><li>Essai de bout en bout avant d'ouvrir à toute l'équipe.</li></ol></main></body></html>
