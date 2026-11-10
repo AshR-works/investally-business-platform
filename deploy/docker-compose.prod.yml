@@ -107,6 +107,32 @@ services:
       web:
         condition: service_healthy
 
+  # Sauvegarde et vérification de restauration (profil « tools » : ne démarre pas avec « up -d », se lance à la demande ou par la minuterie du serveur).
+  #   docker compose -f docker-compose.prod.yml run --rm backup                                     # sauvegarde
+  #   docker compose -f docker-compose.prod.yml run --rm backup /scripts/restore-check.sh           # vérifie qu'elle se restaure
+  backup:
+    image: postgres:17-alpine
+    profiles: ["tools"]
+    restart: "no"
+    entrypoint: ["sh"]
+    command: ["/scripts/backup.sh"]
+    environment:
+      PGHOST: db
+      PGUSER: ${POSTGRES_USER:-investally}
+      PGPASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD manquant}
+      PGDATABASE: ${POSTGRES_DB:-investally}
+      BACKUP_DIR: /backups
+      BACKUP_KEEP_DAYS: ${BACKUP_KEEP_DAYS:-14}
+      DOCUMENTS_DIR: /data/documents
+    volumes:
+      - ./backup/backup.sh:/scripts/backup.sh:ro
+      - ./backup/restore-check.sh:/scripts/restore-check.sh:ro
+      - ${BACKUP_HOST_DIR:-./backups}:/backups
+      - documents:/data/documents:ro
+    depends_on:
+      db:
+        condition: service_healthy
+
 volumes:
   pgdata:
   documents:

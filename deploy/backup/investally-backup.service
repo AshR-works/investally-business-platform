@@ -1,0 +1,13 @@
+# Copier dans /etc/systemd/system/, adapter WorkingDirectory et User, puis :
+#   systemctl daemon-reload && systemctl enable --now investally-backup.timer
+# L'environnement (BACKUP_RCLONE_REMOTE, BACKUP_HOST_DIR) se met dans /etc/investally-backup.env (droits 600), jamais dans le dépôt.
+[Unit]
+Description=Sauvegarde et vérification de restauration de la plateforme Investally
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/investally-platform/deploy
+EnvironmentFile=-/etc/investally-backup.env
+ExecStart=/bin/sh /opt/investally-platform/deploy/backup/run-backup.sh

@@ -61,3 +61,21 @@ jobs:
         run: |
           node gen-env.mjs --domain ci.exemple.test --acme-email ci@exemple.test --sender no-reply@exemple.test
           docker compose -f docker-compose.prod.yml config --quiet
+      - name: Démarrage de la pile en mode production (base, migrations, API, interface web)
+        working-directory: deploy
+        run: |
+          docker compose -f docker-compose.prod.yml up -d --wait web
+          docker compose -f docker-compose.prod.yml exec -T web wget -qO- http://127.0.0.1:3000/api/v1/health
+      - name: Sauvegarde puis vérification de restauration, sur une vraie base PostgreSQL 17
+        working-directory: deploy
+        run: |
+          docker compose -f docker-compose.prod.yml run --rm backup
+          docker compose -f docker-compose.prod.yml run --rm backup /scripts/restore-check.sh
+      - name: Journaux de la pile (en cas d'échec seulement)
+        if: failure()
+        working-directory: deploy
+        run: docker compose -f docker-compose.prod.yml logs --no-color --tail=80
+      - name: Nettoyage
+        if: always()
+        working-directory: deploy
+        run: docker compose -f docker-compose.prod.yml down -v
