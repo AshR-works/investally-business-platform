@@ -7,7 +7,8 @@ import { Badge } from '../../../../components/data/badge';
 import { Card } from '../../../../components/data/card';
 import { EntityLink } from '../../../../components/entity-link';
 import { EntitySheet, SheetState, useEntity } from '../../../../components/entity-sheet';
-import { api } from '../../../../lib/api';
+import { api, ApiError } from '../../../../lib/api';
+import { openOfferSheet } from '../../../../lib/export-sheet';
 import { useAuth } from '../../../../lib/auth-context';
 import { listFor } from '../../../../lib/company-context';
 import { formatDate } from '../../../../lib/format';
@@ -24,12 +25,23 @@ export default function OfferSheetPage() {
   const { entity: offer, error } = useEntity<Offer>('offers');
   const [followups, setFollowups] = useState<Followup[] | null>(null);
   const [cloning, setCloning] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
   const canFollowups = can(profile, 'bd.followup.read');
   const offerId = offer?.id;
   useEffect(() => {
     if (!offerId || !canFollowups) return;
     api<Page<Followup>>(`/followups?offerId=${encodeURIComponent(offerId)}&pageSize=50`).then((p) => setFollowups(p.items)).catch(() => setFollowups([]));
   }, [offerId, canFollowups]);
+
+  /** Exporte l'offre au format de la charte graphique : le serveur contrôle la portée et trace l'export ; le navigateur propose l'enregistrement en PDF. */
+  async function exportOffer(id: string) {
+    setExportError(null);
+    try {
+      await openOfferSheet(id);
+    } catch (e) {
+      setExportError(e instanceof ApiError || e instanceof Error ? e.message : 'Export impossible');
+    }
+  }
 
   if (!offer) return <SheetState kind="offer" error={error} loaded={false} listHref="/offers" listLabel="Toutes les offres" />;
   const status = statusStyle(OFFER_STATUS, offer.status);
@@ -40,7 +52,13 @@ export default function OfferSheetPage() {
       description={offer.subject}
       listHref="/offers"
       listLabel="Toutes les offres"
-      actions={can(profile, 'bd.offer.create') && <button type="button" className="secondary" onClick={() => setCloning(true)}>Cloner en nouveau brouillon</button>}
+      actions={
+        <div className="flex flex-wrap items-center gap-2">
+          <button type="button" className="secondary" onClick={() => void exportOffer(offer.id)}>Exporter l’offre</button>
+          {can(profile, 'bd.offer.create') && <button type="button" className="secondary" onClick={() => setCloning(true)}>Cloner en nouveau brouillon</button>}
+          {exportError && <p role="alert" className="error m-0">{exportError}</p>}
+        </div>
+      }
       facts={[
         { label: 'État', value: <Badge tone={status.tone}>{status.label}</Badge> },
         { label: 'Entreprise', value: <EntityLink kind="company" id={offer.companyId} label={offer.companyName}>{offer.companyName}</EntityLink> },

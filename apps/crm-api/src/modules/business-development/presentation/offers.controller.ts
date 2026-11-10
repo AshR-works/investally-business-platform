@@ -1,9 +1,10 @@
-import { Body, Controller, Get, HttpCode, Param, ParseUUIDPipe, Post, Put, Query, Req } from '@nestjs/common';
+import { Body, Controller, Get, Header, HttpCode, Param, ParseUUIDPipe, Post, Put, Query, Req } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
 import { actorContextFrom } from '../../../shared-kernel';
 import { Access, CurrentActor, Protected, visibilityFor } from '../../iam';
 import type { AccessContext, AuthenticatedActor } from '../../iam';
+import { ExportOfferSheetHandler } from '../application/export-offer-sheet.query';
 import {
   ChangeOfferStatusUseCase, CloneOfferUseCase, GetOfferHandler, ListOffersHandler, OfferAction, RegisterOfferUseCase, UpdateOfferUseCase,
 } from '../application/offer-use-cases';
@@ -23,6 +24,7 @@ export class OffersController {
     private readonly changeStatus: ChangeOfferStatusUseCase,
     private readonly getOffer: GetOfferHandler,
     private readonly listOffers: ListOffersHandler,
+    private readonly exportOfferSheet: ExportOfferSheetHandler,
   ) {}
 
   @Post()
@@ -36,6 +38,18 @@ export class OffersController {
   @Protected('bd.offer.read')
   list(@Query() query: ListOffersDto, @Access() access: AccessContext) {
     return this.listOffers.execute({ ...query, access, visibility: visibilityFor(access, 'bd.offer.read') });
+  }
+
+  /** Offre imprimable (charte graphique) : qui peut voir l'offre peut l'exporter ; chaque export est tracé. HTML autonome, sans script ni ressource externe. */
+  @Get(':id/export')
+  @Protected('bd.offer.read')
+  @Header('Content-Type', 'text/html; charset=utf-8')
+  @Header('Content-Security-Policy', "default-src 'none'; img-src data:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'")
+  @Header('X-Content-Type-Options', 'nosniff')
+  @Header('Cache-Control', 'no-store')
+  async export(@Param('id', ParseUUIDPipe) id: string, @Access() access: AccessContext, @CurrentActor() actor: AuthenticatedActor, @Req() req: Request) {
+    const sheet = await this.exportOfferSheet.execute({ id, access, actor: actorContextFrom(req, actor) });
+    return sheet.html;
   }
 
   @Get(':id')

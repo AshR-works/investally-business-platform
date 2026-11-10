@@ -12,6 +12,7 @@ import { CloseFollowupUseCase, GetFollowupHandler, ListFollowupsHandler, PlanFol
 import { OfferDocumentOwnerResolver, ReceiptDocumentOwnerResolver } from './application/offer-document-owners';
 import { DeleteContactUseCase, GetContactHandler, ListContactsHandler, RegisterContactUseCase, UpdateContactUseCase } from './application/contact-use-cases';
 import { ExportCompanySheetHandler } from './application/export-company-sheet.query';
+import { ExportOfferSheetHandler } from './application/export-offer-sheet.query';
 import { FacilitationResolver } from './application/facilitation-resolver';
 import { GetFacilitatorHandler, ListFacilitatorsHandler } from './application/facilitator-queries';
 import { GetCompanyHandler } from './application/get-company.query';
@@ -95,6 +96,7 @@ import { ReceiptsController } from './presentation/receipts.controller';
     ReassignCompanyUseCase,
     ListOwnerCandidatesHandler,
     ExportCompanySheetHandler,
+    ExportOfferSheetHandler,
     ListCompaniesHandler,
     GetCompanyOverviewHandler,
     GetCompanyHandler,

@@ -61,7 +61,21 @@ describe('fiche imprimable — contenu et sécurité', () => {
   });
   it('le document ne contient aucun script, aucune ressource externe ni lien sortant', () => {
     const html = renderCompanySheet(view(), new Date());
-    expect(html).not.toMatch(/<script|<link|<iframe|src=|href=|@import|url\(/i);
+    expect(html).not.toMatch(/<script|<link|<iframe|href=|@import|url\(/i);
+    // Les seules images sont les logos embarqués de la charte (données incluses dans le document), jamais une adresse.
+    const sources = [...html.matchAll(/src="([^"]*)"/g)].map((m) => m[1]);
+    expect(sources.length).toBeGreaterThan(0);
+    for (const source of sources) expect(source).toMatch(/^data:image\/png;base64,/);
+  });
+  it('respecte la charte graphique : en-tête avec logo, titre et numéro, tableau noir, pied de page légal', () => {
+    const html = renderCompanySheet(view(), new Date('2026-10-30T10:00:00Z'));
+    expect(html).toContain('<h1>FICHE ENTREPRISE</h1>');
+    expect(html).toContain('N° FIC-0000ABCD');
+    expect(html).toContain('class="lignes"');
+    expect(html).toContain('RC : CM-DLA-01-2026-B14-00033');
+    expect(html).toContain('NIU : M082618939960W');
+    expect(html).toContain('contact@investally.io');
+    expect(html).not.toContain('Investally Group');
   });
   it('affiche les coordonnées, la date et la référence ; « — » pour un champ vide', () => {
     const html = renderCompanySheet(view({ phone: null }), new Date('2026-10-30T10:00:00Z'));

@@ -70,7 +70,7 @@ export class CompaniesController {
   @Get(':id/export')
   @Protected('bd.company.read')
   @Header('Content-Type', 'text/html; charset=utf-8')
-  @Header('Content-Security-Policy', "default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'")
+  @Header('Content-Security-Policy', "default-src 'none'; img-src data:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'")
   @Header('X-Content-Type-Options', 'nosniff')
   @Header('Cache-Control', 'no-store')
   async export(@Param('id', ParseUUIDPipe) id: string, @Access() access: AccessContext, @CurrentActor() actor: AuthenticatedActor, @Req() req: Request) {
