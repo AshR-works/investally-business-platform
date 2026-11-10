@@ -32,7 +32,8 @@ describeDb('Jeu de données de démonstration (cas d’usage + PostgreSQL)', () 
     const companies = (await db.company.findMany({ where: { ownerUserId: { in: owners } }, select: { id: true } })).map((c) => c.id);
     const offers = (await db.offer.findMany({ where: { companyId: { in: companies } }, select: { id: true } })).map((o) => o.id);
     await db.commissionPayout.deleteMany({ where: { companyId: { in: companies } } });
-    await db.enrollment.deleteMany({ where: { OR: [{ companyId: { in: companies } }, { learner: { emailKey: { endsWith: LEARNERS_MARKER } } }] } });
+    // Une inscription peut ne tenir au jeu que par sa session (apprenant d'une autre entreprise) : on la retire aussi, sinon la session ne peut pas être supprimée plus bas.
+    await db.enrollment.deleteMany({ where: { OR: [{ companyId: { in: companies } }, { learner: { emailKey: { endsWith: LEARNERS_MARKER } } }, { session: { trainer: { emailKey: { endsWith: TRAINERS_MARKER } } } }] } });
     await db.learner.deleteMany({ where: { OR: [{ companyId: { in: companies } }, { emailKey: { endsWith: LEARNERS_MARKER } }] } });
     await db.approval.deleteMany({ where: { companyId: { in: companies } } });
     await db.appointment.deleteMany({ where: { companyId: { in: companies } } });
@@ -139,7 +140,9 @@ describeDb('Jeu de données de démonstration (cas d’usage + PostgreSQL)', () 
     expect(new Set(rows.flatMap((e) => (e.userId ? [e.userId] : [])).sort())).toEqual(new Set([users.rh, users.finance, users.commercial, users.compte1, users.compte2, users.compte3, users.investudy].sort()));
     // La hiérarchie des comptes n'a pas été touchée ; un seul écart est signalé : la Finance (responsable RH : la DGA, compte sans responsable).
     const access = await t.get<AuthorizationService>(AuthorizationService as never).contextFor(users.rh);
-    const gaps = await t.get<ListHierarchyGapsHandler>(ListHierarchyGapsHandler as never).execute({ access });
+    // La base est partagée : les écarts d'autres suites (leurs employés de test) ne comptent pas, on ne regarde que ceux du jeu de démonstration.
+    const demoIds = new Set(rows.map((e) => e.id));
+    const gaps = (await t.get<ListHierarchyGapsHandler>(ListHierarchyGapsHandler as never).execute({ access })).filter((g) => demoIds.has(g.employeeId));
     expect(gaps).toHaveLength(1);
     expect(gaps[0]).toMatchObject({ employeeName: expect.stringContaining('Nkodo'), hrManagerName: expect.stringContaining('Tchoumi'), accountManagerName: null });
     // Chargé seul sur une démo qui n'a pas de bloc RH.
