@@ -46,7 +46,7 @@ export function EntitySheet({ eyebrow, title, description, listHref, listLabel, 
 }) {
   return (
     <>
-      <PageHeader eyebrow={eyebrow} title={title} description={description} actions={actions} />
+      <PageHeader eyebrow={eyebrow} title={title} description={description} actions={actions} stacked />
       <p className="m-0 mb-4 text-[length:var(--text-sm)]"><Link href={listHref}>← {listLabel}</Link></p>
       <Card className="mb-8">
         <dl className="m-0 grid grid-cols-[repeat(auto-fit,minmax(12rem,1fr))] gap-6 p-5">

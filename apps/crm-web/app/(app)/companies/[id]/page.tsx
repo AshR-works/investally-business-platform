@@ -73,6 +73,7 @@ export default function CompanyPage() {
   return (
     <>
       <PageHeader
+        stacked
         eyebrow="Business Development"
         title={company.name}
         description="Vue d’ensemble de l’entreprise : responsable, statut, contacts, offres, opportunités, rendez-vous et documents. Les actions se font dans chaque module."

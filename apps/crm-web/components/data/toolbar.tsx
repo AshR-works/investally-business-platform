@@ -5,7 +5,8 @@ import { Icon } from '../icon';
 
 /** Barre d'outils d'un tableau : filtres rapides à gauche, recherche et réglages à droite. */
 export function Toolbar({ children }: { children: ReactNode }) {
-  return <div className="flex flex-wrap items-center gap-3 border-b border-line px-4 py-3">{children}</div>;
+  // Le style global des champs ajoute une marge au-dessus d'une liste et sous un libellé : dans une barre d'outils elles décalent les contrôles (lot A) ; tous gardent la même hauteur.
+  return <div className="flex flex-wrap items-center gap-3 border-b border-line px-4 py-3 [&_label]:mb-0 [&_select]:mt-0 [&_select]:h-10 [&_input[type=search]]:mt-0">{children}</div>;
 }
 
 /** Option d'un filtre rapide (`count` facultatif : seulement s'il est connu de l'API). */
