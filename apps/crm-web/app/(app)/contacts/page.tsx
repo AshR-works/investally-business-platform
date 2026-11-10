@@ -20,6 +20,7 @@ import { useAuth } from '../../../lib/auth-context';
 import { CONTACT_ROLES, contactRoleLabel } from '../../../lib/contacts';
 import { can } from '../../../lib/permissions';
 import type { Contact, Page } from '../../../lib/types';
+import { MailLink } from '../../../components/mail-link';
 
 const PAGE_SIZE = 20;
 
@@ -27,7 +28,7 @@ const COLUMNS: Column<Contact>[] = [
   { id: 'name', weight: 3, header: 'Contact', cell: (c) => <EntityLink kind="contact" id={c.id} label={`${c.firstName} ${c.lastName}`}><EntityCell name={`${c.firstName} ${c.lastName}`} /></EntityLink> },
   { id: 'role', weight: 2, header: 'Fonction', cell: (c) => <Badge tone="neutral">{contactRoleLabel(c.role)}</Badge> },
   { id: 'company', weight: 3, header: 'Entreprise', cell: (c) => <EntityLink kind="company" id={c.companyId} label={c.companyName}>{c.companyName}</EntityLink> },
-  { id: 'email', weight: 3.2, header: 'E-mail', cell: (c) => c.email ?? <span className="text-ink-2">—</span> },
+  { id: 'email', weight: 3.2, header: 'E-mail', cell: (c) => <MailLink email={c.email} /> },
   { id: 'phone', weight: 2.4, header: 'Téléphone', cell: (c) => c.phone ?? <span className="text-ink-2">—</span> },
 ];
 

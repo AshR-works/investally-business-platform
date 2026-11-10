@@ -20,6 +20,7 @@ import {
 } from '../../../lib/catalogue';
 import { can } from '../../../lib/permissions';
 import type { Page } from '../../../lib/types';
+import { MailLink } from '../../../components/mail-link';
 
 const PAGE_SIZE = 20;
 
@@ -156,7 +157,7 @@ export default function TrainingCatalogPage() {
                 { id: 'name', weight: 3, header: 'Formateur', cell: (t: Trainer) => <strong>{t.firstName} {t.lastName}</strong> },
                 { id: 'kind', weight: 1.6, header: 'Type', cell: (t: Trainer) => (t.internal ? 'Interne' : 'Externe') },
                 { id: 'specialties', weight: 3, header: 'Spécialités', cell: (t: Trainer) => clip(t.specialties) },
-                { id: 'contact', weight: 3, header: 'Contact', cell: (t: Trainer) => (t.email || t.phone ? <>{t.email}{t.email && t.phone ? <br /> : null}{t.phone}</> : dash) },
+                { id: 'contact', weight: 3, header: 'Contact', cell: (t: Trainer) => (t.email || t.phone ? <>{t.email ? <MailLink email={t.email} /> : null}{t.email && t.phone ? <br /> : null}{t.phone}</> : dash) },
                 { ...statusColumn, cell: (t: Trainer) => <StatusBadge status={t.status} /> },
                 { ...actionsColumn, cell: (t: Trainer) => actionsFor(t, `${t.firstName} ${t.lastName}`, () => setDialog({ kind: 'trainer', trainer: t })) },
               ]);

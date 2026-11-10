@@ -16,6 +16,7 @@ import { useAuth } from '../../../../lib/auth-context';
 import { ENROLLMENT_PERMISSIONS, type Learner } from '../../../../lib/enrollments';
 import { can } from '../../../../lib/permissions';
 import type { Page } from '../../../../lib/types';
+import { MailLink } from '../../../../components/mail-link';
 
 const PAGE_SIZE = 20;
 const dash = <span className="text-ink-2">—</span>;
@@ -81,7 +82,7 @@ export default function LearnersPage() {
   const columns: Column<Learner>[] = [
     { id: 'name', weight: 3, header: 'Apprenant', cell: (l) => <EntityLink kind="learner" id={l.id} label={`${l.firstName} ${l.lastName}`}><strong>{l.firstName} {l.lastName}</strong></EntityLink> },
     { id: 'company', weight: 3, header: 'Entreprise', cell: (l) => <EntityLink kind="company" id={l.companyId} label={l.companyName}>{l.companyName}</EntityLink> },
-    { id: 'contact', weight: 3.4, header: 'Contact', cell: (l) => (l.email || l.phone ? <>{l.email}{l.email && l.phone ? <br /> : null}{l.phone}</> : dash) },
+    { id: 'contact', weight: 3.4, header: 'Contact', cell: (l) => (l.email || l.phone ? <>{l.email ? <MailLink email={l.email} /> : null}{l.email && l.phone ? <br /> : null}{l.phone}</> : dash) },
     { id: 'actions', weight: 1, header: 'Actions', srOnlyHeader: true, align: 'right', cell: actionsFor },
   ];
 

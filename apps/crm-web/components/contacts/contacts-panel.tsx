@@ -13,6 +13,7 @@ import { Card } from '../data/card';
 import { RowAction, RowActions } from '../data/row-actions';
 import { ConfirmDialog } from '../confirm-dialog';
 import { ContactDialog } from './contact-dialog';
+import { MailLink } from '../mail-link';
 
 /**
  * Contacts d'une entreprise, dans sa fiche : liste, création, modification, suppression (avec confirmation). Chaque bouton
@@ -78,7 +79,7 @@ export function ContactsPanel({ company }: { company: { id: string; name: string
                   <tr key={c.id}>
                     <td><EntityLink kind="contact" id={c.id} label={`${c.firstName} ${c.lastName}`}><strong>{c.firstName} {c.lastName}</strong></EntityLink></td>
                     <td><Badge tone="neutral">{contactRoleLabel(c.role)}</Badge></td>
-                    <td>{c.email ?? '—'}</td>
+                    <td><MailLink email={c.email} /></td>
                     <td>{c.phone ?? '—'}</td>
                     {(canUpdate || canDelete) && (
                       <td>
