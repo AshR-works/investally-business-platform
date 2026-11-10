@@ -15,6 +15,8 @@ export interface AppConfig {
     /** Clé AES-256 (32 octets en base64) qui chiffre les secrets TOTP au repos ; absente = clé éphémère (développement/test). */
     encryptionKeyBase64: string | null;
   };
+  /** Domaines publiés (`iam`, `hr`, `bd`, `training`…) : un domaine non publié est refusé (404) par le serveur et masqué par l'interface. `null` = tout est publié. Obligatoire en production. */
+  releasedDomains: readonly string[] | null;
   email: {
     /** `log` : n'envoie rien (développement/test) ; `microsoft365` : API Microsoft Graph ; `google-relay` : relais SMTP de Google Workspace (autorisé par l'adresse IP du serveur). */
     provider: 'log' | 'microsoft365' | 'google-relay';

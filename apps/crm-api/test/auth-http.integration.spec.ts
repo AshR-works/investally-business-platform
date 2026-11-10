@@ -113,7 +113,9 @@ describeDb('Authentification HTTP (PostgreSQL)', () => {
       const res = await get('/api/v1/auth/me/profile', { authorization: `Bearer ${body.accessToken}` });
       expect(res.status).toBe(200);
       const profile = await json(res);
-      expect(Object.keys(profile).sort()).toEqual(['displayName', 'email', 'mfaEnrolled', 'permissions', 'roles', 'userId']);
+      expect(Object.keys(profile).sort()).toEqual(['displayName', 'email', 'mfaEnrolled', 'permissions', 'releasedDomains', 'roles', 'userId']);
+      // Hors production, tout est publié : l'interface reçoit « null ».
+      expect(profile.releasedDomains).toBeNull();
       expect(profile).toMatchObject({ userId: body.userId, mfaEnrolled: false });
       expect(profile.roles.length).toBeGreaterThan(0);
       expect(profile.permissions.length).toBeGreaterThan(0);

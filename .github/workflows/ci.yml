@@ -65,7 +65,10 @@ jobs:
         working-directory: deploy
         run: |
           docker compose -f docker-compose.prod.yml up -d --wait web
-          docker compose -f docker-compose.prod.yml exec -T web wget -qO- http://127.0.0.1:3000/api/v1/health
+          # L'API répond et sa base aussi.
+          docker compose -f docker-compose.prod.yml exec -T api wget -qO- http://127.0.0.1:3001/health/ready
+          # L'interface relaie bien vers l'API, et le drapeau de publication est actif : un domaine hors V1 répond 404, un domaine publié répond 401 (non connecté).
+          docker compose -f docker-compose.prod.yml exec -T web node -e "Promise.all(['/api/v1/companies','/api/v1/hr/directory'].map((p) => fetch('http://127.0.0.1:3000' + p).then((r) => r.status))).then((s) => { console.log(s.join(' ')); process.exit(s[0] === 404 && s[1] === 401 ? 0 : 1); })"
       - name: Sauvegarde puis vérification de restauration, sur une vraie base PostgreSQL 17
         working-directory: deploy
         run: |

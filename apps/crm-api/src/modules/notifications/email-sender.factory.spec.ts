@@ -5,7 +5,7 @@ import { MicrosoftGraphEmailSender } from './infrastructure/microsoft-graph-emai
 import { SmtpRelayEmailSender } from './infrastructure/smtp-relay-email-sender';
 
 const config = (email: Partial<AppConfig['email']>): AppConfig => ({
-  env: 'test', cookieSecure: false, allowedOrigins: [], trustProxy: null, publicUrl: 'http://127.0.0.1:3000',
+  env: 'test', cookieSecure: false, allowedOrigins: [], trustProxy: null, releasedDomains: null, publicUrl: 'http://127.0.0.1:3000',
   mfa: { encryptionKeyBase64: null }, documents: { directory: '/tmp/docs' },
   email: { provider: 'log', microsoft365: null, googleRelay: null, logContent: false, ...email },
   jwt: { privateKeyPem: null, publicKeyPem: null, issuer: 'investally-crm', audience: 'investally-crm-api' },

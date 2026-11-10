@@ -6,6 +6,8 @@ export interface Profile {
   roles: string[];
   permissions: { code: string; scope: 'OWN' | 'TEAM' | 'ALL' }[];
   mfaEnrolled: boolean;
+  /** Domaines publiés par le serveur (`iam`, `hr`, `bd`…) ; absent ou `null` = tout est publié. Un domaine non publié est masqué ici et refusé (404) par le serveur. */
+  releasedDomains?: string[] | null;
 }
 
 /** Page de résultats paginés renvoyée par l'API. */

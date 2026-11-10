@@ -19,6 +19,8 @@ x-api-env: &api-env
   ALLOWED_ORIGINS: https://${APP_DOMAIN}
   # Derrière deux relais de réseau privé (caddy puis l'interface web) : l'adresse du client est la première adresse publique de la chaîne.
   TRUST_PROXY: uniquelocal
+  # Domaines publiés : la V1 publie l'identité et accès (iam) et les ressources humaines (hr) ; le reste répond « introuvable » côté serveur et est masqué par l'interface.
+  RELEASED_DOMAINS: ${RELEASED_DOMAINS:-iam,hr}
   JWT_PRIVATE_KEY_PEM: ${JWT_PRIVATE_KEY_PEM:?JWT_PRIVATE_KEY_PEM manquant}
   JWT_PUBLIC_KEY_PEM: ${JWT_PUBLIC_KEY_PEM:?JWT_PUBLIC_KEY_PEM manquant}
   MFA_ENCRYPTION_KEY: ${MFA_ENCRYPTION_KEY:?MFA_ENCRYPTION_KEY manquant}
@@ -63,7 +65,7 @@ services:
     volumes:
       - documents:/data/documents
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3001/api/v1/health >/dev/null || exit 1"]
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3001/health/ready >/dev/null || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 12

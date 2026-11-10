@@ -3,7 +3,7 @@ import { loadAppConfig } from './app-config.loader';
 const KEYS = { JWT_PRIVATE_KEY_PEM: 'priv', JWT_PUBLIC_KEY_PEM: 'pub' };
 const MFA_KEY = Buffer.alloc(32, 7).toString('base64');
 const M365 = { EMAIL_PROVIDER: 'microsoft365', M365_TENANT_ID: 't', M365_CLIENT_ID: 'c', M365_CLIENT_SECRET: 's', M365_SENDER: 'crm@investally.test' };
-const PROD = { NODE_ENV: 'production', DOCUMENTS_DIR: '/var/lib/investally/documents', ...KEYS, ALLOWED_ORIGINS: 'https://crm.test', MFA_ENCRYPTION_KEY: MFA_KEY, APP_PUBLIC_URL: 'https://crm.test', ...M365 };
+const PROD = { NODE_ENV: 'production', DOCUMENTS_DIR: '/var/lib/investally/documents', ...KEYS, ALLOWED_ORIGINS: 'https://crm.test', MFA_ENCRYPTION_KEY: MFA_KEY, APP_PUBLIC_URL: 'https://crm.test', RELEASED_DOMAINS: 'iam,hr', ...M365 };
 
 describe('loadAppConfig', () => {
   it('autorise le développement sans clé ni configuration (paire éphémère, cookie non sécurisé)', () => {
@@ -158,5 +158,46 @@ describe('loadAppConfig — relais SMTP de Google Workspace', () => {
 
   it('un fournisseur inconnu est refusé et le message liste les trois valeurs', () => {
     expect(() => loadAppConfig({ EMAIL_PROVIDER: 'sendgrid' })).toThrow(/google-relay/);
+  });
+});
+
+describe('loadAppConfig — domaines publiés (RELEASED_DOMAINS)', () => {
+  it('hors production, tout est publié par défaut', () => {
+    expect(loadAppConfig({}).releasedDomains).toBeNull();
+    expect(loadAppConfig({ RELEASED_DOMAINS: '' }).releasedDomains).toBeNull();
+    expect(loadAppConfig({ RELEASED_DOMAINS: '   ' }).releasedDomains).toBeNull();
+  });
+
+  it('refuse de démarrer en production sans RELEASED_DOMAINS : un oubli ne doit jamais publier des écrans non validés', () => {
+    const { RELEASED_DOMAINS, ...without } = PROD;
+    expect(RELEASED_DOMAINS).toBeTruthy();
+    expect(() => loadAppConfig(without)).toThrow(/RELEASED_DOMAINS est obligatoire/);
+    expect(() => loadAppConfig({ ...PROD, RELEASED_DOMAINS: '' })).toThrow(/RELEASED_DOMAINS est obligatoire/);
+  });
+
+  it('lit une liste de domaines (espaces, casse et doublons ignorés)', () => {
+    expect(loadAppConfig({ ...PROD, RELEASED_DOMAINS: 'iam,hr' }).releasedDomains).toEqual(['iam', 'hr']);
+    expect(loadAppConfig({ RELEASED_DOMAINS: ' IAM , Hr , iam ' }).releasedDomains).toEqual(['iam', 'hr']);
+  });
+
+  it('« all » publie tout, en production comme ailleurs', () => {
+    expect(loadAppConfig({ ...PROD, RELEASED_DOMAINS: 'all' }).releasedDomains).toBeNull();
+    expect(loadAppConfig({ RELEASED_DOMAINS: 'ALL' }).releasedDomains).toBeNull();
+  });
+
+  it('refuse un domaine inconnu (une faute de frappe ne doit pas masquer ou publier ce qu’on croit)', () => {
+    expect(() => loadAppConfig({ RELEASED_DOMAINS: 'iam,hrr' })).toThrow(/domaine inconnu « hrr »/);
+    expect(() => loadAppConfig({ RELEASED_DOMAINS: 'iam;hr' })).toThrow(/domaine inconnu/);
+  });
+
+  it('exige « iam » : sans lui, personne ne peut se connecter', () => {
+    expect(() => loadAppConfig({ RELEASED_DOMAINS: 'hr' })).toThrow(/iam/);
+    expect(() => loadAppConfig({ ...PROD, RELEASED_DOMAINS: 'bd,training' })).toThrow(/iam/);
+  });
+
+  it('accepte chaque domaine connu', () => {
+    for (const domain of ['audit', 'docs', 'bd', 'hr', 'training', 'reporting']) {
+      expect(loadAppConfig({ RELEASED_DOMAINS: `iam,${domain}` }).releasedDomains).toEqual(['iam', domain]);
+    }
   });
 });

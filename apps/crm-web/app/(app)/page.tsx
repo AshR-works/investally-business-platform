@@ -15,7 +15,7 @@ import { availableModules, byDomain, upcomingModules } from '../../lib/modules';
 export default function HubPage() {
   const { profile } = useAuth();
   const available = availableModules(profile);
-  const upcoming = upcomingModules();
+  const upcoming = upcomingModules(profile);
 
   return (
     <>

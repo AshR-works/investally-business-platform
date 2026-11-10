@@ -1,0 +1,60 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>V1 — déploiement : images, e-mails par Google, publication, sauvegardes : recette</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="INDEX.html">Index</a> · <a href="GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="ARCHITECTURE.html">Architecture</a> · <a href="SECURITY.html">Sécurité</a> · <a href="METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="TECH-DEBT.html">Dette</a> · <a href="CHARTE-DE-TESTS.html">Charte de tests</a> · <a href="tests/README.html">Fiches de test</a> · <a href="design/README.html">Design</a> · <a href="livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>V1 — déploiement : images, e-mails par Google, publication, sauvegardes : recette</h1>
+<p><em>Branche <code>sprint/v1-deploiement</code> · 2026-11-10 · décisions D60 à D63, <a href="adr/0010-hebergement-v1-serveur-virtuel-et-relais-google.html">ADR-0010</a> · exploitation : <a href="EXPLOITATION-V1.html">EXPLOITATION-V1</a>. <strong>Rien n'est déployé</strong> : ces quatre lots préparent le serveur ; il reste des prérequis externes (§ 5).</em></p>
+<h2>1. Ce qui est livré</h2>
+<div class="table-wrap"><table><thead><tr><th>Lot</th><th>Contenu</th><th>Où</th></tr></thead><tbody>
+<tr><td><strong>1. Images et composition</strong></td><td>Image de l'interface web (sortie « standalone »), image de l'API adaptée (réseau interne, dossier des documents), composition de production (<code>db</code>, <code>migrate</code>, <code>api</code>, <code>web</code>, <code>caddy</code>), entrée HTTPS à certificat automatique, générateur de réglages avec secrets aléatoires, <code>.dockerignore</code>. L'API écoute sur une adresse configurable (<code>API_HOST</code>, 127.0.0.1 par défaut)</td><td><code>deploy/</code>, <code>apps/crm-web/Dockerfile</code>, <code>apps/crm-api/Dockerfile</code></td></tr>
+<tr><td><strong>2. E-mails par Google</strong></td><td>Adaptateur d'envoi par le <strong>relais SMTP de Google Workspace</strong>, autorisé par l'adresse IP du serveur (aucun mot de passe). Chiffrement STARTTLS <strong>exigé</strong> : un relais qui ne l'offre pas ne reçoit jamais le message en clair. Configuration de production qui l'accepte (<code>EMAIL_PROVIDER=google-relay</code>)</td><td><code>modules/notifications/</code>, <code>platform/app-config.loader.ts</code></td></tr>
+<tr><td><strong>3. Publication</strong></td><td>Réglage <code>RELEASED_DOMAINS</code> (V1 = <code>iam,hr</code>, obligatoire en production) : le serveur répond « introuvable » à tout domaine non publié (même non connecté), le profil renseigne l'interface, qui masque les modules (menu, hub, recherche, boutons) et affiche « Prévu pour les prochaines mises à jour »</td><td><code>platform/release-gate.guard.ts</code>, <code>apps/crm-web/</code></td></tr>
+<tr><td><strong>4. Sauvegardes</strong></td><td>Sauvegarde de la base et des documents (fichiers vérifiés avant d'être gardés, somme de contrôle, rotation après succès), <strong>vérification de restauration</strong> dans une base temporaire, minuterie quotidienne, copie hors du serveur si un emplacement est configuré</td><td><code>deploy/backup/</code></td></tr>
+</tbody></table></div>
+<h2>2. Tests et mutants</h2>
+<div class="table-wrap"><table><thead><tr><th>Lot</th><th>Tests ajoutés</th><th>Mutants</th></tr></thead><tbody>
+<tr><td>1</td><td>11 (adresse d'écoute de l'API)</td><td>inclus dans le lot 2 (L1 à L5) : tous tués</td></tr>
+<tr><td>2</td><td>58 dans <code>notifications</code> (dont un <strong>vrai</strong> nodemailer contre un faux serveur SMTP : remise, refus 550 et 452, relais injoignable, chiffrement exigé, mode « none » sans chiffrement), 8 de configuration du relais</td><td><strong>33 sur 34 tués</strong> ; le survivant (<code>S12</code>) est <strong>équivalent</strong> : dans nodemailer, <code>requireTLS</code> l'emporte sur <code>ignoreTLS</code></td></tr>
+<tr><td>3</td><td>API : 7 de configuration, 8 de garde et d'aides ; <strong>intégration : 6</strong> (profil, domaine publié fonctionne, domaine non publié 404 même avec le droit et même sans connexion, routes sans permission ouvertes, <strong>contrat : toute route protégée porte un domaine connu</strong>) ; interface : 11</td><td><strong>28 sur 28 tués</strong></td></tr>
+<tr><td>4</td><td>Essai de bout en bout <strong>en intégration continue</strong> : pile démarrée en mode production, base migrée, sauvegarde, restauration vérifiée</td><td>non applicable (scripts d'exploitation, pas du code testé par mutants)</td></tr>
+</tbody></table></div>
+<p>Chiffres de la branche : API <strong>1 160</strong> tests unitaires réussis (1 ignoré), interface <strong>680</strong>, architecture sans violation (298 modules), contrôle de types propre. Passe d'intégration complète sur base jetable : <strong>31 suites sur 31, 443 tests sur 443</strong>, en 5 min 21 (la première passe avait trouvé un échec, le test qui fixe la liste exacte des champs du profil : il attend maintenant <code>releasedDomains</code> ; corrigé puis rejoué).</p>
+<h2>3. Ce que cela change pour l'utilisation</h2>
+<ul><li>Avec <code>RELEASED_DOMAINS=iam,hr</code>, <strong>personne</strong> (même la Direction, même le Super administrateur) ne peut lire ou écrire le commercial ou Investudy, ni par l'interface ni en appelant l'API directement.</li><li>Un utilisateur connecté voit : <strong>Vue d'ensemble</strong>, <strong>Ressources humaines</strong> (annuaire, organigramme, personnel selon ses droits), <strong>Administration</strong> (utilisateurs, droits), <strong>Mon compte</strong>. Les modules du CRM et d'Investudy, Finance, Stocks, Reporting sont dans « À venir ». Une adresse tapée à la main affiche « Prévu pour les prochaines mises à jour ».</li><li>Les invitations, « mot de passe oublié » et réinitialisations envoient de vrais e-mails par le relais Google, dès que Google l'autorise (§ 5).</li></ul>
+<h2>4. Ce qui est vérifié, ce qui ne l'est pas</h2>
+<p><strong>Vérifié</strong> : les tests ci-dessus ; la construction de l'interface en sortie autonome (essayée en local) ; la validité des fichiers de composition et de l'intégration continue (lus par un analyseur YAML) ; la syntaxe des scripts d'exploitation.</p>
+<p><strong>Non vérifié (à ne pas présenter comme acquis)</strong> :</p>
+<ul><li><strong>Docker n'a jamais été lancé</strong> sur la machine de développement (absent). La construction des deux images, le démarrage de la pile en mode production et l'essai de sauvegarde puis restauration sont vérifiés <strong>par l'intégration continue</strong>, au premier passage de la proposition de changement : un échec là est possible et se corrigera.</li><li><strong>Le relais Google réel</strong> : l'adaptateur n'a parlé qu'à un faux serveur SMTP.</li><li><strong>L'adresse du client derrière deux relais</strong> (<code>TRUST_PROXY=uniquelocal</code> : Caddy puis l'interface web) : à vérifier au premier déploiement (la limite de débit par IP en dépend).</li><li><strong>Aucun regard visuel</strong> sur la page « Prévu pour les prochaines mises à jour » ni sur le menu réduit (D160 : pas d'audit dans un navigateur réel).</li></ul>
+<p><strong>Défaut trouvé en route</strong> : les sondes de santé de l'API sont <code>/health/live</code> et <code>/health/ready</code> (hors du préfixe <code>/api/v1</code>) ; mes premiers contrôles pointaient ailleurs et auraient laissé l'API « non saine » en permanence. Corrigé avant tout essai.</p>
+<h2>5. Prérequis externes (rien ne démarre sans eux)</h2>
+<div class="table-wrap"><table><thead><tr><th>À obtenir</th><th>Auprès de</th><th>Pour</th></tr></thead><tbody>
+<tr><td>Super administrateur Google Workspace : relais SMTP par IP, adresse d'expédition, clé DKIM</td><td>Direction générale</td><td>Les e-mails</td></tr>
+<tr><td>Accès au DNS du domaine : enregistrement du sous-domaine, SPF avec Google, DKIM, DMARC</td><td>Détenteur du compte de l'hébergeur DNS</td><td>Le certificat et la délivrabilité (D165)</td></tr>
+<tr><td>Achat du serveur virtuel</td><td>Direction produit</td><td>L'adresse IP à déclarer à Google, et le serveur lui-même</td></tr>
+<tr><td>Un second SuperAdmin, un second opérateur</td><td>Direction</td><td>R9, R13 : « mot de passe oublié » et reprise ne doivent pas dépendre d'une personne</td></tr>
+<tr><td>Emplacement de la copie des sauvegardes hors du serveur</td><td>Direction produit</td><td>Une sauvegarde sur le même disque ne protège pas d'une perte du serveur</td></tr>
+<tr><td>Avis sur la conservation des données du personnel</td><td>Juridique (D11, D65)</td><td>Avant de saisir de vraies fiches RH</td></tr>
+</tbody></table></div>
+<h2>6. Comment vérifier (à ton tour)</h2>
+<ol><li>Lire le résultat de l'intégration continue de la proposition de changement : <code>verify</code> (déjà exigé) et <code>images</code> (construction, démarrage en mode production, sauvegarde et restauration).</li><li>En local, sans Docker : les tests ci-dessus ; <code>pnpm --filter @investally/crm-api test</code> et <code>test:integration</code>.</li><li>Sur le serveur, une fois les prérequis obtenus : suivre <a href="EXPLOITATION-V1.html">EXPLOITATION-V1</a> § 3 ; vérifier une invitation réelle, puis <code>restore-check.sh</code>.</li><li>Pour voir la V1 en local : <code>RELEASED_DOMAINS=iam,hr</code> dans l'environnement de l'API (pile locale), reconstruire (<code>--rebuild</code>), se connecter avec un compte RH.</li></ol>
+<h2>7. Dette et suites</h2>
+<ul><li><strong>D165</strong> (délivrabilité), <strong>D166</strong> (exploitation d'un serveur unique : supervision, second opérateur, mises à jour du système).</li><li>Antivirus des documents (D42, bloquant avant d'ouvrir les documents), stockage d'objets (D41), Cloudflare devant le serveur : après la V1.</li><li>RH complète (congés) : après la mise en place de la V1 ; règles de congés toujours attendues (D59).</li></ul></main></body></html>

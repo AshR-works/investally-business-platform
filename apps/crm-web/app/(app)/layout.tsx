@@ -3,6 +3,7 @@
 import { ReactNode } from 'react';
 import { AppShell } from '../../components/app-shell';
 import { Gate } from '../../components/gate';
+import { ReleaseGate } from '../../components/release-gate';
 
 /**
  * Cadre de toutes les pages connectées : n'affiche rien tant que l'utilisateur n'est pas authentifié avec son second
@@ -11,7 +12,9 @@ import { Gate } from '../../components/gate';
 export default function AppLayout({ children }: { children: ReactNode }) {
   return (
     <Gate allow={['ready']}>
-      <AppShell>{children}</AppShell>
+      <AppShell>
+        <ReleaseGate>{children}</ReleaseGate>
+      </AppShell>
     </Gate>
   );
 }

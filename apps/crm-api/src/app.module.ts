@@ -11,6 +11,7 @@ import { TrainingModule } from './modules/training/training.module';
 import { AppThrottlerGuard } from './platform/app-throttler.guard';
 import { OriginGuard } from './platform/origin.guard';
 import { PlatformModule } from './platform/platform.module';
+import { ReleaseGateGuard } from './platform/release-gate.guard';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { PlatformModule } from './platform/platform.module';
   providers: [
     { provide: APP_GUARD, useClass: OriginGuard },
     { provide: APP_GUARD, useClass: AppThrottlerGuard },
+    { provide: APP_GUARD, useClass: ReleaseGateGuard },
   ],
 })
 /**

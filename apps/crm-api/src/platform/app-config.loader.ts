@@ -1,6 +1,7 @@
 import { tmpdir } from 'node:os';
 import { isAbsolute, join } from 'node:path';
 import { AppConfig, AppEnvironment } from '../shared-kernel';
+import { parseReleasedDomains } from './released-domains';
 
 /** Lit l'environnement d'exécution (`production`, `test`, sinon développement). */
 function parseEnvironment(raw: string | undefined): AppEnvironment {
@@ -110,6 +111,7 @@ export function loadAppConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     cookieSecure,
     allowedOrigins,
     trustProxy: env.TRUST_PROXY?.trim() || null,
+    releasedDomains: parseReleasedDomains(env.RELEASED_DOMAINS, production),
     publicUrl,
     mfa: { encryptionKeyBase64: mfaKey },
     email: { provider, microsoft365, googleRelay, logContent },

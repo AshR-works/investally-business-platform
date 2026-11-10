@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { DomainError } from '../../../shared-kernel';
+import { APP_CONFIG, AppConfig, DomainError } from '../../../shared-kernel';
 import { USER_REPOSITORY, UserRepository } from '../domain/auth-repositories';
 import { AuthorizationService } from './authorization.service';
 
@@ -11,6 +11,8 @@ export interface ProfileView {
   roles: string[];
   permissions: { code: string; scope: string }[];
   mfaEnrolled: boolean;
+  /** Domaines publiés (`null` = tous) : l'interface masque les autres ; le serveur les refuse de toute façon (404). */
+  releasedDomains: string[] | null;
 }
 
 /** Requête de lecture : profil et droits de l'utilisateur connecté, pour construire les menus de l'interface. */
@@ -19,6 +21,7 @@ export class GetProfileHandler {
   constructor(
     @Inject(USER_REPOSITORY) private readonly users: UserRepository,
     private readonly authorization: AuthorizationService,
+    @Inject(APP_CONFIG) private readonly config: AppConfig,
   ) {}
 
   /** Renvoie nom, rôles, droits et état du MFA ; informatif seulement, le serveur re-contrôle chaque requête. */
@@ -33,6 +36,7 @@ export class GetProfileHandler {
       roles: [...roles],
       permissions: context.grants.map((grant) => ({ code: grant.permission, scope: grant.scope })),
       mfaEnrolled: user.mfaEnabled,
+      releasedDomains: this.config.releasedDomains === null ? null : [...this.config.releasedDomains],
     };
   }
 }
