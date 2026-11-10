@@ -35,6 +35,10 @@
 | 21 | [Apprenants](interfaces/21-apprenants.md) | `/training/learners` | S5.2b | |
 | 22 | [Inscriptions](interfaces/22-inscriptions.md) | `/training/enrollments` | S5.2b | |
 | 23 | [Fiche d'une session](interfaces/23-fiche-session.md) | `/training/sessions/[id]` | S5.2b | |
+| 24 | [Annuaire du personnel](interfaces/24-annuaire.md) | `/hr` | RH-1b | |
+| 25 | [Organigramme](interfaces/25-organigramme.md) | `/hr/org-chart` | RH-1b | |
+| 26 | [Personnel](interfaces/26-personnel.md) | `/hr/employees` | RH-1b | |
+| 27 | [Fiche d'un employé](interfaces/27-fiche-employe.md) | `/hr/employees/[id]` | RH-1b | |
 
 ## Fiches de session (36)
 
@@ -76,6 +80,7 @@
 | [s5-1](sessions/s5-1.md) | S5.1 — catalogue Investudy | `s5-1-validated` | 11 | |
 | [s5-2a](sessions/s5-2a.md) | S5.2a — sessions de formation | `s5-2a-validated` | 14 | |
 | [s5-2b](sessions/s5-2b.md) | S5.2b — apprenants et inscriptions | — | 12 | |
+| [rh-1](sessions/rh-1.md) | RH-1 — annuaire du personnel (RH légère) | — | 12 | |
 
 ## Remarques
 - Les fiches de session sont **dérivées des recettes** : en cas de doute, la recette fait foi. Celles des premiers sprints (S1 à S3.5) sont surtout des tests automatisés ; leurs « vérifications » rappellent ce que chaque contrôle prouve.

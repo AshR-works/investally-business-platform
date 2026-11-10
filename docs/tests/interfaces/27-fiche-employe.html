@@ -1,0 +1,53 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fiche de test — Fiche d&#x27;un employé</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="../../INDEX.html">Index</a> · <a href="../../GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="../../ARCHITECTURE.html">Architecture</a> · <a href="../../SECURITY.html">Sécurité</a> · <a href="../../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../../QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="../../TECH-DEBT.html">Dette</a> · <a href="../../CHARTE-DE-TESTS.html">Charte de tests</a> · <a href="../../tests/README.html">Fiches de test</a> · <a href="../../design/README.html">Design</a> · <a href="../../livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>Fiche de test — Fiche d'un employé</h1>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td><strong>Route</strong></td><td><code>/hr/employees/[id]</code></td></tr>
+<tr><td><strong>Livrée par</strong></td><td>RH-1b</td></tr>
+<tr><td><strong>Accès</strong></td><td>Depuis le nom d'un employé dans la liste du personnel, ou depuis l'encadré des écarts.</td></tr>
+<tr><td><strong>Droits</strong></td><td><strong>Lire</strong> : <code>hr.employee.read</code> selon la portée (RH, Direction, Super administrateur : toutes ; Responsable commercial : son équipe ; les autres : leur propre fiche liée à leur compte). Hors portée : « introuvable ». <strong>La consultation est enregistrée dans l'audit.</strong></td></tr>
+<tr><td><strong>Rôles de test</strong></td><td>rh, dir, chef, cc, sup</td></tr>
+</tbody></table></div>
+<p><em>Fiche d'interface de la <a href="../../CHARTE-DE-TESTS.html">charte de tests</a>. À rejouer à chaque changement de l'écran. Cocher, dater, signer ; tout écart devient un défaut.</em></p>
+<h2>Préconditions</h2>
+<p>Pile locale réinitialisée avec le jeu de démonstration (bloc « rh » : 11 fiches fictives, dont une sortie). Comptes : <code>rh@demo…</code> (la RH), <code>direction@demo…</code>, <code>compte1@demo…</code>, <code>support@demo…</code>.</p>
+<h2>Scénarios</h2>
+<div class="table-wrap"><table><thead><tr><th>N°</th><th>Scénario</th><th>Étapes</th><th>Résultat attendu</th><th>Constaté (✔ / ✘)</th><th>Date et initiales</th></tr></thead><tbody>
+<tr><td>1</td><td><strong>Résumé</strong></td><td>Ouvrir une fiche depuis la liste.</td><td>État, matricule, poste, service, responsable, compte d'accès, e-mail et téléphone professionnels, dates d'entrée (et de sortie, motif pour un sorti).</td><td>☐</td><td></td></tr>
+<tr><td>2</td><td><strong>Aucune donnée sensible</strong></td><td>Lire toute la fiche.</td><td>Ni salaire, ni naissance, ni adresse personnelle, ni pièce d'identité.</td><td>☐</td><td></td></tr>
+<tr><td>3</td><td><strong>Responsable</strong></td><td>Cliquer le nom du responsable (RH et Direction).</td><td>Ouvre sa fiche ; les autres rôles voient le nom sans lien.</td><td>☐</td><td></td></tr>
+<tr><td>4</td><td><strong>Hors portée</strong></td><td>Comme chargé de compte, ouvrir l'adresse de la fiche d'un collègue ; puis une adresse inventée.</td><td>Même message « introuvable » dans les deux cas.</td><td>☐</td><td></td></tr>
+<tr><td>5</td><td><strong>Sa propre fiche</strong></td><td>Comme chargé de compte lié à une fiche, ouvrir sa fiche par son adresse.</td><td>Elle s'ouvre (portée « propre »).</td><td>☐</td><td></td></tr>
+<tr><td>6</td><td><strong>Trace d'audit</strong></td><td>Ouvrir une fiche, puis consulter l'audit (Super administrateur).</td><td>Une entrée « lecture » pour chaque ouverture, avec la session de l'utilisateur.</td><td>☐</td><td></td></tr>
+</tbody></table></div>
+<h2>Accessibilité</h2>
+<ul><li>☐ Clavier seul : Tab et Maj+Tab parcourent tous les contrôles dans un ordre logique ; le focus est toujours visible ; aucun piège de focus hors fenêtre modale.</li><li>☐ Un seul titre de niveau 1 ; pas de saut de niveau (h2 avant h3).</li><li>☐ Chaque champ a un libellé relié ; un champ non conforme est en surbrillance <strong>et</strong> accompagné d'un message écrit relié (<code>aria-describedby</code>), jamais la couleur seule ; le focus va au premier champ en erreur.</li><li>☐ Les messages d'état et d'erreur sont annoncés (<code>role=alert</code> ou <code>aria-live</code>).</li><li>☐ Fenêtres modales : le focus entre dans la fenêtre, Échap la ferme, le focus revient à l'élément d'origine, l'arrière-plan est inerte.</li><li>☐ Lisible à 200 % de zoom et à 375 px de large, sans défilement horizontal de la page.</li></ul>
+<h2>Tests automatisés qui couvrent cet écran</h2>
+<ul><li>API : <code>hr-employees-http.integration</code> (portée, 404 identique, audit VIEW), contrat IDOR</li><li>Web : <code>n7-hr</code> (coque commune, aucune donnée sensible) ; audit navigateur : non rejoué</li></ul>
+<h2>Limites connues</h2>
+<ul><li>La fiche est en lecture : les modifications se font depuis la liste.</li><li>Pas de lien vers le compte d'accès lui-même.</li></ul>
+<h2>Écarts constatés</h2>
+<div class="table-wrap"><table><thead><tr><th>Date</th><th>Scénario</th><th>Description</th><th>Défaut ouvert (D…)</th></tr></thead><tbody>
+<tr><td></td><td></td><td></td><td></td></tr>
+</tbody></table></div></main></body></html>
