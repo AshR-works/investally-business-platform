@@ -106,3 +106,57 @@ describe('loadAppConfig', () => {
     expect(loadAppConfig({ DOCUMENTS_DIR: 'C:/tmp/docs' }).documents.directory).toBe('C:/tmp/docs');
   });
 });
+
+describe('loadAppConfig — relais SMTP de Google Workspace', () => {
+  const RELAY = { EMAIL_PROVIDER: 'google-relay', EMAIL_SENDER: 'no-reply@exemple.test' };
+  const PROD_RELAY = { ...PROD, ...RELAY };
+
+  it('accepte le relais en production et applique les valeurs par défaut (serveur Google, port 587, chiffrement exigé)', () => {
+    const config = loadAppConfig(PROD_RELAY);
+    expect(config.email.provider).toBe('google-relay');
+    expect(config.email.googleRelay).toEqual({ host: 'smtp-relay.gmail.com', port: 587, sender: 'no-reply@exemple.test', security: 'starttls' });
+    expect(config.email.microsoft365).toBeNull();
+  });
+
+  it('ne charge aucun réglage de relais pour les autres fournisseurs', () => {
+    expect(loadAppConfig({}).email.googleRelay).toBeNull();
+    expect(loadAppConfig(PROD).email.googleRelay).toBeNull();
+  });
+
+  it('lit le serveur, le port et le chiffrement quand ils sont donnés', () => {
+    expect(loadAppConfig({ ...PROD_RELAY, SMTP_HOST: 'relais.exemple.test', SMTP_PORT: '2525' }).email.googleRelay).toMatchObject({ host: 'relais.exemple.test', port: 2525, security: 'starttls' });
+    expect(loadAppConfig({ ...RELAY, SMTP_SECURITY: 'none' }).email.googleRelay?.security).toBe('none');
+  });
+
+  it('exige l’adresse d’expédition, valide et unique', () => {
+    for (const sender of [undefined, '', '   ', 'pas une adresse', 'a@b.cm, c@d.cm', 'Nom <a@b.cm>', 'a@b.cm\r\nBcc: x@y.cm']) {
+      expect(() => loadAppConfig({ EMAIL_PROVIDER: 'google-relay', ...(sender === undefined ? {} : { EMAIL_SENDER: sender }) })).toThrow(/EMAIL_SENDER/);
+    }
+  });
+
+  it('refuse un serveur ou un port invalide', () => {
+    for (const host of ['serveur invalide', 'a..b', '-x.test', 'x.test/chemin', 'https://x.test']) {
+      expect(() => loadAppConfig({ ...RELAY, SMTP_HOST: host })).toThrow(/SMTP_HOST/);
+    }
+    for (const port of ['0', '65536', '-1', 'abc', '58.7', '587x', '123456']) {
+      expect(() => loadAppConfig({ ...RELAY, SMTP_PORT: port })).toThrow(/SMTP_PORT/);
+    }
+    expect(loadAppConfig({ ...RELAY, SMTP_PORT: '65535' }).email.googleRelay?.port).toBe(65535);
+    expect(loadAppConfig({ ...RELAY, SMTP_PORT: '1' }).email.googleRelay?.port).toBe(1);
+  });
+
+  it('refuse un mode de chiffrement inconnu, et refuse « none » en production (des liens d’activation ne partent jamais en clair)', () => {
+    expect(() => loadAppConfig({ ...RELAY, SMTP_SECURITY: 'tls' })).toThrow(/SMTP_SECURITY/);
+    expect(() => loadAppConfig({ ...PROD_RELAY, SMTP_SECURITY: 'none' })).toThrow(/SMTP_SECURITY=none/);
+  });
+
+  it('le message du mode « log » en production cite les deux fournisseurs acceptés', () => {
+    const { EMAIL_PROVIDER, ...withoutProvider } = PROD;
+    expect(EMAIL_PROVIDER).toBe('microsoft365');
+    expect(() => loadAppConfig(withoutProvider)).toThrow(/microsoft365 ou google-relay/);
+  });
+
+  it('un fournisseur inconnu est refusé et le message liste les trois valeurs', () => {
+    expect(() => loadAppConfig({ EMAIL_PROVIDER: 'sendgrid' })).toThrow(/google-relay/);
+  });
+});

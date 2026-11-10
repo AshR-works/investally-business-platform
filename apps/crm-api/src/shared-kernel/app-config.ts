@@ -16,11 +16,13 @@ export interface AppConfig {
     encryptionKeyBase64: string | null;
   };
   email: {
-    /** `log` : n'envoie rien (développement/test) ; `microsoft365` : API Microsoft Graph. */
-    provider: 'log' | 'microsoft365';
+    /** `log` : n'envoie rien (développement/test) ; `microsoft365` : API Microsoft Graph ; `google-relay` : relais SMTP de Google Workspace (autorisé par l'adresse IP du serveur). */
+    provider: 'log' | 'microsoft365' | 'google-relay';
     /** Développement local seulement : affiche le CONTENU des e-mails (liens d'invitation) dans la console. Interdit en production. */
     logContent: boolean;
     microsoft365: { tenantId: string; clientId: string; clientSecret: string; sender: string } | null;
+    /** Relais SMTP : `starttls` exige le chiffrement (production) ; `none` (essais locaux) l'abandonne et est refusé en production. */
+    googleRelay: { host: string; port: number; sender: string; security: 'starttls' | 'none' } | null;
   };
   documents: {
     /** Dossier des fichiers téléversés, HORS de toute racine web (droits restreints). Obligatoire et absolu en production. */

@@ -1,8 +1,7 @@
 import { Module } from '@nestjs/common';
 import { APP_CONFIG, AppConfig } from '../../shared-kernel';
 import { EMAIL_SENDER, EmailSender } from './application/email-sender';
-import { LogEmailSender } from './infrastructure/log-email-sender';
-import { MicrosoftGraphEmailSender } from './infrastructure/microsoft-graph-email-sender';
+import { createEmailSender } from './infrastructure/email-sender.factory';
 
 /** Composition root du module Notifications : fournisseur d'e-mail choisi par la configuration. */
 @Module({
@@ -10,16 +9,13 @@ import { MicrosoftGraphEmailSender } from './infrastructure/microsoft-graph-emai
     {
       provide: EMAIL_SENDER,
       inject: [APP_CONFIG],
-      useFactory: (config: AppConfig): EmailSender =>
-        config.email.provider === 'microsoft365' && config.email.microsoft365
-          ? new MicrosoftGraphEmailSender(config.email.microsoft365)
-          : new LogEmailSender(config.email.logContent),
+      useFactory: (config: AppConfig): EmailSender => createEmailSender(config),
     },
   ],
   exports: [EMAIL_SENDER],
 })
 /**
- * Module de notifications : fournit le port d'envoi d'e-mails (journal en développement, Microsoft 365 en
- * production).
+ * Module de notifications : fournit le port d'envoi d'e-mails (journal en développement ; en production, Microsoft 365 ou
+ * le relais SMTP de Google Workspace).
  */
 export class NotificationsModule {}
