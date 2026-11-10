@@ -13,7 +13,7 @@ const pdf = () => Buffer.from('%PDF-1.7\ncontrat idor\n%%EOF');
 
 interface As { token: string; ip: string }
 /** Identifiants visés par une sonde : les vrais (objet de Marie) ou inexistants (tous `NIL`). */
-interface Ids { company: string; doc: string; session: string; facilitator: string; contact: string; offer: string; offerSent: string; offerPending: string; offerReceipt: string; receipt: string; followup: string; appointment: string; appointmentDue: string; opportunity: string; opportunityAgreed: string; teammate: string; opportunityReady: string; approval: string; approvalRequested: string; commission: string; commissionCompany: string; ambassador: string; employee: string; learnerCompany: string; learner: string; learner2: string; enrollment: string; trainingSession: string; trainingSession2: string }
+interface Ids { company: string; doc: string; session: string; facilitator: string; contact: string; offer: string; offerSent: string; offerPending: string; offerReceipt: string; receipt: string; followup: string; appointment: string; appointmentDue: string; opportunity: string; opportunityAgreed: string; teammate: string; opportunityReady: string; approval: string; approvalRequested: string; commission: string; commissionCompany: string; ambassador: string; employee: string; employeeLeave: string; leaveRequest: string; leaveType: string; holiday: string; learnerCompany: string; learner: string; learner2: string; enrollment: string; trainingSession: string; trainingSession2: string }
 
 /**
  * Une sonde par route « objet » : elle appelle la route avec les identifiants donnés, en tant que `as`.
@@ -86,6 +86,15 @@ const PROBES: Record<string, (api: Api, as: As, ids: Ids) => Promise<ApiResponse
   'GET /hr/employees/:id': (api, as, ids) => api.call('GET', `/api/v1/hr/employees/${ids.employee}`, as),
   'PUT /hr/employees/:id': (api, as, ids) => api.call('PUT', `/api/v1/hr/employees/${ids.employee}`, { ...as, body: { version: 1, jobTitle: 'Piraté' } }),
   'POST /hr/employees/:id/status': (api, as, ids) => api.call('POST', `/api/v1/hr/employees/${ids.employee}/status`, { ...as, body: { version: 1, status: 'ARCHIVED', reason: 'Piraté' } }),
+  'POST /hr/leave/requests': (api, as, ids) => api.call('POST', '/api/v1/hr/leave/requests', { ...as, body: { employeeId: ids.employeeLeave, leaveTypeId: ids.leaveType, start: futureMonday(5), end: futureMonday(5), note: 'Absence piège' } }),
+  'GET /hr/leave/requests/:id': (api, as, ids) => api.call('GET', `/api/v1/hr/leave/requests/${ids.leaveRequest}`, as),
+  'POST /hr/leave/requests/:id/decision': (api, as, ids) => api.call('POST', `/api/v1/hr/leave/requests/${ids.leaveRequest}/decision`, { ...as, body: { decision: 'APPROVE', version: 1 } }),
+  'POST /hr/leave/requests/:id/cancel': (api, as, ids) => api.call('POST', `/api/v1/hr/leave/requests/${ids.leaveRequest}/cancel`, { ...as, body: { version: 1, reason: 'Annulée par un pirate' } }),
+  'GET /hr/leave/balance': (api, as, ids) => api.call('GET', `/api/v1/hr/leave/balance?employeeId=${ids.employeeLeave}&year=2026`, as),
+  'PUT /hr/leave/types/:id': (api, as, ids) => api.call('PUT', `/api/v1/hr/leave/types/${ids.leaveType}`, { ...as, body: { version: 1, label: 'Type piraté' } }),
+  'DELETE /hr/leave/holidays/:id': (api, as, ids) => api.call('DELETE', `/api/v1/hr/leave/holidays/${ids.holiday}`, as),
+  'POST /hr/leave/adjustments': (api, as, ids) => api.call('POST', '/api/v1/hr/leave/adjustments', { ...as, body: { employeeId: ids.employeeLeave, year: 2026, days: 5, reason: 'Ajustement piraté' } }),
+  'GET /hr/leave/adjustments': (api, as, ids) => api.call('GET', `/api/v1/hr/leave/adjustments?employeeId=${ids.employeeLeave}&year=2026`, as),
   'POST /ambassadors/:id/status': (api, as, ids) => api.call('POST', `/api/v1/ambassadors/${ids.ambassador}/status`, { ...as, body: { version: 1, status: 'ARCHIVED', reason: 'Piraté' } }),
   'POST /offers/:id/withdraw': (api, as, ids) => api.call('POST', `/api/v1/offers/${ids.offerSent}/withdraw`, { ...as, body: { version: 2, reason: 'Retrait piraté' } }),
   'GET /facilitators/:id': (api, as, ids) => api.call('GET', `/api/v1/facilitators/${ids.facilitator}`, as),
@@ -111,6 +120,15 @@ const PROBES: Record<string, (api: Api, as: As, ids: Ids) => Promise<ApiResponse
   'POST /enrollments/:id/replace': (api, as, ids) => api.call('POST', `/api/v1/enrollments/${ids.enrollment}/replace`, { ...as, body: { version: 1, sessionId: ids.trainingSession2 } }),
   'DELETE /auth/sessions/:id': (api, as, ids) => api.call('DELETE', `/api/v1/auth/sessions/${ids.session}`, as),
 };
+
+/** Un lundi dans `weeks` semaines (une demande ne se pose pas dans le passé). */
+const futureMonday = (weeks: number) => {
+  const d = new Date();
+  d.setUTCDate(d.getUTCDate() + weeks * 7);
+  d.setUTCDate(d.getUTCDate() + ((8 - d.getUTCDay()) % 7 || 7));
+  return d.toISOString().slice(0, 10);
+};
+let holidaySeq = Math.floor(Math.random() * 20_000);
 
 const objectRoutes = Object.entries(IDOR_ROUTES).filter(([, kind]) => kind === 'objet').map(([key]) => key).sort();
 
@@ -254,6 +272,19 @@ describeDb('Contrat anti-IDOR : un acteur sans portée reçoit la réponse d\'un
     const enrollment = await api.call('POST', '/api/v1/enrollments', { ...m, body: { sessionId: trainingSession, learnerId: learner.body.id, approvalId: approval.body.id } });
     expect(enrollment.status).toBe(201);
     const second = await login(marie);
+    // Absences : un employé lié à un compte (Support), sa demande en attente, un type d'absence et un jour férié créés par la RH. Les attaquants n'en sont ni l'employé ni le responsable.
+    const leaveUser = await createUserWithRoles(t, [RoleCode.Support]);
+    const employeeLeave = await api.call('POST', '/api/v1/hr/employees', { ...hrSession, body: { lastName: 'Secret-CONGES-IDOR', firstName: 'Léa', jobTitle: 'Analyste', department: 'Finance', hiredOn: '2026-01-05', userId: leaveUser.id } });
+    expect(employeeLeave.status).toBe(201);
+    const leaveTypes = await api.call('GET', '/api/v1/hr/leave/types', hrSession);
+    const annual = (leaveTypes.body as { id: string; code: string }[]).find((x) => x.code === 'ANNUAL')!;
+    const leaveSession = await login(leaveUser);
+    const leaveRequest = await api.call('POST', '/api/v1/hr/leave/requests', { ...leaveSession, body: { leaveTypeId: annual.id, start: futureMonday(2), end: futureMonday(2), note: 'Secret-ABSENCE-IDOR' } });
+    expect(leaveRequest.status).toBe(201);
+    const leaveType = await api.call('POST', '/api/v1/hr/leave/types', { ...hrSession, body: { code: `IDOR_${tag.toUpperCase()}`, label: 'Type IDOR' } });
+    expect(leaveType.status).toBe(201);
+    const holiday = await api.call('POST', '/api/v1/hr/leave/holidays', { ...hrSession, body: { day: new Date(Date.UTC(2040, 0, 1) + (holidaySeq++) * 86_400_000).toISOString().slice(0, 10), label: 'Secret-FERIE-IDOR' } });
+    expect(holiday.status).toBe(201);
     return {
       manager,
       marie: m,
@@ -261,8 +292,8 @@ describeDb('Contrat anti-IDOR : un acteur sans portée reçoit la réponse d\'un
       finance: financeSession,
       hr: hrSession,
       attackers: { paul: await login(paul), autreChef: await login(autreChef) },
-      real: { company: company.body.id as string, doc: doc.body.id as string, session: second.sessionId, facilitator: facilitator.body.id as string, contact: contact.body.id as string, offer: offer.body.id as string, offerSent: offerSent.body.id as string, offerPending: offerPending.body.id as string, offerReceipt: offerReceipt.body.id as string, receipt: receipt.body.id as string, followup: followup.body.id as string, appointment: appointment.body.id as string, appointmentDue: appointmentDue.body.id as string, opportunity: opportunity.body.id as string, opportunityAgreed: opportunityAgreed.body.id as string, teammate: anne.id, opportunityReady: opportunityReady.body.id as string, approval: approval.body.id as string, approvalRequested: approvalRequested.body.id as string, commission: commission.id as string, commissionCompany: company3.body.id as string, ambassador: ambassador.body.id as string, employee: employee.body.id as string, learnerCompany: company2.body.id as string, learner: learner.body.id as string, learner2: learner2.body.id as string, enrollment: enrollment.body.id as string, trainingSession, trainingSession2 } satisfies Ids,
-      nil: { company: NIL, doc: NIL, session: NIL, facilitator: NIL, contact: NIL, offer: NIL, offerSent: NIL, offerPending: NIL, offerReceipt: NIL, receipt: NIL, followup: NIL, appointment: NIL, appointmentDue: NIL, opportunity: NIL, opportunityAgreed: NIL, teammate: NIL, opportunityReady: NIL, approval: NIL, approvalRequested: NIL, commission: NIL, commissionCompany: NIL, ambassador: NIL, employee: NIL, learnerCompany: NIL, learner: NIL, learner2: NIL, enrollment: NIL, trainingSession: NIL, trainingSession2: NIL } satisfies Ids,
+      real: { company: company.body.id as string, doc: doc.body.id as string, session: second.sessionId, facilitator: facilitator.body.id as string, contact: contact.body.id as string, offer: offer.body.id as string, offerSent: offerSent.body.id as string, offerPending: offerPending.body.id as string, offerReceipt: offerReceipt.body.id as string, receipt: receipt.body.id as string, followup: followup.body.id as string, appointment: appointment.body.id as string, appointmentDue: appointmentDue.body.id as string, opportunity: opportunity.body.id as string, opportunityAgreed: opportunityAgreed.body.id as string, teammate: anne.id, opportunityReady: opportunityReady.body.id as string, approval: approval.body.id as string, approvalRequested: approvalRequested.body.id as string, commission: commission.id as string, commissionCompany: company3.body.id as string, ambassador: ambassador.body.id as string, employee: employee.body.id as string, employeeLeave: employeeLeave.body.id as string, leaveRequest: leaveRequest.body.id as string, leaveType: leaveType.body.id as string, holiday: holiday.body.id as string, learnerCompany: company2.body.id as string, learner: learner.body.id as string, learner2: learner2.body.id as string, enrollment: enrollment.body.id as string, trainingSession, trainingSession2 } satisfies Ids,
+      nil: { company: NIL, doc: NIL, session: NIL, facilitator: NIL, contact: NIL, offer: NIL, offerSent: NIL, offerPending: NIL, offerReceipt: NIL, receipt: NIL, followup: NIL, appointment: NIL, appointmentDue: NIL, opportunity: NIL, opportunityAgreed: NIL, teammate: NIL, opportunityReady: NIL, approval: NIL, approvalRequested: NIL, commission: NIL, commissionCompany: NIL, ambassador: NIL, employee: NIL, employeeLeave: NIL, leaveRequest: NIL, leaveType: NIL, holiday: NIL, learnerCompany: NIL, learner: NIL, learner2: NIL, enrollment: NIL, trainingSession: NIL, trainingSession2: NIL } satisfies Ids,
       secondSession: second,
     };
   }
@@ -293,6 +324,9 @@ describeDb('Contrat anti-IDOR : un acteur sans portée reçoit la réponse d\'un
       expect(onForeign.bytes.toString('utf8')).not.toContain('2500000');
       expect(onForeign.bytes.toString('utf8')).not.toContain('Secret-AMBASSADEUR-IDOR');
       expect(onForeign.bytes.toString('utf8')).not.toContain('Secret-EMPLOYE-IDOR');
+      expect(onForeign.bytes.toString('utf8')).not.toContain('Secret-CONGES-IDOR');
+      expect(onForeign.bytes.toString('utf8')).not.toContain('Secret-ABSENCE-IDOR');
+      expect(onForeign.bytes.toString('utf8')).not.toContain('Secret-FERIE-IDOR');
       expect(onForeign.bytes.toString('utf8')).not.toContain('Secret-APPRENANT-IDOR');
       expect(onForeign.bytes.toString('utf8')).not.toContain('Offre en attente de décharge');
     }
@@ -302,7 +336,7 @@ describeDb('Contrat anti-IDOR : un acteur sans portée reçoit la réponse d\'un
     // Constater le paiement relève de la Finance (D41, FD-4), pas du Responsable commercial.
     // Débloquer et mettre en attente relèvent de la Finance ; verser, du chargé de compte ; annuler et fixer le montant, du Responsable commercial.
     const financeKeys = ['POST /approvals/:id/honor', 'POST /commissions/:id/release', 'POST /commissions/:id/hold'];
-    const hrKeys = ['POST /hr/employees', 'GET /hr/employees/:id', 'PUT /hr/employees/:id', 'POST /hr/employees/:id/status'];
+    const hrKeys = ['POST /hr/employees', 'GET /hr/employees/:id', 'PUT /hr/employees/:id', 'POST /hr/employees/:id/status', 'POST /hr/leave/requests', 'GET /hr/leave/requests/:id', 'POST /hr/leave/requests/:id/decision', 'POST /hr/leave/requests/:id/cancel', 'GET /hr/leave/balance', 'PUT /hr/leave/types/:id', 'DELETE /hr/leave/holidays/:id', 'POST /hr/leave/adjustments', 'GET /hr/leave/adjustments'];
     const trainingManagerKeys = ['DELETE /learners/:id', 'POST /enrollments/:id/confirm', 'POST /enrollments/:id/cancel', 'POST /enrollments/:id/replace'];
     const owner = hrKeys.includes(key) ? w.hr : trainingManagerKeys.includes(key) ? w.manager : financeKeys.includes(key) ? w.finance : ['POST /commissions/:id/cancel', 'POST /commissions/:id/amount'].includes(key) ? w.chef : ['POST /documents/:id/archive', 'DELETE /contacts/:id', 'POST /opportunities/:id/waiver', 'POST /opportunities/:id/close-won', 'POST /companies/:id/owner', 'PUT /ambassadors/:id', 'POST /ambassadors/:id/status', 'POST /approvals/:id/expire', 'POST /approvals/:id/cancel'].includes(key) ? w.chef : w.marie;
     const ok = await probe(api, owner, w.real);

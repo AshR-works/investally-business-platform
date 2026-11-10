@@ -1199,10 +1199,119 @@ model Employee {
   updatedAt         DateTime       @updatedAt @map("updated_at") @db.Timestamptz(6)
   manager           Employee?      @relation("EmployeeHierarchy", fields: [managerEmployeeId], references: [id], onDelete: Restrict)
   reports           Employee[]     @relation("EmployeeHierarchy")
+  leaveRequests     LeaveRequest[]
+  leaveAdjustments  LeaveAdjustment[]
 
   @@index([managerEmployeeId])
   @@index([status])
   @@index([department])
   @@map("employees")
+  @@schema("hr")
+}
+
+/// État d'une demande d'absence (RH-2) : en attente, validée, refusée (motif obligatoire), annulée.
+enum LeaveStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+
+  @@schema("hr")
+}
+
+/// Type d'absence PARAMÉTRABLE par la RH (RH-2, D64) : seul un type qui « décompte le solde » consomme les jours de congé annuel. Jamais supprimé : il se désactive.
+model LeaveType {
+  id                String         @id @db.Uuid
+  code              String         @unique @db.VarChar(30)
+  label             String         @db.VarChar(100)
+  deductsBalance    Boolean        @default(false) @map("deducts_balance")
+  requiresApproval  Boolean        @default(true) @map("requires_approval")
+  /// Durée maximale d'une demande, en jours (permission exceptionnelle) ; absent = pas de plafond.
+  maxDaysPerRequest Decimal?       @map("max_days_per_request") @db.Decimal(5, 2)
+  active            Boolean        @default(true)
+  sortOrder         Int            @default(0) @map("sort_order")
+  version           Int            @default(1)
+  createdAt         DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime       @updatedAt @map("updated_at") @db.Timestamptz(6)
+  requests          LeaveRequest[]
+
+  @@map("leave_types")
+  @@schema("hr")
+}
+
+/// Jour férié saisi par la RH (la liste est VIDE au départ : aucune liste légale n'est présumée). Ne compte pas comme jour d'absence.
+model PublicHoliday {
+  id        String   @id @db.Uuid
+  day       DateTime @unique @db.Date
+  label     String   @db.VarChar(100)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@map("public_holidays")
+  @@schema("hr")
+}
+
+/// Règles de congés (UNE seule ligne, `id = 1`) : valeurs de départ « à confirmer » (D64), modifiables par la RH avec trace.
+model LeaveSettings {
+  id                   Int      @id @default(1)
+  /// Jours acquis par mois de service.
+  accrualDaysPerMonth  Decimal  @default(1.5) @map("accrual_days_per_month") @db.Decimal(4, 2)
+  /// Faux : jours ouvrés du lundi au vendredi ; vrai : le samedi compte aussi (jours ouvrables).
+  countsSaturday       Boolean  @default(false) @map("counts_saturday")
+  allowHalfDays        Boolean  @default(true) @map("allow_half_days")
+  allowNegativeBalance Boolean  @default(false) @map("allow_negative_balance")
+  version              Int      @default(1)
+  updatedAt            DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@map("leave_settings")
+  @@schema("hr")
+}
+
+/// Demande d'absence. Dates incluses ; `startHalf` : la première journée commence l'après-midi ; `endHalf` : la dernière journée s'arrête à midi. `days` est figé à la
+/// demande (jours fériés et week-ends déjà déduits). Les jours comptent pour l'année de la date de début. Aucune donnée de santé : un motif libre est facultatif.
+model LeaveRequest {
+  id                String      @id @db.Uuid
+  employeeId        String      @map("employee_id") @db.Uuid
+  leaveTypeId       String      @map("leave_type_id") @db.Uuid
+  startDate         DateTime    @map("start_date") @db.Date
+  endDate           DateTime    @map("end_date") @db.Date
+  startHalf         Boolean     @default(false) @map("start_half")
+  endHalf           Boolean     @default(false) @map("end_half")
+  days              Decimal     @db.Decimal(5, 2)
+  leaveYear         Int         @map("leave_year")
+  status            LeaveStatus @default(PENDING)
+  note              String?     @db.VarChar(500)
+  /// Compte qui a saisi la demande (l'employé, ou la RH pour lui) : référence inter-contextes SANS clé étrangère.
+  requestedByUserId String      @map("requested_by_user_id") @db.Uuid
+  decidedByUserId   String?     @map("decided_by_user_id") @db.Uuid
+  decidedAt         DateTime?   @map("decided_at") @db.Timestamptz(6)
+  decisionNote      String?     @map("decision_note") @db.VarChar(500)
+  cancelledAt       DateTime?   @map("cancelled_at") @db.Timestamptz(6)
+  cancelReason      String?     @map("cancel_reason") @db.VarChar(500)
+  version           Int         @default(1)
+  createdAt         DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime    @updatedAt @map("updated_at") @db.Timestamptz(6)
+  employee          Employee    @relation(fields: [employeeId], references: [id], onDelete: Restrict)
+  leaveType         LeaveType   @relation(fields: [leaveTypeId], references: [id], onDelete: Restrict)
+
+  @@index([employeeId, startDate])
+  @@index([status])
+  @@index([leaveYear])
+  @@map("leave_requests")
+  @@schema("hr")
+}
+
+/// Ajustement de solde (report, correction) : AJOUT SEUL, motif obligatoire, jamais modifié ni supprimé.
+model LeaveAdjustment {
+  id              String   @id @db.Uuid
+  employeeId      String   @map("employee_id") @db.Uuid
+  year            Int
+  days            Decimal  @db.Decimal(5, 2)
+  reason          String   @db.VarChar(500)
+  createdByUserId String   @map("created_by_user_id") @db.Uuid
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  employee        Employee @relation(fields: [employeeId], references: [id], onDelete: Restrict)
+
+  @@index([employeeId, year])
+  @@map("leave_adjustments")
   @@schema("hr")
 }

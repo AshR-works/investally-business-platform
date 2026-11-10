@@ -75,7 +75,7 @@ Légende : **L:x** lecture (consulter, télécharger, exporter, tableaux de bord
 | Documents | L:T E:T | L:T | L:E E:E | L:O E:O | L:T E:T | L:O | — | — | — | — |
 | Business Development | L:T E:T | L:T | L:T E:E | L:O E:O | L:T | — | L:T | L:T E:T | — | — |
 | Investudy | L:T E:T | L:T | L:T | L:T E:O | L:T E:T | L:T E:O | L:T | L:T | — | — |
-| Ressources humaines | L:T E:T | L:T | L:T | L:T | L:T | L:T | L:T | L:T | L:T E:T | L:T |
+| Ressources humaines | L:T E:T | L:T E:O | L:T E:O | L:T E:O | L:T E:O | L:T E:O | L:T E:O | L:T E:O | L:T E:T | L:T E:O |
 | Reporting | L:T | L:T | L:T | L:O | L:T | L:O | — | L:T | — | — |
 
 ## 4. Matrice détaillée rôles × permissions
@@ -215,6 +215,10 @@ Cellule : **O**, **É**, **T** = portée accordée ; vide = non accordée.
 | `hr.employee.update` | T |  |  |  |  |  |  |  | T |  |
 | `hr.employee.archive` | T |  |  |  |  |  |  |  | T |  |
 | `hr.directory.read` | T | T | T | T | T | T | T | T | T | T |
+| `hr.leave.read` | T | T | O | O | O | O | O | O | T | O |
+| `hr.leave.create` | T | O | O | O | O | O | O | O | T | O |
+| `hr.leave.approve` | T | O | O | O | O | O | O | O | T | O |
+| `hr.leave.manage` | T |  |  |  |  |  |  |  | T |  |
 
 ### Reporting (`reporting`)
 
@@ -239,6 +243,7 @@ Cellule : **O**, **É**, **T** = portée accordée ; vide = non accordée.
 5. Un utilisateur **ne peut pas modifier ses propres rôles**, SuperAdmin compris (règle à implémenter dans l'attribution de rôle en S3, avec test).
 6. Tout changement de rôle est audité (`ROLE_CHANGE`) et exige un MFA récent (step-up).
 6 bis. Le changement de responsable d'une entreprise (`bd.company.reassign`) exige aussi un MFA récent (step-up, décision D41, FD-6).
+6 ter. Absences et congés (`hr.leave.*`, décision D64) : chacun demande et lit les siennes (portée Propre) ; **valider** ou refuser revient au responsable direct de l'organigramme RH (pas à `users.manager_id`) ou à la RH, **jamais à l'auteur de la demande** ; la RH et le Super administrateur paramètrent (types, règles, jours fériés, ajustements) ; la Direction lit tout ; un collègue ne voit dans le calendrier que « absent », sans type.
 7. Aucun export massif pour les rôles chargé de compte, support et formateur. Test automatisé.
 8. Droits de base **implicites** pour tout utilisateur authentifié, hors catalogue : consulter son profil, changer son mot de passe, gérer son MFA et voir/révoquer ses propres sessions.
 

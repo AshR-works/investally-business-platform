@@ -1,0 +1,53 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>RH-2a — absences et congés (API) : recette</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="INDEX.html">Index</a> · <a href="GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="ARCHITECTURE.html">Architecture</a> · <a href="SECURITY.html">Sécurité</a> · <a href="METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="TECH-DEBT.html">Dette</a> · <a href="CHARTE-DE-TESTS.html">Charte de tests</a> · <a href="tests/README.html">Fiches de test</a> · <a href="design/README.html">Design</a> · <a href="livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>RH-2a — absences et congés (API) : recette</h1>
+<p><em>Branche <code>sprint/rh-2a-conges</code> · 2026-11-10 · décision D64 (« B puis C »), cadrage <a href="cadrages/CADRAGE-RH-COMPLETE.html">CADRAGE-RH-COMPLETE</a> · <strong>API seulement</strong> : les écrans (Mes absences, À valider, Calendrier d'équipe, Soldes, Paramètres RH) arrivent avec RH-2b. <strong>Toutes les règles de congés sont des valeurs de départ « à confirmer »</strong>, modifiables par la RH : aucune n'est dans le code.</em></p>
+<h2>Ce qui est livré</h2>
+<div class="table-wrap"><table><thead><tr><th>Demande</th><th>Réponse</th></tr></thead><tbody>
+<tr><td><strong>Types d'absence paramétrables</strong></td><td>Congé annuel (seul type qui décompte le solde), Maladie, Permission exceptionnelle, Sans solde, Maternité et paternité ; la RH en crée, modifie, désactive (jamais supprimés) ; plafond de jours par demande facultatif ; validation exigée ou non</td></tr>
+<tr><td><strong>Règles de départ (« à confirmer »)</strong></td><td>1,5 jour acquis par mois (18 par an), jours ouvrés du lundi au vendredi (le samedi compte si la RH le dit), demi-journées permises, solde négatif interdit, aucun report automatique (la RH ajuste) ; <strong>aucun jour férié présumé</strong> : la RH saisit la liste</td></tr>
+<tr><td><strong>Demande</strong></td><td>L'employé (compte lié) demande ; contrôles : employé en poste, type actif, au moins un jour décompté, plafond du type, pas dans le passé (sauf la RH), pas avant l'entrée, <strong>aucun chevauchement à la demi-journée près</strong>, solde suffisant pour un type qui décompte ; deux demandes simultanées du même employé se suivent (verrou de sa fiche)</td></tr>
+<tr><td><strong>Circuit</strong></td><td>Validation ou refus (refus <strong>motivé</strong>) par le <strong>responsable direct de l'organigramme RH</strong> (pas <code>users.manager_id</code>, D58) ou par la RH ; <strong>jamais sa propre demande</strong>, pas même la RH ni le Super administrateur ; chevauchement et solde <strong>revérifiés à la validation</strong> ; annulation par l'employé (en attente, ou validée mais pas commencée, avec motif) ou par la RH (motif obligatoire pour une demande validée)</td></tr>
+<tr><td><strong>Saisie par la RH pour un employé</strong></td><td>Validée d'emblée ; la RH qui demande pour elle-même attend une autre personne</td></tr>
+<tr><td><strong>Solde</strong></td><td>Acquis (mois de service × taux, proratisé : le mois d'entrée entamé ne compte qu'une fois complet, la sortie arrête l'acquisition) + ajustements − pris − en attente, par année de congé (celle de la date de début) ; jamais calculé à partir de la date du jour</td></tr>
+<tr><td><strong>Ajustements (report, correction)</strong></td><td>RH seulement, motif obligatoire, ajout seul, audité</td></tr>
+<tr><td><strong>Calendrier d'équipe</strong></td><td>Absences <strong>validées</strong> du service, trois mois au plus ; un collègue voit « absent » <strong>sans le type</strong> ; l'employé, son responsable, la RH et la Direction voient le type</td></tr>
+<tr><td><strong>Droits</strong></td><td>Nouvelles permissions <code>hr.leave.read / create / approve / manage</code> : chacun lit, demande et valide pour son équipe directe (portée Propre) ; <strong>la RH et le Super administrateur gèrent</strong> (portée Tous) ; la Direction lit tout ; hors périmètre : « introuvable » (même réponse qu'un identifiant inexistant)</td></tr>
+<tr><td><strong>Aucune donnée de santé</strong></td><td>Pas de champ de diagnostic ni de pièce : un motif libre et facultatif ; test qui vérifie les colonnes de la base</td></tr>
+<tr><td><strong>Base</strong></td><td>Migration <code>20261117000000_rh_2a_leave</code> : schéma <code>hr</code>, <strong>aucune clé étrangère vers un autre schéma</strong> ; 24 règles garanties par la base (dates ordonnées, jours valides, demi-journées cohérentes, année de congé, état cohérent, ajustements, types, règles à ligne unique, jours fériés uniques, RESTRICT)</td></tr>
+<tr><td><strong>API</strong></td><td>17 routes sous <code>/hr/leave</code> ; <strong>audit avant et après</strong> de chaque action ; les 9 routes à identifiant sont dans le <strong>contrat anti-IDOR</strong> avec leurs sondes</td></tr>
+</tbody></table></div>
+<h2>Preuves</h2>
+<div class="table-wrap"><table><thead><tr><th>Contrôle</th><th>Résultat</th></tr></thead><tbody>
+<tr><td>Types, architecture</td><td><code>tsc</code> propre ; <code>pnpm arch</code> : <strong>309 modules, aucune violation</strong></td></tr>
+<tr><td>Tests unitaires de l'API</td><td><strong>1 293 réussis</strong>, 1 ignoré (71 suites) ; nouveaux : calendrier 28, demande 15, règles et types 17, <strong>cas d'usage 72</strong>, matrice des rôles 16</td></tr>
+<tr><td>Intégration complète (base jetable)</td><td><strong>466 sur 466, 32 suites</strong>, en 7 min 2 s ; nouvelle suite <code>hr-leave-http</code> (<strong>14</strong> tests : types et règles de départ, cycle complet demande → validation → solde → calendrier → annulation avec audit, droits et portée, validations, <strong>demandes simultanées</strong> (une seule passe sur trois), paramétrage, 24 règles de la base, verrou optimiste, recherche de chevauchement)</td></tr>
+<tr><td>Contrat anti-IDOR</td><td>Les 9 nouvelles routes : réponse identique pour un objet étranger et pour un objet inexistant, aucune fuite</td></tr>
+<tr><td>Mutants</td><td><strong>126 sur 126 tués</strong> (<code>scripts/mutants/rh2a-conges.py</code>) : 119 au premier passage, <strong>7 survivants rejoués et tués</strong> après ajout de tests : fin de mois du 31 (<code>monthsOfService</code>), arrondi des droits, portée du droit de gestion, contenu de l'audit de création, nom de la contrainte d'ordre des dates, recherche de chevauchement en base, filtre par année</td></tr>
+<tr><td>RBAC</td><td><code>docs/RBAC.md</code> régénéré depuis le code (117 permissions, règle 6 ter)</td></tr>
+</tbody></table></div>
+<h2>Limites connues (dettes D167 à D172, voir TECH-DEBT)</h2>
+<ul><li>Une demande à cheval sur deux années est comptée <strong>entièrement sur l'année de début</strong> (D167).</li><li>« Aujourd'hui » se compte en <strong>UTC</strong> (le Cameroun est en UTC+1) : au passage de minuit, un jour peut être refusé ou accepté à tort (D168, comme D153).</li><li><strong>Aucune notification</strong> : le responsable n'est pas prévenu d'une demande à valider ; l'envoi d'e-mails par le relais Google existe désormais, à décider (D169).</li><li><strong>Pas de suppléant</strong> : si le responsable est absent, la demande attend ; la RH peut valider (D170).</li><li>Un employé <strong>sans compte lié</strong> ne peut pas demander : la RH saisit pour lui (D171).</li><li>Les droits annuels sont <strong>disponibles dès le 1er janvier</strong> (anticipation), proratisés l'année d'entrée ; aucun report automatique (D172).</li><li>Aucun écran, aucune donnée de démonstration d'absences (RH-2b) ; le module reste masqué si <code>RELEASED_DOMAINS</code> n'inclut pas <code>hr</code>.</li></ul>
+<h2>Comment vérifier</h2>
+<ol><li>Lire les tests : <code>apps/crm-api/src/modules/hr/application/leave-use-cases.spec.ts</code> (72 scénarios nommés en français) et <code>test/hr-leave-http.integration.spec.ts</code>.</li><li>Les règles se changent sans code : <code>PUT /hr/leave/settings</code>, <code>/hr/leave/types</code>, <code>/hr/leave/holidays</code> (RH ou Super administrateur).</li><li>Les écrans de RH-2b rendront ces vérifications visibles ; en attendant, l'API se lit dans <code>/api/docs</code>.</li></ol></main></body></html>
