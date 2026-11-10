@@ -23,6 +23,7 @@ import { formatDate } from '../../../lib/format';
 import { can } from '../../../lib/permissions';
 import { COMPANY_STATUS, statusStyle } from '../../../lib/status';
 import type { Company, Page } from '../../../lib/types';
+import { MailLink } from '../../../components/mail-link';
 
 const PAGE_SIZE = 20;
 
@@ -31,7 +32,7 @@ const ALL_COLUMNS: Record<CompanyColumnId, Column<Company>> = {
   name: { id: 'name', weight: 4, header: 'Entreprise', sortField: 'name', cell: (c) => <Link href={`/companies/${c.id}`} className="text-ink no-underline hover:underline"><EntityCell name={c.name} /></Link> },
   sector: { id: 'sector', weight: 2.4, header: 'Secteur', sortField: 'sector', cell: (c) => c.sector ?? <span className="text-ink-2">—</span> },
   country: { id: 'country', weight: 2, header: 'Pays', sortField: 'country', cell: (c) => c.country ?? <span className="text-ink-2">—</span> },
-  email: { id: 'email', weight: 3.6, header: 'E-mail', cell: (c) => c.email ?? <span className="text-ink-2">—</span> },
+  email: { id: 'email', weight: 3.6, header: 'E-mail', cell: (c) => <MailLink email={c.email} /> },
   phone: { id: 'phone', weight: 2.6, header: 'Téléphone', cell: (c) => c.phone ?? <span className="text-ink-2">—</span> },
   value: { id: 'value', weight: 2.6, header: 'Valeur', cell: (c) => openValueText(c.openOpportunities) ?? <span className="text-ink-2">—</span> },
   owner: { id: 'owner', weight: 2.4, header: 'Responsable', cell: (c) => c.ownerName ?? <span className="text-ink-2">—</span> },

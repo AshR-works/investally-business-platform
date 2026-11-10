@@ -7,6 +7,7 @@ import { useAuth } from '../../../../../lib/auth-context';
 import { formatDate } from '../../../../../lib/format';
 import { type Employee, fullName, isArchived } from '../../../../../lib/hr';
 import { canAll } from '../../../../../lib/permissions';
+import { MailLink } from '../../../../../components/mail-link';
 
 const day = (iso: string | null): string => (iso ? formatDate(`${iso}T00:00:00Z`) : '—');
 
@@ -30,7 +31,7 @@ export default function EmployeeSheetPage() {
         { label: 'Service', value: e.department },
         { label: 'Responsable', value: e.managerEmployeeId ? (canAll(profile, 'hr.employee.read') ? <EntityLink kind="employee" id={e.managerEmployeeId} label={e.managerName ?? ''}>{e.managerName}</EntityLink> : e.managerName) : '—' },
         { label: 'Compte d’accès', value: e.userName ?? 'Aucun compte lié' },
-        { label: 'E-mail professionnel', value: e.workEmail ?? '—' },
+        { label: 'E-mail professionnel', value: <MailLink email={e.workEmail} /> },
         { label: 'Téléphone professionnel', value: e.workPhone ?? '—' },
         { label: 'Entrée', value: day(e.hiredOn) },
         ...(archived ? [{ label: 'Sortie', value: day(e.leftOn) }] : []),

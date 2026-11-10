@@ -24,6 +24,7 @@ import { formatDate } from '../../../../lib/format';
 import { can } from '../../../../lib/permissions';
 import { COMPANY_STATUS, statusStyle } from '../../../../lib/status';
 import type { Company } from '../../../../lib/types';
+import { MailLink } from '../../../../components/mail-link';
 
 /**
  * Fiche d'une entreprise (version minimale de S3.6) : identité de l'entreprise et ses documents. Les contacts, offres,
@@ -124,7 +125,7 @@ export default function CompanyPage() {
           <div><dt className="text-xs font-semibold text-ink-2">Responsable</dt><dd className="m-0 mt-1">{company.ownerName ?? '—'}</dd></div>
           <div><dt className="text-xs font-semibold text-ink-2">Secteur</dt><dd className="m-0 mt-1">{company.sector ?? '—'}</dd></div>
           <div><dt className="text-xs font-semibold text-ink-2">Pays</dt><dd className="m-0 mt-1">{company.country ?? '—'}</dd></div>
-          <div><dt className="text-xs font-semibold text-ink-2">E-mail</dt><dd className="m-0 mt-1">{company.email ?? '—'}</dd></div>
+          <div><dt className="text-xs font-semibold text-ink-2">E-mail</dt><dd className="m-0 mt-1"><MailLink email={company.email} /></dd></div>
           <div><dt className="text-xs font-semibold text-ink-2">Téléphone</dt><dd className="m-0 mt-1">{company.phone ?? '—'}</dd></div>
           <div><dt className="text-xs font-semibold text-ink-2">Créée le</dt><dd className="m-0 mt-1">{formatDate(company.createdAt)}</dd></div>
         </dl>

@@ -25,6 +25,9 @@
   ::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--ink) 24%, transparent); border-radius: 999px; border: 2px solid transparent; background-clip: content-box; }
   ::-webkit-scrollbar-thumb:hover { background: color-mix(in srgb, var(--ink) 42%, transparent); background-clip: content-box; }
 }
+/* Pas de rebond élastique en bout de défilement : la page entière (navigation et panneau) ne se décolle plus du bord de la fenêtre. */
+html, body { overscroll-behavior: none; }
+html { background: var(--canvas); }
 body {
   margin: 0;
   background: var(--canvas);

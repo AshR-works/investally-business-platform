@@ -13,6 +13,7 @@ import { formatDate } from '../../../../../lib/format';
 import { can } from '../../../../../lib/permissions';
 import { dateText } from '../../../../../lib/sessions';
 import type { Page } from '../../../../../lib/types';
+import { MailLink } from '../../../../../components/mail-link';
 
 /** Fiche d'un apprenant : identité, entreprise (lien) et ses inscriptions aux sessions. Hors portée = « introuvable ». */
 export default function LearnerSheetPage() {
@@ -36,7 +37,7 @@ export default function LearnerSheetPage() {
       listLabel="Tous les apprenants"
       facts={[
         { label: 'Entreprise', value: can(profile, 'bd.company.read') ? <EntityLink kind="company" id={learner.companyId} label={learner.companyName}>{learner.companyName}</EntityLink> : learner.companyName },
-        { label: 'E-mail', value: learner.email ?? '—' },
+        { label: 'E-mail', value: <MailLink email={learner.email} /> },
         { label: 'Téléphone', value: learner.phone ?? '—' },
         { label: 'Créé le', value: formatDate(learner.createdAt) },
       ]}

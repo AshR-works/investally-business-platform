@@ -10,6 +10,7 @@ import { listFor } from '../../../../lib/company-context';
 import { formatDate } from '../../../../lib/format';
 import { can } from '../../../../lib/permissions';
 import type { Contact } from '../../../../lib/types';
+import { MailLink } from '../../../../components/mail-link';
 
 /** Fiche d'un contact : identité, entreprise (lien), et accès aux listes de cette entreprise. Hors portée = « introuvable ». */
 export default function ContactSheetPage() {
@@ -27,7 +28,7 @@ export default function ContactSheetPage() {
       facts={[
         { label: 'Fonction', value: <Badge tone="neutral">{contactRoleLabel(contact.role)}</Badge> },
         { label: 'Entreprise', value: <EntityLink kind="company" id={contact.companyId} label={contact.companyName}>{contact.companyName}</EntityLink> },
-        { label: 'E-mail', value: contact.email ?? '—' },
+        { label: 'E-mail', value: <MailLink email={contact.email} /> },
         { label: 'Téléphone', value: contact.phone ?? '—' },
         { label: 'Créé le', value: formatDate(contact.createdAt) },
       ]}

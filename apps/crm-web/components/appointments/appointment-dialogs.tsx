@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, ReactNode, useEffect, useState } from 'react';
 import { api, ApiError } from '../../lib/api';
 import {
   type AgendaRights, APPOINTMENT_ACTION_LABEL, APPOINTMENT_STATUS, type AppointmentField, type AppointmentForm, appointmentActions, appointmentTypeLabel, buildAppointmentBody,
@@ -12,6 +12,7 @@ import type { Appointment, Company, Contact, Offer, Opportunity, Page } from '..
 import { Badge } from '../data/badge';
 import { FormField, fieldProps } from '../form-field';
 import { Modal } from '../modal';
+import { EntityLink } from '../entity-link';
 
 const PREFIX = 'appointment';
 
@@ -83,10 +84,10 @@ function ConflictNotice({ appointment, onClose }: { appointment: Appointment; on
 function DetailDialog({ appointment: a, rights, onOpen, onClose }: { appointment: Appointment; rights: AgendaRights; onOpen: (d: AppointmentDialogState) => void; onClose: () => void }) {
   const actions = appointmentActions(a, rights);
   const status = statusStyle(APPOINTMENT_STATUS, a.status);
-  const rows: [string, string | null][] = [
-    ['Entreprise', a.companyName],
+  const rows: [string, ReactNode][] = [
+    ['Entreprise', <EntityLink key="company" kind="company" id={a.companyId} label={a.companyName}>{a.companyName}</EntityLink>],
     ['Contact', a.contactName],
-    ['Offre', a.offerReference],
+    ['Offre', a.offerId && a.offerReference ? <EntityLink key="offer" kind="offer" id={a.offerId} label={a.offerReference}>{a.offerReference}</EntityLink> : a.offerReference],
     ['Opportunité', a.opportunityTitle],
     ['Quand', `${dateLong(a.startsAt)}, ${timeRange(a)} (${a.durationMinutes} min)`],
     ['Lieu ou lien', a.location],

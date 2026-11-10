@@ -13,6 +13,7 @@ import { useAuth } from '../../../lib/auth-context';
 import { type DirectoryEntry, departmentsOf, fullName } from '../../../lib/hr';
 import { can } from '../../../lib/permissions';
 import type { Page } from '../../../lib/types';
+import { MailLink } from '../../../components/mail-link';
 
 const PAGE_SIZE = 20;
 const dash = <span className="text-ink-2">—</span>;
@@ -58,7 +59,7 @@ export default function DirectoryPage() {
   const columns = useMemo<Column<DirectoryEntry>[]>(() => [
     { id: 'name', weight: 3, header: 'Nom', cell: (p) => <EntityCell name={fullName(p)} subtitle={p.jobTitle} round /> },
     { id: 'department', weight: 2, header: 'Service', cell: (p) => p.department },
-    { id: 'email', weight: 3.2, header: 'E-mail professionnel', cell: (p) => (p.workEmail ? <a href={`mailto:${p.workEmail}`}>{p.workEmail}</a> : dash) },
+    { id: 'email', weight: 3.2, header: 'E-mail professionnel', cell: (p) => <MailLink email={p.workEmail} /> },
     { id: 'phone', weight: 2.4, header: 'Téléphone professionnel', cell: (p) => p.workPhone ?? dash },
   ], []);
 

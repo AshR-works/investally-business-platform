@@ -20,6 +20,7 @@ import { useAuth } from '../../../lib/auth-context';
 import { can } from '../../../lib/permissions';
 import { statusStyle } from '../../../lib/status';
 import type { Appointment, Company, Offer, Page } from '../../../lib/types';
+import { EntityLink } from '../../../components/entity-link';
 
 /** L'agenda : rendez-vous et visites visibles selon la portée de l'utilisateur, en vue jour, semaine ou mois. */
 export default function AgendaPage() {
@@ -161,22 +162,28 @@ function AgendaContent() {
   );
 }
 
-/** Un rendez-vous dans une liste : heure, type, entreprise, état ; ouvre sa fiche. */
+/**
+ * Un rendez-vous dans une liste : heure, type, état ; son bouton ouvre la fiche du rendez-vous, et le nom de l'entreprise est un lien vers la fiche de
+ * l'entreprise (un lien ne peut pas se loger dans un bouton : les deux sont côte à côte, dans la même ligne).
+ */
 function AppointmentButton({ appointment: a, compact, onOpen }: { appointment: Appointment; compact?: boolean; onOpen: (a: Appointment) => void }) {
   const status = statusStyle(APPOINTMENT_STATUS, a.status);
   const range = timeRange(a);
   return (
-    <button
-      type="button"
-      className="secondary flex w-full flex-wrap items-center gap-x-2 gap-y-1 text-left"
-      onClick={() => onOpen(a)}
-      aria-label={`${appointmentTypeLabel(a.type)} avec ${a.companyName}, ${range}, ${status.label}${a.reportDue ? ', compte rendu attendu' : ''}`}
-    >
-      <strong>{range}</strong>
-      <span>{compact ? a.companyName : `${appointmentTypeLabel(a.type)} · ${a.companyName}`}</span>
+    <div className="flex w-full flex-wrap items-center gap-x-2 gap-y-1 rounded-control border border-line-strong px-3 py-1.5">
+      <button
+        type="button"
+        className="secondary flex flex-wrap items-center gap-x-2 gap-y-1 border-0 p-0 text-left"
+        onClick={() => onOpen(a)}
+        aria-label={`${appointmentTypeLabel(a.type)} avec ${a.companyName}, ${range}, ${status.label}${a.reportDue ? ', compte rendu attendu' : ''} : ouvrir le rendez-vous`}
+      >
+        <strong>{range}</strong>
+        {!compact && <span>{appointmentTypeLabel(a.type)} ·</span>}
+      </button>
+      <EntityLink kind="company" id={a.companyId} label={a.companyName}>{a.companyName}</EntityLink>
       {!compact && <Badge tone={status.tone}>{status.label}</Badge>}
       {a.reportDue && <Badge tone="warn">{compact ? 'CR attendu' : 'Compte rendu attendu'}</Badge>}
-    </button>
+    </div>
   );
 }
 

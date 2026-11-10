@@ -88,7 +88,7 @@ function FollowupsContent() {
         </span>
       ),
     },
-    { id: 'offer', weight: 2, header: 'Offre', cell: (f) => <strong>{f.offerReference}</strong> },
+    { id: 'offer', weight: 2, header: 'Offre', cell: (f) => <EntityLink kind="offer" id={f.offerId} label={f.offerReference}><strong>{f.offerReference}</strong></EntityLink> },
     { id: 'company', weight: 3, header: 'Entreprise', cell: (f) => <EntityLink kind="company" id={f.companyId} label={f.companyName}>{f.companyName}</EntityLink> },
     { id: 'channel', weight: 1.6, header: 'Canal', cell: (f) => channelLabel(f.channel) },
     {

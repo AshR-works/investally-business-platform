@@ -21,6 +21,7 @@ import { useCompanyContext } from '../../../lib/company-context';
 import { useAuth } from '../../../lib/auth-context';
 import { can } from '../../../lib/permissions';
 import type { Ambassador, Page } from '../../../lib/types';
+import { MailLink } from '../../../components/mail-link';
 
 const PAGE_SIZE = 20;
 
@@ -81,7 +82,7 @@ export default function AmbassadorsPage() {
     { id: 'origin', weight: 1.6, header: 'Origine', cell: (a) => <Badge tone="neutral">{originLabel(a.origin)}</Badge> },
     { id: 'company', weight: 3, header: 'Entreprise', cell: (a) => (a.companyId ? <EntityLink kind="company" id={a.companyId} label={a.companyName ?? ''}>{a.companyName}</EntityLink> : <span className="text-ink-2">—</span>) },
     { id: 'since', weight: 1.4, header: 'Depuis', cell: (a) => sinceLabel(a.appointedOn) },
-    { id: 'email', weight: 3.2, header: 'E-mail', cell: (a) => a.email ?? <span className="text-ink-2">—</span> },
+    { id: 'email', weight: 3.2, header: 'E-mail', cell: (a) => <MailLink email={a.email} /> },
     { id: 'phone', weight: 2.4, header: 'Téléphone', cell: (a) => a.phone ?? <span className="text-ink-2">—</span> },
     ...(canUpdate
       ? [{ id: 'actions', weight: 0.8, header: 'Actions', srOnlyHeader: true, cell: (a: Ambassador) => (

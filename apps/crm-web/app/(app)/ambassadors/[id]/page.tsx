@@ -10,6 +10,7 @@ import { listFor } from '../../../../lib/company-context';
 import { formatDate } from '../../../../lib/format';
 import { can } from '../../../../lib/permissions';
 import type { Ambassador } from '../../../../lib/types';
+import { MailLink } from '../../../../components/mail-link';
 
 /** Fiche d'un ambassadeur : origine, entreprise (lien), ancienneté, état d'archivage et son motif. Archiver et réactiver se font dans la liste. */
 export default function AmbassadorSheetPage() {
@@ -29,7 +30,7 @@ export default function AmbassadorSheetPage() {
         { label: 'Origine', value: <Badge tone="neutral">{originLabel(a.origin)}</Badge> },
         { label: 'Entreprise', value: a.companyId ? <EntityLink kind="company" id={a.companyId} label={a.companyName ?? ''}>{a.companyName}</EntityLink> : '—' },
         { label: 'Ambassadeur', value: sinceLabel(a.appointedOn) },
-        { label: 'E-mail', value: a.email ?? '—' },
+        { label: 'E-mail', value: <MailLink email={a.email} /> },
         { label: 'Téléphone', value: a.phone ?? '—' },
         { label: 'Créé le', value: formatDate(a.createdAt) },
         ...(archived ? [{ label: 'Archivé le', value: formatDate(a.archivedAt) }] : []),
