@@ -111,5 +111,7 @@ Nouvelles permissions `hr.leave.read / create / approve / manage`, portées Prop
 5. Les types de contrat réels pour RH-3 (CDI, CDD, stagiaire, prestataire ; formateurs externes ou non).
 6. Si une notification par e-mail à la demande est souhaitée.
 
-## 7. Décision attendue
-Réponse courte : **« B »**, **« B puis C »** (ma recommandation), ou une autre option. Sous-décisions : les valeurs par défaut du § 5 (« appliquées, à confirmer » comme D59), et l'ordre des lots. **Rien n'est commencé.**
+## 7. Décision *(prise : voir § 8)*
+
+## 8. Décision
+**2026-11-10 — Direction produit : « B puis C ».** Retenu : **option B** (RH-2, absences et congés) **maintenant**, puis **option C** (RH-3, contrats et parcours, sans documents ni donnée sensible) comme lot suivant. **Exclus tant que leur condition n'est pas levée** : présences (RH-4), dossier du personnel (RH-5), évaluations (RH-6), paie (RH-7). Les valeurs par défaut du § 5 sont **appliquées « à confirmer »** (comme D59) ; les règles réelles, quand elles seront fournies, remplacent les valeurs de départ (ce sont des paramètres, pas du code). Enregistré en **D64**. **État** : rien n'est commencé ; RH-2a se lance **à votre signal**.
