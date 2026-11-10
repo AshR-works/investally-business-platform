@@ -17,3 +17,5 @@ deploy
 **/.env
 **/.env.*
 *.log
+# Les tests de l'interface importent du code de l'API (hors du contexte de l'image web) : inutiles dans l'image, et ils feraient échouer la vérification de types de la construction.
+apps/crm-web/test
