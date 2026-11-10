@@ -46,3 +46,18 @@ jobs:
           pnpm --filter @investally/crm-api test:integration
       - name: Audit des dépendances
         run: pnpm audit --prod --audit-level high
+
+  # Les images de la V1 se construisent pour de vrai à chaque proposition de changement (jamais exécutées à la main sur la machine de développement).
+  images:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Image de l'API
+        run: docker build -f apps/crm-api/Dockerfile -t investally-api:ci .
+      - name: Image de l'interface web
+        run: docker build -f apps/crm-web/Dockerfile -t investally-web:ci .
+      - name: Composition de production (réglages factices générés, rien de réel)
+        working-directory: deploy
+        run: |
+          node gen-env.mjs --domain ci.exemple.test --acme-email ci@exemple.test --sender no-reply@exemple.test
+          docker compose -f docker-compose.prod.yml config --quiet

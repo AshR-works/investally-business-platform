@@ -1,0 +1,19 @@
+# Le contexte de construction est la racine du dépôt : on n'y envoie que le nécessaire (sans dépendances installées sur la machine, sans secrets, sans documentation).
+.git
+.github
+**/node_modules
+**/.next
+**/dist
+**/coverage
+**/*.tsbuildinfo
+apps/crm-api/generated
+apps/crm-api/.agents
+apps/crm-api/.claude
+apps/crm-api/.windsurf
+docs
+deploy
+.env
+.env.*
+**/.env
+**/.env.*
+*.log

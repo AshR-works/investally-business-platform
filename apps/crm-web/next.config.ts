@@ -1,3 +1,4 @@
+import path from 'node:path';
 import type { NextConfig } from 'next';
 
 const isDev = process.env.NODE_ENV !== 'production';
@@ -30,6 +31,9 @@ const securityHeaders = [
 ];
 
 const config: NextConfig = {
+  // Image de production : sortie « standalone » (un serveur Node minimal), demandée par l'image seulement (NEXT_OUTPUT) pour que le démarrage local reste « next start ».
+  // La racine du suivi des fichiers est celle du dépôt : les dépendances d'un espace de travail pnpm sont hors du dossier de l'application.
+  ...(process.env.NEXT_OUTPUT === 'standalone' ? { output: 'standalone' as const, outputFileTracingRoot: path.resolve(process.cwd(), '../..') } : {}),
   // Même origine côté navigateur : pas de CORS, l'API reste sur 127.0.0.1.
   async rewrites() {
     const api = process.env.CRM_API_URL ?? 'http://127.0.0.1:3001';

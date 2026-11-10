@@ -6,6 +6,7 @@
 | Document | Contenu |
 |---|---|
 | [Guide d'exécution locale](GUIDE-EXECUTION-LOCALE.md) | Lancer l'application sur votre poste, comptes de démonstration, scénarios |
+| [Exploitation de la V1](EXPLOITATION-V1.md) | Installer, démarrer, mettre à jour et sauvegarder le serveur de production |
 | [Stratégie d'exécution](EXECUTION-LOCALE.md) | Options comparées, environnements, feuille de route |
 | [Vision](VISION.md) | Produit, périmètre, priorités |
 | [État d'avancement](livrables/05-ETAT-D-AVANCEMENT.md) | Où en est le projet |

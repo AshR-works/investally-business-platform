@@ -9,8 +9,11 @@ RUN pnpm --filter @investally/crm-api prisma:generate && pnpm --filter @investal
 
 FROM node:22-alpine AS run
 WORKDIR /repo/apps/crm-api
-ENV NODE_ENV=production
+# API_HOST=0.0.0.0 : l'API écoute sur le réseau INTERNE de la composition (le serveur web est un autre conteneur) ; aucun port n'est publié sur la machine.
+ENV NODE_ENV=production API_HOST=0.0.0.0
 RUN addgroup -S app && adduser -S app -G app
+# Documents téléversés : volume monté ici (DOCUMENTS_DIR=/data/documents), propriété de l'utilisateur de l'application.
+RUN mkdir -p /data/documents && chown app:app /data/documents
 COPY --from=build --chown=app:app /repo /repo
 USER app
 EXPOSE 3001
