@@ -60,7 +60,7 @@ curl -s http://127.0.0.1:3001/api/v1/companies?pageSize=5 -H &quot;Authorization
 <tr><td>00b — Première connexion</td><td>Enrôler le second facteur d'un compte neuf</td><td>Secret remis, 10 codes de secours remis</td></tr>
 <tr><td>01 — Sécurité (173 requêtes)</td><td><strong>Chaque route protégée appelée sans jeton</strong></td><td>Refusée (401) au format « problem details »</td></tr>
 <tr><td>02 — Santé</td><td><code>/health/live</code>, <code>/health/ready</code></td><td>200</td></tr>
-<tr><td>90 — Parcours de bout en bout</td><td>24 étapes qui créent leurs propres données : entreprise (créer, lire, modifier, exporter), formation (programme, certificat, salle, formateur, session, <strong>étudiant sans entreprise et payeur</strong>, inscription, confirmation, annulation), congés (règles, types, jours fériés)</td><td>Statuts, valeurs métier (montant dû, absence d'agrément, nature), erreur de validation attendue</td></tr>
+<tr><td>90 — Parcours de bout en bout</td><td>39 étapes qui créent leurs propres données : entreprise (créer, lire, modifier, exporter), formation (programme, certificat, salle, formateur, session, <strong>étudiant sans entreprise et payeur</strong>, inscription, confirmation, annulation), congés (règles, types, jours fériés), <strong>contrats et parcours</strong> (types, contrat à durée déterminée, second contrat refusé, prolonger, terminer avec un motif de la liste, échéances, lancer un parcours, cocher, décocher, annuler)</td><td>Statuts, valeurs métier (montant dû, absence d'agrément, nature), erreur de validation attendue</td></tr>
 <tr><td>10 à 34 — une requête par route (172)</td><td>Une requête par route, regroupées par domaine, avec la permission dans la description</td><td><strong>Pas d'erreur serveur, jeton accepté, statut prévu, temps de réponse, JSON, erreur au format RFC 7807, champs documentés présents, liste paginée</strong></td></tr>
 <tr><td>98 — Actions de session</td><td>Déconnexion, changement de mot de passe, rafraîchissement, second facteur, régénération des codes de secours</td><td>À lancer <strong>à part</strong> : elles ferment la session ou changent un secret</td></tr>
 </tbody></table></div>
@@ -69,7 +69,7 @@ curl -s http://127.0.0.1:3001/api/v1/companies?pageSize=5 -H &quot;Authorization
 <pre><code>npm install -g newman
 node scripts/api-docs/run-newman.mjs --env mon-environnement.json --report rapport.json</code></pre>
 <p>La commande exclut automatiquement les dossiers 00b et 98 ; <code>--only 00,01,90</code> choisit des dossiers.</p>
-<p><strong>Résultat de référence</strong> (pile jetable, jeu de démonstration, compte Super administrateur) : <strong>373 requêtes, 1 412 assertions, 0 échec</strong>, en 40 secondes ; 98 : 10 requêtes, 50 assertions, 0 échec ; 00b : 2 requêtes, 4 assertions, 0 échec.</p>
+<p><strong>Résultat de référence</strong> (pile jetable, jeu de démonstration, compte Super administrateur) : <strong>424 requêtes, 1 584 assertions, 0 échec</strong>, en 52 secondes ; 98 : 10 requêtes, 50 assertions, 0 échec ; 00b : 2 requêtes, 4 assertions, 0 échec.</p>
 <h3>Régénérer (à chaque changement de route)</h3>
 <pre><code>cd apps/crm-api &amp;&amp; npx tsc -p tsconfig.build.json --outDir dist-docs &amp;&amp; cd ../..
 DATABASE_URL=&lt;base jetable&gt; node scripts/api-docs/export-openapi.cjs --dist apps/crm-api/dist-docs --out docs/api/openapi.json

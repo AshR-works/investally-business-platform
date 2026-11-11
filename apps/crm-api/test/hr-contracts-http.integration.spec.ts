@@ -1,4 +1,6 @@
 import 'reflect-metadata';
+import { Contract } from '../src/modules/hr/domain/contract';
+import { PrismaContractRepository } from '../src/modules/hr/infrastructure/prisma-contract.repositories';
 import { RoleCode } from '../src/modules/iam/domain/roles';
 import { Api, createUserWithRoles, mfaSession, startRbacApp } from './support/rbac-http';
 import { TestApp } from './support/test-app';
@@ -200,6 +202,32 @@ describeDb('Contrats du personnel (HTTP + PostgreSQL)', () => {
     expect(Object.keys(made.body).sort()).toEqual(['contractTypeId', 'contractTypeLabel', 'createdAt', 'employeeId', 'employeeName', 'end', 'endReason', 'endReasonLabel', 'endedOn', 'fixedTerm', 'id', 'probationEnd', 'start', 'status', 'version']);
     const columns = await t.prisma.db.$queryRawUnsafe<{ column_name: string }[]>(`SELECT column_name FROM information_schema.columns WHERE table_schema = 'hr' AND table_name = 'contracts'`);
     expect(columns.map((c) => c.column_name).join()).not.toMatch(/salary|salaire|amount|document|file|note|comment/i);
+  });
+
+  it('filtre d’état et échéances en base : un contrat terminé n’a plus d’échéance et le filtre ne montre que l’état demandé', async () => {
+    const w = await world();
+    const employeeId = await withoutContract(w);
+    const first = await create(w.hr, { employeeId, contractTypeId: w.cdd, start: addDays(today(), -100), end: addDays(today(), 10), probationEnd: addDays(today(), 5) });
+    expect(first.status).toBe(201);
+    const before = (await api.call('GET', '/api/v1/hr/contracts/deadlines', w.hr)).body as { contractId: string }[];
+    expect(before.filter((r) => r.contractId === first.body.id)).toHaveLength(2);
+    expect((await api.call('POST', `/api/v1/hr/contracts/${first.body.id}/end`, { ...w.hr, body: { version: 1, endedOn: today(), reason: 'MISSION_END' } })).status).toBe(200);
+    const second = await create(w.hr, { employeeId, contractTypeId: w.cdi, start: addDays(today(), 1) });
+    expect(second.status).toBe(201);
+    const after = (await api.call('GET', '/api/v1/hr/contracts/deadlines', w.hr)).body as { contractId: string }[];
+    expect(after.filter((r) => r.contractId === first.body.id)).toEqual([]);
+    const ids = async (status: string) => ((await api.call('GET', `/api/v1/hr/contracts?employeeId=${employeeId}&status=${status}`, w.hr)).body.items as { id: string }[]).map((c) => c.id);
+    expect(await ids('ENDED')).toEqual([first.body.id]);
+    expect(await ids('ACTIVE')).toEqual([second.body.id]);
+    expect((await api.call('GET', `/api/v1/hr/contracts?employeeId=${employeeId}`, w.hr)).body.total).toBe(2);
+  });
+
+  it('le dépôt refuse un second contrat en cours par un conflit, même sans passer par le cas d’usage', async () => {
+    const w = await world();
+    const employeeId = await withoutContract(w);
+    expect((await create(w.hr, { employeeId, contractTypeId: w.cdi, start: '2026-02-01' })).status).toBe(201);
+    const intruder = Contract.create({ id: crypto.randomUUID(), employeeId, contractTypeId: w.cdi, fixedTerm: false, start: '2030-01-01', now: new Date() });
+    await expect(new PrismaContractRepository(t.prisma).save(intruder)).rejects.toMatchObject({ code: 'CONFLICT', message: expect.stringMatching(/déjà en cours/) });
   });
 
   describe('règles garanties par la base, quoi que fasse l’application', () => {

@@ -3172,8 +3172,8 @@
     {
       "nom": "90 — Parcours de bout en bout",
       "description": "Scénarios qui créent leurs propres données et vérifient les règles métier (agrément, payeur, portée). À lancer après la connexion, avec un compte qui a les droits (par exemple le Super administrateur de test).",
-      "requetes": 24,
-      "assertions": 35,
+      "requetes": 39,
+      "assertions": 60,
       "detail": [
         {
           "nom": "Créer une entreprise",
@@ -3523,6 +3523,237 @@
           "corps": null,
           "tests": [
             "Le solde d’un compte sans fiche employé est « introuvable » : statut 200 ou 404"
+          ]
+        },
+        {
+          "nom": "Lister les types de contrat",
+          "methode": "GET",
+          "chemin": "/api/v1/hr/contracts/types",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": null,
+          "tests": [
+            "Lister les types de contrat : statut 200",
+            "Les types de départ existent"
+          ]
+        },
+        {
+          "nom": "Créer un employé pour le parcours",
+          "methode": "POST",
+          "chemin": "/api/v1/hr/employees",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": {
+            "lastName": "Contrat{{runId}}",
+            "firstName": "Eli",
+            "jobTitle": "Analyste",
+            "department": "Finance",
+            "hiredOn": "2020-01-01"
+          },
+          "tests": [
+            "Créer un employé pour le parcours : statut 201"
+          ]
+        },
+        {
+          "nom": "Créer un contrat à durée déterminée",
+          "methode": "POST",
+          "chemin": "/api/v1/hr/contracts",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": {
+            "employeeId": "{{rhEmployeeId}}",
+            "contractTypeId": "{{cddTypeId}}",
+            "start": "2026-02-01",
+            "end": "2026-12-31",
+            "probationEnd": "2026-03-01"
+          },
+          "tests": [
+            "Créer un contrat à durée déterminée : statut 201",
+            "En cours, sans salaire ni document"
+          ]
+        },
+        {
+          "nom": "Un second contrat en cours est refusé",
+          "methode": "POST",
+          "chemin": "/api/v1/hr/contracts",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": {
+            "employeeId": "{{rhEmployeeId}}",
+            "contractTypeId": "{{cdiTypeId}}",
+            "start": "2027-01-01"
+          },
+          "tests": [
+            "Un second contrat en cours est refusé : statut 409"
+          ]
+        },
+        {
+          "nom": "Prolonger le contrat",
+          "methode": "PUT",
+          "chemin": "/api/v1/hr/contracts/{{contractId}}",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": {
+            "version": 1,
+            "end": "2027-01-31"
+          },
+          "tests": [
+            "Prolonger le contrat : statut 200",
+            "Fin prolongée"
+          ]
+        },
+        {
+          "nom": "Terminer le contrat, motif de la liste",
+          "methode": "POST",
+          "chemin": "/api/v1/hr/contracts/{{contractId}}/end",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": {
+            "version": 2,
+            "endedOn": "2026-12-31",
+            "reason": "FIXED_TERM_END"
+          },
+          "tests": [
+            "Terminer le contrat, motif de la liste : statut 200",
+            "Terminé avec son motif"
+          ]
+        },
+        {
+          "nom": "Un motif hors liste est refusé",
+          "methode": "POST",
+          "chemin": "/api/v1/hr/contracts/{{contractId}}/end",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": {
+            "version": 3,
+            "endedOn": "2026-12-31",
+            "reason": "Licenciement"
+          },
+          "tests": [
+            "Un motif hors liste est refusé : statut 400"
+          ]
+        },
+        {
+          "nom": "Lister les échéances des 30 prochains jours",
+          "methode": "GET",
+          "chemin": "/api/v1/hr/contracts/deadlines?days=30",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": null,
+          "tests": [
+            "Lister les échéances des 30 prochains jours : statut 200",
+            "Liste d’échéances"
+          ]
+        },
+        {
+          "nom": "Lire les modèles de parcours",
+          "methode": "GET",
+          "chemin": "/api/v1/hr/journeys/templates",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": null,
+          "tests": [
+            "Lire les modèles de parcours : statut 200",
+            "Deux modèles"
+          ]
+        },
+        {
+          "nom": "Lancer un parcours d’intégration",
+          "methode": "POST",
+          "chemin": "/api/v1/hr/journeys",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": {
+            "employeeId": "{{rhEmployeeId}}",
+            "kind": "ONBOARDING"
+          },
+          "tests": [
+            "Lancer un parcours d’intégration : statut 201",
+            "Six tâches, aucune cochée"
+          ]
+        },
+        {
+          "nom": "Un second parcours de même nature est refusé",
+          "methode": "POST",
+          "chemin": "/api/v1/hr/journeys",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": {
+            "employeeId": "{{rhEmployeeId}}",
+            "kind": "ONBOARDING"
+          },
+          "tests": [
+            "Un second parcours de même nature est refusé : statut 409"
+          ]
+        },
+        {
+          "nom": "Cocher une tâche (date et auteur gardés)",
+          "methode": "POST",
+          "chemin": "/api/v1/hr/journeys/{{journeyId}}/tasks/{{journeyTaskId}}/complete",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": {
+            "version": 1
+          },
+          "tests": [
+            "Cocher une tâche (date et auteur gardés) : statut 200",
+            "Cochée avec son auteur"
+          ]
+        },
+        {
+          "nom": "Décocher la tâche",
+          "methode": "POST",
+          "chemin": "/api/v1/hr/journeys/{{journeyId}}/tasks/{{journeyTaskId}}/reopen",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": {
+            "version": 2
+          },
+          "tests": [
+            "Décocher la tâche : statut 200",
+            "Décochée"
+          ]
+        },
+        {
+          "nom": "Annuler le parcours",
+          "methode": "POST",
+          "chemin": "/api/v1/hr/journeys/{{journeyId}}/cancel",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": {
+            "version": 3
+          },
+          "tests": [
+            "Annuler le parcours : statut 200",
+            "Annulé"
+          ]
+        },
+        {
+          "nom": "Un parcours annulé ne se coche plus",
+          "methode": "POST",
+          "chemin": "/api/v1/hr/journeys/{{journeyId}}/tasks/{{journeyTaskId}}/complete",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": {
+            "version": 4
+          },
+          "tests": [
+            "Un parcours annulé ne se coche plus : statut 409"
           ]
         }
       ]
@@ -7854,8 +8085,8 @@
   ],
   "resume": {
     "dossiers": 31,
-    "requetes": 419,
-    "testsDefinis": 1810,
-    "resultatDeReference": "Pile jetable, jeu de démonstration, compte Super administrateur : 373 requêtes, 1 412 assertions exécutées, 0 échec (dossiers 00b et 98 à part : 12 requêtes, 54 assertions, 0 échec)."
+    "requetes": 434,
+    "testsDefinis": 1835,
+    "resultatDeReference": "Pile jetable, jeu de démonstration, compte Super administrateur : 424 requêtes, 1 584 assertions exécutées, 0 échec (dossiers 00b et 98 à part : 12 requêtes, 54 assertions, 0 échec)."
   }
 }

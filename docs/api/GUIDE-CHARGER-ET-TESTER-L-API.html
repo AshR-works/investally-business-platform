@@ -78,7 +78,7 @@
 <div class="grid">
   <div class="card"><h3>Type d'API</h3><p>REST en JSON sur HTTP (NestJS), décrite en OpenAPI 3. Adresses sous <code>/api/v1</code>.</p></div>
   <div class="card"><h3>Connexion</h3><p>E-mail et mot de passe, puis un second facteur (code à 6 chiffres) : sans lui, les routes protégées refusent.</p></div>
-  <div class="card"><h3>Ce que vous testez</h3><p>180 routes : 373 requêtes et plus de 1 400 vérifications, dont des parcours qui créent leurs propres données.</p></div>
+  <div class="card"><h3>Ce que vous testez</h3><p>190 routes : 424 requêtes et plus de 1 500 vérifications, dont des parcours qui créent leurs propres données.</p></div>
 </div>
 <p>Les fichiers utiles sont tous dans <code>docs/api/</code> :</p>
 <div class="table-scroll"><table>
@@ -172,7 +172,7 @@ pnpm install</code></pre>
   <tr><td>00b — Première connexion</td><td>Enrôler le second facteur d'un compte neuf</td><td>Secret et 10 codes de secours remis</td></tr>
   <tr><td>01 — Sécurité (173)</td><td>Chaque route protégée, <strong>sans jeton</strong></td><td>Refusée (401), au format RFC 7807</td></tr>
   <tr><td>02 — Santé</td><td><code>/health/live</code>, <code>/health/ready</code></td><td>200</td></tr>
-  <tr><td>90 — Parcours</td><td>24 étapes qui créent leurs données : entreprise, formation (dont étudiant sans entreprise et payeur), congés</td><td>Statuts, valeurs métier, refus de validation attendus</td></tr>
+  <tr><td>90 — Parcours</td><td>39 étapes qui créent leurs données : entreprise, formation (dont étudiant sans entreprise et payeur), congés, contrats et parcours</td><td>Statuts, valeurs métier, refus de validation attendus</td></tr>
   <tr><td>10 à 34 — par domaine (172)</td><td>Une requête par route</td><td>Pas d'erreur serveur, jeton accepté, statut prévu, temps de réponse, JSON, erreur RFC 7807, champs documentés, pagination</td></tr>
   <tr><td>98 — Actions de session</td><td>Déconnexion, mot de passe, rafraîchissement, second facteur</td><td>À lancer <strong>à part</strong> : elles ferment la session ou changent un secret</td></tr>
 </table></div>
@@ -193,7 +193,7 @@ pnpm install</code></pre>
     <p>La commande saute automatiquement les dossiers « 00b » et « 98 ». Options : <code>--only 00,01,90</code> pour ne lancer que certains dossiers. Code de sortie 0 si tout passe, 1 sinon.</p>
   </li>
 </ol>
-<div class="ok"><strong>Résultat de référence</strong> (pile jetable, jeu de démonstration, Super administrateur) : <strong>373 requêtes, 1 412 vérifications, 0 échec</strong>, en 40 secondes.</div>
+<div class="ok"><strong>Résultat de référence</strong> (pile jetable, jeu de démonstration, Super administrateur) : <strong>424 requêtes, 1 584 vérifications, 0 échec</strong>, en 52 secondes.</div>
 
 <h2 id="base">5. Tester la base de données</h2>
 <p>Postman ne sait pas interroger une base de données : le test de la base se fait avec un script en lecture seule, qui lance <strong>22 vérifications d'intégrité</strong> (références entre domaines, places et agréments, chevauchement d'absences, comptes sans rôle…). Chacune doit renvoyer zéro ligne.</p>

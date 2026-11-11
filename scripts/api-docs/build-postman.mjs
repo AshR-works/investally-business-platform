@@ -305,7 +305,28 @@ const scenarioFolders = () => {
     ],
     event: [runId],
   };
-  return [entreprises, formation, conges];
+  const contratsParcours = {
+    name: '90.4 — RH : contrats et parcours d’intégration (RH-3)',
+    item: [
+      step('Lister les types de contrat', 'GET', '/hr/contracts/types', { save: { cddTypeId: "pm.response.json().find((t) => t.code === 'CDD').id", cdiTypeId: "pm.response.json().find((t) => t.code === 'CDI').id" }, extraTests: ["pm.test('Les types de départ existent', () => pm.expect(pm.response.json().map((t) => t.code)).to.include.members(['CDI', 'CDD', 'STAGE', 'PRESTATION']));"] }),
+      step('Créer un employé pour le parcours', 'POST', '/hr/employees', { body: { lastName: `Contrat${suffix}`, firstName: 'Eli', jobTitle: 'Analyste', department: 'Finance', hiredOn: '2020-01-01' }, expect: [201], save: { rhEmployeeId: 'pm.response.json().id' } }),
+      step('Créer un contrat à durée déterminée', 'POST', '/hr/contracts', { body: { employeeId: '{{rhEmployeeId}}', contractTypeId: '{{cddTypeId}}', start: '2026-02-01', end: '2026-12-31', probationEnd: '2026-03-01' }, expect: [201], save: { contractId: 'pm.response.json().id' }, extraTests: ["pm.test('En cours, sans salaire ni document', () => { const c = pm.response.json(); pm.expect(c.status).to.eql('ACTIVE'); pm.expect(c).to.not.have.any.keys('salary', 'salaire', 'document'); });"] }),
+      step('Un second contrat en cours est refusé', 'POST', '/hr/contracts', { body: { employeeId: '{{rhEmployeeId}}', contractTypeId: '{{cdiTypeId}}', start: '2027-01-01' }, expect: [409] }),
+      step('Prolonger le contrat', 'PUT', '/hr/contracts/{{contractId}}', { body: { version: 1, end: '2027-01-31' }, expect: [200], extraTests: ["pm.test('Fin prolongée', () => pm.expect(pm.response.json().end).to.eql('2027-01-31'));"] }),
+      step('Terminer le contrat, motif de la liste', 'POST', '/hr/contracts/{{contractId}}/end', { body: { version: 2, endedOn: '2026-12-31', reason: 'FIXED_TERM_END' }, expect: [200], extraTests: ["pm.test('Terminé avec son motif', () => { const c = pm.response.json(); pm.expect(c.status).to.eql('ENDED'); pm.expect(c.endReason).to.eql('FIXED_TERM_END'); });"] }),
+      step('Un motif hors liste est refusé', 'POST', '/hr/contracts/{{contractId}}/end', { body: { version: 3, endedOn: '2026-12-31', reason: 'Licenciement' }, expect: [400] }),
+      step('Lister les échéances des 30 prochains jours', 'GET', '/hr/contracts/deadlines?days=30', { query: [{ key: 'days', value: '30' }], extraTests: ["pm.test('Liste d’échéances', () => pm.expect(pm.response.json()).to.be.an('array'));"] }),
+      step('Lire les modèles de parcours', 'GET', '/hr/journeys/templates', { extraTests: ["pm.test('Deux modèles', () => pm.expect(pm.response.json().map((t) => t.kind).sort()).to.eql(['OFFBOARDING', 'ONBOARDING']));"] }),
+      step('Lancer un parcours d’intégration', 'POST', '/hr/journeys', { body: { employeeId: '{{rhEmployeeId}}', kind: 'ONBOARDING' }, expect: [201], save: { journeyId: 'pm.response.json().id', journeyTaskId: 'pm.response.json().tasks[0].id' }, extraTests: ["pm.test('Six tâches, aucune cochée', () => { const j = pm.response.json(); pm.expect(j.tasks).to.have.lengthOf(6); pm.expect(j.progress.done).to.eql(0); });"] }),
+      step('Un second parcours de même nature est refusé', 'POST', '/hr/journeys', { body: { employeeId: '{{rhEmployeeId}}', kind: 'ONBOARDING' }, expect: [409] }),
+      step('Cocher une tâche (date et auteur gardés)', 'POST', '/hr/journeys/{{journeyId}}/tasks/{{journeyTaskId}}/complete', { body: { version: 1 }, expect: [200], extraTests: ["pm.test('Cochée avec son auteur', () => { const t = pm.response.json().tasks[0]; pm.expect(t.done).to.eql(true); pm.expect(t.doneByName).to.be.a('string'); });"] }),
+      step('Décocher la tâche', 'POST', '/hr/journeys/{{journeyId}}/tasks/{{journeyTaskId}}/reopen', { body: { version: 2 }, expect: [200], extraTests: ["pm.test('Décochée', () => pm.expect(pm.response.json().tasks[0].done).to.eql(false));"] }),
+      step('Annuler le parcours', 'POST', '/hr/journeys/{{journeyId}}/cancel', { body: { version: 3 }, expect: [200], extraTests: ["pm.test('Annulé', () => pm.expect(pm.response.json().status).to.eql('CANCELLED'));"] }),
+      step('Un parcours annulé ne se coche plus', 'POST', '/hr/journeys/{{journeyId}}/tasks/{{journeyTaskId}}/complete', { body: { version: 4 }, expect: [409] }),
+    ],
+    event: [runId],
+  };
+  return [entreprises, formation, conges, contratsParcours];
 };
 
 // ───────────────────────────── Assemblage ─────────────────────────────
@@ -469,7 +490,7 @@ catalogue.resume = {
   dossiers: catalogue.dossiers.length,
   requetes: catalogue.dossiers.reduce((n, f) => n + f.requetes, 0),
   testsDefinis: catalogue.dossiers.reduce((n, f) => n + f.assertions, 0),
-  resultatDeReference: 'Pile jetable, jeu de démonstration, compte Super administrateur : 373 requêtes, 1 412 assertions exécutées, 0 échec (dossiers 00b et 98 à part : 12 requêtes, 54 assertions, 0 échec).',
+  resultatDeReference: 'Pile jetable, jeu de démonstration, compte Super administrateur : 424 requêtes, 1 584 assertions exécutées, 0 échec (dossiers 00b et 98 à part : 12 requêtes, 54 assertions, 0 échec).',
 };
 writeFileSync(join(root, 'docs/api/tests-api.json'), JSON.stringify(catalogue, null, 2) + '\n', 'utf8');
 

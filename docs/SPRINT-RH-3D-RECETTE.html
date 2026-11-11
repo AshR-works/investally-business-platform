@@ -1,0 +1,48 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>RH-3d — recette complète des contrats et des parcours : mutants, Newman, fiches de test</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="INDEX.html">Index</a> · <a href="GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="ARCHITECTURE.html">Architecture</a> · <a href="SECURITY.html">Sécurité</a> · <a href="METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="TECH-DEBT.html">Dette</a> · <a href="CHARTE-DE-TESTS.html">Charte de tests</a> · <a href="tests/README.html">Fiches de test</a> · <a href="design/README.html">Design</a> · <a href="livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>RH-3d — recette complète des contrats et des parcours : mutants, Newman, fiches de test</h1>
+<p><em>Branche <code>feat/rh-3d-recette</code> (sur la branche de RH-3c) · 2026-11-12 · décisions D67 et D68 (<a href="adr/0013-contrats-du-personnel-sans-donnees-sensibles.html">ADR-0013</a>, <a href="adr/0014-parcours-d-integration-et-de-depart.html">ADR-0014</a>).</em></p>
+<p>Dernière tranche de RH-3 (après 3a et 3b, l'API, et 3c, les écrans). Elle n'ajoute pas de fonction : elle <strong>éprouve</strong> le travail des trois premières.</p>
+<h2>Ce qui est livré</h2>
+<div class="table-wrap"><table><thead><tr><th>Livrable</th><th>Contenu</th></tr></thead><tbody>
+<tr><td><strong>Mutants</strong></td><td><code>scripts/mutants/rh3-contrats-parcours.py</code> : <strong>163 fautes</strong> injectées une à une (domaine, cas d'usage, routes et lecture en base, règles de la base, droits des rôles, règles de saisie de l'interface, menu et droits des écrans) ; un mutant équivalent retiré et documenté</td></tr>
+<tr><td><strong>Tests ajoutés pour les survivants</strong></td><td>13 cas : fin effective anticipée, droit de gérer en portée réduite (contrats et parcours), échéance « aujourd'hui », contrat terminé absent des échéances, filtres d'état et de nature, ordre des listes, conflits au niveau des dépôts, bornes acceptées côté interface</td></tr>
+<tr><td><strong>Collection Postman</strong></td><td>nouveau parcours <strong>90.4</strong> (15 étapes) : types de contrat, contrat à durée déterminée, second contrat refusé, prolonger, terminer (motif de la liste, motif hors liste refusé), échéances, modèles, lancer un parcours (second refusé), cocher, décocher, annuler (parcours annulé refusé) ; <strong>exécutée avec Newman</strong></td></tr>
+<tr><td><strong>Fiches de test</strong></td><td>session <code>rh-3</code> (15 vérifications) et cinq fiches d'écran (34 à 38), index mis à jour</td></tr>
+<tr><td><strong>Un défaut trouvé et corrigé</strong></td><td>sur l'écran des modèles, l'erreur d'une ligne était affichée mais <strong>non reliée à son champ</strong> pour un lecteur d'écran ; identifiant et <code>aria-describedby</code> ajoutés (test de structure)</td></tr>
+</tbody></table></div>
+<h2>Preuves</h2>
+<div class="table-wrap"><table><thead><tr><th>Contrôle</th><th>Résultat</th></tr></thead><tbody>
+<tr><td>Types, architecture</td><td><code>tsc</code> propre (API et interface) ; <code>pnpm arch</code> : 332 modules, aucune violation</td></tr>
+<tr><td>Tests unitaires de l'API</td><td><strong>1 449 réussis</strong> (80 suites)</td></tr>
+<tr><td>Tests de l'interface</td><td><strong>815 réussis</strong> (42 fichiers)</td></tr>
+<tr><td>Intégration (base jetable)</td><td><code>hr-contracts-http</code>, <code>hr-journeys-http</code>, <code>hr-leave-http</code>, <code>hr-employees-http</code>, <code>idor-contract</code>, <code>core-schema</code>, <code>rbac-http</code>, <code>seed-demo</code> : <strong>228 réussis, 9 suites</strong>. Un premier passage a échoué sur le contrat anti-IDOR : un de mes nouveaux tests changeait la version du modèle de départ dont dépend la sonde ; le test remet maintenant la version de départ (les deux suites rejouées : 132 réussis)</td></tr>
+<tr><td><strong>Mutants</strong></td><td>première passe : <strong>148 tués sur 163</strong>, 15 survivants. Trois cas : <strong>13 vrais survivants</strong> (tests ajoutés, tous tués au second passage) ; <strong>W14</strong> : faute de mon lanceur (une faute qui empêche la compilation était comptée comme survivante : corrigé, W14 tué) ; <strong>R11</strong> : équivalent (le tri des tâches en mémoire double l'ordre que la base rend déjà par son index ; retiré). Bilan : <strong>162 tués sur 162 mutants valides</strong></td></tr>
+<tr><td><strong>Newman</strong> (pile jetable, démonstration, Super administrateur)</td><td><strong>424 requêtes, 1 584 assertions, 0 échec</strong>, en 52 secondes, dont les 17 routes de contrats et de parcours (avec et sans jeton) et le parcours 90.4 (41 requêtes avec la connexion, 65 assertions, 0 échec)</td></tr>
+<tr><td>Accessibilité (contrôle du DOM dans le navigateur)</td><td>écrans <strong>Contrats</strong> (et sa fenêtre : champs nommés, erreurs reliées aux champs, focus dans la fenêtre), <strong>Parcours</strong>, <strong>Un parcours</strong> (cases nommées, barre d'avancement annoncée) et <strong>Modèles</strong> (33 champs et 33 boutons d'icône nommés) : un titre de niveau 1, pas de saut de niveau, aucun identifiant en double ; seul défaut : les erreurs des modèles (corrigé)</td></tr>
+</tbody></table></div>
+<h2>Limites connues</h2>
+<ul><li><strong>axe-core non rejoué</strong> : le navigateur de la plateforme refuse l'injection du script (politique de sécurité du contenu), et le script <code>a11y-audit.mjs</code> exige un environnement dédié (D160). Le contrôle fait ici est un contrôle du DOM, <strong>pas</strong> un audit axe ni un passage au lecteur d'écran.</li><li><strong>Non vérifié</strong> : écran « Contrats à échéance » (contrôle du DOM), contrastes, mode sombre, 1280 px, navigation au clavier, lecteur d'écran.</li><li>Le correctif d'accessibilité des modèles est vérifié par un test de structure, <strong>pas rejoué dans le navigateur</strong> (la pile jetable était déjà arrêtée).</li><li>Les dossiers 00b et 98 de la collection ne sont pas rejoués (ils ferment la session ou enrôlent un compte).</li><li><strong>Dettes ouvertes</strong> : D179 à D184 (voir <a href="TECH-DEBT.html">TECH-DEBT</a>).</li></ul>
+<h2>Comment rejouer</h2>
+<ol><li>Mutants : <code>python scripts/mutants/rh3-contrats-parcours.py</code> (environ 1 h 30 ; <code>DRY=1</code> vérifie seulement les motifs ; <strong>jamais deux exécutions à la fois</strong>, et ne pas toucher à <code>apps/</code> pendant la passe).</li><li>Newman : pile jetable avec démonstration, environnement copié depuis <code>docs/api/postman/Investally-local.postman_environment.json</code> (adresse, e-mail, mot de passe et secret du second facteur <strong>hors du dépôt</strong>), puis <code>node scripts/api-docs/run-newman.mjs --env &lt;environnement&gt; --only 00,90</code>.</li><li>Fiches : <code>docs/tests/sessions/rh-3.md</code> et <code>docs/tests/interfaces/34</code> à <code>38</code>.</li></ol></main></body></html>

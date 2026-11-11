@@ -41,6 +41,13 @@ describe('RH-3c — contrats : règles de saisie (celles du serveur)', () => {
     expect(validateDates({ start: '2026-12-01', end: '2027-03-01', probationEnd: '2027-03-01' }, true)).toEqual({});
   });
 
+  it('les bornes comprises sont acceptées : essai le jour du début, fin effective le jour du début et le jour de la fin prévue', () => {
+    expect(validateDates({ start: '2026-12-01', end: '', probationEnd: '2026-12-01' }, false)).toEqual({});
+    const c = contract();
+    expect(validateEnd({ endedOn: c.start, reason: 'OTHER' }, c)).toEqual({});
+    expect(validateEnd({ endedOn: c.end as string, reason: 'OTHER' }, c)).toEqual({});
+  });
+
   it('le formulaire exige l’employé et le type', () => {
     const errors = validateContractForm(EMPTY_CONTRACT_FORM('2026-12-01'), null);
     expect(Object.keys(errors).sort()).toEqual(['contractTypeId', 'employeeId']);
@@ -223,6 +230,13 @@ describe('RH-3c — écrans : pas de salaire, pas de texte libre, pas de « Ferm
   });
   it('aucun bouton « Fermer » en bas des fenêtres', () => {
     for (const file of ['components/hr/contract-dialogs.tsx', 'components/hr/journey-dialogs.tsx']) expect(read(file), file).not.toMatch(/>\s*Fermer\s*<\/button>/);
+  });
+  it('modèles : chaque erreur de ligne est reliée à son champ (aria-describedby) et nommée par un identifiant', () => {
+    const source = read('app/(app)/hr/journeys/templates/page.tsx');
+    for (const field of ['title', 'offset']) {
+      expect(source).toContain('aria-describedby={shown.rows[i]?.' + field + ' ? `${prefix}-' + field + '-${row.key}-error` : undefined}');
+      expect(source).toContain('<p id={`${prefix}-' + field + '-${row.key}-error`} className="field-error">');
+    }
   });
   it('chaque action d’écriture est réservée à qui gère (le serveur re-contrôle)', () => {
     expect(read('app/(app)/hr/contracts/page.tsx')).toContain("canAll(profile, 'hr.contract.manage')");

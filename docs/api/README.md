@@ -58,7 +58,7 @@ Fichiers dans [`postman/`](postman/) :
 | 00b — Première connexion | Enrôler le second facteur d'un compte neuf | Secret remis, 10 codes de secours remis |
 | 01 — Sécurité (173 requêtes) | **Chaque route protégée appelée sans jeton** | Refusée (401) au format « problem details » |
 | 02 — Santé | `/health/live`, `/health/ready` | 200 |
-| 90 — Parcours de bout en bout | 24 étapes qui créent leurs propres données : entreprise (créer, lire, modifier, exporter), formation (programme, certificat, salle, formateur, session, **étudiant sans entreprise et payeur**, inscription, confirmation, annulation), congés (règles, types, jours fériés) | Statuts, valeurs métier (montant dû, absence d'agrément, nature), erreur de validation attendue |
+| 90 — Parcours de bout en bout | 39 étapes qui créent leurs propres données : entreprise (créer, lire, modifier, exporter), formation (programme, certificat, salle, formateur, session, **étudiant sans entreprise et payeur**, inscription, confirmation, annulation), congés (règles, types, jours fériés), **contrats et parcours** (types, contrat à durée déterminée, second contrat refusé, prolonger, terminer avec un motif de la liste, échéances, lancer un parcours, cocher, décocher, annuler) | Statuts, valeurs métier (montant dû, absence d'agrément, nature), erreur de validation attendue |
 | 10 à 34 — une requête par route (172) | Une requête par route, regroupées par domaine, avec la permission dans la description | **Pas d'erreur serveur, jeton accepté, statut prévu, temps de réponse, JSON, erreur au format RFC 7807, champs documentés présents, liste paginée** |
 | 98 — Actions de session | Déconnexion, changement de mot de passe, rafraîchissement, second facteur, régénération des codes de secours | À lancer **à part** : elles ferment la session ou changent un secret |
 
@@ -71,7 +71,7 @@ node scripts/api-docs/run-newman.mjs --env mon-environnement.json --report rappo
 ```
 La commande exclut automatiquement les dossiers 00b et 98 ; `--only 00,01,90` choisit des dossiers.
 
-**Résultat de référence** (pile jetable, jeu de démonstration, compte Super administrateur) : **373 requêtes, 1 412 assertions, 0 échec**, en 40 secondes ; 98 : 10 requêtes, 50 assertions, 0 échec ; 00b : 2 requêtes, 4 assertions, 0 échec.
+**Résultat de référence** (pile jetable, jeu de démonstration, compte Super administrateur) : **424 requêtes, 1 584 assertions, 0 échec**, en 52 secondes ; 98 : 10 requêtes, 50 assertions, 0 échec ; 00b : 2 requêtes, 4 assertions, 0 échec.
 
 ### Régénérer (à chaque changement de route)
 ```bash

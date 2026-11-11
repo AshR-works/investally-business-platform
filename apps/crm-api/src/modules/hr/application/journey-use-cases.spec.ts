@@ -3,7 +3,7 @@ import { InMemoryJourneyTemplates, InMemoryJourneys } from '../../../../test/sup
 import { ActorContext } from '../../../shared-kernel';
 import { AuditAction, AuditRecord } from '../../audit';
 import type { AccessContext } from '../../iam';
-import { RoleCode, resolveGrants } from '../../iam';
+import { RoleCode, Scope, resolveGrants } from '../../iam';
 import { Employee } from '../domain/employee';
 import { JourneyTemplate } from '../domain/journey';
 import {
@@ -23,6 +23,8 @@ const sam = as(RoleCode.Support, 'u-sam');
 const hr = as(RoleCode.Hr, 'u-hr');
 const root = as(RoleCode.SuperAdmin, 'u-root');
 const nobody: AccessContext = { actorId: 'u-none', grants: [], teamMemberIds: [] };
+// Droit de gérer accordé en portée réduite (Équipe ou Propre) : il ne suffit jamais, la gestion exige la portée Tous.
+const narrowManage = (scope: Scope): AccessContext => ({ actorId: 'u-narrow', grants: [{ permission: 'hr.journey.manage', scope }, { permission: 'hr.journey.read', scope: Scope.All }], teamMemberIds: [uuid(4)] });
 
 const ID = { boss: uuid(1), claire: uuid(2), sam: uuid(4), left: uuid(8) };
 
@@ -115,6 +117,22 @@ describe('Parcours : lancer', () => {
     const view = await w.launch.execute({ ...startFor(ID.sam), access: hr });
     await w.updateTemplate.execute({ kind: 'ONBOARDING', version: 1, tasks: [{ title: 'Seule tâche', owner: 'HR', dueOffsetDays: 1 }], access: hr, actor });
     expect((await w.get.execute({ id: view.id, access: hr })).tasks.map((t) => t.title)).toEqual(['Accès', 'Accueil', 'Bilan']);
+  });
+});
+
+describe('Parcours : le droit de gérer exige la portée Tous', () => {
+  it.each([[Scope.Team], [Scope.Own]])('refuse le droit de gérer en portée %s (lancer, modèles, cocher, décocher, annuler)', async (scope) => {
+    const w = build();
+    const made = await w.launch.execute({ ...startFor(ID.sam), access: hr });
+    const access = narrowManage(scope);
+    const taskId = made.tasks[0]!.id;
+    await expect(w.launch.execute({ ...startFor(ID.claire), access })).rejects.toMatchObject({ code: 'FORBIDDEN' });
+    await expect(w.updateTemplate.execute({ kind: 'ONBOARDING', version: 1, tasks: [{ title: 'X', owner: 'HR', dueOffsetDays: 0 }], access, actor })).rejects.toMatchObject({ code: 'FORBIDDEN' });
+    await expect(w.complete.execute({ id: made.id, taskId, version: 1, access, actor })).rejects.toMatchObject({ code: 'FORBIDDEN' });
+    await expect(w.reopen.execute({ id: made.id, taskId, version: 1, access, actor })).rejects.toMatchObject({ code: 'FORBIDDEN' });
+    await expect(w.cancel.execute({ id: made.id, version: 1, access, actor })).rejects.toMatchObject({ code: 'FORBIDDEN' });
+    expect(w.journeys.items).toHaveLength(1);
+    expect(w.journeys.items[0]!.status).toBe('ACTIVE');
   });
 });
 

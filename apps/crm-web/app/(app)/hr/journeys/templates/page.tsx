@@ -107,8 +107,8 @@ function TemplateEditor({ template, canManage, onSaved }: { template: JourneyTem
                 <li key={row.key} className="mb-4 grid gap-x-3 gap-y-1 border-b border-line pb-4 last:border-0 sm:grid-cols-[minmax(0,3fr)_minmax(0,2fr)_minmax(0,1.4fr)_auto]">
                   <div className="field m-0">
                     <label htmlFor={`${prefix}-title-${row.key}`}>Tâche {i + 1}</label>
-                    <input id={`${prefix}-title-${row.key}`} value={row.title} maxLength={150} aria-invalid={shown.rows[i]?.title ? true : undefined} onChange={(e) => change(row.key, { title: e.target.value })} />
-                    {shown.rows[i]?.title && <p className="field-error"><Icon name="alert" className="size-4" />{shown.rows[i].title}</p>}
+                    <input id={`${prefix}-title-${row.key}`} value={row.title} maxLength={150} aria-invalid={shown.rows[i]?.title ? true : undefined} aria-describedby={shown.rows[i]?.title ? `${prefix}-title-${row.key}-error` : undefined} onChange={(e) => change(row.key, { title: e.target.value })} />
+                    {shown.rows[i]?.title && <p id={`${prefix}-title-${row.key}-error`} className="field-error"><Icon name="alert" className="size-4" />{shown.rows[i].title}</p>}
                   </div>
                   <div className="field m-0">
                     <label htmlFor={`${prefix}-owner-${row.key}`}>Responsable</label>
@@ -118,9 +118,9 @@ function TemplateEditor({ template, canManage, onSaved }: { template: JourneyTem
                   </div>
                   <div className="field m-0">
                     <label htmlFor={`${prefix}-offset-${row.key}`}>Échéance (jours)</label>
-                    <input id={`${prefix}-offset-${row.key}`} inputMode="numeric" value={row.offset} aria-invalid={shown.rows[i]?.offset ? true : undefined} onChange={(e) => change(row.key, { offset: e.target.value })} />
+                    <input id={`${prefix}-offset-${row.key}`} inputMode="numeric" value={row.offset} aria-invalid={shown.rows[i]?.offset ? true : undefined} aria-describedby={shown.rows[i]?.offset ? `${prefix}-offset-${row.key}-error` : undefined} onChange={(e) => change(row.key, { offset: e.target.value })} />
                     {shown.rows[i]?.offset
-                      ? <p className="field-error"><Icon name="alert" className="size-4" />{shown.rows[i].offset}</p>
+                      ? <p id={`${prefix}-offset-${row.key}-error`} className="field-error"><Icon name="alert" className="size-4" />{shown.rows[i].offset}</p>
                       : !validation.rows[i]?.offset && <p className="m-0 mt-1 text-xs text-ink-2">{offsetText(Number(row.offset), template.kind)}</p>}
                   </div>
                   <div className="flex items-start gap-1 pt-6">

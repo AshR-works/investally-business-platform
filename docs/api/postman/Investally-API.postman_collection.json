@@ -11556,6 +11556,684 @@
               }
             }
           ]
+        },
+        {
+          "name": "90.4 — RH : contrats et parcours d’intégration (RH-3)",
+          "item": [
+            {
+              "name": "Lister les types de contrat",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/hr/contracts/types",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "hr",
+                    "contracts",
+                    "types"
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Lister les types de contrat : statut 200', () => pm.expect([200]).to.include(pm.response.code));",
+                      "if ([200].includes(pm.response.code)) pm.environment.set('cddTypeId', String(pm.response.json().find((t) => t.code === 'CDD').id));",
+                      "if ([200].includes(pm.response.code)) pm.environment.set('cdiTypeId', String(pm.response.json().find((t) => t.code === 'CDI').id));",
+                      "pm.test('Les types de départ existent', () => pm.expect(pm.response.json().map((t) => t.code)).to.include.members(['CDI', 'CDD', 'STAGE', 'PRESTATION']));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Créer un employé pour le parcours",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/hr/employees",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "hr",
+                    "employees"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"lastName\": \"Contrat{{runId}}\",\n  \"firstName\": \"Eli\",\n  \"jobTitle\": \"Analyste\",\n  \"department\": \"Finance\",\n  \"hiredOn\": \"2020-01-01\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Créer un employé pour le parcours : statut 201', () => pm.expect([201]).to.include(pm.response.code));",
+                      "if ([201].includes(pm.response.code)) pm.environment.set('rhEmployeeId', String(pm.response.json().id));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Créer un contrat à durée déterminée",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/hr/contracts",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "hr",
+                    "contracts"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"employeeId\": \"{{rhEmployeeId}}\",\n  \"contractTypeId\": \"{{cddTypeId}}\",\n  \"start\": \"2026-02-01\",\n  \"end\": \"2026-12-31\",\n  \"probationEnd\": \"2026-03-01\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Créer un contrat à durée déterminée : statut 201', () => pm.expect([201]).to.include(pm.response.code));",
+                      "if ([201].includes(pm.response.code)) pm.environment.set('contractId', String(pm.response.json().id));",
+                      "pm.test('En cours, sans salaire ni document', () => { const c = pm.response.json(); pm.expect(c.status).to.eql('ACTIVE'); pm.expect(c).to.not.have.any.keys('salary', 'salaire', 'document'); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Un second contrat en cours est refusé",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/hr/contracts",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "hr",
+                    "contracts"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"employeeId\": \"{{rhEmployeeId}}\",\n  \"contractTypeId\": \"{{cdiTypeId}}\",\n  \"start\": \"2027-01-01\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Un second contrat en cours est refusé : statut 409', () => pm.expect([409]).to.include(pm.response.code));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Prolonger le contrat",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/hr/contracts/{{contractId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "hr",
+                    "contracts",
+                    "{{contractId}}"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"version\": 1,\n  \"end\": \"2027-01-31\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Prolonger le contrat : statut 200', () => pm.expect([200]).to.include(pm.response.code));",
+                      "pm.test('Fin prolongée', () => pm.expect(pm.response.json().end).to.eql('2027-01-31'));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Terminer le contrat, motif de la liste",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/hr/contracts/{{contractId}}/end",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "hr",
+                    "contracts",
+                    "{{contractId}}",
+                    "end"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"version\": 2,\n  \"endedOn\": \"2026-12-31\",\n  \"reason\": \"FIXED_TERM_END\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Terminer le contrat, motif de la liste : statut 200', () => pm.expect([200]).to.include(pm.response.code));",
+                      "pm.test('Terminé avec son motif', () => { const c = pm.response.json(); pm.expect(c.status).to.eql('ENDED'); pm.expect(c.endReason).to.eql('FIXED_TERM_END'); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Un motif hors liste est refusé",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/hr/contracts/{{contractId}}/end",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "hr",
+                    "contracts",
+                    "{{contractId}}",
+                    "end"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"version\": 3,\n  \"endedOn\": \"2026-12-31\",\n  \"reason\": \"Licenciement\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Un motif hors liste est refusé : statut 400', () => pm.expect([400]).to.include(pm.response.code));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Lister les échéances des 30 prochains jours",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/hr/contracts/deadlines?days=30",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "hr",
+                    "contracts",
+                    "deadlines"
+                  ],
+                  "query": [
+                    {
+                      "key": "days",
+                      "value": "30"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Lister les échéances des 30 prochains jours : statut 200', () => pm.expect([200]).to.include(pm.response.code));",
+                      "pm.test('Liste d’échéances', () => pm.expect(pm.response.json()).to.be.an('array'));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Lire les modèles de parcours",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/hr/journeys/templates",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "hr",
+                    "journeys",
+                    "templates"
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Lire les modèles de parcours : statut 200', () => pm.expect([200]).to.include(pm.response.code));",
+                      "pm.test('Deux modèles', () => pm.expect(pm.response.json().map((t) => t.kind).sort()).to.eql(['OFFBOARDING', 'ONBOARDING']));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Lancer un parcours d’intégration",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/hr/journeys",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "hr",
+                    "journeys"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"employeeId\": \"{{rhEmployeeId}}\",\n  \"kind\": \"ONBOARDING\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Lancer un parcours d’intégration : statut 201', () => pm.expect([201]).to.include(pm.response.code));",
+                      "if ([201].includes(pm.response.code)) pm.environment.set('journeyId', String(pm.response.json().id));",
+                      "if ([201].includes(pm.response.code)) pm.environment.set('journeyTaskId', String(pm.response.json().tasks[0].id));",
+                      "pm.test('Six tâches, aucune cochée', () => { const j = pm.response.json(); pm.expect(j.tasks).to.have.lengthOf(6); pm.expect(j.progress.done).to.eql(0); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Un second parcours de même nature est refusé",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/hr/journeys",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "hr",
+                    "journeys"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"employeeId\": \"{{rhEmployeeId}}\",\n  \"kind\": \"ONBOARDING\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Un second parcours de même nature est refusé : statut 409', () => pm.expect([409]).to.include(pm.response.code));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Cocher une tâche (date et auteur gardés)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/hr/journeys/{{journeyId}}/tasks/{{journeyTaskId}}/complete",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "hr",
+                    "journeys",
+                    "{{journeyId}}",
+                    "tasks",
+                    "{{journeyTaskId}}",
+                    "complete"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"version\": 1\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Cocher une tâche (date et auteur gardés) : statut 200', () => pm.expect([200]).to.include(pm.response.code));",
+                      "pm.test('Cochée avec son auteur', () => { const t = pm.response.json().tasks[0]; pm.expect(t.done).to.eql(true); pm.expect(t.doneByName).to.be.a('string'); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Décocher la tâche",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/hr/journeys/{{journeyId}}/tasks/{{journeyTaskId}}/reopen",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "hr",
+                    "journeys",
+                    "{{journeyId}}",
+                    "tasks",
+                    "{{journeyTaskId}}",
+                    "reopen"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"version\": 2\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Décocher la tâche : statut 200', () => pm.expect([200]).to.include(pm.response.code));",
+                      "pm.test('Décochée', () => pm.expect(pm.response.json().tasks[0].done).to.eql(false));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Annuler le parcours",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/hr/journeys/{{journeyId}}/cancel",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "hr",
+                    "journeys",
+                    "{{journeyId}}",
+                    "cancel"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"version\": 3\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Annuler le parcours : statut 200', () => pm.expect([200]).to.include(pm.response.code));",
+                      "pm.test('Annulé', () => pm.expect(pm.response.json().status).to.eql('CANCELLED'));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Un parcours annulé ne se coche plus",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/hr/journeys/{{journeyId}}/tasks/{{journeyTaskId}}/complete",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "hr",
+                    "journeys",
+                    "{{journeyId}}",
+                    "tasks",
+                    "{{journeyTaskId}}",
+                    "complete"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"version\": 4\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Un parcours annulé ne se coche plus : statut 409', () => pm.expect([409]).to.include(pm.response.code));"
+                    ]
+                  }
+                }
+              ]
+            }
+          ],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get('runId')) pm.collectionVariables.set('runId', Math.random().toString(36).slice(2, 8));"
+                ]
+              }
+            }
+          ]
         }
       ],
       "description": "Scénarios qui créent leurs propres données et vérifient les règles métier (agrément, payeur, portée). À lancer après la connexion, avec un compte qui a les droits (par exemple le Super administrateur de test)."
