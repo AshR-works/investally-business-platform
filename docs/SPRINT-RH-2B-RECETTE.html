@@ -1,0 +1,49 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>RH-2b — absences et congés (écrans et démonstration) : recette</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="INDEX.html">Index</a> · <a href="GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="ARCHITECTURE.html">Architecture</a> · <a href="SECURITY.html">Sécurité</a> · <a href="METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="TECH-DEBT.html">Dette</a> · <a href="CHARTE-DE-TESTS.html">Charte de tests</a> · <a href="tests/README.html">Fiches de test</a> · <a href="design/README.html">Design</a> · <a href="livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>RH-2b — absences et congés (écrans et démonstration) : recette</h1>
+<p><em>Branche <code>sprint/rh-2b-ecrans</code> · 2026-11-11 · décision D64, cadrage <a href="cadrages/CADRAGE-RH-COMPLETE.html">CADRAGE-RH-COMPLETE</a>, suite de <a href="SPRINT-RH-2A-RECETTE.html">RH-2a</a> · <strong>Toutes les règles de congés restent des valeurs de départ « à confirmer »</strong>, modifiables par la RH depuis l'écran « Paramètres RH ».</em></p>
+<h2>Ce qui est livré</h2>
+<div class="table-wrap"><table><thead><tr><th>Écran</th><th>Pour qui</th><th>Ce qu'on y fait</th></tr></thead><tbody>
+<tr><td><strong>Mes absences</strong> (<code>/hr/leave</code>)</td><td>Tout employé</td><td>Voir son solde de l'année (disponible, acquis, ajustements, pris, en attente), <strong>demander une absence</strong> (type, dates, demi-journées, motif libre facultatif), suivre l'historique et <strong>annuler</strong> une demande ; un compte sans fiche employé le voit dit en clair</td></tr>
+<tr><td><strong>À valider</strong> (<code>/hr/leave/approvals</code>)</td><td>Les responsables (organigramme RH) ; la RH et la Direction voient aussi « Toutes les demandes »</td><td><strong>Valider</strong> ou <strong>refuser</strong> (refus : motif obligatoire) ; jamais sa propre demande</td></tr>
+<tr><td><strong>Calendrier d'équipe</strong> (<code>/hr/leave/calendar</code>)</td><td>Tout employé</td><td>Mois par mois : une ligne par personne absente, une colonne par jour ; week-ends et jours fériés grisés ; journée entière, matinée seule ou après-midi seul dits <strong>par un symbole et par du texte</strong> (jamais la couleur seule) ; un collègue voit seulement « absent »</td></tr>
+<tr><td><strong>Soldes</strong> (<code>/hr/leave/balances</code>)</td><td>RH (portée Tous)</td><td>Le solde de chaque employé en poste, par année ; <strong>ajuster</strong> un solde (report, correction) avec motif obligatoire ; historique des ajustements de l'année</td></tr>
+<tr><td><strong>Paramètres RH</strong> (<code>/hr/leave/settings</code>)</td><td>RH (portée Tous)</td><td>Jours acquis par mois (avec le total annuel pour vérifier le règlement), samedi compté ou non, demi-journées, solde négatif ; <strong>types d'absence</strong> (créer, modifier, désactiver) ; <strong>jours fériés</strong> par année</td></tr>
+</tbody></table></div>
+<ul><li><strong>Menu</strong> : cinq entrées dans le domaine « Ressources humaines », visibles selon les droits (un employé ordinaire voit Mes absences, Absences à valider et le Calendrier ; la RH voit aussi les Soldes et les Paramètres). Une barre d'onglets relie les écrans.</li><li><strong>Jeu de démonstration</strong> (bloc « conges », fictif, sans aucune donnée de santé) : sept demandes sur le personnel fictif : deux saisies par la RH et validées d'emblée (dont une dans le passé), trois <strong>en attente</strong> (dont une demi-journée, et une que seule la RH peut valider), une <strong>validée</strong> par le responsable, une <strong>refusée</strong> avec son motif. Se charge seul sur une démo qui a déjà le personnel ; aucun jour férié n'est présumé.</li></ul>
+<h2>Défaut corrigé au passage (RH-2a)</h2>
+<p>Le <strong>solde décomptait tous les types d'absence</strong>, alors que seul le congé annuel doit le consommer : une maladie de deux jours ou une permission d'une demi-journée réduisait le solde. Constaté en contrôlant l'écran « Soldes » sur le jeu de démonstration (6 jours « pris » pour 4 jours de congé annuel validés). Corrigé : <code>sumDays</code> ne somme que les types qui décomptent le solde (<code>deductsBalance</code>) ; un test reproduit le défaut (il échoue sans la correction). Les mutants de RH-2a (126 sur 126) ne couvraient pas ce cas ; la recette de RH-2a annonçait déjà la règle.</p>
+<h2>Preuves</h2>
+<div class="table-wrap"><table><thead><tr><th>Contrôle</th><th>Résultat</th></tr></thead><tbody>
+<tr><td>Types</td><td><code>tsc</code> propre (API et interface)</td></tr>
+<tr><td>Tests de l'interface</td><td><strong>722 réussis</strong> (38 fichiers) ; nouveau <code>test/leave.test.ts</code> : dates et durées, demi-journées, calendrier, validation de la demande, de l'ajustement, des règles, des types et des jours fériés, entrées de menu par profil</td></tr>
+<tr><td>Tests unitaires de l'API</td><td>Suite HR : <strong>164 réussis</strong> (dont le nouveau test du solde) ; plan de démonstration : <strong>40 réussis</strong>, 5 nouveaux pour le bloc « conges » (fiches et types existants, jours ouvrés, saisie par la RH seule pour un autre, décisions par le responsable de la fiche, une demande refusée, une demi-journée, aucun mot de santé)</td></tr>
+<tr><td>Intégration (base jetable)</td><td>Suites congés, personnel, contrat anti-IDOR et démonstration : <strong>305 réussis, 11 suites</strong> ; la suite <code>seed-demo</code> gagne un test du bloc « conges » (sept demandes, soldes cohérents, rechargement seul)</td></tr>
+<tr><td>Contrôle visuel (pile d'essai jetable, compte RH)</td><td>Les cinq écrans s'affichent ; refus sans motif bloqué par le formulaire ; demande ouverte avec le choix de l'employé (RH) ; calendrier et soldes cohérents avec le jeu de démonstration</td></tr>
+<tr><td>Droits vérifiés par l'API sur le jeu de démonstration</td><td>Un chargé de compte voit son solde (18 − 5 en attente = 13) et, dans le calendrier, « absent » <strong>sans le type</strong> ; le responsable commercial voit le type et ses 2 demandes à valider ; la RH voit tout</td></tr>
+</tbody></table></div>
+<h2>Limites connues</h2>
+<ul><li><strong>Soldes</strong> : une requête de solde par employé de la page (20 au plus) : l'API n'a pas de route groupée (D174).</li><li><strong>Calendrier</strong> : un mois à la fois ; un week-end ou un jour férié au milieu d'une absence reste grisé sans marque. Les absences ne s'affichent qu'une fois <strong>validées</strong>.</li><li><strong>Mode clair seulement</strong> vérifié ; mode sombre, 1280 et 1920 px, et le parcours au clavier restent à contrôler (comme le Lot A).</li><li>Les écrans ne tournent que si le domaine <code>hr</code> est publié (<code>RELEASED_DOMAINS</code>), comme le reste des Ressources humaines.</li><li>Restent d'actualité les dettes de RH-2a : D167 à D172 (année à cheval, fuseau, aucune notification, pas de suppléant, employé sans compte, règles réelles à fournir).</li><li><strong>RH-2c</strong> (à votre signal) : tests d'intégration de l'interface, mutants de l'interface, fiches de test.</li></ul>
+<h2>Comment vérifier</h2>
+<ol><li>Démarrer la pile locale avec démonstration (<code>node scripts/local-stack.mjs --demo</code>) : sur une démonstration déjà chargée, <strong>seul le nouveau bloc « conges » est ajouté</strong>, rien d'autre n'est touché. Se connecter en RH : ouvrir <strong>Ressources humaines → Absences à valider</strong> (« Toutes les demandes », trois en attente) et <strong>Calendrier d'équipe</strong>.</li><li>Se connecter avec un compte de chargé de compte : <strong>Mes absences</strong> montre le solde et une demande en attente ; le calendrier montre « absent » sans le type.</li><li>Se connecter en responsable commercial : <strong>Absences à valider</strong> montre deux demandes ; essayer un refus sans motif (bloqué), puis une validation.</li><li>En RH : <strong>Soldes → Ajuster le solde</strong>, puis <strong>Paramètres des congés</strong> (règles, types, jours fériés).</li></ol></main></body></html>

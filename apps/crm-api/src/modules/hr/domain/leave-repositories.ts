@@ -19,8 +19,11 @@ export interface LeaveRequestRepository {
   findById(id: string): Promise<LeaveRequest | null>;
   /** Demandes en attente ou validées de l'employé dont la période touche [from, to] (jours inclus). */
   findActiveOverlapping(employeeId: string, from: string, to: string, excludeId?: string): Promise<LeaveRequest[]>;
-  /** Jours validés et en attente d'un employé pour une année de congé. */
-  sumDays(employeeId: string, year: number, excludeId?: string): Promise<{ approved: number; pending: number }>;
+  /**
+   * Jours validés et en attente d'un employé pour une année de congé, pour les seuls types donnés : ceux qui décomptent le solde (congé annuel). Une maladie ou une
+   * permission exceptionnelle ne consomme jamais le solde.
+   */
+  sumDays(employeeId: string, year: number, leaveTypeIds: readonly string[], excludeId?: string): Promise<{ approved: number; pending: number }>;
   list(query: LeaveRequestListQuery): Promise<Page<LeaveRequest>>;
   /** Demandes validées dont la période touche [from, to], de ces employés (absent = tous). */
   approvedBetween(from: string, to: string, employeeIds?: readonly string[]): Promise<LeaveRequest[]>;

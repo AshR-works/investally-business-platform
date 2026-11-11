@@ -16,6 +16,7 @@ import { CancelSessionUseCase, OpenSessionUseCase, PlanSessionUseCase, PostponeS
 import { CancelEnrollmentUseCase, ConfirmEnrollmentUseCase, EnrollLearnerUseCase, ListApprovalOptionsHandler, ReplaceEnrollmentUseCase } from '../../modules/training/application/enrollment-use-cases';
 import { RegisterLearnerUseCase } from '../../modules/training/application/learner-use-cases';
 import { RegisterEmployeeUseCase, SetEmployeeStatusUseCase } from '../../modules/hr/application/employee-use-cases';
+import { DecideLeaveUseCase, RequestLeaveUseCase } from '../../modules/hr/application/leave-use-cases';
 import { AuthorizationService } from '../../modules/iam/application/authorization.service';
 import type { AccessContext } from '../../modules/iam';
 import { PrismaService } from '../../platform/prisma.service';
@@ -68,6 +69,7 @@ export async function runSeed(app: ProviderSource, allEvents: readonly SeedEvent
     sessions: (await prisma.db.trainingSession.count({ where: { trainer: { emailKey: { endsWith: TRAINERS_MARKER } } } })) > 0,
     inscriptions: (await prisma.db.company.count({ where: { name: FORMATION_CLIENTS[0]![0] } })) > 0,
     rh: (await prisma.db.employee.count({ where: { workEmail: { endsWith: RH_EMAIL_DOMAIN } } })) > 0,
+    conges: (await prisma.db.leaveRequest.count({ where: { employee: { workEmail: { endsWith: RH_EMAIL_DOMAIN } } } })) > 0,
   };
   const toLoad = SEED_BLOCKS.filter((block) => !present[block]);
   if (toLoad.length === 0) {
@@ -91,10 +93,21 @@ export async function runSeed(app: ProviderSource, allEvents: readonly SeedEvent
     if (!found) throw new Error(`Objet « ${key} » introuvable : le plan est incohérent`);
     return found;
   };
-  const versionOf = async (kind: 'company' | 'offer' | 'followup' | 'appointment' | 'opportunity' | 'approval' | 'receipt' | 'ambassador' | 'employee', key: string): Promise<number> => {
+  const versionOf = async (kind: 'company' | 'offer' | 'followup' | 'appointment' | 'opportunity' | 'approval' | 'receipt' | 'ambassador' | 'employee' | 'leaveRequest', key: string): Promise<number> => {
     const where = { id: id(key) };
     const row = await (prisma.db[kind] as unknown as { findUniqueOrThrow(args: { where: { id: string }; select: { version: true } }): Promise<{ version: number }> }).findUniqueOrThrow({ where, select: { version: true } });
     return row.version;
+  };
+  // Une fiche du plan se retrouve par son e-mail professionnel, qu'elle ait été créée dans ce chargement ou dans un précédent (le bloc « conges » peut arriver seul).
+  const planEmployees = new Map(allEvents.flatMap((e) => (e.op.k === 'employee' ? [[e.op.key, e.op.workEmail] as const] : [])));
+  const employeeIdOf = async (key: string): Promise<string> => {
+    const known = ids.get(key);
+    if (known) return known;
+    const email = planEmployees.get(key);
+    const found = email ? await prisma.db.employee.findFirst({ where: { workEmail: email }, select: { id: true } }) : null;
+    if (!found) throw new Error(`Fiche « ${key} » introuvable : chargez d'abord le bloc « rh »`);
+    ids.set(key, found.id);
+    return found.id;
   };
   const sessionVersion = async (key: string): Promise<number> => (await prisma.db.trainingSession.findUniqueOrThrow({ where: { id: id(key) }, select: { version: true } })).version;
   const enrollmentVersion = async (key: string): Promise<number> => (await prisma.db.enrollment.findUniqueOrThrow({ where: { id: id(key) }, select: { version: true } })).version;
@@ -284,6 +297,19 @@ export async function runSeed(app: ProviderSource, allEvents: readonly SeedEvent
           }
           case 'employeeLeave':
             await use(SetEmployeeStatusUseCase).execute({ id: id(op.employee), version: await versionOf('employee', op.employee), status: 'ARCHIVED', leftOn: op.leftOn, reason: op.reason, access, actor });
+            break;
+          case 'leave': {
+            const type = await prisma.db.leaveType.findUniqueOrThrow({ where: { code: op.typeCode }, select: { id: true } });
+            const view = await use(RequestLeaveUseCase).execute({
+              // Une saisie par la RH désigne la fiche ; la demande d'un employé part de son propre compte (la fiche est celle du compte lié).
+              employeeId: event.who === 'rh' ? await employeeIdOf(op.employee) : undefined,
+              leaveTypeId: type.id, start: op.start, end: op.end, startHalf: op.startHalf, endHalf: op.endHalf, note: op.note, access, actor,
+            });
+            ids.set(op.key, view.id);
+            break;
+          }
+          case 'leaveDecision':
+            await use(DecideLeaveUseCase).execute({ id: id(op.leave), decision: op.decision, note: op.note, version: await versionOf('leaveRequest', op.leave), access, actor });
             break;
           case 'learner': {
             ids.set(op.key, (await use(RegisterLearnerUseCase).execute({ companyId: id(op.company), lastName: op.lastName, firstName: op.firstName, email: op.email, phone: op.phone, access, actor })).id);

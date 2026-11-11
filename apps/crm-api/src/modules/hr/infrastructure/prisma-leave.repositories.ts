@@ -52,9 +52,9 @@ export class PrismaLeaveRequestRepository implements LeaveRequestRepository {
     return rows.map(toRequest);
   }
 
-  async sumDays(employeeId: string, year: number, excludeId?: string): Promise<{ approved: number; pending: number }> {
+  async sumDays(employeeId: string, year: number, leaveTypeIds: readonly string[], excludeId?: string): Promise<{ approved: number; pending: number }> {
     const rows = await this.prisma.db.leaveRequest.findMany({
-      where: { employeeId, leaveYear: year, status: { in: ACTIVE }, ...(excludeId ? { id: { not: excludeId } } : {}) },
+      where: { employeeId, leaveYear: year, leaveTypeId: { in: [...leaveTypeIds] }, status: { in: ACTIVE }, ...(excludeId ? { id: { not: excludeId } } : {}) },
       select: { days: true, status: true },
     });
     let approved = 0;

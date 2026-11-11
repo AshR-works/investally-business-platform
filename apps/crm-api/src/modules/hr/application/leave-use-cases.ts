@@ -80,7 +80,9 @@ async function rulesFor(config: LeaveConfigRepository, from: string, to: string)
 /** Solde d'un employé pour une année (acquis, ajustements, pris, en attente). `excludeId` retire une demande du décompte (celle qu'on décide). */
 async function balanceOf(deps: { config: LeaveConfigRepository; requests: LeaveRequestRepository; adjustments: LeaveAdjustmentRepository }, employee: Employee, year: number, excludeId?: string): Promise<LeaveBalance> {
   const settings = await deps.config.settings();
-  const [adjustments, days] = await Promise.all([deps.adjustments.total(employee.id, year), deps.requests.sumDays(employee.id, year, excludeId)]);
+  // Seuls les types qui décomptent le solde le consomment : une maladie ou une permission exceptionnelle n'y touche pas (D64).
+  const deducting = (await deps.config.types(true)).filter((t) => t.deductsBalance).map((t) => t.id);
+  const [adjustments, days] = await Promise.all([deps.adjustments.total(employee.id, year), deps.requests.sumDays(employee.id, year, deducting, excludeId)]);
   return computeBalance({ year, entitlement: annualEntitlement(employee.hiredOn, employee.leftOn, year, settings.accrualDaysPerMonth), adjustments, taken: days.approved, pending: days.pending });
 }
 

@@ -48,6 +48,8 @@ export type SeedOp =
   | { k: 'sessionCancel'; session: string; reason: string }
   | { k: 'employee'; key: string; matricule: string; lastName: string; firstName: string; jobTitle: string; department: string; manager?: string; account?: Who; workEmail: string; workPhone: string; hiredOn: string }
   | { k: 'employeeLeave'; employee: string; leftOn: string; reason: string }
+  | { k: 'leave'; key: string; employee: string; typeCode: string; start: string; end: string; startHalf?: boolean; endHalf?: boolean; note: string }
+  | { k: 'leaveDecision'; leave: string; decision: 'APPROVE' | 'REJECT'; note?: string }
   | { k: 'ambassador'; key: string; lastName: string; firstName: string; origin: 'CLIENT' | 'LEARNER'; company?: string; email: string; phone: string; appointedOn: string; note: string };
 
 export interface SeedEvent {
@@ -194,8 +196,8 @@ const FORMATEURS: SeedOp[] = TRAINERS.map(([lastName, firstName, specialties, lo
 }));
 
 /** Les blocs du jeu : chacun se charge seul sur une démo existante (marqueur propre), dans l'ordre des dépendances. */
-export type SeedBlock = 'crm' | 'catalogue' | 'formateurs' | 'sessions' | 'inscriptions' | 'rh';
-export const SEED_BLOCKS: readonly SeedBlock[] = ['crm', 'catalogue', 'formateurs', 'sessions', 'inscriptions', 'rh'];
+export type SeedBlock = 'crm' | 'catalogue' | 'formateurs' | 'sessions' | 'inscriptions' | 'rh' | 'conges';
+export const SEED_BLOCKS: readonly SeedBlock[] = ['crm', 'catalogue', 'formateurs', 'sessions', 'inscriptions', 'rh', 'conges'];
 /** Entreprises clientes de formation du bloc « inscriptions » : la première sert de repère au chargement par blocs. */
 export const FORMATION_CLIENTS: readonly [string, 'Cameroun' | "Côte d'Ivoire" | 'Sénégal' | 'Gabon' | 'RDC'][] = [
   ['Académie Wouri Finance', 'Cameroun'], ['Cabinet Libreville Conseil', 'Gabon'], ['Institut Dakar Marchés', 'Sénégal'], ['Groupe Abidjan Capital', "Côte d'Ivoire"], ['Fonds Kinshasa Épargne', 'RDC'],
@@ -211,6 +213,7 @@ export function blockOf(op: SeedOp): SeedBlock {
   if (op.k === 'program' || op.k === 'module' || op.k === 'training' || op.k === 'room') return 'catalogue';
   if (op.k === 'trainer') return 'formateurs';
   if (op.k === 'employee' || op.k === 'employeeLeave') return 'rh';
+  if (op.k === 'leave' || op.k === 'leaveDecision') return 'conges';
   if (op.k === 'learner' || op.k === 'enroll' || op.k === 'enrollConfirm' || op.k === 'enrollCancel' || op.k === 'enrollReplace') return 'inscriptions';
   if (op.k === 'session' || op.k === 'sessionOpen' || op.k === 'sessionPostpone' || op.k === 'sessionCancel') return 'sessions';
   return 'crm';
@@ -571,6 +574,36 @@ export function buildPlan({ anchor, seed = 2026 }: PlanOptions): SeedEvent[] {
   staff(9, 'personnel-support', 'Sonia', 'Manga', 'Agente de support', 'Support', 450, { manager: 'personnel-dga' });
   staff(10, 'personnel-ancien', 'Patrick', 'Owona', 'Chargé de compte', 'Commercial', 800, { manager: 'personnel-commercial' });
   events.push({ at: new Date(day0.getTime() - 5 * DAY + 9 * 3_600_000), who: 'rh', op: { k: 'employeeLeave', employee: 'personnel-ancien', leftOn: hired(60), reason: 'Fin de contrat (donnée de démonstration)' } });
+
+  // Bloc « conges » : des absences fictives sur le personnel ci-dessus, pour montrer chaque écran (à valider, calendrier, refus, demi-journée, saisie par la RH). Aucune donnée de
+  // santé : un type « maladie » n'a ni diagnostic ni pièce. Les dates tombent toujours un jour ouvré. Aucun jour férié n'est présumé : la liste est à la RH.
+  const nextWorkday = (from: Date): Date => {
+    let day = from;
+    while (day.getUTCDay() === 0 || day.getUTCDay() === 6) day = new Date(day.getTime() + DAY);
+    return day;
+  };
+  const workday = (offset: number): string => isoDay(nextWorkday(new Date(day0.getTime() + offset * DAY)));
+  /** Une période de `days` jours ouvrés à partir du premier jour ouvré après `offset`. */
+  const span = (offset: number, days: number): { start: string; end: string } => {
+    const start = nextWorkday(new Date(day0.getTime() + offset * DAY));
+    let end = start;
+    for (let left = days - 1; left > 0; left--) end = nextWorkday(new Date(end.getTime() + DAY));
+    return { start: isoDay(start), end: isoDay(end) };
+  };
+  const leaveAt = (daysAgo: number, hour: number) => new Date(day0.getTime() - daysAgo * DAY + hour * 3_600_000);
+  const leave = (key: string, at: Date, who: Who, employee: string, typeCode: string, period: { start: string; end: string }, note: string, halves: { startHalf?: boolean; endHalf?: boolean } = {}) =>
+    events.push({ at, who, op: { k: 'leave', key, employee, typeCode, ...period, ...halves, note: `${note} (donnée de démonstration)` } });
+  // Saisie par la RH pour un collègue, y compris dans le passé : validée d'emblée.
+  leave('absence-maladie', leaveAt(6, 10), 'rh', 'personnel-compte2', 'SICK', span(-9, 2), 'Absence pour raison personnelle');
+  leave('absence-support', leaveAt(4, 10), 'rh', 'personnel-support', 'ANNUAL', span(1, 3), 'Congé annuel saisi par la RH');
+  // Demandes des employés (compte lié) : deux restent à valider, une est validée, une est refusée, une attend la RH (le responsable est la direction).
+  leave('absence-compte1', leaveAt(3, 9), 'compte1', 'personnel-compte1', 'ANNUAL', span(14, 5), 'Congés de fin d’année');
+  leave('absence-compte3', leaveAt(3, 11), 'compte3', 'personnel-compte3', 'ANNUAL', span(7, 2), 'Congé court');
+  leave('absence-compte2-permission', leaveAt(2, 10), 'compte2', 'personnel-compte2', 'SPECIAL', { start: workday(3), end: workday(3) }, 'Démarche administrative', { endHalf: true });
+  leave('absence-compte2-conge', leaveAt(2, 11), 'compte2', 'personnel-compte2', 'ANNUAL', span(28, 4), 'Congé annuel');
+  leave('absence-investudy', leaveAt(1, 9), 'investudy', 'personnel-investudy', 'ANNUAL', span(40, 5), 'Congé annuel');
+  events.push({ at: leaveAt(2, 15), who: 'commercial', op: { k: 'leaveDecision', leave: 'absence-compte3', decision: 'REJECT', note: 'Période de forte activité commerciale : à reporter après la clôture du trimestre.' } });
+  events.push({ at: leaveAt(1, 15), who: 'commercial', op: { k: 'leaveDecision', leave: 'absence-compte2-conge', decision: 'APPROVE' } });
 
   // Ordre chronologique stable (à date égale, l'ordre de construction est conservé).
   return events.map((event, order) => ({ event, order })).sort((a, b) => a.event.at.getTime() - b.event.at.getTime() || a.order - b.order).map((x) => x.event);
