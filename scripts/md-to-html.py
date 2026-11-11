@@ -156,6 +156,7 @@ def main():
         (os.path.join(design, 'decisions'), design_nav('../'), None), (os.path.join(docs_root, 'cadrages'), nav_cadrages, None),
         (docs_root, root_nav(''), None), (os.path.join(docs_root, 'adr'), root_nav('../'), None),
         (acc, root_nav('../'), None), (os.path.join(acc, 'resultats'), root_nav('../../'), None),
+        (os.path.join(docs_root, 'api'), root_nav('../'), None), (os.path.join(docs_root, 'base-de-donnees'), root_nav('../'), None),
         (os.path.join(docs_root, 'tests'), root_nav('../'), None), (os.path.join(docs_root, 'tests', 'interfaces'), root_nav('../../'), None),
         (os.path.join(docs_root, 'tests', 'sessions'), root_nav('../../'), None),
     ):
