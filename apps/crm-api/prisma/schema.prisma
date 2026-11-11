@@ -1163,7 +1163,7 @@ model Learner {
   @@schema("training")
 }
 
-/// Inscription d'un apprenant à une session, sous un agrément de son entreprise. Une inscription en attente ou confirmée occupe une place
+/// Inscription d'un apprenant à une session, sous un agrément de son entreprise ou, pour un étudiant ou un particulier (sans entreprise), avec un payeur désigné. Une inscription en attente ou confirmée occupe une place
 /// et consomme l'agrément ; annulée ou « à replacer », elle les libère. Jamais supprimée.
 model Enrollment {
   id            String           @id @db.Uuid

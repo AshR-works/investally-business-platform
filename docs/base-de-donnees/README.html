@@ -1,0 +1,50 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Base de données Investally : guide, dictionnaire et vérifications</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="../INDEX.html">Index</a> · <a href="../GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="../ARCHITECTURE.html">Architecture</a> · <a href="../SECURITY.html">Sécurité</a> · <a href="../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="../TECH-DEBT.html">Dette</a> · <a href="../CHARTE-DE-TESTS.html">Charte de tests</a> · <a href="../tests/README.html">Fiches de test</a> · <a href="../design/README.html">Design</a> · <a href="../livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>Base de données Investally : guide, dictionnaire et vérifications</h1>
+<h2>Quel type de base ?</h2>
+<p><strong>PostgreSQL</strong>, accédée par <strong>Prisma</strong> (client généré, migrations versionnées).</p>
+<div class="table-wrap"><table><thead><tr><th>Sujet</th><th>Réponse</th></tr></thead><tbody>
+<tr><td>Moteur</td><td>PostgreSQL ; en développement et en test, une instance embarquée jetable ; en production, un serveur PostgreSQL dans la composition de conteneurs</td></tr>
+<tr><td>Organisation</td><td>Un <strong>schéma PostgreSQL par contexte métier</strong> : <code>iam</code> (comptes et droits), <code>bd</code> (commercial), <code>training</code> (formation), <code>hr</code> (ressources humaines), <code>docs</code> (documents), <code>audit</code> (journal)</td></tr>
+<tr><td>Frontières</td><td><strong>Aucune clé étrangère entre deux schémas</strong> : un contexte désigne un autre <strong>par identifiant</strong> ; l'existence est contrôlée par l'application (test <code>core-schema</code>) et par les vérifications ci-dessous</td></tr>
+<tr><td>Intégrité</td><td>Clés étrangères en <code>RESTRICT</code>, contraintes <code>CHECK</code> et index uniques : une règle violée est refusée <strong>même en contournant l'API</strong></td></tr>
+<tr><td>Suppression</td><td>Jamais physique sur les données métier : archivage, annulation, suppression logique (<code>deleted_at</code>)</td></tr>
+<tr><td>Concurrence</td><td>Colonne <code>version</code> sur chaque agrégat (verrou optimiste)</td></tr>
+<tr><td>Audit</td><td>Table <code>audit.audit_logs</code> partitionnée par mois : qui, quoi, avant/après, session, adresse</td></tr>
+<tr><td>Migrations</td><td><code>apps/crm-api/prisma/migrations/</code> (28 au 2026-11-11), jamais modifiées une fois appliquées</td></tr>
+</tbody></table></div>
+<h2>Les documents</h2>
+<ul><li><a href="DICTIONNAIRE.html"><strong>DICTIONNAIRE.md</strong></a> (généré) : les <strong>43 tables</strong>, leurs colonnes (type, nullité, défaut, description), clés, règles garanties par la base, index, types énumérés, un diagramme des relations par schéma, et la liste des références par identifiant.</li><li><a href="verifications.sql"><strong>verifications.sql</strong></a> : <strong>22 vérifications d'intégrité en lecture seule</strong>. Chacune renvoie zéro ligne quand tout va bien.</li></ul>
+<h2>Tester la base</h2>
+<pre><code>DATABASE_URL=postgresql://… node scripts/db-docs/run-verifications.mjs        # affiche OK ou ÉCHEC pour chaque vérification ; code de sortie 1 s&#x27;il y a une anomalie
+DATABASE_URL=postgresql://… node scripts/db-docs/run-verifications.mjs --json  # même chose, lisible par un outil
+psql &quot;$DATABASE_URL&quot; -f docs/base-de-donnees/verifications.sql                 # sans Node : chaque résultat non vide est une anomalie</code></pre>
+<p>Elles couvrent ce que la base ne peut pas garantir seule : références entre contextes (apprenant → entreprise, inscription → agrément, entreprise → responsable, fiche employé → compte), cumuls (places d'une session, places et montant d'un agrément), cohérence entre tables (entreprise recopiée sur l'inscription, payeur d'un apprenant sans entreprise), chevauchement d'absences, solde de congé, comptes actifs sans rôle, second facteur sans secret, traces d'audit sans auteur.</p>
+<p><strong>Résultat de référence</strong> (pile jetable avec le jeu de démonstration et les parcours Postman) : <strong>22 / 22</strong>. Leur pouvoir de détection a été vérifié : cinq d'entre elles (responsable sorti, places dépassées, compte sans rôle, payeur incohérent, chevauchement d'absences) détectent bien une anomalie injectée dans une transaction annulée.</p>
+<blockquote><p><strong>Postman ne sait pas interroger une base de données</strong> : le test de la base se fait par ce script (ou <code>psql</code>), pas par la collection Postman. Les règles de la base sont aussi exercées indirectement par les tests d'API (la base refuse ce que l'API refuserait) et par les tests d'intégration du projet (<code>particuliers-http</code>, <code>hr-leave-http</code>, <code>core-schema</code>…).</p></blockquote>
+<h2>Régénérer le dictionnaire</h2>
+<pre><code>DATABASE_URL=&lt;base jetable migrée&gt; node scripts/db-docs/build-dictionary.mjs</code></pre>
+<p>Le dictionnaire lit la <strong>base réelle</strong> (catalogue PostgreSQL) et les commentaires <code>///</code> de <code>schema.prisma</code> : pour documenter une colonne, commentez-la dans le schéma, puis régénérez.</p>
+<h2>Précautions</h2>
+<ul><li>Les deux scripts sont en <strong>lecture seule</strong> (transaction en lecture seule), mais ne les pointez que vers une base dont vous avez le droit de lire les données personnelles.</li><li>La base contient des <strong>données personnelles</strong> (contacts, apprenants, personnel) : le dictionnaire décrit la structure, jamais le contenu.</li></ul></main></body></html>

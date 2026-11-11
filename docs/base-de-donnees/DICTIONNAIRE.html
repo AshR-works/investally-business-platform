@@ -1,0 +1,1044 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Dictionnaire de la base de données</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="../INDEX.html">Index</a> · <a href="../GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="../ARCHITECTURE.html">Architecture</a> · <a href="../SECURITY.html">Sécurité</a> · <a href="../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="../TECH-DEBT.html">Dette</a> · <a href="../CHARTE-DE-TESTS.html">Charte de tests</a> · <a href="../tests/README.html">Fiches de test</a> · <a href="../design/README.html">Design</a> · <a href="../livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>Dictionnaire de la base de données</h1>
+<p><em>Généré depuis la base réelle (PostgreSQL 17.10, 28 migrations appliquées) et les commentaires du schéma Prisma, par <code>scripts/db-docs/build-dictionary.mjs</code>. Ne pas modifier à la main : régénérer.</em></p>
+<h2>Vue d’ensemble</h2>
+<ul><li><strong>Moteur</strong> : PostgreSQL ; accès par Prisma (client généré) ; migrations versionnées dans <code>apps/crm-api/prisma/migrations</code>.</li><li><strong>Un schéma PostgreSQL par contexte métier</strong> (monolithe modulaire) : <code>iam</code>, <code>bd</code>, <code>training</code>, <code>hr</code>, <code>docs</code>, <code>audit</code>.</li><li><strong>Aucune clé étrangère entre deux schémas</strong> : un contexte référence un autre <strong>par identifiant</strong> (colonne <code>*_id</code> sans contrainte) ; l’existence et l’appartenance sont contrôlées par les cas d’usage (test <code>core-schema</code>).</li><li><strong>Rien n’est supprimé physiquement</strong> sur les données métier : archivage, annulation ou suppression logique (<code>deleted_at</code>) ; les clés étrangères sont en <code>RESTRICT</code>.</li><li><strong>Verrou optimiste</strong> : chaque agrégat a une colonne <code>version</code> ; une écriture avec une version périmée est refusée.</li><li><strong>Règles garanties par la base</strong> (CHECK, index uniques) en plus de celles de l’application : une règle violée est refusée même en contournant l’API.</li><li><strong>Identifiants</strong> : UUID (v7) générés par l’application ; dates en <code>timestamptz</code> (UTC) ; jours civils en <code>date</code>.</li></ul>
+<div class="table-wrap"><table><thead><tr><th>Schéma</th><th>Rôle</th><th>Tables</th></tr></thead><tbody>
+<tr><td><code>iam</code></td><td>Identité et accès : comptes, rôles, sessions, MFA, invitations</td><td>12</td></tr>
+<tr><td><code>bd</code></td><td>Business Development : entreprises, contacts, offres, relances, rendez-vous, opportunités, agréments, ambassadeurs, commissions</td><td>13</td></tr>
+<tr><td><code>training</code></td><td>Investudy : catalogue, sessions, salles, formateurs, apprenants, inscriptions</td><td>9</td></tr>
+<tr><td><code>hr</code></td><td>Ressources humaines : personnel, absences et congés</td><td>6</td></tr>
+<tr><td><code>docs</code></td><td>Documents (métadonnées ; les fichiers sont stockés à part)</td><td>2</td></tr>
+<tr><td><code>audit</code></td><td>Journal d’audit (partitionné par mois)</td><td>1</td></tr>
+</tbody></table></div>
+<h2>Schéma <code>iam</code></h2>
+<p>Identité et accès : comptes, rôles, sessions, MFA, invitations</p>
+<pre><code>erDiagram
+  users ||--o{ mfa_recovery_codes : &quot;user_id&quot;
+  users ||--o{ one_time_passwords : &quot;user_id&quot;
+  users ||--o{ password_history : &quot;user_id&quot;
+  user_sessions ||--o{ refresh_tokens : &quot;session_id&quot;
+  permissions ||--o{ role_permissions : &quot;permission_id&quot;
+  roles ||--o{ role_permissions : &quot;role_id&quot;
+  users ||--o{ user_invitations : &quot;user_id&quot;
+  roles ||--o{ user_roles : &quot;role_id&quot;
+  users ||--o{ user_roles : &quot;user_id&quot;
+  users ||--o{ user_sessions : &quot;user_id&quot;
+  users ||--o{ users : &quot;manager_id&quot;</code></pre>
+<h3><code>iam.login_attempts</code></h3>
+<p>Tentatives de connexion (y compris pour des e-mails inconnus : pas de clé étrangère).</p>
+<div class="table-wrap"><table><thead><tr><th>Colonne</th><th>Type</th><th>Null</th><th>Défaut</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>email_key</code></td><td>character varying(254)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>user_id</code></td><td>uuid</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>ip_address</code></td><td>character varying(64)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>outcome</code></td><td>iam."LoginOutcome"</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>created_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td><code>CURRENT_TIMESTAMP</code></td><td></td></tr>
+</tbody></table></div>
+<p><strong>Clé primaire</strong> : <code>(id)</code></p>
+<p><strong>Index</strong></p>
+<ul><li><code>login_attempts_email_key_created_at_idx</code> : <code>USING btree (email_key, created_at)</code></li><li><code>login_attempts_ip_address_created_at_idx</code> : <code>USING btree (ip_address, created_at)</code></li></ul>
+<h3><code>iam.mfa_recovery_codes</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Colonne</th><th>Type</th><th>Null</th><th>Défaut</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>user_id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>code_hash</code></td><td>character varying(255)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>used_at</code></td><td>timestamp(6) with time zone</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>created_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td><code>CURRENT_TIMESTAMP</code></td><td></td></tr>
+</tbody></table></div>
+<p><strong>Clé primaire</strong> : <code>(id)</code></p>
+<p><strong>Clés étrangères</strong></p>
+<ul><li><code>mfa_recovery_codes_user_id_fkey</code> : FOREIGN KEY (user_id) REFERENCES iam.users(id) ON UPDATE CASCADE ON DELETE CASCADE</li></ul>
+<p><strong>Index</strong></p>
+<ul><li><code>mfa_recovery_codes_user_id_idx</code> : <code>USING btree (user_id)</code></li></ul>
+<h3><code>iam.one_time_passwords</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Colonne</th><th>Type</th><th>Null</th><th>Défaut</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>user_id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>purpose</code></td><td>iam."OtpPurpose"</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>code_hash</code></td><td>character varying(255)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>attempts</code></td><td>integer</td><td>non</td><td><code>0</code></td><td></td></tr>
+<tr><td><code>expires_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>consumed_at</code></td><td>timestamp(6) with time zone</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>created_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td><code>CURRENT_TIMESTAMP</code></td><td></td></tr>
+</tbody></table></div>
+<p><strong>Clé primaire</strong> : <code>(id)</code></p>
+<p><strong>Clés étrangères</strong></p>
+<ul><li><code>one_time_passwords_user_id_fkey</code> : FOREIGN KEY (user_id) REFERENCES iam.users(id) ON UPDATE CASCADE ON DELETE CASCADE</li></ul>
+<p><strong>Règles garanties par la base (CHECK)</strong></p>
+<ul><li><code>otp_attempts_nonneg</code> : <code>((attempts &gt;= 0))</code></li></ul>
+<p><strong>Index</strong></p>
+<ul><li><code>one_time_passwords_expires_at_idx</code> : <code>USING btree (expires_at)</code></li><li><code>one_time_passwords_user_id_purpose_idx</code> : <code>USING btree (user_id, purpose)</code></li></ul>
+<h3><code>iam.password_history</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Colonne</th><th>Type</th><th>Null</th><th>Défaut</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>user_id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>password_hash</code></td><td>character varying(255)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>created_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td><code>CURRENT_TIMESTAMP</code></td><td></td></tr>
+</tbody></table></div>
+<p><strong>Clé primaire</strong> : <code>(id)</code></p>
+<p><strong>Clés étrangères</strong></p>
+<ul><li><code>password_history_user_id_fkey</code> : FOREIGN KEY (user_id) REFERENCES iam.users(id) ON UPDATE CASCADE ON DELETE CASCADE</li></ul>
+<p><strong>Index</strong></p>
+<ul><li><code>password_history_user_id_created_at_idx</code> : <code>USING btree (user_id, created_at DESC)</code></li></ul>
+<h3><code>iam.permissions</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Colonne</th><th>Type</th><th>Null</th><th>Défaut</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>code</code></td><td>character varying(100)</td><td>non</td><td></td><td><code>module.ressource.action</code></td></tr>
+<tr><td><code>module</code></td><td>character varying(50)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>resource</code></td><td>character varying(50)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>action</code></td><td>character varying(50)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>description</code></td><td>character varying(300)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>created_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td><code>CURRENT_TIMESTAMP</code></td><td></td></tr>
+</tbody></table></div>
+<p><strong>Clé primaire</strong> : <code>(id)</code></p>
+<p><strong>Index</strong></p>
+<ul><li><code>permissions_code_key</code> : <code>UNIQUE USING btree (code)</code></li><li><code>permissions_module_idx</code> : <code>USING btree (module)</code></li></ul>
+<h3><code>iam.refresh_tokens</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Colonne</th><th>Type</th><th>Null</th><th>Défaut</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>session_id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>family_id</code></td><td>uuid</td><td>non</td><td></td><td>Famille de rotation : la réutilisation d'un jeton déjà consommé révoque toute la famille.</td></tr>
+<tr><td><code>token_hash</code></td><td>character varying(64)</td><td>non</td><td></td><td>SHA-256 du jeton opaque ; le jeton lui-même n'est jamais stocké.</td></tr>
+<tr><td><code>issued_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td><code>CURRENT_TIMESTAMP</code></td><td></td></tr>
+<tr><td><code>expires_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>used_at</code></td><td>timestamp(6) with time zone</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>revoked_at</code></td><td>timestamp(6) with time zone</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>replaced_by_id</code></td><td>uuid</td><td>oui</td><td></td><td></td></tr>
+</tbody></table></div>
+<p><strong>Clé primaire</strong> : <code>(id)</code></p>
+<p><strong>Clés étrangères</strong></p>
+<ul><li><code>refresh_tokens_session_id_fkey</code> : FOREIGN KEY (session_id) REFERENCES iam.user_sessions(id) ON UPDATE CASCADE ON DELETE CASCADE</li></ul>
+<p><strong>Index</strong></p>
+<ul><li><code>refresh_tokens_expires_at_idx</code> : <code>USING btree (expires_at)</code></li><li><code>refresh_tokens_family_id_idx</code> : <code>USING btree (family_id)</code></li><li><code>refresh_tokens_session_id_idx</code> : <code>USING btree (session_id)</code></li><li><code>refresh_tokens_token_hash_key</code> : <code>UNIQUE USING btree (token_hash)</code></li></ul>
+<h3><code>iam.role_permissions</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Colonne</th><th>Type</th><th>Null</th><th>Défaut</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>role_id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>permission_id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>scope</code></td><td>iam."RoleScope"</td><td>non</td><td></td><td></td></tr>
+</tbody></table></div>
+<p><strong>Clé primaire</strong> : <code>(role_id, permission_id)</code></p>
+<p><strong>Clés étrangères</strong></p>
+<ul><li><code>role_permissions_permission_id_fkey</code> : FOREIGN KEY (permission_id) REFERENCES iam.permissions(id) ON UPDATE CASCADE ON DELETE CASCADE</li><li><code>role_permissions_role_id_fkey</code> : FOREIGN KEY (role_id) REFERENCES iam.roles(id) ON UPDATE CASCADE ON DELETE CASCADE</li></ul>
+<p><strong>Index</strong></p>
+<ul><li><code>role_permissions_permission_id_idx</code> : <code>USING btree (permission_id)</code></li></ul>
+<h3><code>iam.roles</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Colonne</th><th>Type</th><th>Null</th><th>Défaut</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>code</code></td><td>character varying(50)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>label</code></td><td>character varying(100)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>description</code></td><td>character varying(500)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>mfa_required</code></td><td>boolean</td><td>non</td><td><code>false</code></td><td></td></tr>
+<tr><td><code>is_system</code></td><td>boolean</td><td>non</td><td><code>true</code></td><td>Rôle livré par le système : non supprimable.</td></tr>
+<tr><td><code>created_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td><code>CURRENT_TIMESTAMP</code></td><td></td></tr>
+<tr><td><code>updated_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td></td><td></td></tr>
+</tbody></table></div>
+<p><strong>Clé primaire</strong> : <code>(id)</code></p>
+<p><strong>Index</strong></p>
+<ul><li><code>roles_code_key</code> : <code>UNIQUE USING btree (code)</code></li></ul>
+<h3><code>iam.user_invitations</code></h3>
+<p>Invitation à activer un compte : le mot de passe est choisi par l'utilisateur via un lien à usage unique.</p>
+<div class="table-wrap"><table><thead><tr><th>Colonne</th><th>Type</th><th>Null</th><th>Défaut</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>user_id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>token_hash</code></td><td>character varying(64)</td><td>non</td><td></td><td>SHA-256 du jeton ; le jeton lui-même n'est jamais stocké.</td></tr>
+<tr><td><code>created_by</code></td><td>uuid</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>created_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td><code>CURRENT_TIMESTAMP</code></td><td></td></tr>
+<tr><td><code>expires_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>used_at</code></td><td>timestamp(6) with time zone</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>revoked_at</code></td><td>timestamp(6) with time zone</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>purpose</code></td><td>character varying(20)</td><td>non</td><td><code>'INVITATION'::character varying</code></td><td>INVITATION (activation d'un compte en attente) ou PASSWORD_RESET (réinitialisation par un administrateur).</td></tr>
+</tbody></table></div>
+<p><strong>Clé primaire</strong> : <code>(id)</code></p>
+<p><strong>Clés étrangères</strong></p>
+<ul><li><code>user_invitations_user_id_fkey</code> : FOREIGN KEY (user_id) REFERENCES iam.users(id) ON UPDATE CASCADE ON DELETE CASCADE</li></ul>
+<p><strong>Règles garanties par la base (CHECK)</strong></p>
+<ul><li><code>user_invitations_expiry_after_creation</code> : <code>((expires_at &gt; created_at))</code></li><li><code>user_invitations_purpose_known</code> : <code>(((purpose)::text = ANY ((ARRAY['INVITATION'::character varying, 'PASSWORD_RESET'::character varying])::text[])))</code></li><li><code>user_invitations_token_hash_hex</code> : <code>(((token_hash)::text ~ '^[0-9a-f]{64}$'::text))</code></li></ul>
+<p><strong>Index</strong></p>
+<ul><li><code>user_invitations_expires_at_idx</code> : <code>USING btree (expires_at)</code></li><li><code>user_invitations_token_hash_key</code> : <code>UNIQUE USING btree (token_hash)</code></li><li><code>user_invitations_user_id_idx</code> : <code>USING btree (user_id)</code></li></ul>
+<h3><code>iam.user_roles</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Colonne</th><th>Type</th><th>Null</th><th>Défaut</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>user_id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>role_id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>assigned_by</code></td><td>uuid</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>assigned_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td><code>CURRENT_TIMESTAMP</code></td><td></td></tr>
+</tbody></table></div>
+<p><strong>Clé primaire</strong> : <code>(user_id, role_id)</code></p>
+<p><strong>Clés étrangères</strong></p>
+<ul><li><code>user_roles_role_id_fkey</code> : FOREIGN KEY (role_id) REFERENCES iam.roles(id) ON UPDATE CASCADE ON DELETE RESTRICT</li><li><code>user_roles_user_id_fkey</code> : FOREIGN KEY (user_id) REFERENCES iam.users(id) ON UPDATE CASCADE ON DELETE CASCADE</li></ul>
+<p><strong>Index</strong></p>
+<ul><li><code>user_roles_role_id_idx</code> : <code>USING btree (role_id)</code></li></ul>
+<h3><code>iam.user_sessions</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Colonne</th><th>Type</th><th>Null</th><th>Défaut</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>user_id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>ip_address</code></td><td>character varying(64)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>device</code></td><td>character varying(300)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>browser</code></td><td>character varying(100)</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>os</code></td><td>character varying(100)</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>risk_level</code></td><td>iam."RiskLevel"</td><td>non</td><td><code>'LOW'::iam."RiskLevel"</code></td><td></td></tr>
+<tr><td><code>mfa_verified</code></td><td>boolean</td><td>non</td><td><code>false</code></td><td></td></tr>
+<tr><td><code>logged_in_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td><code>CURRENT_TIMESTAMP</code></td><td></td></tr>
+<tr><td><code>last_seen_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td><code>CURRENT_TIMESTAMP</code></td><td></td></tr>
+<tr><td><code>expires_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td></td><td>Expiration sur inactivité.</td></tr>
+<tr><td><code>absolute_expires_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td></td><td>Expiration absolue, quelle que soit l'activité.</td></tr>
+<tr><td><code>logged_out_at</code></td><td>timestamp(6) with time zone</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>revoked_at</code></td><td>timestamp(6) with time zone</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>revoked_reason</code></td><td>character varying(200)</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>mfa_verified_at</code></td><td>timestamp(6) with time zone</td><td>oui</td><td></td><td>Dernière vérification MFA de la session : sert au step-up.</td></tr>
+</tbody></table></div>
+<p><strong>Clé primaire</strong> : <code>(id)</code></p>
+<p><strong>Clés étrangères</strong></p>
+<ul><li><code>user_sessions_user_id_fkey</code> : FOREIGN KEY (user_id) REFERENCES iam.users(id) ON UPDATE CASCADE ON DELETE CASCADE</li></ul>
+<p><strong>Règles garanties par la base (CHECK)</strong></p>
+<ul><li><code>user_sessions_expiry_order</code> : <code>((expires_at &lt;= absolute_expires_at))</code></li></ul>
+<p><strong>Index</strong></p>
+<ul><li><code>user_sessions_expires_at_idx</code> : <code>USING btree (expires_at)</code></li><li><code>user_sessions_user_id_logged_in_at_idx</code> : <code>USING btree (user_id, logged_in_at)</code></li></ul>
+<h3><code>iam.users</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Colonne</th><th>Type</th><th>Null</th><th>Défaut</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>email</code></td><td>character varying(254)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>email_key</code></td><td>character varying(254)</td><td>non</td><td></td><td>E-mail normalisé (minuscules) : unicité parmi les comptes non supprimés (index partiel en SQL).</td></tr>
+<tr><td><code>display_name</code></td><td>character varying(200)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>status</code></td><td>iam."UserStatus"</td><td>non</td><td><code>'PENDING'::iam."UserStatus"</code></td><td></td></tr>
+<tr><td><code>password_hash</code></td><td>character varying(255)</td><td>oui</td><td></td><td>Hash argon2id. Jamais journalisé (masqué dans l'audit).</td></tr>
+<tr><td><code>password_changed_at</code></td><td>timestamp(6) with time zone</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>failed_login_count</code></td><td>integer</td><td>non</td><td><code>0</code></td><td></td></tr>
+<tr><td><code>locked_until</code></td><td>timestamp(6) with time zone</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>mfa_enabled</code></td><td>boolean</td><td>non</td><td><code>false</code></td><td></td></tr>
+<tr><td><code>mfa_secret_enc</code></td><td>text</td><td>oui</td><td></td><td>Secret TOTP chiffré (AES-256-GCM) ; la clé est hors base.</td></tr>
+<tr><td><code>manager_id</code></td><td>uuid</td><td>oui</td><td></td><td>Responsable hiérarchique : définit la portée TEAM.</td></tr>
+<tr><td><code>last_login_at</code></td><td>timestamp(6) with time zone</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>version</code></td><td>integer</td><td>non</td><td><code>1</code></td><td></td></tr>
+<tr><td><code>created_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td><code>CURRENT_TIMESTAMP</code></td><td></td></tr>
+<tr><td><code>updated_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>deleted_at</code></td><td>timestamp(6) with time zone</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>mfa_last_used_step</code></td><td>bigint</td><td>oui</td><td></td><td>Dernier pas TOTP accepté : un code ne sert qu'une fois (anti-rejeu).</td></tr>
+</tbody></table></div>
+<p><strong>Clé primaire</strong> : <code>(id)</code></p>
+<p><strong>Clés étrangères</strong></p>
+<ul><li><code>users_manager_id_fkey</code> : FOREIGN KEY (manager_id) REFERENCES iam.users(id) ON UPDATE CASCADE ON DELETE SET NULL</li></ul>
+<p><strong>Règles garanties par la base (CHECK)</strong></p>
+<ul><li><code>users_email_key_lowercase</code> : <code>(((email_key)::text = lower((email_key)::text)))</code></li><li><code>users_failed_login_count_nonneg</code> : <code>((failed_login_count &gt;= 0))</code></li><li><code>users_mfa_enabled_has_secret</code> : <code>(((NOT mfa_enabled) OR (mfa_secret_enc IS NOT NULL)))</code></li><li><code>users_mfa_step_nonneg</code> : <code>(((mfa_last_used_step IS NULL) OR (mfa_last_used_step &gt;= 0)))</code></li><li><code>users_not_own_manager</code> : <code>(((manager_id IS NULL) OR (manager_id &lt;&gt; id)))</code></li><li><code>users_version_positive</code> : <code>((version &gt;= 1))</code></li></ul>
+<p><strong>Index</strong></p>
+<ul><li><code>users_email_key_active_uq</code> : <code>UNIQUE USING btree (email_key) WHERE (deleted_at IS NULL)</code></li><li><code>users_manager_id_idx</code> : <code>USING btree (manager_id)</code></li><li><code>users_status_idx</code> : <code>USING btree (status)</code></li></ul>
+<h3>Types énumérés de <code>iam</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Type</th><th>Valeurs</th></tr></thead><tbody>
+<tr><td><code>LoginOutcome</code></td><td><code>SUCCESS</code>, <code>BAD_CREDENTIALS</code>, <code>LOCKED</code>, <code>MFA_FAILED</code>, <code>RATE_LIMITED</code></td></tr>
+<tr><td><code>OtpPurpose</code></td><td><code>RECOVERY</code>, <code>STEP_UP</code>, <code>EMAIL_VERIFICATION</code></td></tr>
+<tr><td><code>RiskLevel</code></td><td><code>LOW</code>, <code>MEDIUM</code>, <code>HIGH</code>, <code>CRITICAL</code></td></tr>
+<tr><td><code>RoleScope</code></td><td><code>OWN</code>, <code>TEAM</code>, <code>ALL</code></td></tr>
+<tr><td><code>UserStatus</code></td><td><code>PENDING</code>, <code>ACTIVE</code>, <code>LOCKED</code>, <code>DISABLED</code></td></tr>
+</tbody></table></div>
+<h2>Schéma <code>bd</code></h2>
+<p>Business Development : entreprises, contacts, offres, relances, rendez-vous, opportunités, agréments, ambassadeurs, commissions</p>
+<pre><code>erDiagram
+  companies ||--o{ ambassadors : &quot;company_id&quot;
+  companies ||--o{ appointments : &quot;company_id&quot;
+  contacts ||--o{ appointments : &quot;contact_id&quot;
+  offers ||--o{ appointments : &quot;offer_id&quot;
+  opportunities ||--o{ appointments : &quot;opportunity_id&quot;
+  companies ||--o{ approvals : &quot;company_id&quot;
+  opportunities ||--o{ approvals : &quot;opportunity_id&quot;
+  approvals ||--o{ commission_payouts : &quot;approval_id&quot;
+  companies ||--o{ commission_payouts : &quot;company_id&quot;
+  facilitators ||--o{ commission_payouts : &quot;facilitator_id&quot;
+  companies ||--o{ company_facilitations : &quot;company_id&quot;
+  facilitators ||--o{ company_facilitations : &quot;facilitator_id&quot;
+  companies ||--o{ contacts : &quot;company_id&quot;
+  offers ||--o{ followups : &quot;offer_id&quot;
+  companies ||--o{ offers : &quot;company_id&quot;
+  companies ||--o{ opportunities : &quot;company_id&quot;
+  offers ||--o{ receipts : &quot;offer_id&quot;</code></pre>
+<h3><code>bd.ambassadors</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Colonne</th><th>Type</th><th>Null</th><th>Défaut</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>owner_user_id</code></td><td>uuid</td><td>non</td><td></td><td>Le chargé de compte qui l'a créé (référence inter-contextes vers iam.users, SANS clé étrangère) : détermine la portée des droits.</td></tr>
+<tr><td><code>last_name</code></td><td>character varying(100)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>first_name</code></td><td>character varying(100)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>origin</code></td><td>bd."AmbassadorOrigin"</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>company_id</code></td><td>uuid</td><td>oui</td><td></td><td>Entreprise d'origine : obligatoire pour un client, facultative pour un apprenant.</td></tr>
+<tr><td><code>email</code></td><td>character varying(200)</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>phone</code></td><td>character varying(40)</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>appointed_on</code></td><td>date</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>note</code></td><td>character varying(500)</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>version</code></td><td>integer</td><td>non</td><td><code>1</code></td><td></td></tr>
+<tr><td><code>created_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td><code>CURRENT_TIMESTAMP</code></td><td></td></tr>
+<tr><td><code>updated_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>status</code></td><td>bd."AmbassadorStatus"</td><td>non</td><td><code>'ACTIVE'::bd."AmbassadorStatus"</code></td><td>Archivage réversible (jamais de suppression) : archivé = gelé, retiré des listes courantes, réactivable.</td></tr>
+<tr><td><code>archived_at</code></td><td>timestamp(6) with time zone</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>archive_reason</code></td><td>character varying(500)</td><td>oui</td><td></td><td></td></tr>
+</tbody></table></div>
+<p><strong>Clé primaire</strong> : <code>(id)</code></p>
+<p><strong>Clés étrangères</strong></p>
+<ul><li><code>ambassadors_company_id_fkey</code> : FOREIGN KEY (company_id) REFERENCES bd.companies(id) ON UPDATE CASCADE ON DELETE RESTRICT</li></ul>
+<p><strong>Règles garanties par la base (CHECK)</strong></p>
+<ul><li><code>ambassadors_client_has_company</code> : <code>(COALESCE(((origin &lt;&gt; 'CLIENT'::bd."AmbassadorOrigin") OR (company_id IS NOT NULL)), false))</code></li><li><code>ambassadors_names_not_blank</code> : <code>(COALESCE(((length(btrim((last_name)::text)) &gt; 0) AND (length(btrim((first_name)::text)) &gt; 0)), false))</code></li><li><code>ambassadors_phone_format</code> : <code>(COALESCE(((phone IS NULL) OR ((phone)::text ~ '^\+?[1-9][0-9]{7,14}$'::text)), false)) NOT VALID</code></li><li><code>ambassadors_status_consistent</code> : <code>(COALESCE((((status = 'ARCHIVED'::bd."AmbassadorStatus") AND (archived_at IS NOT NULL)) OR ((status = 'ACTIVE'::bd."AmbassadorStatus") AND (archived_at IS NULL) AND (archive_reason IS NULL))), false))</code></li><li><code>ambassadors_version_positive</code> : <code>((version &gt;= 1))</code></li></ul>
+<p><strong>Index</strong></p>
+<ul><li><code>ambassadors_company_id_idx</code> : <code>USING btree (company_id)</code></li><li><code>ambassadors_email_unique</code> : <code>UNIQUE USING btree (email) WHERE (email IS NOT NULL)</code></li><li><code>ambassadors_owner_user_id_idx</code> : <code>USING btree (owner_user_id)</code></li><li><code>ambassadors_status_idx</code> : <code>USING btree (status)</code></li></ul>
+<h3><code>bd.appointments</code></h3>
+<p>Rendez-vous ou visite d'une entreprise, dans l'agenda de son organisateur (référence inter-contextes vers iam.users, SANS clé étrangère).</p>
+<div class="table-wrap"><table><thead><tr><th>Colonne</th><th>Type</th><th>Null</th><th>Défaut</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>type</code></td><td>bd."AppointmentType"</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>company_id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>contact_id</code></td><td>uuid</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>offer_id</code></td><td>uuid</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>organizer_user_id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>starts_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>duration_minutes</code></td><td>integer</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>location</code></td><td>character varying(200)</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>note</code></td><td>character varying(500)</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>status</code></td><td>bd."AppointmentStatus"</td><td>non</td><td><code>'PLANNED'::bd."AppointmentStatus"</code></td><td></td></tr>
+<tr><td><code>outcome_note</code></td><td>character varying(1000)</td><td>oui</td><td></td><td>Compte rendu (tenu) ou motif d'annulation (annulé) ; absent tant que le rendez-vous est à venir.</td></tr>
+<tr><td><code>closed_at</code></td><td>timestamp(6) with time zone</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>postponements</code></td><td>integer</td><td>non</td><td><code>0</code></td><td></td></tr>
+<tr><td><code>last_postpone_reason</code></td><td>character varying(500)</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>version</code></td><td>integer</td><td>non</td><td><code>1</code></td><td></td></tr>
+<tr><td><code>created_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td><code>CURRENT_TIMESTAMP</code></td><td></td></tr>
+<tr><td><code>updated_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>opportunity_id</code></td><td>uuid</td><td>oui</td><td></td><td>Opportunité que le rendez-vous sert (facultatif) : un rendez-vous décideur lié ne compte que pour elle (D93).</td></tr>
+</tbody></table></div>
+<p><strong>Clé primaire</strong> : <code>(id)</code></p>
+<p><strong>Clés étrangères</strong></p>
+<ul><li><code>appointments_company_id_fkey</code> : FOREIGN KEY (company_id) REFERENCES bd.companies(id) ON UPDATE CASCADE ON DELETE RESTRICT</li><li><code>appointments_contact_id_fkey</code> : FOREIGN KEY (contact_id) REFERENCES bd.contacts(id) ON UPDATE CASCADE ON DELETE RESTRICT</li><li><code>appointments_offer_id_fkey</code> : FOREIGN KEY (offer_id) REFERENCES bd.offers(id) ON UPDATE CASCADE ON DELETE RESTRICT</li><li><code>appointments_opportunity_id_fkey</code> : FOREIGN KEY (opportunity_id) REFERENCES bd.opportunities(id) ON UPDATE CASCADE ON DELETE RESTRICT</li></ul>
+<p><strong>Règles garanties par la base (CHECK)</strong></p>
+<ul><li><code>appointments_closure_coherent</code> : <code>(COALESCE((((status = 'PLANNED'::bd."AppointmentStatus") = (closed_at IS NULL)) AND ((status = 'PLANNED'::bd."AppointmentStatus") = (outcome_note IS NULL))), false))</code></li><li><code>appointments_duration_range</code> : <code>(COALESCE(((duration_minutes &gt;= 15) AND (duration_minutes &lt;= 480)), false))</code></li><li><code>appointments_postponements_positive</code> : <code>((postponements &gt;= 0))</code></li><li><code>appointments_version_positive</code> : <code>((version &gt;= 1))</code></li></ul>
+<p><strong>Index</strong></p>
+<ul><li><code>appointments_company_id_idx</code> : <code>USING btree (company_id)</code></li><li><code>appointments_opportunity_id_idx</code> : <code>USING btree (opportunity_id)</code></li><li><code>appointments_planned_organizer_idx</code> : <code>USING btree (organizer_user_id, starts_at) WHERE (status = 'PLANNED'::bd."AppointmentStatus")</code></li><li><code>appointments_starts_at_idx</code> : <code>USING btree (starts_at)</code></li></ul>
+<h3><code>bd.approvals</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Colonne</th><th>Type</th><th>Null</th><th>Défaut</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>company_id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>opportunity_id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>amount</code></td><td>numeric(14,2)</td><td>oui</td><td></td><td>Somme globale couverte ; absente si l'agrément ne couvre qu'un nombre de places (au moins l'un des deux, D1).</td></tr>
+<tr><td><code>currency</code></td><td>character varying(3)</td><td>non</td><td><code>'XAF'::character varying</code></td><td></td></tr>
+<tr><td><code>places</code></td><td>integer</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>received_on</code></td><td>date</td><td>oui</td><td></td><td>Absente tant que l'agrément est seulement demandé (ou annulé avant réception).</td></tr>
+<tr><td><code>valid_until</code></td><td>date</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>status</code></td><td>bd."ApprovalStatus"</td><td>non</td><td><code>'RECEIVED'::bd."ApprovalStatus"</code></td><td></td></tr>
+<tr><td><code>closed_reason</code></td><td>character varying(500)</td><td>oui</td><td></td><td>Motif de l'expiration ou de l'annulation ; absent pour un agrément reçu ou honoré.</td></tr>
+<tr><td><code>closed_at</code></td><td>timestamp(6) with time zone</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>version</code></td><td>integer</td><td>non</td><td><code>1</code></td><td></td></tr>
+<tr><td><code>created_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td><code>CURRENT_TIMESTAMP</code></td><td></td></tr>
+<tr><td><code>updated_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>payer_name</code></td><td>character varying(200)</td><td>oui</td><td></td><td>Payeur tiers (nom et type vont ensemble) ; absent : le client paie lui-même.</td></tr>
+<tr><td><code>payer_type</code></td><td>bd."ApprovalPayerType"</td><td>oui</td><td></td><td></td></tr>
+</tbody></table></div>
+<p><strong>Clé primaire</strong> : <code>(id)</code></p>
+<p><strong>Clés étrangères</strong></p>
+<ul><li><code>approvals_company_id_fkey</code> : FOREIGN KEY (company_id) REFERENCES bd.companies(id) ON UPDATE CASCADE ON DELETE RESTRICT</li><li><code>approvals_opportunity_id_fkey</code> : FOREIGN KEY (opportunity_id) REFERENCES bd.opportunities(id) ON UPDATE CASCADE ON DELETE RESTRICT</li></ul>
+<p><strong>Règles garanties par la base (CHECK)</strong></p>
+<ul><li><code>approvals_amount_or_places</code> : <code>(COALESCE(((amount IS NOT NULL) OR (places IS NOT NULL)), false))</code></li><li><code>approvals_amount_positive</code> : <code>(COALESCE(((amount IS NULL) OR (amount &gt; (0)::numeric)), false))</code></li><li><code>approvals_closure_coherent</code> : <code>(COALESCE((((status = ANY (ARRAY['REQUESTED'::bd."ApprovalStatus", 'RECEIVED'::bd."ApprovalStatus"])) = (closed_at IS NULL)) AND ((status = ANY (ARRAY['EXPIRED'::bd."ApprovalStatus", 'CANCELLED'::bd."ApprovalStatus"])) = (closed_reason IS NOT NULL))), false))</code></li><li><code>approvals_payer_complete</code> : <code>(COALESCE(((payer_name IS NULL) = (payer_type IS NULL)), false))</code></li><li><code>approvals_payer_name_not_blank</code> : <code>(COALESCE(((payer_name IS NULL) OR (length(btrim((payer_name)::text)) &gt; 0)), false))</code></li><li><code>approvals_places_positive</code> : <code>(COALESCE(((places IS NULL) OR (places &gt; 0)), false))</code></li><li><code>approvals_received_on_required</code> : <code>(COALESCE(((received_on IS NOT NULL) OR (status = ANY (ARRAY['REQUESTED'::bd."ApprovalStatus", 'CANCELLED'::bd."ApprovalStatus"]))), false))</code></li><li><code>approvals_validity_after_receipt</code> : <code>(COALESCE(((valid_until IS NULL) OR (received_on IS NULL) OR (valid_until &gt;= received_on)), false))</code></li><li><code>approvals_version_positive</code> : <code>((version &gt;= 1))</code></li></ul>
+<p><strong>Index</strong></p>
+<ul><li><code>approvals_company_id_idx</code> : <code>USING btree (company_id)</code></li><li><code>approvals_one_active_per_opportunity</code> : <code>UNIQUE USING btree (opportunity_id) WHERE (status = ANY (ARRAY['REQUESTED'::bd."ApprovalStatus", 'RECEIVED'::bd."ApprovalStatus", 'HONORED'::bd."ApprovalStatus"]))</code></li><li><code>approvals_opportunity_id_idx</code> : <code>USING btree (opportunity_id)</code></li></ul>
+<h3><code>bd.commission_payouts</code></h3>
+<p>Versement de la commission d'un facilitateur (flux F3) : naît à l'honneur d'un agrément ; montant figé ; déblocage par la Finance, versement avec justificatif.</p>
+<div class="table-wrap"><table><thead><tr><th>Colonne</th><th>Type</th><th>Null</th><th>Défaut</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>company_id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>facilitator_id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>approval_id</code></td><td>uuid</td><td>non</td><td></td><td>Un seul versement par agrément.</td></tr>
+<tr><td><code>commission_type</code></td><td>bd."CommissionType"</td><td>non</td><td></td><td>Définition de la commission au moment où elle est devenue due (figée).</td></tr>
+<tr><td><code>commission_value</code></td><td>numeric(12,2)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>commission_currency</code></td><td>character(3)</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>amount</code></td><td>numeric(14,2)</td><td>oui</td><td></td><td>Montant à verser ; absent tant qu'un pourcentage n'a pas de montant d'agrément à s'appliquer.</td></tr>
+<tr><td><code>currency</code></td><td>character varying(3)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>status</code></td><td>bd."CommissionPayoutStatus"</td><td>non</td><td><code>'DUE'::bd."CommissionPayoutStatus"</code></td><td></td></tr>
+<tr><td><code>hold_reason</code></td><td>character varying(500)</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>cancelled_reason</code></td><td>character varying(500)</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>paid_on</code></td><td>date</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>version</code></td><td>integer</td><td>non</td><td><code>1</code></td><td></td></tr>
+<tr><td><code>created_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td><code>CURRENT_TIMESTAMP</code></td><td></td></tr>
+<tr><td><code>updated_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td></td><td></td></tr>
+</tbody></table></div>
+<p><strong>Clé primaire</strong> : <code>(id)</code></p>
+<p><strong>Clés étrangères</strong></p>
+<ul><li><code>commission_payouts_approval_id_fkey</code> : FOREIGN KEY (approval_id) REFERENCES bd.approvals(id) ON UPDATE CASCADE ON DELETE RESTRICT</li><li><code>commission_payouts_company_id_fkey</code> : FOREIGN KEY (company_id) REFERENCES bd.companies(id) ON UPDATE CASCADE ON DELETE RESTRICT</li><li><code>commission_payouts_facilitator_id_fkey</code> : FOREIGN KEY (facilitator_id) REFERENCES bd.facilitators(id) ON UPDATE CASCADE ON DELETE RESTRICT</li></ul>
+<p><strong>Règles garanties par la base (CHECK)</strong></p>
+<ul><li><code>commission_payouts_amount_before_release</code> : <code>(COALESCE(((status &lt;&gt; ALL (ARRAY['RELEASED'::bd."CommissionPayoutStatus", 'PAID'::bd."CommissionPayoutStatus"])) OR (amount IS NOT NULL)), false))</code></li><li><code>commission_payouts_amount_positive</code> : <code>(COALESCE(((amount IS NULL) OR (amount &gt; (0)::numeric)), false))</code></li><li><code>commission_payouts_cancel_coherent</code> : <code>(COALESCE(((status = 'CANCELLED'::bd."CommissionPayoutStatus") = (cancelled_reason IS NOT NULL)), false))</code></li><li><code>commission_payouts_commission_valid</code> : <code>(COALESCE(((commission_value &gt; (0)::numeric) AND ((commission_type = 'PERCENT'::bd."CommissionType") = (commission_currency IS NULL)) AND ((commission_type &lt;&gt; 'PERCENT'::bd."CommissionType") OR (commission_value &lt;= (100)::numeric))), false))</code></li><li><code>commission_payouts_hold_coherent</code> : <code>(COALESCE(((status = 'ON_HOLD'::bd."CommissionPayoutStatus") = (hold_reason IS NOT NULL)), false))</code></li><li><code>commission_payouts_paid_coherent</code> : <code>(COALESCE(((status = 'PAID'::bd."CommissionPayoutStatus") = (paid_on IS NOT NULL)), false))</code></li><li><code>commission_payouts_version_positive</code> : <code>((version &gt;= 1))</code></li></ul>
+<p><strong>Index</strong></p>
+<ul><li><code>commission_payouts_approval_id_key</code> : <code>UNIQUE USING btree (approval_id)</code></li><li><code>commission_payouts_company_id_idx</code> : <code>USING btree (company_id)</code></li><li><code>commission_payouts_facilitator_id_idx</code> : <code>USING btree (facilitator_id)</code></li><li><code>commission_payouts_status_idx</code> : <code>USING btree (status)</code></li></ul>
+<h3><code>bd.companies</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Colonne</th><th>Type</th><th>Null</th><th>Défaut</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>name</code></td><td>character varying(200)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>name_key</code></td><td>character varying(200)</td><td>non</td><td></td><td>Nom normalisé (minuscules) : unicité parmi les entreprises non supprimées (index partiel en SQL).</td></tr>
+<tr><td><code>status</code></td><td>bd."CompanyStatus"</td><td>non</td><td><code>'TARGET'::bd."CompanyStatus"</code></td><td></td></tr>
+<tr><td><code>sector</code></td><td>character varying(100)</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>country</code></td><td>character varying(100)</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>version</code></td><td>integer</td><td>non</td><td><code>1</code></td><td>Verrou optimiste.</td></tr>
+<tr><td><code>created_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td><code>CURRENT_TIMESTAMP</code></td><td></td></tr>
+<tr><td><code>updated_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>deleted_at</code></td><td>timestamp(6) with time zone</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>owner_user_id</code></td><td>uuid</td><td>oui</td><td></td><td>Propriétaire (référence inter-contextes vers iam.users, SANS clé étrangère) : détermine la portée des droits.</td></tr>
+<tr><td><code>email</code></td><td>character varying(200)</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>phone</code></td><td>character varying(40)</td><td>oui</td><td></td><td></td></tr>
+</tbody></table></div>
+<p><strong>Clé primaire</strong> : <code>(id)</code></p>
+<p><strong>Règles garanties par la base (CHECK)</strong></p>
+<ul><li><code>companies_phone_format</code> : <code>(COALESCE(((phone IS NULL) OR ((phone)::text ~ '^\+?[1-9][0-9]{7,14}$'::text)), false)) NOT VALID</code></li><li><code>companies_version_positive</code> : <code>((version &gt;= 1))</code></li></ul>
+<p><strong>Index</strong></p>
+<ul><li><code>companies_name_key_active_uq</code> : <code>UNIQUE USING btree (name_key) WHERE (deleted_at IS NULL)</code></li><li><code>companies_owner_user_id_idx</code> : <code>USING btree (owner_user_id)</code></li><li><code>companies_status_idx</code> : <code>USING btree (status)</code></li></ul>
+<h3><code>bd.company_facilitations</code></h3>
+<p>Lien entreprise ↔ facilitateur : méthode de contact, appartenance à l'entreprise, commission (cohérence en SQL).</p>
+<div class="table-wrap"><table><thead><tr><th>Colonne</th><th>Type</th><th>Null</th><th>Défaut</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>company_id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>facilitator_id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>contact_method</code></td><td>bd."ContactMethod"</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>is_company_employee</code></td><td>boolean</td><td>non</td><td><code>false</code></td><td></td></tr>
+<tr><td><code>commission_type</code></td><td>bd."CommissionType"</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>commission_value</code></td><td>numeric(12,2)</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>commission_currency</code></td><td>character(3)</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>created_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td><code>CURRENT_TIMESTAMP</code></td><td></td></tr>
+</tbody></table></div>
+<p><strong>Clé primaire</strong> : <code>(company_id)</code></p>
+<p><strong>Clés étrangères</strong></p>
+<ul><li><code>company_facilitations_company_id_fkey</code> : FOREIGN KEY (company_id) REFERENCES bd.companies(id) ON UPDATE CASCADE ON DELETE RESTRICT</li><li><code>company_facilitations_facilitator_id_fkey</code> : FOREIGN KEY (facilitator_id) REFERENCES bd.facilitators(id) ON UPDATE CASCADE ON DELETE RESTRICT</li></ul>
+<p><strong>Règles garanties par la base (CHECK)</strong></p>
+<ul><li><code>company_facilitations_commission_coherent</code> : <code>(COALESCE((((commission_type IS NULL) AND (commission_value IS NULL) AND (commission_currency IS NULL)) OR ((commission_type = 'PERCENT'::bd."CommissionType") AND (commission_value &gt; (0)::numeric) AND (commission_value &lt;= (100)::numeric) AND (commission_currency IS NULL)) OR ((commission_type = 'FIXED'::bd."CommissionType") AND (commission_value &gt; (0)::numeric) AND (commission_currency ~ '^[A-Z]{3}$'::text))), false))</code></li></ul>
+<p><strong>Index</strong></p>
+<ul><li><code>company_facilitations_facilitator_id_idx</code> : <code>USING btree (facilitator_id)</code></li></ul>
+<h3><code>bd.contacts</code></h3>
+<p>Contact : interlocuteur d'une entreprise (DAF, décideur…). Sa visibilité suit celle de son entreprise.</p>
+<div class="table-wrap"><table><thead><tr><th>Colonne</th><th>Type</th><th>Null</th><th>Défaut</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>company_id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>last_name</code></td><td>character varying(100)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>first_name</code></td><td>character varying(100)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>name_key</code></td><td>character varying(210)</td><td>non</td><td></td><td>Nom normalisé (minuscules) pour la détection de doublons.</td></tr>
+<tr><td><code>role</code></td><td>bd."ContactRole"</td><td>non</td><td><code>'OTHER'::bd."ContactRole"</code></td><td></td></tr>
+<tr><td><code>email</code></td><td>character varying(200)</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>email_key</code></td><td>character varying(200)</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>phone</code></td><td>character varying(40)</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>version</code></td><td>integer</td><td>non</td><td><code>1</code></td><td></td></tr>
+<tr><td><code>created_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td><code>CURRENT_TIMESTAMP</code></td><td></td></tr>
+<tr><td><code>updated_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>deleted_at</code></td><td>timestamp(6) with time zone</td><td>oui</td><td></td><td></td></tr>
+</tbody></table></div>
+<p><strong>Clé primaire</strong> : <code>(id)</code></p>
+<p><strong>Clés étrangères</strong></p>
+<ul><li><code>contacts_company_id_fkey</code> : FOREIGN KEY (company_id) REFERENCES bd.companies(id) ON UPDATE CASCADE ON DELETE RESTRICT</li></ul>
+<p><strong>Règles garanties par la base (CHECK)</strong></p>
+<ul><li><code>contacts_phone_format</code> : <code>(COALESCE(((phone IS NULL) OR ((phone)::text ~ '^\+?[1-9][0-9]{7,14}$'::text)), false)) NOT VALID</code></li><li><code>contacts_version_positive</code> : <code>((version &gt;= 1))</code></li></ul>
+<p><strong>Index</strong></p>
+<ul><li><code>contacts_company_id_email_key_idx</code> : <code>USING btree (company_id, email_key)</code></li><li><code>contacts_company_id_idx</code> : <code>USING btree (company_id)</code></li><li><code>contacts_company_id_name_key_idx</code> : <code>USING btree (company_id, name_key)</code></li></ul>
+<h3><code>bd.facilitators</code></h3>
+<p>Facilitateur : personne qui met en relation avec une entreprise (peut en être un employé). Réutilisable.</p>
+<div class="table-wrap"><table><thead><tr><th>Colonne</th><th>Type</th><th>Null</th><th>Défaut</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>last_name</code></td><td>character varying(100)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>first_name</code></td><td>character varying(100)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>phone</code></td><td>character varying(40)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>comment</code></td><td>character varying(2000)</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>owner_user_id</code></td><td>uuid</td><td>non</td><td></td><td>Créateur (référence inter-contextes, SANS clé étrangère) : détermine la portée des droits.</td></tr>
+<tr><td><code>version</code></td><td>integer</td><td>non</td><td><code>1</code></td><td></td></tr>
+<tr><td><code>created_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td><code>CURRENT_TIMESTAMP</code></td><td></td></tr>
+<tr><td><code>updated_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>deleted_at</code></td><td>timestamp(6) with time zone</td><td>oui</td><td></td><td></td></tr>
+</tbody></table></div>
+<p><strong>Clé primaire</strong> : <code>(id)</code></p>
+<p><strong>Règles garanties par la base (CHECK)</strong></p>
+<ul><li><code>facilitators_phone_format</code> : <code>(COALESCE(((phone)::text ~ '^\+?[1-9][0-9]{7,14}$'::text), false)) NOT VALID</code></li><li><code>facilitators_version_positive</code> : <code>((version &gt;= 1))</code></li></ul>
+<p><strong>Index</strong></p>
+<ul><li><code>facilitators_owner_user_id_idx</code> : <code>USING btree (owner_user_id)</code></li></ul>
+<h3><code>bd.followups</code></h3>
+<p>Relance d'une offre en cours : à faire à une échéance, par un canal ; terminée (avec son résultat) ou annulée (avec son motif).</p>
+<div class="table-wrap"><table><thead><tr><th>Colonne</th><th>Type</th><th>Null</th><th>Défaut</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>offer_id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>due_on</code></td><td>date</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>channel</code></td><td>bd."FollowupChannel"</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>note</code></td><td>character varying(500)</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>status</code></td><td>bd."FollowupStatus"</td><td>non</td><td><code>'PLANNED'::bd."FollowupStatus"</code></td><td></td></tr>
+<tr><td><code>result_note</code></td><td>character varying(1000)</td><td>oui</td><td></td><td>Résultat de la relance (terminée) ou motif d'annulation (annulée) ; absent tant qu'elle est à faire.</td></tr>
+<tr><td><code>closed_at</code></td><td>timestamp(6) with time zone</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>version</code></td><td>integer</td><td>non</td><td><code>1</code></td><td></td></tr>
+<tr><td><code>created_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td><code>CURRENT_TIMESTAMP</code></td><td></td></tr>
+<tr><td><code>updated_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td></td><td></td></tr>
+</tbody></table></div>
+<p><strong>Clé primaire</strong> : <code>(id)</code></p>
+<p><strong>Clés étrangères</strong></p>
+<ul><li><code>followups_offer_id_fkey</code> : FOREIGN KEY (offer_id) REFERENCES bd.offers(id) ON UPDATE CASCADE ON DELETE RESTRICT</li></ul>
+<p><strong>Règles garanties par la base (CHECK)</strong></p>
+<ul><li><code>followups_closure_coherent</code> : <code>(COALESCE((((status = 'PLANNED'::bd."FollowupStatus") = (closed_at IS NULL)) AND ((status = 'PLANNED'::bd."FollowupStatus") = (result_note IS NULL))), false))</code></li><li><code>followups_version_positive</code> : <code>((version &gt;= 1))</code></li></ul>
+<p><strong>Index</strong></p>
+<ul><li><code>followups_offer_id_idx</code> : <code>USING btree (offer_id)</code></li><li><code>followups_planned_due_idx</code> : <code>USING btree (due_on) WHERE (status = 'PLANNED'::bd."FollowupStatus")</code></li></ul>
+<h3><code>bd.offer_counters</code></h3>
+<p>Compteur des références d'offres, une ligne par année (incrémenté dans la transaction de création).</p>
+<div class="table-wrap"><table><thead><tr><th>Colonne</th><th>Type</th><th>Null</th><th>Défaut</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>year</code></td><td>integer</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>last</code></td><td>integer</td><td>non</td><td></td><td></td></tr>
+</tbody></table></div>
+<p><strong>Clé primaire</strong> : <code>(year)</code></p>
+<h3><code>bd.offers</code></h3>
+<p>Offre faite à une entreprise. Sa visibilité suit celle de l'entreprise ; jamais supprimée (on la retire, avec un motif).</p>
+<div class="table-wrap"><table><thead><tr><th>Colonne</th><th>Type</th><th>Null</th><th>Défaut</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>reference</code></td><td>character varying(20)</td><td>non</td><td></td><td>Référence lisible « OFF-2026-0001 » (compteur par année).</td></tr>
+<tr><td><code>company_id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>subject</code></td><td>character varying(200)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>amount</code></td><td>numeric(14,2)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>currency</code></td><td>character(3)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>status</code></td><td>bd."OfferStatus"</td><td>non</td><td><code>'DRAFT'::bd."OfferStatus"</code></td><td></td></tr>
+<tr><td><code>note</code></td><td>character varying(1000)</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>submitted_at</code></td><td>timestamp(6) with time zone</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>decided_at</code></td><td>timestamp(6) with time zone</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>withdrawn_reason</code></td><td>character varying(500)</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>version</code></td><td>integer</td><td>non</td><td><code>1</code></td><td></td></tr>
+<tr><td><code>created_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td><code>CURRENT_TIMESTAMP</code></td><td></td></tr>
+<tr><td><code>updated_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td></td><td></td></tr>
+</tbody></table></div>
+<p><strong>Clé primaire</strong> : <code>(id)</code></p>
+<p><strong>Clés étrangères</strong></p>
+<ul><li><code>offers_company_id_fkey</code> : FOREIGN KEY (company_id) REFERENCES bd.companies(id) ON UPDATE CASCADE ON DELETE RESTRICT</li></ul>
+<p><strong>Règles garanties par la base (CHECK)</strong></p>
+<ul><li><code>offers_amount_positive</code> : <code>((amount &gt; (0)::numeric))</code></li><li><code>offers_submitted_at_coherent</code> : <code>((COALESCE(((status = 'DRAFT'::bd."OfferStatus") = (submitted_at IS NULL)), false) OR (status = 'WITHDRAWN'::bd."OfferStatus")))</code></li><li><code>offers_version_positive</code> : <code>((version &gt;= 1))</code></li><li><code>offers_withdrawn_reason_required</code> : <code>(COALESCE(((status = 'WITHDRAWN'::bd."OfferStatus") = (withdrawn_reason IS NOT NULL)), false))</code></li></ul>
+<p><strong>Index</strong></p>
+<ul><li><code>offers_company_id_idx</code> : <code>USING btree (company_id)</code></li><li><code>offers_reference_key</code> : <code>UNIQUE USING btree (reference)</code></li><li><code>offers_status_idx</code> : <code>USING btree (status)</code></li></ul>
+<h3><code>bd.opportunities</code></h3>
+<p>Opportunité commerciale d'une entreprise. Sa visibilité suit celle de l'entreprise ; jamais supprimée (on la clôt, gagnée ou perdue).</p>
+<div class="table-wrap"><table><thead><tr><th>Colonne</th><th>Type</th><th>Null</th><th>Défaut</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>company_id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>title</code></td><td>character varying(200)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>amount</code></td><td>numeric(14,2)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>currency</code></td><td>character(3)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>source</code></td><td>bd."OpportunitySource"</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>stage</code></td><td>bd."OpportunityStage"</td><td>non</td><td><code>'QUALIFICATION'::bd."OpportunityStage"</code></td><td></td></tr>
+<tr><td><code>status</code></td><td>bd."OpportunityStatus"</td><td>non</td><td><code>'OPEN'::bd."OpportunityStatus"</code></td><td></td></tr>
+<tr><td><code>loss_reason</code></td><td>bd."LossReason"</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>closing_note</code></td><td>character varying(500)</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>closed_at</code></td><td>timestamp(6) with time zone</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>waiver_reason</code></td><td>character varying(500)</td><td>oui</td><td></td><td>Dérogation à la règle du rendez-vous décideur : justification et date vont ensemble.</td></tr>
+<tr><td><code>waived_at</code></td><td>timestamp(6) with time zone</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>stage_changed_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td><code>CURRENT_TIMESTAMP</code></td><td></td></tr>
+<tr><td><code>version</code></td><td>integer</td><td>non</td><td><code>1</code></td><td></td></tr>
+<tr><td><code>created_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td><code>CURRENT_TIMESTAMP</code></td><td></td></tr>
+<tr><td><code>updated_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td></td><td></td></tr>
+</tbody></table></div>
+<p><strong>Clé primaire</strong> : <code>(id)</code></p>
+<p><strong>Clés étrangères</strong></p>
+<ul><li><code>opportunities_company_id_fkey</code> : FOREIGN KEY (company_id) REFERENCES bd.companies(id) ON UPDATE CASCADE ON DELETE RESTRICT</li></ul>
+<p><strong>Règles garanties par la base (CHECK)</strong></p>
+<ul><li><code>opportunities_amount_positive</code> : <code>(COALESCE((amount &gt; (0)::numeric), false))</code></li><li><code>opportunities_closure_coherent</code> : <code>(COALESCE( CASE status     WHEN 'OPEN'::bd."OpportunityStatus" THEN ((closed_at IS NULL) AND (loss_reason IS NULL) AND (closing_note IS NULL))     WHEN 'LOST'::bd."OpportunityStatus" THEN ((closed_at IS NOT NULL) AND (loss_reason IS NOT NULL))     WHEN 'WON'::bd."OpportunityStatus" THEN ((closed_at IS NOT NULL) AND (loss_reason IS NULL) AND (closing_note IS NULL))     ELSE NULL::boolean END, false))</code></li><li><code>opportunities_version_positive</code> : <code>((version &gt;= 1))</code></li><li><code>opportunities_waiver_coherent</code> : <code>(COALESCE(((waiver_reason IS NULL) = (waived_at IS NULL)), false))</code></li><li><code>opportunities_won_after_agreement</code> : <code>(COALESCE(((status &lt;&gt; 'WON'::bd."OpportunityStatus") OR (stage = ANY (ARRAY['AGREEMENT_IN_PRINCIPLE'::bd."OpportunityStage", 'ACCREDITATION'::bd."OpportunityStage"]))), false))</code></li></ul>
+<p><strong>Index</strong></p>
+<ul><li><code>opportunities_company_id_idx</code> : <code>USING btree (company_id)</code></li><li><code>opportunities_status_stage_idx</code> : <code>USING btree (status, stage)</code></li></ul>
+<h3><code>bd.receipts</code></h3>
+<p>Décharge signée d'une offre déposée. Une offre n'a qu'UNE décharge valide (index unique partiel posé en SQL, que Prisma ne sait pas décrire).</p>
+<div class="table-wrap"><table><thead><tr><th>Colonne</th><th>Type</th><th>Null</th><th>Défaut</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>offer_id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>received_on</code></td><td>date</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>received_by</code></td><td>character varying(150)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>status</code></td><td>bd."ReceiptStatus"</td><td>non</td><td><code>'VALID'::bd."ReceiptStatus"</code></td><td></td></tr>
+<tr><td><code>cancelled_reason</code></td><td>character varying(500)</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>cancelled_at</code></td><td>timestamp(6) with time zone</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>version</code></td><td>integer</td><td>non</td><td><code>1</code></td><td></td></tr>
+<tr><td><code>created_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td><code>CURRENT_TIMESTAMP</code></td><td></td></tr>
+<tr><td><code>updated_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td></td><td></td></tr>
+</tbody></table></div>
+<p><strong>Clé primaire</strong> : <code>(id)</code></p>
+<p><strong>Clés étrangères</strong></p>
+<ul><li><code>receipts_offer_id_fkey</code> : FOREIGN KEY (offer_id) REFERENCES bd.offers(id) ON UPDATE CASCADE ON DELETE RESTRICT</li></ul>
+<p><strong>Règles garanties par la base (CHECK)</strong></p>
+<ul><li><code>receipts_cancellation_coherent</code> : <code>(COALESCE((((status = 'CANCELLED'::bd."ReceiptStatus") = (cancelled_reason IS NOT NULL)) AND ((status = 'CANCELLED'::bd."ReceiptStatus") = (cancelled_at IS NOT NULL))), false))</code></li><li><code>receipts_version_positive</code> : <code>((version &gt;= 1))</code></li></ul>
+<p><strong>Index</strong></p>
+<ul><li><code>receipts_offer_id_idx</code> : <code>USING btree (offer_id)</code></li><li><code>receipts_one_valid_per_offer</code> : <code>UNIQUE USING btree (offer_id) WHERE (status = 'VALID'::bd."ReceiptStatus")</code></li></ul>
+<h3>Types énumérés de <code>bd</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Type</th><th>Valeurs</th></tr></thead><tbody>
+<tr><td><code>AmbassadorOrigin</code></td><td><code>CLIENT</code>, <code>LEARNER</code></td></tr>
+<tr><td><code>AmbassadorStatus</code></td><td><code>ACTIVE</code>, <code>ARCHIVED</code></td></tr>
+<tr><td><code>AppointmentStatus</code></td><td><code>PLANNED</code>, <code>HELD</code>, <code>CANCELLED</code></td></tr>
+<tr><td><code>AppointmentType</code></td><td><code>FINANCE_DIRECTOR</code>, <code>DECISION_MAKER</code>, <code>VISIT</code></td></tr>
+<tr><td><code>ApprovalPayerType</code></td><td><code>EMPLOYER</code>, <code>ORGANISM</code>, <code>LANDLORD</code></td></tr>
+<tr><td><code>ApprovalStatus</code></td><td><code>REQUESTED</code>, <code>RECEIVED</code>, <code>HONORED</code>, <code>EXPIRED</code>, <code>CANCELLED</code></td></tr>
+<tr><td><code>CommissionPayoutStatus</code></td><td><code>DUE</code>, <code>ON_HOLD</code>, <code>RELEASED</code>, <code>PAID</code>, <code>CANCELLED</code></td></tr>
+<tr><td><code>CommissionType</code></td><td><code>FIXED</code>, <code>PERCENT</code></td></tr>
+<tr><td><code>CompanyStatus</code></td><td><code>TARGET</code>, <code>CONTACTED</code>, <code>QUALIFIED</code>, <code>CLIENT</code>, <code>ARCHIVED</code></td></tr>
+<tr><td><code>ContactMethod</code></td><td><code>WHATSAPP_MESSAGE</code>, <code>PHONE_CALL</code>, <code>EMAIL</code>, <code>MEETING</code>, <code>OTHER</code></td></tr>
+<tr><td><code>ContactRole</code></td><td><code>FINANCE_DIRECTOR</code>, <code>DECISION_MAKER</code>, <code>OTHER</code></td></tr>
+<tr><td><code>FollowupChannel</code></td><td><code>CALL</code>, <code>EMAIL</code>, <code>WHATSAPP</code>, <code>MEETING</code>, <code>OTHER</code></td></tr>
+<tr><td><code>FollowupStatus</code></td><td><code>PLANNED</code>, <code>DONE</code>, <code>CANCELLED</code></td></tr>
+<tr><td><code>LossReason</code></td><td><code>PRICE</code>, <code>COMPETITOR</code>, <code>NO_BUDGET</code>, <code>NO_RESPONSE</code>, <code>NOT_INTERESTED</code>, <code>OTHER</code></td></tr>
+<tr><td><code>OfferStatus</code></td><td><code>DRAFT</code>, <code>SUBMITTED</code>, <code>RECEIPT_RECEIVED</code>, <code>ACCEPTED</code>, <code>REFUSED</code>, <code>WITHDRAWN</code></td></tr>
+<tr><td><code>OpportunitySource</code></td><td><code>PROSPECTING</code>, <code>REFERRAL</code>, <code>EVENT</code>, <code>INBOUND</code>, <code>OTHER</code></td></tr>
+<tr><td><code>OpportunityStage</code></td><td><code>QUALIFICATION</code>, <code>PROPOSAL</code>, <code>NEGOTIATION</code>, <code>AGREEMENT_IN_PRINCIPLE</code>, <code>ACCREDITATION</code></td></tr>
+<tr><td><code>OpportunityStatus</code></td><td><code>OPEN</code>, <code>WON</code>, <code>LOST</code></td></tr>
+<tr><td><code>ReceiptStatus</code></td><td><code>VALID</code>, <code>CANCELLED</code></td></tr>
+</tbody></table></div>
+<h2>Schéma <code>training</code></h2>
+<p>Investudy : catalogue, sessions, salles, formateurs, apprenants, inscriptions</p>
+<pre><code>erDiagram
+  learners ||--o{ enrollments : &quot;learner_id&quot;
+  enrollments ||--o{ enrollments : &quot;replaced_by_id&quot;
+  sessions ||--o{ enrollments : &quot;session_id&quot;
+  rooms ||--o{ sessions : &quot;room_id&quot;
+  trainers ||--o{ sessions : &quot;trainer_id&quot;
+  trainings ||--o{ sessions : &quot;training_id&quot;
+  modules ||--o{ training_modules : &quot;module_id&quot;
+  trainings ||--o{ training_modules : &quot;training_id&quot;
+  programs ||--o{ trainings : &quot;program_id&quot;</code></pre>
+<h3><code>training.enrollments</code></h3>
+<p>Inscription d'un apprenant à une session, sous un agrément de son entreprise ou, pour un étudiant ou un particulier (sans entreprise), avec un payeur désigné. Une inscription en attente ou confirmée occupe une place et consomme l'agrément ; annulée ou « à replacer », elle les libère. Jamais supprimée.</p>
+<div class="table-wrap"><table><thead><tr><th>Colonne</th><th>Type</th><th>Null</th><th>Défaut</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>session_id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>learner_id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>company_id</code></td><td>uuid</td><td>oui</td><td></td><td>Entreprise de l'apprenant, recopiée : la portée d'une inscription est celle de son entreprise. Absente pour un étudiant ou un particulier.</td></tr>
+<tr><td><code>approval_id</code></td><td>uuid</td><td>oui</td><td></td><td>Agrément qui couvre l'inscription (apprenant d'une entreprise). Absent pour un étudiant ou un particulier : le payeur est alors désigné ci-dessous.</td></tr>
+<tr><td><code>charged_amount</code></td><td>numeric(14,2)</td><td>oui</td><td></td><td>Prix complet du certificat au moment de l'inscription, quand l'agrément couvre une somme ; recopié pour que le cumul ne bouge pas si le prix change.</td></tr>
+<tr><td><code>status</code></td><td>training."EnrollmentStatus"</td><td>non</td><td><code>'PENDING'::training."EnrollmentStatus"</code></td><td></td></tr>
+<tr><td><code>comment</code></td><td>character varying(500)</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>cancel_reason</code></td><td>character varying(500)</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>confirmed_at</code></td><td>timestamp(6) with time zone</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>replaced_by_id</code></td><td>uuid</td><td>oui</td><td></td><td>Inscription qui a remplacé celle-ci (replacement sur une autre session).</td></tr>
+<tr><td><code>version</code></td><td>integer</td><td>non</td><td><code>1</code></td><td></td></tr>
+<tr><td><code>created_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td><code>CURRENT_TIMESTAMP</code></td><td></td></tr>
+<tr><td><code>updated_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>payer_kind</code></td><td>training."EnrollmentPayerKind"</td><td>oui</td><td></td><td>Apprenant sans entreprise : lui-même ou un tiers règle les frais (la base garantit qu'un seul des deux modes existe : agrément ou payeur).</td></tr>
+<tr><td><code>payer_name</code></td><td>character varying(200)</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>payer_type</code></td><td>training."EnrollmentPayerType"</td><td>oui</td><td></td><td></td></tr>
+</tbody></table></div>
+<p><strong>Clé primaire</strong> : <code>(id)</code></p>
+<p><strong>Clés étrangères</strong></p>
+<ul><li><code>enrollments_learner_id_fkey</code> : FOREIGN KEY (learner_id) REFERENCES training.learners(id) ON UPDATE CASCADE ON DELETE RESTRICT</li><li><code>enrollments_replaced_by_id_fkey</code> : FOREIGN KEY (replaced_by_id) REFERENCES training.enrollments(id) ON UPDATE CASCADE ON DELETE SET NULL</li><li><code>enrollments_session_id_fkey</code> : FOREIGN KEY (session_id) REFERENCES training.sessions(id) ON UPDATE CASCADE ON DELETE RESTRICT</li></ul>
+<p><strong>Règles garanties par la base (CHECK)</strong></p>
+<ul><li><code>enrollments_cancel_reason_coherent</code> : <code>(COALESCE(((status = 'CANCELLED'::training."EnrollmentStatus") = (cancel_reason IS NOT NULL)), false))</code></li><li><code>enrollments_charged_amount_positive</code> : <code>(COALESCE(((charged_amount IS NULL) OR (charged_amount &gt; (0)::numeric)), false))</code></li><li><code>enrollments_confirmed_at_coherent</code> : <code>(COALESCE(((status &lt;&gt; 'CONFIRMED'::training."EnrollmentStatus") OR (confirmed_at IS NOT NULL)), false))</code></li><li><code>enrollments_payer_coherent</code> : <code>(COALESCE((((company_id IS NOT NULL) AND (approval_id IS NOT NULL) AND (payer_kind IS NULL) AND (payer_name IS NULL) AND (payer_type IS NULL)) OR ((company_id IS NULL) AND (approval_id IS NULL) AND (charged_amount IS NOT NULL) AND (payer_kind = 'SELF'::training."EnrollmentPayerKind") AND (payer_name IS NULL) AND (payer_type IS NULL)) OR ((company_id IS NULL) AND (approval_id IS NULL) AND (charged_amount IS NOT NULL) AND (payer_kind = 'THIRD_PARTY'::training."EnrollmentPayerKind") AND (payer_name IS NOT NULL) AND (length(btrim((payer_name)::text)) &gt; 0) AND (payer_type IS NOT NULL))), false))</code></li><li><code>enrollments_version_positive</code> : <code>((version &gt;= 1))</code></li></ul>
+<p><strong>Index</strong></p>
+<ul><li><code>enrollments_approval_id_status_idx</code> : <code>USING btree (approval_id, status)</code></li><li><code>enrollments_company_id_idx</code> : <code>USING btree (company_id)</code></li><li><code>enrollments_learner_id_status_idx</code> : <code>USING btree (learner_id, status)</code></li><li><code>enrollments_one_live_per_learner_session</code> : <code>UNIQUE USING btree (session_id, learner_id) WHERE (status &lt;&gt; 'CANCELLED'::training."EnrollmentStatus")</code></li><li><code>enrollments_session_id_status_idx</code> : <code>USING btree (session_id, status)</code></li></ul>
+<h3><code>training.learners</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Colonne</th><th>Type</th><th>Null</th><th>Défaut</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>company_id</code></td><td>uuid</td><td>oui</td><td></td><td>Absent pour un étudiant ou un particulier (<code>kind</code> ≠ COMPANY) : la base garantit la cohérence des deux.</td></tr>
+<tr><td><code>contact_id</code></td><td>uuid</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>last_name</code></td><td>character varying(100)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>first_name</code></td><td>character varying(100)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>name_key</code></td><td>character varying(210)</td><td>non</td><td></td><td>Nom normalisé (minuscules) pour la détection de doublons.</td></tr>
+<tr><td><code>email</code></td><td>character varying(200)</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>email_key</code></td><td>character varying(200)</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>phone</code></td><td>character varying(40)</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>version</code></td><td>integer</td><td>non</td><td><code>1</code></td><td></td></tr>
+<tr><td><code>created_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td><code>CURRENT_TIMESTAMP</code></td><td></td></tr>
+<tr><td><code>updated_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>deleted_at</code></td><td>timestamp(6) with time zone</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>kind</code></td><td>training."LearnerKind"</td><td>non</td><td><code>'COMPANY'::training."LearnerKind"</code></td><td></td></tr>
+</tbody></table></div>
+<p><strong>Clé primaire</strong> : <code>(id)</code></p>
+<p><strong>Règles garanties par la base (CHECK)</strong></p>
+<ul><li><code>learners_email_key_coherent</code> : <code>(COALESCE(((email IS NULL) = (email_key IS NULL)), false))</code></li><li><code>learners_kind_company_coherent</code> : <code>(COALESCE((((kind = 'COMPANY'::training."LearnerKind") AND (company_id IS NOT NULL)) OR ((kind &lt;&gt; 'COMPANY'::training."LearnerKind") AND (company_id IS NULL) AND (contact_id IS NULL))), false))</code></li><li><code>learners_phone_format</code> : <code>(COALESCE(((phone IS NULL) OR ((phone)::text ~ '^\+?[1-9][0-9]{7,14}$'::text)), false))</code></li><li><code>learners_version_positive</code> : <code>((version &gt;= 1))</code></li></ul>
+<p><strong>Index</strong></p>
+<ul><li><code>learners_company_id_email_key_idx</code> : <code>USING btree (company_id, email_key)</code></li><li><code>learners_company_id_idx</code> : <code>USING btree (company_id)</code></li><li><code>learners_company_id_name_key_idx</code> : <code>USING btree (company_id, name_key)</code></li><li><code>learners_kind_name_key_idx</code> : <code>USING btree (kind, name_key)</code></li></ul>
+<h3><code>training.modules</code></h3>
+<p>Module : chapitre partagé entre plusieurs certificats (un titre ; ni durée ni prix, portés par le certificat et le rythme de session).</p>
+<div class="table-wrap"><table><thead><tr><th>Colonne</th><th>Type</th><th>Null</th><th>Défaut</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>title</code></td><td>character varying(150)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>title_key</code></td><td>character varying(150)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>description</code></td><td>character varying(1000)</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>requires_workstations</code></td><td>boolean</td><td>non</td><td><code>false</code></td><td>Pratique sur poste de travail (ne se donne pas dans une salle de cours) ou cours magistral.</td></tr>
+<tr><td><code>status</code></td><td>training."CatalogueStatus"</td><td>non</td><td><code>'ACTIVE'::training."CatalogueStatus"</code></td><td></td></tr>
+<tr><td><code>version</code></td><td>integer</td><td>non</td><td><code>1</code></td><td></td></tr>
+<tr><td><code>created_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td><code>CURRENT_TIMESTAMP</code></td><td></td></tr>
+<tr><td><code>updated_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td></td><td></td></tr>
+</tbody></table></div>
+<p><strong>Clé primaire</strong> : <code>(id)</code></p>
+<p><strong>Règles garanties par la base (CHECK)</strong></p>
+<ul><li><code>modules_version_positive</code> : <code>((version &gt;= 1))</code></li></ul>
+<p><strong>Index</strong></p>
+<ul><li><code>modules_title_key_key</code> : <code>UNIQUE USING btree (title_key)</code></li></ul>
+<h3><code>training.programs</code></h3>
+<p>Programme : regroupement de formations. Référentiel partagé (sans propriétaire) ; archivé, jamais supprimé.</p>
+<div class="table-wrap"><table><thead><tr><th>Colonne</th><th>Type</th><th>Null</th><th>Défaut</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>name</code></td><td>character varying(150)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>name_key</code></td><td>character varying(150)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>description</code></td><td>character varying(2000)</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>audience</code></td><td>character varying(500)</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>status</code></td><td>training."CatalogueStatus"</td><td>non</td><td><code>'ACTIVE'::training."CatalogueStatus"</code></td><td></td></tr>
+<tr><td><code>version</code></td><td>integer</td><td>non</td><td><code>1</code></td><td></td></tr>
+<tr><td><code>created_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td><code>CURRENT_TIMESTAMP</code></td><td></td></tr>
+<tr><td><code>updated_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td></td><td></td></tr>
+</tbody></table></div>
+<p><strong>Clé primaire</strong> : <code>(id)</code></p>
+<p><strong>Règles garanties par la base (CHECK)</strong></p>
+<ul><li><code>programs_version_positive</code> : <code>((version &gt;= 1))</code></li></ul>
+<p><strong>Index</strong></p>
+<ul><li><code>programs_name_key_key</code> : <code>UNIQUE USING btree (name_key)</code></li></ul>
+<h3><code>training.rooms</code></h3>
+<p>Salle de formation : capacité et équipements ; désactivée (jamais supprimée) pour rester visible sur les sessions passées.</p>
+<div class="table-wrap"><table><thead><tr><th>Colonne</th><th>Type</th><th>Null</th><th>Défaut</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>name</code></td><td>character varying(100)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>name_key</code></td><td>character varying(100)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>kind</code></td><td>training."RoomKind"</td><td>non</td><td><code>'WORKSTATIONS'::training."RoomKind"</code></td><td></td></tr>
+<tr><td><code>learner_seats</code></td><td>integer</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>unavailable_seats</code></td><td>integer</td><td>non</td><td><code>0</code></td><td></td></tr>
+<tr><td><code>trainer_seats</code></td><td>integer</td><td>non</td><td><code>1</code></td><td></td></tr>
+<tr><td><code>equipment</code></td><td>character varying(1000)</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>status</code></td><td>training."CatalogueStatus"</td><td>non</td><td><code>'ACTIVE'::training."CatalogueStatus"</code></td><td></td></tr>
+<tr><td><code>version</code></td><td>integer</td><td>non</td><td><code>1</code></td><td></td></tr>
+<tr><td><code>created_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td><code>CURRENT_TIMESTAMP</code></td><td></td></tr>
+<tr><td><code>updated_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td></td><td></td></tr>
+</tbody></table></div>
+<p><strong>Clé primaire</strong> : <code>(id)</code></p>
+<p><strong>Règles garanties par la base (CHECK)</strong></p>
+<ul><li><code>rooms_seats_range</code> : <code>(COALESCE((((learner_seats &gt;= 1) AND (learner_seats &lt;= 1000)) AND ((unavailable_seats &gt;= 0) AND (unavailable_seats &lt;= learner_seats)) AND ((trainer_seats &gt;= 0) AND (trainer_seats &lt;= 10))), false))</code></li><li><code>rooms_version_positive</code> : <code>((version &gt;= 1))</code></li></ul>
+<p><strong>Index</strong></p>
+<ul><li><code>rooms_name_key_key</code> : <code>UNIQUE USING btree (name_key)</code></li></ul>
+<h3><code>training.sessions</code></h3>
+<p>Session de formation : un certificat, un rythme, une salle, un formateur, des dates (début saisi, fin calculée), une capacité. Jamais supprimée : annulée avec un motif. Pas de propriétaire (référentiel), mais le formateur lié ne voit que les siennes.</p>
+<div class="table-wrap"><table><thead><tr><th>Colonne</th><th>Type</th><th>Null</th><th>Défaut</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>training_id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>room_id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>trainer_id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>rhythm</code></td><td>training."SessionRhythm"</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>start_date</code></td><td>date</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>end_date</code></td><td>date</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>capacity</code></td><td>integer</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>status</code></td><td>training."SessionStatus"</td><td>non</td><td><code>'PLANNED'::training."SessionStatus"</code></td><td></td></tr>
+<tr><td><code>cancel_reason</code></td><td>character varying(500)</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>version</code></td><td>integer</td><td>non</td><td><code>1</code></td><td></td></tr>
+<tr><td><code>created_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td><code>CURRENT_TIMESTAMP</code></td><td></td></tr>
+<tr><td><code>updated_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td></td><td></td></tr>
+</tbody></table></div>
+<p><strong>Clé primaire</strong> : <code>(id)</code></p>
+<p><strong>Clés étrangères</strong></p>
+<ul><li><code>sessions_room_id_fkey</code> : FOREIGN KEY (room_id) REFERENCES training.rooms(id) ON UPDATE CASCADE ON DELETE RESTRICT</li><li><code>sessions_trainer_id_fkey</code> : FOREIGN KEY (trainer_id) REFERENCES training.trainers(id) ON UPDATE CASCADE ON DELETE RESTRICT</li><li><code>sessions_training_id_fkey</code> : FOREIGN KEY (training_id) REFERENCES training.trainings(id) ON UPDATE CASCADE ON DELETE RESTRICT</li></ul>
+<p><strong>Règles garanties par la base (CHECK)</strong></p>
+<ul><li><code>sessions_cancel_reason_coherent</code> : <code>(COALESCE(((status = 'CANCELLED'::training."SessionStatus") = (cancel_reason IS NOT NULL)), false))</code></li><li><code>sessions_capacity_range</code> : <code>(COALESCE(((capacity &gt;= 1) AND (capacity &lt;= 1000)), false))</code></li><li><code>sessions_dates_ordered</code> : <code>(COALESCE((end_date &gt;= start_date), false))</code></li><li><code>sessions_version_positive</code> : <code>((version &gt;= 1))</code></li></ul>
+<p><strong>Index</strong></p>
+<ul><li><code>sessions_room_id_start_date_end_date_idx</code> : <code>USING btree (room_id, start_date, end_date)</code></li><li><code>sessions_status_start_date_idx</code> : <code>USING btree (status, start_date)</code></li><li><code>sessions_trainer_id_start_date_end_date_idx</code> : <code>USING btree (trainer_id, start_date, end_date)</code></li><li><code>sessions_training_id_idx</code> : <code>USING btree (training_id)</code></li></ul>
+<h3><code>training.trainers</code></h3>
+<p>Formateur : interne (compte utilisateur lié, référence SANS clé étrangère) ou externe (sans compte).</p>
+<div class="table-wrap"><table><thead><tr><th>Colonne</th><th>Type</th><th>Null</th><th>Défaut</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>last_name</code></td><td>character varying(100)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>first_name</code></td><td>character varying(100)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>specialties</code></td><td>character varying(500)</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>email</code></td><td>character varying(200)</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>email_key</code></td><td>character varying(200)</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>phone</code></td><td>character varying(40)</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>user_id</code></td><td>uuid</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>status</code></td><td>training."CatalogueStatus"</td><td>non</td><td><code>'ACTIVE'::training."CatalogueStatus"</code></td><td></td></tr>
+<tr><td><code>version</code></td><td>integer</td><td>non</td><td><code>1</code></td><td></td></tr>
+<tr><td><code>created_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td><code>CURRENT_TIMESTAMP</code></td><td></td></tr>
+<tr><td><code>updated_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td></td><td></td></tr>
+</tbody></table></div>
+<p><strong>Clé primaire</strong> : <code>(id)</code></p>
+<p><strong>Règles garanties par la base (CHECK)</strong></p>
+<ul><li><code>trainers_email_key_coherent</code> : <code>(COALESCE(((email IS NULL) = (email_key IS NULL)), false))</code></li><li><code>trainers_phone_format</code> : <code>(COALESCE(((phone IS NULL) OR ((phone)::text ~ '^\+?[1-9][0-9]{7,14}$'::text)), false))</code></li><li><code>trainers_version_positive</code> : <code>((version &gt;= 1))</code></li></ul>
+<p><strong>Index</strong></p>
+<ul><li><code>trainers_email_key_key</code> : <code>UNIQUE USING btree (email_key)</code></li><li><code>trainers_user_id_key</code> : <code>UNIQUE USING btree (user_id)</code></li></ul>
+<h3><code>training.training_modules</code></h3>
+<p>Place d'un module dans un certificat (ordre 1, 2, 3…).</p>
+<div class="table-wrap"><table><thead><tr><th>Colonne</th><th>Type</th><th>Null</th><th>Défaut</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>training_id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>module_id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>position</code></td><td>integer</td><td>non</td><td></td><td></td></tr>
+</tbody></table></div>
+<p><strong>Clé primaire</strong> : <code>(training_id, module_id)</code></p>
+<p><strong>Clés étrangères</strong></p>
+<ul><li><code>training_modules_module_id_fkey</code> : FOREIGN KEY (module_id) REFERENCES training.modules(id) ON UPDATE CASCADE ON DELETE RESTRICT</li><li><code>training_modules_training_id_fkey</code> : FOREIGN KEY (training_id) REFERENCES training.trainings(id) ON UPDATE CASCADE ON DELETE CASCADE</li></ul>
+<p><strong>Règles garanties par la base (CHECK)</strong></p>
+<ul><li><code>training_modules_position_positive</code> : <code>(COALESCE(("position" &gt;= 1), false))</code></li></ul>
+<p><strong>Index</strong></p>
+<ul><li><code>training_modules_module_id_idx</code> : <code>USING btree (module_id)</code></li><li><code>training_modules_training_id_position_key</code> : <code>UNIQUE USING btree (training_id, "position")</code></li></ul>
+<h3><code>training.trainings</code></h3>
+<p>Certificat (formation vendable et planifiable) : appartient à un seul programme ; objectifs, prérequis (texte libre), prix complet et prix par module (même devise), modules ordonnés.</p>
+<div class="table-wrap"><table><thead><tr><th>Colonne</th><th>Type</th><th>Null</th><th>Défaut</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>program_id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>title</code></td><td>character varying(150)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>title_key</code></td><td>character varying(150)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>objectives</code></td><td>character varying(2000)</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>prerequisites</code></td><td>character varying(1000)</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>price_amount</code></td><td>numeric(12,2)</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>module_price_amount</code></td><td>numeric(12,2)</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>price_currency</code></td><td>character(3)</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>status</code></td><td>training."CatalogueStatus"</td><td>non</td><td><code>'ACTIVE'::training."CatalogueStatus"</code></td><td></td></tr>
+<tr><td><code>version</code></td><td>integer</td><td>non</td><td><code>1</code></td><td></td></tr>
+<tr><td><code>created_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td><code>CURRENT_TIMESTAMP</code></td><td></td></tr>
+<tr><td><code>updated_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td></td><td></td></tr>
+</tbody></table></div>
+<p><strong>Clé primaire</strong> : <code>(id)</code></p>
+<p><strong>Clés étrangères</strong></p>
+<ul><li><code>trainings_program_id_fkey</code> : FOREIGN KEY (program_id) REFERENCES training.programs(id) ON UPDATE CASCADE ON DELETE RESTRICT</li></ul>
+<p><strong>Règles garanties par la base (CHECK)</strong></p>
+<ul><li><code>trainings_price_coherent</code> : <code>(COALESCE(((((price_amount IS NULL) AND (module_price_amount IS NULL)) = (price_currency IS NULL)) AND ((price_amount IS NULL) OR (price_amount &gt; (0)::numeric)) AND ((module_price_amount IS NULL) OR (module_price_amount &gt; (0)::numeric))), false))</code></li><li><code>trainings_version_positive</code> : <code>((version &gt;= 1))</code></li></ul>
+<p><strong>Index</strong></p>
+<ul><li><code>trainings_program_id_title_key_key</code> : <code>UNIQUE USING btree (program_id, title_key)</code></li></ul>
+<h3>Types énumérés de <code>training</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Type</th><th>Valeurs</th></tr></thead><tbody>
+<tr><td><code>CatalogueStatus</code></td><td><code>ACTIVE</code>, <code>ARCHIVED</code></td></tr>
+<tr><td><code>EnrollmentPayerKind</code></td><td><code>SELF</code>, <code>THIRD_PARTY</code></td></tr>
+<tr><td><code>EnrollmentPayerType</code></td><td><code>EMPLOYER</code>, <code>ORGANISM</code>, <code>LANDLORD</code>, <code>FAMILY</code></td></tr>
+<tr><td><code>EnrollmentStatus</code></td><td><code>PENDING</code>, <code>CONFIRMED</code>, <code>CANCELLED</code>, <code>TO_REPLACE</code></td></tr>
+<tr><td><code>LearnerKind</code></td><td><code>COMPANY</code>, <code>STUDENT</code>, <code>INDIVIDUAL</code></td></tr>
+<tr><td><code>RoomKind</code></td><td><code>WORKSTATIONS</code>, <code>CLASSROOM</code></td></tr>
+<tr><td><code>SessionRhythm</code></td><td><code>DAY</code>, <code>EVENING</code></td></tr>
+<tr><td><code>SessionStatus</code></td><td><code>PLANNED</code>, <code>OPEN</code>, <code>CLOSED</code>, <code>CANCELLED</code></td></tr>
+</tbody></table></div>
+<h2>Schéma <code>hr</code></h2>
+<p>Ressources humaines : personnel, absences et congés</p>
+<pre><code>erDiagram
+  employees ||--o{ employees : &quot;manager_employee_id&quot;
+  employees ||--o{ leave_adjustments : &quot;employee_id&quot;
+  employees ||--o{ leave_requests : &quot;employee_id&quot;
+  leave_types ||--o{ leave_requests : &quot;leave_type_id&quot;</code></pre>
+<h3><code>hr.employees</code></h3>
+<p>Employé : identité PROFESSIONNELLE seulement (jamais de salaire, pièce d'identité, adresse personnelle, date de naissance : D57). Distinct du compte (<code>userId</code> facultatif, sans clé étrangère).</p>
+<div class="table-wrap"><table><thead><tr><th>Colonne</th><th>Type</th><th>Null</th><th>Défaut</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>matricule</code></td><td>character varying(30)</td><td>oui</td><td></td><td>Matricule de saisie libre, normalisé en majuscules ; unique s'il est renseigné.</td></tr>
+<tr><td><code>last_name</code></td><td>character varying(100)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>first_name</code></td><td>character varying(100)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>job_title</code></td><td>character varying(150)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>department</code></td><td>character varying(100)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>manager_employee_id</code></td><td>uuid</td><td>oui</td><td></td><td>Responsable hiérarchique (donnée RH) ; ne modifie jamais <code>iam.users.manager_id</code>.</td></tr>
+<tr><td><code>user_id</code></td><td>uuid</td><td>oui</td><td></td><td>Compte de la personne (0 ou 1), référence inter-contextes vers iam.users SANS clé étrangère.</td></tr>
+<tr><td><code>work_email</code></td><td>character varying(200)</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>work_phone</code></td><td>character varying(40)</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>hired_on</code></td><td>date</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>left_on</code></td><td>date</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>status</code></td><td>hr."EmployeeStatus"</td><td>non</td><td><code>'ACTIVE'::hr."EmployeeStatus"</code></td><td></td></tr>
+<tr><td><code>archived_at</code></td><td>timestamp(6) with time zone</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>archive_reason</code></td><td>character varying(500)</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>version</code></td><td>integer</td><td>non</td><td><code>1</code></td><td></td></tr>
+<tr><td><code>created_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td><code>CURRENT_TIMESTAMP</code></td><td></td></tr>
+<tr><td><code>updated_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td></td><td></td></tr>
+</tbody></table></div>
+<p><strong>Clé primaire</strong> : <code>(id)</code></p>
+<p><strong>Clés étrangères</strong></p>
+<ul><li><code>employees_manager_employee_id_fkey</code> : FOREIGN KEY (manager_employee_id) REFERENCES hr.employees(id) ON UPDATE CASCADE ON DELETE RESTRICT</li></ul>
+<p><strong>Règles garanties par la base (CHECK)</strong></p>
+<ul><li><code>employees_left_after_hired</code> : <code>(COALESCE(((left_on IS NULL) OR (left_on &gt;= hired_on)), false))</code></li><li><code>employees_names_not_blank</code> : <code>(COALESCE(((length(btrim((last_name)::text)) &gt; 0) AND (length(btrim((first_name)::text)) &gt; 0) AND (length(btrim((job_title)::text)) &gt; 0) AND (length(btrim((department)::text)) &gt; 0)), false))</code></li><li><code>employees_not_own_manager</code> : <code>(COALESCE(((manager_employee_id IS NULL) OR (manager_employee_id &lt;&gt; id)), false))</code></li><li><code>employees_status_consistent</code> : <code>(COALESCE((((status = 'ARCHIVED'::hr."EmployeeStatus") AND (archived_at IS NOT NULL)) OR ((status = 'ACTIVE'::hr."EmployeeStatus") AND (archived_at IS NULL) AND (archive_reason IS NULL) AND (left_on IS NULL))), false))</code></li><li><code>employees_version_positive</code> : <code>((version &gt;= 1))</code></li></ul>
+<p><strong>Index</strong></p>
+<ul><li><code>employees_department_idx</code> : <code>USING btree (department)</code></li><li><code>employees_manager_employee_id_idx</code> : <code>USING btree (manager_employee_id)</code></li><li><code>employees_matricule_unique</code> : <code>UNIQUE USING btree (upper((matricule)::text)) WHERE (matricule IS NOT NULL)</code></li><li><code>employees_status_idx</code> : <code>USING btree (status)</code></li><li><code>employees_user_id_unique</code> : <code>UNIQUE USING btree (user_id) WHERE (user_id IS NOT NULL)</code></li><li><code>employees_work_email_unique</code> : <code>UNIQUE USING btree (lower((work_email)::text)) WHERE (work_email IS NOT NULL)</code></li></ul>
+<h3><code>hr.leave_adjustments</code></h3>
+<p>Ajustement de solde (report, correction) : AJOUT SEUL, motif obligatoire, jamais modifié ni supprimé.</p>
+<div class="table-wrap"><table><thead><tr><th>Colonne</th><th>Type</th><th>Null</th><th>Défaut</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>employee_id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>year</code></td><td>integer</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>days</code></td><td>numeric(5,2)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>reason</code></td><td>character varying(500)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>created_by_user_id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>created_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td><code>CURRENT_TIMESTAMP</code></td><td></td></tr>
+</tbody></table></div>
+<p><strong>Clé primaire</strong> : <code>(id)</code></p>
+<p><strong>Clés étrangères</strong></p>
+<ul><li><code>leave_adjustments_employee_id_fkey</code> : FOREIGN KEY (employee_id) REFERENCES hr.employees(id) ON UPDATE CASCADE ON DELETE RESTRICT</li></ul>
+<p><strong>Règles garanties par la base (CHECK)</strong></p>
+<ul><li><code>leave_adjustments_days_valid</code> : <code>(COALESCE(((days &lt;&gt; (0)::numeric) AND (abs(days) &lt;= (60)::numeric) AND ((days * (2)::numeric) = round((days * (2)::numeric)))), false))</code></li><li><code>leave_adjustments_reason_not_blank</code> : <code>(COALESCE((length(btrim((reason)::text)) &gt; 0), false))</code></li><li><code>leave_adjustments_year_range</code> : <code>(((year &gt;= 2000) AND (year &lt;= 2100)))</code></li></ul>
+<p><strong>Index</strong></p>
+<ul><li><code>leave_adjustments_employee_id_year_idx</code> : <code>USING btree (employee_id, year)</code></li></ul>
+<h3><code>hr.leave_requests</code></h3>
+<p>Demande d'absence. Dates incluses ; <code>startHalf</code> : la première journée commence l'après-midi ; <code>endHalf</code> : la dernière journée s'arrête à midi. <code>days</code> est figé à la demande (jours fériés et week-ends déjà déduits). Les jours comptent pour l'année de la date de début. Aucune donnée de santé : un motif libre est facultatif.</p>
+<div class="table-wrap"><table><thead><tr><th>Colonne</th><th>Type</th><th>Null</th><th>Défaut</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>employee_id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>leave_type_id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>start_date</code></td><td>date</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>end_date</code></td><td>date</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>start_half</code></td><td>boolean</td><td>non</td><td><code>false</code></td><td></td></tr>
+<tr><td><code>end_half</code></td><td>boolean</td><td>non</td><td><code>false</code></td><td></td></tr>
+<tr><td><code>days</code></td><td>numeric(5,2)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>leave_year</code></td><td>integer</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>status</code></td><td>hr."LeaveStatus"</td><td>non</td><td><code>'PENDING'::hr."LeaveStatus"</code></td><td></td></tr>
+<tr><td><code>note</code></td><td>character varying(500)</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>requested_by_user_id</code></td><td>uuid</td><td>non</td><td></td><td>Compte qui a saisi la demande (l'employé, ou la RH pour lui) : référence inter-contextes SANS clé étrangère.</td></tr>
+<tr><td><code>decided_by_user_id</code></td><td>uuid</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>decided_at</code></td><td>timestamp(6) with time zone</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>decision_note</code></td><td>character varying(500)</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>cancelled_at</code></td><td>timestamp(6) with time zone</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>cancel_reason</code></td><td>character varying(500)</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>version</code></td><td>integer</td><td>non</td><td><code>1</code></td><td></td></tr>
+<tr><td><code>created_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td><code>CURRENT_TIMESTAMP</code></td><td></td></tr>
+<tr><td><code>updated_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td></td><td></td></tr>
+</tbody></table></div>
+<p><strong>Clé primaire</strong> : <code>(id)</code></p>
+<p><strong>Clés étrangères</strong></p>
+<ul><li><code>leave_requests_employee_id_fkey</code> : FOREIGN KEY (employee_id) REFERENCES hr.employees(id) ON UPDATE CASCADE ON DELETE RESTRICT</li><li><code>leave_requests_leave_type_id_fkey</code> : FOREIGN KEY (leave_type_id) REFERENCES hr.leave_types(id) ON UPDATE CASCADE ON DELETE RESTRICT</li></ul>
+<p><strong>Règles garanties par la base (CHECK)</strong></p>
+<ul><li><code>leave_requests_dates_ordered</code> : <code>(COALESCE((end_date &gt;= start_date), false))</code></li><li><code>leave_requests_days_valid</code> : <code>(COALESCE(((days &gt; (0)::numeric) AND ((days * (2)::numeric) = round((days * (2)::numeric))) AND (days &lt;= (((end_date - start_date) + 1))::numeric)), false))</code></li><li><code>leave_requests_single_day_halves</code> : <code>(COALESCE((NOT ((start_date = end_date) AND start_half AND end_half)), false))</code></li><li><code>leave_requests_status_consistent</code> : <code>(COALESCE((((status = 'PENDING'::hr."LeaveStatus") AND (decided_at IS NULL) AND (decided_by_user_id IS NULL) AND (decision_note IS NULL) AND (cancelled_at IS NULL) AND (cancel_reason IS NULL)) OR ((status = 'APPROVED'::hr."LeaveStatus") AND (decided_at IS NOT NULL) AND (cancelled_at IS NULL) AND (cancel_reason IS NULL)) OR ((status = 'REJECTED'::hr."LeaveStatus") AND (decided_at IS NOT NULL) AND (decision_note IS NOT NULL) AND (length(btrim((decision_note)::text)) &gt; 0) AND (cancelled_at IS NULL)) OR ((status = 'CANCELLED'::hr."LeaveStatus") AND (cancelled_at IS NOT NULL))), false))</code></li><li><code>leave_requests_version_positive</code> : <code>((version &gt;= 1))</code></li><li><code>leave_requests_year_matches_start</code> : <code>(COALESCE((leave_year = (EXTRACT(year FROM start_date))::integer), false))</code></li></ul>
+<p><strong>Index</strong></p>
+<ul><li><code>leave_requests_employee_id_start_date_idx</code> : <code>USING btree (employee_id, start_date)</code></li><li><code>leave_requests_leave_year_idx</code> : <code>USING btree (leave_year)</code></li><li><code>leave_requests_status_idx</code> : <code>USING btree (status)</code></li></ul>
+<h3><code>hr.leave_settings</code></h3>
+<p>Règles de congés (UNE seule ligne, <code>id = 1</code>) : valeurs de départ « à confirmer » (D64), modifiables par la RH avec trace.</p>
+<div class="table-wrap"><table><thead><tr><th>Colonne</th><th>Type</th><th>Null</th><th>Défaut</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>id</code></td><td>integer</td><td>non</td><td><code>1</code></td><td></td></tr>
+<tr><td><code>accrual_days_per_month</code></td><td>numeric(4,2)</td><td>non</td><td><code>1.5</code></td><td>Jours acquis par mois de service.</td></tr>
+<tr><td><code>counts_saturday</code></td><td>boolean</td><td>non</td><td><code>false</code></td><td>Faux : jours ouvrés du lundi au vendredi ; vrai : le samedi compte aussi (jours ouvrables).</td></tr>
+<tr><td><code>allow_half_days</code></td><td>boolean</td><td>non</td><td><code>true</code></td><td></td></tr>
+<tr><td><code>allow_negative_balance</code></td><td>boolean</td><td>non</td><td><code>false</code></td><td></td></tr>
+<tr><td><code>version</code></td><td>integer</td><td>non</td><td><code>1</code></td><td></td></tr>
+<tr><td><code>updated_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td><code>CURRENT_TIMESTAMP</code></td><td></td></tr>
+</tbody></table></div>
+<p><strong>Clé primaire</strong> : <code>(id)</code></p>
+<p><strong>Règles garanties par la base (CHECK)</strong></p>
+<ul><li><code>leave_settings_accrual_range</code> : <code>(COALESCE(((accrual_days_per_month &gt;= (0)::numeric) AND (accrual_days_per_month &lt;= (5)::numeric)), false))</code></li><li><code>leave_settings_single_row</code> : <code>((id = 1))</code></li><li><code>leave_settings_version_positive</code> : <code>((version &gt;= 1))</code></li></ul>
+<h3><code>hr.leave_types</code></h3>
+<p>Type d'absence PARAMÉTRABLE par la RH (RH-2, D64) : seul un type qui « décompte le solde » consomme les jours de congé annuel. Jamais supprimé : il se désactive.</p>
+<div class="table-wrap"><table><thead><tr><th>Colonne</th><th>Type</th><th>Null</th><th>Défaut</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>code</code></td><td>character varying(30)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>label</code></td><td>character varying(100)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>deducts_balance</code></td><td>boolean</td><td>non</td><td><code>false</code></td><td></td></tr>
+<tr><td><code>requires_approval</code></td><td>boolean</td><td>non</td><td><code>true</code></td><td></td></tr>
+<tr><td><code>max_days_per_request</code></td><td>numeric(5,2)</td><td>oui</td><td></td><td>Durée maximale d'une demande, en jours (permission exceptionnelle) ; absent = pas de plafond.</td></tr>
+<tr><td><code>active</code></td><td>boolean</td><td>non</td><td><code>true</code></td><td></td></tr>
+<tr><td><code>sort_order</code></td><td>integer</td><td>non</td><td><code>0</code></td><td></td></tr>
+<tr><td><code>version</code></td><td>integer</td><td>non</td><td><code>1</code></td><td></td></tr>
+<tr><td><code>created_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td><code>CURRENT_TIMESTAMP</code></td><td></td></tr>
+<tr><td><code>updated_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td></td><td></td></tr>
+</tbody></table></div>
+<p><strong>Clé primaire</strong> : <code>(id)</code></p>
+<p><strong>Règles garanties par la base (CHECK)</strong></p>
+<ul><li><code>leave_types_code_format</code> : <code>(COALESCE(((code)::text ~ '^[A-Z][A-Z0-9_]{1,29}$'::text), false))</code></li><li><code>leave_types_label_not_blank</code> : <code>(COALESCE((length(btrim((label)::text)) &gt; 0), false))</code></li><li><code>leave_types_max_days_positive</code> : <code>(COALESCE(((max_days_per_request IS NULL) OR ((max_days_per_request &gt; (0)::numeric) AND ((max_days_per_request * (2)::numeric) = round((max_days_per_request * (2)::numeric))))), false))</code></li><li><code>leave_types_version_positive</code> : <code>((version &gt;= 1))</code></li></ul>
+<p><strong>Index</strong></p>
+<ul><li><code>leave_types_code_key</code> : <code>UNIQUE USING btree (code)</code></li></ul>
+<h3><code>hr.public_holidays</code></h3>
+<p>Jour férié saisi par la RH (la liste est VIDE au départ : aucune liste légale n'est présumée). Ne compte pas comme jour d'absence.</p>
+<div class="table-wrap"><table><thead><tr><th>Colonne</th><th>Type</th><th>Null</th><th>Défaut</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>day</code></td><td>date</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>label</code></td><td>character varying(100)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>created_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td><code>CURRENT_TIMESTAMP</code></td><td></td></tr>
+</tbody></table></div>
+<p><strong>Clé primaire</strong> : <code>(id)</code></p>
+<p><strong>Règles garanties par la base (CHECK)</strong></p>
+<ul><li><code>public_holidays_label_not_blank</code> : <code>(COALESCE((length(btrim((label)::text)) &gt; 0), false))</code></li></ul>
+<p><strong>Index</strong></p>
+<ul><li><code>public_holidays_day_key</code> : <code>UNIQUE USING btree (day)</code></li></ul>
+<h3>Types énumérés de <code>hr</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Type</th><th>Valeurs</th></tr></thead><tbody>
+<tr><td><code>EmployeeStatus</code></td><td><code>ACTIVE</code>, <code>ARCHIVED</code></td></tr>
+<tr><td><code>LeaveStatus</code></td><td><code>PENDING</code>, <code>APPROVED</code>, <code>REJECTED</code>, <code>CANCELLED</code></td></tr>
+</tbody></table></div>
+<h2>Schéma <code>docs</code></h2>
+<p>Documents (métadonnées ; les fichiers sont stockés à part)</p>
+<pre><code>erDiagram
+  documents ||--o{ document_versions : &quot;document_id&quot;</code></pre>
+<h3><code>docs.document_versions</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Colonne</th><th>Type</th><th>Null</th><th>Défaut</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>document_id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>version_number</code></td><td>integer</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>storage_key</code></td><td>character varying(300)</td><td>non</td><td></td><td>Clé d'objet aléatoire côté stockage (jamais le nom fourni par l'utilisateur).</td></tr>
+<tr><td><code>file_name</code></td><td>character varying(255)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>mime_type</code></td><td>character varying(150)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>size_bytes</code></td><td>bigint</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>sha256</code></td><td>character(64)</td><td>non</td><td></td><td>Empreinte SHA-256 hexadécimale du contenu.</td></tr>
+<tr><td><code>uploaded_by</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>created_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td><code>CURRENT_TIMESTAMP</code></td><td></td></tr>
+<tr><td><code>scan_status</code></td><td>docs."ScanStatus"</td><td>non</td><td><code>'PENDING'::docs."ScanStatus"</code></td><td>Analyse antivirus : PENDING tant que le service d'analyse n'existe pas (S7) ; le téléchargement le signale.</td></tr>
+</tbody></table></div>
+<p><strong>Clé primaire</strong> : <code>(id)</code></p>
+<p><strong>Clés étrangères</strong></p>
+<ul><li><code>document_versions_document_id_fkey</code> : FOREIGN KEY (document_id) REFERENCES docs.documents(id) ON UPDATE CASCADE ON DELETE RESTRICT</li></ul>
+<p><strong>Règles garanties par la base (CHECK)</strong></p>
+<ul><li><code>document_versions_number_positive</code> : <code>((version_number &gt;= 1))</code></li><li><code>document_versions_sha256_hex</code> : <code>((sha256 ~ '^[0-9a-f]{64}$'::text))</code></li><li><code>document_versions_size_nonneg</code> : <code>((size_bytes &gt;= 0))</code></li></ul>
+<p><strong>Index</strong></p>
+<ul><li><code>document_versions_document_id_version_number_key</code> : <code>UNIQUE USING btree (document_id, version_number)</code></li><li><code>document_versions_storage_key_key</code> : <code>UNIQUE USING btree (storage_key)</code></li></ul>
+<h3><code>docs.documents</code></h3>
+<p>Un document appartient à un objet d'un autre contexte, référencé par type + identifiant (sans FK). L'historique d'accès (consultation, téléchargement, export…) est lu dans audit.audit_logs.</p>
+<div class="table-wrap"><table><thead><tr><th>Colonne</th><th>Type</th><th>Null</th><th>Défaut</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>owner_type</code></td><td>character varying(50)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>owner_id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>title</code></td><td>character varying(300)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>category</code></td><td>character varying(100)</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>status</code></td><td>docs."DocumentStatus"</td><td>non</td><td><code>'DRAFT'::docs."DocumentStatus"</code></td><td></td></tr>
+<tr><td><code>current_version_number</code></td><td>integer</td><td>non</td><td><code>0</code></td><td></td></tr>
+<tr><td><code>created_by</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>version</code></td><td>integer</td><td>non</td><td><code>1</code></td><td>Verrou optimiste.</td></tr>
+<tr><td><code>created_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td><code>CURRENT_TIMESTAMP</code></td><td></td></tr>
+<tr><td><code>updated_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>deleted_at</code></td><td>timestamp(6) with time zone</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>deleted_by</code></td><td>uuid</td><td>oui</td><td></td><td></td></tr>
+</tbody></table></div>
+<p><strong>Clé primaire</strong> : <code>(id)</code></p>
+<p><strong>Règles garanties par la base (CHECK)</strong></p>
+<ul><li><code>documents_version_positive</code> : <code>((version &gt;= 1))</code></li></ul>
+<p><strong>Index</strong></p>
+<ul><li><code>documents_owner_type_owner_id_idx</code> : <code>USING btree (owner_type, owner_id)</code></li><li><code>documents_status_idx</code> : <code>USING btree (status)</code></li></ul>
+<h3>Types énumérés de <code>docs</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Type</th><th>Valeurs</th></tr></thead><tbody>
+<tr><td><code>DocumentStatus</code></td><td><code>DRAFT</code>, <code>ACTIVE</code>, <code>ARCHIVED</code>, <code>DELETED</code></td></tr>
+<tr><td><code>ScanStatus</code></td><td><code>PENDING</code>, <code>CLEAN</code>, <code>INFECTED</code></td></tr>
+</tbody></table></div>
+<h2>Schéma <code>audit</code></h2>
+<p>Journal d’audit (partitionné par mois)</p>
+<h3><code>audit.audit_logs</code></h3>
+<p>Journal append-only, partitionné par mois (SQL). Jamais de UPDATE ni DELETE (déclencheur SQL). La clé primaire inclut createdAt : exigence du partitionnement PostgreSQL.</p>
+<div class="table-wrap"><table><thead><tr><th>Colonne</th><th>Type</th><th>Null</th><th>Défaut</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>user_id</code></td><td>uuid</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>session_id</code></td><td>uuid</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>module</code></td><td>character varying(100)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>entity_type</code></td><td>character varying(100)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>entity_id</code></td><td>character varying(100)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>action</code></td><td>audit."AuditAction"</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>old_value</code></td><td>jsonb</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>new_value</code></td><td>jsonb</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>ip_address</code></td><td>character varying(64)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>device</code></td><td>character varying(300)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>created_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td><code>CURRENT_TIMESTAMP</code></td><td></td></tr>
+</tbody></table></div>
+<p><strong>Clé primaire</strong> : <code>(id, created_at)</code></p>
+<p><strong>Index</strong></p>
+<ul><li><code>audit_logs_created_at_idx</code> : <code>audit.audit_logs USING btree (created_at)</code></li><li><code>audit_logs_entity_type_entity_id_idx</code> : <code>audit.audit_logs USING btree (entity_type, entity_id)</code></li><li><code>audit_logs_user_id_created_at_idx</code> : <code>audit.audit_logs USING btree (user_id, created_at)</code></li></ul>
+<h3>Types énumérés de <code>audit</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Type</th><th>Valeurs</th></tr></thead><tbody>
+<tr><td><code>AuditAction</code></td><td><code>CREATE</code>, <code>UPDATE</code>, <code>DELETE</code>, <code>VIEW</code>, <code>DOWNLOAD</code>, <code>EXPORT</code>, <code>LOGIN</code>, <code>LOGOUT</code>, <code>LOGIN_FAILED</code>, <code>ACCESS_DENIED</code>, <code>PASSWORD_CHANGE</code>, <code>MFA_CHANGE</code>, <code>ROLE_CHANGE</code>, <code>SESSION_REVOKE</code>, <code>PASSWORD_RESET</code></td></tr>
+</tbody></table></div>
+<h2>Références par identifiant (sans clé étrangère)</h2>
+<p><em>Colonnes <code>*_id</code> qui désignent un objet d’un autre contexte (ou une personne désignée sans contrainte) : l’existence est contrôlée par l’application, jamais par la base.</em></p>
+<div class="table-wrap"><table><thead><tr><th>Table</th><th>Colonne</th><th>Null</th></tr></thead><tbody>
+<tr><td><code>audit.audit_logs</code></td><td><code>user_id</code></td><td>oui</td></tr>
+<tr><td><code>audit.audit_logs</code></td><td><code>session_id</code></td><td>oui</td></tr>
+<tr><td><code>audit.audit_logs</code></td><td><code>entity_id</code></td><td>non</td></tr>
+<tr><td><code>bd.ambassadors</code></td><td><code>owner_user_id</code></td><td>non</td></tr>
+<tr><td><code>bd.appointments</code></td><td><code>organizer_user_id</code></td><td>non</td></tr>
+<tr><td><code>bd.companies</code></td><td><code>owner_user_id</code></td><td>oui</td></tr>
+<tr><td><code>bd.facilitators</code></td><td><code>owner_user_id</code></td><td>non</td></tr>
+<tr><td><code>docs.documents</code></td><td><code>owner_id</code></td><td>non</td></tr>
+<tr><td><code>hr.employees</code></td><td><code>user_id</code></td><td>oui</td></tr>
+<tr><td><code>hr.leave_adjustments</code></td><td><code>created_by_user_id</code></td><td>non</td></tr>
+<tr><td><code>hr.leave_requests</code></td><td><code>requested_by_user_id</code></td><td>non</td></tr>
+<tr><td><code>hr.leave_requests</code></td><td><code>decided_by_user_id</code></td><td>oui</td></tr>
+<tr><td><code>iam.login_attempts</code></td><td><code>user_id</code></td><td>oui</td></tr>
+<tr><td><code>iam.refresh_tokens</code></td><td><code>family_id</code></td><td>non</td></tr>
+<tr><td><code>iam.refresh_tokens</code></td><td><code>replaced_by_id</code></td><td>oui</td></tr>
+<tr><td><code>training.enrollments</code></td><td><code>company_id</code></td><td>oui</td></tr>
+<tr><td><code>training.enrollments</code></td><td><code>approval_id</code></td><td>oui</td></tr>
+<tr><td><code>training.learners</code></td><td><code>company_id</code></td><td>oui</td></tr>
+<tr><td><code>training.learners</code></td><td><code>contact_id</code></td><td>oui</td></tr>
+<tr><td><code>training.trainers</code></td><td><code>user_id</code></td><td>oui</td></tr>
+</tbody></table></div>
+<h2>Migrations appliquées</h2>
+<ul><li><code>20261020000000_s1_company_audit</code></li><li><code>20261021000000_s2_core_iam_docs_audit_partition</code></li><li><code>20261022000000_s3_2_mfa</code></li><li><code>20261023000000_s3_3_ownership_invitations</code></li><li><code>20261024000000_s3_5_password_reset</code></li><li><code>20261025000000_s3_6_documents</code></li><li><code>20261029000000_s4_0_facilitators</code></li><li><code>20261030000000_s4_1_contacts</code></li><li><code>20261031000000_s4_2a_offers</code></li><li><code>20261102000000_s4_2b_receipts</code></li><li><code>20261103000000_s4_2c_followups</code></li><li><code>20261104000000_s4_2d_appointments</code></li><li><code>20261105000000_s4_3_opportunities</code></li><li><code>20261106000000_s4_3c_appointment_opportunity</code></li><li><code>20261107000000_s4_4a_approvals</code></li><li><code>20261108000000_s4_4b_ambassadors</code></li><li><code>20261109000000_s4_4a_bis_requested_status</code></li><li><code>20261109000100_s4_4a_bis_payer_and_request</code></li><li><code>20261110000000_phone_format</code></li><li><code>20261111000000_s4_4c_commission_payouts</code></li><li><code>20261112000000_s5_1_catalogue</code></li><li><code>20261113000000_s5_2a_sessions</code></li><li><code>20261114000000_s5_2b_inscriptions</code></li><li><code>20261114000001_s5_2b_no_cross_schema_fk</code></li><li><code>20261115000000_n5_ambassadors_archive</code></li><li><code>20261116000000_rh_1a_employees</code></li><li><code>20261117000000_rh_2a_leave</code></li><li><code>20261118000000_lot_b_apprenant_particulier</code></li></ul></main></body></html>

@@ -1,0 +1,281 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Référence des routes de l’API</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="../INDEX.html">Index</a> · <a href="../GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="../ARCHITECTURE.html">Architecture</a> · <a href="../SECURITY.html">Sécurité</a> · <a href="../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="../TECH-DEBT.html">Dette</a> · <a href="../CHARTE-DE-TESTS.html">Charte de tests</a> · <a href="../tests/README.html">Fiches de test</a> · <a href="../design/README.html">Design</a> · <a href="../livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>Référence des routes de l’API</h1>
+<p><em>Générée depuis la description OpenAPI réelle (<code>docs/api/openapi.json</code>) par <code>scripts/api-docs/build-postman.mjs</code> : ne pas modifier à la main.</em></p>
+<h2>admin</h2>
+<div class="table-wrap"><table><thead><tr><th>Méthode</th><th>Chemin</th><th>Résumé</th><th>Permission</th><th>Succès</th></tr></thead><tbody>
+<tr><td>GET</td><td><code>/admin/roles</code></td><td></td><td><code>iam.role.read</code></td><td>200</td></tr>
+<tr><td>GET</td><td><code>/admin/users</code></td><td></td><td><code>iam.user.read</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/admin/users</code></td><td></td><td><code>iam.user.create</code> + step-up</td><td>201</td></tr>
+<tr><td>GET</td><td><code>/admin/users/{id}</code></td><td></td><td><code>iam.user.read</code></td><td>200</td></tr>
+<tr><td>PATCH</td><td><code>/admin/users/{id}</code></td><td></td><td><code>iam.user.update</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/admin/users/{id}/disable</code></td><td></td><td><code>iam.user.disable</code> + step-up</td><td>200</td></tr>
+<tr><td>POST</td><td><code>/admin/users/{id}/enable</code></td><td></td><td><code>iam.user.disable</code> + step-up</td><td>200</td></tr>
+<tr><td>POST</td><td><code>/admin/users/{id}/invitations</code></td><td></td><td><code>iam.user.create</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/admin/users/{id}/mfa/reset</code></td><td></td><td><code>iam.user.reset_mfa</code> + step-up</td><td>204</td></tr>
+<tr><td>POST</td><td><code>/admin/users/{id}/password-reset</code></td><td></td><td><code>iam.user.reset_password</code> + step-up</td><td>200</td></tr>
+<tr><td>PUT</td><td><code>/admin/users/{id}/roles</code></td><td></td><td><code>iam.user.assign_role</code> + step-up</td><td>200</td></tr>
+<tr><td>POST</td><td><code>/admin/users/{id}/sessions/revoke</code></td><td></td><td><code>iam.session.revoke</code> + step-up</td><td>200</td></tr>
+</tbody></table></div>
+<h2>ambassadors</h2>
+<div class="table-wrap"><table><thead><tr><th>Méthode</th><th>Chemin</th><th>Résumé</th><th>Permission</th><th>Succès</th></tr></thead><tbody>
+<tr><td>GET</td><td><code>/ambassadors</code></td><td></td><td><code>bd.ambassador.read</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/ambassadors</code></td><td></td><td><code>bd.ambassador.create</code></td><td>201</td></tr>
+<tr><td>GET</td><td><code>/ambassadors/{id}</code></td><td></td><td><code>bd.ambassador.read</code></td><td>200</td></tr>
+<tr><td>PUT</td><td><code>/ambassadors/{id}</code></td><td></td><td><code>bd.ambassador.update</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/ambassadors/{id}/status</code></td><td></td><td><code>bd.ambassador.update</code></td><td>200</td></tr>
+</tbody></table></div>
+<h2>appointments</h2>
+<div class="table-wrap"><table><thead><tr><th>Méthode</th><th>Chemin</th><th>Résumé</th><th>Permission</th><th>Succès</th></tr></thead><tbody>
+<tr><td>GET</td><td><code>/appointments</code></td><td></td><td><code>bd.appointment.read</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/appointments</code></td><td></td><td><code>bd.appointment.create</code></td><td>201</td></tr>
+<tr><td>GET</td><td><code>/appointments/{id}</code></td><td></td><td><code>bd.appointment.read</code></td><td>200</td></tr>
+<tr><td>PUT</td><td><code>/appointments/{id}</code></td><td></td><td><code>bd.appointment.update</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/appointments/{id}/cancel</code></td><td></td><td><code>bd.appointment.cancel</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/appointments/{id}/hold</code></td><td></td><td><code>bd.appointment.update</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/appointments/{id}/postpone</code></td><td></td><td><code>bd.appointment.update</code></td><td>200</td></tr>
+</tbody></table></div>
+<h2>approvals</h2>
+<div class="table-wrap"><table><thead><tr><th>Méthode</th><th>Chemin</th><th>Résumé</th><th>Permission</th><th>Succès</th></tr></thead><tbody>
+<tr><td>GET</td><td><code>/approvals</code></td><td></td><td><code>bd.approval.read</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/approvals</code></td><td></td><td><code>bd.approval.create</code></td><td>201</td></tr>
+<tr><td>GET</td><td><code>/approvals/{id}</code></td><td></td><td><code>bd.approval.read</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/approvals/{id}/cancel</code></td><td></td><td><code>bd.approval.cancel</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/approvals/{id}/expire</code></td><td></td><td><code>bd.approval.cancel</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/approvals/{id}/honor</code></td><td></td><td><code>bd.approval.honor</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/approvals/{id}/receive</code></td><td></td><td><code>bd.approval.create</code></td><td>200</td></tr>
+</tbody></table></div>
+<h2>auth</h2>
+<div class="table-wrap"><table><thead><tr><th>Méthode</th><th>Chemin</th><th>Résumé</th><th>Permission</th><th>Succès</th></tr></thead><tbody>
+<tr><td>POST</td><td><code>/auth/change-password</code></td><td></td><td>authentifié</td><td>204</td></tr>
+<tr><td>POST</td><td><code>/auth/invitation/accept</code></td><td></td><td>publique</td><td>204</td></tr>
+<tr><td>POST</td><td><code>/auth/login</code></td><td></td><td>publique</td><td>200</td></tr>
+<tr><td>POST</td><td><code>/auth/logout</code></td><td></td><td>authentifié</td><td>204</td></tr>
+<tr><td>GET</td><td><code>/auth/me</code></td><td></td><td>authentifié</td><td>200</td></tr>
+<tr><td>GET</td><td><code>/auth/me/profile</code></td><td></td><td>authentifié</td><td>200</td></tr>
+<tr><td>POST</td><td><code>/auth/mfa/enroll/confirm</code></td><td></td><td>authentifié</td><td>200</td></tr>
+<tr><td>POST</td><td><code>/auth/mfa/enroll/start</code></td><td></td><td>authentifié</td><td>200</td></tr>
+<tr><td>POST</td><td><code>/auth/mfa/recovery-codes/regenerate</code></td><td></td><td>authentifié</td><td>200</td></tr>
+<tr><td>POST</td><td><code>/auth/mfa/verify</code></td><td></td><td>authentifié</td><td>200</td></tr>
+<tr><td>POST</td><td><code>/auth/password-reset/accept</code></td><td></td><td>publique</td><td>204</td></tr>
+<tr><td>POST</td><td><code>/auth/password-reset/request</code></td><td></td><td>publique</td><td>202</td></tr>
+<tr><td>POST</td><td><code>/auth/refresh</code></td><td></td><td>publique</td><td>200</td></tr>
+<tr><td>GET</td><td><code>/auth/sessions</code></td><td></td><td><code>iam.session.read</code></td><td>200</td></tr>
+<tr><td>DELETE</td><td><code>/auth/sessions/{id}</code></td><td></td><td><code>iam.session.revoke</code></td><td>204</td></tr>
+<tr><td>GET</td><td><code>/auth/sessions/history</code></td><td></td><td><code>iam.session.read</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/auth/sessions/revoke-others</code></td><td></td><td><code>iam.session.revoke</code> + step-up</td><td>200</td></tr>
+</tbody></table></div>
+<h2>commissions</h2>
+<div class="table-wrap"><table><thead><tr><th>Méthode</th><th>Chemin</th><th>Résumé</th><th>Permission</th><th>Succès</th></tr></thead><tbody>
+<tr><td>GET</td><td><code>/commissions</code></td><td></td><td><code>bd.commission.read</code></td><td>200</td></tr>
+<tr><td>GET</td><td><code>/commissions/{id}</code></td><td></td><td><code>bd.commission.read</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/commissions/{id}/amount</code></td><td></td><td><code>bd.commission.manage</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/commissions/{id}/cancel</code></td><td></td><td><code>bd.commission.manage</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/commissions/{id}/hold</code></td><td></td><td><code>bd.commission.release</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/commissions/{id}/pay</code></td><td></td><td><code>bd.commission.pay</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/commissions/{id}/release</code></td><td></td><td><code>bd.commission.release</code></td><td>200</td></tr>
+</tbody></table></div>
+<h2>companies</h2>
+<div class="table-wrap"><table><thead><tr><th>Méthode</th><th>Chemin</th><th>Résumé</th><th>Permission</th><th>Succès</th></tr></thead><tbody>
+<tr><td>GET</td><td><code>/companies</code></td><td></td><td><code>bd.company.read</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/companies</code></td><td></td><td><code>bd.company.create</code></td><td>201</td></tr>
+<tr><td>GET</td><td><code>/companies/{id}</code></td><td></td><td><code>bd.company.read</code></td><td>200</td></tr>
+<tr><td>PUT</td><td><code>/companies/{id}</code></td><td></td><td><code>bd.company.update</code></td><td>200</td></tr>
+<tr><td>GET</td><td><code>/companies/{id}/export</code></td><td></td><td><code>bd.company.read</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/companies/{id}/owner</code></td><td></td><td><code>bd.company.reassign</code> + step-up</td><td>200</td></tr>
+<tr><td>POST</td><td><code>/companies/{id}/status</code></td><td></td><td><code>bd.company.update</code></td><td>200</td></tr>
+<tr><td>GET</td><td><code>/companies/overview</code></td><td></td><td><code>bd.company.read</code></td><td>200</td></tr>
+<tr><td>GET</td><td><code>/companies/owners</code></td><td></td><td><code>bd.company.reassign</code></td><td>200</td></tr>
+</tbody></table></div>
+<h2>contacts</h2>
+<div class="table-wrap"><table><thead><tr><th>Méthode</th><th>Chemin</th><th>Résumé</th><th>Permission</th><th>Succès</th></tr></thead><tbody>
+<tr><td>GET</td><td><code>/contacts</code></td><td></td><td><code>bd.contact.read</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/contacts</code></td><td></td><td><code>bd.contact.create</code></td><td>201</td></tr>
+<tr><td>DELETE</td><td><code>/contacts/{id}</code></td><td></td><td><code>bd.contact.delete</code></td><td>204</td></tr>
+<tr><td>GET</td><td><code>/contacts/{id}</code></td><td></td><td><code>bd.contact.read</code></td><td>200</td></tr>
+<tr><td>PUT</td><td><code>/contacts/{id}</code></td><td></td><td><code>bd.contact.update</code></td><td>200</td></tr>
+</tbody></table></div>
+<h2>documents</h2>
+<div class="table-wrap"><table><thead><tr><th>Méthode</th><th>Chemin</th><th>Résumé</th><th>Permission</th><th>Succès</th></tr></thead><tbody>
+<tr><td>GET</td><td><code>/documents</code></td><td></td><td><code>docs.document.read</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/documents</code></td><td></td><td><code>docs.document.create</code></td><td>201</td></tr>
+<tr><td>GET</td><td><code>/documents/{id}</code></td><td></td><td><code>docs.document.read</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/documents/{id}/archive</code></td><td></td><td><code>docs.document.delete</code></td><td>204</td></tr>
+<tr><td>GET</td><td><code>/documents/{id}/download</code></td><td></td><td><code>docs.document.download</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/documents/{id}/versions</code></td><td></td><td><code>docs.document.create</code></td><td>201</td></tr>
+<tr><td>GET</td><td><code>/documents/meta</code></td><td></td><td><code>docs.document.read</code></td><td>200</td></tr>
+</tbody></table></div>
+<h2>enrollments</h2>
+<div class="table-wrap"><table><thead><tr><th>Méthode</th><th>Chemin</th><th>Résumé</th><th>Permission</th><th>Succès</th></tr></thead><tbody>
+<tr><td>GET</td><td><code>/enrollments</code></td><td></td><td><code>training.enrollment.read</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/enrollments</code></td><td></td><td><code>training.enrollment.create</code></td><td>201</td></tr>
+<tr><td>GET</td><td><code>/enrollments/{id}</code></td><td></td><td><code>training.enrollment.read</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/enrollments/{id}/cancel</code></td><td></td><td><code>training.enrollment.cancel</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/enrollments/{id}/confirm</code></td><td></td><td><code>training.enrollment.update</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/enrollments/{id}/replace</code></td><td></td><td><code>training.enrollment.cancel</code></td><td>201</td></tr>
+<tr><td>GET</td><td><code>/enrollments/approval-options</code></td><td></td><td><code>training.enrollment.create</code></td><td>200</td></tr>
+</tbody></table></div>
+<h2>facilitators</h2>
+<div class="table-wrap"><table><thead><tr><th>Méthode</th><th>Chemin</th><th>Résumé</th><th>Permission</th><th>Succès</th></tr></thead><tbody>
+<tr><td>GET</td><td><code>/facilitators</code></td><td></td><td><code>bd.facilitator.read</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/facilitators</code></td><td></td><td><code>bd.facilitator.create</code></td><td>201</td></tr>
+<tr><td>GET</td><td><code>/facilitators/{id}</code></td><td></td><td><code>bd.facilitator.read</code></td><td>200</td></tr>
+</tbody></table></div>
+<h2>followups</h2>
+<div class="table-wrap"><table><thead><tr><th>Méthode</th><th>Chemin</th><th>Résumé</th><th>Permission</th><th>Succès</th></tr></thead><tbody>
+<tr><td>GET</td><td><code>/followups</code></td><td></td><td><code>bd.followup.read</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/followups</code></td><td></td><td><code>bd.followup.create</code></td><td>201</td></tr>
+<tr><td>GET</td><td><code>/followups/{id}</code></td><td></td><td><code>bd.followup.read</code></td><td>200</td></tr>
+<tr><td>PUT</td><td><code>/followups/{id}</code></td><td></td><td><code>bd.followup.update</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/followups/{id}/cancel</code></td><td></td><td><code>bd.followup.update</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/followups/{id}/complete</code></td><td></td><td><code>bd.followup.complete</code></td><td>200</td></tr>
+</tbody></table></div>
+<h2>Health</h2>
+<div class="table-wrap"><table><thead><tr><th>Méthode</th><th>Chemin</th><th>Résumé</th><th>Permission</th><th>Succès</th></tr></thead><tbody>
+<tr><td>GET</td><td><code>/health/live</code></td><td></td><td>publique</td><td>200</td></tr>
+<tr><td>GET</td><td><code>/health/ready</code></td><td></td><td>publique</td><td>200</td></tr>
+</tbody></table></div>
+<h2>hr</h2>
+<div class="table-wrap"><table><thead><tr><th>Méthode</th><th>Chemin</th><th>Résumé</th><th>Permission</th><th>Succès</th></tr></thead><tbody>
+<tr><td>GET</td><td><code>/hr/directory</code></td><td></td><td><code>hr.directory.read</code></td><td>200</td></tr>
+<tr><td>GET</td><td><code>/hr/employees</code></td><td></td><td><code>hr.employee.read</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/hr/employees</code></td><td></td><td><code>hr.employee.create</code></td><td>201</td></tr>
+<tr><td>GET</td><td><code>/hr/employees/{id}</code></td><td></td><td><code>hr.employee.read</code></td><td>200</td></tr>
+<tr><td>PUT</td><td><code>/hr/employees/{id}</code></td><td></td><td><code>hr.employee.update</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/hr/employees/{id}/status</code></td><td></td><td><code>hr.employee.archive</code></td><td>200</td></tr>
+<tr><td>GET</td><td><code>/hr/employees/hierarchy-gaps</code></td><td></td><td><code>hr.employee.read</code></td><td>200</td></tr>
+<tr><td>GET</td><td><code>/hr/leave/adjustments</code></td><td></td><td><code>hr.leave.manage</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/hr/leave/adjustments</code></td><td></td><td><code>hr.leave.manage</code></td><td>201</td></tr>
+<tr><td>GET</td><td><code>/hr/leave/balance</code></td><td></td><td><code>hr.leave.read</code></td><td>200</td></tr>
+<tr><td>GET</td><td><code>/hr/leave/calendar</code></td><td></td><td><code>hr.leave.read</code></td><td>200</td></tr>
+<tr><td>GET</td><td><code>/hr/leave/holidays</code></td><td></td><td><code>hr.leave.read</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/hr/leave/holidays</code></td><td></td><td><code>hr.leave.manage</code></td><td>201</td></tr>
+<tr><td>DELETE</td><td><code>/hr/leave/holidays/{id}</code></td><td></td><td><code>hr.leave.manage</code></td><td>204</td></tr>
+<tr><td>GET</td><td><code>/hr/leave/requests</code></td><td></td><td><code>hr.leave.read</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/hr/leave/requests</code></td><td></td><td><code>hr.leave.create</code></td><td>201</td></tr>
+<tr><td>GET</td><td><code>/hr/leave/requests/{id}</code></td><td></td><td><code>hr.leave.read</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/hr/leave/requests/{id}/cancel</code></td><td></td><td><code>hr.leave.read</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/hr/leave/requests/{id}/decision</code></td><td></td><td><code>hr.leave.approve</code></td><td>200</td></tr>
+<tr><td>GET</td><td><code>/hr/leave/settings</code></td><td></td><td><code>hr.leave.read</code></td><td>200</td></tr>
+<tr><td>PUT</td><td><code>/hr/leave/settings</code></td><td></td><td><code>hr.leave.manage</code></td><td>200</td></tr>
+<tr><td>GET</td><td><code>/hr/leave/types</code></td><td></td><td><code>hr.leave.read</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/hr/leave/types</code></td><td></td><td><code>hr.leave.manage</code></td><td>201</td></tr>
+<tr><td>PUT</td><td><code>/hr/leave/types/{id}</code></td><td></td><td><code>hr.leave.manage</code></td><td>200</td></tr>
+<tr><td>GET</td><td><code>/hr/linkable-users</code></td><td></td><td><code>hr.employee.update</code></td><td>200</td></tr>
+<tr><td>GET</td><td><code>/hr/org-chart</code></td><td></td><td><code>hr.directory.read</code></td><td>200</td></tr>
+</tbody></table></div>
+<h2>learners</h2>
+<div class="table-wrap"><table><thead><tr><th>Méthode</th><th>Chemin</th><th>Résumé</th><th>Permission</th><th>Succès</th></tr></thead><tbody>
+<tr><td>GET</td><td><code>/learners</code></td><td></td><td><code>training.learner.read</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/learners</code></td><td></td><td><code>training.learner.create</code></td><td>201</td></tr>
+<tr><td>DELETE</td><td><code>/learners/{id}</code></td><td></td><td><code>training.learner.delete</code></td><td>204</td></tr>
+<tr><td>GET</td><td><code>/learners/{id}</code></td><td></td><td><code>training.learner.read</code></td><td>200</td></tr>
+<tr><td>PUT</td><td><code>/learners/{id}</code></td><td></td><td><code>training.learner.update</code></td><td>200</td></tr>
+</tbody></table></div>
+<h2>modules</h2>
+<div class="table-wrap"><table><thead><tr><th>Méthode</th><th>Chemin</th><th>Résumé</th><th>Permission</th><th>Succès</th></tr></thead><tbody>
+<tr><td>GET</td><td><code>/modules</code></td><td></td><td><code>training.training.read</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/modules</code></td><td></td><td><code>training.training.create</code></td><td>201</td></tr>
+<tr><td>GET</td><td><code>/modules/{id}</code></td><td></td><td><code>training.training.read</code></td><td>200</td></tr>
+<tr><td>PUT</td><td><code>/modules/{id}</code></td><td></td><td><code>training.training.update</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/modules/{id}/status</code></td><td></td><td><code>training.training.update</code></td><td>200</td></tr>
+</tbody></table></div>
+<h2>offers</h2>
+<div class="table-wrap"><table><thead><tr><th>Méthode</th><th>Chemin</th><th>Résumé</th><th>Permission</th><th>Succès</th></tr></thead><tbody>
+<tr><td>GET</td><td><code>/offers</code></td><td></td><td><code>bd.offer.read</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/offers</code></td><td></td><td><code>bd.offer.create</code></td><td>201</td></tr>
+<tr><td>GET</td><td><code>/offers/{id}</code></td><td></td><td><code>bd.offer.read</code></td><td>200</td></tr>
+<tr><td>PUT</td><td><code>/offers/{id}</code></td><td></td><td><code>bd.offer.update</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/offers/{id}/accept</code></td><td></td><td><code>bd.offer.update</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/offers/{id}/clone</code></td><td></td><td><code>bd.offer.create</code></td><td>201</td></tr>
+<tr><td>GET</td><td><code>/offers/{id}/export</code></td><td></td><td><code>bd.offer.read</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/offers/{id}/refuse</code></td><td></td><td><code>bd.offer.update</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/offers/{id}/submit</code></td><td></td><td><code>bd.offer.update</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/offers/{id}/withdraw</code></td><td></td><td><code>bd.offer.withdraw</code></td><td>200</td></tr>
+</tbody></table></div>
+<h2>opportunities</h2>
+<div class="table-wrap"><table><thead><tr><th>Méthode</th><th>Chemin</th><th>Résumé</th><th>Permission</th><th>Succès</th></tr></thead><tbody>
+<tr><td>GET</td><td><code>/opportunities</code></td><td></td><td><code>bd.opportunity.read</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/opportunities</code></td><td></td><td><code>bd.opportunity.create</code></td><td>201</td></tr>
+<tr><td>GET</td><td><code>/opportunities/{id}</code></td><td></td><td><code>bd.opportunity.read</code></td><td>200</td></tr>
+<tr><td>PUT</td><td><code>/opportunities/{id}</code></td><td></td><td><code>bd.opportunity.update</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/opportunities/{id}/advance</code></td><td></td><td><code>bd.opportunity.advance</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/opportunities/{id}/close-lost</code></td><td></td><td><code>bd.opportunity.close_lost</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/opportunities/{id}/close-won</code></td><td></td><td><code>bd.opportunity.close_won</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/opportunities/{id}/waiver</code></td><td></td><td><code>bd.opportunity.override</code></td><td>200</td></tr>
+</tbody></table></div>
+<h2>programs</h2>
+<div class="table-wrap"><table><thead><tr><th>Méthode</th><th>Chemin</th><th>Résumé</th><th>Permission</th><th>Succès</th></tr></thead><tbody>
+<tr><td>GET</td><td><code>/programs</code></td><td></td><td><code>training.program.read</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/programs</code></td><td></td><td><code>training.program.create</code></td><td>201</td></tr>
+<tr><td>GET</td><td><code>/programs/{id}</code></td><td></td><td><code>training.program.read</code></td><td>200</td></tr>
+<tr><td>PUT</td><td><code>/programs/{id}</code></td><td></td><td><code>training.program.update</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/programs/{id}/status</code></td><td></td><td><code>training.program.archive</code></td><td>200</td></tr>
+</tbody></table></div>
+<h2>receipts</h2>
+<div class="table-wrap"><table><thead><tr><th>Méthode</th><th>Chemin</th><th>Résumé</th><th>Permission</th><th>Succès</th></tr></thead><tbody>
+<tr><td>GET</td><td><code>/receipts</code></td><td></td><td><code>bd.receipt.read</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/receipts</code></td><td></td><td><code>bd.receipt.create</code></td><td>201</td></tr>
+<tr><td>GET</td><td><code>/receipts/{id}</code></td><td></td><td><code>bd.receipt.read</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/receipts/{id}/cancel</code></td><td></td><td><code>bd.receipt.update</code></td><td>200</td></tr>
+</tbody></table></div>
+<h2>rhythms</h2>
+<div class="table-wrap"><table><thead><tr><th>Méthode</th><th>Chemin</th><th>Résumé</th><th>Permission</th><th>Succès</th></tr></thead><tbody>
+<tr><td>GET</td><td><code>/rhythms</code></td><td></td><td><code>training.program.read</code></td><td>200</td></tr>
+</tbody></table></div>
+<h2>rooms</h2>
+<div class="table-wrap"><table><thead><tr><th>Méthode</th><th>Chemin</th><th>Résumé</th><th>Permission</th><th>Succès</th></tr></thead><tbody>
+<tr><td>GET</td><td><code>/rooms</code></td><td></td><td><code>training.room.read</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/rooms</code></td><td></td><td><code>training.room.manage</code></td><td>201</td></tr>
+<tr><td>GET</td><td><code>/rooms/{id}</code></td><td></td><td><code>training.room.read</code></td><td>200</td></tr>
+<tr><td>PUT</td><td><code>/rooms/{id}</code></td><td></td><td><code>training.room.manage</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/rooms/{id}/status</code></td><td></td><td><code>training.room.manage</code></td><td>200</td></tr>
+</tbody></table></div>
+<h2>sessions</h2>
+<div class="table-wrap"><table><thead><tr><th>Méthode</th><th>Chemin</th><th>Résumé</th><th>Permission</th><th>Succès</th></tr></thead><tbody>
+<tr><td>GET</td><td><code>/sessions</code></td><td></td><td><code>training.session.read</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/sessions</code></td><td></td><td><code>training.session.create</code></td><td>201</td></tr>
+<tr><td>GET</td><td><code>/sessions/{id}</code></td><td></td><td><code>training.session.read</code></td><td>200</td></tr>
+<tr><td>PUT</td><td><code>/sessions/{id}</code></td><td></td><td><code>training.session.update</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/sessions/{id}/cancel</code></td><td></td><td><code>training.session.cancel</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/sessions/{id}/open</code></td><td></td><td><code>training.session.update</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/sessions/{id}/postpone</code></td><td></td><td><code>training.session.update</code></td><td>200</td></tr>
+</tbody></table></div>
+<h2>trainers</h2>
+<div class="table-wrap"><table><thead><tr><th>Méthode</th><th>Chemin</th><th>Résumé</th><th>Permission</th><th>Succès</th></tr></thead><tbody>
+<tr><td>GET</td><td><code>/trainers</code></td><td></td><td><code>training.trainer.read</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/trainers</code></td><td></td><td><code>training.trainer.manage</code></td><td>201</td></tr>
+<tr><td>GET</td><td><code>/trainers/{id}</code></td><td></td><td><code>training.trainer.read</code></td><td>200</td></tr>
+<tr><td>PUT</td><td><code>/trainers/{id}</code></td><td></td><td><code>training.trainer.manage</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/trainers/{id}/status</code></td><td></td><td><code>training.trainer.manage</code></td><td>200</td></tr>
+</tbody></table></div>
+<h2>trainings</h2>
+<div class="table-wrap"><table><thead><tr><th>Méthode</th><th>Chemin</th><th>Résumé</th><th>Permission</th><th>Succès</th></tr></thead><tbody>
+<tr><td>GET</td><td><code>/trainings</code></td><td></td><td><code>training.training.read</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/trainings</code></td><td></td><td><code>training.training.create</code></td><td>201</td></tr>
+<tr><td>GET</td><td><code>/trainings/{id}</code></td><td></td><td><code>training.training.read</code></td><td>200</td></tr>
+<tr><td>PUT</td><td><code>/trainings/{id}</code></td><td></td><td><code>training.training.update</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/trainings/{id}/status</code></td><td></td><td><code>training.training.update</code></td><td>200</td></tr>
+</tbody></table></div>
+<p><em>180 routes.</em></p></main></body></html>

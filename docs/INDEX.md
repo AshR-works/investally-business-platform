@@ -68,6 +68,16 @@
 | [RH-2c](SPRINT-RH-2C-RECETTE.md) | Absences et congés (recette, mutants, fiches de test) |
 | [Lot B](SPRINT-LOT-B-RECETTE.md) | Apprenant étudiant ou particulier (sans entreprise, payeur désigné) |
 
+## API et base de données
+| Document | Contenu |
+|---|---|
+| [API : guide et tests Postman](api/README.md) | Type d'API (REST/JSON, OpenAPI), connexion, conventions, collection Postman avec tests, Newman |
+| [Pas à pas : charger l'API et la tester](api/GUIDE-CHARGER-ET-TESTER-L-API.html) | Démarrer l'API, préparer un compte, Postman, Newman, base de données, dépannage (page HTML autonome) |
+| [Catalogue des tests (JSON)](api/tests-api.json) | Toutes les requêtes de test et leurs vérifications, lisibles sans Postman |
+| [Référence des routes](api/REFERENCE-DES-ROUTES.md) | Les 180 routes, avec la permission de chacune (générée) |
+| [Base de données : guide](base-de-donnees/README.md) | PostgreSQL, schémas par contexte, intégrité, vérifications |
+| [Dictionnaire de la base](base-de-donnees/DICTIONNAIRE.md) | Tables, colonnes, règles, index, relations (généré) |
+
 ## Design et livrables
 | Document | Contenu |
 |---|---|

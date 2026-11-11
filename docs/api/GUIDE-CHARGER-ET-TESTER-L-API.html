@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Charger l'API du projet et la tester</title>
+<style>
+  :root { --bg:#fbf9f7; --surface:#ffffff; --ink:#1c1917; --ink-2:#57534e; --line:#e7e2dd; --brand:#7a6455; --brand-soft:#efe7e0; --ok:#1d6b45; --ok-bg:#e4f3ea; --warn:#8a5a00; --warn-bg:#fdf0d5; --bad:#9b1c1c; --bad-bg:#fbe4e4; --code:#f3eee9; --radius:12px; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#161412; --surface:#1f1c1a; --ink:#f3efeb; --ink-2:#b5aca4; --line:#38332f; --brand:#d6bfae; --brand-soft:#2c2622; --ok:#7bd3a3; --ok-bg:#16301f; --warn:#f0c46a; --warn-bg:#33270c; --bad:#f19a9a; --bad-bg:#3a1c1c; --code:#26221f; } }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.65 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 24px 16px 80px; }
+  header.hero { padding: 28px 0 8px; }
+  .eyebrow { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-2); font-weight: 700; margin: 0 0 8px; }
+  h1 { font-size: clamp(1.7rem, 4vw, 2.3rem); line-height: 1.2; margin: 0 0 10px; }
+  h2 { font-size: 1.45rem; margin: 2.4em 0 .5em; padding-bottom: .3em; border-bottom: 2px solid var(--line); scroll-margin-top: 16px; }
+  h3 { font-size: 1.1rem; margin: 1.6em 0 .4em; }
+  p, li { max-width: 78ch; }
+  a { color: var(--brand); }
+  .lead { color: var(--ink-2); font-size: 1.08rem; max-width: 70ch; }
+  nav.toc { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 18px; margin: 20px 0; }
+  nav.toc ol { margin: 6px 0 0; padding-left: 20px; columns: 2; column-gap: 28px; }
+  nav.toc li { break-inside: avoid; }
+  @media (max-width: 640px) { nav.toc ol { columns: 1; } }
+  .steps { counter-reset: step; list-style: none; padding: 0; margin: 14px 0; }
+  .steps > li { counter-increment: step; position: relative; padding: 12px 14px 12px 56px; margin: 0 0 10px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); max-width: none; }
+  .steps > li::before { content: counter(step); position: absolute; left: 14px; top: 12px; width: 30px; height: 30px; border-radius: 50%; background: var(--brand); color: var(--bg); font-weight: 700; display: grid; place-items: center; }
+  .steps > li > p:first-child { margin-top: 0; }
+  pre { background: var(--code); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; overflow-x: auto; font: 13.5px/1.55 ui-monospace,"Cascadia Code",Consolas,monospace; margin: 10px 0; }
+  code { background: var(--code); padding: .1em .35em; border-radius: 5px; font: .9em ui-monospace,Consolas,monospace; overflow-wrap: anywhere; }
+  pre code { background: none; padding: 0; }
+  table { border-collapse: collapse; width: 100%; margin: 12px 0; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; font-size: .95rem; }
+  th, td { text-align: left; vertical-align: top; padding: 9px 12px; border-bottom: 1px solid var(--line); }
+  th { background: var(--brand-soft); font-size: .85rem; }
+  tr:last-child td { border-bottom: 0; }
+  .table-scroll { overflow-x: auto; }
+  .note, .warn, .ok { border-radius: var(--radius); padding: 12px 16px; margin: 14px 0; border: 1px solid var(--line); max-width: none; }
+  .note { background: var(--brand-soft); }
+  .warn { background: var(--warn-bg); border-color: transparent; color: var(--warn); }
+  .ok { background: var(--ok-bg); border-color: transparent; color: var(--ok); }
+  .warn strong, .ok strong { color: inherit; }
+  .tag { display: inline-block; font-size: .75rem; font-weight: 700; padding: 1px 9px; border-radius: 999px; background: var(--brand-soft); color: var(--brand); }
+  .grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); margin: 14px 0; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; }
+  .card h3 { margin: 0 0 4px; }
+  .card p { margin: 0; color: var(--ink-2); font-size: .95rem; }
+  footer { margin-top: 48px; color: var(--ink-2); font-size: .9rem; border-top: 1px solid var(--line); padding-top: 14px; }
+  @media print { body { background: #fff; color: #000; } nav.toc { display: none; } .steps > li, .card, table { break-inside: avoid; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <p class="eyebrow">Investally Business Platform · API</p>
+  <h1>Charger l'API du projet et la tester</h1>
+  <p class="lead">La démarche complète, de zéro : installer, démarrer l'API sur votre poste avec des données de démonstration, puis la tester avec Postman (ou en ligne de commande), et vérifier la base de données. Compter une vingtaine de minutes la première fois.</p>
+</header>
+
+<nav class="toc" aria-label="Sommaire">
+  <strong>Sommaire</strong>
+  <ol>
+    <li><a href="#vue">Vue d'ensemble</a></li>
+    <li><a href="#prerequis">Ce qu'il vous faut</a></li>
+    <li><a href="#demarrer">1. Démarrer l'API</a></li>
+    <li><a href="#compte">2. Préparer un compte de test</a></li>
+    <li><a href="#postman">3. Charger et lancer les tests dans Postman</a></li>
+    <li><a href="#newman">4. Les lancer en ligne de commande</a></li>
+    <li><a href="#base">5. Tester la base de données</a></li>
+    <li><a href="#lire">6. Lire les résultats</a></li>
+    <li><a href="#depannage">7. Dépannage</a></li>
+    <li><a href="#regenerer">8. Régénérer après un changement</a></li>
+  </ol>
+</nav>
+
+<h2 id="vue">Vue d'ensemble</h2>
+<div class="grid">
+  <div class="card"><h3>Type d'API</h3><p>REST en JSON sur HTTP (NestJS), décrite en OpenAPI 3. Adresses sous <code>/api/v1</code>.</p></div>
+  <div class="card"><h3>Connexion</h3><p>E-mail et mot de passe, puis un second facteur (code à 6 chiffres) : sans lui, les routes protégées refusent.</p></div>
+  <div class="card"><h3>Ce que vous testez</h3><p>180 routes : 373 requêtes et plus de 1 400 vérifications, dont des parcours qui créent leurs propres données.</p></div>
+</div>
+<p>Les fichiers utiles sont tous dans <code>docs/api/</code> :</p>
+<div class="table-scroll"><table>
+  <tr><th>Fichier</th><th>À quoi il sert</th></tr>
+  <tr><td><code>postman/Investally-API.postman_collection.json</code></td><td><strong>La collection de tests</strong> (JSON) : ce que Postman exécute. Une requête par route, avec ses tests.</td></tr>
+  <tr><td><code>postman/Investally-local.postman_environment.json</code></td><td>L'environnement : adresse de l'API et identifiants du compte de test (à remplir, <strong>sans secret dans le fichier fourni</strong>).</td></tr>
+  <tr><td><code>tests-api.json</code></td><td><strong>Le catalogue des tests</strong> (JSON) : la même chose, lisible sans Postman : chaque route, sa permission, ses statuts attendus, la liste de ses tests.</td></tr>
+  <tr><td><code>openapi.json</code></td><td>La description OpenAPI de l'API, avec la permission de chaque route.</td></tr>
+  <tr><td><code>REFERENCE-DES-ROUTES.md</code></td><td>La liste des routes par domaine.</td></tr>
+  <tr><td><code>README.md</code></td><td>Le guide de référence (conventions, erreurs, limites).</td></tr>
+</table></div>
+
+<h2 id="prerequis">Ce qu'il vous faut</h2>
+<ul>
+  <li><strong>Node.js 22</strong> et <strong>pnpm</strong> (pour démarrer le projet).</li>
+  <li><strong>Postman</strong> (application de bureau ou web) <em>ou</em> <strong>Newman</strong> (<code>npm install -g newman</code>) pour la ligne de commande.</li>
+  <li>Une <strong>application d'authentification</strong> (TOTP) sur téléphone ou navigateur, <em>ou</em> la possibilité de copier la clé du second facteur (voir l'étape 2).</li>
+  <li>Le dépôt du projet : <code>C:\dev\investally\investally-platform</code>.</li>
+</ul>
+<div class="warn"><strong>Important.</strong> Ne visez jamais une base de production avec ces tests : les parcours <strong>créent des données</strong> (préfixées « Postman »). Utilisez la pile locale ci-dessous, ou une pile jetable.</div>
+
+<h2 id="demarrer">1. Démarrer l'API</h2>
+<ol class="steps">
+  <li>
+    <p><strong>Se placer dans le projet et installer</strong> (une seule fois, puis après chaque mise à jour des dépendances).</p>
+<pre><code>cd C:\dev\investally\investally-platform
+git checkout main &amp;&amp; git pull
+pnpm install</code></pre>
+  </li>
+  <li>
+    <p><strong>Démarrer la pile locale avec les données de démonstration.</strong> Elle lance PostgreSQL (port 54330), l'API (port 3001) et l'interface (port 3000), applique les migrations et charge un jeu de données fictives.</p>
+<pre><code>node scripts/local-stack.mjs --demo --rebuild</code></pre>
+    <p>Ajoutez <code>--rebuild</code> après chaque mise à jour du code (il recompile). Sans lui, un redémarrage est rapide. Arrêt : <code>Ctrl+C</code> dans la console ; les données sont conservées.</p>
+  </li>
+  <li>
+    <p><strong>Vérifier que l'API répond.</strong></p>
+<pre><code>curl http://127.0.0.1:3001/health/live          # doit répondre 200
+# Interface Swagger (toutes les routes, essai direct) :
+#   http://127.0.0.1:3001/api/docs</code></pre>
+    <div class="ok"><strong>Bon signe :</strong> <code>/health/live</code> répond 200 et la page Swagger s'affiche.</div>
+  </li>
+</ol>
+<div class="note">Le premier démarrage compile tout et peut durer plusieurs minutes. Les mots de passe des comptes sont <strong>aléatoires</strong> : ils sont écrits dans <code>C:\dev\investally\investally-local\demo-accounts.json</code> (hors dépôt). Le mot de passe de l'administrateur <code>admin@investally.test</code> n'est affiché <strong>qu'une fois</strong>, au premier démarrage. Ne les copiez jamais dans un fichier du dépôt.</div>
+
+<h2 id="compte">2. Préparer un compte de test</h2>
+<p>Prenez un compte qui a <strong>tous les droits</strong> : le <strong>Super administrateur</strong> (<code>admin@investally.test</code>). Les parcours de la collection touchent plusieurs domaines (commercial, formation, ressources humaines) : un compte plus limité aurait des refus (403 ou 404), que les tests acceptent mais qui rendent les parcours peu parlants.</p>
+<ol class="steps">
+  <li>
+    <p><strong>Noter l'e-mail et le mot de passe</strong> du compte (voir ci-dessus).</p>
+  </li>
+  <li>
+    <p><strong>Obtenir la clé du second facteur (<code>mfaSecret</code>).</strong> Deux façons, au choix :</p>
+    <p><span class="tag">Par l'interface</span> ouvrez <code>http://127.0.0.1:3000</code>, connectez-vous avec le compte. Au premier passage l'écran d'enrôlement affiche un QR code <strong>et la clé en texte</strong> : copiez cette clé (une suite de lettres et de chiffres), et scannez aussi le QR code avec votre application si vous voulez vous connecter à l'interface plus tard. Conservez les codes de secours.</p>
+    <p><span class="tag">Par Postman</span> si le compte n'a pas encore de second facteur, le dossier « 00b — Première connexion » le fait pour vous (étape 3) : le secret est conservé dans la variable <code>mfaSecret</code>.</p>
+    <div class="warn"><strong>Le second facteur ne s'enrôle qu'une fois par compte.</strong> Si le compte est déjà enrôlé et que vous n'avez plus la clé, il faut la réinitialiser (droit d'administration), ou utiliser un autre compte.</div>
+  </li>
+</ol>
+
+<h2 id="postman">3. Charger et lancer les tests dans Postman</h2>
+<ol class="steps">
+  <li>
+    <p><strong>Importer.</strong> Postman › <em>Import</em> › glissez les deux fichiers de <code>docs/api/postman/</code> : la collection <em>« Investally Business Platform — API (tests) »</em> et l'environnement <em>« Investally — local »</em>.</p>
+  </li>
+  <li>
+    <p><strong>Choisir l'environnement</strong> « Investally — local » (menu en haut à droite), puis ouvrir ses variables et renseigner :</p>
+    <div class="table-scroll"><table>
+      <tr><th>Variable</th><th>Valeur</th></tr>
+      <tr><td><code>baseUrl</code></td><td><code>http://127.0.0.1:3001</code> (déjà remplie : l'API locale)</td></tr>
+      <tr><td><code>origin</code></td><td><code>http://127.0.0.1:3000</code> (déjà remplie : l'origine autorisée de l'interface)</td></tr>
+      <tr><td><code>email</code></td><td>l'e-mail du compte de test</td></tr>
+      <tr><td><code>password</code></td><td>son mot de passe (type « secret »)</td></tr>
+      <tr><td><code>mfaSecret</code></td><td>la clé du second facteur (type « secret »)</td></tr>
+    </table></div>
+    <p>Enregistrez l'environnement (<kbd>Ctrl</kbd>+<kbd>S</kbd>). Les identifiants de ressources (<code>companyId</code>, etc.) sont déjà là, avec un identifiant inexistant : les parcours les remplissent.</p>
+  </li>
+  <li>
+    <p><strong>Se connecter.</strong> Dans la collection, dossier <strong>« 00 — Authentification »</strong> : lancez <em>« 1 — Connexion »</em> puis <em>« 2 — Vérifier le code du second facteur »</em>. Le code à 6 chiffres est <strong>calculé automatiquement</strong> à partir de <code>mfaSecret</code> : pas besoin de téléphone. Les deux requêtes doivent passer au vert, et le jeton est conservé pour toute la suite.</p>
+    <p>Compte <strong>non enrôlé</strong> ? Lancez d'abord « 1 — Connexion », puis le dossier <strong>« 00b — Première connexion »</strong> (démarrer, puis confirmer) : il enrôle le second facteur et vous remet 10 <strong>codes de secours à conserver hors de Postman</strong>. Copiez ensuite le secret obtenu dans la variable <code>mfaSecret</code> de l'environnement.</p>
+  </li>
+  <li>
+    <p><strong>Lancer les tests.</strong> Deux façons :</p>
+    <p><span class="tag">Tout</span> clic droit sur la collection › <em>Run collection</em> › <strong>décochez</strong> « 00b » et « 98 » › <em>Run</em>. Durée : environ 40 secondes.</p>
+    <p><span class="tag">Un dossier</span> clic droit sur un dossier › <em>Run folder</em>, par exemple « 90 — Parcours de bout en bout » ou « 16 — companies ».</p>
+  </li>
+</ol>
+
+<h3>Ce que contient la collection</h3>
+<div class="table-scroll"><table>
+  <tr><th>Dossier</th><th>Ce qu'il fait</th><th>Ce qui est vérifié</th></tr>
+  <tr><td>00 — Authentification</td><td>Connexion, second facteur</td><td>Jeton remis et vérifié</td></tr>
+  <tr><td>00b — Première connexion</td><td>Enrôler le second facteur d'un compte neuf</td><td>Secret et 10 codes de secours remis</td></tr>
+  <tr><td>01 — Sécurité (173)</td><td>Chaque route protégée, <strong>sans jeton</strong></td><td>Refusée (401), au format RFC 7807</td></tr>
+  <tr><td>02 — Santé</td><td><code>/health/live</code>, <code>/health/ready</code></td><td>200</td></tr>
+  <tr><td>90 — Parcours</td><td>24 étapes qui créent leurs données : entreprise, formation (dont étudiant sans entreprise et payeur), congés</td><td>Statuts, valeurs métier, refus de validation attendus</td></tr>
+  <tr><td>10 à 34 — par domaine (172)</td><td>Une requête par route</td><td>Pas d'erreur serveur, jeton accepté, statut prévu, temps de réponse, JSON, erreur RFC 7807, champs documentés, pagination</td></tr>
+  <tr><td>98 — Actions de session</td><td>Déconnexion, mot de passe, rafraîchissement, second facteur</td><td>À lancer <strong>à part</strong> : elles ferment la session ou changent un secret</td></tr>
+</table></div>
+<div class="note"><strong>Ordre.</strong> Les parcours (90) passent <em>avant</em> les requêtes de route : ils enregistrent les identifiants qu'ils créent, que les requêtes de route réutilisent pour viser de vrais objets. Une route visée avec un identifiant inexistant répond « introuvable » (404) : c'est normal et accepté, cela prouve que la route existe, que le jeton est valide et que la portée est contrôlée.</div>
+
+<h2 id="newman">4. Les lancer en ligne de commande</h2>
+<p>Pour rejouer les tests sans ouvrir Postman (par exemple avant une livraison) :</p>
+<ol class="steps">
+  <li>
+    <p><strong>Installer Newman</strong> (une fois) : <code>npm install -g newman</code></p>
+  </li>
+  <li>
+    <p><strong>Préparer un environnement avec vos identifiants.</strong> Copiez <code>docs/api/postman/Investally-local.postman_environment.json</code> <strong>hors du dépôt</strong> (par exemple <code>C:\dev\investally\investally-local\env-tests.json</code>) et renseignez <code>email</code>, <code>password</code> et <code>mfaSecret</code>.</p>
+  </li>
+  <li>
+    <p><strong>Lancer.</strong></p>
+<pre><code>node scripts/api-docs/run-newman.mjs --env C:\dev\investally\investally-local\env-tests.json --report rapport.json</code></pre>
+    <p>La commande saute automatiquement les dossiers « 00b » et « 98 ». Options : <code>--only 00,01,90</code> pour ne lancer que certains dossiers. Code de sortie 0 si tout passe, 1 sinon.</p>
+  </li>
+</ol>
+<div class="ok"><strong>Résultat de référence</strong> (pile jetable, jeu de démonstration, Super administrateur) : <strong>373 requêtes, 1 412 vérifications, 0 échec</strong>, en 40 secondes.</div>
+
+<h2 id="base">5. Tester la base de données</h2>
+<p>Postman ne sait pas interroger une base de données : le test de la base se fait avec un script en lecture seule, qui lance <strong>22 vérifications d'intégrité</strong> (références entre domaines, places et agréments, chevauchement d'absences, comptes sans rôle…). Chacune doit renvoyer zéro ligne.</p>
+<pre><code># Base locale : utilisateur investally_local, base investally_local, port 54330 ;
+# le mot de passe (dbPassword) est dans C:\dev\investally\investally-local\secrets.json
+$env:DATABASE_URL = "postgresql://investally_local:&lt;dbPassword&gt;@127.0.0.1:54330/investally_local"    # PowerShell
+node scripts/db-docs/run-verifications.mjs</code></pre>
+<p>Sans Node : <code>psql "$DATABASE_URL" -f docs/base-de-donnees/verifications.sql</code> (chaque résultat non vide est une anomalie). Le dictionnaire complet de la base est dans <code>docs/base-de-donnees/DICTIONNAIRE.md</code>.</p>
+<div class="ok"><strong>Résultat de référence :</strong> 22 / 22 vérifications réussies sur la pile de démonstration.</div>
+
+<h2 id="lire">6. Lire les résultats</h2>
+<div class="table-scroll"><table>
+  <tr><th>Ce que vous voyez</th><th>Ce que cela veut dire</th></tr>
+  <tr><td>Tout est vert</td><td>Les routes répondent comme documenté : pas d'erreur serveur, jeton accepté, format d'erreur correct, règles des parcours respectées.</td></tr>
+  <tr><td><strong>401</strong> dans « 01 — Sécurité »</td><td><strong>Normal</strong> : c'est le résultat attendu (la route refuse l'appel sans jeton).</td></tr>
+  <tr><td><strong>404</strong> sur une route avec un identifiant</td><td><strong>Normal</strong> pour un identifiant inexistant : « introuvable ». Les parcours (90) créent de vrais objets, que les requêtes suivantes réutilisent.</td></tr>
+  <tr><td><strong>400</strong> sur une route de création</td><td><strong>Normal</strong> : la requête de route envoie volontairement un corps vide, pour vérifier que la validation refuse sans rien créer.</td></tr>
+  <tr><td>Un test « Le jeton est accepté » en rouge</td><td>Problème d'<strong>authentification</strong> : jeton absent, expiré, ou session fermée (par exemple après « 98 »). Relancez « 00 ».</td></tr>
+  <tr><td>Un test « Pas d'erreur serveur » en rouge</td><td>Un <strong>vrai défaut</strong> de l'API (statut 500). Notez la route et le corps envoyé.</td></tr>
+</table></div>
+<p>Le catalogue <code>tests-api.json</code> liste, pour chaque route, <em>quels tests</em> sont attendus : utile pour savoir ce qu'un test rouge contrôle.</p>
+
+<h2 id="depannage">7. Dépannage</h2>
+<div class="table-scroll"><table>
+  <tr><th>Symptôme</th><th>Cause probable</th><th>Quoi faire</th></tr>
+  <tr><td>Connexion impossible (« could not get response »)</td><td>L'API n'est pas démarrée, ou mauvais port</td><td>Vérifier <code>curl http://127.0.0.1:3001/health/live</code> ; corriger <code>baseUrl</code></td></tr>
+  <tr><td><strong>401</strong> partout après la connexion</td><td>Le second facteur n'a pas été vérifié, ou la session est fermée</td><td>Relancer « 00 — Authentification » (les deux requêtes)</td></tr>
+  <tr><td><strong>403 « Vérification MFA requise »</strong></td><td>Jeton non vérifié par le second facteur</td><td>Lancer « 2 — Vérifier le code du second facteur »</td></tr>
+  <tr><td>« 2 — Vérifier… » répond 400 ou 401</td><td>Mauvais <code>mfaSecret</code>, ou horloge du poste décalée (le code change toutes les 30 s), ou même code déjà utilisé</td><td>Vérifier la clé ; attendre 30 s et relancer ; synchroniser l'heure du poste</td></tr>
+  <tr><td><strong>403 « Origine non autorisée »</strong> sur un POST/PUT/DELETE</td><td>La variable <code>origin</code> n'est pas une origine autorisée de l'API</td><td>Mettre <code>origin</code> à <code>http://127.0.0.1:3000</code> (l'interface locale)</td></tr>
+  <tr><td><strong>429</strong></td><td>Trop de tentatives : la connexion et le second facteur sont limités à 5 par minute</td><td>Attendre une minute</td></tr>
+  <tr><td>Les parcours (90) échouent en 403</td><td>Le compte n'a pas tous les droits</td><td>Utiliser le Super administrateur</td></tr>
+  <tr><td>Beaucoup d'échecs après un changement du code</td><td>L'API tourne sur un ancien build</td><td>Redémarrer avec <code>--rebuild</code></td></tr>
+  <tr><td><code>newman</code> introuvable</td><td>Newman non installé</td><td><code>npm install -g newman</code></td></tr>
+</table></div>
+
+<h2 id="regenerer">8. Régénérer après un changement</h2>
+<p>La collection et le catalogue ne s'écrivent <strong>jamais à la main</strong> : ils sont produits depuis le code, pour ne pas dériver. Après l'ajout ou la modification d'une route :</p>
+<pre><code>cd apps\crm-api
+npx tsc -p tsconfig.build.json --outDir dist-docs
+cd ..\..
+# DATABASE_URL : une base JETABLE migrée (par exemple lancée par « node apps/crm-api/scripts/test-db.mjs --keep »)
+node scripts/api-docs/export-openapi.cjs --dist apps/crm-api/dist-docs --out docs/api/openapi.json
+node scripts/api-docs/build-postman.mjs</code></pre>
+<p>La dernière commande réécrit la collection, l'environnement, <code>tests-api.json</code> et la référence des routes. Elle <strong>échoue</strong> si un parcours vise une route qui n'existe plus : une dérive ne passe pas inaperçue.</p>
+
+<h3>Ce que ces tests ne couvrent pas</h3>
+<ul>
+  <li><strong>Les droits par rôle</strong> : la collection tourne avec un seul compte. La matrice des permissions est vérifiée par les tests automatiques du projet (<code>roles.spec</code>, contrat anti-accès croisé, tests d'intégration). Pour essayer un autre rôle, changez les trois variables du compte : les routes refusées répondent 403 ou 404, que les tests acceptent.</li>
+  <li><strong>L'envoi de fichiers</strong> (documents, pièces jointes) : testé avec un corps vide ; un envoi réel se fait à la main.</li>
+  <li><strong>Les valeurs exactes</strong> des réponses hors parcours : on contrôle la forme (statut, JSON, champs), pas chaque valeur.</li>
+</ul>
+
+<footer>
+  Investally Business Platform · guide généré avec la documentation de l'API (<code>docs/api/README.md</code> pour la référence, <code>docs/base-de-donnees/README.md</code> pour la base). Ce fichier est autonome : aucune ressource externe.
+</footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,81 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>API Investally : guide, documentation et tests Postman</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="../INDEX.html">Index</a> · <a href="../GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="../ARCHITECTURE.html">Architecture</a> · <a href="../SECURITY.html">Sécurité</a> · <a href="../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="../TECH-DEBT.html">Dette</a> · <a href="../CHARTE-DE-TESTS.html">Charte de tests</a> · <a href="../tests/README.html">Fiches de test</a> · <a href="../design/README.html">Design</a> · <a href="../livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>API Investally : guide, documentation et tests Postman</h1>
+<h2>Quel type d'API ?</h2>
+<p>Une <strong>API REST en JSON sur HTTP</strong>, construite avec <strong>NestJS</strong> (Node.js), décrite en <strong>OpenAPI 3</strong> (Swagger).</p>
+<div class="table-wrap"><table><thead><tr><th>Sujet</th><th>Réponse</th></tr></thead><tbody>
+<tr><td>Style</td><td>REST : ressources (<code>/companies</code>, <code>/learners</code>…), verbes HTTP (GET, POST, PUT, DELETE), JSON dans les deux sens. Ni GraphQL, ni gRPC</td></tr>
+<tr><td>Adresse de base</td><td><code>/api/v1/…</code> (préfixe versionné). Deux routes de santé hors préfixe : <code>/health/live</code> et <code>/health/ready</code></td></tr>
+<tr><td>Description</td><td>OpenAPI 3 : interface <code>/api/docs</code>, document <code>/api/docs-json</code> (désactivés en production). Une copie enrichie est dans <a href="openapi.json"><code>openapi.json</code></a></td></tr>
+<tr><td>Authentification</td><td>Jeton d'accès <strong>Bearer (JWT)</strong> dans l'en-tête <code>Authorization</code>, jeton de rafraîchissement en <strong>cookie</strong> <code>HttpOnly</code>, <strong>second facteur (MFA) obligatoire</strong> sur toutes les routes protégées</td></tr>
+<tr><td>Autorisation</td><td>Permissions <code>module.ressource.action</code> avec <strong>portée</strong> (Propre, Équipe, Tous) ; un objet hors portée répond <strong>404 « introuvable »</strong>, jamais « interdit » (pas de fuite d'existence)</td></tr>
+<tr><td>Erreurs</td><td>« Problem details » (RFC 7807) : <code>type</code>, <code>title</code>, <code>status</code>, <code>detail</code></td></tr>
+<tr><td>Concurrence</td><td><strong>Verrou optimiste</strong> : un champ <code>version</code> à renvoyer pour modifier ; une version périmée répond 409</td></tr>
+<tr><td>Protection</td><td>En-tête <code>Origin</code> contrôlé sur les requêtes qui modifient, limitation de débit (429), en-têtes de sécurité</td></tr>
+<tr><td>Données</td><td>Identifiants en UUID, dates en ISO 8601, <strong>montants en texte décimal</strong> (<code>"150000.00"</code>), jours civils <code>AAAA-MM-JJ</code></td></tr>
+</tbody></table></div>
+<p><strong>Pas à pas pour charger l'API et la tester</strong> : <a href="GUIDE-CHARGER-ET-TESTER-L-API.html">GUIDE-CHARGER-ET-TESTER-L-API.html</a> (page autonome, à ouvrir dans un navigateur). <strong>Les tests en JSON</strong> : <a href="tests-api.json"><code>tests-api.json</code></a> (catalogue lisible) et <a href="postman/Investally-API.postman_collection.json"><code>postman/Investally-API.postman_collection.json</code></a> (exécutable).</p>
+<p>La liste exhaustive des routes, avec la permission de chacune, est dans <a href="REFERENCE-DES-ROUTES.html">REFERENCE-DES-ROUTES.md</a> (générée). La base de données est décrite dans <a href="../base-de-donnees/README.html"><code>../base-de-donnees/</code></a>.</p>
+<h2>Se connecter (3 appels)</h2>
+<pre><code># 1. Connexion : renvoie un jeton d&#x27;accès (pas encore vérifié par le second facteur)
+curl -s -X POST http://127.0.0.1:3001/api/v1/auth/login -H &quot;Content-Type: application/json&quot; -H &quot;Origin: http://127.0.0.1:3000&quot; \
+     -d &#x27;{&quot;email&quot;:&quot;…&quot;,&quot;password&quot;:&quot;…&quot;}&#x27;
+# 2. Second facteur : le code à 6 chiffres de l&#x27;application d&#x27;authentification (ou un code de secours)
+curl -s -X POST http://127.0.0.1:3001/api/v1/auth/mfa/verify -H &quot;Authorization: Bearer &lt;jeton du 1&gt;&quot; -H &quot;Content-Type: application/json&quot; -H &quot;Origin: http://127.0.0.1:3000&quot; \
+     -d &#x27;{&quot;code&quot;:&quot;123456&quot;}&#x27;          # renvoie le jeton VÉRIFIÉ : à utiliser pour tout le reste
+# 3. Appeler une route
+curl -s http://127.0.0.1:3001/api/v1/companies?pageSize=5 -H &quot;Authorization: Bearer &lt;jeton du 2&gt;&quot;</code></pre>
+<p>Un compte qui n'a pas encore de second facteur l'enrôle par <code>POST /auth/mfa/enroll/start</code> puis <code>/auth/mfa/enroll/confirm</code> (voir le dossier « 00b » de la collection). <strong>Les routes qui modifient</strong> (POST, PUT, DELETE) exigent un en-tête <code>Origin</code> autorisé (<code>ALLOWED_ORIGINS</code>).</p>
+<h2>Conventions</h2>
+<ul><li><strong>Liste paginée</strong> : <code>?page=1&amp;pageSize=20</code> (100 au plus) ; réponse <code>{ "items": […], "total": 123, "page": 1, "pageSize": 20 }</code>.</li><li><strong>Erreur</strong> : <code>{ "type": "…", "title": "NOT_FOUND", "status": 404, "detail": "Entreprise introuvable" }</code>. Statuts usuels : 400 validation, 401 non authentifié, 403 droit ou second facteur manquant (<code>MFA_REQUIRED</code>), 404 introuvable ou hors portée, 409 conflit (doublon, version périmée), 415 type de contenu, 429 trop de requêtes.</li><li><strong>Modifier</strong> : <code>PUT /companies/{id}</code> avec <code>{ "version": 3, … }</code> ; la réponse porte la nouvelle version.</li><li><strong>Rien n'est supprimé</strong> : archivage, annulation avec motif, suppression logique.</li><li><strong>Audit</strong> : toute action qui modifie (et chaque export) laisse une trace avec l'auteur, la session et l'adresse.</li></ul>
+<h2>Tests Postman</h2>
+<p>Fichiers dans <a href="postman/"><code>postman/</code></a> :</p>
+<ul><li><code>Investally-API.postman_collection.json</code> : la collection <strong>avec ses tests</strong> (générée, ne pas modifier à la main) ;</li><li><code>Investally-local.postman_environment.json</code> : l'environnement, <strong>sans aucun secret</strong> ;</li><li><a href="tests-api.json"><code>tests-api.json</code></a> : le <strong>catalogue des tests</strong> en JSON, lisible sans Postman (chaque route, sa permission, ses statuts attendus, la liste de ses tests) ; généré avec la collection.</li></ul>
+<h3>Utiliser</h3>
+<ol><li>Postman › Import : les deux fichiers.</li><li>Choisir l'environnement « Investally — local » et renseigner <strong><code>email</code></strong>, <strong><code>password</code></strong> et <strong><code>mfaSecret</code></strong> (le secret du second facteur du compte de test, celui du QR code) ; <code>baseUrl</code> vaut <code>http://127.0.0.1:3001</code> (l'API locale).</li><li>Lancer <strong>« 00 — Authentification »</strong> (connexion, puis second facteur : le code à 6 chiffres est <strong>calculé automatiquement</strong> depuis <code>mfaSecret</code>). Le jeton est conservé et utilisé par tout le reste.</li><li>Lancer le dossier voulu, ou toute la collection (Collection Runner).</li></ol>
+<h3>Ce que contient la collection</h3>
+<div class="table-wrap"><table><thead><tr><th>Dossier</th><th>Contenu</th><th>Tests</th></tr></thead><tbody>
+<tr><td>00 — Authentification</td><td>Connexion puis second facteur</td><td>Jeton remis, jeton vérifié</td></tr>
+<tr><td>00b — Première connexion</td><td>Enrôler le second facteur d'un compte neuf</td><td>Secret remis, 10 codes de secours remis</td></tr>
+<tr><td>01 — Sécurité (173 requêtes)</td><td><strong>Chaque route protégée appelée sans jeton</strong></td><td>Refusée (401) au format « problem details »</td></tr>
+<tr><td>02 — Santé</td><td><code>/health/live</code>, <code>/health/ready</code></td><td>200</td></tr>
+<tr><td>90 — Parcours de bout en bout</td><td>24 étapes qui créent leurs propres données : entreprise (créer, lire, modifier, exporter), formation (programme, certificat, salle, formateur, session, <strong>étudiant sans entreprise et payeur</strong>, inscription, confirmation, annulation), congés (règles, types, jours fériés)</td><td>Statuts, valeurs métier (montant dû, absence d'agrément, nature), erreur de validation attendue</td></tr>
+<tr><td>10 à 34 — une requête par route (172)</td><td>Une requête par route, regroupées par domaine, avec la permission dans la description</td><td><strong>Pas d'erreur serveur, jeton accepté, statut prévu, temps de réponse, JSON, erreur au format RFC 7807, champs documentés présents, liste paginée</strong></td></tr>
+<tr><td>98 — Actions de session</td><td>Déconnexion, changement de mot de passe, rafraîchissement, second facteur, régénération des codes de secours</td><td>À lancer <strong>à part</strong> : elles ferment la session ou changent un secret</td></tr>
+</tbody></table></div>
+<p>Les parcours (90) s'exécutent <strong>avant</strong> les requêtes de route : ils enregistrent les identifiants qu'ils créent (<code>companyId</code>, <code>learnerId</code>, <code>sessionId</code>…) dans l'environnement, que les requêtes de route réutilisent pour viser de <strong>vrais objets</strong>. Les autres identifiants valent un UUID inexistant : la route répond alors « introuvable », ce qui prouve que la route existe, que le jeton est accepté et que la portée est contrôlée.</p>
+<h3>En ligne de commande (Newman)</h3>
+<pre><code>npm install -g newman
+node scripts/api-docs/run-newman.mjs --env mon-environnement.json --report rapport.json</code></pre>
+<p>La commande exclut automatiquement les dossiers 00b et 98 ; <code>--only 00,01,90</code> choisit des dossiers.</p>
+<p><strong>Résultat de référence</strong> (pile jetable, jeu de démonstration, compte Super administrateur) : <strong>373 requêtes, 1 412 assertions, 0 échec</strong>, en 40 secondes ; 98 : 10 requêtes, 50 assertions, 0 échec ; 00b : 2 requêtes, 4 assertions, 0 échec.</p>
+<h3>Régénérer (à chaque changement de route)</h3>
+<pre><code>cd apps/crm-api &amp;&amp; npx tsc -p tsconfig.build.json --outDir dist-docs &amp;&amp; cd ../..
+DATABASE_URL=&lt;base jetable&gt; node scripts/api-docs/export-openapi.cjs --dist apps/crm-api/dist-docs --out docs/api/openapi.json
+node scripts/api-docs/build-postman.mjs</code></pre>
+<p>La construction <strong>échoue</strong> si une étape d'un parcours vise une route qui n'existe plus : la collection ne peut pas dériver du code sans qu'on le voie.</p>
+<h3>Précautions</h3>
+<ul><li><strong>Ne jamais viser une base de production</strong> : les parcours créent des données (préfixées « Postman »).</li><li>Gardez <code>password</code> et <code>mfaSecret</code> dans un environnement <strong>hors du dépôt</strong> (type « secret » dans Postman).</li><li>Les requêtes de route qui créent (POST sans identifiant dans l'adresse) envoient <strong>volontairement un corps vide</strong> : la route doit refuser (400) sans rien créer ; les créations réelles sont dans les parcours.</li></ul>
+<h2>Ce que ces tests ne couvrent pas</h2>
+<ul><li><strong>Les droits par rôle</strong> : la collection tourne avec <strong>un seul compte</strong> (Super administrateur). La matrice des permissions par rôle est vérifiée par les tests automatiques du projet (<code>roles.spec</code>, contrat anti-IDOR, tests d'intégration), pas par Postman. Pour essayer un autre rôle, changez <code>email</code>/<code>password</code>/<code>mfaSecret</code> : les routes refusées répondront 403 ou 404, ce que les tests acceptent.</li><li><strong>Les routes qui reçoivent des fichiers</strong> (documents, pièces jointes) : le corps envoyé est vide ; un envoi réel se fait à la main.</li><li><strong>Le cookie de rafraîchissement</strong> n'est exercé que dans le dossier 98.</li><li><strong>Les réponses exactes</strong> (contenu métier) hors parcours : les tests de route contrôlent la forme (statut, JSON, champs documentés), pas chaque valeur.</li></ul></main></body></html>
