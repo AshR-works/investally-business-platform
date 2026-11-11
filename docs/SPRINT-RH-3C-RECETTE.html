@@ -1,0 +1,47 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>RH-3c — écrans des contrats et des parcours, données de démonstration : recette</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="INDEX.html">Index</a> · <a href="GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="ARCHITECTURE.html">Architecture</a> · <a href="SECURITY.html">Sécurité</a> · <a href="METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="TECH-DEBT.html">Dette</a> · <a href="CHARTE-DE-TESTS.html">Charte de tests</a> · <a href="tests/README.html">Fiches de test</a> · <a href="design/README.html">Design</a> · <a href="livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>RH-3c — écrans des contrats et des parcours, données de démonstration : recette</h1>
+<p><em>Branche <code>feat/rh-3c-ecrans</code> · 2026-11-12 · décisions D67 et D68 (<a href="adr/0013-contrats-du-personnel-sans-donnees-sensibles.html">ADR-0013</a>, <a href="adr/0014-parcours-d-integration-et-de-depart.html">ADR-0014</a>).</em></p>
+<p>Troisième tranche de RH-3 (après 3a et 3b, l'API). Reste <strong>3d</strong> : recette complète, mutants, Newman, fiches de test.</p>
+<h2>Ce qui est livré</h2>
+<div class="table-wrap"><table><thead><tr><th>Écran</th><th>Pour qui</th><th>Contenu</th></tr></thead><tbody>
+<tr><td><strong>Contrats</strong> (<code>/hr/contracts</code>)</td><td>RH et Super administrateur : tout voir et gérer ; Direction : tout lire ; employé : « Mon contrat » (le sien) ; responsables et collègues : rien</td><td>Liste filtrable (en cours, terminés) : employé, type, début, fin, fin d'essai, état, motif de fin ; <strong>Nouveau contrat</strong> ; menu de ligne <strong>Ajuster</strong> (prolonger la fin, déplacer l'essai) et <strong>Mettre fin</strong> (date et <strong>motif choisi dans une liste</strong>) ; section <strong>Types de contrat</strong> (créer, modifier, désactiver)</td></tr>
+<tr><td><strong>Contrats à échéance</strong> (<code>/hr/contracts/deadlines</code>)</td><td>RH et Super administrateur seulement</td><td>Fins de contrat et fins d'essai à venir (30, 60, 90, 180 ou 365 jours), jours restants en pastille (rouge dans la semaine, orange dans le mois) ; aucun courriel</td></tr>
+<tr><td><strong>Parcours</strong> (<code>/hr/journeys</code>)</td><td>RH et Super administrateur : tout ; Direction : lecture ; employé : « Mes parcours »</td><td>Liste (état, nature), avancement, retards ; <strong>Lancer un parcours</strong> (employé, nature, date de référence facultative)</td></tr>
+<tr><td><strong>Un parcours</strong> (<code>/hr/journeys/:id</code>)</td><td>idem</td><td>Tâches avec responsable, échéance, <strong>case à cocher</strong> (la RH coche et décoche), date et auteur de chaque coche, pastille « En retard », barre d'avancement, <strong>Annuler le parcours</strong></td></tr>
+<tr><td><strong>Modèles de parcours</strong> (<code>/hr/journeys/templates</code>)</td><td>RH et Super administrateur : modifier ; Direction : lire</td><td>Un modèle par nature ; titre, responsable, échéance (avec phrase en clair : « 3 jours avant l'entrée »), <strong>monter, descendre, retirer, ajouter</strong> une tâche, 30 au plus</td></tr>
+<tr><td><strong>Menu</strong></td><td>selon les droits</td><td>Quatre entrées dans « Ressources humaines » : Contrats, Contrats à échéance, Parcours, Modèles de parcours</td></tr>
+<tr><td><strong>Données de démonstration</strong></td><td><code>--demo</code></td><td>Bloc <strong>contrats</strong> (12 contrats dont deux terminés, un CDI après un CDD, quatre échéances proches) et bloc <strong>parcours</strong> (une intégration en cours avec un retard, une terminée, un départ) ; chargés <strong>par les cas d'usage</strong>, chacun seul sur une démo existante</td></tr>
+</tbody></table></div>
+<p>Aucun salaire, aucun document, aucune zone de texte libre dans ces écrans (testé).</p>
+<h2>Preuves</h2>
+<div class="table-wrap"><table><thead><tr><th>Contrôle</th><th>Résultat</th></tr></thead><tbody>
+<tr><td>Types</td><td><code>tsc</code> propre (API et interface)</td></tr>
+<tr><td>Tests de l'interface</td><td><strong>813 réussis</strong> (30 nouveaux dans <code>rh-3c.test</code> : règles de saisie identiques à celles du serveur, actions par état et droit, réordonnancement, menu par profil, aucun champ de rémunération ni de texte libre)</td></tr>
+<tr><td>Tests du plan de démonstration</td><td><strong>41 réussis</strong> (nouveaux : un seul contrat en cours par employé, pas de chevauchement, essai dans le contrat, aucun contrat avant l'entrée, au moins trois échéances dans les 30 jours, coches après le lancement)</td></tr>
+<tr><td>Intégration (base jetable)</td><td><code>seed-demo</code> : <strong>10 réussis</strong>, dont 12 contrats (2 terminés pour fin de CDD, 10 en cours), 3 parcours (1 terminé), 9 tâches cochées avec date et auteur ; blocs rechargés seuls</td></tr>
+<tr><td>Contrôle visuel (navigateur, pile jetable avec démonstration, compte Super administrateur)</td><td><strong>Contrats</strong> : 10 contrats en cours, filtres, « Nouveau contrat » (second contrat en cours refusé avec le message du serveur) ; <strong>échéances</strong> : 4 lignes avec pastilles rouge et orange ; <strong>parcours</strong> : liste, parcours avec trois tâches cochées (date et auteur), une tâche « En retard », cochage d'une tâche (avancement 67 %, retard levé) ; <strong>modèles</strong> : cinq tâches de départ avec phrase d'échéance en clair. Pile <strong>supprimée</strong> ensuite</td></tr>
+</tbody></table></div>
+<h2>Limites connues</h2>
+<ul><li><strong>Pas d'écran dans la fiche d'un employé</strong> : les contrats et parcours d'un employé se retrouvent depuis leurs listes, pas depuis sa fiche.</li><li><strong>Seule la RH coche</strong> (dette D182) : l'employé voit ses tâches mais ne les coche pas.</li><li><strong>Mutants et Newman</strong> : prévus en <strong>3d</strong>.</li><li><strong>Non vérifié</strong> : mode sombre, 1280 px, clavier, lecteur d'écran.</li></ul></main></body></html>

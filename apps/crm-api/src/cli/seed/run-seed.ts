@@ -16,6 +16,8 @@ import { CancelSessionUseCase, OpenSessionUseCase, PlanSessionUseCase, PostponeS
 import { CancelEnrollmentUseCase, ConfirmEnrollmentUseCase, EnrollLearnerUseCase, ListApprovalOptionsHandler, ReplaceEnrollmentUseCase } from '../../modules/training/application/enrollment-use-cases';
 import { RegisterLearnerUseCase } from '../../modules/training/application/learner-use-cases';
 import { RegisterEmployeeUseCase, SetEmployeeStatusUseCase } from '../../modules/hr/application/employee-use-cases';
+import { CreateContractUseCase, EndContractUseCase } from '../../modules/hr/application/contract-use-cases';
+import { CompleteJourneyTaskUseCase, LaunchJourneyUseCase } from '../../modules/hr/application/journey-use-cases';
 import { DecideLeaveUseCase, RequestLeaveUseCase } from '../../modules/hr/application/leave-use-cases';
 import { AuthorizationService } from '../../modules/iam/application/authorization.service';
 import type { AccessContext } from '../../modules/iam';
@@ -71,6 +73,8 @@ export async function runSeed(app: ProviderSource, allEvents: readonly SeedEvent
     rh: (await prisma.db.employee.count({ where: { workEmail: { endsWith: RH_EMAIL_DOMAIN } } })) > 0,
     particuliers: (await prisma.db.learner.count({ where: { kind: { not: 'COMPANY' }, emailKey: { endsWith: INDIVIDUALS_EMAIL_DOMAIN } } })) > 0,
     conges: (await prisma.db.leaveRequest.count({ where: { employee: { workEmail: { endsWith: RH_EMAIL_DOMAIN } } } })) > 0,
+    contrats: (await prisma.db.contract.count({ where: { employee: { workEmail: { endsWith: RH_EMAIL_DOMAIN } } } })) > 0,
+    parcours: (await prisma.db.journey.count({ where: { employee: { workEmail: { endsWith: RH_EMAIL_DOMAIN } } } })) > 0,
   };
   const toLoad = SEED_BLOCKS.filter((block) => !present[block]);
   if (toLoad.length === 0) {
@@ -94,7 +98,7 @@ export async function runSeed(app: ProviderSource, allEvents: readonly SeedEvent
     if (!found) throw new Error(`Objet « ${key} » introuvable : le plan est incohérent`);
     return found;
   };
-  const versionOf = async (kind: 'company' | 'offer' | 'followup' | 'appointment' | 'opportunity' | 'approval' | 'receipt' | 'ambassador' | 'employee' | 'leaveRequest', key: string): Promise<number> => {
+  const versionOf = async (kind: 'company' | 'offer' | 'followup' | 'appointment' | 'opportunity' | 'approval' | 'receipt' | 'ambassador' | 'employee' | 'leaveRequest' | 'contract' | 'journey', key: string): Promise<number> => {
     const where = { id: id(key) };
     const row = await (prisma.db[kind] as unknown as { findUniqueOrThrow(args: { where: { id: string }; select: { version: true } }): Promise<{ version: number }> }).findUniqueOrThrow({ where, select: { version: true } });
     return row.version;
@@ -312,6 +316,25 @@ export async function runSeed(app: ProviderSource, allEvents: readonly SeedEvent
           case 'leaveDecision':
             await use(DecideLeaveUseCase).execute({ id: id(op.leave), decision: op.decision, note: op.note, version: await versionOf('leaveRequest', op.leave), access, actor });
             break;
+          case 'contract': {
+            const type = await prisma.db.contractType.findUniqueOrThrow({ where: { code: op.typeCode }, select: { id: true } });
+            const view = await use(CreateContractUseCase).execute({ employeeId: await employeeIdOf(op.employee), contractTypeId: type.id, start: op.start, end: op.end, probationEnd: op.probationEnd, access, actor });
+            ids.set(op.key, view.id);
+            break;
+          }
+          case 'contractEnd':
+            await use(EndContractUseCase).execute({ id: id(op.contract), version: await versionOf('contract', op.contract), endedOn: op.endedOn, reason: op.reason, access, actor });
+            break;
+          case 'journey': {
+            const view = await use(LaunchJourneyUseCase).execute({ employeeId: await employeeIdOf(op.employee), kind: op.kind, referenceDate: op.referenceDate, access, actor });
+            ids.set(op.key, view.id);
+            break;
+          }
+          case 'journeyTask': {
+            const tasks = await prisma.db.journeyTask.findMany({ where: { journeyId: id(op.journey) }, orderBy: { sortOrder: 'asc' }, select: { id: true } });
+            await use(CompleteJourneyTaskUseCase).execute({ id: id(op.journey), taskId: tasks[op.index]!.id, version: await versionOf('journey', op.journey), access, actor });
+            break;
+          }
           case 'individual': {
             ids.set(op.key, (await use(RegisterLearnerUseCase).execute({ kind: op.kind, lastName: op.lastName, firstName: op.firstName, email: op.email, phone: op.phone, access, actor })).id);
             break;

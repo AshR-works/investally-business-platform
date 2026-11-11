@@ -212,6 +212,8 @@ describe('plan du jeu de données de démonstration', () => {
     // cinq entreprises clientes (7 opérations chacune), douze apprenants, quatorze inscriptions, dix confirmations, une annulation, un replacement
     expect(byBlock.get('inscriptions')).toBe(5 * 7 + 12 + 14 + 10 + 1 + 1);
     expect(byBlock.get('rh')).toBe(11 + 1); // onze fiches du personnel et une sortie
+    expect(byBlock.get('contrats')).toBe(12 + 2); // douze contrats et deux fins de contrat
+    expect(byBlock.get('parcours')).toBe(3 + 3 + 6); // trois parcours lancés, trois tâches cochées sur l'un, six sur l'autre
     // Aucun bloc ne dépend d'un objet d'un autre : le catalogue et les formateurs n'utilisent que leurs propres clés.
     const keysOf = (block: string) => new Set(plan.filter((e) => blockOf(e.op) === block && 'key' in e.op).map((e) => (e.op as { key: string }).key));
     const catalogueKeys = keysOf('catalogue');
@@ -433,5 +435,80 @@ describe('plan de démonstration — bloc « particuliers » (Lot B)', () => {
 
   it('ne contient aucune donnée réelle : noms fictifs, payeurs marqués « donnée de démonstration »', () => {
     for (const e of enrollments) if (e.op.payer.kind === 'THIRD_PARTY') expect(e.op.payer.name).toMatch(/donnée de démonstration/);
+  });
+});
+
+describe('plan de démonstration — blocs « contrats » et « parcours »', () => {
+  const plan = buildPlan({ anchor: new Date('2026-11-09T10:00:00Z') });
+  const staff = new Map(plan.flatMap((e) => (e.op.k === 'employee' ? [[e.op.key, e.op] as const] : [])));
+  const contracts = plan.flatMap((e) => (e.op.k === 'contract' ? [{ at: e.at, who: e.who, op: e.op }] : []));
+  const ends = plan.flatMap((e) => (e.op.k === 'contractEnd' ? [{ at: e.at, who: e.who, op: e.op }] : []));
+  const journeys = plan.flatMap((e) => (e.op.k === 'journey' ? [{ at: e.at, who: e.who, op: e.op }] : []));
+  const checks = plan.flatMap((e) => (e.op.k === 'journeyTask' ? [{ at: e.at, who: e.who, op: e.op }] : []));
+  const day = (iso: string) => new Date(`${iso}T00:00:00Z`).getTime();
+  const anchorDay = day('2026-11-09');
+
+  it('tout est saisi par la RH, sur des fiches du plan et des types de contrat connus', () => {
+    for (const e of [...contracts, ...ends, ...journeys, ...checks]) expect(e.who).toBe('rh');
+    for (const c of contracts) {
+      expect(staff.has(c.op.employee)).toBe(true);
+      expect(['CDI', 'CDD', 'STAGE', 'PRESTATION']).toContain(c.op.typeCode);
+    }
+    for (const j of journeys) expect(staff.has(j.op.employee)).toBe(true);
+  });
+
+  it('un contrat à durée déterminée a une fin, un CDI n’en a pas, l’essai reste dans le contrat, et aucun contrat ne commence avant l’entrée', () => {
+    for (const { op } of contracts) {
+      expect(op.typeCode === 'CDI').toBe(op.end === undefined);
+      if (op.end) expect(op.end >= op.start).toBe(true);
+      if (op.probationEnd) {
+        expect(op.probationEnd >= op.start).toBe(true);
+        if (op.end) expect(op.probationEnd <= op.end).toBe(true);
+      }
+      expect(op.start >= staff.get(op.employee)!.hiredOn).toBe(true);
+    }
+  });
+
+  it('au plus un contrat en cours par employé, sans chevauchement avec les contrats terminés', () => {
+    const ended = new Set(ends.map((e) => e.op.contract));
+    const active = contracts.filter((c) => !ended.has(c.op.key));
+    expect(new Set(active.map((c) => c.op.employee)).size).toBe(active.length);
+    for (const e of ends) {
+      const c = contracts.find((x) => x.op.key === e.op.contract)!;
+      expect(e.at.getTime() > c.at.getTime()).toBe(true);
+      expect(e.op.endedOn >= c.op.start).toBe(true);
+      if (c.op.end) expect(e.op.endedOn <= c.op.end).toBe(true);
+      expect(['FIXED_TERM_END', 'PROBATION_END', 'RESIGNATION', 'MISSION_END', 'OTHER']).toContain(e.op.reason);
+      // Un contrat qui suit un contrat terminé de la même personne commence après sa fin.
+      for (const later of contracts.filter((x) => x.op.employee === c.op.employee && x.op.key !== c.op.key)) {
+        if (later.at.getTime() > e.at.getTime()) expect(later.op.start > e.op.endedOn).toBe(true);
+      }
+    }
+  });
+
+  it('montre l’écran des échéances : au moins trois dates dans les 30 jours, un contrat qui se termine plus tard', () => {
+    const soon = contracts.flatMap(({ op }) => [op.end, op.probationEnd].flatMap((d) => (d && day(d) >= anchorDay && day(d) - anchorDay <= 30 * 86_400_000 ? [d] : [])));
+    expect(soon.length).toBeGreaterThanOrEqual(3);
+    expect(contracts.some(({ op }) => op.end && day(op.end) - anchorDay > 60 * 86_400_000)).toBe(true);
+  });
+
+  it('les parcours : une intégration en cours, une terminée, un départ ; les coches viennent après le lancement', () => {
+    expect(journeys.map((j) => j.op.kind).sort()).toEqual(['OFFBOARDING', 'ONBOARDING', 'ONBOARDING']);
+    const perJourney = new Map<string, number>();
+    for (const c of checks) {
+      perJourney.set(c.op.journey, (perJourney.get(c.op.journey) ?? 0) + 1);
+      const j = journeys.find((x) => x.op.key === c.op.journey)!;
+      expect(c.at.getTime() > j.at.getTime()).toBe(true);
+      expect(c.op.index).toBeGreaterThanOrEqual(0);
+      expect(c.op.index).toBeLessThan(6);
+    }
+    expect([...perJourney.values()].sort()).toEqual([3, 6]);
+    // Un seul parcours en cours par employé et par nature.
+    expect(new Set(journeys.map((j) => `${j.op.employee}|${j.op.kind}`)).size).toBe(journeys.length);
+  });
+
+  it('chaque bloc se charge après « rh » (dans l’ordre des dépendances)', () => {
+    expect(SEED_BLOCKS.indexOf('contrats')).toBeGreaterThan(SEED_BLOCKS.indexOf('rh'));
+    expect(SEED_BLOCKS.indexOf('parcours')).toBeGreaterThan(SEED_BLOCKS.indexOf('rh'));
   });
 });
