@@ -17,7 +17,7 @@ Prérequis : Node 22 LTS, pnpm 12, une application TOTP (téléphone ou extensio
 2. Compile l'API et l'interface (long la première fois seulement).
 3. Démarre PostgreSQL (données dans `..\investally-local\pgdata`), applique les migrations, crée rôles et permissions.
 4. Crée `admin@investally.test` si aucun utilisateur n'existe : mot de passe aléatoire **affiché une seule fois**.
-5. Avec `--demo` : un compte par rôle, puis le **jeu de données de démonstration** : 40 entreprises fictives (banques, fintechs, assurances, gestion de patrimoine, bourse, télécoms, industries, PME) réparties entre `compte1`, `compte2` et `compte3`, avec leur vie commerciale sur douze mois : contacts, facilitateurs et commissions, offres, décharges, relances (faites, à venir, en retard), rendez-vous (tenus, annulés, à venir), opportunités à toutes les étapes (perdues, gagnées, dérogations), agréments (demandé, reçu, honoré, expiré, annulé, payeur tiers) et ambassadeurs. Les données sont **entièrement fictives** et passent par les vrais cas d'usage ; le chargement est **rejouable sans doublon** (commande seule : `node apps/crm-api/dist/src/cli/seed-demo.js` après la compilation).
+5. Avec `--demo` : un compte par rôle, puis le **jeu de données de démonstration** : 40 entreprises fictives (banques, fintechs, assurances, gestion de patrimoine, bourse, télécoms, industries, PME) réparties entre `compte1`, `compte2` et `compte3`, avec leur vie commerciale sur douze mois : contacts, facilitateurs et commissions, offres, décharges, relances (faites, à venir, en retard), rendez-vous (tenus, annulés, à venir), opportunités à toutes les étapes (perdues, gagnées, dérogations), agréments (demandé, reçu, honoré, expiré, annulé, payeur tiers) et ambassadeurs. Les données sont **entièrement fictives** et passent par les vrais cas d'usage ; le chargement est **rejouable sans doublon** (commande seule : `node apps/api/dist/src/cli/seed-demo.js` après la compilation).
 6. Démarre l'API puis l'interface et affiche les adresses.
 
 ## Utiliser
@@ -53,7 +53,7 @@ Mots de passe : `..\investally-local\demo-accounts.json` (local, hors dépôt, a
 ## Valider la qualité sans la pile
 ```bash
 pnpm ci                                   # types, architecture, tests unitaires
-node apps/crm-api/scripts/test-db.mjs     # intégration, base jetable (TEST_DB_PORT=54340 si le port 54329 est occupé)
+node apps/api/scripts/test-db.mjs     # intégration, base jetable (TEST_DB_PORT=54340 si le port 54329 est occupé)
 ```
 
 ## Scénarios à parcourir

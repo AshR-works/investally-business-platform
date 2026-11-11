@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 // Cohérence interface ↔ serveur : les domaines RÉELS de l'API sont interrogés sur les mêmes cas.
-import { CourseModule as ServerModule } from '../../crm-api/src/modules/training/domain/course-module';
-import { Program as ServerProgram } from '../../crm-api/src/modules/training/domain/program';
-import { RHYTHMS } from '../../crm-api/src/modules/training/domain/rhythms';
-import { Room as ServerRoom } from '../../crm-api/src/modules/training/domain/room';
-import { Trainer as ServerTrainer } from '../../crm-api/src/modules/training/domain/trainer';
-import { Training as ServerTraining } from '../../crm-api/src/modules/training/domain/training';
+import { CourseModule as ServerModule } from '../../api/src/modules/training/domain/course-module';
+import { Program as ServerProgram } from '../../api/src/modules/training/domain/program';
+import { RHYTHMS } from '../../api/src/modules/training/domain/rhythms';
+import { Room as ServerRoom } from '../../api/src/modules/training/domain/room';
+import { Trainer as ServerTrainer } from '../../api/src/modules/training/domain/trainer';
+import { Training as ServerTraining } from '../../api/src/modules/training/domain/training';
 import {
   amountText, ARCHIVE_LABEL, ARCHIVE_PERMISSION, CATALOGUE_SECTIONS, EMPTY_MODULE_FORM, EMPTY_PROGRAM_FORM, EMPTY_ROOM_FORM, EMPTY_TRAINER_FORM, EMPTY_TRAINING_FORM,
   formFromRoom, formFromTraining, moduleBody, moveModule, pricingText, programBody, ROOM_KIND_LABEL, roomBody, seatsText, seatWord, slotsText, trainerBody, trainingBody, validateModule, validateProgram,

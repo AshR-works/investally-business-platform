@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 // Cohérence interface ↔ serveur : le domaine RÉEL du rendez-vous valide les mêmes saisies.
-import { Appointment } from '../../crm-api/src/modules/business-development/domain/appointment';
+import { Appointment } from '../../api/src/modules/business-development/domain/appointment';
 import {
   type AgendaRights, agendaParams, agendaTitle, agendaWindow, APPOINTMENT_ACTION_LABEL, APPOINTMENT_STATUS, APPOINTMENT_TYPES, appointmentActions, appointmentTypeLabel,
   type AppointmentForm, buildAppointmentBody, canPlan, dayHeading, EMPTY_APPOINTMENT_FORM, formFromAppointment, groupByDay, localDay, localTime, mondayOf, plannableTypes,

@@ -35,7 +35,7 @@ function moduleSummary(role, module) {
 const lines = [];
 lines.push('# RBAC — CRM Investally');
 lines.push('');
-lines.push('> **Document généré** par `pnpm crm-api docs:rbac` à partir du code (`apps/crm-api/src/modules/iam/domain`). Ne pas modifier à la main : modifier le code puis régénérer. Les tests `roles.spec.ts` et `core-schema.integration.spec.ts` garantissent que la base contient exactement cette matrice.');
+lines.push('> **Document généré** par `pnpm crm-api docs:rbac` à partir du code (`apps/api/src/modules/iam/domain`). Ne pas modifier à la main : modifier le code puis régénérer. Les tests `roles.spec.ts` et `core-schema.integration.spec.ts` garantissent que la base contient exactement cette matrice.');
 lines.push('');
 lines.push('## 1. Modèle');
 lines.push('');

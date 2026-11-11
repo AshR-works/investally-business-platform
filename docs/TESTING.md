@@ -7,8 +7,8 @@
 |---|---|---|---|
 | Unitaires du Domain | Agrégats, VO, services de domaine — sans base, sans NestJS | Jest | majorité |
 | Use cases | Application avec repositories en mémoire / faux ports | Jest | forte |
-| Intégration et API | Routes réelles (HTTP), RBAC, validation, erreurs, repositories Prisma, contraintes de la base, audit : base PostgreSQL **jetable** lancée par `apps/crm-api/scripts/test-db.mjs` | Jest + helpers HTTP de `test/support` | moyenne |
-| Interface | Logique des écrans, cohérence avec le domaine réel du serveur | Vitest (`apps/crm-web/test`) | moyenne |
+| Intégration et API | Routes réelles (HTTP), RBAC, validation, erreurs, repositories Prisma, contraintes de la base, audit : base PostgreSQL **jetable** lancée par `apps/api/scripts/test-db.mjs` | Jest + helpers HTTP de `test/support` | moyenne |
+| Interface | Logique des écrans, cohérence avec le domaine réel du serveur | Vitest (`apps/web/test`) | moyenne |
 | Mutation | Les tests détectent-ils les fautes injectées ? | scripts `scripts/mutants/` | chaque lot |
 | Architecture | Règles de dépendances | dependency-cruiser / eslint-plugin-boundaries | obligatoire, bloquant |
 | Navigateur réel et accessibilité | Parcours scriptés dans Edge sans fenêtre, axe-core à chaque état d'écran (Playwright non retenu) | `scripts/a11y-audit.mjs` | chaque lot qui touche un écran |

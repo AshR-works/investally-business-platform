@@ -18,8 +18,8 @@ import { createInterface } from 'node:readline/promises';
 import { fileURLToPath } from 'node:url';
 
 const repo = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const apiDir = join(repo, 'apps', 'crm-api');
-const webDir = join(repo, 'apps', 'crm-web');
+const apiDir = join(repo, 'apps', 'api');
+const webDir = join(repo, 'apps', 'web');
 const home = resolve(process.env.INVESTALLY_LOCAL_HOME ?? join(repo, '..', 'investally-local'));
 const PG_PORT = Number(process.env.LOCAL_DB_PORT ?? 54330);
 const API_PORT = Number(process.env.LOCAL_API_PORT ?? 3001);

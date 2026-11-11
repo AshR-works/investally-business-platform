@@ -2,7 +2,7 @@ from pathlib import Path
 # Racine du dépôt : ce script se trouve dans scripts/mutants/.
 REPO = Path(__file__).resolve().parents[2]
 import subprocess, os, sys
-web = str(REPO / 'apps' / 'crm-web')
+web = str(REPO / 'apps' / 'web')
 leave = os.path.join(web, 'lib', 'leave.ts')
 mods = os.path.join(web, 'lib', 'modules.ts')
 # Chaque mutant est une faute plausible dans la logique des écrans de congés (RH-2b) ; la suite doit la détecter.

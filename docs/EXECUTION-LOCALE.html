@@ -26,7 +26,7 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <h2>0. Constat sur l'existant (vérifié dans le dépôt)</h2>
 <div class="table-wrap"><table><thead><tr><th>Élément</th><th>État réel</th><th>Conséquence</th></tr></thead><tbody>
 <tr><td>Modules livrés</td><td>Identité et accès (connexion, MFA, invitations, rôles, sessions), entreprises (Business Development), documents</td><td>On peut tester ces parcours <strong>maintenant</strong>. Opportunités, formations, finance, RH, reporting <strong>n'existent pas encore</strong> (S4 à S6)</td></tr>
-<tr><td>Base de données</td><td>PostgreSQL 17 : <code>docker-compose.yml</code> (service <code>db</code>, port 5433) ou base embarquée jetable (<code>apps/crm-api/scripts/test-db.mjs</code>)</td><td>La base embarquée ne demande <strong>ni Docker ni identifiants</strong></td></tr>
+<tr><td>Base de données</td><td>PostgreSQL 17 : <code>docker-compose.yml</code> (service <code>db</code>, port 5433) ou base embarquée jetable (<code>apps/api/scripts/test-db.mjs</code>)</td><td>La base embarquée ne demande <strong>ni Docker ni identifiants</strong></td></tr>
 <tr><td>Docker</td><td>Non détecté sur le poste de l'assistant ; le <code>docker-compose.yml</code> ne contient <strong>que la base et l'API</strong> (profil <code>full</code>), pas l'interface web, pas de migration ni de seed</td><td>Le Docker complet demande du travail avant d'être utile</td></tr>
 <tr><td>Node</td><td><code>.nvmrc</code> = 22 ; le poste de l'assistant a Node 26.7 (Prisma 7 le supporte « officieusement »)</td><td>Installer Node 22 sur votre poste</td></tr>
 <tr><td>Configuration</td><td>L'API refuse de démarrer en production sans clés (JWT, MFA, documents). En développement, clés <strong>éphémères</strong> : jetons et secrets MFA perdus à chaque redémarrage</td><td>Pour tester sur la durée, il faut des secrets <strong>persistants</strong> locaux</td></tr>
@@ -66,8 +66,8 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <p><strong>Recommandation (à confirmer par vous) : B maintenant, C en S7</strong> (le Dockerfile et le compose existent comme base). Risques de B : divergence avec la production (réduite par la CI qui, elle, tourne sur PostgreSQL 17 réel) ; Node hors version (le script avertit). Réversible : aucun choix de B n'empêche C.</p>
 <h2>3. Arborescence (existante, sans bouleversement)</h2>
 <pre><code>investally-platform/
-├─ apps/crm-api/        NestJS, prisma/ (schéma, migrations), scripts/, src/modules/{iam,audit,business-development,documents}
-├─ apps/crm-web/        Next.js (app/, components/, lib/, test/)
+├─ apps/api/        NestJS, prisma/ (schéma, migrations), scripts/, src/modules/{iam,audit,business-development,documents}
+├─ apps/web/        Next.js (app/, components/, lib/, test/)
 ├─ docs/                architecture, sécurité, recettes, cadrages, design/ (prototype HTML), accessibilite/
 ├─ scripts/             local-stack.mjs (nouveau), a11y-audit.mjs, md-to-html.py
 ├─ .github/workflows/   ci.yml
@@ -91,7 +91,7 @@ node scripts/local-stack.mjs --demo</code></pre>
 <tr><td><code>EMAIL_PROVIDER</code>, <code>EMAIL_LOG_CONTENT</code></td><td><code>log</code>, <code>true</code></td><td>script</td></tr>
 </tbody></table></div>
 <p><strong>Vérification</strong> : <code>http://127.0.0.1:3000/login</code> s'affiche → connexion avec l'e-mail <code>admin@investally.test</code> → scan du QR → fiche entreprises remplie → <code>http://127.0.0.1:3001/api/docs</code> (Swagger). Commandes utiles : <code>--dev</code> (rechargement à chaud), <code>--rebuild</code>, <code>reset</code> (efface tout après confirmation). Les liens d'invitation sont dans <code>..\investally-local\logs\api.log</code>.</p>
-<p>Qualité sans Claude Code : <code>pnpm ci</code> (types, architecture, tests) puis <code>node apps/crm-api/scripts/test-db.mjs</code> (intégration, base jetable).</p>
+<p>Qualité sans Claude Code : <code>pnpm ci</code> (types, architecture, tests) puis <code>node apps/api/scripts/test-db.mjs</code> (intégration, base jetable).</p>
 <p><strong>Test réalisé</strong> (base, ports et dossier jetables, Node 26.7) : premier démarrage complet (6 migrations, 95 permissions, 10 rôles, administrateur, 40 entreprises) ; redémarrage : données conservées, aucun second administrateur, démonstration idempotente (0 ajout) ; interface 200, proxy <code>/api</code> 401 attendu, connexion par mot de passe réussie à travers le proxy. <strong>Non testé</strong> : l'enrôlement MFA dans le navigateur (à faire par vous), Node 22, <code>--dev</code>. Deux défauts corrigés pendant le test : interface compilée pour un autre port d'API (recompilation automatique), <code>next build</code> refusait <code>NODE_ENV=development</code>.</p>
 <h2>5. Docker : pas maintenant</h2>
 <p>À faire en S7 : service <code>web</code>, étape de migration, secrets par fichier, utilisateur non-root, healthchecks, image API en <code>--prod</code> (le Dockerfile actuel copie tout le dépôt avec ses dépendances de développement), réseau interne, sauvegarde du volume documents. Avantages : reproductible, proche de la production. Inconvénients : installation de Docker Desktop (WSL2, licence selon l'organisation), images à maintenir, débogage plus lent.</p>

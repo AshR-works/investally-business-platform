@@ -2,7 +2,7 @@ from pathlib import Path
 # Racine du dépôt : ce script se trouve dans scripts/mutants/.
 REPO = Path(__file__).resolve().parents[2]
 import subprocess, os, re
-root = str(REPO / 'apps' / 'crm-api')
+root = str(REPO / 'apps' / 'api')
 base = os.path.join(root, 'src', 'modules', 'business-development')
 domain = os.path.join(base, 'domain', 'offer.ts')
 uc = os.path.join(base, 'application', 'offer-use-cases.ts')

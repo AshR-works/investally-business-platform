@@ -60,7 +60,7 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <ul><li><strong>Nombre de codes de secours restants</strong> (A03) non affiché : l'API ne le fournit pas (dette D39).</li><li>Les contrôles de formulaire gardent le style « legacy » aux jetons du design (dette D32).</li><li>Le code à 6 chiffres est en <strong>six cases</strong>, comme le prototype (DDR-0009, qui remplace DDR-0008 : décision de la direction produit du 2026-10-22). Les codes de secours gardent un champ unique.</li></ul>
 <h2>Rejouer les contrôles automatisés</h2>
 <pre><code>pnpm ci                                   # types, architecture, tests unitaires et interface
-node apps/crm-api/scripts/test-db.mjs     # tests d&#x27;intégration (base PostgreSQL jetable)</code></pre>
+node apps/api/scripts/test-db.mjs     # tests d&#x27;intégration (base PostgreSQL jetable)</code></pre>
 <p><em>Pas de script de mutants versionné pour ce lot.</em></p>
 <h2>Écarts constatés</h2>
 <div class="table-wrap"><table><thead><tr><th>Date</th><th>Vérification n°</th><th>Description</th><th>Défaut ouvert (D…)</th></tr></thead><tbody>

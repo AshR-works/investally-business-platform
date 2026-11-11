@@ -52,7 +52,7 @@
 ## Rejouer les contrôles automatisés
 ```bash
 pnpm ci                                   # types, architecture, tests unitaires et interface
-node apps/crm-api/scripts/test-db.mjs     # tests d'intégration (base PostgreSQL jetable)
+node apps/api/scripts/test-db.mjs     # tests d'intégration (base PostgreSQL jetable)
 python scripts/mutants/correctifs-recette-1.py   # mutants du lot (arbre de travail propre)
 ```
 

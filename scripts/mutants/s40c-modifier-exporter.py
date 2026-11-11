@@ -3,7 +3,7 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[2]
 import subprocess, shutil, sys
 
-API = str(REPO / 'apps' / 'crm-api')
+API = str(REPO / 'apps' / 'api')
 B = API + r'\src\modules\business-development'
 BS = chr(92)
 def p(*parts):

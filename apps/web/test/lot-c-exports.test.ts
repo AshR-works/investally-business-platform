@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 // Cohérence interface ↔ serveur : les noms et en-têtes RÉELS de l'API sont interrogés.
-import { ADMIN_EXPORT_HEADERS, ADMIN_EXPORT_KINDS, DEFAULT_SESSION_DAYS, MAX_SESSION_DAYS } from '../../crm-api/src/modules/iam/application/admin/admin-export-spec';
-import { RESOURCES } from '../../crm-api/src/modules/iam/domain/permission-catalog';
-import { RoleCode, resolveGrants } from '../../crm-api/src/modules/iam/domain/roles';
+import { ADMIN_EXPORT_HEADERS, ADMIN_EXPORT_KINDS, DEFAULT_SESSION_DAYS, MAX_SESSION_DAYS } from '../../api/src/modules/iam/application/admin/admin-export-spec';
+import { RESOURCES } from '../../api/src/modules/iam/domain/permission-catalog';
+import { RoleCode, resolveGrants } from '../../api/src/modules/iam/domain/roles';
 import { DEFAULT_PERIOD, EXPORTS, exportFileName, exportPath, PERIODS, validPeriod } from '../lib/exports';
 import { availableModules } from '../lib/modules';
 import { RESOURCE_LABELS } from '../lib/roles';

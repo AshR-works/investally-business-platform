@@ -2,8 +2,8 @@ from pathlib import Path
 # Racine du dépôt : ce script se trouve dans scripts/mutants/.
 REPO = Path(__file__).resolve().parents[2]
 import subprocess, os, sys
-api = str(REPO / 'apps' / 'crm-api')
-web = str(REPO / 'apps' / 'crm-web')
+api = str(REPO / 'apps' / 'api')
+web = str(REPO / 'apps' / 'web')
 info = os.path.join(api, 'src', 'shared-kernel', 'contact-format.ts')
 mig = os.path.join(api, 'prisma', 'migrations', '20261110000000_phone_format', 'migration.sql')
 wphone = os.path.join(web, 'lib', 'phone.ts')

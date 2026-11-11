@@ -67,7 +67,7 @@ D37 sélection sans actions groupées · D38 colonnes et filtres métier absents
 
 ## Rejouer la recette
 ```
-node apps/crm-api/scripts/test-db.mjs --keep      # base jetable
+node apps/api/scripts/test-db.mjs --keep      # base jetable
 pnpm --filter @investally/crm-web build           # puis démarrer l'API et le web (voir SPRINT-3.4-RECETTE.md)
 node scripts/a11y-audit.mjs --api-log <journal de l'API> --shots <dossier de captures>
 ```

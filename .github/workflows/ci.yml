@@ -53,9 +53,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Image de l'API
-        run: docker build -f apps/crm-api/Dockerfile -t investally-api:ci .
+        run: docker build -f apps/api/Dockerfile -t investally-api:ci .
       - name: Image de l'interface web
-        run: docker build -f apps/crm-web/Dockerfile -t investally-web:ci .
+        run: docker build -f apps/web/Dockerfile -t investally-web:ci .
       - name: Composition de production (réglages factices générés, rien de réel)
         working-directory: deploy
         run: |

@@ -1,6 +1,6 @@
 # Spécifications frontend — Next.js, TypeScript, Tailwind CSS
 
-**Objet** : traduire le design system ([01-DESIGN-SYSTEM.md](01-DESIGN-SYSTEM.md)) en code pour `apps/crm-web`, sans toucher aux règles de sécurité existantes.
+**Objet** : traduire le design system ([01-DESIGN-SYSTEM.md](01-DESIGN-SYSTEM.md)) en code pour `apps/web`, sans toucher aux règles de sécurité existantes.
 **Statut** : spécification **à valider** ; rien n'est encore appliqué à l'application.
 
 ---
@@ -49,7 +49,7 @@ Exemples d'usage : `bg-surface text-ink border border-line rounded-card`, `bg-br
 
 ## 3. Structure des fichiers proposée
 ```
-apps/crm-web/
+apps/web/
 ├── app/
 │   ├── globals.css                 import de Tailwind et des jetons
 │   ├── (auth)/                     connexion, MFA, mot de passe oublié, invitation (gabarit « auth »)

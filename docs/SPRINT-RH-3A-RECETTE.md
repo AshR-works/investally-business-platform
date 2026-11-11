@@ -33,5 +33,5 @@ RH-3 se livre par tranches, comme RH-2 : **3a** (cette tranche : l'API des contr
 - **Non vérifié** : concurrence au-delà de trois créations simultanées ; contrat d'un employé dont la fiche est ensuite archivée (il reste lisible, rien ne le termine automatiquement).
 
 ## Comment vérifier
-1. `node apps/crm-api/scripts/test-db.mjs --tests=hr-contracts-http` (base jetable, environ une minute).
+1. `node apps/api/scripts/test-db.mjs --tests=hr-contracts-http` (base jetable, environ une minute).
 2. Collection Postman : dossiers « hr » (types, contrats, échéances) ; voir `docs/api/README.md`.

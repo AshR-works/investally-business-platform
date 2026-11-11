@@ -9,11 +9,11 @@ coverage/
 !.env.example
 *.log
 .DS_Store
-apps/crm-api/generated/
+apps/api/generated/
 *.tsbuildinfo
 
 # Dossiers et verrou générés par la CLI de Prisma (compétences d'agents) : jamais versionnés.
-apps/crm-api/.agents/
-apps/crm-api/.claude/
-apps/crm-api/.windsurf/
-apps/crm-api/skills-lock.json
+apps/api/.agents/
+apps/api/.claude/
+apps/api/.windsurf/
+apps/api/skills-lock.json

@@ -2,7 +2,7 @@ from pathlib import Path
 # Racine du dépôt : ce script se trouve dans scripts/mutants/.
 REPO = Path(__file__).resolve().parents[2]
 import subprocess, os, sys
-api = str(REPO / 'apps' / 'crm-api')
+api = str(REPO / 'apps' / 'api')
 notif = os.path.join(api, 'src', 'modules', 'notifications', 'infrastructure')
 sender = os.path.join(notif, 'smtp-relay-email-sender.ts')
 factory = os.path.join(notif, 'email-sender.factory.ts')

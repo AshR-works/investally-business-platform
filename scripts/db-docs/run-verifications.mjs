@@ -9,7 +9,7 @@ import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
-const pg = createRequire(join(root, 'apps/crm-api/package.json'))('pg');
+const pg = createRequire(join(root, 'apps/api/package.json'))('pg');
 if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL est obligatoire.');
 
 const text = readFileSync(join(root, 'docs/base-de-donnees/verifications.sql'), 'utf8');
