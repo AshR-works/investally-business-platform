@@ -1108,9 +1108,38 @@ enum EnrollmentStatus {
 
 /// Apprenant : personne inscrite à une formation pour le compte d'une entreprise (distincte d'un contact, lien facultatif).
 /// Suppression logique seulement (`deleted_at`). Suit la portée de son entreprise.
+/// Nature d'un apprenant : rattaché à une entreprise (cas général), ou sans entreprise : étudiant ou particulier (Lot B, option C). Les deux derniers n'ont ni entreprise ni contact.
+enum LearnerKind {
+  COMPANY
+  STUDENT
+  INDIVIDUAL
+
+  @@schema("training")
+}
+
+/// Qui règle les frais d'un apprenant sans entreprise : lui-même, ou un tiers désigné.
+enum EnrollmentPayerKind {
+  SELF
+  THIRD_PARTY
+
+  @@schema("training")
+}
+
+/// Nature d'un payeur tiers (apprenant sans entreprise) : les trois types des agréments plus la famille ou un proche.
+enum EnrollmentPayerType {
+  EMPLOYER
+  ORGANISM
+  LANDLORD
+  FAMILY
+
+  @@schema("training")
+}
+
 model Learner {
   id        String    @id @db.Uuid
-  companyId String    @map("company_id") @db.Uuid
+  /// Absent pour un étudiant ou un particulier (`kind` ≠ COMPANY) : la base garantit la cohérence des deux.
+  companyId String?   @map("company_id") @db.Uuid
+  kind      LearnerKind @default(COMPANY)
   contactId String?   @map("contact_id") @db.Uuid
   lastName  String    @map("last_name") @db.VarChar(100)
   firstName String    @map("first_name") @db.VarChar(100)
@@ -1129,6 +1158,7 @@ model Learner {
   @@index([companyId])
   @@index([companyId, nameKey])
   @@index([companyId, emailKey])
+  @@index([kind, nameKey])
   @@map("learners")
   @@schema("training")
 }
@@ -1139,9 +1169,14 @@ model Enrollment {
   id            String           @id @db.Uuid
   sessionId     String           @map("session_id") @db.Uuid
   learnerId     String           @map("learner_id") @db.Uuid
-  /// Entreprise de l'apprenant, recopiée : la portée d'une inscription est celle de son entreprise.
-  companyId     String           @map("company_id") @db.Uuid
-  approvalId    String           @map("approval_id") @db.Uuid
+  /// Entreprise de l'apprenant, recopiée : la portée d'une inscription est celle de son entreprise. Absente pour un étudiant ou un particulier.
+  companyId     String?          @map("company_id") @db.Uuid
+  /// Agrément qui couvre l'inscription (apprenant d'une entreprise). Absent pour un étudiant ou un particulier : le payeur est alors désigné ci-dessous.
+  approvalId    String?          @map("approval_id") @db.Uuid
+  /// Apprenant sans entreprise : lui-même ou un tiers règle les frais (la base garantit qu'un seul des deux modes existe : agrément ou payeur).
+  payerKind     EnrollmentPayerKind? @map("payer_kind")
+  payerName     String?          @map("payer_name") @db.VarChar(200)
+  payerType     EnrollmentPayerType? @map("payer_type")
   /// Prix complet du certificat au moment de l'inscription, quand l'agrément couvre une somme ; recopié pour que le cumul ne bouge pas si le prix change.
   chargedAmount Decimal?         @map("charged_amount") @db.Decimal(14, 2)
   status        EnrollmentStatus @default(PENDING)

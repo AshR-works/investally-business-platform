@@ -6,6 +6,7 @@ import { ListHierarchyGapsHandler } from '../src/modules/hr/application/employee
 import { GetLeaveBalanceHandler } from '../src/modules/hr/application/leave-use-cases';
 import { AuthorizationService } from '../src/modules/iam/application/authorization.service';
 import { CATALOGUE_MARKER, LEARNERS_MARKER, runSeed, SEED_MARKER, TRAINERS_MARKER } from '../src/cli/seed/run-seed';
+import { INDIVIDUALS_EMAIL_DOMAIN } from '../src/cli/seed/seed-plan';
 import { createUserWithRoles } from './support/rbac-http';
 import { startTestApp, TestApp } from './support/test-app';
 
@@ -34,8 +35,8 @@ describeDb('Jeu de données de démonstration (cas d’usage + PostgreSQL)', () 
     const offers = (await db.offer.findMany({ where: { companyId: { in: companies } }, select: { id: true } })).map((o) => o.id);
     await db.commissionPayout.deleteMany({ where: { companyId: { in: companies } } });
     // Une inscription peut ne tenir au jeu que par sa session (apprenant d'une autre entreprise) : on la retire aussi, sinon la session ne peut pas être supprimée plus bas.
-    await db.enrollment.deleteMany({ where: { OR: [{ companyId: { in: companies } }, { learner: { emailKey: { endsWith: LEARNERS_MARKER } } }, { session: { trainer: { emailKey: { endsWith: TRAINERS_MARKER } } } }] } });
-    await db.learner.deleteMany({ where: { OR: [{ companyId: { in: companies } }, { emailKey: { endsWith: LEARNERS_MARKER } }] } });
+    await db.enrollment.deleteMany({ where: { OR: [{ companyId: { in: companies } }, { learner: { emailKey: { endsWith: LEARNERS_MARKER } } }, { learner: { emailKey: { endsWith: INDIVIDUALS_EMAIL_DOMAIN } } }, { session: { trainer: { emailKey: { endsWith: TRAINERS_MARKER } } } }] } });
+    await db.learner.deleteMany({ where: { OR: [{ companyId: { in: companies } }, { emailKey: { endsWith: LEARNERS_MARKER } }, { emailKey: { endsWith: INDIVIDUALS_EMAIL_DOMAIN } }] } });
     await db.approval.deleteMany({ where: { companyId: { in: companies } } });
     await db.appointment.deleteMany({ where: { companyId: { in: companies } } });
     await db.followup.deleteMany({ where: { offerId: { in: offers } } });
@@ -63,7 +64,7 @@ describeDb('Jeu de données de démonstration (cas d’usage + PostgreSQL)', () 
 
   it('charge tout le plan par les cas d’usage, sans erreur, puis refuse de recharger (idempotent)', async () => {
     const first = await runSeed(t.app as never, plan, { users });
-    expect(first).toMatchObject({ skipped: false, executed: plan.length, loaded: ['crm', 'catalogue', 'formateurs', 'sessions', 'inscriptions', 'rh', 'conges'] });
+    expect(first).toMatchObject({ skipped: false, executed: plan.length, loaded: ['crm', 'catalogue', 'formateurs', 'sessions', 'inscriptions', 'rh', 'conges', 'particuliers'] });
     const second = await runSeed(t.app as never, plan, { users });
     expect(second).toMatchObject({ skipped: true, executed: 0 });
     expect(await t.prisma.db.company.count({ where: { name: SEED_MARKER } })).toBe(1);
@@ -71,7 +72,9 @@ describeDb('Jeu de données de démonstration (cas d’usage + PostgreSQL)', () 
 
   it('une démo ANCIENNE (sans catalogue ni formateurs) reçoit ces blocs sans que le reste soit touché ; un nouveau passage ne fait rien', async () => {
     const db = t.prisma.db;
-    // On simule une base chargée avant l'arrivée du catalogue : on retire les deux blocs récents.
+    // On simule une base chargée avant l'arrivée du catalogue : on retire les blocs récents (les étudiants et particuliers, qui reposent sur les sessions, aussi).
+    await db.enrollment.deleteMany({ where: { learner: { emailKey: { endsWith: INDIVIDUALS_EMAIL_DOMAIN } } } });
+    await db.learner.deleteMany({ where: { emailKey: { endsWith: INDIVIDUALS_EMAIL_DOMAIN } } });
     await db.enrollment.deleteMany({ where: { learner: { emailKey: { endsWith: LEARNERS_MARKER } } } });
     await db.learner.deleteMany({ where: { emailKey: { endsWith: LEARNERS_MARKER } } });
     const clients = (await db.company.findMany({ where: { name: { in: FORMATION_CLIENTS.map(([name]) => name) } }, select: { id: true } })).map((c) => c.id);
@@ -89,8 +92,8 @@ describeDb('Jeu de données de démonstration (cas d’usage + PostgreSQL)', () 
 
     const logs: string[] = [];
     const reload = await runSeed(t.app as never, plan, { users, log: (line) => logs.push(line) });
-    expect(reload).toMatchObject({ skipped: false, loaded: ['catalogue', 'formateurs', 'sessions', 'inscriptions'], executed: 1 + 7 + 5 + 2 + 5 + 14 + 73 });
-    expect(reload.counts).toMatchObject({ program: 1, module: 7, training: 5, room: 2, trainer: 5, session: 7, sessionOpen: 5, sessionPostpone: 1, sessionCancel: 1, learner: 12, enroll: 14, company: 5, approval: 5 });
+    expect(reload).toMatchObject({ skipped: false, loaded: ['catalogue', 'formateurs', 'sessions', 'inscriptions', 'particuliers'], executed: 1 + 7 + 5 + 2 + 5 + 14 + 73 + 8 });
+    expect(reload.counts).toMatchObject({ program: 1, module: 7, training: 5, room: 2, trainer: 5, session: 7, sessionOpen: 5, sessionPostpone: 1, sessionCancel: 1, learner: 12, enroll: 14, company: 5, approval: 5, individual: 3, enrollIndividual: 3, individualConfirm: 2 });
     // Les inscriptions du jeu : confirmées pour les sessions passées, en attente et annulée sur la session ouverte, deux à replacer ou replacées sur la session annulée.
     const byStatus = await t.prisma.db.enrollment.groupBy({ by: ['status'], where: { learner: { emailKey: { endsWith: LEARNERS_MARKER } } }, _count: { _all: true } });
     expect(Object.fromEntries(byStatus.map((r) => [r.status, r._count._all]))).toMatchObject({ CONFIRMED: expect.any(Number), PENDING: expect.any(Number) });
@@ -177,6 +180,28 @@ describeDb('Jeu de données de démonstration (cas d’usage + PostgreSQL)', () 
     await db.leaveRequest.deleteMany({ where });
     expect(await runSeed(t.app as never, plan, { users })).toMatchObject({ skipped: false, loaded: ['conges'], executed: 9 });
     expect(await db.leaveRequest.count({ where })).toBe(7);
+    expect(await runSeed(t.app as never, plan, { users })).toMatchObject({ skipped: true, loaded: [] });
+  }, 300_000);
+
+  it('le bloc « particuliers » : trois apprenants sans entreprise, trois inscriptions avec payeur (aucun agrément), deux confirmées ; il se charge seul', async () => {
+    const db = t.prisma.db;
+    const where = { kind: { not: 'COMPANY' as const }, emailKey: { endsWith: INDIVIDUALS_EMAIL_DOMAIN } };
+    const people = await db.learner.findMany({ where });
+    expect(people).toHaveLength(3);
+    expect(people.every((p) => p.companyId === null && p.contactId === null)).toBe(true);
+    expect(people.map((p) => p.kind).sort()).toEqual(['INDIVIDUAL', 'STUDENT', 'STUDENT']);
+    const rows = await db.enrollment.findMany({ where: { learnerId: { in: people.map((p) => p.id) } } });
+    expect(rows).toHaveLength(3);
+    expect(rows.every((r) => r.companyId === null && r.approvalId === null && r.chargedAmount !== null)).toBe(true);
+    expect(rows.map((r) => r.payerKind).sort()).toEqual(['SELF', 'THIRD_PARTY', 'THIRD_PARTY']);
+    expect(rows.filter((r) => r.status === 'CONFIRMED')).toHaveLength(2);
+    expect(rows.filter((r) => r.status === 'PENDING')).toHaveLength(1);
+    expect(rows.filter((r) => r.payerKind === 'THIRD_PARTY').map((r) => r.payerType).sort()).toEqual(['EMPLOYER', 'FAMILY']);
+    // Chargé seul sur une démo qui n'a pas ce bloc.
+    await db.enrollment.deleteMany({ where: { learnerId: { in: people.map((p) => p.id) } } });
+    await db.learner.deleteMany({ where });
+    expect(await runSeed(t.app as never, plan, { users })).toMatchObject({ skipped: false, loaded: ['particuliers'], executed: 3 + 3 + 2 });
+    expect(await db.learner.count({ where })).toBe(3);
     expect(await runSeed(t.app as never, plan, { users })).toMatchObject({ skipped: true, loaded: [] });
   }, 300_000);
 

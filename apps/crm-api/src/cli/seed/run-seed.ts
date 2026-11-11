@@ -21,7 +21,7 @@ import { AuthorizationService } from '../../modules/iam/application/authorizatio
 import type { AccessContext } from '../../modules/iam';
 import { PrismaService } from '../../platform/prisma.service';
 import { ActorContext, CLOCK } from '../../shared-kernel';
-import { blockOf, COMPANIES, FORMATION_CLIENTS, RH_EMAIL_DOMAIN, SEED_BLOCKS, SeedBlock, SeedEvent, SeedOp, Who } from './seed-plan';
+import { blockOf, COMPANIES, FORMATION_CLIENTS, INDIVIDUALS_EMAIL_DOMAIN, RH_EMAIL_DOMAIN, SEED_BLOCKS, SeedBlock, SeedEvent, SeedOp, Who } from './seed-plan';
 
 /** Ce dont le chargeur a besoin de l'application : retrouver un service, sans en dépendre autrement (l'application complète ou un test). */
 export interface ProviderSource {
@@ -69,6 +69,7 @@ export async function runSeed(app: ProviderSource, allEvents: readonly SeedEvent
     sessions: (await prisma.db.trainingSession.count({ where: { trainer: { emailKey: { endsWith: TRAINERS_MARKER } } } })) > 0,
     inscriptions: (await prisma.db.company.count({ where: { name: FORMATION_CLIENTS[0]![0] } })) > 0,
     rh: (await prisma.db.employee.count({ where: { workEmail: { endsWith: RH_EMAIL_DOMAIN } } })) > 0,
+    particuliers: (await prisma.db.learner.count({ where: { kind: { not: 'COMPANY' }, emailKey: { endsWith: INDIVIDUALS_EMAIL_DOMAIN } } })) > 0,
     conges: (await prisma.db.leaveRequest.count({ where: { employee: { workEmail: { endsWith: RH_EMAIL_DOMAIN } } } })) > 0,
   };
   const toLoad = SEED_BLOCKS.filter((block) => !present[block]);
@@ -310,6 +311,18 @@ export async function runSeed(app: ProviderSource, allEvents: readonly SeedEvent
           }
           case 'leaveDecision':
             await use(DecideLeaveUseCase).execute({ id: id(op.leave), decision: op.decision, note: op.note, version: await versionOf('leaveRequest', op.leave), access, actor });
+            break;
+          case 'individual': {
+            ids.set(op.key, (await use(RegisterLearnerUseCase).execute({ kind: op.kind, lastName: op.lastName, firstName: op.firstName, email: op.email, phone: op.phone, access, actor })).id);
+            break;
+          }
+          case 'enrollIndividual': {
+            const sessionId = await sessionIdOf(op.session);
+            ids.set(op.key, (await use(EnrollLearnerUseCase).execute({ sessionId, learnerId: id(op.learner), payer: op.payer, access, actor })).id);
+            break;
+          }
+          case 'individualConfirm':
+            await use(ConfirmEnrollmentUseCase).execute({ id: id(op.enrollment), version: await enrollmentVersion(op.enrollment), access, actor });
             break;
           case 'learner': {
             ids.set(op.key, (await use(RegisterLearnerUseCase).execute({ companyId: id(op.company), lastName: op.lastName, firstName: op.firstName, email: op.email, phone: op.phone, access, actor })).id);

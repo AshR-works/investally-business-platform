@@ -1,0 +1,35 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ADR-0011 — Apprenant sans entreprise et payeur désigné</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="../INDEX.html">Index</a> · <a href="../GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="../ARCHITECTURE.html">Architecture</a> · <a href="../SECURITY.html">Sécurité</a> · <a href="../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="../TECH-DEBT.html">Dette</a> · <a href="../CHARTE-DE-TESTS.html">Charte de tests</a> · <a href="../tests/README.html">Fiches de test</a> · <a href="../design/README.html">Design</a> · <a href="../livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>ADR-0011 — Apprenant sans entreprise et payeur désigné</h1>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td><strong>Statut</strong></td><td>Accepté (2026-11-11, décision D65 de la Direction produit : « applique les recommandations », option C). <strong>Amende</strong> le modèle des apprenants et des inscriptions (S5.2b, D47, D49).</td></tr>
+<tr><td><strong>Contexte</strong></td><td>Un apprenant dépendait obligatoirement d'une entreprise (<code>company_id</code> non nul) et chaque inscription consommait l'agrément de cette entreprise. La Direction veut inscrire des <strong>étudiants</strong> et des <strong>particuliers</strong>, qui règlent eux-mêmes ou dont un tiers règle les frais. Les apprenants n'ont <strong>pas accès à la plateforme</strong> : ce sont des fiches saisies par les employés.</td></tr>
+<tr><td><strong>Lié à</strong></td><td><a href="../QUESTIONS-ET-DECISIONS.html">ARBITRAGE du 2026-11-11 (réponse dans le registre, D65)</a>, S5.2b, ADR-0009 (même principe : pas de clé étrangère entre schémas)</td></tr>
+</tbody></table></div>
+<h2>Options considérées</h2>
+<ol><li><strong>Statu quo</strong> : un particulier ne peut pas être inscrit. Ne répond pas au besoin.</li><li><strong>A, inscription libre</strong> : apprenant sans entreprise ni agrément, aucune trace de qui paie. Perd l'information voulue.</li><li><strong>B, suivi simple</strong> : montant dû et état « à régler / réglé » saisis à la main. Fait doublon avec le futur module Facturation et paiements.</li><li><strong>C, payeur désigné (retenue)</strong> : l'apprenant sans entreprise a, à chaque inscription, un payeur (lui-même ou un tiers nommé) et un montant dû ; aucun suivi de règlement.</li></ol>
+<h2>Décision</h2>
+<ul><li><strong>Nature de l'apprenant</strong> : <code>COMPANY</code> (cas général), <code>STUDENT</code> ou <code>INDIVIDUAL</code>. Un étudiant ou un particulier n'a <strong>ni entreprise ni contact</strong> ; la <strong>base</strong> garantit la cohérence (<code>learners_kind_company_coherent</code>).</li><li><strong>Inscription, deux formes jamais mélangées</strong> : sous l'<strong>agrément</strong> d'une entreprise (entreprise, agrément, aucun payeur) <strong>ou</strong> sans entreprise (ni entreprise ni agrément, <strong>un payeur désigné</strong> et <strong>le montant dû = prix complet du certificat</strong>, obligatoire). La base le garantit (<code>enrollments_payer_coherent</code>) ; un certificat sans prix complet ne s'inscrit pas.</li><li><strong>Payeur</strong> : <code>SELF</code> (l'apprenant lui-même, sans nom) ou <code>THIRD_PARTY</code> (nom de 200 caractères au plus <strong>et</strong> nature : employeur, organisme, bailleur, famille ou proche).</li><li><strong>Visibilité</strong> : un étudiant ou un particulier n'a pas de responsable commercial. Il est traité comme un objet <strong>sans propriétaire</strong> : la règle d'accès existante l'autorise <strong>seulement avec la portée Tous</strong>, et le refuse (« introuvable ») aux portées Propre et Équipe. Aucune nouvelle permission, aucune règle d'accès nouvelle.</li><li>Les apprenants et inscriptions existants gardent leur sens (<code>kind = COMPANY</code>, aucun payeur). Aucune clé étrangère vers un autre schéma.</li></ul>
+<h2>Conséquences</h2>
+<ul><li>(+) Le besoin est couvert sans modifier les agréments ni le module commercial ; les contrôles de places, de recouvrement et de doublon restent communs.</li><li>(+) Le montant dû et le payeur sont prêts pour la facturation future.</li><li>(−) <strong>Dette D175</strong> : le règlement n'est pas suivi (montant dû seulement) et le prix est le prix complet, sans tarif étudiant ; <strong>D176</strong> : un chargé de compte ou un Responsable commercial ne voit pas les étudiants et particuliers (pas de propriétaire).</li><li>À revoir si : le module Facturation et paiements arrive (relier le payeur aux factures), ou si un tarif étudiant est fourni.</li></ul></main></body></html>

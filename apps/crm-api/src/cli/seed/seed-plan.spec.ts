@@ -394,3 +394,44 @@ describe('plan de démonstration — bloc « conges »', () => {
     expect(JSON.stringify(requests.map((r) => r.op.note)).toLowerCase()).not.toMatch(/diagnostic|maladie|médical|medical|santé|sante|certificat|ordonnance/);
   });
 });
+
+describe('plan de démonstration — bloc « particuliers » (Lot B)', () => {
+  const plan = buildPlan({ anchor: new Date('2026-11-09T10:00:00Z') });
+  const block = plan.filter((e) => blockOf(e.op) === 'particuliers');
+  const people = block.flatMap((e) => (e.op.k === 'individual' ? [{ at: e.at, who: e.who, op: e.op }] : []));
+  const enrollments = block.flatMap((e) => (e.op.k === 'enrollIndividual' ? [{ at: e.at, who: e.who, op: e.op }] : []));
+  const confirms = block.flatMap((e) => (e.op.k === 'individualConfirm' ? [{ at: e.at, who: e.who, op: e.op }] : []));
+
+  it('trois apprenants sans entreprise (deux étudiants, un particulier), saisis par le Responsable Investudy, aux e-mails du domaine réservé', () => {
+    expect(people).toHaveLength(3);
+    expect(people.map((p) => p.op.kind).sort()).toEqual(['INDIVIDUAL', 'STUDENT', 'STUDENT']);
+    expect(block.every((e) => e.who === 'investudy')).toBe(true);
+    for (const p of people) expect(p.op.email).toMatch(/@particuliers\.test$/);
+    expect(new Set(people.map((p) => p.op.email)).size).toBe(3);
+    for (const p of people) expect(isDemoPhone(p.op.phone)).toBe(true);
+  });
+
+  it('trois inscriptions : un payeur lui-même, deux tiers nommés (famille, employeur) ; deux confirmées, une en attente ; chacune vise un apprenant et une session du plan', () => {
+    expect(enrollments).toHaveLength(3);
+    const keys = new Set(people.map((p) => p.op.key));
+    const sessions = new Set(plan.flatMap((e) => (e.op.k === 'session' ? [e.op.key] : [])));
+    for (const e of enrollments) {
+      expect(keys.has(e.op.learner)).toBe(true);
+      expect(sessions.has(e.op.session)).toBe(true);
+    }
+    expect(enrollments.map((e) => e.op.payer.kind).sort()).toEqual(['SELF', 'THIRD_PARTY', 'THIRD_PARTY']);
+    expect(enrollments.flatMap((e) => (e.op.payer.kind === 'THIRD_PARTY' ? [e.op.payer.type] : [])).sort()).toEqual(['EMPLOYER', 'FAMILY']);
+    expect(confirms).toHaveLength(2);
+  });
+
+  it('chaque apprenant est créé avant son inscription, et chaque confirmation vient après son inscription', () => {
+    const created = new Map(people.map((p) => [p.op.key, p.at.getTime()]));
+    const enrolled = new Map(enrollments.map((e) => [e.op.key, e.at.getTime()]));
+    for (const e of enrollments) expect(e.at.getTime()).toBeGreaterThan(created.get(e.op.learner)!);
+    for (const c of confirms) expect(c.at.getTime()).toBeGreaterThan(enrolled.get(c.op.enrollment)!);
+  });
+
+  it('ne contient aucune donnée réelle : noms fictifs, payeurs marqués « donnée de démonstration »', () => {
+    for (const e of enrollments) if (e.op.payer.kind === 'THIRD_PARTY') expect(e.op.payer.name).toMatch(/donnée de démonstration/);
+  });
+});

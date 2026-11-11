@@ -175,6 +175,8 @@
 | D172 | **Droits annuels disponibles dès le 1er janvier** (anticipation), proratisés l'année d'entrée ; aucun report automatique, la RH ajuste (valeurs par défaut « à confirmer », D64) ; aucun jour férié présumé, la RH saisit la liste | RH-2a | Direction produit / Claude | Fort avant d'ouvrir à de vrais salariés : règles réelles à fournir |
 | D173 | ~~Pas de jeu de démonstration d'absences ni d'écrans~~ **Soldée par RH-2b** : cinq écrans et un bloc de démonstration « conges » (fictif) | RH-2a | Claude | Soldée |
 | D174 | **Écran « Soldes » : une requête de solde par employé de la page** (20 au plus) : l'API de RH-2a n'a pas de route groupée ; à regrouper si le personnel dépasse quelques dizaines | RH-2b | Claude | Faible |
+| D175 | **Étudiants et particuliers : le montant dû est enregistré, pas son règlement** ; prix complet du certificat, **sans tarif étudiant** (à fournir) ; à relier à la facturation quand le module existera | Lot B | Direction produit / Claude | Moyen ; avant d'accepter de vrais paiements |
+| D176 | **Étudiants et particuliers visibles seulement en portée Tous** (Responsable Investudy, Support, Direction, Super administrateur) : pas de propriétaire, donc ni chargé de compte ni Responsable commercial ; à revoir si un commercial doit suivre ses propres particuliers | Lot B | Direction produit | Faible |
 | D105 | **Le statut « Cliente » n'est posé par rien** tant que l'agrément n'existe pas ; une entreprise ne peut donc pas encore devenir cliente | S4.3b | Claude | *Soldée par S4.4a* : l'agrément reçu pose « Cliente » |
 | D5 | Hypothèses de charge et de périmètre non confirmées | Phase 3 | Revue à la fin de S1 avec les chiffres réels | Ouverte |
 

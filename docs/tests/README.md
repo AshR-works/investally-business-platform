@@ -45,7 +45,7 @@
 | 31 | [Soldes de congé](interfaces/31-soldes-de-conge.md) | `/hr/leave/balances` | RH-2b, RH-2c | |
 | 32 | [Paramètres des congés](interfaces/32-parametres-des-conges.md) | `/hr/leave/settings` | RH-2b, RH-2c | |
 
-## Fiches de session (37)
+## Fiches de session (38)
 
 | Session | Intitulé | Étiquette | Vérifications | Dernière exécution |
 |---|---|---|---|---|
@@ -87,6 +87,7 @@
 | [s5-2b](sessions/s5-2b.md) | S5.2b — apprenants et inscriptions | — | 12 | |
 | [rh-1](sessions/rh-1.md) | RH-1 — annuaire du personnel (RH légère) | — | 12 | |
 | [rh-2](sessions/rh-2.md) | RH-2 — absences et congés | `rh-2a-validated`, `rh-2b-validated` | 12 | |
+| [lot-b](sessions/lot-b.md) | Lot B — apprenant étudiant ou particulier | `lot-b-validated` | 11 | |
 
 ## Remarques
 - Les fiches de session sont **dérivées des recettes** : en cas de doute, la recette fait foi. Celles des premiers sprints (S1 à S3.5) sont surtout des tests automatisés ; leurs « vérifications » rappellent ce que chaque contrôle prouve.

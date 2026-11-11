@@ -6,7 +6,7 @@ import type { CompanyDirectory, CompanyRef } from '../../business-development';
 import { decideFor, visibilityFor } from '../../iam';
 import type { AccessContext } from '../../iam';
 import { ENROLLMENT_REPOSITORY, EnrollmentRepository, LEARNER_REPOSITORY, LearnerRepository } from '../domain/enrollment-repositories';
-import { Learner } from '../domain/learner';
+import { Learner, LearnerKind } from '../domain/learner';
 import { assertVersion, normalizePage } from './catalogue-use-cases';
 import { LearnerView, toLearnerView } from './enrollment-view';
 
@@ -20,18 +20,26 @@ export async function companyInScope(directory: CompanyDirectory, id: string, ac
   return company;
 }
 
-/** Apprenant et entreprise visibles de l'appelant (la visibilité d'un apprenant suit celle de son entreprise). */
+/**
+ * Apprenant et entreprise visibles de l'appelant : la visibilité d'un apprenant suit celle de son entreprise. Un étudiant ou un particulier n'a pas d'entreprise ni de
+ * responsable commercial : il n'est visible que de ceux dont le droit couvre **tout** (portée Tous), sinon « introuvable » ; `company` est alors absente.
+ */
 export async function learnerInScope(
   learners: LearnerRepository, directory: CompanyDirectory, id: string, access: AccessContext, permission: string,
-): Promise<{ learner: Learner; company: CompanyRef }> {
+): Promise<{ learner: Learner; company: CompanyRef | null }> {
   const learner = await learners.findById(id);
-  const company = learner ? await directory.company(learner.companyId) : null;
-  if (!learner || !company || !decideFor(access, permission, company.ownerUserId).allowed) throw new DomainError('NOT_FOUND', NOT_FOUND_LEARNER);
+  if (!learner) throw new DomainError('NOT_FOUND', NOT_FOUND_LEARNER);
+  if (learner.isIndividual) {
+    if (!decideFor(access, permission, null).allowed) throw new DomainError('NOT_FOUND', NOT_FOUND_LEARNER);
+    return { learner, company: null };
+  }
+  const company = await directory.company(learner.companyId!);
+  if (!company || !decideFor(access, permission, company.ownerUserId).allowed) throw new DomainError('NOT_FOUND', NOT_FOUND_LEARNER);
   return { learner, company };
 }
 
-function assertWritable(company: CompanyRef): void {
-  if (company.archived) throw new DomainError('INVARIANT_VIOLATION', "L'entreprise est archivée : ses apprenants ne sont plus modifiables");
+function assertWritable(company: CompanyRef | null): void {
+  if (company?.archived) throw new DomainError('INVARIANT_VIOLATION', "L'entreprise est archivée : ses apprenants ne sont plus modifiables");
 }
 
 async function assertContactOfCompany(directory: CompanyDirectory, contactId: string | null | undefined, companyId: string): Promise<void> {
@@ -41,16 +49,19 @@ async function assertContactOfCompany(directory: CompanyDirectory, contactId: st
 }
 
 /** Un doublon probable (même entreprise, même nom ou même e-mail) est signalé par un conflit ; `allowDuplicate` permet de créer quand même. */
+const DUPLICATE_SCOPE = (learner: Learner): string => (learner.companyId ? 'dans cette entreprise' : 'parmi les étudiants et les particuliers');
+
 async function assertNoDuplicate(learners: LearnerRepository, learner: Learner, allowDuplicate: boolean | undefined, excludeId?: string): Promise<void> {
   if (allowDuplicate) return;
   const duplicates = await learners.findDuplicates({ companyId: learner.companyId, nameKey: learner.nameKey, emailKey: learner.emailKey, excludeId });
   if (duplicates.length > 0) {
-    throw new DomainError('CONFLICT', `Un apprenant « ${duplicates[0].fullName} » existe déjà dans cette entreprise (même nom ou même e-mail)`);
+    throw new DomainError('CONFLICT', `Un apprenant « ${duplicates[0].fullName} » existe déjà ${DUPLICATE_SCOPE(learner)} (même nom ou même e-mail)`);
   }
 }
 
 export interface RegisterLearnerCommand {
-  companyId: string; lastName: string; firstName: string; email?: string | null; phone?: string | null; contactId?: string | null; allowDuplicate?: boolean;
+  /** Absent : un apprenant d'une entreprise (`COMPANY`) ; `STUDENT` ou `INDIVIDUAL` : sans entreprise. */
+  kind?: LearnerKind; companyId?: string | null; lastName: string; firstName: string; email?: string | null; phone?: string | null; contactId?: string | null; allowDuplicate?: boolean;
   access: AccessContext; actor: ActorContext;
 }
 export interface UpdateLearnerCommand {
@@ -58,7 +69,10 @@ export interface UpdateLearnerCommand {
   access: AccessContext; actor: ActorContext;
 }
 
-/** Créer un apprenant : l'entreprise doit être dans la portée de l'appelant et non archivée ; contact de la même entreprise ; doublon signalé ; audit. */
+/**
+ * Créer un apprenant : l'entreprise doit être dans la portée de l'appelant et non archivée ; contact de la même entreprise ; doublon signalé ; audit.
+ * Un étudiant ou un particulier n'a ni entreprise ni contact : seuls ceux dont le droit couvre tout (portée Tous) l'inscrivent.
+ */
 @Injectable()
 export class RegisterLearnerUseCase {
   constructor(
@@ -72,13 +86,22 @@ export class RegisterLearnerUseCase {
 
   execute(command: RegisterLearnerCommand): Promise<LearnerView> {
     return this.unitOfWork.run(async () => {
-      const company = await companyInScope(this.directory, command.companyId, command.access, 'training.learner.create');
-      assertWritable(company);
-      const learner = Learner.create({ ...command, id: this.ids.next(), now: this.clock.now() });
-      await assertContactOfCompany(this.directory, learner.contactId, company.id);
+      const kind = command.kind ?? 'COMPANY';
+      let company: CompanyRef | null = null;
+      if (kind === 'COMPANY') {
+        if (!command.companyId) throw new DomainError('VALIDATION', "L'entreprise de l'apprenant est obligatoire");
+        company = await companyInScope(this.directory, command.companyId, command.access, 'training.learner.create');
+        assertWritable(company);
+      } else if (command.companyId) {
+        throw new DomainError('VALIDATION', "Un étudiant ou un particulier n'a pas d'entreprise");
+      } else if (!decideFor(command.access, 'training.learner.create', null).allowed) {
+        throw new DomainError('FORBIDDEN', "Seuls les profils qui gèrent tous les apprenants peuvent inscrire un étudiant ou un particulier");
+      }
+      const learner = Learner.create({ ...command, kind, companyId: company?.id ?? null, id: this.ids.next(), now: this.clock.now() });
+      if (company) await assertContactOfCompany(this.directory, learner.contactId, company.id);
       await assertNoDuplicate(this.learners, learner, command.allowDuplicate);
       await this.learners.save(learner);
-      const view = toLearnerView(learner, company.name);
+      const view = toLearnerView(learner, company?.name ?? '');
       await this.audit.record({ actor: command.actor, module: 'training', entityType: 'Learner', entityId: learner.id, action: AuditAction.Create, newValue: { ...view } });
       return view;
     });
@@ -100,12 +123,12 @@ export class UpdateLearnerUseCase {
       const { learner, company } = await learnerInScope(this.learners, this.directory, command.id, command.access, 'training.learner.update');
       assertWritable(company);
       assertVersion(learner.version, command.version, "L'apprenant");
-      const before = toLearnerView(learner, company.name);
+      const before = toLearnerView(learner, company?.name ?? '');
       learner.update(command);
-      await assertContactOfCompany(this.directory, command.contactId, company.id);
+      if (company) await assertContactOfCompany(this.directory, command.contactId, company.id);
       await assertNoDuplicate(this.learners, learner, command.allowDuplicate, learner.id);
       await this.learners.save(learner);
-      const after = toLearnerView((await this.learners.findById(learner.id)) ?? learner, company.name);
+      const after = toLearnerView((await this.learners.findById(learner.id)) ?? learner, company?.name ?? '');
       await this.audit.record({ actor: command.actor, module: 'training', entityType: 'Learner', entityId: learner.id, action: AuditAction.Update, oldValue: { ...before }, newValue: { ...after } });
       return after;
     });
@@ -131,7 +154,7 @@ export class DeleteLearnerUseCase {
       if (await this.enrollments.hasConfirmed(learner.id)) {
         throw new DomainError('INVARIANT_VIOLATION', "L'apprenant a une inscription confirmée : annulez-la avant de le supprimer");
       }
-      const before = toLearnerView(learner, company.name);
+      const before = toLearnerView(learner, company?.name ?? '');
       learner.markDeleted(this.clock.now());
       await this.learners.save(learner);
       await this.audit.record({ actor: command.actor, module: 'training', entityType: 'Learner', entityId: learner.id, action: AuditAction.Delete, oldValue: { ...before } });
@@ -145,7 +168,7 @@ export class GetLearnerHandler {
 
   async execute(query: { id: string; access: AccessContext }): Promise<LearnerView> {
     const { learner, company } = await learnerInScope(this.learners, this.directory, query.id, query.access, 'training.learner.read');
-    return toLearnerView(learner, company.name);
+    return toLearnerView(learner, company?.name ?? '');
   }
 }
 
@@ -154,16 +177,16 @@ export class GetLearnerHandler {
 export class ListLearnersHandler {
   constructor(@Inject(LEARNER_REPOSITORY) private readonly learners: LearnerRepository, @Inject(COMPANY_DIRECTORY) private readonly directory: CompanyDirectory) {}
 
-  async execute(query: { page: number; pageSize: number; search?: string; companyId?: string; access: AccessContext }): Promise<Page<LearnerView>> {
+  async execute(query: { page: number; pageSize: number; search?: string; companyId?: string; kind?: LearnerKind; access: AccessContext }): Promise<Page<LearnerView>> {
     if (query.companyId) await companyInScope(this.directory, query.companyId, query.access, 'training.learner.read');
     const visibility = visibilityFor(query.access, 'training.learner.read');
     const result = await this.learners.list({
-      ...normalizePage(query), search: query.search?.trim() || undefined, companyId: query.companyId, companyIds: visibility.unrestricted ? undefined : await this.directory.companyIdsOwnedBy(visibility.ownerIds),
+      ...normalizePage(query), search: query.search?.trim() || undefined, companyId: query.companyId, kind: query.kind, companyIds: visibility.unrestricted ? undefined : await this.directory.companyIdsOwnedBy(visibility.ownerIds),
     });
     const names = new Map<string, string>();
     for (const learner of result.items) {
-      if (!names.has(learner.companyId)) names.set(learner.companyId, (await this.directory.company(learner.companyId))?.name ?? '');
+      if (learner.companyId && !names.has(learner.companyId)) names.set(learner.companyId, (await this.directory.company(learner.companyId))?.name ?? '');
     }
-    return { ...result, items: result.items.map((l) => toLearnerView(l, names.get(l.companyId) ?? '')) };
+    return { ...result, items: result.items.map((l) => toLearnerView(l, l.companyId ? names.get(l.companyId) ?? '' : '')) };
   }
 }

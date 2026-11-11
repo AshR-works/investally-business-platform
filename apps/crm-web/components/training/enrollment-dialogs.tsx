@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react';
 import { api, ApiError } from '../../lib/api';
 import {
-  type ApprovalOption, coverText, EMPTY_ENROLL_FORM, EMPTY_LEARNER_FORM, type Enrollment, type EnrollForm, enrollBody, formFromLearner, type Learner, learnerBody, type LearnerForm,
-  validateCancelEnrollment, validateEnroll, validateLearner, validateReplace,
+  type ApprovalOption, coverText, EMPTY_ENROLL_FORM, EMPTY_LEARNER_FORM, type Enrollment, type EnrollForm, enrollBody, formFromLearner, INDIVIDUAL_KINDS, isIndividual, type Learner, learnerBody,
+  LEARNER_KIND_LABEL, type LearnerForm, learnerOrigin, PAYER_TYPE_OPTIONS, payerText, validateCancelEnrollment, validateEnroll, validateLearner, validateReplace,
 } from '../../lib/enrollments';
 import { dateText, type Session } from '../../lib/sessions';
 import type { Page } from '../../lib/types';
@@ -48,18 +48,19 @@ function LearnerDialog({ learner, companyId, onClose, onDone }: { learner?: Lear
   const [forceError, setForceError] = useState<string | null>(null);
   const set = (key: keyof LearnerForm, value: string) => setForm((f) => ({ ...f, [key]: value }));
   const errors = validateLearner(form, Boolean(learner));
+  const noCompany = form.withoutCompany;
 
   useEffect(() => {
     if (learner) return;
     api<Page<CompanyOption>>('/companies?pageSize=100').then((p) => setCompanies(p.items)).catch(() => setCompanies([]));
   }, [learner]);
   useEffect(() => {
-    if (!form.companyId) {
+    if (!form.companyId || form.withoutCompany) {
       setContacts([]);
       return;
     }
     api<Page<ContactOption>>(`/contacts?companyId=${form.companyId}&pageSize=100`).then((p) => setContacts(p.items)).catch(() => setContacts([]));
-  }, [form.companyId]);
+  }, [form.companyId, form.withoutCompany]);
 
   async function save(allowDuplicate: boolean) {
     if (learner) await api(`/learners/${learner.id}`, { method: 'PUT', body: learnerBody(form, { version: learner.version, allowDuplicate }) });
@@ -80,7 +81,7 @@ function LearnerDialog({ learner, companyId, onClose, onDone }: { learner?: Lear
   return (
     <FormDialog
       title={learner ? "Modifier l'apprenant" : 'Nouvel apprenant'}
-      intro="Un apprenant est une personne inscrite à une formation pour le compte d’une entreprise. Il n’est pas forcément un contact de l’entreprise ; vous pouvez les relier."
+      intro="Un apprenant est une personne inscrite à une formation, pour le compte d’une entreprise ou, sans entreprise, comme étudiant ou particulier. Il n’a pas accès à la plateforme : c’est une fiche que vous tenez à jour."
       errors={errors}
       onClose={onClose}
       submit={async () => {
@@ -98,14 +99,31 @@ function LearnerDialog({ learner, companyId, onClose, onDone }: { learner?: Lear
           <fieldset>
             <legend>L’apprenant</legend>
             {!learner && (
-              <FormField prefix={PREFIX} name="companyId" label="Entreprise" error={shown('companyId')}>
-                <select {...fieldProps(PREFIX, 'companyId', shown('companyId'))} value={form.companyId} onChange={(e) => { set('companyId', e.target.value); set('contactId', ''); }} required aria-required="true">
-                  <option value="">Choisir…</option>
-                  {companies.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-                </select>
-              </FormField>
+              <>
+                <label className="mb-3 flex items-center gap-2 font-normal">
+                  <input type="checkbox" checked={noCompany} onChange={(e) => setForm((f) => ({ ...f, withoutCompany: e.target.checked, companyId: e.target.checked ? '' : f.companyId, contactId: '' }))} style={{ width: 'auto', margin: 0 }} />
+                  Sans entreprise (étudiant ou particulier)
+                </label>
+                <FormField prefix={PREFIX} name="companyId" label="Entreprise" error={shown('companyId')}>
+                  <select {...fieldProps(PREFIX, 'companyId', shown('companyId'))} value={form.companyId} disabled={noCompany} onChange={(e) => { set('companyId', e.target.value); set('contactId', ''); }} required={!noCompany} aria-required={!noCompany}>
+                    <option value="">Choisir…</option>
+                    {companies.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  </select>
+                </FormField>
+                {noCompany && (
+                  <FormField prefix={PREFIX} name="kind" label="Nature">
+                    <select id={`${PREFIX}-kind`} value={form.kind} onChange={(e) => set('kind', e.target.value)}>
+                      {INDIVIDUAL_KINDS.map((k) => <option key={k.value} value={k.value}>{k.label}</option>)}
+                    </select>
+                  </FormField>
+                )}
+              </>
             )}
-            {learner && <p className="m-0 mb-3 text-ink-2">Entreprise : <strong>{learner.companyName}</strong> (elle ne change pas).</p>}
+            {learner && (
+              <p className="m-0 mb-3 text-ink-2">
+                {isIndividual(learner) ? <>Nature : <strong>{learnerOrigin(learner)}</strong>, sans entreprise.</> : <>Entreprise : <strong>{learner.companyName}</strong> (elle ne change pas).</>}
+              </p>
+            )}
             <FormField prefix={PREFIX} name="lastName" label="Nom" error={shown('lastName')}>
               <input {...fieldProps(PREFIX, 'lastName', shown('lastName'))} value={form.lastName} onChange={(e) => set('lastName', e.target.value)} maxLength={100} required aria-required="true" />
             </FormField>
@@ -119,7 +137,7 @@ function LearnerDialog({ learner, companyId, onClose, onDone }: { learner?: Lear
               <input {...fieldProps(PREFIX, 'phone', shown('phone'))} type="tel" inputMode="tel" value={form.phone} onChange={(e) => set('phone', e.target.value)} placeholder="+237 699 12 34 56" />
             </FormField>
             <FormField prefix={PREFIX} name="contactId" label="Contact de l’entreprise (facultatif)">
-              <select id={`${PREFIX}-contactId`} value={form.contactId} onChange={(e) => set('contactId', e.target.value)} disabled={!form.companyId}>
+              <select id={`${PREFIX}-contactId`} value={form.contactId} onChange={(e) => set('contactId', e.target.value)} disabled={!form.companyId || noCompany}>
                 <option value="">Aucun</option>
                 {contacts.map((c) => <option key={c.id} value={c.id}>{c.firstName} {c.lastName}</option>)}
               </select>
@@ -155,7 +173,7 @@ function DeleteLearnerDialog({ learner, onClose, onDone }: { learner: Learner; o
   return (
     <Modal title="Supprimer l’apprenant" onClose={onClose}>
       <p className="m-0 mb-3">
-        « {learner.firstName} {learner.lastName} » ({learner.companyName}) disparaîtra des listes. Ses inscriptions passées restent lisibles. La suppression est refusée s’il a une inscription confirmée.
+        « {learner.firstName} {learner.lastName} » ({learnerOrigin(learner)}) disparaîtra des listes. Ses inscriptions passées restent lisibles. La suppression est refusée s’il a une inscription confirmée.
       </p>
       {error && <p role="alert" className="error">{error}</p>}
       <div className="row end">
@@ -213,13 +231,46 @@ function ApprovalChoice({ form, setForm, options, loading, error, shown }: {
   );
 }
 
+/** Qui règle les frais d'un étudiant ou d'un particulier : lui-même, ou un tiers (nom et nature). Le montant dû est le prix complet du certificat, fixé par le serveur. */
+function PayerChoice({ form, setForm, shown }: { form: EnrollForm; setForm: (update: (f: EnrollForm) => EnrollForm) => void; shown: (name: keyof EnrollForm) => string | undefined }) {
+  const third = form.payerKind === 'THIRD_PARTY';
+  return (
+    <>
+      <FormField prefix={PREFIX} name="payerKind" label="Qui règle les frais ?" error={shown('payerKind')}>
+        <select {...fieldProps(PREFIX, 'payerKind', shown('payerKind'))} value={form.payerKind} onChange={(e) => setForm((f) => ({ ...f, payerKind: e.target.value as EnrollForm['payerKind'], ...(e.target.value === 'THIRD_PARTY' ? {} : { payerName: '', payerType: '' as const }) }))} required aria-required="true">
+          <option value="">Choisir…</option>
+          <option value="SELF">L’apprenant lui-même</option>
+          <option value="THIRD_PARTY">Un tiers</option>
+        </select>
+      </FormField>
+      {third && (
+        <>
+          <FormField prefix={PREFIX} name="payerName" label="Nom du payeur" error={shown('payerName')}>
+            <input {...fieldProps(PREFIX, 'payerName', shown('payerName'))} value={form.payerName} onChange={(e) => setForm((f) => ({ ...f, payerName: e.target.value }))} maxLength={200} required aria-required="true" />
+          </FormField>
+          <FormField prefix={PREFIX} name="payerType" label="Nature du payeur" error={shown('payerType')}>
+            <select {...fieldProps(PREFIX, 'payerType', shown('payerType'))} value={form.payerType} onChange={(e) => setForm((f) => ({ ...f, payerType: e.target.value as EnrollForm['payerType'] }))} required aria-required="true">
+              <option value="">Choisir…</option>
+              {PAYER_TYPE_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+            </select>
+          </FormField>
+        </>
+      )}
+      <p className="m-0 mb-3 text-ink-2">Le montant dû est le prix complet du certificat. Le règlement lui-même n’est pas suivi ici : il le sera avec le module Facturation et paiements.</p>
+    </>
+  );
+}
+
 function EnrollDialog({ learner, session, onClose, onDone }: { learner?: Learner; session?: Session; onClose: () => void; onDone: () => Promise<void> }) {
   const [form, setForm] = useState<EnrollForm>(() => EMPTY_ENROLL_FORM(learner?.id, session?.id));
   const [learners, setLearners] = useState<Learner[]>(learner ? [learner] : []);
   const [sessions, setSessions] = useState<Session[]>(session ? [session] : []);
-  const { options, loading, error } = useApprovalOptions(form.learnerId, form.sessionId);
+  const chosenLearner = learners.find((l) => l.id === form.learnerId) ?? learner;
+  // Un étudiant ou un particulier n'a pas d'agrément : on désigne qui règle les frais.
+  const individual = chosenLearner ? isIndividual(chosenLearner) : false;
+  const { options, loading, error } = useApprovalOptions(individual ? '' : form.learnerId, form.sessionId);
   const set = (key: keyof EnrollForm, value: string) => setForm((f) => ({ ...f, [key]: value }));
-  const errors = validateEnroll(form, options);
+  const errors = validateEnroll(form, options, individual);
 
   useEffect(() => {
     if (!learner) api<Page<Learner>>('/learners?pageSize=100').then((p) => setLearners(p.items)).catch(() => setLearners([]));
@@ -235,11 +286,11 @@ function EnrollDialog({ learner, session, onClose, onDone }: { learner?: Learner
   return (
     <FormDialog
       title="Inscrire un apprenant"
-      intro="L’inscription prend une place de la session et consomme l’agrément choisi. Elle reste « en attente » jusqu’à sa confirmation par le Responsable Investudy."
+      intro="L’inscription prend une place de la session et consomme l’agrément choisi ; pour un étudiant ou un particulier, qui n’a pas d’agrément, on indique qui règle les frais. Elle reste « en attente » jusqu’à sa confirmation par le Responsable Investudy."
       errors={errors}
       onClose={onClose}
       submit={async () => {
-        await api('/enrollments', { method: 'POST', body: enrollBody(form) });
+        await api('/enrollments', { method: 'POST', body: enrollBody(form, individual) });
         await onDone();
       }}
     >
@@ -251,7 +302,7 @@ function EnrollDialog({ learner, session, onClose, onDone }: { learner?: Learner
             <FormField prefix={PREFIX} name="learnerId" label="Apprenant" error={shown('learnerId')}>
               <select {...fieldProps(PREFIX, 'learnerId', shown('learnerId'))} value={form.learnerId} disabled={Boolean(learner)} onChange={(e) => set('learnerId', e.target.value)} required aria-required="true">
                 <option value="">Choisir…</option>
-                {learners.map((l) => <option key={l.id} value={l.id}>{l.firstName} {l.lastName} ({l.companyName})</option>)}
+                {learners.map((l) => <option key={l.id} value={l.id}>{l.firstName} {l.lastName} ({learnerOrigin(l)})</option>)}
               </select>
             </FormField>
             <FormField prefix={PREFIX} name="sessionId" label="Session ouverte" error={shown('sessionId')}>
@@ -260,7 +311,9 @@ function EnrollDialog({ learner, session, onClose, onDone }: { learner?: Learner
                 {sessions.map((s) => <option key={s.id} value={s.id} disabled={s.enrolled >= s.capacity}>{sessionLabel(s)}{s.enrolled >= s.capacity ? ' : complète' : ''}</option>)}
               </select>
             </FormField>
-            <ApprovalChoice form={form} setForm={(approvalId) => set('approvalId', approvalId)} options={options} loading={loading} error={error} shown={shown('approvalId')} />
+            {individual
+              ? <PayerChoice form={form} setForm={setForm} shown={shown} />
+              : <ApprovalChoice form={form} setForm={(approvalId) => set('approvalId', approvalId)} options={options} loading={loading} error={error} shown={shown('approvalId')} />}
             <FormField prefix={PREFIX} name="comment" label="Commentaire (facultatif)" error={shown('comment')}>
               <textarea {...fieldProps(PREFIX, 'comment', shown('comment'))} value={form.comment} onChange={(e) => set('comment', e.target.value)} rows={2} maxLength={500} />
             </FormField>
@@ -288,8 +341,8 @@ function ConfirmDialog({ enrollment, onClose, onDone }: { enrollment: Enrollment
   return (
     <Modal title="Confirmer l’inscription" onClose={onClose}>
       <p className="m-0 mb-3">
-        Confirmer l’inscription de <strong>{enrollment.learnerName}</strong> ({enrollment.companyName}) à « {enrollment.trainingTitle} » du {dateText(enrollment.sessionStart)} au {dateText(enrollment.sessionEnd)}.
-        Son agrément doit rester valide.
+        Confirmer l’inscription de <strong>{enrollment.learnerName}</strong> ({enrollment.companyName || LEARNER_KIND_LABEL[enrollment.learnerKind]}) à « {enrollment.trainingTitle} » du {dateText(enrollment.sessionStart)} au {dateText(enrollment.sessionEnd)}.
+        {enrollment.approvalId ? ' Son agrément doit rester valide.' : ` Payeur : ${payerText(enrollment.payer)}.`}
       </p>
       {error && <p role="alert" className="error">{error}</p>}
       <div className="row end">
@@ -329,9 +382,11 @@ function CancelDialog({ enrollment, onClose, onDone }: { enrollment: Enrollment;
 }
 
 function ReplaceDialog({ enrollment, onClose, onDone }: { enrollment: Enrollment; onClose: () => void; onDone: () => Promise<void> }) {
-  const [form, setForm] = useState({ sessionId: '', approvalId: enrollment.approvalId });
+  const [form, setForm] = useState({ sessionId: '', approvalId: enrollment.approvalId ?? '' });
   const [sessions, setSessions] = useState<Session[]>([]);
-  const { options, loading, error } = useApprovalOptions(enrollment.learnerId, form.sessionId);
+  // Un étudiant ou un particulier garde son payeur : aucun agrément à choisir.
+  const individual = enrollment.approvalId === null;
+  const { options, loading, error } = useApprovalOptions(individual ? '' : enrollment.learnerId, form.sessionId);
   const errors = validateReplace(form, enrollment, options);
   useEffect(() => {
     api<Page<Session>>('/sessions?status=OPEN&pageSize=100').then((p) => setSessions(p.items)).catch(() => setSessions([]));
@@ -357,7 +412,9 @@ function ReplaceDialog({ enrollment, onClose, onDone }: { enrollment: Enrollment
               {sessions.filter((s) => s.id !== enrollment.sessionId).map((s) => <option key={s.id} value={s.id} disabled={s.enrolled >= s.capacity}>{sessionLabel(s)}{s.enrolled >= s.capacity ? ' : complète' : ''}</option>)}
             </select>
           </FormField>
-          <ApprovalChoice form={form} setForm={(approvalId) => setForm((f) => ({ ...f, approvalId }))} options={options} loading={loading} error={error} shown={submitted ? errors.approvalId : undefined} />
+          {individual
+            ? <p className="m-0 mb-3 text-ink-2">Le payeur est conservé : <strong>{payerText(enrollment.payer)}</strong>.</p>
+            : <ApprovalChoice form={form} setForm={(approvalId) => setForm((f) => ({ ...f, approvalId }))} options={options} loading={loading} error={error} shown={submitted ? errors.approvalId : undefined} />}
         </fieldset>
       )}
     </FormDialog>
