@@ -1,0 +1,57 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fiche de test — Calendrier d&#x27;équipe</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="../../INDEX.html">Index</a> · <a href="../../GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="../../ARCHITECTURE.html">Architecture</a> · <a href="../../SECURITY.html">Sécurité</a> · <a href="../../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../../QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="../../TECH-DEBT.html">Dette</a> · <a href="../../CHARTE-DE-TESTS.html">Charte de tests</a> · <a href="../../tests/README.html">Fiches de test</a> · <a href="../../design/README.html">Design</a> · <a href="../../livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>Fiche de test — Calendrier d'équipe</h1>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td><strong>Route</strong></td><td><code>/hr/leave/calendar</code></td></tr>
+<tr><td><strong>Livrée par</strong></td><td>RH-2b (recette et mutants : RH-2c)</td></tr>
+<tr><td><strong>Accès</strong></td><td>Tout utilisateur qui détient <code>hr.leave.read</code> : menu Ressources humaines › Calendrier d'équipe.</td></tr>
+<tr><td><strong>Droits</strong></td><td><strong>Voir</strong> : tout employé voit les absences <strong>validées</strong> de son service, avec la seule mention « absent » (ni type, ni motif) ; l'employé lui-même, son responsable, la RH et la Direction voient aussi le <strong>type</strong>. La RH et la Direction peuvent choisir le service.</td></tr>
+<tr><td><strong>Rôles de test</strong></td><td>cc, chef, rh, dir</td></tr>
+</tbody></table></div>
+<p><em>Fiche d'interface de la <a href="../../CHARTE-DE-TESTS.html">charte de tests</a>. À rejouer à chaque changement de l'écran. Cocher, dater, signer ; tout écart devient un défaut.</em></p>
+<h2>Préconditions</h2>
+<p>Jeu de démonstration (bloc « conges ») : trois absences validées (maladie de Karim Biya dans le passé, congé du Support dans les jours qui viennent, congé annuel de Karim Biya dans quelques semaines). Aucun jour férié saisi.</p>
+<h2>Scénarios</h2>
+<div class="table-wrap"><table><thead><tr><th>N°</th><th>Scénario</th><th>Étapes</th><th>Résultat attendu</th><th>Constaté (✔ / ✘)</th><th>Date et initiales</th></tr></thead><tbody>
+<tr><td>1</td><td><strong>Mois courant</strong></td><td>Ouvrir la page.</td><td>Le mois en cours est affiché, aujourd'hui souligné ; une ligne par personne absente, une colonne par jour ; week-ends grisés.</td><td>☐</td><td></td></tr>
+<tr><td>2</td><td><strong>Naviguer</strong></td><td>Flèches précédent / suivant et « Aujourd'hui ».</td><td>Le mois change, l'année aussi en passant de décembre à janvier ; « Aujourd'hui » revient au mois courant.</td><td>☐</td><td></td></tr>
+<tr><td>3</td><td><strong>Ce que voit un collègue</strong></td><td>Avec <code>compte1</code>, regarder une absence de Sonia Manga ou de Karim Biya.</td><td>Aucun type ni motif : le nom et le service seulement.</td><td>☐</td><td></td></tr>
+<tr><td>4</td><td><strong>Ce que voit le responsable et la RH</strong></td><td>Avec <code>commercial</code>, puis <code>rh</code>.</td><td>Le type d'absence (« Maladie », « Congé annuel ») apparaît sous le nom.</td><td>☐</td><td></td></tr>
+<tr><td>5</td><td><strong>Demi-journée</strong></td><td>Valider la permission d'une demi-journée de Karim Biya (écran « Absences à valider »), revenir au calendrier du mois concerné.</td><td>La case porte ◐ (matin) ou ◑ (après-midi) <strong>et</strong> un texte pour lecteur d'écran « absent le matin / l'après-midi » ; la légende l'explique.</td><td>☐</td><td></td></tr>
+<tr><td>6</td><td><strong>Week-end dans une absence</strong></td><td>Regarder une absence qui couvre un week-end.</td><td>Les cases du samedi et du dimanche restent grisées, sans marque : ce ne sont pas des jours d'absence.</td><td>☐</td><td></td></tr>
+<tr><td>7</td><td><strong>Jour férié</strong></td><td>Saisir un jour férié (Paramètres RH) dans le mois, revenir.</td><td>La colonne est grisée, son titre dit « jour férié : &lt;libellé&gt; » ; aucune marque ce jour-là.</td><td>☐</td><td></td></tr>
+<tr><td>8</td><td><strong>Service</strong></td><td>Avec <code>rh</code>, choisir un service dans « Service ».</td><td>Seules les personnes de ce service ; un employé ordinaire n'a pas ce choix (il voit son service).</td><td>☐</td><td></td></tr>
+<tr><td>9</td><td><strong>Mois sans absence</strong></td><td>Aller dans un mois sans absence.</td><td>Une ligne unique « Aucune absence validée en &lt;mois&gt; ».</td><td>☐</td><td></td></tr>
+<tr><td>10</td><td><strong>Seules les validées</strong></td><td>Créer une demande en attente, regarder le calendrier.</td><td>Elle n'y figure pas tant qu'elle n'est pas validée.</td><td>☐</td><td></td></tr>
+</tbody></table></div>
+<h2>Accessibilité</h2>
+<ul><li>☐ Clavier seul : Tab et Maj+Tab parcourent tous les contrôles dans un ordre logique ; le focus est toujours visible ; aucun piège de focus hors fenêtre modale.</li><li>☐ Un seul titre de niveau 1 ; pas de saut de niveau (h2 avant h3).</li><li>☐ Chaque champ a un libellé relié ; un champ non conforme est en surbrillance <strong>et</strong> accompagné d'un message écrit relié (<code>aria-describedby</code>), jamais la couleur seule.</li><li>☐ Les messages d'état et d'erreur sont annoncés (<code>role=alert</code> ou <code>role=status</code>).</li><li>☐ Fenêtres modales : le focus entre dans la fenêtre, Échap la ferme, le focus revient à l'élément d'origine, l'arrière-plan est inerte.</li><li>☐ Lisible à 200 % de zoom et à 375 px de large, sans défilement horizontal de la page (le calendrier défile dans son cadre).</li><li>☐ La barre d'onglets « Absences et congés » annonce l'écran courant (<code>aria-current=page</code>).</li><li>☐ Aucune information n'est portée par la couleur seule : l'état d'une demande est écrit, une demi-journée est dite par un symbole <strong>et</strong> par du texte.</li></ul>
+<h2>Tests automatisés qui couvrent cet écran</h2>
+<ul><li>API : <code>hr-leave-http.integration</code> (calendrier, confidentialité du type), <code>leave-use-cases.spec</code> (un collègue voit « absent » sans type, trois mois au plus) ; Web : <code>leave.test</code> (marques de journée et de demi-journée, tri des lignes, bornes et passage d'un mois à l'autre), mutants de RH-2c</li></ul>
+<h2>Limites connues</h2>
+<ul><li>Un mois à la fois ; période de trois mois au plus côté serveur.</li><li>Beaucoup de personnes absentes : le tableau défile dans son cadre (colonne des noms figée).</li></ul>
+<h2>Écarts constatés</h2>
+<div class="table-wrap"><table><thead><tr><th>Date</th><th>Scénario</th><th>Description</th><th>Défaut ouvert (D…)</th></tr></thead><tbody>
+<tr><td></td><td></td><td></td><td></td></tr>
+</tbody></table></div></main></body></html>

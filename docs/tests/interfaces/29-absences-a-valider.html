@@ -1,0 +1,57 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fiche de test — Absences à valider</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="../../INDEX.html">Index</a> · <a href="../../GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="../../ARCHITECTURE.html">Architecture</a> · <a href="../../SECURITY.html">Sécurité</a> · <a href="../../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../../QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="../../TECH-DEBT.html">Dette</a> · <a href="../../CHARTE-DE-TESTS.html">Charte de tests</a> · <a href="../../tests/README.html">Fiches de test</a> · <a href="../../design/README.html">Design</a> · <a href="../../livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>Fiche de test — Absences à valider</h1>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td><strong>Route</strong></td><td><code>/hr/leave/approvals</code></td></tr>
+<tr><td><strong>Livrée par</strong></td><td>RH-2b (recette et mutants : RH-2c)</td></tr>
+<tr><td><strong>Accès</strong></td><td>Tout utilisateur qui détient <code>hr.leave.approve</code> : menu Ressources humaines › Absences à valider. La liste est celle des collaborateurs <strong>directs</strong> de l'organigramme RH ; la RH et la Direction peuvent aussi choisir « Toutes les demandes ».</td></tr>
+<tr><td><strong>Droits</strong></td><td><strong>Valider ou refuser</strong> : le responsable direct de l'employé (organigramme RH, pas la hiérarchie des comptes) ou la RH ; <strong>jamais sa propre demande</strong>. <strong>Voir toutes les demandes</strong> : RH, Direction, Super administrateur.</td></tr>
+<tr><td><strong>Rôles de test</strong></td><td>chef, rh, dir, cc</td></tr>
+</tbody></table></div>
+<p><em>Fiche d'interface de la <a href="../../CHARTE-DE-TESTS.html">charte de tests</a>. À rejouer à chaque changement de l'écran. Cocher, dater, signer ; tout écart devient un défaut.</em></p>
+<h2>Préconditions</h2>
+<p>Jeu de démonstration (bloc « conges ») : le Responsable commercial (<code>commercial@demo…</code>) est le responsable de trois chargés de compte ; il a <strong>deux demandes en attente</strong> (Camille Ngono, congé annuel ; Karim Biya, permission d'une demi-journée). La demande d'Inès Abena (Investudy) n'a pour responsable que la direction : seule la RH la voit et la valide.</p>
+<h2>Scénarios</h2>
+<div class="table-wrap"><table><thead><tr><th>N°</th><th>Scénario</th><th>Étapes</th><th>Résultat attendu</th><th>Constaté (✔ / ✘)</th><th>Date et initiales</th></tr></thead><tbody>
+<tr><td>1</td><td><strong>Mon équipe</strong></td><td>Avec <code>commercial</code>, ouvrir la page (filtre « En attente » par défaut).</td><td>Deux demandes : Camille Ngono (congé annuel, 5 jours) et Karim Biya (permission, 0,5 jour, « (matin) ») ; rien de la demande d'Inès Abena.</td><td>☐</td><td></td></tr>
+<tr><td>2</td><td><strong>Toutes les demandes</strong></td><td>Avec <code>rh</code>, cliquer « Toutes les demandes ».</td><td>Trois demandes en attente, dont celle d'Inès Abena ; le filtre « Mon équipe » ne montre que les collaborateurs directs de la RH.</td><td>☐</td><td></td></tr>
+<tr><td>3</td><td><strong>Droit de voir toutes</strong></td><td>Avec <code>commercial</code>, chercher le bouton « Toutes les demandes ».</td><td>Absent : seul celui qui voit toutes les absences (RH, Direction) a ce filtre.</td><td>☐</td><td></td></tr>
+<tr><td>4</td><td><strong>Valider</strong></td><td>Menu de ligne › Valider, puis Valider dans la fenêtre.</td><td>Message « La demande est validée » ; la demande disparaît de « En attente » et apparaît dans « Validées » ; elle devient visible dans le calendrier ; le solde passe de « en attente » à « pris ».</td><td>☐</td><td></td></tr>
+<tr><td>5</td><td><strong>Refuser sans motif</strong></td><td>Menu de ligne › Refuser ; envoyer sans motif.</td><td>Le champ « Motif du refus » est en surbrillance avec « Le motif est obligatoire » ; rien n'est envoyé.</td><td>☐</td><td></td></tr>
+<tr><td>6</td><td><strong>Refuser avec motif</strong></td><td>Refuser avec un motif.</td><td>Message « La demande est refusée » ; la demande passe dans « Refusées » ; l'employé voit le motif dans « Mes absences » ; son solde n'est pas touché.</td><td>☐</td><td></td></tr>
+<tr><td>7</td><td><strong>Pas sa propre demande</strong></td><td>Avec la RH, chercher sa propre demande en attente (si elle en a une).</td><td>L'API refuse de la valider (« Vous ne pouvez pas valider ou refuser cette demande ») : personne ne valide la sienne, pas même la RH ou le Super administrateur.</td><td>☐</td><td></td></tr>
+<tr><td>8</td><td><strong>Décision d'un autre onglet</strong></td><td>Ouvrir la même demande dans deux onglets ; décider dans l'un, puis dans l'autre.</td><td>Le second reçoit « La demande a été modifiée par un autre utilisateur : rechargez-la ».</td><td>☐</td><td></td></tr>
+<tr><td>9</td><td><strong>Droit insuffisant</strong></td><td>Avec un profil sans droit de valider.</td><td>La page dit « Votre profil ne valide pas de demandes » ; l'entrée n'est pas dans le menu.</td><td>☐</td><td></td></tr>
+<tr><td>10</td><td><strong>Filtres</strong></td><td>Filtrer Toutes / Validées / Refusées / Annulées.</td><td>Le tableau suit le filtre ; les demandes décidées n'ont plus d'action.</td><td>☐</td><td></td></tr>
+</tbody></table></div>
+<h2>Accessibilité</h2>
+<ul><li>☐ Clavier seul : Tab et Maj+Tab parcourent tous les contrôles dans un ordre logique ; le focus est toujours visible ; aucun piège de focus hors fenêtre modale.</li><li>☐ Un seul titre de niveau 1 ; pas de saut de niveau (h2 avant h3).</li><li>☐ Chaque champ a un libellé relié ; un champ non conforme est en surbrillance <strong>et</strong> accompagné d'un message écrit relié (<code>aria-describedby</code>), jamais la couleur seule.</li><li>☐ Les messages d'état et d'erreur sont annoncés (<code>role=alert</code> ou <code>role=status</code>).</li><li>☐ Fenêtres modales : le focus entre dans la fenêtre, Échap la ferme, le focus revient à l'élément d'origine, l'arrière-plan est inerte.</li><li>☐ Lisible à 200 % de zoom et à 375 px de large, sans défilement horizontal de la page (le calendrier défile dans son cadre).</li><li>☐ La barre d'onglets « Absences et congés » annonce l'écran courant (<code>aria-current=page</code>).</li><li>☐ Aucune information n'est portée par la couleur seule : l'état d'une demande est écrit, une demi-journée est dite par un symbole <strong>et</strong> par du texte.</li></ul>
+<h2>Tests automatisés qui couvrent cet écran</h2>
+<ul><li>API : <code>hr-leave-http.integration</code>, <code>leave-use-cases.spec</code> (décision, refus motivé, jamais sa propre demande, revérification du solde et du chevauchement), contrat IDOR (route de décision) ; Web : <code>leave.test</code> (motif de refus, entrée de menu par droit), mutants de RH-2c</li></ul>
+<h2>Limites connues</h2>
+<ul><li>Pas de suppléant : si le responsable est absent, la demande attend ; la RH peut valider (D170).</li><li>Aucun e-mail au responsable à la demande (D169).</li></ul>
+<h2>Écarts constatés</h2>
+<div class="table-wrap"><table><thead><tr><th>Date</th><th>Scénario</th><th>Description</th><th>Défaut ouvert (D…)</th></tr></thead><tbody>
+<tr><td></td><td></td><td></td><td></td></tr>
+</tbody></table></div></main></body></html>
