@@ -1,0 +1,50 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>RH-3a — contrats du personnel (API) : recette</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="INDEX.html">Index</a> · <a href="GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="ARCHITECTURE.html">Architecture</a> · <a href="SECURITY.html">Sécurité</a> · <a href="METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="TECH-DEBT.html">Dette</a> · <a href="CHARTE-DE-TESTS.html">Charte de tests</a> · <a href="tests/README.html">Fiches de test</a> · <a href="design/README.html">Design</a> · <a href="livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>RH-3a — contrats du personnel (API) : recette</h1>
+<p><em>Branche <code>feat/rh-3-contrats-parcours</code> · 2026-11-11 · décision <strong>D67</strong> (« Lançons RH-3 », puis « applique les recommandations »), <a href="adr/0013-contrats-du-personnel-sans-donnees-sensibles.html">ADR-0013</a>.</em></p>
+<p>RH-3 se livre par tranches, comme RH-2 : <strong>3a</strong> (cette tranche : l'API des contrats), <strong>3b</strong> (parcours d'intégration et de départ, API), <strong>3c</strong> (écrans et données de démonstration), <strong>3d</strong> (recette complète, mutants, fiches de test).</p>
+<h2>Ce qui est livré</h2>
+<div class="table-wrap"><table><thead><tr><th>Demande</th><th>Réponse</th></tr></thead><tbody>
+<tr><td><strong>Types de contrat paramétrables</strong></td><td><code>GET/POST /hr/contracts/types</code>, <code>PUT /hr/contracts/types/:id</code> : départ CDI, CDD, Stage, Prestation ; chaque type dit seulement s'il a une <strong>fin obligatoire</strong> ; un type se <strong>désactive</strong>, ne se supprime pas ; code et nature ne changent pas ; <strong>aucune règle légale codée</strong></td></tr>
+<tr><td><strong>Contrats successifs, un seul en cours</strong></td><td><code>POST /hr/contracts</code>, <code>GET /hr/contracts</code>, <code>GET /hr/contracts/:id</code> ; <strong>index unique partiel</strong> en base + verrou de la fiche de l'employé (trois créations simultanées : une réussit, deux refusées) ; pas de chevauchement avec un contrat terminé ; pas de début avant l'entrée de l'employé</td></tr>
+<tr><td><strong>Champs</strong></td><td>type, début, fin (vide pour la durée indéterminée), fin de période d'essai (dans le contrat), état, date de fin effective, motif de fin — <strong>ni salaire, ni document, ni avenant, ni texte libre</strong> (testé sur les colonnes et sur la réponse)</td></tr>
+<tr><td><strong>Ajuster</strong></td><td><code>PUT /hr/contracts/:id</code> : prolonger la fin, déplacer l'essai ; le début ne change jamais ; version lue, audit avant / après</td></tr>
+<tr><td><strong>Terminer</strong></td><td><code>POST /hr/contracts/:id/end</code> : une date (entre le début et la fin prévue) et un <strong>motif de la liste fermée</strong> (fin de CDD, fin d'essai, démission, fin de mission, autre) ; le contrat est conservé et ne bouge plus</td></tr>
+<tr><td><strong>Droits</strong></td><td>RH et Super administrateur : tout voir et gérer ; <strong>Direction : tout lire, rien écrire</strong> ; <strong>employé : le sien seulement</strong> ; <strong>responsables et collègues : rien</strong> ; hors périmètre : 404 identique à un identifiant inexistant</td></tr>
+<tr><td><strong>Échéances</strong></td><td><code>GET /hr/contracts/deadlines?days=</code> (60 par défaut, 1 à 365) : fin de contrat et fin d'essai des contrats en cours, jours restants, triées par date ; RH et Direction ; aucun courriel</td></tr>
+<tr><td><strong>Permissions</strong></td><td><code>hr.contract.read</code> (Propre pour tous, Tous pour la Direction, la RH et le Super administrateur), <code>hr.contract.manage</code> (Tous : RH et Super administrateur) ; aucune permission de salaire n'existe</td></tr>
+<tr><td><strong>Documentation de l'API</strong></td><td><code>openapi.json</code> (190 opérations), référence des routes, collection Postman (182 requêtes de route, 24 étapes de parcours), <code>docs/RBAC.md</code> (120 permissions) régénérés</td></tr>
+</tbody></table></div>
+<h2>Preuves</h2>
+<div class="table-wrap"><table><thead><tr><th>Contrôle</th><th>Résultat</th></tr></thead><tbody>
+<tr><td>Types, architecture</td><td><code>tsc</code> propre (API et interface) ; <code>pnpm arch</code> : <strong>325 modules, aucune violation</strong> (un premier passage a refusé qu'un DTO importe le domaine : la liste des motifs y est dupliquée et un test vérifie qu'elle reste identique)</td></tr>
+<tr><td>Tests unitaires de l'API</td><td><strong>1 401 réussis</strong> (78 suites) ; nouveaux : <code>contract.spec</code> (14 : types, dates, essai, motifs, bornes), <code>contract-use-cases.spec</code> (26 : création, un seul contrat en cours, chevauchement, droits de chaque rôle, portée Propre, lecture par le responsable refusée, échéances aux bornes 60 / 61 jours, types, audit) et un cas dans <code>roles.spec</code> (matrice des rôles)</td></tr>
+<tr><td>Tests de l'interface</td><td><strong>768 réussis</strong> (les libellés de permission de l'interface restent identiques au catalogue)</td></tr>
+<tr><td>Intégration (base jetable)</td><td><code>hr-contracts-http</code> (<strong>11</strong> tests : cycle complet avec audit, création simultanée, refus métier, droits par rôle, échéances, paramétrage, absence de salaire, <strong>règles garanties par la base</strong> : un seul contrat en cours, dates et état cohérents, types, jamais de suppression) + <code>idor-contract</code> (4 nouvelles routes classées « objet » avec leurs sondes : même réponse pour un contrat étranger et inexistant, aucune fuite), <code>rbac-http</code>, <code>core-schema</code>, <code>hr-leave-http</code> : <strong>186 réussis, 6 suites</strong></td></tr>
+<tr><td>Migration</td><td><code>20261119000000_rh_3a_contracts</code> appliquée sur base vierge (29 migrations) ; statut « à jour »</td></tr>
+</tbody></table></div>
+<h2>Limites connues</h2>
+<ul><li><strong>Pas encore d'écran</strong> (tranche 3c) : l'API se teste par Postman ou par les tests.</li><li><strong>Mutants et Newman non rejoués</strong> pour cette tranche : le test de mutation des règles de contrat et le passage complet de la collection sur pile jetable sont prévus en <strong>3d</strong>, avec la recette de l'ensemble (la collection se construit sans erreur : toutes ses routes existent).</li><li><strong>Dettes</strong> : D179 (ni salaire, ni document, ni avenant), D180 (aucune règle légale codée : à valider par un juriste), D181 (pas de notification d'échéance ; fin de contrat et départ restent deux gestes).</li><li><strong>Non vérifié</strong> : concurrence au-delà de trois créations simultanées ; contrat d'un employé dont la fiche est ensuite archivée (il reste lisible, rien ne le termine automatiquement).</li></ul>
+<h2>Comment vérifier</h2>
+<ol><li><code>node apps/crm-api/scripts/test-db.mjs --tests=hr-contracts-http</code> (base jetable, environ une minute).</li><li>Collection Postman : dossiers « hr » (types, contrats, échéances) ; voir <code>docs/api/README.md</code>.</li></ol></main></body></html>

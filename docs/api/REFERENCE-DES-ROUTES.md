@@ -166,6 +166,15 @@
 
 | Méthode | Chemin | Résumé | Permission | Succès |
 |---|---|---|---|---|
+| GET | `/hr/contracts` |  | `hr.contract.read` | 200 |
+| POST | `/hr/contracts` |  | `hr.contract.manage` | 201 |
+| GET | `/hr/contracts/{id}` |  | `hr.contract.read` | 200 |
+| PUT | `/hr/contracts/{id}` |  | `hr.contract.manage` | 200 |
+| POST | `/hr/contracts/{id}/end` |  | `hr.contract.manage` | 200 |
+| GET | `/hr/contracts/deadlines` |  | `hr.contract.read` | 200 |
+| GET | `/hr/contracts/types` |  | `hr.contract.read` | 200 |
+| POST | `/hr/contracts/types` |  | `hr.contract.manage` | 201 |
+| PUT | `/hr/contracts/types/{id}` |  | `hr.contract.manage` | 200 |
 | GET | `/hr/directory` |  | `hr.directory.read` | 200 |
 | GET | `/hr/employees` |  | `hr.employee.read` | 200 |
 | POST | `/hr/employees` |  | `hr.employee.create` | 201 |
@@ -308,4 +317,4 @@
 | PUT | `/trainings/{id}` |  | `training.training.update` | 200 |
 | POST | `/trainings/{id}/status` |  | `training.training.update` | 200 |
 
-*181 routes.*
+*190 routes.*

@@ -9540,6 +9540,481 @@
               }
             }
           ]
+        },
+        {
+          "name": "GET /hr/contracts/types",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/hr/contracts/types",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "hr",
+                "contracts",
+                "types"
+              ],
+              "variable": [],
+              "query": [
+                {
+                  "key": "includeInactive",
+                  "value": "false",
+                  "disabled": true,
+                  "description": "Inclure les types désactivés (RH seulement)."
+                }
+              ]
+            },
+            "description": "**Permission** : `hr.contract.read`\n\nSuccès attendu : 200.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Sans jeton : refusé (401)', () => pm.response.to.have.status(401));",
+                  "pm.test('Réponse « problem details »', () => pm.expect(pm.response.json()).to.include.keys('type', 'title', 'status'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /hr/contracts/types",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/hr/contracts/types",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "hr",
+                "contracts",
+                "types"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**Permission** : `hr.contract.manage`\n\nSuccès attendu : 201.\n\n_Corps vide envoyé volontairement : la route refuse (400) sans rien créer. Le corps documenté est :_\n\n```json\n{\n  \"code\": \"APPRENTI\",\n  \"label\": \"texte\",\n  \"fixedTerm\": false\n}\n```\n\nLes créations réelles sont testées dans le dossier « 90 — Parcours de bout en bout ».",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Sans jeton : refusé (401)', () => pm.response.to.have.status(401));",
+                  "pm.test('Réponse « problem details »', () => pm.expect(pm.response.json()).to.include.keys('type', 'title', 'status'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PUT /hr/contracts/types/{id}",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/hr/contracts/types/{id}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "hr",
+                "contracts",
+                "types",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{typeId}}",
+                  "description": "Identifiant : voir l’environnement (valeur par défaut : identifiant inexistant, la route répond « introuvable »)."
+                }
+              ],
+              "query": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"version\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**Permission** : `hr.contract.manage`\n\nSuccès attendu : 200.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Sans jeton : refusé (401)', () => pm.response.to.have.status(401));",
+                  "pm.test('Réponse « problem details »', () => pm.expect(pm.response.json()).to.include.keys('type', 'title', 'status'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /hr/contracts/deadlines",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/hr/contracts/deadlines",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "hr",
+                "contracts",
+                "deadlines"
+              ],
+              "variable": [],
+              "query": [
+                {
+                  "key": "days",
+                  "value": "60",
+                  "disabled": true,
+                  "description": "Fenêtre en jours à partir d’aujourd’hui."
+                }
+              ]
+            },
+            "description": "**Permission** : `hr.contract.read`\n\nSuccès attendu : 200.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Sans jeton : refusé (401)', () => pm.response.to.have.status(401));",
+                  "pm.test('Réponse « problem details »', () => pm.expect(pm.response.json()).to.include.keys('type', 'title', 'status'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /hr/contracts",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/hr/contracts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "hr",
+                "contracts"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**Permission** : `hr.contract.manage`\n\nSuccès attendu : 201.\n\n_Corps vide envoyé volontairement : la route refuse (400) sans rien créer. Le corps documenté est :_\n\n```json\n{\n  \"employeeId\": \"{{uuid}}\",\n  \"contractTypeId\": \"{{uuid}}\",\n  \"start\": \"2026-12-01\"\n}\n```\n\nLes créations réelles sont testées dans le dossier « 90 — Parcours de bout en bout ».",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Sans jeton : refusé (401)', () => pm.response.to.have.status(401));",
+                  "pm.test('Réponse « problem details »', () => pm.expect(pm.response.json()).to.include.keys('type', 'title', 'status'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /hr/contracts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/hr/contracts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "hr",
+                "contracts"
+              ],
+              "variable": [],
+              "query": [
+                {
+                  "key": "employeeId",
+                  "value": "{{uuid}}",
+                  "disabled": true,
+                  "description": ""
+                },
+                {
+                  "key": "status",
+                  "value": "ACTIVE",
+                  "disabled": true,
+                  "description": "Valeurs : ACTIVE, ENDED"
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": true,
+                  "description": ""
+                },
+                {
+                  "key": "pageSize",
+                  "value": "25",
+                  "disabled": true,
+                  "description": ""
+                }
+              ]
+            },
+            "description": "**Permission** : `hr.contract.read`\n\nSuccès attendu : 200.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Sans jeton : refusé (401)', () => pm.response.to.have.status(401));",
+                  "pm.test('Réponse « problem details »', () => pm.expect(pm.response.json()).to.include.keys('type', 'title', 'status'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /hr/contracts/{id}",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/hr/contracts/{id}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "hr",
+                "contracts",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{contractId}}",
+                  "description": "Identifiant : voir l’environnement (valeur par défaut : identifiant inexistant, la route répond « introuvable »)."
+                }
+              ],
+              "query": []
+            },
+            "description": "**Permission** : `hr.contract.read`\n\nSuccès attendu : 200.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Sans jeton : refusé (401)', () => pm.response.to.have.status(401));",
+                  "pm.test('Réponse « problem details »', () => pm.expect(pm.response.json()).to.include.keys('type', 'title', 'status'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PUT /hr/contracts/{id}",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/hr/contracts/{id}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "hr",
+                "contracts",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{contractId}}",
+                  "description": "Identifiant : voir l’environnement (valeur par défaut : identifiant inexistant, la route répond « introuvable »)."
+                }
+              ],
+              "query": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"version\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**Permission** : `hr.contract.manage`\n\nSuccès attendu : 200.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Sans jeton : refusé (401)', () => pm.response.to.have.status(401));",
+                  "pm.test('Réponse « problem details »', () => pm.expect(pm.response.json()).to.include.keys('type', 'title', 'status'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /hr/contracts/{id}/end",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/hr/contracts/{id}/end",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "hr",
+                "contracts",
+                ":id",
+                "end"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{contractId}}",
+                  "description": "Identifiant : voir l’environnement (valeur par défaut : identifiant inexistant, la route répond « introuvable »)."
+                }
+              ],
+              "query": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"version\": 1,\n  \"endedOn\": \"2027-05-31\",\n  \"reason\": \"FIXED_TERM_END\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**Permission** : `hr.contract.manage`\n\nSuccès attendu : 200.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Sans jeton : refusé (401)', () => pm.response.to.have.status(401));",
+                  "pm.test('Réponse « problem details »', () => pm.expect(pm.response.json()).to.include.keys('type', 'title', 'status'));"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
@@ -16504,6 +16979,607 @@
     {
       "name": "23 — hr",
       "item": [
+        {
+          "name": "GET /hr/contracts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/hr/contracts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "hr",
+                "contracts"
+              ],
+              "variable": [],
+              "query": [
+                {
+                  "key": "employeeId",
+                  "value": "{{uuid}}",
+                  "disabled": true,
+                  "description": ""
+                },
+                {
+                  "key": "status",
+                  "value": "ACTIVE",
+                  "disabled": true,
+                  "description": "Valeurs : ACTIVE, ENDED"
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "disabled": true,
+                  "description": ""
+                },
+                {
+                  "key": "pageSize",
+                  "value": "25",
+                  "disabled": true,
+                  "description": ""
+                }
+              ]
+            },
+            "description": "**Permission** : `hr.contract.read`\n\nSuccès attendu : 200."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const documented = [200,400,403,404,409,415,422,429];",
+                  "const success = [200];",
+                  "pm.test('Pas d’erreur serveur (statut inférieur à 500)', () => pm.expect(pm.response.code).to.be.below(500));",
+                  "pm.test('Le jeton est accepté (pas de 401)', () => pm.expect(pm.response.code).to.not.eql(401));",
+                  "pm.test('Statut prévu (succès documenté ou refus métier standard)', () => pm.expect(documented).to.include(pm.response.code));",
+                  "pm.test('Temps de réponse raisonnable (moins de 3 s)', () => pm.expect(pm.response.responseTime).to.be.below(3000));",
+                  "if (pm.response.code !== 204 && pm.response.text().length > 0) {",
+                  "  pm.test('Réponse en JSON', () => pm.expect(pm.response.headers.get('Content-Type') || '').to.match(/json/));",
+                  "}",
+                  "if (pm.response.code >= 400 && pm.response.code < 500 && pm.response.text().length > 0) {",
+                  "  pm.test('Erreur au format « problem details » (RFC 7807)', () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body).to.include.keys('type', 'title', 'status');",
+                  "    pm.expect(body.status).to.eql(pm.response.code);",
+                  "  });",
+                  "}",
+                  "if (success.includes(pm.response.code)) {",
+                  "  pm.test('Statut de succès documenté', () => pm.expect(success).to.include(pm.response.code));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /hr/contracts",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/hr/contracts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "hr",
+                "contracts"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**Permission** : `hr.contract.manage`\n\nSuccès attendu : 201.\n\n_Corps vide envoyé volontairement : la route refuse (400) sans rien créer. Le corps documenté est :_\n\n```json\n{\n  \"employeeId\": \"{{uuid}}\",\n  \"contractTypeId\": \"{{uuid}}\",\n  \"start\": \"2026-12-01\"\n}\n```\n\nLes créations réelles sont testées dans le dossier « 90 — Parcours de bout en bout »."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const documented = [201,400,403,404,409,415,422,429];",
+                  "const success = [201];",
+                  "pm.test('Pas d’erreur serveur (statut inférieur à 500)', () => pm.expect(pm.response.code).to.be.below(500));",
+                  "pm.test('Le jeton est accepté (pas de 401)', () => pm.expect(pm.response.code).to.not.eql(401));",
+                  "pm.test('Statut prévu (succès documenté ou refus métier standard)', () => pm.expect(documented).to.include(pm.response.code));",
+                  "pm.test('Temps de réponse raisonnable (moins de 3 s)', () => pm.expect(pm.response.responseTime).to.be.below(3000));",
+                  "if (pm.response.code !== 204 && pm.response.text().length > 0) {",
+                  "  pm.test('Réponse en JSON', () => pm.expect(pm.response.headers.get('Content-Type') || '').to.match(/json/));",
+                  "}",
+                  "if (pm.response.code >= 400 && pm.response.code < 500 && pm.response.text().length > 0) {",
+                  "  pm.test('Erreur au format « problem details » (RFC 7807)', () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body).to.include.keys('type', 'title', 'status');",
+                  "    pm.expect(body.status).to.eql(pm.response.code);",
+                  "  });",
+                  "}",
+                  "if (success.includes(pm.response.code)) {",
+                  "  pm.test('Statut de succès documenté', () => pm.expect(success).to.include(pm.response.code));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /hr/contracts/{id}",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/hr/contracts/{id}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "hr",
+                "contracts",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{contractId}}",
+                  "description": "Identifiant : voir l’environnement (valeur par défaut : identifiant inexistant, la route répond « introuvable »)."
+                }
+              ],
+              "query": []
+            },
+            "description": "**Permission** : `hr.contract.read`\n\nSuccès attendu : 200."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const documented = [200,400,403,404,409,415,422,429];",
+                  "const success = [200];",
+                  "pm.test('Pas d’erreur serveur (statut inférieur à 500)', () => pm.expect(pm.response.code).to.be.below(500));",
+                  "pm.test('Le jeton est accepté (pas de 401)', () => pm.expect(pm.response.code).to.not.eql(401));",
+                  "pm.test('Statut prévu (succès documenté ou refus métier standard)', () => pm.expect(documented).to.include(pm.response.code));",
+                  "pm.test('Temps de réponse raisonnable (moins de 3 s)', () => pm.expect(pm.response.responseTime).to.be.below(3000));",
+                  "if (pm.response.code !== 204 && pm.response.text().length > 0) {",
+                  "  pm.test('Réponse en JSON', () => pm.expect(pm.response.headers.get('Content-Type') || '').to.match(/json/));",
+                  "}",
+                  "if (pm.response.code >= 400 && pm.response.code < 500 && pm.response.text().length > 0) {",
+                  "  pm.test('Erreur au format « problem details » (RFC 7807)', () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body).to.include.keys('type', 'title', 'status');",
+                  "    pm.expect(body.status).to.eql(pm.response.code);",
+                  "  });",
+                  "}",
+                  "if (success.includes(pm.response.code)) {",
+                  "  pm.test('Statut de succès documenté', () => pm.expect(success).to.include(pm.response.code));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PUT /hr/contracts/{id}",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/hr/contracts/{id}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "hr",
+                "contracts",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{contractId}}",
+                  "description": "Identifiant : voir l’environnement (valeur par défaut : identifiant inexistant, la route répond « introuvable »)."
+                }
+              ],
+              "query": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"version\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**Permission** : `hr.contract.manage`\n\nSuccès attendu : 200."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const documented = [200,400,403,404,409,415,422,429];",
+                  "const success = [200];",
+                  "pm.test('Pas d’erreur serveur (statut inférieur à 500)', () => pm.expect(pm.response.code).to.be.below(500));",
+                  "pm.test('Le jeton est accepté (pas de 401)', () => pm.expect(pm.response.code).to.not.eql(401));",
+                  "pm.test('Statut prévu (succès documenté ou refus métier standard)', () => pm.expect(documented).to.include(pm.response.code));",
+                  "pm.test('Temps de réponse raisonnable (moins de 3 s)', () => pm.expect(pm.response.responseTime).to.be.below(3000));",
+                  "if (pm.response.code !== 204 && pm.response.text().length > 0) {",
+                  "  pm.test('Réponse en JSON', () => pm.expect(pm.response.headers.get('Content-Type') || '').to.match(/json/));",
+                  "}",
+                  "if (pm.response.code >= 400 && pm.response.code < 500 && pm.response.text().length > 0) {",
+                  "  pm.test('Erreur au format « problem details » (RFC 7807)', () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body).to.include.keys('type', 'title', 'status');",
+                  "    pm.expect(body.status).to.eql(pm.response.code);",
+                  "  });",
+                  "}",
+                  "if (success.includes(pm.response.code)) {",
+                  "  pm.test('Statut de succès documenté', () => pm.expect(success).to.include(pm.response.code));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /hr/contracts/{id}/end",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/hr/contracts/{id}/end",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "hr",
+                "contracts",
+                ":id",
+                "end"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{contractId}}",
+                  "description": "Identifiant : voir l’environnement (valeur par défaut : identifiant inexistant, la route répond « introuvable »)."
+                }
+              ],
+              "query": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"version\": 1,\n  \"endedOn\": \"2027-05-31\",\n  \"reason\": \"FIXED_TERM_END\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**Permission** : `hr.contract.manage`\n\nSuccès attendu : 200."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const documented = [200,400,403,404,409,415,422,429];",
+                  "const success = [200];",
+                  "pm.test('Pas d’erreur serveur (statut inférieur à 500)', () => pm.expect(pm.response.code).to.be.below(500));",
+                  "pm.test('Le jeton est accepté (pas de 401)', () => pm.expect(pm.response.code).to.not.eql(401));",
+                  "pm.test('Statut prévu (succès documenté ou refus métier standard)', () => pm.expect(documented).to.include(pm.response.code));",
+                  "pm.test('Temps de réponse raisonnable (moins de 3 s)', () => pm.expect(pm.response.responseTime).to.be.below(3000));",
+                  "if (pm.response.code !== 204 && pm.response.text().length > 0) {",
+                  "  pm.test('Réponse en JSON', () => pm.expect(pm.response.headers.get('Content-Type') || '').to.match(/json/));",
+                  "}",
+                  "if (pm.response.code >= 400 && pm.response.code < 500 && pm.response.text().length > 0) {",
+                  "  pm.test('Erreur au format « problem details » (RFC 7807)', () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body).to.include.keys('type', 'title', 'status');",
+                  "    pm.expect(body.status).to.eql(pm.response.code);",
+                  "  });",
+                  "}",
+                  "if (success.includes(pm.response.code)) {",
+                  "  pm.test('Statut de succès documenté', () => pm.expect(success).to.include(pm.response.code));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /hr/contracts/deadlines",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/hr/contracts/deadlines",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "hr",
+                "contracts",
+                "deadlines"
+              ],
+              "variable": [],
+              "query": [
+                {
+                  "key": "days",
+                  "value": "60",
+                  "disabled": true,
+                  "description": "Fenêtre en jours à partir d’aujourd’hui."
+                }
+              ]
+            },
+            "description": "**Permission** : `hr.contract.read`\n\nSuccès attendu : 200."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const documented = [200,400,403,404,409,415,422,429];",
+                  "const success = [200];",
+                  "pm.test('Pas d’erreur serveur (statut inférieur à 500)', () => pm.expect(pm.response.code).to.be.below(500));",
+                  "pm.test('Le jeton est accepté (pas de 401)', () => pm.expect(pm.response.code).to.not.eql(401));",
+                  "pm.test('Statut prévu (succès documenté ou refus métier standard)', () => pm.expect(documented).to.include(pm.response.code));",
+                  "pm.test('Temps de réponse raisonnable (moins de 3 s)', () => pm.expect(pm.response.responseTime).to.be.below(3000));",
+                  "if (pm.response.code !== 204 && pm.response.text().length > 0) {",
+                  "  pm.test('Réponse en JSON', () => pm.expect(pm.response.headers.get('Content-Type') || '').to.match(/json/));",
+                  "}",
+                  "if (pm.response.code >= 400 && pm.response.code < 500 && pm.response.text().length > 0) {",
+                  "  pm.test('Erreur au format « problem details » (RFC 7807)', () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body).to.include.keys('type', 'title', 'status');",
+                  "    pm.expect(body.status).to.eql(pm.response.code);",
+                  "  });",
+                  "}",
+                  "if (success.includes(pm.response.code)) {",
+                  "  pm.test('Statut de succès documenté', () => pm.expect(success).to.include(pm.response.code));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /hr/contracts/types",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/hr/contracts/types",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "hr",
+                "contracts",
+                "types"
+              ],
+              "variable": [],
+              "query": [
+                {
+                  "key": "includeInactive",
+                  "value": "false",
+                  "disabled": true,
+                  "description": "Inclure les types désactivés (RH seulement)."
+                }
+              ]
+            },
+            "description": "**Permission** : `hr.contract.read`\n\nSuccès attendu : 200."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const documented = [200,400,403,404,409,415,422,429];",
+                  "const success = [200];",
+                  "pm.test('Pas d’erreur serveur (statut inférieur à 500)', () => pm.expect(pm.response.code).to.be.below(500));",
+                  "pm.test('Le jeton est accepté (pas de 401)', () => pm.expect(pm.response.code).to.not.eql(401));",
+                  "pm.test('Statut prévu (succès documenté ou refus métier standard)', () => pm.expect(documented).to.include(pm.response.code));",
+                  "pm.test('Temps de réponse raisonnable (moins de 3 s)', () => pm.expect(pm.response.responseTime).to.be.below(3000));",
+                  "if (pm.response.code !== 204 && pm.response.text().length > 0) {",
+                  "  pm.test('Réponse en JSON', () => pm.expect(pm.response.headers.get('Content-Type') || '').to.match(/json/));",
+                  "}",
+                  "if (pm.response.code >= 400 && pm.response.code < 500 && pm.response.text().length > 0) {",
+                  "  pm.test('Erreur au format « problem details » (RFC 7807)', () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body).to.include.keys('type', 'title', 'status');",
+                  "    pm.expect(body.status).to.eql(pm.response.code);",
+                  "  });",
+                  "}",
+                  "if (success.includes(pm.response.code)) {",
+                  "  pm.test('Statut de succès documenté', () => pm.expect(success).to.include(pm.response.code));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /hr/contracts/types",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/hr/contracts/types",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "hr",
+                "contracts",
+                "types"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**Permission** : `hr.contract.manage`\n\nSuccès attendu : 201.\n\n_Corps vide envoyé volontairement : la route refuse (400) sans rien créer. Le corps documenté est :_\n\n```json\n{\n  \"code\": \"APPRENTI\",\n  \"label\": \"texte\",\n  \"fixedTerm\": false\n}\n```\n\nLes créations réelles sont testées dans le dossier « 90 — Parcours de bout en bout »."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const documented = [201,400,403,404,409,415,422,429];",
+                  "const success = [201];",
+                  "pm.test('Pas d’erreur serveur (statut inférieur à 500)', () => pm.expect(pm.response.code).to.be.below(500));",
+                  "pm.test('Le jeton est accepté (pas de 401)', () => pm.expect(pm.response.code).to.not.eql(401));",
+                  "pm.test('Statut prévu (succès documenté ou refus métier standard)', () => pm.expect(documented).to.include(pm.response.code));",
+                  "pm.test('Temps de réponse raisonnable (moins de 3 s)', () => pm.expect(pm.response.responseTime).to.be.below(3000));",
+                  "if (pm.response.code !== 204 && pm.response.text().length > 0) {",
+                  "  pm.test('Réponse en JSON', () => pm.expect(pm.response.headers.get('Content-Type') || '').to.match(/json/));",
+                  "}",
+                  "if (pm.response.code >= 400 && pm.response.code < 500 && pm.response.text().length > 0) {",
+                  "  pm.test('Erreur au format « problem details » (RFC 7807)', () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body).to.include.keys('type', 'title', 'status');",
+                  "    pm.expect(body.status).to.eql(pm.response.code);",
+                  "  });",
+                  "}",
+                  "if (success.includes(pm.response.code)) {",
+                  "  pm.test('Statut de succès documenté', () => pm.expect(success).to.include(pm.response.code));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PUT /hr/contracts/types/{id}",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/hr/contracts/types/{id}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "hr",
+                "contracts",
+                "types",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{typeId}}",
+                  "description": "Identifiant : voir l’environnement (valeur par défaut : identifiant inexistant, la route répond « introuvable »)."
+                }
+              ],
+              "query": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"version\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**Permission** : `hr.contract.manage`\n\nSuccès attendu : 200."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const documented = [200,400,403,404,409,415,422,429];",
+                  "const success = [200];",
+                  "pm.test('Pas d’erreur serveur (statut inférieur à 500)', () => pm.expect(pm.response.code).to.be.below(500));",
+                  "pm.test('Le jeton est accepté (pas de 401)', () => pm.expect(pm.response.code).to.not.eql(401));",
+                  "pm.test('Statut prévu (succès documenté ou refus métier standard)', () => pm.expect(documented).to.include(pm.response.code));",
+                  "pm.test('Temps de réponse raisonnable (moins de 3 s)', () => pm.expect(pm.response.responseTime).to.be.below(3000));",
+                  "if (pm.response.code !== 204 && pm.response.text().length > 0) {",
+                  "  pm.test('Réponse en JSON', () => pm.expect(pm.response.headers.get('Content-Type') || '').to.match(/json/));",
+                  "}",
+                  "if (pm.response.code >= 400 && pm.response.code < 500 && pm.response.text().length > 0) {",
+                  "  pm.test('Erreur au format « problem details » (RFC 7807)', () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body).to.include.keys('type', 'title', 'status');",
+                  "    pm.expect(body.status).to.eql(pm.response.code);",
+                  "  });",
+                  "}",
+                  "if (success.includes(pm.response.code)) {",
+                  "  pm.test('Statut de succès documenté', () => pm.expect(success).to.include(pm.response.code));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
         {
           "name": "GET /hr/directory",
           "request": {

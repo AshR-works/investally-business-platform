@@ -1236,6 +1236,7 @@ model Employee {
   reports           Employee[]     @relation("EmployeeHierarchy")
   leaveRequests     LeaveRequest[]
   leaveAdjustments  LeaveAdjustment[]
+  contracts         Contract[]
 
   @@index([managerEmployeeId])
   @@index([status])
@@ -1271,6 +1272,65 @@ model LeaveType {
   requests          LeaveRequest[]
 
   @@map("leave_types")
+  @@schema("hr")
+}
+
+/// État d'un contrat (RH-3) : en cours ou terminé. Un seul contrat en cours par employé (index unique partiel dans la migration).
+enum ContractStatus {
+  ACTIVE
+  ENDED
+
+  @@schema("hr")
+}
+
+/// Motif de fin : liste fermée, jamais un texte libre.
+enum ContractEndReason {
+  FIXED_TERM_END
+  PROBATION_END
+  RESIGNATION
+  MISSION_END
+  OTHER
+
+  @@schema("hr")
+}
+
+/// Type de contrat PARAMÉTRABLE par la RH (RH-3, D67) : `fixedTerm` = date de fin obligatoire. Jamais supprimé : il se désactive.
+model ContractType {
+  id        String     @id @db.Uuid
+  code      String     @unique @db.VarChar(30)
+  label     String     @db.VarChar(100)
+  fixedTerm Boolean    @default(false) @map("fixed_term")
+  active    Boolean    @default(true)
+  sortOrder Int        @default(0) @map("sort_order")
+  version   Int        @default(1)
+  createdAt DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime   @updatedAt @map("updated_at") @db.Timestamptz(6)
+  contracts Contract[]
+
+  @@map("contract_types")
+  @@schema("hr")
+}
+
+/// Contrat d'un employé : AUCUN salaire, document ni donnée sensible. Plusieurs au fil du temps, un seul en cours.
+model Contract {
+  id               String             @id @db.Uuid
+  employeeId       String             @map("employee_id") @db.Uuid
+  contractTypeId   String             @map("contract_type_id") @db.Uuid
+  startDate        DateTime           @map("start_date") @db.Date
+  endDate          DateTime?          @map("end_date") @db.Date
+  probationEndDate DateTime?          @map("probation_end_date") @db.Date
+  status           ContractStatus     @default(ACTIVE)
+  endedOn          DateTime?          @map("ended_on") @db.Date
+  endReason        ContractEndReason? @map("end_reason")
+  version          Int                @default(1)
+  createdAt        DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime           @updatedAt @map("updated_at") @db.Timestamptz(6)
+  employee         Employee           @relation(fields: [employeeId], references: [id], onDelete: Restrict)
+  contractType     ContractType       @relation(fields: [contractTypeId], references: [id], onDelete: Restrict)
+
+  @@index([employeeId, startDate])
+  @@index([status])
+  @@map("contracts")
   @@schema("hr")
 }
 
