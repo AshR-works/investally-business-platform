@@ -103,8 +103,8 @@
     {
       "nom": "01 — Sécurité : sans jeton, toute route protégée refuse",
       "description": null,
-      "requetes": 183,
-      "assertions": 366,
+      "requetes": 191,
+      "assertions": 382,
       "detail": [
         {
           "nom": "POST /auth/logout",
@@ -2995,6 +2995,141 @@
             "Sans jeton : refusé (401)",
             "Réponse « problem details »"
           ]
+        },
+        {
+          "nom": "GET /hr/journeys/templates",
+          "methode": "GET",
+          "chemin": "/api/v1/hr/journeys/templates",
+          "permission": "hr.journey.read",
+          "protegee": true,
+          "succesAttendus": [
+            200
+          ],
+          "corps": null,
+          "tests": [
+            "Sans jeton : refusé (401)",
+            "Réponse « problem details »"
+          ]
+        },
+        {
+          "nom": "PUT /hr/journeys/templates/{kind}",
+          "methode": "PUT",
+          "chemin": "/api/v1/hr/journeys/templates/{kind}",
+          "permission": "hr.journey.manage",
+          "protegee": true,
+          "succesAttendus": [
+            200
+          ],
+          "corps": {
+            "version": 1,
+            "tasks": [
+              {
+                "title": "texte",
+                "owner": "HR",
+                "dueOffsetDays": -365
+              }
+            ]
+          },
+          "tests": [
+            "Sans jeton : refusé (401)",
+            "Réponse « problem details »"
+          ]
+        },
+        {
+          "nom": "POST /hr/journeys",
+          "methode": "POST",
+          "chemin": "/api/v1/hr/journeys",
+          "permission": "hr.journey.manage",
+          "protegee": true,
+          "succesAttendus": [
+            201
+          ],
+          "corps": {},
+          "tests": [
+            "Sans jeton : refusé (401)",
+            "Réponse « problem details »"
+          ]
+        },
+        {
+          "nom": "GET /hr/journeys",
+          "methode": "GET",
+          "chemin": "/api/v1/hr/journeys",
+          "permission": "hr.journey.read",
+          "protegee": true,
+          "succesAttendus": [
+            200
+          ],
+          "corps": null,
+          "tests": [
+            "Sans jeton : refusé (401)",
+            "Réponse « problem details »"
+          ]
+        },
+        {
+          "nom": "GET /hr/journeys/{id}",
+          "methode": "GET",
+          "chemin": "/api/v1/hr/journeys/{id}",
+          "permission": "hr.journey.read",
+          "protegee": true,
+          "succesAttendus": [
+            200
+          ],
+          "corps": null,
+          "tests": [
+            "Sans jeton : refusé (401)",
+            "Réponse « problem details »"
+          ]
+        },
+        {
+          "nom": "POST /hr/journeys/{id}/tasks/{taskId}/complete",
+          "methode": "POST",
+          "chemin": "/api/v1/hr/journeys/{id}/tasks/{taskId}/complete",
+          "permission": "hr.journey.manage",
+          "protegee": true,
+          "succesAttendus": [
+            200
+          ],
+          "corps": {
+            "version": 1
+          },
+          "tests": [
+            "Sans jeton : refusé (401)",
+            "Réponse « problem details »"
+          ]
+        },
+        {
+          "nom": "POST /hr/journeys/{id}/tasks/{taskId}/reopen",
+          "methode": "POST",
+          "chemin": "/api/v1/hr/journeys/{id}/tasks/{taskId}/reopen",
+          "permission": "hr.journey.manage",
+          "protegee": true,
+          "succesAttendus": [
+            200
+          ],
+          "corps": {
+            "version": 1
+          },
+          "tests": [
+            "Sans jeton : refusé (401)",
+            "Réponse « problem details »"
+          ]
+        },
+        {
+          "nom": "POST /hr/journeys/{id}/cancel",
+          "methode": "POST",
+          "chemin": "/api/v1/hr/journeys/{id}/cancel",
+          "permission": "hr.journey.manage",
+          "protegee": true,
+          "succesAttendus": [
+            200
+          ],
+          "corps": {
+            "version": 1
+          },
+          "tests": [
+            "Sans jeton : refusé (401)",
+            "Réponse « problem details »"
+          ]
         }
       ]
     },
@@ -5299,8 +5434,8 @@
     {
       "nom": "23 — hr",
       "description": null,
-      "requetes": 35,
-      "assertions": 245,
+      "requetes": 43,
+      "assertions": 301,
       "detail": [
         {
           "nom": "GET /hr/contracts",
@@ -5625,6 +5760,181 @@
             200
           ],
           "corps": null,
+          "tests": [
+            "Pas d’erreur serveur (statut inférieur à 500)",
+            "Le jeton est accepté (pas de 401)",
+            "Statut prévu (succès documenté ou refus métier standard)",
+            "Temps de réponse raisonnable (moins de 3 s)",
+            "Réponse en JSON",
+            "Erreur au format « problem details » (RFC 7807)",
+            "Statut de succès documenté"
+          ]
+        },
+        {
+          "nom": "GET /hr/journeys",
+          "methode": "GET",
+          "chemin": "/api/v1/hr/journeys",
+          "permission": "hr.journey.read",
+          "protegee": true,
+          "succesAttendus": [
+            200
+          ],
+          "corps": null,
+          "tests": [
+            "Pas d’erreur serveur (statut inférieur à 500)",
+            "Le jeton est accepté (pas de 401)",
+            "Statut prévu (succès documenté ou refus métier standard)",
+            "Temps de réponse raisonnable (moins de 3 s)",
+            "Réponse en JSON",
+            "Erreur au format « problem details » (RFC 7807)",
+            "Statut de succès documenté"
+          ]
+        },
+        {
+          "nom": "POST /hr/journeys",
+          "methode": "POST",
+          "chemin": "/api/v1/hr/journeys",
+          "permission": "hr.journey.manage",
+          "protegee": true,
+          "succesAttendus": [
+            201
+          ],
+          "corps": {},
+          "tests": [
+            "Pas d’erreur serveur (statut inférieur à 500)",
+            "Le jeton est accepté (pas de 401)",
+            "Statut prévu (succès documenté ou refus métier standard)",
+            "Temps de réponse raisonnable (moins de 3 s)",
+            "Réponse en JSON",
+            "Erreur au format « problem details » (RFC 7807)",
+            "Statut de succès documenté"
+          ]
+        },
+        {
+          "nom": "GET /hr/journeys/{id}",
+          "methode": "GET",
+          "chemin": "/api/v1/hr/journeys/{id}",
+          "permission": "hr.journey.read",
+          "protegee": true,
+          "succesAttendus": [
+            200
+          ],
+          "corps": null,
+          "tests": [
+            "Pas d’erreur serveur (statut inférieur à 500)",
+            "Le jeton est accepté (pas de 401)",
+            "Statut prévu (succès documenté ou refus métier standard)",
+            "Temps de réponse raisonnable (moins de 3 s)",
+            "Réponse en JSON",
+            "Erreur au format « problem details » (RFC 7807)",
+            "Statut de succès documenté"
+          ]
+        },
+        {
+          "nom": "POST /hr/journeys/{id}/cancel",
+          "methode": "POST",
+          "chemin": "/api/v1/hr/journeys/{id}/cancel",
+          "permission": "hr.journey.manage",
+          "protegee": true,
+          "succesAttendus": [
+            200
+          ],
+          "corps": {
+            "version": 1
+          },
+          "tests": [
+            "Pas d’erreur serveur (statut inférieur à 500)",
+            "Le jeton est accepté (pas de 401)",
+            "Statut prévu (succès documenté ou refus métier standard)",
+            "Temps de réponse raisonnable (moins de 3 s)",
+            "Réponse en JSON",
+            "Erreur au format « problem details » (RFC 7807)",
+            "Statut de succès documenté"
+          ]
+        },
+        {
+          "nom": "POST /hr/journeys/{id}/tasks/{taskId}/complete",
+          "methode": "POST",
+          "chemin": "/api/v1/hr/journeys/{id}/tasks/{taskId}/complete",
+          "permission": "hr.journey.manage",
+          "protegee": true,
+          "succesAttendus": [
+            200
+          ],
+          "corps": {
+            "version": 1
+          },
+          "tests": [
+            "Pas d’erreur serveur (statut inférieur à 500)",
+            "Le jeton est accepté (pas de 401)",
+            "Statut prévu (succès documenté ou refus métier standard)",
+            "Temps de réponse raisonnable (moins de 3 s)",
+            "Réponse en JSON",
+            "Erreur au format « problem details » (RFC 7807)",
+            "Statut de succès documenté"
+          ]
+        },
+        {
+          "nom": "POST /hr/journeys/{id}/tasks/{taskId}/reopen",
+          "methode": "POST",
+          "chemin": "/api/v1/hr/journeys/{id}/tasks/{taskId}/reopen",
+          "permission": "hr.journey.manage",
+          "protegee": true,
+          "succesAttendus": [
+            200
+          ],
+          "corps": {
+            "version": 1
+          },
+          "tests": [
+            "Pas d’erreur serveur (statut inférieur à 500)",
+            "Le jeton est accepté (pas de 401)",
+            "Statut prévu (succès documenté ou refus métier standard)",
+            "Temps de réponse raisonnable (moins de 3 s)",
+            "Réponse en JSON",
+            "Erreur au format « problem details » (RFC 7807)",
+            "Statut de succès documenté"
+          ]
+        },
+        {
+          "nom": "GET /hr/journeys/templates",
+          "methode": "GET",
+          "chemin": "/api/v1/hr/journeys/templates",
+          "permission": "hr.journey.read",
+          "protegee": true,
+          "succesAttendus": [
+            200
+          ],
+          "corps": null,
+          "tests": [
+            "Pas d’erreur serveur (statut inférieur à 500)",
+            "Le jeton est accepté (pas de 401)",
+            "Statut prévu (succès documenté ou refus métier standard)",
+            "Temps de réponse raisonnable (moins de 3 s)",
+            "Réponse en JSON",
+            "Erreur au format « problem details » (RFC 7807)",
+            "Statut de succès documenté"
+          ]
+        },
+        {
+          "nom": "PUT /hr/journeys/templates/{kind}",
+          "methode": "PUT",
+          "chemin": "/api/v1/hr/journeys/templates/{kind}",
+          "permission": "hr.journey.manage",
+          "protegee": true,
+          "succesAttendus": [
+            200
+          ],
+          "corps": {
+            "version": 1,
+            "tasks": [
+              {
+                "title": "texte",
+                "owner": "HR",
+                "dueOffsetDays": -365
+              }
+            ]
+          },
           "tests": [
             "Pas d’erreur serveur (statut inférieur à 500)",
             "Le jeton est accepté (pas de 401)",
@@ -7544,8 +7854,8 @@
   ],
   "resume": {
     "dossiers": 31,
-    "requetes": 403,
-    "testsDefinis": 1738,
+    "requetes": 419,
+    "testsDefinis": 1810,
     "resultatDeReference": "Pile jetable, jeu de démonstration, compte Super administrateur : 373 requêtes, 1 412 assertions exécutées, 0 échec (dossiers 00b et 98 à part : 12 requêtes, 54 assertions, 0 échec)."
   }
 }

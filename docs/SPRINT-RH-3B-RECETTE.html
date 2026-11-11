@@ -1,0 +1,51 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>RH-3b — parcours d&#x27;intégration et de départ (API) : recette</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="INDEX.html">Index</a> · <a href="GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="ARCHITECTURE.html">Architecture</a> · <a href="SECURITY.html">Sécurité</a> · <a href="METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="TECH-DEBT.html">Dette</a> · <a href="CHARTE-DE-TESTS.html">Charte de tests</a> · <a href="tests/README.html">Fiches de test</a> · <a href="design/README.html">Design</a> · <a href="livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>RH-3b — parcours d'intégration et de départ (API) : recette</h1>
+<p><em>Branche <code>feat/rh-3b-parcours</code> · 2026-11-11 · décision <strong>D68</strong> (« Lançons RH-3 », puis « applique les recommandations »), <a href="adr/0014-parcours-d-integration-et-de-depart.html">ADR-0014</a>.</em></p>
+<p>Deuxième tranche de RH-3 (après 3a, les contrats). Restent <strong>3c</strong> (écrans et données de démonstration) et <strong>3d</strong> (recette complète, mutants, fiches de test).</p>
+<h2>Ce qui est livré</h2>
+<div class="table-wrap"><table><thead><tr><th>Demande</th><th>Réponse</th></tr></thead><tbody>
+<tr><td><strong>Modèles modifiables</strong></td><td><code>GET /hr/journeys/templates</code>, <code>PUT /hr/journeys/templates/:kind</code> : deux modèles (Intégration, Départ), départ « à confirmer » de 6 et 5 tâches ; chaque tâche : titre court, <strong>responsable dans une liste fermée</strong> (RH, Responsable, Employé, Informatique), <strong>échéance relative</strong> (-365 à +365 jours) ; 1 à 30 tâches, titres distincts ; la RH remplace la liste en bloc (version lue, audit avant / après)</td></tr>
+<tr><td><strong>Lancement à la main</strong></td><td><code>POST /hr/journeys</code> : employé en poste, nature, date de référence facultative (date d'entrée pour une intégration, aujourd'hui pour un départ) ; tâches <strong>copiées</strong> du modèle : modifier le modèle ne change pas les parcours déjà lancés</td></tr>
+<tr><td><strong>Un seul parcours en cours</strong></td><td>par employé et par nature : index unique partiel en base + verrou de la fiche (trois lancements simultanés : un réussit, deux refusés) ; une autre nature, ou la même nature après annulation, reste possible</td></tr>
+<tr><td><strong>Cocher avec date et auteur</strong></td><td><code>POST /hr/journeys/:id/tasks/:taskId/complete</code> : date et auteur gardés (nom lisible dans la réponse, les deux ensemble en base) ; la dernière tâche cochée <strong>termine</strong> le parcours ; <code>…/reopen</code> décoche (refusé si un autre parcours de la même nature est en cours) ; <code>POST /hr/journeys/:id/cancel</code> annule en conservant les tâches</td></tr>
+<tr><td><strong>Retards</strong></td><td>une tâche non cochée dont l'échéance est dépassée est signalée (<code>overdue</code>), avec un décompte par parcours ; rien pour un parcours terminé ou annulé</td></tr>
+<tr><td><strong>Lecture</strong></td><td><code>GET /hr/journeys</code> (filtres employé, nature, état, pagination bornée à 100), <code>GET /hr/journeys/:id</code></td></tr>
+<tr><td><strong>Droits</strong></td><td>RH et Super administrateur : tout gérer et cocher ; <strong>Direction : lire tout</strong> ; <strong>employé : les siens</strong> ; <strong>responsables et collègues : rien</strong> ; hors périmètre : 404 identique à un identifiant inexistant ; modèles lisibles par la RH, la Direction et le Super administrateur</td></tr>
+<tr><td><strong>Aucune donnée sensible</strong></td><td>ni texte libre, ni motif, ni pièce, ni commentaire : testé sur les colonnes de la base et sur la forme de la réponse</td></tr>
+<tr><td><strong>Permissions</strong></td><td><code>hr.journey.read</code> (Propre pour tous, Tous pour la Direction, la RH, le Super administrateur) et <code>hr.journey.manage</code> (Tous : RH, Super administrateur)</td></tr>
+<tr><td><strong>Documentation de l'API</strong></td><td><code>openapi.json</code> (198 opérations), référence des routes, collection Postman (190 requêtes de route), <code>docs/RBAC.md</code> (122 permissions) régénérés</td></tr>
+</tbody></table></div>
+<h2>Preuves</h2>
+<div class="table-wrap"><table><thead><tr><th>Contrôle</th><th>Résultat</th></tr></thead><tbody>
+<tr><td>Types, architecture</td><td><code>tsc</code> propre (API et interface) ; <code>pnpm arch</code> : <strong>332 modules, aucune violation</strong></td></tr>
+<tr><td>Tests unitaires de l'API</td><td><strong>1 437 réussis</strong> (80 suites) ; nouveaux : <code>journey.spec</code> (13 : validation des tâches, copie et dates relatives dont changement d'année et année bissextile, cocher, terminer, rouvrir, annuler), <code>journey-use-cases.spec</code> (22 : lancement, un seul en cours, droits de chaque rôle, copie figée, cocher avec auteur et audit, rouvrir refusé, retards, lecture par portée, modèles) et un cas dans <code>roles.spec</code></td></tr>
+<tr><td>Tests de l'interface</td><td><strong>768 réussis</strong> (libellés de permission toujours identiques au catalogue)</td></tr>
+<tr><td>Intégration (base jetable)</td><td><code>hr-journeys-http</code> (cycle complet avec audit, date de référence, lancement simultané, rouvrir refusé, refus métier, droits par rôle, modèles, absence de donnée libre, <strong>règles garanties par la base</strong>) + <code>idor-contract</code> (5 nouvelles routes classées « objet » avec sondes : même réponse pour un parcours étranger et inexistant, aucune fuite), <code>hr-contracts-http</code>, <code>rbac-http</code>, <code>core-schema</code>, <code>hr-leave-http</code> : <strong>203 réussis, 7 suites</strong></td></tr>
+<tr><td>Migration</td><td><code>20261120000000_rh_3b_journeys</code> appliquée sur base vierge (30 migrations) ; statut « à jour »</td></tr>
+</tbody></table></div>
+<h2>Limites connues</h2>
+<ul><li><strong>Pas encore d'écran</strong> (tranche 3c).</li><li><strong>Mutants et Newman non rejoués</strong> pour cette tranche (prévus en <strong>3d</strong>) ; la collection se construit sans erreur, donc toutes ses routes existent.</li><li><strong>Dettes</strong> : D182 (<strong>seule la RH coche</strong> : le responsable, l'employé et l'informatique ne cochent pas leurs tâches), D183 (lancement manuel, pas de notification, pas de lien automatique avec les contrats ni l'archivage), D184 (un modèle par nature, pas de variante ni de description par tâche).</li><li><strong>Valeurs prises sans réponse explicite, à confirmer avec la RH</strong> : le contenu des deux modèles de départ, les quatre responsables, « seule la RH coche ».</li><li><strong>Non vérifié</strong> : concurrence au-delà de trois lancements simultanés ; cocher la même tâche depuis deux sessions en même temps (le verrou de version la refuse, testé en séquence).</li></ul>
+<h2>Comment vérifier</h2>
+<ol><li><code>node apps/crm-api/scripts/test-db.mjs --tests=hr-journeys-http</code> (base jetable, environ une minute).</li><li>Collection Postman : dossiers « hr » (parcours, modèles) ; voir <code>docs/api/README.md</code>.</li></ol></main></body></html>

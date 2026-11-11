@@ -175,6 +175,14 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td>PUT</td><td><code>/hr/employees/{id}</code></td><td></td><td><code>hr.employee.update</code></td><td>200</td></tr>
 <tr><td>POST</td><td><code>/hr/employees/{id}/status</code></td><td></td><td><code>hr.employee.archive</code></td><td>200</td></tr>
 <tr><td>GET</td><td><code>/hr/employees/hierarchy-gaps</code></td><td></td><td><code>hr.employee.read</code></td><td>200</td></tr>
+<tr><td>GET</td><td><code>/hr/journeys</code></td><td></td><td><code>hr.journey.read</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/hr/journeys</code></td><td></td><td><code>hr.journey.manage</code></td><td>201</td></tr>
+<tr><td>GET</td><td><code>/hr/journeys/{id}</code></td><td></td><td><code>hr.journey.read</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/hr/journeys/{id}/cancel</code></td><td></td><td><code>hr.journey.manage</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/hr/journeys/{id}/tasks/{taskId}/complete</code></td><td></td><td><code>hr.journey.manage</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/hr/journeys/{id}/tasks/{taskId}/reopen</code></td><td></td><td><code>hr.journey.manage</code></td><td>200</td></tr>
+<tr><td>GET</td><td><code>/hr/journeys/templates</code></td><td></td><td><code>hr.journey.read</code></td><td>200</td></tr>
+<tr><td>PUT</td><td><code>/hr/journeys/templates/{kind}</code></td><td></td><td><code>hr.journey.manage</code></td><td>200</td></tr>
 <tr><td>GET</td><td><code>/hr/leave/adjustments</code></td><td></td><td><code>hr.leave.manage</code></td><td>200</td></tr>
 <tr><td>POST</td><td><code>/hr/leave/adjustments</code></td><td></td><td><code>hr.leave.manage</code></td><td>201</td></tr>
 <tr><td>GET</td><td><code>/hr/leave/balance</code></td><td></td><td><code>hr.leave.read</code></td><td>200</td></tr>
@@ -288,4 +296,4 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td>PUT</td><td><code>/trainings/{id}</code></td><td></td><td><code>training.training.update</code></td><td>200</td></tr>
 <tr><td>POST</td><td><code>/trainings/{id}/status</code></td><td></td><td><code>training.training.update</code></td><td>200</td></tr>
 </tbody></table></div>
-<p><em>190 routes.</em></p></main></body></html>
+<p><em>198 routes.</em></p></main></body></html>

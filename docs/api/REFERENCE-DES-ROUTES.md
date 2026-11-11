@@ -182,6 +182,14 @@
 | PUT | `/hr/employees/{id}` |  | `hr.employee.update` | 200 |
 | POST | `/hr/employees/{id}/status` |  | `hr.employee.archive` | 200 |
 | GET | `/hr/employees/hierarchy-gaps` |  | `hr.employee.read` | 200 |
+| GET | `/hr/journeys` |  | `hr.journey.read` | 200 |
+| POST | `/hr/journeys` |  | `hr.journey.manage` | 201 |
+| GET | `/hr/journeys/{id}` |  | `hr.journey.read` | 200 |
+| POST | `/hr/journeys/{id}/cancel` |  | `hr.journey.manage` | 200 |
+| POST | `/hr/journeys/{id}/tasks/{taskId}/complete` |  | `hr.journey.manage` | 200 |
+| POST | `/hr/journeys/{id}/tasks/{taskId}/reopen` |  | `hr.journey.manage` | 200 |
+| GET | `/hr/journeys/templates` |  | `hr.journey.read` | 200 |
+| PUT | `/hr/journeys/templates/{kind}` |  | `hr.journey.manage` | 200 |
 | GET | `/hr/leave/adjustments` |  | `hr.leave.manage` | 200 |
 | POST | `/hr/leave/adjustments` |  | `hr.leave.manage` | 201 |
 | GET | `/hr/leave/balance` |  | `hr.leave.read` | 200 |
@@ -317,4 +325,4 @@
 | PUT | `/trainings/{id}` |  | `training.training.update` | 200 |
 | POST | `/trainings/{id}/status` |  | `training.training.update` | 200 |
 
-*190 routes.*
+*198 routes.*
