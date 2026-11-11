@@ -60,7 +60,7 @@ export const RESOURCE_LABELS: Record<string, string> = {
   'training.program': 'Programmes', 'training.training': 'Formations', 'training.session': 'Sessions', 'training.room': 'Salles',
   'training.trainer': 'Formateurs', 'training.learner': 'Apprenants', 'training.enrollment': 'Inscriptions', 'training.attendance': 'Présences',
   'training.evaluation': 'Évaluations', 'training.certification': 'Certifications et attestations',
-  'hr.employee': 'Personnel', 'hr.directory': 'Annuaire du personnel', 'hr.leave': 'Absences et congés', 'hr.contract': 'Contrats du personnel',
+  'hr.employee': 'Personnel', 'hr.directory': 'Annuaire du personnel', 'hr.leave': 'Absences et congés', 'hr.contract': 'Contrats du personnel', 'hr.journey': 'Parcours d’intégration et de départ',
   'reporting.dashboard': 'Tableaux de bord', 'reporting.kpi': 'Indicateurs', 'reporting.report': 'Rapports',
 };
 

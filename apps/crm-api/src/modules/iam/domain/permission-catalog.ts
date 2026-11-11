@@ -51,6 +51,7 @@ export const RESOURCES: readonly ResourceDefinition[] = [
   { module: 'hr', resource: 'directory', label: 'Annuaire du personnel', actions: ['read'] },
   { module: 'hr', resource: 'leave', label: 'Absences et congés', actions: ['read', 'create', 'approve', 'manage'] },
   { module: 'hr', resource: 'contract', label: 'Contrats du personnel', actions: ['read', 'manage'] },
+  { module: 'hr', resource: 'journey', label: 'Parcours d’intégration et de départ', actions: ['read', 'manage'] },
   // Reporting
   { module: 'reporting', resource: 'dashboard', label: 'Tableaux de bord', actions: ['account_manager', 'head_of_sales', 'training', 'direction', 'security', 'admin'] },
   { module: 'reporting', resource: 'kpi', label: 'Indicateurs', actions: ['read'] },

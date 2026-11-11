@@ -182,6 +182,9 @@
 | D179 | **Contrats sans salaire, sans document, sans avenant** : toute extension attend l'avis juridique (D57, D65) et une nouvelle décision | RH-3a | Claude | Moyenne |
 | D180 | **Aucune règle légale codée sur les contrats** (durée maximale d'un CDD, plafond d'une période d'essai, renouvellements) : la RH reste responsable de la conformité ; à faire valider par un juriste avant toute automatisation | RH-3a | Claude | Moyenne |
 | D181 | **Échéances de contrat sans notification** (écran seulement, pas de courriel) ; fin de contrat et départ de l'employé (archivage) restent deux gestes séparés ; l'API des échéances est lisible par la Direction (portée Tous) mais l'écran prévu est réservé à la RH | RH-3a | Claude | Faible |
+| D182 | **Parcours : seule la RH coche les tâches** ; le responsable, l'employé et l'informatique ne cochent pas « leurs » tâches (le responsable d'une tâche est une étiquette) ; à confirmer avec la RH, une permission distincte serait alors créée | RH-3b | Claude | Moyenne |
+| D183 | **Parcours lancés à la main seulement** : aucune notification de retard, aucun lien automatique avec la fin d'un contrat ni l'archivage de l'employé | RH-3b | Claude | Faible |
+| D184 | **Modèles de parcours limités** : un par nature (pas de variante par service ou type de contrat), pas de description ni de document par tâche, modification en bloc sans historique propre (l'audit garde l'avant et l'après) | RH-3b | Claude | Faible |
 | D105 | **Le statut « Cliente » n'est posé par rien** tant que l'agrément n'existe pas ; une entreprise ne peut donc pas encore devenir cliente | S4.3b | Claude | *Soldée par S4.4a* : l'agrément reçu pose « Cliente » |
 | D5 | Hypothèses de charge et de périmètre non confirmées | Phase 3 | Revue à la fin de S1 avec les chiffres réels | Ouverte |
 

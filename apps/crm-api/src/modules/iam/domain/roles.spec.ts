@@ -67,8 +67,8 @@ describe('Matrice rôles → permissions', () => {
     for (const role of [RoleCode.Hr, RoleCode.Tax]) {
       expect(codesOf(role).filter((c) => !c.startsWith('iam.session.') && !c.startsWith('hr.'))).toEqual([]);
     }
-    expect(codesOf(RoleCode.Tax).filter((c) => c.startsWith('hr.') && !c.startsWith('hr.leave.') && !c.startsWith('hr.contract.'))).toEqual(['hr.directory.read', 'hr.employee.read']);
-    expect(codesOf(RoleCode.Hr).filter((c) => c.startsWith('hr.') && !c.startsWith('hr.leave.') && !c.startsWith('hr.contract.'))).toEqual(['hr.directory.read', 'hr.employee.archive', 'hr.employee.create', 'hr.employee.read', 'hr.employee.update']);
+    expect(codesOf(RoleCode.Tax).filter((c) => c.startsWith('hr.') && !c.startsWith('hr.leave.') && !c.startsWith('hr.contract.') && !c.startsWith('hr.journey.'))).toEqual(['hr.directory.read', 'hr.employee.read']);
+    expect(codesOf(RoleCode.Hr).filter((c) => c.startsWith('hr.') && !c.startsWith('hr.leave.') && !c.startsWith('hr.contract.') && !c.startsWith('hr.journey.'))).toEqual(['hr.directory.read', 'hr.employee.archive', 'hr.employee.create', 'hr.employee.read', 'hr.employee.update']);
   });
 
   it('RH légère (D57) : l’annuaire est lisible de tous en portée Tous ; la fiche suit la portée ; seuls la RH et le Super administrateur écrivent', () => {
@@ -83,7 +83,7 @@ describe('Matrice rôles → permissions', () => {
       expect(codesOf(role).filter((c) => ['hr.employee.create', 'hr.employee.update', 'hr.employee.archive'].includes(c))).toEqual([]);
     }
     // Aucune permission de salaire, de paie ou de donnée sensible n'existe dans le catalogue.
-    expect(codesOf(RoleCode.SuperAdmin).filter((c) => c.startsWith('hr.') && !c.startsWith('hr.leave.') && !c.startsWith('hr.contract.')).sort()).toEqual(['hr.directory.read', 'hr.employee.archive', 'hr.employee.create', 'hr.employee.read', 'hr.employee.update']);
+    expect(codesOf(RoleCode.SuperAdmin).filter((c) => c.startsWith('hr.') && !c.startsWith('hr.leave.') && !c.startsWith('hr.contract.') && !c.startsWith('hr.journey.')).sort()).toEqual(['hr.directory.read', 'hr.employee.archive', 'hr.employee.create', 'hr.employee.read', 'hr.employee.update']);
   });
 
   it('absences et congés (D64) : chacun demande et lit les siennes et valide celles de son équipe directe ; la RH et le Super administrateur gèrent ; la Direction lit tout', () => {
@@ -115,6 +115,17 @@ describe('Matrice rôles → permissions', () => {
     }
     // Aucune permission de salaire ni de paie dans le catalogue.
     for (const role of Object.values(RoleCode)) expect(codesOf(role).filter((c) => /salary|salaire|payroll|paie/.test(c))).toEqual([]);
+  });
+
+  it('parcours d’intégration et de départ (D67) : la RH et le Super administrateur gèrent, la Direction lit tout, chacun lit les siens, personne d’autre ne gère', () => {
+    const scope = (role: RoleCode, permission: string) => resolveGrants(role).find((g) => g.permission === permission)?.scope;
+    for (const role of Object.values(RoleCode).filter((r) => r !== RoleCode.Hr && r !== RoleCode.SuperAdmin)) {
+      expect([role, scope(role, 'hr.journey.manage')]).toEqual([role, undefined]);
+      expect([role, scope(role, 'hr.journey.read')]).toEqual([role, role === RoleCode.Direction ? Scope.All : Scope.Own]);
+    }
+    for (const role of [RoleCode.Hr, RoleCode.SuperAdmin]) {
+      for (const action of ['read', 'manage']) expect([role, action, scope(role, `hr.journey.${action}`)]).toEqual([role, action, Scope.All]);
+    }
   });
 
   it("n'accorde jamais iam.session.revoke ou read en portée ALL à un rôle autre que SuperAdmin", () => {

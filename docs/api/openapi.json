@@ -7294,6 +7294,339 @@
         "x-permission": "hr.contract.manage",
         "x-protected": true
       }
+    },
+    "/api/v1/hr/journeys/templates": {
+      "get": {
+        "operationId": "JourneysController_templates",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "hr"
+        ],
+        "x-permission": "hr.journey.read",
+        "x-protected": true
+      }
+    },
+    "/api/v1/hr/journeys/templates/{kind}": {
+      "put": {
+        "operationId": "JourneysController_editTemplate",
+        "parameters": [
+          {
+            "name": "kind",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTemplateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "hr"
+        ],
+        "x-permission": "hr.journey.manage",
+        "x-protected": true
+      }
+    },
+    "/api/v1/hr/journeys": {
+      "post": {
+        "operationId": "JourneysController_start",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LaunchJourneyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "hr"
+        ],
+        "x-permission": "hr.journey.manage",
+        "x-protected": true
+      },
+      "get": {
+        "operationId": "JourneysController_all",
+        "parameters": [
+          {
+            "name": "employeeId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "kind",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ONBOARDING",
+                "OFFBOARDING"
+              ]
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ACTIVE",
+                "COMPLETED",
+                "CANCELLED"
+              ]
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "hr"
+        ],
+        "x-permission": "hr.journey.read",
+        "x-protected": true
+      }
+    },
+    "/api/v1/hr/journeys/{id}": {
+      "get": {
+        "operationId": "JourneysController_get",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "hr"
+        ],
+        "x-permission": "hr.journey.read",
+        "x-protected": true
+      }
+    },
+    "/api/v1/hr/journeys/{id}/tasks/{taskId}/complete": {
+      "post": {
+        "operationId": "JourneysController_check",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "taskId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JourneyVersionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "hr"
+        ],
+        "x-permission": "hr.journey.manage",
+        "x-protected": true
+      }
+    },
+    "/api/v1/hr/journeys/{id}/tasks/{taskId}/reopen": {
+      "post": {
+        "operationId": "JourneysController_uncheck",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "taskId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JourneyVersionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "hr"
+        ],
+        "x-permission": "hr.journey.manage",
+        "x-protected": true
+      }
+    },
+    "/api/v1/hr/journeys/{id}/cancel": {
+      "post": {
+        "operationId": "JourneysController_stop",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JourneyVersionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "hr"
+        ],
+        "x-permission": "hr.journey.manage",
+        "x-protected": true
+      }
     }
   },
   "info": {
@@ -9648,6 +9981,95 @@
           "version",
           "endedOn",
           "reason"
+        ]
+      },
+      "TemplateTaskDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 150
+          },
+          "owner": {
+            "type": "string",
+            "enum": [
+              "HR",
+              "MANAGER",
+              "EMPLOYEE",
+              "IT"
+            ],
+            "description": "Une étiquette (liste fermée), pas un droit d’accès."
+          },
+          "dueOffsetDays": {
+            "type": "number",
+            "minimum": -365,
+            "maximum": 365,
+            "description": "Jours par rapport à la date de référence (entrée ou départ) ; négatif = avant."
+          }
+        },
+        "required": [
+          "title",
+          "owner",
+          "dueOffsetDays"
+        ]
+      },
+      "UpdateTemplateDto": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "number",
+            "minimum": 1
+          },
+          "tasks": {
+            "minItems": 1,
+            "maxItems": 30,
+            "description": "La liste complète, dans l’ordre voulu : elle remplace la précédente.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TemplateTaskDto"
+            }
+          }
+        },
+        "required": [
+          "version",
+          "tasks"
+        ]
+      },
+      "LaunchJourneyDto": {
+        "type": "object",
+        "properties": {
+          "employeeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "ONBOARDING",
+              "OFFBOARDING"
+            ]
+          },
+          "referenceDate": {
+            "type": "string",
+            "example": "2026-12-01",
+            "description": "Absente : la date d’entrée (intégration) ou aujourd’hui (départ)."
+          }
+        },
+        "required": [
+          "employeeId",
+          "kind"
+        ]
+      },
+      "JourneyVersionDto": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "number",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "version"
         ]
       }
     }

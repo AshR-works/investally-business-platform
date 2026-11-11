@@ -222,6 +222,8 @@ Cellule : **O**, **É**, **T** = portée accordée ; vide = non accordée.
 | `hr.leave.manage` | T |  |  |  |  |  |  |  | T |  |
 | `hr.contract.read` | T | T | O | O | O | O | O | O | T | O |
 | `hr.contract.manage` | T |  |  |  |  |  |  |  | T |  |
+| `hr.journey.read` | T | T | O | O | O | O | O | O | T | O |
+| `hr.journey.manage` | T |  |  |  |  |  |  |  | T |  |
 
 ### Reporting (`reporting`)
 

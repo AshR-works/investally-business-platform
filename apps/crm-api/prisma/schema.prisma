@@ -1237,6 +1237,7 @@ model Employee {
   leaveRequests     LeaveRequest[]
   leaveAdjustments  LeaveAdjustment[]
   contracts         Contract[]
+  journeys          Journey[]
 
   @@index([managerEmployeeId])
   @@index([status])
@@ -1331,6 +1332,98 @@ model Contract {
   @@index([employeeId, startDate])
   @@index([status])
   @@map("contracts")
+  @@schema("hr")
+}
+
+/// Nature d'un parcours (RH-3b) : intégration d'un nouvel employé ou départ.
+enum JourneyKind {
+  ONBOARDING
+  OFFBOARDING
+
+  @@schema("hr")
+}
+
+/// État d'un parcours : en cours, terminé (toutes les tâches cochées) ou annulé. Un seul en cours par employé et par nature (index unique partiel dans la migration).
+enum JourneyStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+
+  @@schema("hr")
+}
+
+/// Responsable d'une tâche : liste fermée (une étiquette, pas un droit d'accès).
+enum JourneyTaskOwner {
+  HR
+  MANAGER
+  EMPLOYEE
+  IT
+
+  @@schema("hr")
+}
+
+/// Modèle de parcours (RH-3b, D67) : UN par nature, modifiable par la RH. Les tâches lancées sont des copies : modifier le modèle ne change pas les parcours en cours.
+model JourneyTemplate {
+  id        String                @id @db.Uuid
+  kind      JourneyKind           @unique
+  version   Int                   @default(1)
+  updatedAt DateTime              @updatedAt @map("updated_at") @db.Timestamptz(6)
+  tasks     JourneyTemplateTask[]
+
+  @@map("journey_templates")
+  @@schema("hr")
+}
+
+model JourneyTemplateTask {
+  id            String           @id @db.Uuid
+  templateId    String           @map("template_id") @db.Uuid
+  title         String           @db.VarChar(150)
+  owner         JourneyTaskOwner
+  /// Jours par rapport à la date de référence (entrée ou départ) ; négatif = avant.
+  dueOffsetDays Int              @map("due_offset_days")
+  sortOrder     Int              @map("sort_order")
+  template      JourneyTemplate  @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  @@index([templateId, sortOrder])
+  @@map("journey_template_tasks")
+  @@schema("hr")
+}
+
+/// Parcours lancé à la main pour un employé. Aucune donnée sensible.
+model Journey {
+  id               String        @id @db.Uuid
+  employeeId       String        @map("employee_id") @db.Uuid
+  kind             JourneyKind
+  referenceDate    DateTime      @map("reference_date") @db.Date
+  status           JourneyStatus @default(ACTIVE)
+  launchedByUserId String        @map("launched_by_user_id") @db.Uuid
+  completedAt      DateTime?     @map("completed_at") @db.Timestamptz(6)
+  cancelledAt      DateTime?     @map("cancelled_at") @db.Timestamptz(6)
+  version          Int           @default(1)
+  createdAt        DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime      @updatedAt @map("updated_at") @db.Timestamptz(6)
+  employee         Employee      @relation(fields: [employeeId], references: [id], onDelete: Restrict)
+  tasks            JourneyTask[]
+
+  @@index([employeeId, kind])
+  @@index([status])
+  @@map("journeys")
+  @@schema("hr")
+}
+
+model JourneyTask {
+  id           String           @id @db.Uuid
+  journeyId    String           @map("journey_id") @db.Uuid
+  title        String           @db.VarChar(150)
+  owner        JourneyTaskOwner
+  dueOn        DateTime         @map("due_on") @db.Date
+  sortOrder    Int              @map("sort_order")
+  doneAt       DateTime?        @map("done_at") @db.Timestamptz(6)
+  doneByUserId String?          @map("done_by_user_id") @db.Uuid
+  journey      Journey          @relation(fields: [journeyId], references: [id], onDelete: Restrict)
+
+  @@index([journeyId, sortOrder])
+  @@map("journey_tasks")
   @@schema("hr")
 }
 
