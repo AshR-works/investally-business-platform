@@ -32,6 +32,7 @@ export const IDOR_ROUTES: Record<string, IdorClass> = {
   'GET /offers': 'objet',
   'POST /offers': 'objet',
   'GET /offers/:id': 'objet',
+  'GET /offers/:id/export': 'objet',
   'PUT /offers/:id': 'objet',
   'POST /offers/:id/submit': 'objet',
   'POST /offers/:id/clone': 'objet',

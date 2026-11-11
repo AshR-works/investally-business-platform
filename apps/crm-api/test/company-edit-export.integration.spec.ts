@@ -143,7 +143,9 @@ describeDb('Modifier et exporter une fiche d\'entreprise (HTTP + PostgreSQL)', (
       const html = res.bytes.toString('utf8');
       expect(html).toContain(company.name);
       expect(html).toContain('Paul Mbarga');
-      expect(html).not.toMatch(/<script|src=|href=/i);
+      expect(html).not.toMatch(/<script|<link|href=/i);
+      // Seules images admises : les logos de la charte, embarqués dans le document (jamais une adresse).
+      for (const source of [...html.matchAll(/src="([^"]*)"/g)].map((m) => m[1])) expect(source).toMatch(/^data:image\/png;base64,/);
 
       const logs = await t.prisma.db.auditLog.findMany({ where: { entityId: id, action: 'EXPORT' } });
       expect(logs).toHaveLength(1);

@@ -36,6 +36,7 @@ const PROBES: Record<string, (api: Api, as: As, ids: Ids) => Promise<ApiResponse
   'GET /offers': (api, as, ids) => api.call('GET', `/api/v1/offers?companyId=${ids.company}`, as),
   'POST /offers': (api, as, ids) => api.call('POST', '/api/v1/offers', { ...as, body: { companyId: ids.company, subject: 'Offre piège', amount: '1000' } }),
   'GET /offers/:id': (api, as, ids) => api.call('GET', `/api/v1/offers/${ids.offer}`, as),
+  'GET /offers/:id/export': (api, as, ids) => api.call('GET', `/api/v1/offers/${ids.offer}/export`, as),
   'PUT /offers/:id': (api, as, ids) => api.call('PUT', `/api/v1/offers/${ids.offer}`, { ...as, body: { version: 1, subject: 'Offre piratée' } }),
   'POST /offers/:id/clone': (api, as, ids) => api.call('POST', `/api/v1/offers/${ids.offer}/clone`, { ...as }),
   'POST /offers/:id/submit': (api, as, ids) => api.call('POST', `/api/v1/offers/${ids.offer}/submit`, { ...as, body: { version: 1 } }),

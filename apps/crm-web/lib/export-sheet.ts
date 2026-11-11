@@ -6,10 +6,19 @@ import { api } from './api';
  * l'audit : la fenêtre est ouverte tout de suite (clic de l'utilisateur, sinon le navigateur la bloque), puis remplie.
  */
 export async function openCompanySheet(companyId: string): Promise<void> {
+  return openSheet(`/companies/${companyId}/export`);
+}
+
+/** Même chose pour l'offre : document de la charte graphique, contrôlé et tracé par le serveur. */
+export async function openOfferSheet(offerId: string): Promise<void> {
+  return openSheet(`/offers/${offerId}/export`);
+}
+
+async function openSheet(path: string): Promise<void> {
   const win = window.open('', '_blank');
   if (!win) throw new Error('Le navigateur a bloqué la nouvelle fenêtre : autorisez les fenêtres pour ce site, puis recommencez.');
   try {
-    const html = await (await api<Blob>(`/companies/${companyId}/export`, { blob: true })).text();
+    const html = await (await api<Blob>(path, { blob: true })).text();
     win.document.open();
     win.document.write(html);
     win.document.close();
