@@ -71,14 +71,16 @@ describe('coque et hub', () => {
     expect(shell).toContain('aria-expanded={open}');
     expect(shell).toContain('aria-controls={listId}');
     expect(shell).toContain('active?.group');
-    expect(shell).toContain('setClosedHere(null)');
+    // Lot A : une seule rubrique ouverte à la fois ; le choix à la main repart de zéro à chaque page (plus de mémorisation).
+    expect(shell).toContain('setManual(null)');
+    expect(shell).toContain('isDomainOpen(manual, active?.group, domain)');
     expect(shell).toContain('current={active?.id === m.id}'); // plus de `startsWith` qui allumait deux entrées
     expect(shell).not.toContain('pathname.startsWith(m.href');
   });
   it('en rail replié, toutes les entrées restent visibles (le domaine n\'est qu\'un séparateur)', () => {
     const shell = read('components/app-shell.tsx');
-    expect(shell).toContain("'hidden flex-col gap-0.5 group-data-[nav=rail]/shell:min-[901px]:flex'");
-    expect(shell).toContain('group-data-[nav=rail]/shell:min-[901px]:hidden');
+    expect(shell).toContain("'hidden flex-col gap-0.5 group-data-[look=rail]/nav:min-[901px]:flex'");
+    expect(shell).toContain('group-data-[look=rail]/nav:min-[901px]:hidden');
   });
   it('le hub range les modules par domaine', () => {
     const hub = read('app/(app)/page.tsx');

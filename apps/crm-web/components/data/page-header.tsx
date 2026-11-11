@@ -6,7 +6,7 @@ import { PageHeading } from '../page-heading';
  * En-tête de page du design : fil d'Ariane (retour à la Vue d'ensemble), domaine, titre (qui renseigne aussi le titre du
  * document), description et actions principales à droite.
  */
-export function PageHeader({ eyebrow, title, description, actions }: { eyebrow?: string; title: string; description?: string; actions?: ReactNode }) {
+export function PageHeader({ eyebrow, title, description, actions, stacked = false }: { eyebrow?: string; title: string; description?: string; actions?: ReactNode; stacked?: boolean }) {
   return (
     <header className="mb-6">
       <nav aria-label="Fil d’Ariane">
@@ -18,10 +18,11 @@ export function PageHeader({ eyebrow, title, description, actions }: { eyebrow?:
         </ol>
       </nav>
       {eyebrow && <p className="mb-2 mt-4 text-xs font-semibold uppercase tracking-[0.14em] text-ink-2">{eyebrow}</p>}
-      <div className={`flex flex-wrap items-end gap-6 ${eyebrow ? '' : 'mt-4'}`}>
+      {/* Pages de liste : actions à droite du titre. Fiches (`stacked`) : un bloc horizontal pleine largeur, puis la rangée d'actions en dessous (cinq boutons ne tiennent pas à côté d'un titre). */}
+      <div className={`flex gap-x-6 gap-y-4 ${stacked ? 'flex-col' : 'flex-wrap items-end'} ${eyebrow ? '' : 'mt-4'}`}>
         <div className="min-w-0 flex-1">
           <PageHeading className="m-0 text-[length:var(--text-2xl)]">{title}</PageHeading>
-          {description && <p className="m-0 mt-1 max-w-prose text-ink-2">{description}</p>}
+          {description && <p className={`m-0 mt-1 text-ink-2 ${stacked ? 'max-w-none' : 'max-w-prose'}`}>{description}</p>}
         </div>
         {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
       </div>

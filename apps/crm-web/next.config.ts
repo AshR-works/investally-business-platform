@@ -31,6 +31,8 @@ const securityHeaders = [
 ];
 
 const config: NextConfig = {
+  // Dossier de construction : `.next` par défaut ; NEXT_DIST_DIR permet un second serveur (audit de l'interface sur une pile jetable) sans toucher à la pile locale en cours.
+  distDir: process.env.NEXT_DIST_DIR || '.next',
   // Image de production : sortie « standalone » (un serveur Node minimal), demandée par l'image seulement (NEXT_OUTPUT) pour que le démarrage local reste « next start ».
   // La racine du suivi des fichiers est celle du dépôt : les dépendances d'un espace de travail pnpm sont hors du dossier de l'application.
   ...(process.env.NEXT_OUTPUT === 'standalone' ? { output: 'standalone' as const, outputFileTracingRoot: path.resolve(process.cwd(), '../..') } : {}),

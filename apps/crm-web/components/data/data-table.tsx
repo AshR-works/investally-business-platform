@@ -2,7 +2,7 @@
 
 import { ReactNode, useEffect, useRef } from 'react';
 import { Icon } from '../icon';
-import { columnWidths } from '../../lib/table-layout';
+import { columnLayout, tableWidthRem } from '../../lib/table-layout';
 import { allSelected, setMany, someSelected, toggleId, type Selection } from '../../lib/selection';
 
 /** Colonne d'un tableau : en-tête, rendu de la cellule, alignement. `srOnlyHeader` pour une colonne d'actions sans titre visible. */
@@ -12,8 +12,12 @@ export interface Column<T> {
   cell: (row: T) => ReactNode;
   align?: 'left' | 'right';
   srOnlyHeader?: boolean;
-  /** Part relative de la largeur du tableau (défaut 1). Les largeurs sont fixes : trier ou changer de page ne les déplace jamais. */
+  /** Poids de la colonne dans la largeur restante (défaut 1). Les largeurs ne dépendent que des colonnes : trier ou changer de page ne les déplace jamais. */
   weight?: number;
+  /** Largeur minimale (rem) ; sinon celle qui correspond à la nature de la colonne, déduite de son en-tête (date, téléphone, montant, état…). */
+  min?: number;
+  /** Force (`true`) ou interdit (`false`) le passage à la ligne ; sinon selon la nature de la colonne (une date, un numéro, un état ne se coupent jamais). */
+  nowrap?: boolean;
   /** Champ de tri côté serveur : l'en-tête devient un bouton qui trie (et annonce le sens avec `aria-sort`). */
   sortField?: string;
 }
@@ -62,19 +66,21 @@ export function DataTable<T>({
   }, [some]);
 
   const cols = columns.length + (selection ? 1 : 0);
-  // Largeurs fixes : chaque colonne garde sa part du tableau (la case de sélection garde 3 rem ; 7 % de marge lui sont réservés).
-  const widths = columnWidths(columns.map((column) => column.weight), !!selection);
-  const cell = 'border-b border-line px-4 py-3 align-middle [overflow-wrap:anywhere]';
+  // Largeurs : le plus grand de la largeur minimale de la nature de la colonne et de sa part de poids ; le tableau défile à l'horizontale si sa place est plus petite.
+  const layout = columnLayout(columns);
+  const minWidth = `${Math.max(48, tableWidthRem(layout, !!selection))}rem`;
+  const cell = 'border-b border-line px-4 py-3 align-middle';
+  const cellFor = (index: number) => `${cell} ${layout[index]!.nowrap ? 'overflow-hidden text-ellipsis whitespace-nowrap' : '[overflow-wrap:anywhere]'}`;
 
   // « relative » : le cadre est le repère de position des textes réservés aux lecteurs d'écran (position absolue), qui sinon sortent du cadre défilant
   // et élargissent toute la page sur téléphone.
   return (
     <div className="relative overflow-x-auto" aria-busy={busy}>
-      <table className="w-full min-w-[48rem] table-fixed border-collapse text-[length:var(--text-sm)]">
+      <table style={{ minWidth }} className="w-full table-fixed border-collapse text-[length:var(--text-sm)]">
         <caption className="sr-only">{caption}</caption>
         <colgroup>
           {selection && <col style={{ width: '3rem' }} />}
-          {columns.map((column, index) => <col key={column.id} style={{ width: widths[index] }} />)}
+          {columns.map((column, index) => <col key={column.id} style={{ width: layout[index]!.width }} />)}
         </colgroup>
         <thead>
           <tr>
@@ -147,8 +153,8 @@ export function DataTable<T>({
                     />
                   </td>
                 )}
-                {columns.map((column) => (
-                  <td key={column.id} className={`${cell} ${column.align === 'right' ? 'text-right tabular-nums' : ''}`}>{column.cell(row)}</td>
+                {columns.map((column, index) => (
+                  <td key={column.id} className={`${cellFor(index)} ${column.align === 'right' ? 'text-right tabular-nums' : ''}`}>{column.cell(row)}</td>
                 ))}
               </tr>
             );

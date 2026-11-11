@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { columnWidths, SELECTION_SHARE } from '../lib/table-layout';
+import { columnLayout, SELECTION_REM, tableWidthRem, WEIGHT_UNIT_REM } from '../lib/table-layout';
 
 const root = join(__dirname, '..');
 const read = (path: string) => readFileSync(join(root, path), 'utf8');
@@ -61,12 +61,14 @@ describe('tableaux : icône de tri propre, sans changer l’aspect du tableau (c
     expect(table).toMatch(/className=\{`size-4 /);
     expect(table).toContain('aria-sort=');
   });
-  it('largeurs de colonnes fixes : mise en page fixe, une part relative par colonne, textes longs coupés, largeur minimale', () => {
+  it('largeurs de colonnes fixes : mise en page fixe, largeur minimale par nature de colonne, défilement plutôt qu’écrasement (lot A)', () => {
     expect(table).toMatch(/table-fixed/);
     expect(table).toMatch(/<colgroup>/);
-    expect(table).toContain('columnWidths(columns.map((column) => column.weight)');
-    expect(table).toMatch(/min-w-\[48rem\]/);
+    expect(table).toContain('columnLayout(columns)');
+    expect(table).toContain('tableWidthRem(layout');
+    expect(table).toMatch(/Math\.max\(48,/);
     expect(table).toMatch(/\[overflow-wrap:anywhere\]/);
+    expect(table).toMatch(/whitespace-nowrap/);
     expect(table).toMatch(/width: '3rem'/);
   });
   it('les neuf tableaux de l’application donnent une part à leurs colonnes principales', () => {
@@ -84,23 +86,48 @@ describe('tableaux : icône de tri propre, sans changer l’aspect du tableau (c
   });
 });
 
-describe('largeurs de colonnes : calcul des parts', () => {
-  it('chaque colonne reçoit sa part relative ; le total fait 100 % sans case de sélection', () => {
-    expect(columnWidths([4, 2, 2], false)).toEqual(['50.00%', '25.00%', '25.00%']);
-    expect(columnWidths([1, 1, 1, 1], false)).toEqual(['25.00%', '25.00%', '25.00%', '25.00%']);
+describe('largeurs de colonnes : calcul des largeurs (lot A)', () => {
+  const column = (header: string, weight?: number, extra: Record<string, unknown> = {}) => ({ header, weight, ...extra });
+
+  it('une colonne de texte reçoit sa part de poids (3,5 rem par unité), au moins une unité', () => {
+    expect(WEIGHT_UNIT_REM).toBe(3.5);
+    expect(columnLayout([column('Entreprise', 4), column('Responsable', 2)]).map((c) => c.width)).toEqual(['14.00rem', '7.00rem']);
+    expect(columnLayout([column('Objet'), column('Note', 0), column('Autre', undefined)]).map((c) => c.width)).toEqual(['3.50rem', '3.50rem', '3.50rem']);
   });
-  it('une colonne sans poids (ou à poids nul) compte pour 1', () => {
-    expect(columnWidths([undefined, 3], false)).toEqual(['25.00%', '75.00%']);
-    expect(columnWidths([0, 1], false)).toEqual(['50.00%', '50.00%']);
+
+  it('une colonne de date, téléphone, montant, état ou référence garde sa largeur minimale quel que soit son poids', () => {
+    const widths = (header: string, weight: number) => columnLayout([column(header, weight)])[0]!.width;
+    expect(widths('Créée le', 1)).toBe('8.00rem');
+    expect(widths('Téléphone', 1)).toBe('10.00rem');
+    expect(widths('Valeur', 1)).toBe('11.00rem');
+    expect(widths('Statut', 1)).toBe('11.50rem');
+    expect(widths('Référence', 1)).toBe('10.00rem');
+    expect(widths('Pays', 1)).toBe('9.00rem');
+    expect(widths('Dernière connexion', 1)).toBe('11.50rem');
+    // Un poids plus grand que le minimum l'emporte.
+    expect(widths('Statut', 5)).toBe('17.50rem');
   });
-  it('avec une case de sélection, les colonnes se partagent 93 % : 7 % restent à la case', () => {
-    expect(SELECTION_SHARE).toBe(93);
-    expect(columnWidths([1, 1], true)).toEqual(['46.50%', '46.50%']);
-    const total = columnWidths([4, 2.4, 2, 3.6, 2.6, 2.6, 2.4, 2, 1.8], true).reduce((n, w) => n + parseFloat(w), 0);
-    expect(total).toBeGreaterThan(92.9);
-    expect(total).toBeLessThan(93.1);
+
+  it('une colonne peut préciser sa largeur minimale et sa coupure', () => {
+    expect(columnLayout([column('Entreprise', 1, { min: 12 })])[0]).toEqual({ width: '12.00rem', nowrap: false });
+    expect(columnLayout([column('Créée le', 1, { nowrap: false })])[0]!.nowrap).toBe(false);
+    expect(columnLayout([column('Entreprise', 1, { nowrap: true })])[0]!.nowrap).toBe(true);
   });
-  it('les parts ne dépendent que des poids : jamais du contenu des lignes', () => {
-    expect(columnWidths([2, 1], false)).toEqual(columnWidths([2, 1], false));
+
+  it('les dates, numéros, montants, états et références ne se coupent jamais ; le texte, si', () => {
+    const nowrap = (header: string) => columnLayout([column(header)])[0]!.nowrap;
+    for (const header of ['Créée le', 'Déposée le', 'Téléphone', 'Téléphone professionnel', 'Valeur', 'Montant', 'État', 'Statut', 'Référence', 'Dernière connexion']) expect([header, nowrap(header)]).toEqual([header, true]);
+    for (const header of ['Entreprise', 'E-mail', 'Secteur', 'Pays', 'Objet', 'Responsable', 'Actions', 'Dates']) expect([header, nowrap(header)]).toEqual([header, false]);
+  });
+
+  it('les largeurs ne dépendent que des colonnes, jamais des lignes', () => {
+    expect(columnLayout([column('Statut', 2), column('Objet', 3)])).toEqual(columnLayout([column('Statut', 2), column('Objet', 3)]));
+  });
+
+  it('la largeur totale compte la case de sélection (3 rem) et sert de largeur minimale du tableau', () => {
+    expect(SELECTION_REM).toBe(3);
+    const layout = columnLayout([column('Entreprise', 4), column('Créée le', 1)]);
+    expect(tableWidthRem(layout, false)).toBe(22);
+    expect(tableWidthRem(layout, true)).toBe(25);
   });
 });

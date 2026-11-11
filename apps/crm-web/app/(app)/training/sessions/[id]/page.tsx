@@ -61,6 +61,7 @@ export default function SessionSheetPage() {
   return (
     <>
       <PageHeader
+        stacked
         eyebrow="Session de formation"
         title={session.trainingTitle}
         description={`${session.programName} · ${periodText(session)} · ${session.rhythm.label}`}

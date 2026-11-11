@@ -1,8 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { CompanyDialog } from '../../../components/companies/company-dialog';
+import { useDismiss } from '../../../lib/use-dismiss';
 import { Badge } from '../../../components/data/badge';
 import { Card } from '../../../components/data/card';
 import { DataTable, type Column, type TableSort } from '../../../components/data/data-table';
@@ -190,8 +191,16 @@ function FilterSelect({ label, value, options, onChange }: { label: string; valu
 
 /** Menu « Colonnes » : une case par colonne ; la colonne du nom est toujours affichée. */
 function ColumnsMenu({ visible, onToggle }: { visible: readonly CompanyColumnId[]; onToggle: (id: CompanyColumnId) => void }) {
+  const ref = useRef<HTMLDetailsElement>(null);
+  const [open, setOpen] = useState(false);
+  // Se referme au clic en dehors et à Échap (le focus revient alors au bouton) ; ouvert au clavier comme à la souris (Entrée, Espace).
+  useDismiss(ref, open, (reason) => {
+    if (!ref.current) return;
+    ref.current.open = false;
+    if (reason === 'escape') ref.current.querySelector('summary')?.focus();
+  });
   return (
-    <details className="relative">
+    <details ref={ref} className="relative" onToggle={(event) => setOpen((event.currentTarget as HTMLDetailsElement).open)}>
       <summary className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-full border border-field bg-surface px-4 text-[length:var(--text-sm)] font-semibold">Colonnes</summary>
       <fieldset className="absolute left-0 z-10 mt-2 min-w-48 rounded-lg border border-line bg-surface p-3 shadow-lg">
         <legend className="sr-only">Colonnes affichées</legend>
