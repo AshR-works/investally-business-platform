@@ -20,7 +20,7 @@ const serverAccepts = (build: () => unknown) => {
     return false;
   }
 };
-const form = (over: Partial<LearnerForm> = {}): LearnerForm => ({ companyId: 'c1', lastName: 'Mbarga', firstName: 'Aïcha', email: '', phone: '', contactId: '', ...over });
+const form = (over: Partial<LearnerForm> = {}): LearnerForm => ({ companyId: 'c1', withoutCompany: false, kind: 'STUDENT', lastName: 'Mbarga', firstName: 'Aïcha', email: '', phone: '', contactId: '', ...over });
 const profileWith = (...permissions: string[]) => ({ permissions: permissions.map((code) => ({ code, scope: 'ALL' })) }) as unknown as Profile;
 
 const option = (over: Partial<ApprovalOption> = {}): ApprovalOption => ({
@@ -29,7 +29,7 @@ const option = (over: Partial<ApprovalOption> = {}): ApprovalOption => ({
 });
 
 const enrollment = (over: Partial<Enrollment> = {}): Enrollment => ({
-  id: 'e1', sessionId: 's1', learnerId: 'l1', companyId: 'c1', approvalId: 'a1', chargedAmount: null, status: 'PENDING', comment: null, cancelReason: null, confirmedAt: null, replacedById: null,
+  id: 'e1', sessionId: 's1', learnerId: 'l1', companyId: 'c1', approvalId: 'a1', payer: null, learnerKind: 'COMPANY', chargedAmount: null, status: 'PENDING', comment: null, cancelReason: null, confirmedAt: null, replacedById: null,
   trainingTitle: 'Certificat trading', sessionStart: '2026-11-16', sessionEnd: '2026-11-20', sessionStatus: 'OPEN', roomName: 'Salle de marchés', learnerName: 'Aïcha Mbarga', companyName: 'Banque Test',
   approvalLabel: 'Agrément du 2026-10-12 : 2 places', version: 1, createdAt: '2026-11-06T09:00:00.000Z', ...over,
 });
@@ -65,7 +65,7 @@ describe('apprenants : saisie', () => {
   });
 
   it('à la modification n\'envoie que la version et les champs, jamais l\'entreprise ; « créer quand même » ajoute l\'indicateur de doublon', () => {
-    const learner: Learner = { id: 'l1', companyId: 'c1', companyName: 'Banque Test', contactId: 'k1', lastName: 'Mbarga', firstName: 'Aïcha', email: null, phone: null, version: 3, createdAt: '2026-11-06T09:00:00.000Z' };
+    const learner: Learner = { id: 'l1', kind: 'COMPANY', companyId: 'c1', companyName: 'Banque Test', contactId: 'k1', lastName: 'Mbarga', firstName: 'Aïcha', email: null, phone: null, version: 3, createdAt: '2026-11-06T09:00:00.000Z' };
     const body = learnerBody(formFromLearner(learner), { version: 3, allowDuplicate: true });
     expect(body).toMatchObject({ version: 3, allowDuplicate: true, contactId: 'k1' });
     expect(body).not.toHaveProperty('companyId');

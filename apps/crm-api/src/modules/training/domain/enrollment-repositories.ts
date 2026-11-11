@@ -2,13 +2,15 @@ import { Page } from '../../../shared-kernel';
 import { Consumption } from './approval-cover';
 import { Enrollment, EnrollmentStatus } from './enrollment';
 import { IsoDate } from './session-dates';
-import { Learner } from './learner';
+import { Learner, LearnerKind } from './learner';
 
 export interface LearnerListQuery {
   page: number;
   pageSize: number;
   search?: string;
   companyId?: string;
+  /** Nature : d'une entreprise, étudiant ou particulier. */
+  kind?: LearnerKind;
   /** Restreint aux apprenants de ces entreprises (la portée de l'utilisateur, résolue par l'annuaire du module commercial ; liste vide = aucun) ; absent = pas de restriction. */
   companyIds?: readonly string[];
 }
@@ -17,9 +19,11 @@ export interface LearnerRepository {
   save(learner: Learner): Promise<void>;
   /** Un apprenant supprimé logiquement n'est jamais renvoyé. */
   findById(id: string): Promise<Learner | null>;
-  /** Doublon probable : même entreprise et même nom ou même e-mail. */
-  findDuplicates(input: { companyId: string; nameKey: string; emailKey: string | null; excludeId?: string }): Promise<Learner[]>;
+  /** Doublon probable : même entreprise (ou, sans entreprise, parmi les étudiants et particuliers) et même nom ou même e-mail. */
+  findDuplicates(input: { companyId: string | null; nameKey: string; emailKey: string | null; excludeId?: string }): Promise<Learner[]>;
   list(query: LearnerListQuery): Promise<Page<Learner>>;
+  /** Nature (entreprise, étudiant, particulier) d'un lot d'apprenants, supprimés compris. */
+  kindsOf(ids: readonly string[]): Promise<Map<string, LearnerKind>>;
   /** Noms complets (supprimés compris) : une inscription garde le nom de son apprenant même après la suppression logique de celui-ci. */
   namesOf(ids: readonly string[]): Promise<Map<string, string>>;
 }

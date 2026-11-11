@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Route** | `/training/enrollments` |
-| **Livrée par** | S5.2b |
+| **Livrée par** | S5.2b, Lot B (payeur d'un apprenant sans entreprise) |
 | **Accès** | Utilisateur avec `training.enrollment.read` (module « Inscriptions » du hub). |
 | **Droits** | **Lire** : chargé de compte (les inscriptions de ses entreprises), Responsable commercial (son équipe), Responsable Investudy, Direction, Support et Finance (toutes). **Inscrire** : chargé de compte (ses apprenants) et Responsable Investudy. **Confirmer, annuler, replacer** : Responsable Investudy. |
 | **Rôles de test** | sa, inv, dir, cc, sup |
@@ -47,3 +47,13 @@ Pile locale avec le jeu de démonstration (15 inscriptions : confirmées, en att
 | Date | Scénario | Description | Défaut ouvert (D…) |
 |---|---|---|---|
 | | | | |
+
+## Scénarios ajoutés par le Lot B (apprenants sans entreprise)
+| N° | Scénario | Étapes | Résultat attendu | Constaté (✔ / ✘) | Date et initiales |
+|---|---|---|---|---|---|
+| B1 | **Inscrire un étudiant** | Depuis « Apprenants » ou « Inscriptions », choisir un étudiant ou un particulier et une session ouverte. | Le choix d'**agrément disparaît** ; « Qui règle les frais ? » apparaît (L'apprenant lui-même / Un tiers) ; la note rappelle que le montant dû est le prix complet et que le règlement n'est pas suivi. | ☐ | |
+| B2 | **Payeur tiers** | Choisir « Un tiers ». | Nom du payeur et Nature (Employeur, Organisme, Bailleur, Famille ou proche) apparaissent ; vides, ils sont refusés avec leur message ; 200 caractères au plus. | ☐ | |
+| B3 | **Résultat dans le tableau** | Valider l'inscription. | La colonne « Agrément ou payeur » dit « Payeur : Lui-même » ou « Payeur : <nom> (<nature>) » avec « Montant dû : <prix complet> » ; la colonne Apprenant montre « Étudiant » ou « Particulier » à la place de l'entreprise. | ☐ | |
+| B4 | **Confirmer, annuler, replacer** | Confirmer ; annuler avec motif ; replacer sur une autre session. | Aucun agrément n'est contrôlé ; le replacement **garde le payeur** et le message le dit ; la confirmation rappelle le payeur. | ☐ | |
+| B5 | **Certificat sans prix** | Inscrire un étudiant à un certificat sans prix complet. | Refus : « Le certificat n'a pas de prix complet… » (le montant dû serait inconnu). | ☐ | |
+| B6 | **Apprenant d'entreprise inchangé** | Inscrire un apprenant d'une entreprise. | L'agrément reste exigé et contrôlé ; aucun choix de payeur n'est proposé. | ☐ | |

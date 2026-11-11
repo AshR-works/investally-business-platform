@@ -5,7 +5,7 @@ import { DomainError, Page } from '../../../shared-kernel';
 import { Consumption } from '../domain/approval-cover';
 import { Enrollment, SEAT_STATUSES } from '../domain/enrollment';
 import { EnrollmentListQuery, EnrollmentRepository, LearnerListQuery, LearnerRepository } from '../domain/enrollment-repositories';
-import { Learner } from '../domain/learner';
+import { Learner, LearnerKind } from '../domain/learner';
 import { toCents } from '../domain/money';
 import { IsoDate, toIsoDate } from '../domain/session-dates';
 
@@ -15,7 +15,7 @@ const seatStatuses = [...SEAT_STATUSES];
 type LearnerRow = Prisma.LearnerGetPayload<object>;
 const learnerOf = (r: LearnerRow): Learner =>
   Learner.rehydrate({
-    id: r.id, companyId: r.companyId, contactId: r.contactId, lastName: r.lastName, firstName: r.firstName, email: r.email, phone: r.phone,
+    id: r.id, kind: r.kind, companyId: r.companyId, contactId: r.contactId, lastName: r.lastName, firstName: r.firstName, email: r.email, phone: r.phone,
     deletedAt: r.deletedAt, createdAt: r.createdAt, version: r.version,
   });
 
@@ -25,7 +25,7 @@ export class PrismaLearnerRepository implements LearnerRepository {
 
   async save(learner: Learner): Promise<void> {
     const data = {
-      companyId: learner.companyId, contactId: learner.contactId, lastName: learner.lastName, firstName: learner.firstName, nameKey: learner.nameKey, email: learner.email,
+      kind: learner.kind, companyId: learner.companyId, contactId: learner.contactId, lastName: learner.lastName, firstName: learner.firstName, nameKey: learner.nameKey, email: learner.email,
       emailKey: learner.emailKey, phone: learner.phone, deletedAt: learner.deletedAt,
     };
     const db = this.prisma.db.learner;
@@ -39,10 +39,11 @@ export class PrismaLearnerRepository implements LearnerRepository {
     return row ? learnerOf(row) : null;
   }
 
-  async findDuplicates(input: { companyId: string; nameKey: string; emailKey: string | null; excludeId?: string }): Promise<Learner[]> {
+  async findDuplicates(input: { companyId: string | null; nameKey: string; emailKey: string | null; excludeId?: string }): Promise<Learner[]> {
     const rows = await this.prisma.db.learner.findMany({
       where: {
         companyId: input.companyId,
+        ...(input.companyId === null ? { kind: { not: 'COMPANY' as const } } : {}),
         deletedAt: null,
         OR: [{ nameKey: input.nameKey }, ...(input.emailKey ? [{ emailKey: input.emailKey }] : [])],
         ...(input.excludeId ? { id: { not: input.excludeId } } : {}),
@@ -57,6 +58,7 @@ export class PrismaLearnerRepository implements LearnerRepository {
     const where: Prisma.LearnerWhereInput = {
       deletedAt: null,
       ...(query.companyId ? { companyId: query.companyId } : {}),
+      ...(query.kind ? { kind: query.kind } : {}),
       ...(query.companyIds ? { companyId: { in: [...query.companyIds] } } : {}),
       ...(search
         ? { OR: [{ lastName: { contains: search, mode: 'insensitive' } }, { firstName: { contains: search, mode: 'insensitive' } }, { email: { contains: search, mode: 'insensitive' } }] }
@@ -69,6 +71,12 @@ export class PrismaLearnerRepository implements LearnerRepository {
     return { items: rows.map(learnerOf), total, page: query.page, pageSize: query.pageSize };
   }
 
+  async kindsOf(ids: readonly string[]): Promise<Map<string, LearnerKind>> {
+    if (ids.length === 0) return new Map();
+    const rows = await this.prisma.db.learner.findMany({ where: { id: { in: [...ids] } }, select: { id: true, kind: true } });
+    return new Map(rows.map((r) => [r.id, r.kind]));
+  }
+
   async namesOf(ids: readonly string[]): Promise<Map<string, string>> {
     if (ids.length === 0) return new Map();
     const rows = await this.prisma.db.learner.findMany({ where: { id: { in: [...ids] } }, select: { id: true, firstName: true, lastName: true } });
@@ -79,7 +87,8 @@ export class PrismaLearnerRepository implements LearnerRepository {
 type EnrollmentRow = Prisma.EnrollmentGetPayload<object>;
 const enrollmentOf = (r: EnrollmentRow): Enrollment =>
   Enrollment.rehydrate({
-    id: r.id, sessionId: r.sessionId, learnerId: r.learnerId, companyId: r.companyId, approvalId: r.approvalId, chargedAmount: r.chargedAmount === null ? null : r.chargedAmount.toFixed(2),
+    id: r.id, sessionId: r.sessionId, learnerId: r.learnerId, companyId: r.companyId, approvalId: r.approvalId,
+    payer: r.payerKind === 'SELF' ? { kind: 'SELF' } : r.payerKind === 'THIRD_PARTY' ? { kind: 'THIRD_PARTY', name: r.payerName ?? '', type: r.payerType! } : null, chargedAmount: r.chargedAmount === null ? null : r.chargedAmount.toFixed(2),
     status: r.status, comment: r.comment, cancelReason: r.cancelReason, confirmedAt: r.confirmedAt, replacedById: r.replacedById, createdAt: r.createdAt, version: r.version,
   });
 
@@ -89,7 +98,9 @@ export class PrismaEnrollmentRepository implements EnrollmentRepository {
 
   async save(enrollment: Enrollment): Promise<void> {
     const data = {
-      sessionId: enrollment.sessionId, learnerId: enrollment.learnerId, companyId: enrollment.companyId, approvalId: enrollment.approvalId, chargedAmount: enrollment.chargedAmount,
+      sessionId: enrollment.sessionId, learnerId: enrollment.learnerId, companyId: enrollment.companyId, approvalId: enrollment.approvalId,
+      payerKind: enrollment.payer?.kind ?? null, payerName: enrollment.payer?.kind === 'THIRD_PARTY' ? enrollment.payer.name : null,
+      payerType: enrollment.payer?.kind === 'THIRD_PARTY' ? enrollment.payer.type : null, chargedAmount: enrollment.chargedAmount,
       status: enrollment.status, comment: enrollment.comment, cancelReason: enrollment.cancelReason, confirmedAt: enrollment.confirmedAt, replacedById: enrollment.replacedById,
     };
     const db = this.prisma.db.enrollment;

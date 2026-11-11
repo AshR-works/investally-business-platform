@@ -1,9 +1,18 @@
 import { AggregateRoot, DomainError, normalizeEmail, normalizePhone } from '../../../shared-kernel';
 import { keyOf, requiredText } from './catalogue-fields';
 
+/**
+ * Nature d'un apprenant (Lot B) : rattaché à une entreprise (cas général), ou **étudiant** / **particulier**, sans entreprise ni contact.
+ * Les apprenants n'ont pas accès à la plateforme : ce sont des fiches saisies par les employés.
+ */
+export type LearnerKind = 'COMPANY' | 'STUDENT' | 'INDIVIDUAL';
+export const LEARNER_KINDS: readonly LearnerKind[] = ['COMPANY', 'STUDENT', 'INDIVIDUAL'];
+
 export interface LearnerProps {
   id: string;
-  companyId: string;
+  kind: LearnerKind;
+  /** Absente pour un étudiant ou un particulier. */
+  companyId: string | null;
   /** Contact de la même entreprise auquel l'apprenant correspond (facultatif : un apprenant n'est pas forcément un contact). */
   contactId: string | null;
   lastName: string;
@@ -18,7 +27,8 @@ export interface LearnerProps {
 
 /**
  * Apprenant : une personne inscrite à une formation pour le compte d'une entreprise (D47, D-SESS-4 B : distinct d'un contact, avec un lien
- * facultatif). L'entreprise d'un apprenant ne change pas. Supprimé logiquement, jamais effacé.
+ * facultatif), ou, sans entreprise, un étudiant ou un particulier qui règle lui-même ou dont un tiers règle les frais (Lot B). La nature d'un
+ * apprenant et son entreprise ne changent pas. Supprimé logiquement, jamais effacé.
  */
 export class Learner extends AggregateRoot {
   private constructor(private props: LearnerProps) {
@@ -26,11 +36,17 @@ export class Learner extends AggregateRoot {
   }
 
   static create(input: {
-    id: string; companyId: string; lastName: string; firstName: string; email?: string | null; phone?: string | null; contactId?: string | null; now: Date;
+    id: string; kind?: LearnerKind; companyId?: string | null; lastName: string; firstName: string; email?: string | null; phone?: string | null; contactId?: string | null; now: Date;
   }): Learner {
+    const kind = input.kind ?? 'COMPANY';
+    if (!LEARNER_KINDS.includes(kind)) throw new DomainError('VALIDATION', "La nature de l'apprenant est inconnue");
+    if (kind === 'COMPANY' && !input.companyId) throw new DomainError('VALIDATION', "L'entreprise de l'apprenant est obligatoire");
+    if (kind !== 'COMPANY' && input.companyId) throw new DomainError('VALIDATION', "Un étudiant ou un particulier n'a pas d'entreprise");
+    if (kind !== 'COMPANY' && input.contactId) throw new DomainError('VALIDATION', "Un étudiant ou un particulier n'a pas de contact d'entreprise");
     return new Learner({
       id: input.id,
-      companyId: input.companyId,
+      kind,
+      companyId: kind === 'COMPANY' ? input.companyId! : null,
       contactId: input.contactId || null,
       lastName: requiredText(input.lastName, 'Le nom', 100),
       firstName: requiredText(input.firstName, 'Le prénom', 100),
@@ -54,7 +70,10 @@ export class Learner extends AggregateRoot {
     if (changes.firstName !== undefined) next.firstName = requiredText(changes.firstName, 'Le prénom', 100);
     if (changes.email !== undefined) next.email = normalizeEmail(changes.email);
     if (changes.phone !== undefined) next.phone = normalizePhone(changes.phone, { required: false });
-    if (changes.contactId !== undefined) next.contactId = changes.contactId || null;
+    if (changes.contactId !== undefined) {
+      if (changes.contactId && this.props.kind !== 'COMPANY') throw new DomainError('VALIDATION', "Un étudiant ou un particulier n'a pas de contact d'entreprise");
+      next.contactId = changes.contactId || null;
+    }
     this.props = next;
   }
 
@@ -68,7 +87,10 @@ export class Learner extends AggregateRoot {
   }
 
   get id(): string { return this.props.id; }
-  get companyId(): string { return this.props.companyId; }
+  get kind(): LearnerKind { return this.props.kind; }
+  /** Étudiant ou particulier : sans entreprise, donc sans agrément ; un payeur est désigné à chaque inscription. */
+  get isIndividual(): boolean { return this.props.kind !== 'COMPANY'; }
+  get companyId(): string | null { return this.props.companyId; }
   get contactId(): string | null { return this.props.contactId; }
   get lastName(): string { return this.props.lastName; }
   get firstName(): string { return this.props.firstName; }

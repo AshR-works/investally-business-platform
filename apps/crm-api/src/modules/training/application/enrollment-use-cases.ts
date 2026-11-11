@@ -7,7 +7,7 @@ import { decideFor, visibilityFor } from '../../iam';
 import type { AccessContext } from '../../iam';
 import { ROOM_REPOSITORY, RoomRepository, TRAINING_REPOSITORY, TrainingRepository } from '../domain/catalogue-repositories';
 import { assertApprovalCovers, assertApprovalValid } from '../domain/approval-cover';
-import { Enrollment, EnrollmentStatus } from '../domain/enrollment';
+import { Enrollment, EnrollmentPayer, EnrollmentStatus, normalizePayer } from '../domain/enrollment';
 import { ENROLLMENT_REPOSITORY, EnrollmentRepository, LEARNER_REPOSITORY, LearnerRepository } from '../domain/enrollment-repositories';
 import { Learner } from '../domain/learner';
 import { amountLabel, toCents } from '../domain/money';
@@ -38,6 +38,7 @@ export class EnrollmentViews {
     const names = await this.learners.namesOf([...new Set(enrollments.map((e) => e.learnerId))]);
     const sessionContext = new Map<string, Promise<Pick<EnrollmentContext, 'trainingTitle' | 'sessionStart' | 'sessionEnd' | 'sessionStatus' | 'roomName'>>>();
     const companyNames = new Map<string, Promise<string>>();
+    const kinds = await this.learners.kindsOf([...new Set(enrollments.map((e) => e.learnerId))]);
     const approvalLabels = new Map<string, Promise<string>>();
 
     const sessionOf = (id: string) => {
@@ -76,8 +77,8 @@ export class EnrollmentViews {
 
     const views: EnrollmentView[] = [];
     for (const e of enrollments) {
-      const [session, companyName, approvalLabel] = await Promise.all([sessionOf(e.sessionId), companyOf(e.companyId), approvalOf(e.approvalId)]);
-      views.push(toEnrollmentView(e, { ...session, learnerName: names.get(e.learnerId) ?? '', companyName, approvalLabel }));
+      const [session, companyName, approvalLabel] = await Promise.all([sessionOf(e.sessionId), e.companyId ? companyOf(e.companyId) : Promise.resolve(''), e.approvalId ? approvalOf(e.approvalId) : Promise.resolve('')]);
+      views.push(toEnrollmentView(e, { ...session, learnerName: names.get(e.learnerId) ?? '', learnerKind: kinds.get(e.learnerId) ?? 'COMPANY', companyName, approvalLabel }));
     }
     return views;
   }
@@ -100,7 +101,11 @@ export class EnrollmentRules {
     @Inject(COMPANY_DIRECTORY) private readonly directory: CompanyDirectory,
   ) {}
 
-  async admit(session: TrainingSession, learner: Learner, approvalId: string): Promise<{ chargedAmount: string | null }> {
+  /**
+   * Contrôles communs, puis la couverture : sous l'**agrément** de l'entreprise pour un apprenant d'une entreprise ; pour un étudiant ou un particulier, **aucun agrément**,
+   * mais le prix complet du certificat, qui devient le montant dû (un certificat sans prix ou sans devise ne s'inscrit pas : le montant dû serait inconnu).
+   */
+  async admit(session: TrainingSession, learner: Learner, approvalId: string | null): Promise<{ chargedAmount: string | null }> {
     if (session.status === 'PLANNED') throw new DomainError('INVARIANT_VIOLATION', "La session n'est pas encore ouverte aux inscriptions");
     if (session.status === 'CANCELLED') throw new DomainError('INVARIANT_VIOLATION', 'La session est annulée');
     if (session.status === 'CLOSED') throw new DomainError('INVARIANT_VIOLATION', 'La session est clôturée');
@@ -116,6 +121,15 @@ export class EnrollmentRules {
     const taken = await this.enrollments.countSeats(session.id);
     if (taken >= session.capacity) throw new DomainError('INVARIANT_VIOLATION', `La session est complète (${taken} place${taken > 1 ? 's' : ''} sur ${session.capacity})`);
 
+    if (learner.isIndividual) {
+      if (approvalId !== null) throw new DomainError('VALIDATION', "Un étudiant ou un particulier ne s'inscrit pas sous un agrément : indiquez qui règle les frais");
+      const pricing = (await this.trainings.findById(session.trainingId))?.pricing ?? null;
+      if (!pricing?.full || !pricing.currency) {
+        throw new DomainError('INVARIANT_VIOLATION', "Le certificat n'a pas de prix complet : renseignez-le dans le catalogue avant d'inscrire un étudiant ou un particulier (le montant dû serait inconnu)");
+      }
+      return { chargedAmount: pricing.full };
+    }
+    if (approvalId === null) throw new DomainError('VALIDATION', "Choisissez l'agrément de l'entreprise qui couvre l'inscription");
     const approval = await this.directory.approval(approvalId);
     if (!approval || approval.companyId !== learner.companyId) throw new DomainError('NOT_FOUND', 'Agrément introuvable');
     await this.directory.lockApproval(approval.id);
@@ -125,20 +139,43 @@ export class EnrollmentRules {
   }
 }
 
-/** Inscription et son apprenant, visibles de l'appelant (la visibilité d'une inscription suit celle de l'entreprise de l'apprenant). */
+/**
+ * Inscription visible de l'appelant : la visibilité d'une inscription suit celle de l'entreprise de l'apprenant. Celle d'un étudiant ou d'un particulier n'a pas
+ * d'entreprise : elle n'est visible que de ceux dont le droit couvre tout (portée Tous).
+ */
 async function enrollmentInScope(
   enrollments: EnrollmentRepository, directory: CompanyDirectory, id: string, access: AccessContext, permission: string,
 ): Promise<Enrollment> {
   const enrollment = await enrollments.findById(id);
-  const company = enrollment ? await directory.company(enrollment.companyId) : null;
-  if (!enrollment || !company || !decideFor(access, permission, company.ownerUserId).allowed) throw new DomainError('NOT_FOUND', NOT_FOUND_ENROLLMENT);
+  if (!enrollment) throw new DomainError('NOT_FOUND', NOT_FOUND_ENROLLMENT);
+  if (enrollment.companyId === null) {
+    if (!decideFor(access, permission, null).allowed) throw new DomainError('NOT_FOUND', NOT_FOUND_ENROLLMENT);
+    return enrollment;
+  }
+  const company = await directory.company(enrollment.companyId);
+  if (!company || !decideFor(access, permission, company.ownerUserId).allowed) throw new DomainError('NOT_FOUND', NOT_FOUND_ENROLLMENT);
   return enrollment;
 }
 
-export interface EnrollCommand { sessionId: string; learnerId: string; approvalId: string; comment?: string | null; access: AccessContext; actor: ActorContext }
+/** Qui règle les frais : exigé d'un étudiant ou d'un particulier, interdit pour un apprenant d'une entreprise (l'agrément en tient lieu). */
+function payerFor(learner: Learner, input: { kind?: string; name?: string | null; type?: string | null } | null | undefined): EnrollmentPayer | null {
+  if (!learner.isIndividual) {
+    if (input) throw new DomainError('VALIDATION', "Un apprenant d'une entreprise n'a pas de payeur désigné : son agrément en tient lieu");
+    return null;
+  }
+  return normalizePayer(input);
+}
+
+export interface EnrollCommand {
+  sessionId: string; learnerId: string;
+  /** Agrément de l'entreprise : exigé d'un apprenant d'une entreprise, interdit pour un étudiant ou un particulier. */
+  approvalId?: string | null;
+  /** Qui règle les frais : exigé d'un étudiant ou d'un particulier, interdit pour un apprenant d'une entreprise. */
+  payer?: { kind?: string; name?: string | null; type?: string | null } | null;
+  comment?: string | null; access: AccessContext; actor: ActorContext }
 export interface ConfirmEnrollmentCommand { id: string; version: number; access: AccessContext; actor: ActorContext }
 export interface CancelEnrollmentCommand { id: string; version: number; reason: string; access: AccessContext; actor: ActorContext }
-export interface ReplaceEnrollmentCommand { id: string; version: number; sessionId: string; approvalId?: string; comment?: string | null; access: AccessContext; actor: ActorContext }
+export interface ReplaceEnrollmentCommand { id: string; version: number; sessionId: string; approvalId?: string | null; comment?: string | null; access: AccessContext; actor: ActorContext }
 
 /** Inscrire un apprenant : portée de son entreprise (non archivée), session verrouillée puis contrôlée, agrément verrouillé puis contrôlé ; audit. */
 @Injectable()
@@ -159,13 +196,15 @@ export class EnrollLearnerUseCase {
   execute(command: EnrollCommand): Promise<EnrollmentView> {
     return this.unitOfWork.run(async () => {
       const { learner, company } = await learnerInScope(this.learners, this.directory, command.learnerId, command.access, 'training.enrollment.create');
-      if (company.archived) throw new DomainError('INVARIANT_VIOLATION', "L'entreprise est archivée : on ne peut plus y inscrire d'apprenant");
+      if (company?.archived) throw new DomainError('INVARIANT_VIOLATION', "L'entreprise est archivée : on ne peut plus y inscrire d'apprenant");
+      const payer = payerFor(learner, command.payer);
       await this.enrollments.lockSession(command.sessionId);
       const session = await this.sessions.findById(command.sessionId);
       if (!session) throw new DomainError('NOT_FOUND', NOT_FOUND_SESSION);
-      const { chargedAmount } = await this.rules.admit(session, learner, command.approvalId);
+      const approvalId = command.approvalId ?? null;
+      const { chargedAmount } = await this.rules.admit(session, learner, approvalId);
       const enrollment = Enrollment.create({
-        id: this.ids.next(), sessionId: session.id, learnerId: learner.id, companyId: learner.companyId, approvalId: command.approvalId, chargedAmount, comment: command.comment, now: this.clock.now(),
+        id: this.ids.next(), sessionId: session.id, learnerId: learner.id, companyId: learner.companyId, approvalId, payer, chargedAmount, comment: command.comment, now: this.clock.now(),
       });
       await this.enrollments.save(enrollment);
       const view = await this.views.of(enrollment);
@@ -198,9 +237,11 @@ export class ConfirmEnrollmentUseCase {
       const before = await this.views.of(enrollment);
       enrollment.confirm(this.clock.now());
       if (session.status !== 'OPEN') throw new DomainError('INVARIANT_VIOLATION', 'La session n\'est plus ouverte aux inscriptions');
-      const approval = await this.directory.approval(enrollment.approvalId);
-      if (!approval) throw new DomainError('NOT_FOUND', 'Agrément introuvable');
-      assertApprovalValid(approval, session.startDate);
+      if (enrollment.approvalId !== null) {
+        const approval = await this.directory.approval(enrollment.approvalId);
+        if (!approval) throw new DomainError('NOT_FOUND', 'Agrément introuvable');
+        assertApprovalValid(approval, session.startDate);
+      }
       await this.enrollments.save(enrollment);
       const after = await this.views.of((await this.enrollments.findById(enrollment.id)) ?? enrollment);
       await this.audit.record({ actor: command.actor, module: 'training', entityType: 'Enrollment', entityId: enrollment.id, action: AuditAction.Update, oldValue: { ...before }, newValue: { ...after } });
@@ -274,10 +315,11 @@ export class ReplaceEnrollmentUseCase {
       const before = await this.views.of(old);
       old.cancel('Replacée sur une autre session');
       await this.enrollments.save(old);
-      const approvalId = command.approvalId ?? old.approvalId;
+      // Un étudiant ou un particulier garde son payeur ; un apprenant d'une entreprise garde l'agrément de l'inscription, sauf s'il en désigne un autre.
+      const approvalId = learner.isIndividual ? null : command.approvalId ?? old.approvalId;
       const { chargedAmount } = await this.rules.admit(target, learner, approvalId);
       const replacement = Enrollment.create({
-        id: this.ids.next(), sessionId: target.id, learnerId: learner.id, companyId: learner.companyId, approvalId, chargedAmount, comment: command.comment, now: this.clock.now(),
+        id: this.ids.next(), sessionId: target.id, learnerId: learner.id, companyId: learner.companyId, approvalId, payer: old.payer, chargedAmount, comment: command.comment, now: this.clock.now(),
       });
       await this.enrollments.save(replacement);
       const cancelled = (await this.enrollments.findById(old.id))!;
@@ -312,6 +354,8 @@ export class ListApprovalOptionsHandler {
     const { learner } = await learnerInScope(this.learners, this.directory, query.learnerId, query.access, 'training.enrollment.create');
     const session = await this.sessions.findById(query.sessionId);
     if (!session) throw new DomainError('NOT_FOUND', NOT_FOUND_SESSION);
+    // Un étudiant ou un particulier n'a pas d'agrément : le payeur se désigne à l'inscription.
+    if (learner.companyId === null) return [];
     const pricing = (await this.trainings.findById(session.trainingId))?.pricing ?? null;
     const options: ApprovalOptionView[] = [];
     for (const approval of await this.directory.approvalsOf(learner.companyId)) {

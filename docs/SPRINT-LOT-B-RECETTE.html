@@ -1,0 +1,46 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Lot B — apprenant étudiant ou particulier : recette</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="INDEX.html">Index</a> · <a href="GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="ARCHITECTURE.html">Architecture</a> · <a href="SECURITY.html">Sécurité</a> · <a href="METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="TECH-DEBT.html">Dette</a> · <a href="CHARTE-DE-TESTS.html">Charte de tests</a> · <a href="tests/README.html">Fiches de test</a> · <a href="design/README.html">Design</a> · <a href="livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>Lot B — apprenant étudiant ou particulier : recette</h1>
+<p><em>Branche <code>feat/lot-b-apprenant-particulier</code> · 2026-11-11 · décision <strong>D65</strong> (option C de l'arbitrage du 2026-11-11, « applique les recommandations »), <a href="adr/0011-apprenant-sans-entreprise-et-payeur-designe.html">ADR-0011</a> · <strong>Les apprenants n'ont pas accès à la plateforme</strong> : ce sont des fiches saisies par les employés.</em></p>
+<h2>Ce qui est livré</h2>
+<div class="table-wrap"><table><thead><tr><th>Demande</th><th>Réponse</th></tr></thead><tbody>
+<tr><td><strong>Apprenant sans entreprise</strong></td><td>Nature <code>Étudiant</code> ou <code>Particulier</code>, sans entreprise, contact ni agrément ; les apprenants existants restent « d'une entreprise » ; la <strong>base</strong> refuse une fiche incohérente</td></tr>
+<tr><td><strong>Payeur désigné</strong></td><td>À chaque inscription d'un apprenant sans entreprise : <strong>lui-même</strong> ou un <strong>tiers</strong> (nom et nature : employeur, organisme, bailleur, <strong>famille ou proche</strong>) ; jamais un agrément en même temps ; le <strong>montant dû est le prix complet</strong> du certificat (recopié) ; un certificat sans prix ne s'inscrit pas</td></tr>
+<tr><td><strong>Règles communes</strong></td><td>Place, pas deux fois la même session, pas de session qui recouvre, doublon, confirmation, annulation motivée, replacement (qui <strong>garde le payeur</strong>) : inchangés</td></tr>
+<tr><td><strong>Visibilité</strong></td><td>Un étudiant ou un particulier est un objet <strong>sans propriétaire</strong> : visible et gérable seulement avec la portée <strong>Tous</strong> (Responsable Investudy, Support et Direction en lecture, Finance pour les inscriptions, Super administrateur) ; chargé de compte et Responsable commercial : « introuvable » ; création : réservée à ceux qui gèrent tout. <strong>Aucune nouvelle permission</strong></td></tr>
+<tr><td><strong>Interface</strong></td><td>Case <strong>« Sans entreprise (étudiant ou particulier) »</strong> qui désactive l'entreprise et ouvre la liste Étudiant / Particulier ; à l'inscription, <strong>choix du payeur</strong> à la place de l'agrément ; filtre « Tous / Entreprises / Étudiants / Particuliers » ; pastille de nature ; colonne « Agrément ou payeur » avec le montant dû</td></tr>
+<tr><td><strong>Démonstration</strong></td><td>Bloc « particuliers » : 2 étudiants (l'un règle lui-même, pour l'autre c'est sa famille) et 1 particulier (son employeur règle), 3 inscriptions dont 2 confirmées ; se charge seul sur une démo existante</td></tr>
+</tbody></table></div>
+<h2>Preuves</h2>
+<div class="table-wrap"><table><thead><tr><th>Contrôle</th><th>Résultat</th></tr></thead><tbody>
+<tr><td>Types</td><td><code>tsc</code> propre (API et interface)</td></tr>
+<tr><td>Tests unitaires de l'API</td><td>Domaine de la formation : <strong>112 réussis</strong>, dont 16 nouveaux (<code>learner-individual.spec</code>) : création et incohérences, visibilité par rôle, filtre par nature, doublon, payeur (lui-même, tiers, refus), certificat sans prix, règles communes, confirmation / annulation / replacement, aucune offre d'agrément ; plan de démonstration : 4 nouveaux</td></tr>
+<tr><td>Tests de l'interface</td><td><strong>760 réussis</strong> (39 fichiers), dont <code>lot-b-particuliers.test</code> qui interroge le <strong>domaine réel du serveur</strong> sur la nature et le payeur</td></tr>
+<tr><td>Intégration (base jetable)</td><td><code>particuliers-http</code> (<strong>4</strong> tests : parcours étudiant et particulier avec audit, refus de payeur mal désigné, portée par rôle, <strong>règles de la base</strong>), plus <code>enrollments-http</code>, <code>core-schema</code>, <code>idor-contract</code> et <code>seed-demo</code> (10) : verts</td></tr>
+<tr><td>Base</td><td>Migration <code>20261118000000_lot_b_apprenant_particulier</code> : colonne <code>kind</code>, <code>company_id</code> et <code>approval_id</code> facultatifs, payeur ; <strong>deux règles garanties par la base</strong> (<code>learners_kind_company_coherent</code>, <code>enrollments_payer_coherent</code>) ; aucune clé étrangère vers un autre schéma</td></tr>
+</tbody></table></div>
+<h2>Limites connues (dettes D175 et D176)</h2>
+<ul><li><strong>Le règlement n'est pas suivi</strong> : seul le montant dû est enregistré ; le prix est le prix complet, <strong>sans tarif étudiant</strong> (à fournir). À relier à la facturation avec le module Facturation et paiements.</li><li>Un chargé de compte ou un Responsable commercial <strong>ne voit pas</strong> les étudiants et particuliers (pas de propriétaire).</li><li>Mode sombre, 1280 et 1920 px, clavier : à contrôler (comme les lots précédents). Aucun mutant n'a été lancé sur ce lot.</li></ul>
+<h2>Comment vérifier</h2>
+<ol><li>Démarrer la pile avec démonstration (<code>node scripts/local-stack.mjs --demo</code>) : sur une démo existante, seul le bloc « particuliers » est ajouté.</li><li>Rejouer la fiche de session <code>docs/tests/sessions/lot-b.md</code> et les scénarios 10 à 13 de la fiche « Apprenants », B1 à B6 de la fiche « Inscriptions ».</li></ol></main></body></html>

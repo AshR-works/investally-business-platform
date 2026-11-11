@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { api, ApiError } from '../../lib/api';
 import { useAuth } from '../../lib/auth-context';
-import { type Enrollment, ENROLLMENT_PERMISSIONS, ENROLLMENT_STATUS, ENROLLMENT_STATUS_OPTIONS, enrollmentActions } from '../../lib/enrollments';
+import { type Enrollment, ENROLLMENT_PERMISSIONS, ENROLLMENT_STATUS, ENROLLMENT_STATUS_OPTIONS, enrollmentActions, LEARNER_KIND_LABEL, payerText } from '../../lib/enrollments';
 import { can } from '../../lib/permissions';
 import { dateText } from '../../lib/sessions';
 import type { Page } from '../../lib/types';
@@ -65,11 +65,16 @@ export function EnrollmentsTable({ sessionId, defaultStatus = '', refreshKey = 0
   };
 
   const columns: Column<Enrollment>[] = [
-    { id: 'learner', weight: 2.6, header: 'Apprenant', cell: (e) => <><strong>{e.learnerName}</strong><br /><span className="text-ink-2">{e.companyName}</span></> },
+    { id: 'learner', weight: 2.6, header: 'Apprenant', cell: (e) => <><strong>{e.learnerName}</strong><br /><span className="text-ink-2">{e.companyName || LEARNER_KIND_LABEL[e.learnerKind]}</span></> },
     ...(sessionId
       ? []
       : [{ id: 'session', weight: 3.2, header: 'Session', cell: (e: Enrollment) => <><Link href={`/training/sessions/${e.sessionId}`}>{e.trainingTitle}</Link><br /><span className="text-ink-2">{dateText(e.sessionStart)} → {dateText(e.sessionEnd)}</span></> }]),
-    { id: 'approval', weight: 3, header: 'Agrément', cell: (e) => <>{e.approvalLabel || '—'}{e.chargedAmount ? <><br /><span className="text-ink-2">Compte {Number(e.chargedAmount).toLocaleString('fr-FR').replace(/[  ]/g, ' ')} sur l’agrément</span></> : null}</> },
+    {
+      id: 'approval', weight: 3, header: 'Agrément ou payeur',
+      cell: (e) => (e.payer
+        ? <>Payeur : {payerText(e.payer)}{e.chargedAmount ? <><br /><span className="text-ink-2">Montant dû : {Number(e.chargedAmount).toLocaleString('fr-FR')}</span></> : null}</>
+        : <>{e.approvalLabel || '—'}{e.chargedAmount ? <><br /><span className="text-ink-2">Compte {Number(e.chargedAmount).toLocaleString('fr-FR').replace(/[  ]/g, ' ')} sur l’agrément</span></> : null}</>),
+    },
     {
       id: 'status', weight: 2.6, header: 'État',
       cell: (e) => (

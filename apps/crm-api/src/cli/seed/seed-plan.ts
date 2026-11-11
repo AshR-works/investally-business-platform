@@ -38,6 +38,9 @@ export type SeedOp =
   | { k: 'training'; key: string; program: string; title: string; objectives: string; priceAmount: string; modulePriceAmount: string; modules: string[] }
   | { k: 'room'; key: string; name: string; kind: 'WORKSTATIONS' | 'CLASSROOM'; learnerSeats: number; unavailableSeats: number; trainerSeats: number; equipment: string }
   | { k: 'session'; key: string; training: string; room: string; trainer: string; startDate: string; capacity: number }
+  | { k: 'individual'; key: string; kind: 'STUDENT' | 'INDIVIDUAL'; lastName: string; firstName: string; email: string; phone: string }
+  | { k: 'enrollIndividual'; key: string; learner: string; session: string; payer: { kind: 'SELF' } | { kind: 'THIRD_PARTY'; name: string; type: 'EMPLOYER' | 'ORGANISM' | 'LANDLORD' | 'FAMILY' } }
+  | { k: 'individualConfirm'; enrollment: string }
   | { k: 'learner'; key: string; company: string; lastName: string; firstName: string; email: string; phone: string }
   | { k: 'enroll'; key: string; learner: string; session: string }
   | { k: 'enrollConfirm'; enrollment: string }
@@ -196,8 +199,8 @@ const FORMATEURS: SeedOp[] = TRAINERS.map(([lastName, firstName, specialties, lo
 }));
 
 /** Les blocs du jeu : chacun se charge seul sur une démo existante (marqueur propre), dans l'ordre des dépendances. */
-export type SeedBlock = 'crm' | 'catalogue' | 'formateurs' | 'sessions' | 'inscriptions' | 'rh' | 'conges';
-export const SEED_BLOCKS: readonly SeedBlock[] = ['crm', 'catalogue', 'formateurs', 'sessions', 'inscriptions', 'rh', 'conges'];
+export type SeedBlock = 'crm' | 'catalogue' | 'formateurs' | 'sessions' | 'inscriptions' | 'rh' | 'conges' | 'particuliers';
+export const SEED_BLOCKS: readonly SeedBlock[] = ['crm', 'catalogue', 'formateurs', 'sessions', 'inscriptions', 'rh', 'conges', 'particuliers'];
 /** Entreprises clientes de formation du bloc « inscriptions » : la première sert de repère au chargement par blocs. */
 export const FORMATION_CLIENTS: readonly [string, 'Cameroun' | "Côte d'Ivoire" | 'Sénégal' | 'Gabon' | 'RDC'][] = [
   ['Académie Wouri Finance', 'Cameroun'], ['Cabinet Libreville Conseil', 'Gabon'], ['Institut Dakar Marchés', 'Sénégal'], ['Groupe Abidjan Capital', "Côte d'Ivoire"], ['Fonds Kinshasa Épargne', 'RDC'],
@@ -206,6 +209,8 @@ export const FORMATION_CLIENTS: readonly [string, 'Cameroun' | "Côte d'Ivoire" 
 export const FORMATION_CLIENT = 'client-formation-';
 /** Domaine (fictif, réservé) des e-mails professionnels du personnel de démonstration : repère le bloc « rh ». */
 export const RH_EMAIL_DOMAIN = '@staff.investally.test';
+/** Domaine (fictif, réservé) des e-mails des étudiants et particuliers de démonstration : repère le bloc « particuliers ». */
+export const INDIVIDUALS_EMAIL_DOMAIN = '@particuliers.test';
 const isFormationClient = (key: string | undefined): boolean => key?.startsWith(FORMATION_CLIENT) ?? false;
 export function blockOf(op: SeedOp): SeedBlock {
   if ((op.k === 'company' || op.k === 'opportunity' || op.k === 'approval') && isFormationClient(op.key)) return 'inscriptions';
@@ -214,6 +219,7 @@ export function blockOf(op: SeedOp): SeedBlock {
   if (op.k === 'trainer') return 'formateurs';
   if (op.k === 'employee' || op.k === 'employeeLeave') return 'rh';
   if (op.k === 'leave' || op.k === 'leaveDecision') return 'conges';
+  if (op.k === 'individual' || op.k === 'enrollIndividual' || op.k === 'individualConfirm') return 'particuliers';
   if (op.k === 'learner' || op.k === 'enroll' || op.k === 'enrollConfirm' || op.k === 'enrollCancel' || op.k === 'enrollReplace') return 'inscriptions';
   if (op.k === 'session' || op.k === 'sessionOpen' || op.k === 'sessionPostpone' || op.k === 'sessionCancel') return 'sessions';
   return 'crm';
@@ -546,6 +552,26 @@ export function buildPlan({ anchor, seed = 2026 }: PlanOptions): SeedEvent[] {
   enroll('inscription-13', 1, 'session-etudiants-annulee', 0, false);
   enroll('inscription-14', 2, 'session-etudiants-annulee', 1, false);
   events.push({ at: new Date(enrolledAt('session-etudiants-annulee', 0) + 12 * 3_600_000), who: 'investudy', op: { k: 'enrollReplace', enrollment: 'inscription-13', session: 'session-banque-ouverte' } });
+
+  // Bloc « particuliers » (Lot B) : des apprenants SANS entreprise ni agrément, saisis par le Responsable Investudy : deux étudiants (l'un règle lui-même, pour l'autre c'est sa famille) et un
+  // particulier dont l'employeur règle. Aucune donnée réelle ; les e-mails sont en domaine réservé. Les inscriptions visent des sessions du bloc « sessions ».
+  const individualsAt = learnerAt + 30 * 60_000;
+  const person = (key: string, kind: 'STUDENT' | 'INDIVIDUAL', first: string, last: string, index: number) => events.push({
+    at: new Date(individualsAt + index * 60_000),
+    who: 'investudy',
+    op: { k: 'individual', key, kind, lastName: last, firstName: first, email: `${slug(first)}.${slug(last)}${INDIVIDUALS_EMAIL_DOMAIN}`, phone: demoPhone('Cameroun', 9500 + index) },
+  });
+  person('etudiant-1', 'STUDENT', 'Léa', 'Essomba', 0);
+  person('etudiant-2', 'STUDENT', 'Marc', 'Ndongo', 1);
+  person('particulier-1', 'INDIVIDUAL', 'Carine', 'Tchamba', 2);
+  const individualEnroll = (key: string, learner: string, session: string, hours: number, payer: Extract<SeedOp, { k: 'enrollIndividual' }>['payer'], confirm: boolean) => {
+    const at = enrolledAt(session, hours + 10);
+    events.push({ at: new Date(at), who: 'investudy', op: { k: 'enrollIndividual', key, learner, session, payer } });
+    if (confirm) events.push({ at: new Date(at + 3_600_000), who: 'investudy', op: { k: 'individualConfirm', enrollment: key } });
+  };
+  individualEnroll('inscription-etudiant-1', 'etudiant-1', 'session-etudiants-passee', 0, { kind: 'SELF' }, true);
+  individualEnroll('inscription-etudiant-2', 'etudiant-2', 'session-etudiants-passee', 1, { kind: 'THIRD_PARTY', name: 'Famille Ndongo (donnée de démonstration)', type: 'FAMILY' }, true);
+  individualEnroll('inscription-particulier-1', 'particulier-1', 'session-banque-ouverte', 4, { kind: 'THIRD_PARTY', name: 'Cabinet Audit Plus (donnée de démonstration)', type: 'EMPLOYER' }, false);
 
   // Bloc « rh » : le personnel fictif (des FONCTIONS, aux noms inventés), créé par la RH. La hiérarchie des fiches suit celle des comptes de démonstration, sauf la
   // Finance (responsable RH : la DGA ; compte sans responsable) : un écart volontaire, pour montrer son signalement. Un ancien chargé de compte est sorti du personnel.

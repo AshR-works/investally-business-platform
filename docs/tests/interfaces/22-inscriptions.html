@@ -24,7 +24,7 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 </style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="../../INDEX.html">Index</a> · <a href="../../GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="../../ARCHITECTURE.html">Architecture</a> · <a href="../../SECURITY.html">Sécurité</a> · <a href="../../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../../QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="../../TECH-DEBT.html">Dette</a> · <a href="../../CHARTE-DE-TESTS.html">Charte de tests</a> · <a href="../../tests/README.html">Fiches de test</a> · <a href="../../design/README.html">Design</a> · <a href="../../livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>Fiche de test — Inscriptions</h1>
 <div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
 <tr><td><strong>Route</strong></td><td><code>/training/enrollments</code></td></tr>
-<tr><td><strong>Livrée par</strong></td><td>S5.2b</td></tr>
+<tr><td><strong>Livrée par</strong></td><td>S5.2b, Lot B (payeur d'un apprenant sans entreprise)</td></tr>
 <tr><td><strong>Accès</strong></td><td>Utilisateur avec <code>training.enrollment.read</code> (module « Inscriptions » du hub).</td></tr>
 <tr><td><strong>Droits</strong></td><td><strong>Lire</strong> : chargé de compte (les inscriptions de ses entreprises), Responsable commercial (son équipe), Responsable Investudy, Direction, Support et Finance (toutes). <strong>Inscrire</strong> : chargé de compte (ses apprenants) et Responsable Investudy. <strong>Confirmer, annuler, replacer</strong> : Responsable Investudy.</td></tr>
 <tr><td><strong>Rôles de test</strong></td><td>sa, inv, dir, cc, sup</td></tr>
@@ -54,4 +54,13 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <h2>Écarts constatés</h2>
 <div class="table-wrap"><table><thead><tr><th>Date</th><th>Scénario</th><th>Description</th><th>Défaut ouvert (D…)</th></tr></thead><tbody>
 <tr><td></td><td></td><td></td><td></td></tr>
+</tbody></table></div>
+<h2>Scénarios ajoutés par le Lot B (apprenants sans entreprise)</h2>
+<div class="table-wrap"><table><thead><tr><th>N°</th><th>Scénario</th><th>Étapes</th><th>Résultat attendu</th><th>Constaté (✔ / ✘)</th><th>Date et initiales</th></tr></thead><tbody>
+<tr><td>B1</td><td><strong>Inscrire un étudiant</strong></td><td>Depuis « Apprenants » ou « Inscriptions », choisir un étudiant ou un particulier et une session ouverte.</td><td>Le choix d'<strong>agrément disparaît</strong> ; « Qui règle les frais ? » apparaît (L'apprenant lui-même / Un tiers) ; la note rappelle que le montant dû est le prix complet et que le règlement n'est pas suivi.</td><td>☐</td><td></td></tr>
+<tr><td>B2</td><td><strong>Payeur tiers</strong></td><td>Choisir « Un tiers ».</td><td>Nom du payeur et Nature (Employeur, Organisme, Bailleur, Famille ou proche) apparaissent ; vides, ils sont refusés avec leur message ; 200 caractères au plus.</td><td>☐</td><td></td></tr>
+<tr><td>B3</td><td><strong>Résultat dans le tableau</strong></td><td>Valider l'inscription.</td><td>La colonne « Agrément ou payeur » dit « Payeur : Lui-même » ou « Payeur : &lt;nom&gt; (&lt;nature&gt;) » avec « Montant dû : &lt;prix complet&gt; » ; la colonne Apprenant montre « Étudiant » ou « Particulier » à la place de l'entreprise.</td><td>☐</td><td></td></tr>
+<tr><td>B4</td><td><strong>Confirmer, annuler, replacer</strong></td><td>Confirmer ; annuler avec motif ; replacer sur une autre session.</td><td>Aucun agrément n'est contrôlé ; le replacement <strong>garde le payeur</strong> et le message le dit ; la confirmation rappelle le payeur.</td><td>☐</td><td></td></tr>
+<tr><td>B5</td><td><strong>Certificat sans prix</strong></td><td>Inscrire un étudiant à un certificat sans prix complet.</td><td>Refus : « Le certificat n'a pas de prix complet… » (le montant dû serait inconnu).</td><td>☐</td><td></td></tr>
+<tr><td>B6</td><td><strong>Apprenant d'entreprise inchangé</strong></td><td>Inscrire un apprenant d'une entreprise.</td><td>L'agrément reste exigé et contrôlé ; aucun choix de payeur n'est proposé.</td><td>☐</td><td></td></tr>
 </tbody></table></div></main></body></html>

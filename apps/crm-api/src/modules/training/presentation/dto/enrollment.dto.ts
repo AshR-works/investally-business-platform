@@ -1,8 +1,11 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsBoolean, IsIn, IsInt, IsNotEmpty, IsOptional, IsString, IsUUID, Max, MaxLength, Min, ValidateIf } from 'class-validator';
+import { IsBoolean, IsIn, IsInt, IsNotEmpty, IsOptional, IsString, IsUUID, Max, MaxLength, Min, ValidateIf, ValidateNested } from 'class-validator';
 
 const STATUSES = ['PENDING', 'CONFIRMED', 'CANCELLED', 'TO_REPLACE'] as const;
+const KINDS = ['COMPANY', 'STUDENT', 'INDIVIDUAL'] as const;
+const PAYER_KINDS = ['SELF', 'THIRD_PARTY'] as const;
+const PAYER_TYPES = ['EMPLOYER', 'ORGANISM', 'LANDLORD', 'FAMILY'] as const;
 
 export class ListLearnersDto {
   @ApiPropertyOptional({ default: 1 }) @IsOptional() @Type(() => Number) @IsInt() @Min(1)
@@ -16,11 +19,17 @@ export class ListLearnersDto {
 
   @ApiPropertyOptional({ format: 'uuid' }) @IsOptional() @IsUUID()
   companyId?: string;
+
+  @ApiPropertyOptional({ enum: KINDS, description: "Nature : d'une entreprise, étudiant ou particulier (sans entreprise)" }) @IsOptional() @IsIn(KINDS)
+  kind?: (typeof KINDS)[number];
 }
 
 export class CreateLearnerDto {
-  @ApiProperty({ format: 'uuid' }) @IsUUID()
-  companyId!: string;
+  @ApiPropertyOptional({ enum: KINDS, default: 'COMPANY', description: 'COMPANY : apprenant d\'une entreprise ; STUDENT ou INDIVIDUAL : sans entreprise (profils qui gèrent tous les apprenants)' }) @IsOptional() @IsIn(KINDS)
+  kind?: (typeof KINDS)[number];
+
+  @ApiPropertyOptional({ format: 'uuid', description: 'Obligatoire pour un apprenant d\'une entreprise ; interdit pour un étudiant ou un particulier' }) @ValidateIf((o: CreateLearnerDto) => (o.kind ?? 'COMPANY') === 'COMPANY') @IsUUID()
+  companyId?: string;
 
   @ApiProperty({ maxLength: 100 }) @IsString() @IsNotEmpty() @MaxLength(100)
   lastName!: string;
@@ -98,6 +107,18 @@ export class ApprovalOptionsDto {
   sessionId!: string;
 }
 
+/** Qui règle les frais d'un étudiant ou d'un particulier : lui-même (`SELF`), ou un tiers (`THIRD_PARTY`) avec son nom et sa nature. */
+export class PayerDto {
+  @ApiProperty({ enum: PAYER_KINDS }) @IsIn(PAYER_KINDS)
+  kind!: (typeof PAYER_KINDS)[number];
+
+  @ApiPropertyOptional({ maxLength: 200, description: 'Nom du tiers (obligatoire pour `THIRD_PARTY`)' }) @IsOptional() @IsString() @MaxLength(200)
+  name?: string;
+
+  @ApiPropertyOptional({ enum: PAYER_TYPES, description: 'Nature du tiers : employeur, organisme, bailleur, famille ou proche (obligatoire pour `THIRD_PARTY`)' }) @IsOptional() @IsIn(PAYER_TYPES)
+  type?: (typeof PAYER_TYPES)[number];
+}
+
 export class EnrollDto {
   @ApiProperty({ format: 'uuid' }) @IsUUID()
   sessionId!: string;
@@ -105,8 +126,11 @@ export class EnrollDto {
   @ApiProperty({ format: 'uuid' }) @IsUUID()
   learnerId!: string;
 
-  @ApiProperty({ format: 'uuid', description: "Agrément de l'entreprise de l'apprenant qui couvre l'inscription" }) @IsUUID()
-  approvalId!: string;
+  @ApiPropertyOptional({ format: 'uuid', description: "Agrément de l'entreprise de l'apprenant qui couvre l'inscription (apprenant d'une entreprise ; interdit pour un étudiant ou un particulier)" }) @IsOptional() @IsUUID()
+  approvalId?: string;
+
+  @ApiPropertyOptional({ type: PayerDto, description: "Qui règle les frais (étudiant ou particulier ; interdit pour un apprenant d'une entreprise)" }) @IsOptional() @ValidateNested() @Type(() => PayerDto)
+  payer?: PayerDto;
 
   @ApiPropertyOptional({ maxLength: 500 }) @IsOptional() @IsString() @MaxLength(500)
   comment?: string;

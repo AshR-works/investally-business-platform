@@ -12,13 +12,36 @@ export const SEAT_STATUSES: readonly EnrollmentStatus[] = ['PENDING', 'CONFIRMED
 /** États « vivants » : l'apprenant est encore rattaché à la session (une seule inscription vivante par session et par apprenant). */
 export const LIVE_STATUSES: readonly EnrollmentStatus[] = ['PENDING', 'CONFIRMED', 'TO_REPLACE'];
 
+/** Nature d'un payeur tiers (apprenant sans entreprise) : les trois types des agréments, plus la famille ou un proche. */
+export type PayerType = 'EMPLOYER' | 'ORGANISM' | 'LANDLORD' | 'FAMILY';
+export const PAYER_TYPES: readonly PayerType[] = ['EMPLOYER', 'ORGANISM', 'LANDLORD', 'FAMILY'];
+
+/** Qui règle les frais d'un apprenant sans entreprise : lui-même, ou un tiers désigné (nom et nature). Les apprenants d'une entreprise n'en ont pas : l'agrément en tient lieu. */
+export type EnrollmentPayer = { kind: 'SELF' } | { kind: 'THIRD_PARTY'; name: string; type: PayerType };
+
+/** Valide et normalise un payeur saisi : un tiers a un nom (200 caractères au plus) et une nature connue ; « lui-même » n'a ni nom ni nature. */
+export function normalizePayer(input: { kind?: string; name?: string | null; type?: string | null } | null | undefined): EnrollmentPayer {
+  if (!input || (input.kind !== 'SELF' && input.kind !== 'THIRD_PARTY')) throw new DomainError('VALIDATION', "Indiquez qui règle les frais : l'apprenant lui-même ou un tiers");
+  if (input.kind === 'SELF') {
+    if (input.name || input.type) throw new DomainError('VALIDATION', "Quand l'apprenant règle lui-même, aucun nom ni type de payeur ne s'ajoute");
+    return { kind: 'SELF' };
+  }
+  const name = optionalText(input.name, 'Le nom du payeur', 200);
+  if (!name) throw new DomainError('VALIDATION', 'Le nom du payeur tiers est obligatoire');
+  if (!PAYER_TYPES.includes(input.type as PayerType)) throw new DomainError('VALIDATION', 'La nature du payeur tiers est obligatoire (employeur, organisme, bailleur, famille ou proche)');
+  return { kind: 'THIRD_PARTY', name, type: input.type as PayerType };
+}
+
 export interface EnrollmentProps {
   id: string;
   sessionId: string;
   learnerId: string;
-  /** Entreprise de l'apprenant, recopiée : la portée d'une inscription est celle de son entreprise. */
-  companyId: string;
-  approvalId: string;
+  /** Entreprise de l'apprenant, recopiée : la portée d'une inscription est celle de son entreprise. Absente pour un étudiant ou un particulier. */
+  companyId: string | null;
+  /** Agrément qui couvre l'inscription ; absent pour un apprenant sans entreprise, dont le payeur est désigné. */
+  approvalId: string | null;
+  /** Qui règle les frais d'un apprenant sans entreprise ; absent quand un agrément couvre l'inscription. */
+  payer: EnrollmentPayer | null;
   /** Prix complet du certificat au moment de l'inscription (texte décimal), quand l'agrément couvre une somme ; sinon absent. */
   chargedAmount: string | null;
   status: EnrollmentStatus;
@@ -36,13 +59,29 @@ export class Enrollment extends AggregateRoot {
     super();
   }
 
-  static create(input: { id: string; sessionId: string; learnerId: string; companyId: string; approvalId: string; chargedAmount: string | null; comment?: string | null; now: Date }): Enrollment {
+  /**
+   * Deux formes, jamais mélangées : sous l'**agrément** d'une entreprise (entreprise, agrément, aucun payeur), ou **sans entreprise** (ni entreprise ni agrément,
+   * un payeur désigné et le montant dû, qui est le prix complet du certificat).
+   */
+  static create(input: {
+    id: string; sessionId: string; learnerId: string; companyId: string | null; approvalId: string | null; payer?: EnrollmentPayer | null; chargedAmount: string | null; comment?: string | null; now: Date;
+  }): Enrollment {
+    const payer = input.payer ?? null;
+    if (input.approvalId !== null && input.companyId !== null) {
+      if (payer) throw new DomainError('VALIDATION', "Une inscription sous agrément n'a pas de payeur désigné : l'agrément en tient lieu");
+    } else if (input.approvalId === null && input.companyId === null) {
+      if (!payer) throw new DomainError('VALIDATION', "Indiquez qui règle les frais : l'apprenant lui-même ou un tiers");
+      if (input.chargedAmount === null) throw new DomainError('INVARIANT_VIOLATION', 'Le montant dû est obligatoire pour un apprenant sans entreprise');
+    } else {
+      throw new DomainError('INVARIANT_VIOLATION', 'Une inscription a soit une entreprise et un agrément, soit un payeur désigné');
+    }
     return new Enrollment({
       id: input.id,
       sessionId: input.sessionId,
       learnerId: input.learnerId,
       companyId: input.companyId,
       approvalId: input.approvalId,
+      payer,
       chargedAmount: input.chargedAmount,
       status: 'PENDING',
       comment: optionalText(input.comment, 'Le commentaire', 500),
@@ -88,8 +127,10 @@ export class Enrollment extends AggregateRoot {
   get id(): string { return this.props.id; }
   get sessionId(): string { return this.props.sessionId; }
   get learnerId(): string { return this.props.learnerId; }
-  get companyId(): string { return this.props.companyId; }
-  get approvalId(): string { return this.props.approvalId; }
+  get companyId(): string | null { return this.props.companyId; }
+  get approvalId(): string | null { return this.props.approvalId; }
+  /** Qui règle les frais (apprenant sans entreprise) ; absent quand un agrément couvre l'inscription. */
+  get payer(): EnrollmentPayer | null { return this.props.payer; }
   get chargedAmount(): string | null { return this.props.chargedAmount; }
   get status(): EnrollmentStatus { return this.props.status; }
   get comment(): string | null { return this.props.comment; }

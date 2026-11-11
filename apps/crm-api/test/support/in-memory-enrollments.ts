@@ -35,20 +35,22 @@ export class InMemoryLearners implements LearnerRepository {
 
   async save(learner: Learner) { if (!this.items.includes(learner)) this.items.push(learner); }
   async findById(id: string) { return this.items.find((l) => l.id === id && !l.deleted) ?? null; }
-  async findDuplicates(input: { companyId: string; nameKey: string; emailKey: string | null; excludeId?: string }) {
+  async findDuplicates(input: { companyId: string | null; nameKey: string; emailKey: string | null; excludeId?: string }) {
     return this.items.filter(
-      (l) => !l.deleted && l.companyId === input.companyId && l.id !== input.excludeId && (l.nameKey === input.nameKey || (input.emailKey !== null && l.emailKey === input.emailKey)),
+      (l) => !l.deleted && l.companyId === input.companyId && (input.companyId !== null || l.isIndividual) && l.id !== input.excludeId && (l.nameKey === input.nameKey || (input.emailKey !== null && l.emailKey === input.emailKey)),
     );
   }
   async list(query: LearnerListQuery) {
     const rows = this.items
       .filter((l) => !l.deleted)
       .filter((l) => !query.companyId || l.companyId === query.companyId)
-      .filter((l) => !query.companyIds || query.companyIds.includes(l.companyId))
+      .filter((l) => !query.kind || l.kind === query.kind)
+      .filter((l) => !query.companyIds || (l.companyId !== null && query.companyIds.includes(l.companyId)))
       .filter((l) => !query.search || l.fullName.toLowerCase().includes(query.search.toLowerCase()));
     return pageOf(rows, query);
   }
   async namesOf(ids: readonly string[]) { return new Map(this.items.filter((l) => ids.includes(l.id)).map((l) => [l.id, l.fullName])); }
+  async kindsOf(ids: readonly string[]) { return new Map(this.items.filter((l) => ids.includes(l.id)).map((l) => [l.id, l.kind] as const)); }
 }
 
 /** Dépôt en mémoire des inscriptions. */
@@ -89,7 +91,7 @@ export class InMemoryEnrollments implements EnrollmentRepository {
       .filter((e) => !query.learnerId || e.learnerId === query.learnerId)
       .filter((e) => !query.companyId || e.companyId === query.companyId)
       .filter((e) => !query.status || e.status === query.status)
-      .filter((e) => !query.companyIds || query.companyIds.includes(e.companyId));
+      .filter((e) => !query.companyIds || (e.companyId !== null && query.companyIds.includes(e.companyId)));
     return pageOf(rows, query);
   }
 }

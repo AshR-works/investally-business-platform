@@ -8,7 +8,7 @@ import { EntityLink } from '../../../../../components/entity-link';
 import { EntitySheet, SheetState, useEntity } from '../../../../../components/entity-sheet';
 import { api } from '../../../../../lib/api';
 import { useAuth } from '../../../../../lib/auth-context';
-import { type Enrollment, ENROLLMENT_PERMISSIONS, ENROLLMENT_STATUS, type Learner } from '../../../../../lib/enrollments';
+import { type Enrollment, ENROLLMENT_PERMISSIONS, ENROLLMENT_STATUS, LEARNER_KIND_LABEL, type Learner } from '../../../../../lib/enrollments';
 import { formatDate } from '../../../../../lib/format';
 import { can } from '../../../../../lib/permissions';
 import { dateText } from '../../../../../lib/sessions';
@@ -36,7 +36,7 @@ export default function LearnerSheetPage() {
       listHref="/training/learners"
       listLabel="Tous les apprenants"
       facts={[
-        { label: 'Entreprise', value: can(profile, 'bd.company.read') ? <EntityLink kind="company" id={learner.companyId} label={learner.companyName}>{learner.companyName}</EntityLink> : learner.companyName },
+        { label: 'Entreprise', value: learner.companyId === null ? `Aucune (${LEARNER_KIND_LABEL[learner.kind].toLowerCase()})` : can(profile, 'bd.company.read') ? <EntityLink kind="company" id={learner.companyId} label={learner.companyName}>{learner.companyName}</EntityLink> : learner.companyName },
         { label: 'E-mail', value: <MailLink email={learner.email} /> },
         { label: 'Téléphone', value: learner.phone ?? '—' },
         { label: 'Créé le', value: formatDate(learner.createdAt) },
