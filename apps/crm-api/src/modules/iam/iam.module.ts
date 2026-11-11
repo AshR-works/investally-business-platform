@@ -6,6 +6,7 @@ import { IssuePasswordResetUseCase, RequestPasswordResetUseCase, ResetPasswordUs
 import { AcceptInvitationUseCase, InviteUserUseCase, ResendInvitationUseCase } from './application/admin/invitations.use-cases';
 import { ListOwnSessionsHandler, LoginHistoryHandler, RevokeOtherSessionsUseCase, RevokeSessionUseCase, RevokeUserSessionsUseCase } from './application/admin/session-management.use-cases';
 import { AssignRolesUseCase, SetUserStatusUseCase, UpdateUserUseCase } from './application/admin/user-management.use-cases';
+import { ADMIN_EXPORT_READER, ExportAdminDataHandler } from './application/admin/admin-exports';
 import { GetUserHandler, ListRolesHandler, ListUsersHandler } from './application/admin/user-queries';
 import { ROLE_CATALOG_READER } from './application/admin/user-view';
 import { AuthenticateAccessTokenUseCase } from './application/authenticate-access-token.use-case';
@@ -31,6 +32,7 @@ import { Argon2PasswordHasher } from './infrastructure/argon2-password-hasher';
 import { CryptoRecoveryCodeGenerator, CryptoTotpGenerator } from './infrastructure/crypto-generators';
 import { PrismaRecoveryCodeRepository } from './infrastructure/prisma-recovery-code.repository';
 import { Es256AccessTokenService } from './infrastructure/es256-access-token.service';
+import { PrismaAdminExportReader } from './infrastructure/prisma-admin-export.reader';
 import { PrismaGrantReader, PrismaRoleCatalogReader } from './infrastructure/prisma-grant-reader.repository';
 import { PrismaInvitationRepository } from './infrastructure/prisma-invitation.repository';
 import { PrismaLoginAttemptRepository } from './infrastructure/prisma-login-attempt.repository';
@@ -40,6 +42,7 @@ import { PrismaSessionRepository } from './infrastructure/prisma-session.reposit
 import { PrismaUserRepository } from './infrastructure/prisma-user.repository';
 import { Sha256RefreshTokenFactory } from './infrastructure/sha256-refresh-token-factory';
 import { AccessTokenGuard } from './presentation/access-token.guard';
+import { AdminExportsController } from './presentation/admin-exports.controller';
 import { AdminRolesController, AdminUsersController, SessionsController } from './presentation/admin.controllers';
 import { AuthController } from './presentation/auth.controller';
 import { PermissionGuard } from './presentation/protected.decorator';
@@ -48,7 +51,7 @@ import { RequireMfaGuard, RequireRecentMfaGuard } from './presentation/mfa.guard
 /** Composition root du module Identity & Access. */
 @Module({
   imports: [AuditModule, NotificationsModule],
-  controllers: [AuthController, AdminUsersController, AdminRolesController, SessionsController],
+  controllers: [AuthController, AdminUsersController, AdminRolesController, SessionsController, AdminExportsController],
   providers: [
     CreateUserUseCase, LoginUseCase, RefreshSessionUseCase, LogoutUseCase, ChangePasswordUseCase,
     AuthenticateAccessTokenUseCase, SessionTokenService, AccessTokenGuard, RequireMfaGuard, RequireRecentMfaGuard,
@@ -57,6 +60,8 @@ import { RequireMfaGuard, RequireRecentMfaGuard } from './presentation/mfa.guard
     ListUsersHandler, GetUserHandler, ListRolesHandler, ListOwnSessionsHandler, RevokeSessionUseCase, RevokeUserSessionsUseCase, RevokeOtherSessionsUseCase, LoginHistoryHandler,
     { provide: GRANT_READER, useClass: PrismaGrantReader },
     { provide: ROLE_CATALOG_READER, useClass: PrismaRoleCatalogReader },
+    { provide: ADMIN_EXPORT_READER, useClass: PrismaAdminExportReader },
+    ExportAdminDataHandler,
     { provide: INVITATION_REPOSITORY, useClass: PrismaInvitationRepository },
     { provide: INVITATION_TOKEN_FACTORY, useClass: Sha256RefreshTokenFactory },
     StartMfaEnrollmentUseCase, ConfirmMfaEnrollmentUseCase, VerifyMfaUseCase, RegenerateRecoveryCodesUseCase, ResetMfaUseCase,

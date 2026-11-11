@@ -25,6 +25,7 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <p><em>Générée depuis la description OpenAPI réelle (<code>docs/api/openapi.json</code>) par <code>scripts/api-docs/build-postman.mjs</code> : ne pas modifier à la main.</em></p>
 <h2>admin</h2>
 <div class="table-wrap"><table><thead><tr><th>Méthode</th><th>Chemin</th><th>Résumé</th><th>Permission</th><th>Succès</th></tr></thead><tbody>
+<tr><td>GET</td><td><code>/admin/exports/{kind}</code></td><td>Télécharger un export d’administration (CSV)</td><td><code>iam.export.read</code> + step-up</td><td>200</td></tr>
 <tr><td>GET</td><td><code>/admin/roles</code></td><td></td><td><code>iam.role.read</code></td><td>200</td></tr>
 <tr><td>GET</td><td><code>/admin/users</code></td><td></td><td><code>iam.user.read</code></td><td>200</td></tr>
 <tr><td>POST</td><td><code>/admin/users</code></td><td></td><td><code>iam.user.create</code> + step-up</td><td>201</td></tr>
@@ -278,4 +279,4 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td>PUT</td><td><code>/trainings/{id}</code></td><td></td><td><code>training.training.update</code></td><td>200</td></tr>
 <tr><td>POST</td><td><code>/trainings/{id}/status</code></td><td></td><td><code>training.training.update</code></td><td>200</td></tr>
 </tbody></table></div>
-<p><em>180 routes.</em></p></main></body></html>
+<p><em>181 routes.</em></p></main></body></html>

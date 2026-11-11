@@ -116,3 +116,9 @@ export class LoginHistoryQueryDto {
   @IsOptional() @IsISO8601({ strict: true })
   before?: string;
 }
+
+/** Période d'un export de sessions : de 1 à 365 jours (90 par défaut). Sans effet sur les autres exports. */
+export class AdminExportQueryDto {
+  @ApiPropertyOptional({ minimum: 1, maximum: 365, default: 90, description: 'Sessions des N derniers jours (export « sessions » seulement)' }) @IsOptional() @Type(() => Number) @IsInt() @Min(1) @Max(365)
+  days?: number;
+}

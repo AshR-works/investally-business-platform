@@ -103,8 +103,8 @@
     {
       "nom": "01 — Sécurité : sans jeton, toute route protégée refuse",
       "description": null,
-      "requetes": 173,
-      "assertions": 346,
+      "requetes": 174,
+      "assertions": 348,
       "detail": [
         {
           "nom": "POST /auth/logout",
@@ -463,6 +463,21 @@
           "protegee": true,
           "succesAttendus": [
             204
+          ],
+          "corps": null,
+          "tests": [
+            "Sans jeton : refusé (401)",
+            "Réponse « problem details »"
+          ]
+        },
+        {
+          "nom": "GET /admin/exports/{kind}",
+          "methode": "GET",
+          "chemin": "/api/v1/admin/exports/{kind}",
+          "permission": "iam.export.read",
+          "protegee": true,
+          "succesAttendus": [
+            200
           ],
           "corps": null,
           "tests": [
@@ -3237,9 +3252,32 @@
     {
       "nom": "10 — admin",
       "description": null,
-      "requetes": 12,
-      "assertions": 84,
+      "requetes": 13,
+      "assertions": 94,
       "detail": [
+        {
+          "nom": "GET /admin/exports/{kind} — Télécharger un export d’administration (CSV)",
+          "methode": "GET",
+          "chemin": "/api/v1/admin/exports/{kind}",
+          "permission": "iam.export.read",
+          "protegee": true,
+          "succesAttendus": [
+            200
+          ],
+          "corps": null,
+          "tests": [
+            "Pas d’erreur serveur (statut inférieur à 500)",
+            "Le jeton est accepté (pas de 401)",
+            "Statut prévu (succès documenté ou refus métier standard)",
+            "Temps de réponse raisonnable (moins de 3 s)",
+            "Fichier CSV (text/csv)",
+            "Téléchargement forcé (attachment)",
+            "Jamais mis en cache",
+            "Marque d’ordre des octets (BOM) et séparateur « ; »",
+            "Erreur au format « problem details » (RFC 7807)",
+            "Statut de succès documenté"
+          ]
+        },
         {
           "nom": "GET /admin/roles",
           "methode": "GET",
@@ -7175,8 +7213,8 @@
   ],
   "resume": {
     "dossiers": 31,
-    "requetes": 383,
-    "testsDefinis": 1645,
+    "requetes": 385,
+    "testsDefinis": 1657,
     "resultatDeReference": "Pile jetable, jeu de démonstration, compte Super administrateur : 373 requêtes, 1 412 assertions exécutées, 0 échec (dossiers 00b et 98 à part : 12 requêtes, 54 assertions, 0 échec)."
   }
 }

@@ -5,7 +5,7 @@
  * - `objet` : l'accès dépend de l'objet visé (propriétaire, équipe). Un acteur qui a la permission mais pas la portée doit
  *   recevoir EXACTEMENT la même réponse que pour un objet inexistant (404). Chaque route de cette catégorie DOIT avoir une
  *   sonde dans `idor-contract.integration.spec.ts`.
- * - `admin` : réservée aux détenteurs d'une permission `iam.user.*`, accordée au seul Super administrateur (portée Tous) ;
+ * - `admin` : réservée aux détenteurs d'une permission `iam.user.*` ou `iam.export.*`, accordée au seul Super administrateur (portée Tous) ;
  *   le test vérifie que personne d'autre ne la détient.
  * - `portee-tous` : agit sur n'importe quel utilisateur avec une permission que d'autres rôles détiennent en portée « propre »
  *   (ex. `iam.session.revoke`) ; la garde doit alors exiger la portée Tous (`minScope: 'ALL'`).
@@ -18,6 +18,7 @@
 export type IdorClass = 'objet' | 'admin' | 'portee-tous' | 'referentiel' | 'lecture-formateur';
 
 export const IDOR_ROUTES: Record<string, IdorClass> = {
+  'GET /admin/exports/:kind': 'admin',
   'GET /companies/:id': 'objet',
   'GET /facilitators/:id': 'objet',
   'GET /companies/:id/export': 'objet',

@@ -8,7 +8,7 @@
 3. **Un écart** : le noter dans la section « Écarts constatés » de la fiche ; il devient un défaut (charte, § 10).
 4. **Mise à jour** : un lot qui modifie un écran met à jour sa fiche d'interface ; la fiche de session d'un nouveau lot est créée à partir de sa recette (`docs/SPRINT-*-RECETTE.md`).
 
-## Fiches d'interface (32)
+## Fiches d'interface (33)
 
 | N° | Écran | Route | Lots | Dernière exécution |
 |---|---|---|---|---|
@@ -44,8 +44,9 @@
 | 30 | [Calendrier d'équipe](interfaces/30-calendrier-d-equipe.md) | `/hr/leave/calendar` | RH-2b, RH-2c | |
 | 31 | [Soldes de congé](interfaces/31-soldes-de-conge.md) | `/hr/leave/balances` | RH-2b, RH-2c | |
 | 32 | [Paramètres des congés](interfaces/32-parametres-des-conges.md) | `/hr/leave/settings` | RH-2b, RH-2c | |
+| 33 | [Exports d'administration](interfaces/33-exports-d-administration.md) | `/admin/exports` | Lot C | |
 
-## Fiches de session (38)
+## Fiches de session (39)
 
 | Session | Intitulé | Étiquette | Vérifications | Dernière exécution |
 |---|---|---|---|---|
@@ -88,6 +89,7 @@
 | [rh-1](sessions/rh-1.md) | RH-1 — annuaire du personnel (RH légère) | — | 12 | |
 | [rh-2](sessions/rh-2.md) | RH-2 — absences et congés | `rh-2a-validated`, `rh-2b-validated` | 12 | |
 | [lot-b](sessions/lot-b.md) | Lot B — apprenant étudiant ou particulier | `lot-b-validated` | 11 | |
+| [lot-c](sessions/lot-c.md) | Lot C — exports d'administration | `lot-c-validated` | 10 | |
 
 ## Remarques
 - Les fiches de session sont **dérivées des recettes** : en cas de doute, la recette fait foi. Celles des premiers sprints (S1 à S3.5) sont surtout des tests automatisés ; leurs « vérifications » rappellent ce que chaque contrôle prouve.

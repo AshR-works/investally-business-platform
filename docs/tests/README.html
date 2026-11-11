@@ -25,7 +25,7 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <p><em>Application de la <a href="../CHARTE-DE-TESTS.html">charte de tests</a> : une fiche par <strong>interface</strong> (écran) et une fiche par <strong>session</strong> (lot). Elles servent à la recette utilisateur et à la non-régression.</em></p>
 <h2>Comment s'en servir</h2>
 <ol><li><strong>Avant une validation</strong> : ouvrir les fiches de la session et des écrans concernés, les rejouer avec les rôles indiqués, cocher, dater, signer.</li><li><strong>Après un changement d'écran</strong> : rejouer sa fiche d'interface en entier (non-régression).</li><li><strong>Un écart</strong> : le noter dans la section « Écarts constatés » de la fiche ; il devient un défaut (charte, § 10).</li><li><strong>Mise à jour</strong> : un lot qui modifie un écran met à jour sa fiche d'interface ; la fiche de session d'un nouveau lot est créée à partir de sa recette (<code>docs/SPRINT-*-RECETTE.md</code>).</li></ol>
-<h2>Fiches d'interface (32)</h2>
+<h2>Fiches d'interface (33)</h2>
 <div class="table-wrap"><table><thead><tr><th>N°</th><th>Écran</th><th>Route</th><th>Lots</th><th>Dernière exécution</th></tr></thead><tbody>
 <tr><td>01</td><td><a href="interfaces/01-connexion.html">Connexion</a></td><td><code>/login</code></td><td>S3.1, S3.4, H2a, S3.7</td><td></td></tr>
 <tr><td>02</td><td><a href="interfaces/02-second-facteur.html">Second facteur (MFA)</a></td><td><code>/mfa</code></td><td>S3.2, S3.4, H2a, S3.7</td><td></td></tr>
@@ -59,8 +59,9 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td>30</td><td><a href="interfaces/30-calendrier-d-equipe.html">Calendrier d'équipe</a></td><td><code>/hr/leave/calendar</code></td><td>RH-2b, RH-2c</td><td></td></tr>
 <tr><td>31</td><td><a href="interfaces/31-soldes-de-conge.html">Soldes de congé</a></td><td><code>/hr/leave/balances</code></td><td>RH-2b, RH-2c</td><td></td></tr>
 <tr><td>32</td><td><a href="interfaces/32-parametres-des-conges.html">Paramètres des congés</a></td><td><code>/hr/leave/settings</code></td><td>RH-2b, RH-2c</td><td></td></tr>
+<tr><td>33</td><td><a href="interfaces/33-exports-d-administration.html">Exports d'administration</a></td><td><code>/admin/exports</code></td><td>Lot C</td><td></td></tr>
 </tbody></table></div>
-<h2>Fiches de session (38)</h2>
+<h2>Fiches de session (39)</h2>
 <div class="table-wrap"><table><thead><tr><th>Session</th><th>Intitulé</th><th>Étiquette</th><th>Vérifications</th><th>Dernière exécution</th></tr></thead><tbody>
 <tr><td><a href="sessions/s1.html">s1</a></td><td>Sprint 1 — Plan de recette (validation avant clôture)</td><td><code>s1-validated</code></td><td>29</td><td></td></tr>
 <tr><td><a href="sessions/s2.html">s2</a></td><td>Sprint 2 — Plan de recette (Sécurité et données Core du CRM)</td><td><code>s2-validated</code></td><td>27</td><td></td></tr>
@@ -101,6 +102,7 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td><a href="sessions/rh-1.html">rh-1</a></td><td>RH-1 — annuaire du personnel (RH légère)</td><td>—</td><td>12</td><td></td></tr>
 <tr><td><a href="sessions/rh-2.html">rh-2</a></td><td>RH-2 — absences et congés</td><td><code>rh-2a-validated</code>, <code>rh-2b-validated</code></td><td>12</td><td></td></tr>
 <tr><td><a href="sessions/lot-b.html">lot-b</a></td><td>Lot B — apprenant étudiant ou particulier</td><td><code>lot-b-validated</code></td><td>11</td><td></td></tr>
+<tr><td><a href="sessions/lot-c.html">lot-c</a></td><td>Lot C — exports d'administration</td><td><code>lot-c-validated</code></td><td>10</td><td></td></tr>
 </tbody></table></div>
 <h2>Remarques</h2>
 <ul><li>Les fiches de session sont <strong>dérivées des recettes</strong> : en cas de doute, la recette fait foi. Celles des premiers sprints (S1 à S3.5) sont surtout des tests automatisés ; leurs « vérifications » rappellent ce que chaque contrôle prouve.</li><li>Les fiches d'interface ne couvrent que les écrans <strong>existants</strong> ; les modules à venir (Formation, Finance, RH, Fiscalité, Stocks, Reporting, Sécurité) n'ont pas encore de fiche.</li><li>Les captures et résultats d'accessibilité sont dans <code>docs/accessibilite/</code>.</li></ul></main></body></html>

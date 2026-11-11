@@ -6,6 +6,7 @@
 
 | Méthode | Chemin | Résumé | Permission | Succès |
 |---|---|---|---|---|
+| GET | `/admin/exports/{kind}` | Télécharger un export d’administration (CSV) | `iam.export.read` + step-up | 200 |
 | GET | `/admin/roles` |  | `iam.role.read` | 200 |
 | GET | `/admin/users` |  | `iam.user.read` | 200 |
 | POST | `/admin/users` |  | `iam.user.create` + step-up | 201 |
@@ -307,4 +308,4 @@
 | PUT | `/trainings/{id}` |  | `training.training.update` | 200 |
 | POST | `/trainings/{id}/status` |  | `training.training.update` | 200 |
 
-*180 routes.*
+*181 routes.*
