@@ -1,0 +1,43 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>RH-2c — absences et congés (recette, mutants, fiches de test) : recette</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="INDEX.html">Index</a> · <a href="GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="ARCHITECTURE.html">Architecture</a> · <a href="SECURITY.html">Sécurité</a> · <a href="METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="TECH-DEBT.html">Dette</a> · <a href="CHARTE-DE-TESTS.html">Charte de tests</a> · <a href="tests/README.html">Fiches de test</a> · <a href="design/README.html">Design</a> · <a href="livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>RH-2c — absences et congés (recette, mutants, fiches de test) : recette</h1>
+<p><em>Branche <code>sprint/rh-2c-recette</code> · 2026-11-11 · décision D64, cadrage <a href="cadrages/CADRAGE-RH-COMPLETE.html">CADRAGE-RH-COMPLETE</a>, suite de <a href="SPRINT-RH-2A-RECETTE.html">RH-2a</a> et <a href="SPRINT-RH-2B-RECETTE.html">RH-2b</a> · <strong>aucun changement de comportement</strong> : ce lot éprouve ce qui est livré.</em></p>
+<h2>Ce qui est livré</h2>
+<div class="table-wrap"><table><thead><tr><th>Demande</th><th>Réponse</th></tr></thead><tbody>
+<tr><td><strong>Mutants de l'interface</strong></td><td><code>scripts/mutants/rh2b-conges-ecrans.py</code> : <strong>109 fautes plausibles</strong> dans la logique des écrans de congés (<code>lib/leave.ts</code>) et dans les entrées de menu (<code>lib/modules.ts</code>) : formats de date, durées, calendrier et demi-journées, validation de la demande, de l'ajustement, des règles, des types et des jours fériés, annulation, états, filtres, droits des onglets et du menu</td></tr>
+<tr><td><strong>Tests ajoutés</strong></td><td><code>test/leave.test.ts</code> passe de 20 à <strong>48 tests</strong> : un test par survivant, avec les <strong>bornes</strong> (500 caractères, 60 jours, 5 jours par mois, 0,5 et 365 jours de plafond, 10 000 d'ordre, 30 caractères de code) et les <strong>messages exacts</strong> ; un test d'accord entre les onglets (<code>LEAVE_PAGES</code>) et le menu (<code>MODULES</code>) : même chemin, même droit, même portée</td></tr>
+<tr><td><strong>Fiches de test</strong></td><td><strong>Cinq fiches d'écran</strong> (28 à 32 : Mes absences, Absences à valider, Calendrier d'équipe, Soldes de congé, Paramètres des congés) et la <strong>fiche de session RH-2</strong> (12 vérifications), au format de la charte de tests ; index <code>docs/tests/README.md</code> mis à jour (32 écrans, 37 sessions)</td></tr>
+</tbody></table></div>
+<h2>Preuves</h2>
+<div class="table-wrap"><table><thead><tr><th>Contrôle</th><th>Résultat</th></tr></thead><tbody>
+<tr><td>Mutants de l'interface</td><td><strong>109 sur 109 tués</strong>. Premier passage : 59 sur 110, <strong>51 survivants</strong>, tous rejoués et tués après ajout de tests ; un mutant (<strong>A19</strong>, remplissage à deux chiffres de la fin de mois) est <strong>équivalent</strong> — une fin de mois fait toujours au moins 28 jours, le remplissage est sans effet — et a été retiré</td></tr>
+<tr><td>Tests de l'interface</td><td><code>tsc</code> propre ; <strong>750 tests réussis</strong> (38 fichiers), dont 48 pour les congés</td></tr>
+<tr><td>Contrôle des anomalies d'outillage</td><td>Une première passe a été <strong>corrompue</strong> par deux exécutions simultanées des mutants (résultats « motif introuvable ») ; elle a été <strong>arrêtée, les sources restaurées depuis Git, et rejouée une seule fois</strong> : seul le bilan de cette passe fait foi</td></tr>
+</tbody></table></div>
+<h2>Ce que ces mutants révèlent</h2>
+<p>Les 51 survivants du premier passage étaient presque tous des <strong>bornes et des messages</strong>, pas des erreurs de logique : un test qui vérifiait « un message existe » laissait passer un message faux, un test d'un cas valide laissait passer une limite décalée d'un cran. Les règles de menu et de portée (« les soldes ne sont réservés qu'à la portée Tous ») n'étaient testées que pour un profil sans droit de gestion : aucun test n'essayait quelqu'un qui gère en portée Propre.</p>
+<h2>Ce qui n'est pas fait (à dire clairement)</h2>
+<ul><li><strong>Aucun audit d'accessibilité dans un navigateur (axe)</strong> des cinq écrans : seul un contrôle visuel de RH-2b a eu lieu. Les cases d'accessibilité des fiches de test sont <strong>à cocher</strong> par la personne qui les rejoue. À planifier (le script <code>scripts/a11y-audit.mjs</code> n'a pas non plus de parcours pour les écrans de personnel).</li><li><strong>Aucun test d'interface automatisé au niveau des composants</strong> : l'interface n'a pas de bibliothèque de test de composants ; les pages, boîtes de dialogue et le tableau du calendrier ne sont couverts que par la logique de <code>lib/leave.ts</code>, les tests de l'API et le contrôle visuel. Les mutants ne portent donc <strong>pas</strong> sur les fichiers <code>.tsx</code>.</li><li><strong>Mode sombre, 1280 et 1920 px, parcours au clavier</strong> : toujours à contrôler (comme pour le Lot A et RH-2b).</li><li><strong>Mutants de l'API</strong> : déjà faits pour RH-2a (126 sur 126) ; le défaut du solde corrigé dans RH-2b n'y avait pas été détecté ; son mutant n'a pas été ajouté à <code>rh2a-conges.py</code> dans ce lot.</li></ul>
+<h2>Comment vérifier</h2>
+<ol><li>Rejouer les mutants : <code>python scripts/mutants/rh2b-conges-ecrans.py</code> (environ 12 minutes ; <code>DRY=1</code> vérifie seulement les motifs). <strong>Ne jamais lancer deux exécutions à la fois</strong> : le script modifie les fichiers puis les restaure.</li><li>Rejouer les fiches <code>docs/tests/interfaces/28…32</code> et la fiche de session <code>docs/tests/sessions/rh-2.md</code> avec le jeu de démonstration (<code>node scripts/local-stack.mjs --demo</code>).</li></ol></main></body></html>

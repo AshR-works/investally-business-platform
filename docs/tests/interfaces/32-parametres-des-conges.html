@@ -1,0 +1,57 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fiche de test — Paramètres des congés</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="../../INDEX.html">Index</a> · <a href="../../GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="../../ARCHITECTURE.html">Architecture</a> · <a href="../../SECURITY.html">Sécurité</a> · <a href="../../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../../QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="../../TECH-DEBT.html">Dette</a> · <a href="../../CHARTE-DE-TESTS.html">Charte de tests</a> · <a href="../../tests/README.html">Fiches de test</a> · <a href="../../design/README.html">Design</a> · <a href="../../livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>Fiche de test — Paramètres des congés</h1>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td><strong>Route</strong></td><td><code>/hr/leave/settings</code></td></tr>
+<tr><td><strong>Livrée par</strong></td><td>RH-2b (recette et mutants : RH-2c)</td></tr>
+<tr><td><strong>Accès</strong></td><td>Utilisateur qui détient <code>hr.leave.manage</code> <strong>en portée Tous</strong> (RH, Super administrateur) : menu Ressources humaines › Paramètres des congés.</td></tr>
+<tr><td><strong>Droits</strong></td><td><strong>Modifier les règles, les types d'absence et les jours fériés</strong> : RH et Super administrateur seulement ; chaque changement est audité. Les valeurs de départ sont « à confirmer » (D64).</td></tr>
+<tr><td><strong>Rôles de test</strong></td><td>rh, sa, cc</td></tr>
+</tbody></table></div>
+<p><em>Fiche d'interface de la <a href="../../CHARTE-DE-TESTS.html">charte de tests</a>. À rejouer à chaque changement de l'écran. Cocher, dater, signer ; tout écart devient un défaut.</em></p>
+<h2>Préconditions</h2>
+<p>Pile locale réinitialisée : règles de départ (1,5 jour par mois, lundi au vendredi, demi-journées permises, solde négatif interdit), cinq types d'absence, aucun jour férié.</p>
+<h2>Scénarios</h2>
+<div class="table-wrap"><table><thead><tr><th>N°</th><th>Scénario</th><th>Étapes</th><th>Résultat attendu</th><th>Constaté (✔ / ✘)</th><th>Date et initiales</th></tr></thead><tbody>
+<tr><td>1</td><td><strong>Règles de départ</strong></td><td>Ouvrir la page.</td><td>1,5 jour par mois, « Soit 18 jours par an » ; demi-journées cochées ; samedi et solde négatif décochés.</td><td>☐</td><td></td></tr>
+<tr><td>2</td><td><strong>Modifier les règles</strong></td><td>Passer à 2,5 jours par mois ; enregistrer.</td><td>Message « Les règles sont enregistrées » ; le total annuel passe à 30 jours ; les soldes de l'écran « Soldes » changent en conséquence.</td><td>☐</td><td></td></tr>
+<tr><td>3</td><td><strong>Règles refusées</strong></td><td>Saisir 6, puis -1, puis 1,505, puis vide.</td><td>Chaque cas est refusé avec son message (de 0 à 5, deux décimales, nombre obligatoire) ; rien n'est enregistré.</td><td>☐</td><td></td></tr>
+<tr><td>4</td><td><strong>Conflit de version</strong></td><td>Ouvrir la page dans deux onglets ; enregistrer dans les deux.</td><td>Le second reçoit « Les règles de congés ont été modifiées… ».</td><td>☐</td><td></td></tr>
+<tr><td>5</td><td><strong>Samedi et demi-journées</strong></td><td>Cocher « Le samedi compte » ; décocher les demi-journées ; faire une demande.</td><td>Le samedi est décompté ; les cases de demi-journée disparaissent du formulaire de demande.</td><td>☐</td><td></td></tr>
+<tr><td>6</td><td><strong>Nouveau type</strong></td><td>« Nouveau type » ; code en minuscules, puis valide (par exemple ÉTUDE → STUDY), libellé, plafond 2.</td><td>Code refusé s'il n'est pas en majuscules, chiffres et tiret bas (30 au plus) ; un type valide apparaît dans la liste et dans les demandes ; un code déjà pris est refusé.</td><td>☐</td><td></td></tr>
+<tr><td>7</td><td><strong>Plafond</strong></td><td>Fixer 3 jours à un type ; demander 4 jours.</td><td>La demande est refusée par le serveur (« limité à 3 jour(s) par demande »).</td><td>☐</td><td></td></tr>
+<tr><td>8</td><td><strong>Désactiver un type</strong></td><td>Menu de ligne › Modifier ; décocher « Actif ».</td><td>Le type reste dans la liste (« Désactivé ») mais n'est plus proposé dans les demandes ; les demandes passées le gardent.</td><td>☐</td><td></td></tr>
+<tr><td>9</td><td><strong>Jour férié</strong></td><td>« Ajouter » ; une date et un libellé ; puis « Retirer ».</td><td>Le jour apparaît avec son jour de semaine ; il n'est plus décompté dans les demandes ni compté dans le calendrier ; deux jours fériés à la même date sont refusés ; le retrait fonctionne.</td><td>☐</td><td></td></tr>
+<tr><td>10</td><td><strong>Droit insuffisant</strong></td><td>Avec <code>compte1</code>, ouvrir l'adresse de la page.</td><td>Message « Les règles des absences et congés sont réservées à la RH » ; l'entrée n'est pas dans le menu.</td><td>☐</td><td></td></tr>
+</tbody></table></div>
+<h2>Accessibilité</h2>
+<ul><li>☐ Clavier seul : Tab et Maj+Tab parcourent tous les contrôles dans un ordre logique ; le focus est toujours visible ; aucun piège de focus hors fenêtre modale.</li><li>☐ Un seul titre de niveau 1 ; pas de saut de niveau (h2 avant h3).</li><li>☐ Chaque champ a un libellé relié ; un champ non conforme est en surbrillance <strong>et</strong> accompagné d'un message écrit relié (<code>aria-describedby</code>), jamais la couleur seule.</li><li>☐ Les messages d'état et d'erreur sont annoncés (<code>role=alert</code> ou <code>role=status</code>).</li><li>☐ Fenêtres modales : le focus entre dans la fenêtre, Échap la ferme, le focus revient à l'élément d'origine, l'arrière-plan est inerte.</li><li>☐ Lisible à 200 % de zoom et à 375 px de large, sans défilement horizontal de la page (le calendrier défile dans son cadre).</li><li>☐ La barre d'onglets « Absences et congés » annonce l'écran courant (<code>aria-current=page</code>).</li><li>☐ Aucune information n'est portée par la couleur seule : l'état d'une demande est écrit, une demi-journée est dite par un symbole <strong>et</strong> par du texte.</li></ul>
+<h2>Tests automatisés qui couvrent cet écran</h2>
+<ul><li>API : <code>hr-leave-http.integration</code> (paramétrage, 24 règles de la base, verrou optimiste), <code>leave-use-cases.spec</code> (types, règles, jours fériés, audit) ; Web : <code>leave.test</code> (règles, types, jours fériés), mutants de RH-2c</li></ul>
+<h2>Limites connues</h2>
+<ul><li>Aucun jour férié n'est présumé : la liste est à la charge de la RH (D172).</li><li>Un type ne se supprime pas : il se désactive.</li></ul>
+<h2>Écarts constatés</h2>
+<div class="table-wrap"><table><thead><tr><th>Date</th><th>Scénario</th><th>Description</th><th>Défaut ouvert (D…)</th></tr></thead><tbody>
+<tr><td></td><td></td><td></td><td></td></tr>
+</tbody></table></div></main></body></html>

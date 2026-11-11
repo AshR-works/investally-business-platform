@@ -1,0 +1,59 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fiche de test — Mes absences</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="../../INDEX.html">Index</a> · <a href="../../GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="../../ARCHITECTURE.html">Architecture</a> · <a href="../../SECURITY.html">Sécurité</a> · <a href="../../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../../QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="../../TECH-DEBT.html">Dette</a> · <a href="../../CHARTE-DE-TESTS.html">Charte de tests</a> · <a href="../../tests/README.html">Fiches de test</a> · <a href="../../design/README.html">Design</a> · <a href="../../livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>Fiche de test — Mes absences</h1>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td><strong>Route</strong></td><td><code>/hr/leave</code></td></tr>
+<tr><td><strong>Livrée par</strong></td><td>RH-2b (recette et mutants : RH-2c)</td></tr>
+<tr><td><strong>Accès</strong></td><td>Tout utilisateur qui détient <code>hr.leave.read</code> : menu Ressources humaines › Mes absences (et l'onglet « Mes absences » des écrans de congés).</td></tr>
+<tr><td><strong>Droits</strong></td><td><strong>Lire ses demandes et son solde</strong> : tout employé (portée Propre). <strong>Demander</strong> : tout employé dont le compte est lié à une fiche ; la RH peut aussi saisir <strong>pour un autre</strong> (validée d'emblée) et dans le passé. <strong>Annuler</strong> : l'employé (demande en attente, ou validée qui n'a pas commencé, avec motif) ; la RH aussi une absence en cours.</td></tr>
+<tr><td><strong>Rôles de test</strong></td><td>cc, rh, chef, sa</td></tr>
+</tbody></table></div>
+<p><em>Fiche d'interface de la <a href="../../CHARTE-DE-TESTS.html">charte de tests</a>. À rejouer à chaque changement de l'écran. Cocher, dater, signer ; tout écart devient un défaut.</em></p>
+<h2>Préconditions</h2>
+<p>Pile locale avec le jeu de démonstration (blocs « rh » et « conges »). Comptes : <code>compte1@demo…</code> (chargée de compte, une demande en attente), <code>compte2@demo…</code> (trois demandes), <code>rh@demo…</code>. Aucun jour férié n'est saisi au départ.</p>
+<h2>Scénarios</h2>
+<div class="table-wrap"><table><thead><tr><th>N°</th><th>Scénario</th><th>Étapes</th><th>Résultat attendu</th><th>Constaté (✔ / ✘)</th><th>Date et initiales</th></tr></thead><tbody>
+<tr><td>1</td><td><strong>Solde</strong></td><td>Ouvrir la page avec <code>compte1</code>.</td><td>Cinq cartes : Disponible, Acquis, Ajustements, Pris, En attente. Acquis 18 jours (1,5 par mois), En attente 5 jours, Disponible 13 jours (18 − 5).</td><td>☐</td><td></td></tr>
+<tr><td>2</td><td><strong>Historique et filtres</strong></td><td>Filtrer Toutes / En attente / Validées / Refusées / Annulées ; changer l'année.</td><td>Le compteur et le tableau suivent le filtre ; une année sans demande dit « Aucune demande en &lt;année&gt; ».</td><td>☐</td><td></td></tr>
+<tr><td>3</td><td><strong>Demande valide</strong></td><td>« Demander une absence » ; type Congé annuel, deux jours ouvrés dans le futur ; envoyer.</td><td>Message « La demande est enregistrée » ; la ligne apparaît « En attente » ; le solde « En attente » augmente de la durée.</td><td>☐</td><td></td></tr>
+<tr><td>4</td><td><strong>Champs obligatoires</strong></td><td>Envoyer le formulaire vide (type non choisi).</td><td>Le champ « Type d'absence » est en surbrillance avec son message écrit ; rien n'est envoyé.</td><td>☐</td><td></td></tr>
+<tr><td>5</td><td><strong>Passé et fin avant début</strong></td><td>Choisir une date passée, puis une fin antérieure au début.</td><td>Pour un employé : « Une demande dans le passé est réservée à la RH » ; « La date de fin ne peut pas précéder le début » ; la RH peut saisir dans le passé.</td><td>☐</td><td></td></tr>
+<tr><td>6</td><td><strong>Week-ends et jours fériés</strong></td><td>Demander du vendredi au lundi suivant.</td><td>Seuls les jours ouvrés sont décomptés (2 jours) ; une période réduite à un week-end est refusée par le serveur (« Aucun jour décompté »).</td><td>☐</td><td></td></tr>
+<tr><td>7</td><td><strong>Demi-journées</strong></td><td>Cocher « La première journée commence l'après-midi » et/ou « La dernière journée s'arrête à midi ».</td><td>La durée perd une demi-journée par case cochée ; la période est dite « (après-midi) » / « (matin) » ; si la RH interdit les demi-journées, les cases n'apparaissent pas.</td><td>☐</td><td></td></tr>
+<tr><td>8</td><td><strong>Chevauchement</strong></td><td>Redemander une période déjà couverte (même d'une demi-journée).</td><td>Refusé : « Une demande couvre déjà cette période » ; rien n'est créé.</td><td>☐</td><td></td></tr>
+<tr><td>9</td><td><strong>Solde insuffisant</strong></td><td>Demander plus de jours de congé annuel que le solde disponible.</td><td>Refusé : « Solde insuffisant : … » ; une maladie ou une permission n'est jamais refusée pour le solde et ne le consomme pas.</td><td>☐</td><td></td></tr>
+<tr><td>10</td><td><strong>Annuler</strong></td><td>Menu de ligne › Annuler la demande, sur une demande en attente, puis sur une validée.</td><td>En attente : annulée sans motif obligatoire, les jours reviennent au solde. Validée : le motif est obligatoire ; l'action est absente d'une demande refusée ou déjà annulée.</td><td>☐</td><td></td></tr>
+<tr><td>11</td><td><strong>Saisie par la RH</strong></td><td>Avec <code>rh</code>, « Demander une absence » ; choisir un autre employé.</td><td>Le menu « Employé » (Moi-même par défaut) liste les employés en poste ; la mention « validée d'emblée » s'affiche ; la demande est validée dès l'envoi.</td><td>☐</td><td></td></tr>
+<tr><td>12</td><td><strong>Compte sans fiche</strong></td><td>Avec un compte non lié à une fiche employé (par exemple le Super administrateur).</td><td>Message « Aucune fiche employé n'est liée à votre compte » ; pas d'erreur technique ; l'historique est vide.</td><td>☐</td><td></td></tr>
+</tbody></table></div>
+<h2>Accessibilité</h2>
+<ul><li>☐ Clavier seul : Tab et Maj+Tab parcourent tous les contrôles dans un ordre logique ; le focus est toujours visible ; aucun piège de focus hors fenêtre modale.</li><li>☐ Un seul titre de niveau 1 ; pas de saut de niveau (h2 avant h3).</li><li>☐ Chaque champ a un libellé relié ; un champ non conforme est en surbrillance <strong>et</strong> accompagné d'un message écrit relié (<code>aria-describedby</code>), jamais la couleur seule.</li><li>☐ Les messages d'état et d'erreur sont annoncés (<code>role=alert</code> ou <code>role=status</code>).</li><li>☐ Fenêtres modales : le focus entre dans la fenêtre, Échap la ferme, le focus revient à l'élément d'origine, l'arrière-plan est inerte.</li><li>☐ Lisible à 200 % de zoom et à 375 px de large, sans défilement horizontal de la page (le calendrier défile dans son cadre).</li><li>☐ La barre d'onglets « Absences et congés » annonce l'écran courant (<code>aria-current=page</code>).</li><li>☐ Aucune information n'est portée par la couleur seule : l'état d'une demande est écrit, une demi-journée est dite par un symbole <strong>et</strong> par du texte.</li></ul>
+<h2>Tests automatisés qui couvrent cet écran</h2>
+<ul><li>API : <code>hr-leave-http.integration</code> (cycle complet, droits et portée, validations, demandes simultanées), <code>leave-use-cases.spec</code>, <code>leave-calendar.spec</code>, contrat IDOR (routes de demandes) ; Web : <code>leave.test</code> (dates, durées, validation de la demande, annulation, motifs, menu par profil), <code>lib/leave.ts</code> couvert par les mutants de RH-2c ; audit navigateur : voir la recette RH-2c</li></ul>
+<h2>Limites connues</h2>
+<ul><li>Une demande à cheval sur deux années est comptée sur l'année de début (D167) ; « aujourd'hui » se compte en UTC (D168) ; aucune notification au responsable (D169).</li><li>Seul le mode clair est vérifié ; mode sombre, 1280 et 1920 px à contrôler.</li></ul>
+<h2>Écarts constatés</h2>
+<div class="table-wrap"><table><thead><tr><th>Date</th><th>Scénario</th><th>Description</th><th>Défaut ouvert (D…)</th></tr></thead><tbody>
+<tr><td></td><td></td><td></td><td></td></tr>
+</tbody></table></div></main></body></html>

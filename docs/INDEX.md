@@ -65,6 +65,7 @@
 | [V1](SPRINT-V1-DEPLOIEMENT-RECETTE.md) | Déploiement : images, e-mails par Google, publication par domaine, sauvegardes |
 | [RH-2a](SPRINT-RH-2A-RECETTE.md) | Absences et congés (API) |
 | [RH-2b](SPRINT-RH-2B-RECETTE.md) | Absences et congés (écrans et démonstration) |
+| [RH-2c](SPRINT-RH-2C-RECETTE.md) | Absences et congés (recette, mutants, fiches de test) |
 
 ## Design et livrables
 | Document | Contenu |
