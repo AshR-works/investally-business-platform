@@ -65,7 +65,6 @@ function Loading({ title, onClose, error }: { title: string; onClose: () => void
   return (
     <Modal title={title} onClose={onClose}>
       {error ? <p role="alert" className="error">{error}</p> : <p aria-live="polite">Chargement…</p>}
-      <div className="row end"><button type="button" className="secondary" onClick={onClose}>Fermer</button></div>
     </Modal>
   );
 }

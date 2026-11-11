@@ -11,6 +11,7 @@ import { statusStyle } from '../../lib/status';
 import type { Appointment, Company, Contact, Offer, Opportunity, Page } from '../../lib/types';
 import { Badge } from '../data/badge';
 import { FormField, fieldProps } from '../form-field';
+import { IconButton } from '../icon-button';
 import { Modal } from '../modal';
 import { EntityLink } from '../entity-link';
 
@@ -82,7 +83,10 @@ function ConflictNotice({ appointment, onClose }: { appointment: Appointment; on
 
 /** Fiche d'un rendez-vous : tous ses éléments, et les actions possibles selon son état et les droits. */
 function DetailDialog({ appointment: a, rights, onOpen, onClose }: { appointment: Appointment; rights: AgendaRights; onOpen: (d: AppointmentDialogState) => void; onClose: () => void }) {
-  const actions = appointmentActions(a, rights);
+  const allActions = appointmentActions(a, rights);
+  // « Modifier » devient un pictogramme dans l'en-tête, avant la croix ; reporter, tenir et annuler restent en bas, sur une seule ligne.
+  const canEdit = allActions.includes('edit');
+  const actions = allActions.filter((x) => x !== 'edit');
   const status = statusStyle(APPOINTMENT_STATUS, a.status);
   const rows: [string, ReactNode][] = [
     ['Entreprise', <EntityLink key="company" kind="company" id={a.companyId} label={a.companyName}>{a.companyName}</EntityLink>],
@@ -96,7 +100,7 @@ function DetailDialog({ appointment: a, rights, onOpen, onClose }: { appointment
     [a.status === 'HELD' ? 'Compte rendu' : 'Motif d’annulation', a.outcomeNote],
   ];
   return (
-    <Modal title={appointmentTypeLabel(a.type)} onClose={onClose}>
+    <Modal title={appointmentTypeLabel(a.type)} onClose={onClose} size="medium" actions={canEdit ? <IconButton icon="edit" label="Modifier le rendez-vous" onClick={() => onOpen({ kind: 'edit', appointment: a })} /> : undefined}>
       <p className="m-0 mb-3 inline-flex flex-wrap items-center gap-2">
         <Badge tone={status.tone}>{status.label}</Badge>
         {a.reportDue && <Badge tone="warn">Compte rendu attendu</Badge>}
@@ -106,12 +110,13 @@ function DetailDialog({ appointment: a, rights, onOpen, onClose }: { appointment
           <div key={label} className="contents"><dt className="text-ink-2">{label}</dt><dd className="m-0">{value}</dd></div>
         ))}
       </dl>
-      <div className="row end">
-        <button type="button" className="secondary" onClick={onClose}>Fermer</button>
-        {actions.map((action) => (
-          <button key={action} type="button" className={action === 'cancel' ? 'danger' : 'secondary'} onClick={() => onOpen({ kind: action, appointment: a })}>{APPOINTMENT_ACTION_LABEL[action]}</button>
-        ))}
-      </div>
+      {actions.length > 0 && (
+        <div className="actions-line">
+          {actions.map((action) => (
+            <button key={action} type="button" className={action === 'cancel' ? 'danger' : 'secondary'} onClick={() => onOpen({ kind: action, appointment: a })}>{APPOINTMENT_ACTION_LABEL[action]}</button>
+          ))}
+        </div>
+      )}
     </Modal>
   );
 }

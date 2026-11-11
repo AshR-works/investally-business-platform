@@ -209,9 +209,9 @@ function TrainingDialog({ training, programId, onClose, onDone }: { training?: T
                 </ol>
               )}
               {form.moduleIds.length < MAX_MODULES_PER_TRAINING && (
-                <label className="m-0 flex items-center gap-2 font-normal">
+                <label className="field-stack">
                   Ajouter un module
-                  <select value="" onChange={(e) => e.target.value && setIds([...form.moduleIds, e.target.value])} style={{ width: 'auto', marginTop: 0 }}>
+                  <select value="" onChange={(e) => e.target.value && setIds([...form.moduleIds, e.target.value])}>
                     <option value="">— Choisir —</option>
                     {addable.map((m) => <option key={m.id} value={m.id}>{m.title}</option>)}
                   </select>

@@ -13,6 +13,7 @@ import { statusStyle } from '../../lib/status';
 import type { Company, Opportunity, Page } from '../../lib/types';
 import { Badge } from '../data/badge';
 import { FormField, fieldProps } from '../form-field';
+import { IconButton } from '../icon-button';
 import { Modal } from '../modal';
 
 const PREFIX = 'opportunity';
@@ -51,7 +52,10 @@ export function OpportunityDialogs({ dialog, rights, onOpen, onClose, onDone }: 
 /** Fiche : tous les éléments de l'opportunité et les actions possibles selon son état et les droits. */
 function DetailDialog({ opportunity: o, rights, onOpen, onClose }: { opportunity: Opportunity; rights: OpportunityRights; onOpen: (d: OpportunityDialogState) => void; onClose: () => void }) {
   const status = statusStyle(OPPORTUNITY_STATUS, o.status);
-  const actions = opportunityActions(o, rights).filter((a): a is Exclude<OpportunityAction, 'details'> => a !== 'details');
+  const allActions = opportunityActions(o, rights).filter((a): a is Exclude<OpportunityAction, 'details'> => a !== 'details');
+  // « Modifier » devient un pictogramme dans l'en-tête, avant la croix ; les actions de passage et de clôture restent en bas, sur une seule ligne.
+  const canEdit = allActions.includes('edit');
+  const actions = allActions.filter((a) => a !== 'edit');
   const rows: [string, string | null][] = [
     ['Entreprise', o.companyName],
     ['Étape', stageLabel(o.stage)],
@@ -64,7 +68,7 @@ function DetailDialog({ opportunity: o, rights, onOpen, onClose }: { opportunity
     ['Clôturée le', o.closedAt ? formatDate(o.closedAt) : null],
   ];
   return (
-    <Modal title={o.title} onClose={onClose}>
+    <Modal title={o.title} onClose={onClose} size="medium" actions={canEdit ? <IconButton icon="edit" label="Modifier l’opportunité" onClick={() => onOpen({ kind: 'edit', opportunity: o })} /> : undefined}>
       <p className="m-0 mb-3 inline-flex flex-wrap items-center gap-2">
         <Badge tone={status.tone}>{status.label}</Badge>
         {o.status !== 'OPEN' && <span className="text-ink-2">Clôturée : elle ne peut plus être modifiée.</span>}
@@ -74,14 +78,15 @@ function DetailDialog({ opportunity: o, rights, onOpen, onClose }: { opportunity
           <div key={label} className="contents"><dt className="text-ink-2">{label}</dt><dd className="m-0">{value}</dd></div>
         ))}
       </dl>
-      <div className="row end">
-        <button type="button" className="secondary" onClick={onClose}>Fermer</button>
-        {actions.map((action) => (
-          <button key={action} type="button" className={action === 'close-lost' ? 'danger' : 'secondary'} onClick={() => onOpen({ kind: action, opportunity: o })}>
-            {action === 'advance' ? advanceLabel(o.nextStage) : OPPORTUNITY_ACTION_LABEL[action]}
-          </button>
-        ))}
-      </div>
+      {actions.length > 0 && (
+        <div className="actions-line">
+          {actions.map((action) => (
+            <button key={action} type="button" className={action === 'close-lost' ? 'danger' : 'secondary'} onClick={() => onOpen({ kind: action, opportunity: o })}>
+              {action === 'advance' ? advanceLabel(o.nextStage) : OPPORTUNITY_ACTION_LABEL[action]}
+            </button>
+          ))}
+        </div>
+      )}
     </Modal>
   );
 }

@@ -152,7 +152,6 @@ function OfferDocumentsDialog({ offer, onClose }: { offer: Offer; onClose: () =>
     <Modal title={`Documents de l’offre ${offer.reference}`} onClose={onClose} size="wide">
       <p className="m-0 mb-3 text-ink-2">{offer.companyName} · {offer.subject}</p>
       <DocumentsPanel ownerType="offer" ownerId={offer.id} />
-      <div className="row end"><button type="button" className="secondary" onClick={onClose}>Fermer</button></div>
     </Modal>
   );
 }

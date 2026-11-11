@@ -1,0 +1,42 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Lot D — finitions d&#x27;interface (retours du test manuel, correctifs) : recette</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="INDEX.html">Index</a> · <a href="GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="ARCHITECTURE.html">Architecture</a> · <a href="SECURITY.html">Sécurité</a> · <a href="METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="TECH-DEBT.html">Dette</a> · <a href="CHARTE-DE-TESTS.html">Charte de tests</a> · <a href="tests/README.html">Fiches de test</a> · <a href="design/README.html">Design</a> · <a href="livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>Lot D — finitions d'interface (retours du test manuel, correctifs) : recette</h1>
+<p><em>Branche <code>feat/lot-d-finitions-interface</code> · 2026-11-11 · retours de la Direction produit (« Attaques ces correctifs »), catégories <strong>Défauts</strong> et <strong>Choix de design</strong>. Les <strong>fonctionnalités nouvelles</strong> (contacts sur la fiche, recherche dans l'agenda, agréments et relances, gestion de l'agenda, sessions dans l'agenda, organigramme fonctionnel) sont <strong>hors de ce lot</strong> : elles attendent des décisions (arbitrage de l'agenda, sens de « fonctionnel »).</em></p>
+<h2>Ce qui est livré</h2>
+<div class="table-wrap"><table><thead><tr><th>Retour</th><th>Réponse</th><th>Vérifié dans le navigateur</th></tr></thead><tbody>
+<tr><td><strong>Catalogue : « Nouveau certificat »</strong>, libellé trop long</td><td>Le libellé « Ajouter un module » passe <strong>au-dessus</strong> de la liste, qui prend toute la largeur (le libellé n'était pas trop long : la liste en largeur automatique débordait et faisait apparaître une barre de défilement horizontale)</td><td>Oui : aucun débordement, liste à la largeur du formulaire</td></tr>
+<tr><td><strong>Bouton « Télécharger »</strong> écrasé (texte à la verticale)</td><td>Pictogramme de téléchargement <strong>nommé</strong> (« Télécharger &lt;fichier&gt; ») avec info-bulle, dans la liste des documents et dans l'historique des versions ; le bouton ne replie jamais son contenu</td><td>Oui : carré de 35 px à côté du menu « … »</td></tr>
+<tr><td><strong>Changement de responsable : confirmation du code</strong></td><td>La fenêtre de confirmation (partagée par toutes les actions sensibles) reprend la fenêtre commune : en-tête, croix, marges ; saisie du code <strong>comme à la connexion</strong> (six cases) ou code de secours ; échec : le code est vidé et l'erreur affichée</td><td>Oui, de bout en bout : code saisi, l'action reprend sans ressaisie, le responsable change</td></tr>
+<tr><td><strong>Bouton de statut</strong> (« Revenir à … »)</td><td>Déplacé dans une rangée <strong>alignée à droite</strong> de la carte, sur le même bord que « Nouveau contact » ou « Enregistrer un agrément »</td><td>Oui</td></tr>
+<tr><td><strong>En-tête de la fiche entreprise</strong></td><td>Déjà corrigé dans le lot A (titre et description sur toute la largeur, boutons dessous) ; la capture du test montrait une <strong>version plus ancienne</strong> de l'interface</td><td>Oui</td></tr>
+<tr><td><strong>Fenêtres de consultation</strong> : boutons sur une même ligne ; plus de « Fermer » ; « Modifier » en pictogramme avant la croix</td><td>Opportunité et rendez-vous : crayon nommé avant la croix, <strong>les autres actions sur une seule ligne</strong>, fenêtre un peu plus large ; « Fermer » retiré des cinq fenêtres qui le gardaient (opportunité, rendez-vous, documents d'offre, décharge, chargement de session)</td><td>Oui (opportunité et rendez-vous ; le crayon ouvre la modification)</td></tr>
+</tbody></table></div>
+<h2>Preuves</h2>
+<div class="table-wrap"><table><thead><tr><th>Contrôle</th><th>Résultat</th></tr></thead><tbody>
+<tr><td>Types</td><td><code>tsc</code> propre</td></tr>
+<tr><td>Tests de l'interface</td><td><strong>783 réussis</strong> (15 nouveaux dans <code>lot-d-finitions.test</code>)</td></tr>
+<tr><td>Contrôle visuel</td><td>Pile jetable avec données de démonstration (compte Super administrateur, second facteur activé pour l'occasion) ; <strong>pile supprimée</strong> ensuite</td></tr>
+</tbody></table></div>
+<h2>À savoir</h2>
+<ul><li><strong>Non vérifié</strong> : mode sombre, 1280 px, clavier, lecteur d'écran (les pictogrammes portent un nom accessible et une info-bulle, mais aucun passage au lecteur d'écran n'a eu lieu) ; fenêtre « Justificatif du versement » des commissions (même panneau de documents, non ouvert) ; décharge et documents d'offre (« Fermer » retiré, non ouverts).</li><li><strong>Catalogue de captures</strong> (<code>docs/design/screens/app/</code>) et journal de design : à mettre à jour ; ces fichiers sont dans l'extraction principale, modifiés par une autre session, ils n'ont pas été touchés ici.</li><li><strong>Constat pour la suite</strong> : la liste des contacts propose « Modifier » et <strong>« Supprimer »</strong> (pas « Archiver ») ; l'agenda a déjà la fiche d'un rendez-vous avec modifier, reporter, annuler (pas de suppression, voulu).</li></ul></main></body></html>
