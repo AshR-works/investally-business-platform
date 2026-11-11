@@ -67,6 +67,7 @@
 | [RH-2b](SPRINT-RH-2B-RECETTE.md) | Absences et congés (écrans et démonstration) |
 | [RH-2c](SPRINT-RH-2C-RECETTE.md) | Absences et congés (recette, mutants, fiches de test) |
 | [Lot B](SPRINT-LOT-B-RECETTE.md) | Apprenant étudiant ou particulier (sans entreprise, payeur désigné) |
+| [Lot C](SPRINT-LOT-C-RECETTE.md) | Exports d'administration pour les audits (utilisateurs, droits, sessions en CSV) |
 
 ## API et base de données
 | Document | Contenu |

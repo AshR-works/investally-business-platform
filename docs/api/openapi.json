@@ -819,6 +819,66 @@
         "x-protected": true
       }
     },
+    "/api/v1/admin/exports/{kind}": {
+      "get": {
+        "description": "Utilisateurs, droits ou sessions, pour les audits. Super administrateur seulement ; second facteur récent exigé ; l’export est tracé dans l’audit ; aucun secret dans le fichier.",
+        "operationId": "AdminExportsController_download",
+        "parameters": [
+          {
+            "name": "kind",
+            "required": true,
+            "in": "path",
+            "description": "Nature de l’export",
+            "schema": {
+              "enum": [
+                "users",
+                "rights",
+                "sessions"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "days",
+            "required": false,
+            "in": "query",
+            "description": "Sessions des N derniers jours (export « sessions » seulement)",
+            "schema": {
+              "minimum": 1,
+              "maximum": 365,
+              "default": 90,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Fichier CSV (UTF-8 avec marque d’ordre des octets, séparateur « ; »), remis en téléchargement",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Télécharger un export d’administration (CSV)",
+        "tags": [
+          "admin"
+        ],
+        "x-permission": "iam.export.read",
+        "x-min-scope": "ALL",
+        "x-step-up": true,
+        "x-protected": true
+      }
+    },
     "/api/v1/documents/meta": {
       "get": {
         "operationId": "DocumentsController_meta",

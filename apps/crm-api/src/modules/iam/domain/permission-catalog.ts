@@ -17,6 +17,7 @@ export const RESOURCES: readonly ResourceDefinition[] = [
   { module: 'iam', resource: 'user', label: 'Utilisateurs', actions: ['read', 'create', 'update', 'disable', 'assign_role', 'reset_mfa', 'reset_password'] },
   { module: 'iam', resource: 'role', label: 'Rôles et permissions', actions: ['read', 'manage'] },
   { module: 'iam', resource: 'session', label: 'Sessions', actions: ['read', 'revoke'] },
+  { module: 'iam', resource: 'export', label: 'Exports d\u2019administration', actions: ['read'] },
   // Audit
   { module: 'audit', resource: 'log', label: "Journal d'audit", actions: ['read', 'export'] },
   // Documents

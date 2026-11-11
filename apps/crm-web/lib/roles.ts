@@ -51,7 +51,7 @@ export const MODULE_LABELS: Record<string, string> = {
 
 /** Libellés des ressources (clé `module.ressource`), identiques à ceux du catalogue du serveur (un test le vérifie). */
 export const RESOURCE_LABELS: Record<string, string> = {
-  'iam.user': 'Utilisateurs', 'iam.role': 'Rôles et permissions', 'iam.session': 'Sessions',
+  'iam.user': 'Utilisateurs', 'iam.role': 'Rôles et permissions', 'iam.session': 'Sessions', 'iam.export': 'Exports d’administration',
   'audit.log': "Journal d'audit",
   'docs.document': 'Documents',
   'bd.company': 'Entreprises', 'bd.contact': 'Contacts', 'bd.offer': 'Offres', 'bd.receipt': 'Décharges', 'bd.followup': 'Relances',

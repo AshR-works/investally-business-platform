@@ -56,6 +56,7 @@ export const MODULES: readonly AppModule[] = [
   { id: 'reporting', label: 'Reporting', description: 'Rapports périodiques et incidents', icon: 'chart', group: 'Reporting' },
   { id: 'users', label: 'Utilisateurs', description: 'Comptes, rôles et sessions', icon: 'users', group: 'Administration', href: '/admin/users', permission: 'iam.user.read' },
   { id: 'rights', label: 'Droits', description: 'Rôles et permissions, en lecture seule', icon: 'shield', group: 'Administration', href: '/admin/rights', permission: 'iam.role.read' },
+  { id: 'exports', label: 'Exports', description: 'Utilisateurs, droits et sessions en CSV, pour les audits', icon: 'doc', group: 'Administration', href: '/admin/exports', permission: 'iam.export.read', allScope: true },
   { id: 'security', label: 'Sécurité', description: 'Journal d’audit et alertes', icon: 'shield', group: 'Administration' },
 ];
 

@@ -97,6 +97,7 @@ Cellule : **O**, **É**, **T** = portée accordée ; vide = non accordée.
 | `iam.role.manage` | T |  |  |  |  |  |  |  |  |  |
 | `iam.session.read` | T | O | O | O | O | O | O | O | O | O |
 | `iam.session.revoke` | T | O | O | O | O | O | O | O | O | O |
+| `iam.export.read` | T |  |  |  |  |  |  |  |  |  |
 
 ### Audit (`audit`)
 

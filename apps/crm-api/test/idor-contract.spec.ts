@@ -43,11 +43,11 @@ describe('Contrat anti-IDOR : classement de toutes les routes (structurel)', () 
     expect(Object.keys(IDOR_ROUTES).filter((key) => !existing.has(key))).toEqual([]);
   });
 
-  it('les routes « admin » exigent une permission iam.user.* que SEUL le Super administrateur détient, avec la portée Tous', () => {
+  it('les routes « admin » exigent une permission iam.user.* ou iam.export.* que SEUL le Super administrateur détient, avec la portée Tous', () => {
     const adminRoutes = routes.filter((r) => IDOR_ROUTES[r.key] === 'admin');
     expect(adminRoutes.length).toBeGreaterThanOrEqual(8);
     for (const route of adminRoutes) {
-      expect(route.permission).toMatch(/^iam\.user\./);
+      expect(route.permission).toMatch(/^iam\.(user|export)\./);
       const holders = Object.values(RoleCode).filter((role) => resolveGrants(role).some((g) => g.permission === route.permission));
       expect([route.key, holders]).toEqual([route.key, [RoleCode.SuperAdmin]]);
       expect(resolveGrants(RoleCode.SuperAdmin).find((g) => g.permission === route.permission)?.scope).toBe(Scope.All);

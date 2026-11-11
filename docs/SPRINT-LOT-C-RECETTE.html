@@ -1,0 +1,53 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Lot C — exports d&#x27;administration pour les audits : recette</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="INDEX.html">Index</a> · <a href="GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="ARCHITECTURE.html">Architecture</a> · <a href="SECURITY.html">Sécurité</a> · <a href="METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="TECH-DEBT.html">Dette</a> · <a href="CHARTE-DE-TESTS.html">Charte de tests</a> · <a href="tests/README.html">Fiches de test</a> · <a href="design/README.html">Design</a> · <a href="livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>Lot C — exports d'administration pour les audits : recette</h1>
+<p><em>Branche <code>feat/lot-c-exports-admin</code> · 2026-11-11 · décision <strong>D66</strong> (« Super administrateur uniquement », puis « applique les recommandations » pour le fichier d'audit), <a href="adr/0012-exports-d-administration-pour-les-audits.html">ADR-0012</a>.</em></p>
+<h2>Ce qui est livré</h2>
+<div class="table-wrap"><table><thead><tr><th>Demande</th><th>Réponse</th></tr></thead><tbody>
+<tr><td><strong>Trois exports</strong></td><td><code>GET /admin/exports/{users|rights|sessions}</code> en <strong>CSV</strong> : <strong>utilisateurs</strong> (identité, statut, rôles en codes et en libellés, responsable, second facteur actif, dernière connexion, création), <strong>droits</strong> (une ligne par rôle et par permission : module, ressource, action, portée en français), <strong>sessions</strong> (connexion, activité, fin ou motif de fin, adresse IP, appareil, niveau de risque, second facteur vérifié)</td></tr>
+<tr><td><strong>Super administrateur seulement</strong></td><td>Nouvelle permission <code>iam.export.read</code>, <strong>portée Tous</strong>, détenue par le seul Super administrateur (test) ; le cas d'usage revérifie la portée, sans se fier au seul contrôleur ; tout autre rôle : 403</td></tr>
+<tr><td><strong>Second facteur récent</strong></td><td>Gardes dans l'ordre : jeton, second facteur vérifié, permission, second facteur <strong>récent</strong> (10 minutes) ; l'interface redemande le code au clic</td></tr>
+<tr><td><strong>Trace avant remise</strong></td><td>Chaque export écrit une ligne d'audit (auteur, session, adresse, nature, nombre de lignes, nom du fichier, période) <strong>avant</strong> de répondre ; si l'écriture échoue, <strong>rien n'est remis</strong> ; la trace ne recopie jamais le contenu ; un export refusé ne laisse pas de trace d'export</td></tr>
+<tr><td><strong>Aucun secret</strong></td><td>Le lecteur <strong>sélectionne ses colonnes une à une</strong> : hachage du mot de passe, secret du second facteur, dernier pas TOTP, compteur d'échecs, codes de secours et jetons ne sont jamais lus ; le cas d'usage n'écrit que des colonnes nommées (un champ ajouté par erreur ne fuit pas) ; testé sur le fichier réel contre les valeurs de la base</td></tr>
+<tr><td><strong>Injection de formule</strong></td><td>Un texte qui commence par <code>=</code>, <code>+</code>, <code>-</code>, <code>@</code>, tabulation ou retour chariot reçoit une apostrophe en tête</td></tr>
+<tr><td><strong>Tableur français</strong></td><td>UTF-8 avec marque d'ordre des octets (accents lus par Excel), séparateur « ; », fin de ligne CRLF, valeurs « oui » / « non »</td></tr>
+<tr><td><strong>Volume et période</strong></td><td>Au-delà de 10 000 utilisateurs ou 50 000 sessions : export <strong>refusé</strong>, jamais tronqué ; sessions sur 1 à 365 jours (90 par défaut) ; comptes supprimés logiquement exclus</td></tr>
+<tr><td><strong>Réponse</strong></td><td><code>text/csv</code>, téléchargement forcé (<code>attachment</code>), <code>no-store</code>, <code>nosniff</code>, <code>default-src 'none'</code>, nom daté sans deux-points</td></tr>
+<tr><td><strong>Interface</strong></td><td>Page <strong>Administration › Exports</strong> (Super administrateur seulement) : trois cartes avec leur description et leurs colonnes, choix de la période des sessions, encadré « À savoir avant d'exporter » (données personnelles, aucun secret, Excel, volume), message de succès, boutons occupés pendant l'export</td></tr>
+<tr><td><strong>Documentation de l'API</strong></td><td><code>openapi.json</code> régénéré (route décrite : types d'export, réponse <code>text/csv</code>, permission, step-up), collection Postman avec un test CSV, référence des routes, <code>docs/RBAC.md</code> (118 permissions)</td></tr>
+</tbody></table></div>
+<h2>Preuves</h2>
+<div class="table-wrap"><table><thead><tr><th>Contrôle</th><th>Résultat</th></tr></thead><tbody>
+<tr><td>Types, architecture</td><td><code>tsc</code> propre (API et interface) ; <code>pnpm arch</code> : <strong>318 modules, aucune violation</strong></td></tr>
+<tr><td>Tests unitaires de l'API</td><td><strong>1 361 réussis</strong> (les 2 suites qui exigent une base ne tournent qu'en intégration) ; nouveaux : <code>csv.spec</code> (7), <code>admin-exports.spec</code> (20 : contenu des trois exports, aucun secret même si le lecteur en remettait, formules, limites exactes, refus de tout autre rôle, portée Propre ou Équipe insuffisante, trace, trace en échec), <code>admin-exports.controller.spec</code> (3 : permission, portée, ordre des gardes)</td></tr>
+<tr><td>Tests de l'interface</td><td><strong>768 réussis</strong> ; nouveau <code>lot-c-exports.test</code> qui interroge le <strong>serveur réel</strong> : types et en-têtes d'accord, périodes, adresse, nom de fichier, menu réservé au Super administrateur</td></tr>
+<tr><td>Intégration (base jetable)</td><td><code>admin-exports-http</code> (<strong>11</strong> tests : trois exports et en-têtes, aucun secret comparé aux valeurs de la base, formule neutralisée, droits, sessions et période, type inconnu, <strong>403 pour les neuf autres rôles</strong>, step-up, trace, compte supprimé, lecture bornée) + <code>rbac-http</code>, <code>idor-contract</code>, <code>core-schema</code> : <strong>168 réussis, 5 suites</strong></td></tr>
+<tr><td><strong>Mutants</strong></td><td><code>scripts/mutants/lotc-exports.py</code> : <strong>55 sur 55 tués</strong>. Premier passage : 50 sur 56, six survivants traités : bornes exactes de volume (2 tests), libellé de ressource (mutant mal construit, refait), permission et second facteur de la route (test des métadonnées), lecture bornée en base (test sur la vraie base). Un mutant <strong>équivalent</strong> retiré : l'en-tête <code>nosniff</code> de la route double celui de Helmet</td></tr>
+<tr><td>Postman (Newman, pile jetable)</td><td><strong>375 requêtes, 1 423 assertions, 0 échec</strong>, dont la nouvelle route (type <code>text/csv</code>, téléchargement forcé, jamais en cache, marque d'ordre des octets lue sur les octets bruts)</td></tr>
+<tr><td>Contrôle visuel (navigateur, compte Super administrateur)</td><td>La page s'affiche avec ses trois cartes ; le clic sur Utilisateurs télécharge (requête 200) et affiche « Le fichier … est enregistré. Cet export est tracé dans l'audit. »</td></tr>
+</tbody></table></div>
+<h2>Limites connues (dettes D177 et D178)</h2>
+<ul><li><strong>Données personnelles</strong> : l'export des sessions contient des adresses IP et des appareils ; durée de conservation du fichier et base légale à fixer (avis juridique) ; le fichier téléchargé échappe au contrôle de la plateforme.</li><li><strong>CSV seulement</strong> : pas de PDF, pas de signature d'intégrité du fichier, ni tentatives de connexion échouées ni journal d'audit ; pas d'export différé au-delà des limites.</li><li><strong>Non vérifié</strong> : le second facteur redemandé dans la fenêtre au clic (testé côté serveur, pas rejoué dans le navigateur), l'ouverture du fichier dans Excel, le mode sombre, 1280 et 1920 px, le clavier.</li><li>Trois valeurs de départ prises sans réponse explicite : CSV seul, séparateur « ; », adresses IP et appareils inclus.</li></ul>
+<h2>Comment vérifier</h2>
+<ol><li>Démarrer la pile avec démonstration (<code>node scripts/local-stack.mjs --demo --rebuild</code>) ; se connecter en Super administrateur ; Administration › Exports ; télécharger les trois fichiers et les ouvrir dans Excel.</li><li>Rejouer la fiche de session <code>docs/tests/sessions/lot-c.md</code> et la fiche d'écran <code>docs/tests/interfaces/33-exports-d-administration.md</code>.</li><li>Rejouer les mutants : <code>python scripts/mutants/lotc-exports.py</code> (environ 25 minutes ; <code>DRY=1</code> vérifie seulement les motifs ; <strong>jamais deux exécutions à la fois</strong>).</li></ol></main></body></html>

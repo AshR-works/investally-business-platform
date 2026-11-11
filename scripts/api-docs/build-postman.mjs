@@ -54,6 +54,7 @@ function example(schema, depth = 0) {
 }
 
 // ───────────────────────────── Tests Postman (scripts) ─────────────────────────────
+const csvResponse = (operation) => Object.values(operation.responses ?? {}).some((r) => Object.keys(r.content ?? {}).includes('text/csv'));
 const COMMON_ERRORS = [400, 403, 404, 409, 415, 422, 429];
 const PUBLIC_ERRORS = [...COMMON_ERRORS, 401];
 const successOf = (operation) => Object.keys(operation.responses ?? {}).filter((c) => /^2/.test(c)).map(Number);
@@ -67,11 +68,20 @@ function testsFor(operation, { expectStatuses }) {
   const lines = [
     `const documented = ${documented};`,
     `const success = ${success};`,
-    "pm.test('Pas d\\u2019erreur serveur (statut inférieur à 500)', () => pm.expect(pm.response.code).to.be.below(500));",
+    "pm.test('Pas d\u2019erreur serveur (statut inférieur à 500)', () => pm.expect(pm.response.code).to.be.below(500));",
     ...(operation['x-protected'] ? ["pm.test('Le jeton est accepté (pas de 401)', () => pm.expect(pm.response.code).to.not.eql(401));"] : []),
     "pm.test('Statut prévu (succès documenté ou refus métier standard)', () => pm.expect(documented).to.include(pm.response.code));",
     "pm.test('Temps de réponse raisonnable (moins de 3 s)', () => pm.expect(pm.response.responseTime).to.be.below(3000));",
-    ...(/\/(export|download)$/.test(operation.__path)
+    ...(csvResponse(operation)
+      ? [
+        "if (pm.response.code === 200) {",
+        "  pm.test('Fichier CSV (text/csv)', () => pm.expect(pm.response.headers.get('Content-Type') || '').to.include('text/csv'));",
+        "  pm.test('Téléchargement forcé (attachment)', () => pm.expect(pm.response.headers.get('Content-Disposition') || '').to.include('attachment'));",
+        "  pm.test('Jamais mis en cache', () => pm.expect(pm.response.headers.get('Cache-Control') || '').to.include('no-store'));",
+        "  pm.test('Marque d\u2019ordre des octets (BOM) et s\u00e9parateur « ; »', () => { const raw = pm.response.stream; const bytes = raw && raw.data ? raw.data : raw; pm.expect(bytes && bytes[0] === 0xEF && bytes[1] === 0xBB && bytes[2] === 0xBF, 'BOM UTF-8').to.eql(true); pm.expect(pm.response.text()).to.include(';'); });",
+        '}',
+      ]
+      : /\/(export|download)$/.test(operation.__path)
       ? ["if (pm.response.code === 200) pm.test('Document remis avec un type de contenu', () => pm.expect(pm.response.headers.get('Content-Type') || '').to.not.be.empty);"]
       : [
         "if (pm.response.code !== 204 && pm.response.text().length > 0) {",
@@ -117,7 +127,9 @@ const toItem = (path, method, operation, extra = {}) => {
   const urlPath = segments.map((segment, index) => {
     const match = /^\{(.+)\}$/.exec(segment);
     if (!match) return segment;
-    pathVariables.push({ key: match[1], value: `{{${variableFor(segments, index)}}}`, description: 'Identifiant : voir l’environnement (valeur par défaut : identifiant inexistant, la route répond « introuvable »).' });
+    const declared = (operation.parameters ?? []).find((p) => p.in === 'path' && p.name === match[1]);
+    const choice = declared?.schema?.enum?.[0];
+    pathVariables.push({ key: match[1], value: choice !== undefined ? String(choice) : `{{${variableFor(segments, index)}}}`, description: 'Identifiant : voir l’environnement (valeur par défaut : identifiant inexistant, la route répond « introuvable »).' });
     return `:${match[1]}`;
   });
   const query = (operation.parameters ?? []).filter((p) => p.in === 'query').map((p) => ({
@@ -174,7 +186,7 @@ const authItems = () => {
     tests: [
       "pm.test('Connexion acceptée (200)', () => pm.response.to.have.status(200));",
       'const body = pm.response.json();',
-      "pm.test('Un jeton d\\u2019accès est remis', () => pm.expect(body.accessToken).to.be.a('string').and.not.empty);",
+      "pm.test('Un jeton d\u2019accès est remis', () => pm.expect(body.accessToken).to.be.a('string').and.not.empty);",
       "pm.collectionVariables.set('accessToken', body.accessToken);",
       "pm.collectionVariables.set('mfaEnrolled', String(Boolean(body.mfaEnrolled)));",
       "pm.test('Le second facteur est demandé (jeton pas encore vérifié)', () => pm.expect(body.mfaVerified).to.not.eql(true));",
@@ -198,7 +210,7 @@ const authItems = () => {
       'const body = pm.response.json();',
       "pm.test('Jeton vérifié et codes de secours remis', () => { pm.expect(body.accessToken).to.be.a('string'); pm.expect(body.recoveryCodes).to.be.an('array').with.lengthOf(10); });",
       "pm.collectionVariables.set('accessToken', body.accessToken);",
-      "console.log('Conservez les codes de secours hors de Postman : ils ne sont affichés qu\\u2019une fois.');",
+      "console.log('Conservez les codes de secours hors de Postman : ils ne sont affichés qu\u2019une fois.');",
     ].join('\n'),
   });
   const verify = item('/api/v1/auth/mfa/verify', 'post', '2 — Vérifier le code du second facteur (code calculé)', {
@@ -419,7 +431,7 @@ writeFileSync(join(root, 'docs/api/REFERENCE-DES-ROUTES.md'), md.join('\n'), 'ut
 // Le même contenu que la collection, mais lisible sans Postman : chaque requête avec sa permission, ses statuts attendus et la liste de ses tests (assertions).
 const testNames = (item) => {
   const script = (item.event ?? []).filter((e) => e.listen === 'test').flatMap((e) => e.script.exec).join('\n');
-  return [...script.matchAll(/pm\.test\('((?:[^'\\]|\\.)*)'/g)].map((m) => m[1].replace(/\\u2019/g, String.fromCharCode(8217)).replace(/\\'/g, "'"));
+  return [...script.matchAll(/pm\.test\('((?:[^'\\]|\\.)*)'/g)].map((m) => m[1].replace(/\u2019/g, String.fromCharCode(8217)).replace(/\\'/g, "'"));
 };
 const describeItem = (item) => {
   const notes = item.request?.description ?? '';
