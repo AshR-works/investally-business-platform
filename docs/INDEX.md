@@ -64,6 +64,7 @@
 | [H1](SPRINT-H1-RECETTE.md), [H2a](SPRINT-H2A-RECETTE.md), [H2b](SPRINT-H2B-RECETTE.md) | Habillage, authentification et sessions |
 | [V1](SPRINT-V1-DEPLOIEMENT-RECETTE.md) | Déploiement : images, e-mails par Google, publication par domaine, sauvegardes |
 | [RH-2a](SPRINT-RH-2A-RECETTE.md) | Absences et congés (API) |
+| [RH-2b](SPRINT-RH-2B-RECETTE.md) | Absences et congés (écrans et démonstration) |
 
 ## Design et livrables
 | Document | Contenu |

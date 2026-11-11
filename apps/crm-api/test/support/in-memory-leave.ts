@@ -16,8 +16,8 @@ export class InMemoryLeaveRequests implements LeaveRequestRepository {
   async findActiveOverlapping(employeeId: string, from: string, to: string, excludeId?: string) {
     return this.items.filter((r) => r.employeeId === employeeId && r.isActive && r.start <= to && r.end >= from && r.id !== excludeId);
   }
-  async sumDays(employeeId: string, year: number, excludeId?: string) {
-    const rows = this.items.filter((r) => r.employeeId === employeeId && r.year === year && r.isActive && r.id !== excludeId);
+  async sumDays(employeeId: string, year: number, leaveTypeIds: readonly string[], excludeId?: string) {
+    const rows = this.items.filter((r) => r.employeeId === employeeId && r.year === year && leaveTypeIds.includes(r.leaveTypeId) && r.isActive && r.id !== excludeId);
     return { approved: rows.filter((r) => r.status === 'APPROVED').reduce((n, r) => n + r.days, 0), pending: rows.filter((r) => r.status === 'PENDING').reduce((n, r) => n + r.days, 0) };
   }
   async list(q: LeaveRequestListQuery): Promise<Page<LeaveRequest>> {

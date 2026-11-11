@@ -537,6 +537,18 @@ describe('Absences — solde', () => {
     });
   });
 
+  it('seul le congé annuel consomme le solde : une maladie, une permission ou un type sans validation n\u2019y touchent pas', async () => {
+    const w = build();
+    await decide(w, (await ask(w, claire, { leaveTypeId: TYPE.sick, start: '2026-12-14', end: '2026-12-15' })).id, boss);
+    await ask(w, claire, { leaveTypeId: TYPE.special, start: '2026-12-16', end: '2026-12-16' });
+    await ask(w, claire, { leaveTypeId: TYPE.auto, start: '2026-12-17', end: '2026-12-17' });
+    expect(await w.balance.execute({ access: claire, year: 2026 })).toMatchObject({ taken: 0, pending: 0, available: 13.5 });
+    // Le congé annuel, lui, décompte : validé il devient « pris », en attente il est réservé.
+    await decide(w, (await ask(w, claire, { start: '2026-12-21', end: '2026-12-22' })).id, boss);
+    await ask(w, claire, { start: '2026-12-28', end: '2026-12-28' });
+    expect(await w.balance.execute({ access: claire, year: 2026 })).toMatchObject({ taken: 2, pending: 1, available: 10.5 });
+  });
+
   it('l’année par défaut est l’année en cours', async () => {
     const w = build();
     expect((await w.balance.execute({ access: paul })).year).toBe(2026);

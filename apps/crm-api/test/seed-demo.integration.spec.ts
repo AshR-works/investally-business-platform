@@ -3,6 +3,7 @@ import { RoleCode } from '../src/modules/iam/domain/roles';
 import { CLOCK } from '../src/shared-kernel';
 import { buildPlan, FORMATION_CLIENTS, RH_EMAIL_DOMAIN, Who } from '../src/cli/seed/seed-plan';
 import { ListHierarchyGapsHandler } from '../src/modules/hr/application/employee-use-cases';
+import { GetLeaveBalanceHandler } from '../src/modules/hr/application/leave-use-cases';
 import { AuthorizationService } from '../src/modules/iam/application/authorization.service';
 import { CATALOGUE_MARKER, LEARNERS_MARKER, runSeed, SEED_MARKER, TRAINERS_MARKER } from '../src/cli/seed/run-seed';
 import { createUserWithRoles } from './support/rbac-http';
@@ -54,6 +55,7 @@ describeDb('Jeu de données de démonstration (cas d’usage + PostgreSQL)', () 
     await db.courseModule.deleteMany({ where: { trainings: { none: {} }, title: { in: ['Fondations Économiques & Architecture de la Place Financière', 'Ingénierie des Instruments Financiers, Données & Acteurs de Marché', 'Asset Management, Construction & Évaluation de Portefeuille', 'Pratique du Trading, Décision d’Investissement & Analyse Quantitative', 'Ingénierie Financière, IPO & Levées de Fonds en Zone CEMAC', 'Réglementation des Marchés Financiers en Zone CEMAC & Pouvoirs de la COSUMAF', 'Portfolio Engineering, Asset Allocation & Live Trading (Capstone Project)'] } } });
     await db.room.deleteMany({ where: { name: { in: ['Salle de marchés', 'Salle de réunion'] } } });
     await db.trainer.deleteMany({ where: { emailKey: { endsWith: TRAINERS_MARKER } } });
+    await db.leaveRequest.deleteMany({ where: { employee: { workEmail: { endsWith: RH_EMAIL_DOMAIN } } } });
     await db.employee.updateMany({ where: { workEmail: { endsWith: RH_EMAIL_DOMAIN } }, data: { managerEmployeeId: null } });
     await db.employee.deleteMany({ where: { workEmail: { endsWith: RH_EMAIL_DOMAIN } } });
     await t.close();
@@ -61,7 +63,7 @@ describeDb('Jeu de données de démonstration (cas d’usage + PostgreSQL)', () 
 
   it('charge tout le plan par les cas d’usage, sans erreur, puis refuse de recharger (idempotent)', async () => {
     const first = await runSeed(t.app as never, plan, { users });
-    expect(first).toMatchObject({ skipped: false, executed: plan.length, loaded: ['crm', 'catalogue', 'formateurs', 'sessions', 'inscriptions', 'rh'] });
+    expect(first).toMatchObject({ skipped: false, executed: plan.length, loaded: ['crm', 'catalogue', 'formateurs', 'sessions', 'inscriptions', 'rh', 'conges'] });
     const second = await runSeed(t.app as never, plan, { users });
     expect(second).toMatchObject({ skipped: true, executed: 0 });
     expect(await t.prisma.db.company.count({ where: { name: SEED_MARKER } })).toBe(1);
@@ -146,9 +148,35 @@ describeDb('Jeu de données de démonstration (cas d’usage + PostgreSQL)', () 
     expect(gaps).toHaveLength(1);
     expect(gaps[0]).toMatchObject({ employeeName: expect.stringContaining('Nkodo'), hrManagerName: expect.stringContaining('Tchoumi'), accountManagerName: null });
     // Chargé seul sur une démo qui n'a pas de bloc RH.
+    await db.leaveRequest.deleteMany({ where: { employee: { workEmail: { endsWith: RH_EMAIL_DOMAIN } } } });
     await db.employee.updateMany({ where: { workEmail: { endsWith: RH_EMAIL_DOMAIN } }, data: { managerEmployeeId: null } });
     await db.employee.deleteMany({ where: { workEmail: { endsWith: RH_EMAIL_DOMAIN } } });
-    expect(await runSeed(t.app as never, plan, { users })).toMatchObject({ skipped: false, loaded: ['rh'], executed: 12 });
+    expect(await runSeed(t.app as never, plan, { users })).toMatchObject({ skipped: false, loaded: ['rh', 'conges'], executed: 12 + 9 });
+    expect(await runSeed(t.app as never, plan, { users })).toMatchObject({ skipped: true, loaded: [] });
+  }, 300_000);
+
+  it('le bloc « conges » : sept demandes fictives par les cas d’usage, des soldes cohérents, trois en attente (dont une pour la RH), un refus motivé ; il se charge seul sur une démo qui a déjà le personnel', async () => {
+    const db = t.prisma.db;
+    const where = { employee: { workEmail: { endsWith: RH_EMAIL_DOMAIN } } };
+    const rows = await db.leaveRequest.findMany({ where, include: { employee: true, leaveType: true } });
+    expect(rows).toHaveLength(7);
+    const count = (status: string) => rows.filter((r) => r.status === status).length;
+    expect([count('PENDING'), count('APPROVED'), count('REJECTED')]).toEqual([3, 3, 1]);
+    // Saisies par la RH (validées d’emblée) : l’absence passée et le congé du support.
+    expect(rows.filter((r) => r.status === 'APPROVED' && r.employee.workEmail?.startsWith('sonia.manga'))).toHaveLength(1);
+    const refused = rows.find((r) => r.status === 'REJECTED')!;
+    expect(refused.decisionNote).toMatch(/clôture du trimestre/);
+    expect(rows.find((r) => r.endHalf && r.startDate.getTime() === r.endDate.getTime())).toBeDefined(); // la demi-journée
+    // Le solde de la RH voit les jours pris et en attente d’une personne du jeu.
+    const access = await t.get<AuthorizationService>(AuthorizationService as never).contextFor(users.rh);
+    const karim = rows.find((r) => r.employee.workEmail?.startsWith('karim.biya') && r.leaveType.code === 'ANNUAL')!;
+    const balance = await t.get<GetLeaveBalanceHandler>(GetLeaveBalanceHandler as never).execute({ employeeId: karim.employeeId, year: karim.startDate.getUTCFullYear(), access });
+    expect(balance.taken + balance.pending).toBeGreaterThan(0);
+    expect(balance.available).toBeLessThan(balance.entitlement + balance.adjustments);
+    // Chargé seul sur une démo qui a déjà le personnel mais pas ses absences.
+    await db.leaveRequest.deleteMany({ where });
+    expect(await runSeed(t.app as never, plan, { users })).toMatchObject({ skipped: false, loaded: ['conges'], executed: 9 });
+    expect(await db.leaveRequest.count({ where })).toBe(7);
     expect(await runSeed(t.app as never, plan, { users })).toMatchObject({ skipped: true, loaded: [] });
   }, 300_000);
 

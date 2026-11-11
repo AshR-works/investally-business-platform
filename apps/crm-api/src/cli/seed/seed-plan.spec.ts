@@ -340,3 +340,57 @@ describe('plan de démonstration — bloc « rh »', () => {
   });
 });
 
+
+describe('plan de démonstration — bloc « conges »', () => {
+  const plan = buildPlan({ anchor: new Date('2026-11-09T10:00:00Z') });
+  const staff = plan.flatMap((e) => (e.op.k === 'employee' ? [e.op] : []));
+  const conges = plan.filter((e) => blockOf(e.op) === 'conges');
+  const requests = conges.flatMap((e) => (e.op.k === 'leave' ? [{ at: e.at, who: e.who, op: e.op }] : []));
+  const decisions = conges.flatMap((e) => (e.op.k === 'leaveDecision' ? [{ at: e.at, who: e.who, op: e.op }] : []));
+  const isWorkday = (iso: string) => ![0, 6].includes(new Date(`${iso}T00:00:00Z`).getUTCDay());
+
+  it('sept demandes et deux décisions, toutes sur des fiches et des types existants', () => {
+    expect(requests).toHaveLength(7);
+    expect(decisions).toHaveLength(2);
+    for (const r of requests) {
+      expect(staff.some((s) => s.key === r.op.employee)).toBe(true);
+      expect(['ANNUAL', 'SICK', 'SPECIAL', 'UNPAID', 'PARENTAL']).toContain(r.op.typeCode);
+    }
+    expect(new Set(requests.map((r) => r.op.key)).size).toBe(requests.length);
+  });
+
+  it('chaque période commence et finit un jour ouvré, et la fin ne précède pas le début', () => {
+    for (const r of requests) {
+      expect(isWorkday(r.op.start)).toBe(true);
+      expect(isWorkday(r.op.end)).toBe(true);
+      expect(r.op.end >= r.op.start).toBe(true);
+    }
+  });
+
+  it('seule la RH saisit pour un autre ; un employé demande depuis le compte lié à sa fiche', () => {
+    for (const r of requests) {
+      const person = staff.find((s) => s.key === r.op.employee)!;
+      if (r.who !== 'rh') expect(person.account).toBe(r.who);
+    }
+    expect(requests.some((r) => r.who === 'rh')).toBe(true);
+  });
+
+  it('une décision vient après la demande et d\'un compte qui peut décider : le responsable de la fiche dans l\'organigramme', () => {
+    for (const d of decisions) {
+      const request = requests.find((r) => r.op.key === d.op.leave)!;
+      expect(d.at.getTime()).toBeGreaterThan(request.at.getTime());
+      const person = staff.find((s) => s.key === request.op.employee)!;
+      expect(staff.find((s) => s.key === person.manager)!.account).toBe(d.who);
+    }
+    // Un refus porte son motif.
+    for (const d of decisions.filter((x) => x.op.decision === 'REJECT')) expect((d.op.note ?? '').length).toBeGreaterThan(0);
+  });
+
+  it('au moins une demande reste à valider, une est refusée, une est en demi-journée, aucun motif ne parle de santé', () => {
+    const decided = new Set(decisions.map((d) => d.op.leave));
+    expect(requests.filter((r) => !decided.has(r.op.key) && r.who !== 'rh').length).toBeGreaterThanOrEqual(2);
+    expect(decisions.some((d) => d.op.decision === 'REJECT')).toBe(true);
+    expect(requests.some((r) => r.op.startHalf || r.op.endHalf)).toBe(true);
+    expect(JSON.stringify(requests.map((r) => r.op.note)).toLowerCase()).not.toMatch(/diagnostic|maladie|médical|medical|santé|sante|certificat|ordonnance/);
+  });
+});

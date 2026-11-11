@@ -173,7 +173,8 @@
 | D170 | **Pas de suppléant** : si le responsable direct est absent, la demande attend ; la RH peut valider à sa place | RH-2a | Claude | Moyen ; règle de délégation à fournir |
 | D171 | **Un employé sans compte lié ne demande pas lui-même** : la RH saisit pour lui (validée d'emblée) | RH-2a | Claude | Faible |
 | D172 | **Droits annuels disponibles dès le 1er janvier** (anticipation), proratisés l'année d'entrée ; aucun report automatique, la RH ajuste (valeurs par défaut « à confirmer », D64) ; aucun jour férié présumé, la RH saisit la liste | RH-2a | Direction produit / Claude | Fort avant d'ouvrir à de vrais salariés : règles réelles à fournir |
-| D173 | **Pas de jeu de démonstration d'absences ni d'écrans** : l'API de RH-2a n'est visible que par ses tests et `/api/docs` | RH-2a | Claude | RH-2b |
+| D173 | ~~Pas de jeu de démonstration d'absences ni d'écrans~~ **Soldée par RH-2b** : cinq écrans et un bloc de démonstration « conges » (fictif) | RH-2a | Claude | Soldée |
+| D174 | **Écran « Soldes » : une requête de solde par employé de la page** (20 au plus) : l'API de RH-2a n'a pas de route groupée ; à regrouper si le personnel dépasse quelques dizaines | RH-2b | Claude | Faible |
 | D105 | **Le statut « Cliente » n'est posé par rien** tant que l'agrément n'existe pas ; une entreprise ne peut donc pas encore devenir cliente | S4.3b | Claude | *Soldée par S4.4a* : l'agrément reçu pose « Cliente » |
 | D5 | Hypothèses de charge et de périmètre non confirmées | Phase 3 | Revue à la fin de S1 avec les chiffres réels | Ouverte |
 
