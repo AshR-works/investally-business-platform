@@ -118,6 +118,7 @@ lines.push('4. La **Direction** est en lecture seule (consulter, télécharger, 
 lines.push("5. Un utilisateur **ne peut pas modifier ses propres rôles**, SuperAdmin compris (règle à implémenter dans l'attribution de rôle en S3, avec test).");
 lines.push('6. Tout changement de rôle est audité (`ROLE_CHANGE`) et exige un MFA récent (step-up).');
 lines.push("6 bis. Le changement de responsable d'une entreprise (`bd.company.reassign`) exige aussi un MFA récent (step-up, décision D41, FD-6).");
+lines.push("6 ter. Absences et congés (`hr.leave.*`, décision D64) : chacun demande et lit les siennes (portée Propre) ; **valider** ou refuser revient au responsable direct de l'organigramme RH (pas à `users.manager_id`) ou à la RH, **jamais à l'auteur de la demande** ; la RH et le Super administrateur paramètrent (types, règles, jours fériés, ajustements) ; la Direction lit tout ; un collègue ne voit dans le calendrier que « absent », sans type.");
 lines.push('7. Aucun export massif pour les rôles chargé de compte, support et formateur. Test automatisé.');
 lines.push('8. Droits de base **implicites** pour tout utilisateur authentifié, hors catalogue : consulter son profil, changer son mot de passe, gérer son MFA et voir/révoquer ses propres sessions.');
 lines.push('');

@@ -1,0 +1,111 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Cadrage — la section RH « complète »</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — cadrages · <a href="README.html">Index des cadrages</a> · <a href="../INDEX.html">Documentation</a> · <a href="../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../design/05-AIDE-A-LA-DECISION.html">Aide à la décision</a></nav><h1>Cadrage — la section RH « complète »</h1>
+<p><em>2026-11-10 · Demande de la Direction produit : « RH complète » · Méthode : <a href="../METHODE-D-ARBITRAGE.html">METHODE-D-ARBITRAGE</a> (options dont le statu quo, grille recalculée, recommandation, <strong>décision laissée à la Direction produit</strong>). Ce document nomme des <strong>fonctions</strong>, jamais des personnes : le dépôt est public. <strong>Aucun code n'est écrit</strong> tant que la décision n'est pas prise.</em></p>
+<h2>1. La demande, et pourquoi elle se décompose</h2>
+<p>« RH complète » recouvre au moins six choses très différentes par leur <strong>sensibilité</strong>, leurs <strong>règles inconnues</strong> et leurs <strong>dépendances externes</strong>. Les traiter d'un bloc ferait porter à la section entière le risque de la plus sensible. Ce cadrage les sépare, dit ce qui est faisable tout de suite avec des valeurs par défaut, ce qui est contraint par vos propres décisions (ADR-0009, D55 à D58, DEC-006) et ce qui attend un tiers (avis juridique, antivirus, ERP).</p>
+<h2>2. Ce qui existe et ce qui contraint</h2>
+<div class="table-wrap"><table><thead><tr><th>Fait</th><th>Source</th></tr></thead><tbody>
+<tr><td><strong>RH-1 livré</strong> : annuaire, organigramme, fiche employé, archivage réversible, lien facultatif avec un compte, écarts de hiérarchie signalés</td><td>recette RH-1</td></tr>
+<tr><td>La RH vit <strong>dans le CRM, schéma <code>hr</code>, sans donnée sensible</strong> : jamais de salaire, pièce d'identité, adresse personnelle, date de naissance, santé</td><td>ADR-0009, D57</td></tr>
+<tr><td>La <strong>RH sensible reste à l'ERP</strong> (paie, salaires, pièces, évaluations)</td><td>ADR-0009</td></tr>
+<tr><td>Le <strong>suivi de performance</strong> attend l'<strong>avis juridique</strong></td><td>DEC-006</td></tr>
+<tr><td>Les <strong>règles de congés n'ont pas été communiquées</strong> ; les valeurs par défaut sont retenues « à confirmer »</td><td>D59, § 7 de <a href="CADRAGE-RH.html">CADRAGE-RH</a></td></tr>
+<tr><td>Les <strong>documents</strong> (contrats signés, pièces) exigent l'<strong>antivirus</strong> (D42, bloquant) et un stockage d'objets (D41) ; ils n'existent pas</td><td>PLAN-DE-MISE-EN-PRODUCTION</td></tr>
+<tr><td>La <strong>conservation</strong> des données du personnel n'est pas validée juridiquement</td><td>D11, D65</td></tr>
+<tr><td>Une absence se rattache à un <strong>employé qui a un compte</strong> (le lien est facultatif aujourd'hui : 7 fiches de démonstration sur 11 en ont un)</td><td>RH-1</td></tr>
+</tbody></table></div>
+<h2>3. Les blocs de « RH complète »</h2>
+<div class="table-wrap"><table><thead><tr><th>Bloc</th><th>Contenu</th><th>Sensibilité</th><th>Dépend de</th><th>État</th></tr></thead><tbody>
+<tr><td><strong>RH-2 Absences et congés</strong></td><td>Types d'absence, demande, validation par le responsable, solde, calendrier d'équipe, paramètres (jours par an, jours fériés)</td><td>Moyenne (une absence maladie est une donnée de santé indirecte : on ne stocke <strong>jamais</strong> de diagnostic)</td><td>Règles de congés (valeurs par défaut proposées § 5)</td><td>Faisable maintenant</td></tr>
+<tr><td><strong>RH-3 Contrats et parcours</strong></td><td>Type de relation (CDI, CDD, stage, prestation), dates, période d'essai, fin de contrat, <strong>liste de contrôle d'intégration et de départ</strong></td><td>Moyenne (sans salaire, sans pièce)</td><td>Types de contrat réels</td><td>Faisable après RH-2</td></tr>
+<tr><td><strong>RH-4 Présences</strong></td><td>Pointage, retards, heures</td><td><strong>Élevée</strong> (surveillance des salariés)</td><td>Avis juridique, besoin réel à confirmer</td><td>Non recommandé maintenant</td></tr>
+<tr><td><strong>RH-5 Dossier du personnel</strong></td><td>Documents RH : contrat signé, attestations, pièces</td><td><strong>Élevée</strong></td><td><strong>Antivirus (D42)</strong>, stockage d'objets (D41), avis juridique</td><td>Bloqué</td></tr>
+<tr><td><strong>RH-6 Évaluations et performance</strong></td><td>Entretiens, objectifs, notes</td><td><strong>Élevée</strong></td><td><strong>Avis juridique (DEC-006)</strong></td><td>Bloqué</td></tr>
+<tr><td><strong>RH-7 Paie</strong></td><td>Salaires, bulletins, charges</td><td><strong>Très élevée</strong></td><td><strong>L'ERP</strong> (ADR-0009)</td><td>Hors CRM</td></tr>
+</tbody></table></div>
+<h2>4. Options et arbitrage</h2>
+<div class="table-wrap"><table><thead><tr><th>Option</th><th>Contenu</th></tr></thead><tbody>
+<tr><td><strong>A. Statu quo</strong></td><td>RH-1 seulement (annuaire, organigramme, personnel)</td></tr>
+<tr><td><strong>B. RH-2 seul</strong></td><td>A + absences et congés</td></tr>
+<tr><td><strong>C. RH-2 puis RH-3</strong></td><td>B + contrats et parcours, <strong>sans</strong> documents ni données sensibles</td></tr>
+<tr><td><strong>D. C + présences (RH-4)</strong></td><td>C + pointage</td></tr>
+<tr><td><strong>E. Tout</strong> (RH-2 à RH-7)</td><td>Contredit ADR-0009 et DEC-006 ; exige avant tout l'antivirus, le stockage d'objets, l'avis juridique et l'ERP</td></tr>
+</tbody></table></div>
+<div class="table-wrap"><table><thead><tr><th>Critère (poids)</th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th></tr></thead><tbody>
+<tr><td>Valeur pour l'entreprise (5)</td><td>1</td><td>4</td><td>5</td><td>5</td><td>5</td></tr>
+<tr><td>Faible risque sur les données personnelles (4)</td><td>5</td><td>4</td><td>3</td><td>2</td><td>1</td></tr>
+<tr><td>Tenable à court terme (5)</td><td>5</td><td>3</td><td>2</td><td>1</td><td>1</td></tr>
+<tr><td>Peu de règles métier inconnues (3)</td><td>5</td><td>2</td><td>2</td><td>1</td><td>1</td></tr>
+<tr><td>Réversibilité (2)</td><td>5</td><td>4</td><td>3</td><td>3</td><td>1</td></tr>
+<tr><td><strong>Total</strong> (maximum 95)</td><td><strong>75</strong></td><td><strong>65</strong></td><td><strong>59</strong></td><td><strong>47</strong></td><td><strong>39</strong></td></tr>
+</tbody></table></div>
+<p><em>Calculs : A = 5 + 20 + 25 + 15 + 10 = 75 ; B = 20 + 16 + 15 + 6 + 8 = 65 ; C = 25 + 12 + 10 + 6 + 6 = 59 ; D = 25 + 8 + 5 + 3 + 6 = 47 ; E = 25 + 4 + 5 + 3 + 2 = 39.</em></p>
+<p><strong>Écart entre la grille et la recommandation.</strong> A a le meilleur total parce que ne rien faire ne coûte rien ; mais A échoue sur votre demande ferme (« RH complète »). Entre les options qui y répondent, <strong>B devance C</strong>, qui devance D, qui devance E.</p>
+<p><strong>Recommandation : B maintenant, puis C comme lot suivant</strong>, quand B est validé et que les types de contrat réels sont connus. <strong>D, RH-5, RH-6 et RH-7 ne sont pas à faire</strong> tant que l'avis juridique, l'antivirus, le stockage d'objets ou l'ERP n'existent pas : les construire d'abord serait faire porter au CRM ce que vos propres décisions réservent ailleurs. Je ne les « différe » pas par prudence de principe : chacun est <strong>bloqué par une décision que vous avez déjà prise</strong>.</p>
+<h2>5. RH-2 : ce que je propose (valeurs par défaut, toutes « à confirmer »)</h2>
+<p>Les règles réelles ne m'ont pas été données : <strong>aucune n'est inscrite dans le code</strong>. Toutes sont des <strong>paramètres modifiables par la RH</strong> (table de paramètres, changement tracé), initialisés à ces valeurs de départ.</p>
+<h3>Types d'absence (paramétrables)</h3>
+<div class="table-wrap"><table><thead><tr><th>Type</th><th>Décompté du solde</th><th>Remarque</th></tr></thead><tbody>
+<tr><td>Congé annuel</td><td>Oui</td><td>Le seul type qui consomme le solde</td></tr>
+<tr><td>Maladie</td><td>Non</td><td>Un justificatif « reçu / non reçu » (case), <strong>jamais de diagnostic ni de pièce</strong></td></tr>
+<tr><td>Permission exceptionnelle</td><td>Non</td><td>Durée maximale par motif, paramétrable</td></tr>
+<tr><td>Sans solde</td><td>Non</td><td>Validation obligatoire</td></tr>
+<tr><td>Maternité et paternité</td><td>Non</td><td>Durées légales à valider (voir ci-dessous)</td></tr>
+</tbody></table></div>
+<h3>Règles</h3>
+<div class="table-wrap"><table><thead><tr><th>Sujet</th><th>Valeur de départ</th><th>À valider avec</th></tr></thead><tbody>
+<tr><td>Acquisition</td><td><strong>1,5 jour par mois de service, soit 18 jours par an</strong>, proratisé le mois d'entrée</td><td>Le droit du travail applicable ou le règlement intérieur : les guides publics se <strong>contredisent</strong> (18 ou 30 jours ; 12 ou 15 jours fériés) et ne sont pas des textes officiels. Référence à vérifier : la loi n° 92/007 du 14 août 1992 portant Code du travail et ses textes d'application</td></tr>
+<tr><td>Jours comptés</td><td><strong>Jours ouvrés du lundi au vendredi</strong> (la semaine de travail de l'entreprise) ; paramètre « ouvrés / ouvrables »</td><td>La RH</td></tr>
+<tr><td>Jours fériés</td><td>Table <strong>éditable par la RH</strong>, <strong>vide au départ</strong> : je ne présume pas la liste</td><td>La RH</td></tr>
+<tr><td>Demi-journées</td><td>Oui (0,5 jour)</td><td>La RH</td></tr>
+<tr><td>Solde négatif</td><td>Interdit</td><td>La RH</td></tr>
+<tr><td>Report du solde</td><td>Aucun report automatique ; la RH ajuste à la main (ajustement tracé, motif obligatoire)</td><td>La RH, la Direction</td></tr>
+<tr><td>Chevauchement</td><td>Refusé (même employé)</td><td>—</td></tr>
+<tr><td>Demande dans le passé</td><td>Réservée à la RH</td><td>La RH</td></tr>
+</tbody></table></div>
+<h3>Circuit</h3>
+<ol><li>L'employé (compte lié) <strong>demande</strong> : type, dates, demi-journées, note facultative.</li><li>Son <strong>responsable RH</strong> (celui de l'organigramme) <strong>valide ou refuse</strong> ; un refus exige un motif. Sans responsable, <strong>la RH valide</strong>.</li><li>L'employé peut <strong>annuler</strong> avant le début ; après le début, seule la RH.</li><li>La RH peut <strong>saisir pour un employé</strong>, et <strong>ajuster un solde</strong> (motif obligatoire).</li><li>Toute transition est <strong>auditée avant/après</strong>.</li></ol>
+<h3>Droits et visibilité</h3>
+<div class="table-wrap"><table><thead><tr><th>Qui</th><th>Voit</th></tr></thead><tbody>
+<tr><td>L'employé</td><td>Ses demandes et son solde</td></tr>
+<tr><td>Le responsable</td><td>Les demandes de son équipe directe, avec leur type</td></tr>
+<tr><td>La RH</td><td>Tout</td></tr>
+<tr><td>La Direction</td><td>Tout, en lecture</td></tr>
+<tr><td>Un collègue</td><td>Dans le <strong>calendrier d'équipe</strong>, seulement « absent » : <strong>ni type, ni motif</strong></td></tr>
+</tbody></table></div>
+<p>Nouvelles permissions <code>hr.leave.read / create / approve / manage</code>, portées Propre, Équipe, Tous ; hors portée = « introuvable » (comme le reste du CRM), sonde ajoutée au contrat anti-IDOR. <strong>Aucune notification par défaut</strong> (l'envoi d'e-mails par le relais Google existe désormais : « demande à valider » est une option à décider).</p>
+<h3>Écrans</h3>
+<p><strong>Mes absences</strong> (demande, solde, historique) · <strong>À valider</strong> (pour les responsables) · <strong>Calendrier d'équipe</strong> · <strong>Soldes</strong> (RH) · <strong>Paramètres RH</strong> (types, jours fériés, acquisition ; RH et Super administrateur).</p>
+<h3>Plan</h3>
+<div class="table-wrap"><table><thead><tr><th>Lot</th><th>Contenu</th></tr></thead><tbody>
+<tr><td><strong>RH-2a</strong></td><td>Migration (<code>hr</code>, tables types, jours fériés, paramètres, demandes, ajustements ; contraintes et index), domaine, cas d'usage, API, permissions, IDOR, audit</td></tr>
+<tr><td><strong>RH-2b</strong></td><td>Les cinq écrans, entrée de menu, jeu de démonstration fictif</td></tr>
+<tr><td><strong>RH-2c</strong></td><td>Recette, tests (dont intégration), <strong>mutants</strong>, fiches de test</td></tr>
+</tbody></table></div>
+<h2>6. Ce que je ne sais pas (à fournir quand vous le pourrez ; en attendant, les valeurs ci-dessus s'appliquent)</h2>
+<ol><li>Le nombre de jours par an réellement accordé, et les jours fériés applicables.</li><li>Qui valide quand le responsable est absent (suppléant ?).</li><li>Le report des soldes d'une année sur l'autre.</li><li>Les types d'absence que vous voulez voir, et les durées de permission exceptionnelle.</li><li>Les types de contrat réels pour RH-3 (CDI, CDD, stagiaire, prestataire ; formateurs externes ou non).</li><li>Si une notification par e-mail à la demande est souhaitée.</li></ol>
+<h2>7. Décision <em>(prise : voir § 8)</em></h2>
+<h2>8. Décision</h2>
+<p><strong>2026-11-10 — Direction produit : « B puis C ».</strong> Retenu : <strong>option B</strong> (RH-2, absences et congés) <strong>maintenant</strong>, puis <strong>option C</strong> (RH-3, contrats et parcours, sans documents ni donnée sensible) comme lot suivant. <strong>Exclus tant que leur condition n'est pas levée</strong> : présences (RH-4), dossier du personnel (RH-5), évaluations (RH-6), paie (RH-7). Les valeurs par défaut du § 5 sont <strong>appliquées « à confirmer »</strong> (comme D59) ; les règles réelles, quand elles seront fournies, remplacent les valeurs de départ (ce sont des paramètres, pas du code). Enregistré en <strong>D64</strong>. <strong>État (2026-11-10)</strong> : <strong>RH-2a livré</strong> (API, base, droits, tests, mutants 126 sur 126) : <a href="../SPRINT-RH-2A-RECETTE.html">recette</a> ; RH-2b (écrans) et RH-2c (recette, mutants de l'interface) à lancer <strong>à votre signal</strong>.</p></main></body></html>
