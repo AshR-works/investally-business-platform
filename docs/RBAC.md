@@ -220,6 +220,8 @@ Cellule : **O**, **É**, **T** = portée accordée ; vide = non accordée.
 | `hr.leave.create` | T | O | O | O | O | O | O | O | T | O |
 | `hr.leave.approve` | T | O | O | O | O | O | O | O | T | O |
 | `hr.leave.manage` | T |  |  |  |  |  |  |  | T |  |
+| `hr.contract.read` | T | T | O | O | O | O | O | O | T | O |
+| `hr.contract.manage` | T |  |  |  |  |  |  |  | T |  |
 
 ### Reporting (`reporting`)
 

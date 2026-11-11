@@ -159,6 +159,15 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 </tbody></table></div>
 <h2>hr</h2>
 <div class="table-wrap"><table><thead><tr><th>Méthode</th><th>Chemin</th><th>Résumé</th><th>Permission</th><th>Succès</th></tr></thead><tbody>
+<tr><td>GET</td><td><code>/hr/contracts</code></td><td></td><td><code>hr.contract.read</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/hr/contracts</code></td><td></td><td><code>hr.contract.manage</code></td><td>201</td></tr>
+<tr><td>GET</td><td><code>/hr/contracts/{id}</code></td><td></td><td><code>hr.contract.read</code></td><td>200</td></tr>
+<tr><td>PUT</td><td><code>/hr/contracts/{id}</code></td><td></td><td><code>hr.contract.manage</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/hr/contracts/{id}/end</code></td><td></td><td><code>hr.contract.manage</code></td><td>200</td></tr>
+<tr><td>GET</td><td><code>/hr/contracts/deadlines</code></td><td></td><td><code>hr.contract.read</code></td><td>200</td></tr>
+<tr><td>GET</td><td><code>/hr/contracts/types</code></td><td></td><td><code>hr.contract.read</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/hr/contracts/types</code></td><td></td><td><code>hr.contract.manage</code></td><td>201</td></tr>
+<tr><td>PUT</td><td><code>/hr/contracts/types/{id}</code></td><td></td><td><code>hr.contract.manage</code></td><td>200</td></tr>
 <tr><td>GET</td><td><code>/hr/directory</code></td><td></td><td><code>hr.directory.read</code></td><td>200</td></tr>
 <tr><td>GET</td><td><code>/hr/employees</code></td><td></td><td><code>hr.employee.read</code></td><td>200</td></tr>
 <tr><td>POST</td><td><code>/hr/employees</code></td><td></td><td><code>hr.employee.create</code></td><td>201</td></tr>
@@ -279,4 +288,4 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td>PUT</td><td><code>/trainings/{id}</code></td><td></td><td><code>training.training.update</code></td><td>200</td></tr>
 <tr><td>POST</td><td><code>/trainings/{id}/status</code></td><td></td><td><code>training.training.update</code></td><td>200</td></tr>
 </tbody></table></div>
-<p><em>181 routes.</em></p></main></body></html>
+<p><em>190 routes.</em></p></main></body></html>

@@ -103,8 +103,8 @@
     {
       "nom": "01 — Sécurité : sans jeton, toute route protégée refuse",
       "description": null,
-      "requetes": 174,
-      "assertions": 348,
+      "requetes": 183,
+      "assertions": 366,
       "detail": [
         {
           "nom": "POST /auth/logout",
@@ -2852,6 +2852,149 @@
             "Sans jeton : refusé (401)",
             "Réponse « problem details »"
           ]
+        },
+        {
+          "nom": "GET /hr/contracts/types",
+          "methode": "GET",
+          "chemin": "/api/v1/hr/contracts/types",
+          "permission": "hr.contract.read",
+          "protegee": true,
+          "succesAttendus": [
+            200
+          ],
+          "corps": null,
+          "tests": [
+            "Sans jeton : refusé (401)",
+            "Réponse « problem details »"
+          ]
+        },
+        {
+          "nom": "POST /hr/contracts/types",
+          "methode": "POST",
+          "chemin": "/api/v1/hr/contracts/types",
+          "permission": "hr.contract.manage",
+          "protegee": true,
+          "succesAttendus": [
+            201
+          ],
+          "corps": {},
+          "tests": [
+            "Sans jeton : refusé (401)",
+            "Réponse « problem details »"
+          ]
+        },
+        {
+          "nom": "PUT /hr/contracts/types/{id}",
+          "methode": "PUT",
+          "chemin": "/api/v1/hr/contracts/types/{id}",
+          "permission": "hr.contract.manage",
+          "protegee": true,
+          "succesAttendus": [
+            200
+          ],
+          "corps": {
+            "version": 1
+          },
+          "tests": [
+            "Sans jeton : refusé (401)",
+            "Réponse « problem details »"
+          ]
+        },
+        {
+          "nom": "GET /hr/contracts/deadlines",
+          "methode": "GET",
+          "chemin": "/api/v1/hr/contracts/deadlines",
+          "permission": "hr.contract.read",
+          "protegee": true,
+          "succesAttendus": [
+            200
+          ],
+          "corps": null,
+          "tests": [
+            "Sans jeton : refusé (401)",
+            "Réponse « problem details »"
+          ]
+        },
+        {
+          "nom": "POST /hr/contracts",
+          "methode": "POST",
+          "chemin": "/api/v1/hr/contracts",
+          "permission": "hr.contract.manage",
+          "protegee": true,
+          "succesAttendus": [
+            201
+          ],
+          "corps": {},
+          "tests": [
+            "Sans jeton : refusé (401)",
+            "Réponse « problem details »"
+          ]
+        },
+        {
+          "nom": "GET /hr/contracts",
+          "methode": "GET",
+          "chemin": "/api/v1/hr/contracts",
+          "permission": "hr.contract.read",
+          "protegee": true,
+          "succesAttendus": [
+            200
+          ],
+          "corps": null,
+          "tests": [
+            "Sans jeton : refusé (401)",
+            "Réponse « problem details »"
+          ]
+        },
+        {
+          "nom": "GET /hr/contracts/{id}",
+          "methode": "GET",
+          "chemin": "/api/v1/hr/contracts/{id}",
+          "permission": "hr.contract.read",
+          "protegee": true,
+          "succesAttendus": [
+            200
+          ],
+          "corps": null,
+          "tests": [
+            "Sans jeton : refusé (401)",
+            "Réponse « problem details »"
+          ]
+        },
+        {
+          "nom": "PUT /hr/contracts/{id}",
+          "methode": "PUT",
+          "chemin": "/api/v1/hr/contracts/{id}",
+          "permission": "hr.contract.manage",
+          "protegee": true,
+          "succesAttendus": [
+            200
+          ],
+          "corps": {
+            "version": 1
+          },
+          "tests": [
+            "Sans jeton : refusé (401)",
+            "Réponse « problem details »"
+          ]
+        },
+        {
+          "nom": "POST /hr/contracts/{id}/end",
+          "methode": "POST",
+          "chemin": "/api/v1/hr/contracts/{id}/end",
+          "permission": "hr.contract.manage",
+          "protegee": true,
+          "succesAttendus": [
+            200
+          ],
+          "corps": {
+            "version": 1,
+            "endedOn": "2027-05-31",
+            "reason": "FIXED_TERM_END"
+          },
+          "tests": [
+            "Sans jeton : refusé (401)",
+            "Réponse « problem details »"
+          ]
         }
       ]
     },
@@ -5156,9 +5299,197 @@
     {
       "nom": "23 — hr",
       "description": null,
-      "requetes": 26,
-      "assertions": 182,
+      "requetes": 35,
+      "assertions": 245,
       "detail": [
+        {
+          "nom": "GET /hr/contracts",
+          "methode": "GET",
+          "chemin": "/api/v1/hr/contracts",
+          "permission": "hr.contract.read",
+          "protegee": true,
+          "succesAttendus": [
+            200
+          ],
+          "corps": null,
+          "tests": [
+            "Pas d’erreur serveur (statut inférieur à 500)",
+            "Le jeton est accepté (pas de 401)",
+            "Statut prévu (succès documenté ou refus métier standard)",
+            "Temps de réponse raisonnable (moins de 3 s)",
+            "Réponse en JSON",
+            "Erreur au format « problem details » (RFC 7807)",
+            "Statut de succès documenté"
+          ]
+        },
+        {
+          "nom": "POST /hr/contracts",
+          "methode": "POST",
+          "chemin": "/api/v1/hr/contracts",
+          "permission": "hr.contract.manage",
+          "protegee": true,
+          "succesAttendus": [
+            201
+          ],
+          "corps": {},
+          "tests": [
+            "Pas d’erreur serveur (statut inférieur à 500)",
+            "Le jeton est accepté (pas de 401)",
+            "Statut prévu (succès documenté ou refus métier standard)",
+            "Temps de réponse raisonnable (moins de 3 s)",
+            "Réponse en JSON",
+            "Erreur au format « problem details » (RFC 7807)",
+            "Statut de succès documenté"
+          ]
+        },
+        {
+          "nom": "GET /hr/contracts/{id}",
+          "methode": "GET",
+          "chemin": "/api/v1/hr/contracts/{id}",
+          "permission": "hr.contract.read",
+          "protegee": true,
+          "succesAttendus": [
+            200
+          ],
+          "corps": null,
+          "tests": [
+            "Pas d’erreur serveur (statut inférieur à 500)",
+            "Le jeton est accepté (pas de 401)",
+            "Statut prévu (succès documenté ou refus métier standard)",
+            "Temps de réponse raisonnable (moins de 3 s)",
+            "Réponse en JSON",
+            "Erreur au format « problem details » (RFC 7807)",
+            "Statut de succès documenté"
+          ]
+        },
+        {
+          "nom": "PUT /hr/contracts/{id}",
+          "methode": "PUT",
+          "chemin": "/api/v1/hr/contracts/{id}",
+          "permission": "hr.contract.manage",
+          "protegee": true,
+          "succesAttendus": [
+            200
+          ],
+          "corps": {
+            "version": 1
+          },
+          "tests": [
+            "Pas d’erreur serveur (statut inférieur à 500)",
+            "Le jeton est accepté (pas de 401)",
+            "Statut prévu (succès documenté ou refus métier standard)",
+            "Temps de réponse raisonnable (moins de 3 s)",
+            "Réponse en JSON",
+            "Erreur au format « problem details » (RFC 7807)",
+            "Statut de succès documenté"
+          ]
+        },
+        {
+          "nom": "POST /hr/contracts/{id}/end",
+          "methode": "POST",
+          "chemin": "/api/v1/hr/contracts/{id}/end",
+          "permission": "hr.contract.manage",
+          "protegee": true,
+          "succesAttendus": [
+            200
+          ],
+          "corps": {
+            "version": 1,
+            "endedOn": "2027-05-31",
+            "reason": "FIXED_TERM_END"
+          },
+          "tests": [
+            "Pas d’erreur serveur (statut inférieur à 500)",
+            "Le jeton est accepté (pas de 401)",
+            "Statut prévu (succès documenté ou refus métier standard)",
+            "Temps de réponse raisonnable (moins de 3 s)",
+            "Réponse en JSON",
+            "Erreur au format « problem details » (RFC 7807)",
+            "Statut de succès documenté"
+          ]
+        },
+        {
+          "nom": "GET /hr/contracts/deadlines",
+          "methode": "GET",
+          "chemin": "/api/v1/hr/contracts/deadlines",
+          "permission": "hr.contract.read",
+          "protegee": true,
+          "succesAttendus": [
+            200
+          ],
+          "corps": null,
+          "tests": [
+            "Pas d’erreur serveur (statut inférieur à 500)",
+            "Le jeton est accepté (pas de 401)",
+            "Statut prévu (succès documenté ou refus métier standard)",
+            "Temps de réponse raisonnable (moins de 3 s)",
+            "Réponse en JSON",
+            "Erreur au format « problem details » (RFC 7807)",
+            "Statut de succès documenté"
+          ]
+        },
+        {
+          "nom": "GET /hr/contracts/types",
+          "methode": "GET",
+          "chemin": "/api/v1/hr/contracts/types",
+          "permission": "hr.contract.read",
+          "protegee": true,
+          "succesAttendus": [
+            200
+          ],
+          "corps": null,
+          "tests": [
+            "Pas d’erreur serveur (statut inférieur à 500)",
+            "Le jeton est accepté (pas de 401)",
+            "Statut prévu (succès documenté ou refus métier standard)",
+            "Temps de réponse raisonnable (moins de 3 s)",
+            "Réponse en JSON",
+            "Erreur au format « problem details » (RFC 7807)",
+            "Statut de succès documenté"
+          ]
+        },
+        {
+          "nom": "POST /hr/contracts/types",
+          "methode": "POST",
+          "chemin": "/api/v1/hr/contracts/types",
+          "permission": "hr.contract.manage",
+          "protegee": true,
+          "succesAttendus": [
+            201
+          ],
+          "corps": {},
+          "tests": [
+            "Pas d’erreur serveur (statut inférieur à 500)",
+            "Le jeton est accepté (pas de 401)",
+            "Statut prévu (succès documenté ou refus métier standard)",
+            "Temps de réponse raisonnable (moins de 3 s)",
+            "Réponse en JSON",
+            "Erreur au format « problem details » (RFC 7807)",
+            "Statut de succès documenté"
+          ]
+        },
+        {
+          "nom": "PUT /hr/contracts/types/{id}",
+          "methode": "PUT",
+          "chemin": "/api/v1/hr/contracts/types/{id}",
+          "permission": "hr.contract.manage",
+          "protegee": true,
+          "succesAttendus": [
+            200
+          ],
+          "corps": {
+            "version": 1
+          },
+          "tests": [
+            "Pas d’erreur serveur (statut inférieur à 500)",
+            "Le jeton est accepté (pas de 401)",
+            "Statut prévu (succès documenté ou refus métier standard)",
+            "Temps de réponse raisonnable (moins de 3 s)",
+            "Réponse en JSON",
+            "Erreur au format « problem details » (RFC 7807)",
+            "Statut de succès documenté"
+          ]
+        },
         {
           "nom": "GET /hr/directory",
           "methode": "GET",
@@ -7213,8 +7544,8 @@
   ],
   "resume": {
     "dossiers": 31,
-    "requetes": 385,
-    "testsDefinis": 1657,
+    "requetes": 403,
+    "testsDefinis": 1738,
     "resultatDeReference": "Pile jetable, jeu de démonstration, compte Super administrateur : 373 requêtes, 1 412 assertions exécutées, 0 échec (dossiers 00b et 98 à part : 12 requêtes, 54 assertions, 0 échec)."
   }
 }

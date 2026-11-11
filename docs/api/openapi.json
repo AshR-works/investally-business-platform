@@ -6959,6 +6959,341 @@
         "x-permission": "hr.leave.manage",
         "x-protected": true
       }
+    },
+    "/api/v1/hr/contracts/types": {
+      "get": {
+        "operationId": "ContractsController_types",
+        "parameters": [
+          {
+            "name": "includeInactive",
+            "required": false,
+            "in": "query",
+            "description": "Inclure les types désactivés (RH seulement).",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "hr"
+        ],
+        "x-permission": "hr.contract.read",
+        "x-protected": true
+      },
+      "post": {
+        "operationId": "ContractsController_newType",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateContractTypeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "hr"
+        ],
+        "x-permission": "hr.contract.manage",
+        "x-protected": true
+      }
+    },
+    "/api/v1/hr/contracts/types/{id}": {
+      "put": {
+        "operationId": "ContractsController_editType",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateContractTypeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "hr"
+        ],
+        "x-permission": "hr.contract.manage",
+        "x-protected": true
+      }
+    },
+    "/api/v1/hr/contracts/deadlines": {
+      "get": {
+        "operationId": "ContractsController_upcoming",
+        "parameters": [
+          {
+            "name": "days",
+            "required": false,
+            "in": "query",
+            "description": "Fenêtre en jours à partir d’aujourd’hui.",
+            "schema": {
+              "minimum": 1,
+              "maximum": 365,
+              "default": 60,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "hr"
+        ],
+        "x-permission": "hr.contract.read",
+        "x-protected": true
+      }
+    },
+    "/api/v1/hr/contracts": {
+      "post": {
+        "operationId": "ContractsController_add",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateContractDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "hr"
+        ],
+        "x-permission": "hr.contract.manage",
+        "x-protected": true
+      },
+      "get": {
+        "operationId": "ContractsController_all",
+        "parameters": [
+          {
+            "name": "employeeId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ACTIVE",
+                "ENDED"
+              ]
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "hr"
+        ],
+        "x-permission": "hr.contract.read",
+        "x-protected": true
+      }
+    },
+    "/api/v1/hr/contracts/{id}": {
+      "get": {
+        "operationId": "ContractsController_get",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "hr"
+        ],
+        "x-permission": "hr.contract.read",
+        "x-protected": true
+      },
+      "put": {
+        "operationId": "ContractsController_edit",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdjustContractDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "hr"
+        ],
+        "x-permission": "hr.contract.manage",
+        "x-protected": true
+      }
+    },
+    "/api/v1/hr/contracts/{id}/end": {
+      "post": {
+        "operationId": "ContractsController_finish",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EndContractDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "hr"
+        ],
+        "x-permission": "hr.contract.manage",
+        "x-protected": true
+      }
     }
   },
   "info": {
@@ -9177,6 +9512,141 @@
           "employeeId",
           "year",
           "days",
+          "reason"
+        ]
+      },
+      "CreateContractTypeDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "APPRENTI",
+            "description": "Majuscules, chiffres et _ (2 à 30 caractères)."
+          },
+          "label": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "fixedTerm": {
+            "type": "boolean",
+            "description": "Vrai : la date de fin est obligatoire ; faux : le contrat n’en a jamais."
+          },
+          "sortOrder": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 10000
+          }
+        },
+        "required": [
+          "code",
+          "label",
+          "fixedTerm"
+        ]
+      },
+      "UpdateContractTypeDto": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "number",
+            "minimum": 1
+          },
+          "label": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "sortOrder": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 10000
+          }
+        },
+        "required": [
+          "version"
+        ]
+      },
+      "CreateContractDto": {
+        "type": "object",
+        "properties": {
+          "employeeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "contractTypeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "start": {
+            "type": "string",
+            "example": "2026-12-01"
+          },
+          "end": {
+            "type": "object",
+            "example": "2027-05-31",
+            "nullable": true,
+            "description": "Obligatoire pour un type à durée déterminée, interdite sinon."
+          },
+          "probationEnd": {
+            "type": "object",
+            "example": "2027-02-28",
+            "nullable": true
+          }
+        },
+        "required": [
+          "employeeId",
+          "contractTypeId",
+          "start"
+        ]
+      },
+      "AdjustContractDto": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "number",
+            "minimum": 1
+          },
+          "end": {
+            "type": "object",
+            "nullable": true,
+            "description": "Nouvelle fin (contrat à durée déterminée en cours)."
+          },
+          "probationEnd": {
+            "type": "object",
+            "nullable": true
+          }
+        },
+        "required": [
+          "version"
+        ]
+      },
+      "EndContractDto": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "number",
+            "minimum": 1
+          },
+          "endedOn": {
+            "type": "string",
+            "example": "2027-05-31"
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "FIXED_TERM_END",
+              "PROBATION_END",
+              "RESIGNATION",
+              "MISSION_END",
+              "OTHER"
+            ],
+            "description": "Motif choisi dans une liste fermée ; jamais un texte libre."
+          }
+        },
+        "required": [
+          "version",
+          "endedOn",
           "reason"
         ]
       }
