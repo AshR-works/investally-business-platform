@@ -120,9 +120,7 @@ export default function CompanyPage() {
       {changingOwner && <CompanyOwnerDialog company={company} onClose={() => setChangingOwner(false)} onDone={async () => { setChangingOwner(false); await load(); }} />}
       <Card className="mb-8">
         <dl className="m-0 grid grid-cols-[repeat(auto-fit,minmax(12rem,1fr))] gap-6 p-5">
-          <div><dt className="text-xs font-semibold text-ink-2">Statut</dt><dd className="m-0 mt-1"><Badge tone={status.tone}>{status.label}</Badge>{can(profile, 'bd.company.update') && statusActions(company.status).length > 0 && (
-            <span className="ml-2 inline-flex flex-wrap gap-2">{statusActions(company.status).map((a) => <button key={a.to} type="button" className="secondary" onClick={() => setStatusAction(a)}>{a.label}</button>)}</span>
-          )}</dd></div>
+          <div><dt className="text-xs font-semibold text-ink-2">Statut</dt><dd className="m-0 mt-1"><Badge tone={status.tone}>{status.label}</Badge></dd></div>
           <div><dt className="text-xs font-semibold text-ink-2">Responsable</dt><dd className="m-0 mt-1">{company.ownerName ?? '—'}</dd></div>
           <div><dt className="text-xs font-semibold text-ink-2">Secteur</dt><dd className="m-0 mt-1">{company.sector ?? '—'}</dd></div>
           <div><dt className="text-xs font-semibold text-ink-2">Pays</dt><dd className="m-0 mt-1">{company.country ?? '—'}</dd></div>
@@ -130,6 +128,12 @@ export default function CompanyPage() {
           <div><dt className="text-xs font-semibold text-ink-2">Téléphone</dt><dd className="m-0 mt-1">{company.phone ?? '—'}</dd></div>
           <div><dt className="text-xs font-semibold text-ink-2">Créée le</dt><dd className="m-0 mt-1">{formatDate(company.createdAt)}</dd></div>
         </dl>
+        {/* Changements de statut : alignés à droite, sur le bord des boutons des autres blocs (nouvelle offre, enregistrer un agrément…). */}
+        {can(profile, 'bd.company.update') && statusActions(company.status).length > 0 && (
+          <div className="flex flex-wrap justify-end gap-2 px-5 pb-5">
+            {statusActions(company.status).map((a) => <button key={a.to} type="button" className="secondary" onClick={() => setStatusAction(a)}>{a.label}</button>)}
+          </div>
+        )}
       </Card>
       <FacilitationPanel facilitation={company.facilitation} />
       {can(profile, 'bd.contact.read') && <ContactsPanel company={{ id: company.id, name: company.name }} />}

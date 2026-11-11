@@ -1,5 +1,6 @@
 'use client';
 
+import { IconButton } from '../icon-button';
 import { FormEvent, useCallback, useEffect, useState } from 'react';
 import { api, ApiError } from '../../lib/api';
 import { useAuth } from '../../lib/auth-context';
@@ -129,7 +130,7 @@ export function DocumentsPanel({ ownerType, ownerId }: { ownerType: string; owne
       align: 'right',
       cell: (d) => (
         <div className="flex items-center justify-end gap-1">
-          {canDownload && <button type="button" className="secondary small" onClick={() => void download(d)}>Télécharger</button>}
+          {canDownload && <IconButton icon="download" label={`Télécharger ${d.current.fileName}`} outlined onClick={() => void download(d)} />}
           <RowActions label={`Actions pour ${d.title}`}>
             <RowAction onClick={() => setDialog({ kind: 'history', document: d })}>Historique des versions</RowAction>
             {canCreate && d.status !== 'ARCHIVED' && <RowAction onClick={() => setDialog({ kind: 'version', document: d })}>Ajouter une nouvelle version</RowAction>}
@@ -311,7 +312,7 @@ function HistoryDialog({ document, canDownload, onClose, onError }: { document: 
                   <td>{v.fileName}<span className="block text-xs text-ink-2">{formatBytes(v.sizeBytes)}</span></td>
                   <td>{formatDate(v.uploadedAt)}</td>
                   <td><code title={v.sha256}>{v.sha256.slice(0, 12)}…</code></td>
-                  <td>{canDownload && <button type="button" className="secondary small" onClick={() => void downloadVersion(document.id, v.fileName, v.number).catch((e) => onError(e instanceof ApiError ? e.message : 'Téléchargement impossible'))}>Télécharger</button>}</td>
+                  <td>{canDownload && <IconButton icon="download" label={`Télécharger la version ${v.number} (${v.fileName})`} outlined onClick={() => void downloadVersion(document.id, v.fileName, v.number).catch((e) => onError(e instanceof ApiError ? e.message : 'Téléchargement impossible'))} />}</td>
                 </tr>
               ))}
             </tbody>

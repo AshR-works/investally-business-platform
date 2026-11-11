@@ -103,6 +103,7 @@ td .row { min-width: 15rem; }
 /* Largeur minimale : les champs et les groupes ne se tassent pas (sur un écran plus étroit, la fenêtre prend toute la largeur). */
 .dialog { min-width: min(26rem, 100%); }
 .dialog.wide { min-width: min(46rem, 100%); }
+.dialog.medium { max-width: min(640px, calc(100vw - 2rem)); min-width: min(34rem, 100%); }
 /* Le cadre ne défile jamais : l'en-tête reste en place et seul le corps défile. La barre de défilement est fine, à l'intérieur du cadre
    (marges à droite et en bas : elle ne touche plus les angles arrondis) et sa place est réservée (la largeur ne saute pas à l'apparition). */
 .dialog-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; padding: 1.25rem 1.5rem .5rem; flex: none; }
@@ -113,6 +114,19 @@ td .row { min-width: 15rem; }
 .dialog-body > .row.end:last-child, .dialog-body > form > .row.end:last-child { position: sticky; bottom: 0; z-index: 1; background: var(--surface); border-top: 1px solid var(--line); margin-top: 1rem; padding: .75rem 0 .25rem; }
 .dialog-close { flex-shrink: 0; display: inline-grid; place-items: center; padding: .4rem; margin: -.2rem -.3rem 0 0; background: transparent; color: var(--ink); border-color: transparent; border-radius: var(--radius-pill); }
 .dialog-close:hover:not(:disabled) { background: var(--surface-2); }
+/* Pictogrammes d'action de l'en-tête (modifier…), alignés sur la croix et placés avant elle. */
+.dialog-head-actions { display: flex; align-items: flex-start; gap: .25rem; flex-shrink: 0; }
+.dialog-head-actions > .icon-button { margin: -.2rem 0 0 0; }
+/* Bouton à pictogramme seul : le nom accessible et l'info-bulle viennent de `IconButton` ; jamais de texte qui se replie. */
+.icon-button { flex-shrink: 0; display: inline-grid; place-items: center; padding: .4rem; background: transparent; color: var(--ink); border-color: transparent; border-radius: var(--radius-pill); white-space: nowrap; }
+.icon-button:hover:not(:disabled) { background: var(--surface-2); }
+.icon-button.outlined { border-color: var(--line-strong); }
+/* Actions d'une fenêtre de consultation : toujours sur une seule ligne, alignées à droite. */
+.actions-line { display: flex; flex-wrap: nowrap; justify-content: flex-end; gap: .5rem; }
+.actions-line > button { white-space: nowrap; min-width: 0; }
+/* Champ précédé de son libellé : le libellé est au-dessus du champ, qui prend toute la largeur (jamais en ligne). */
+.field-stack { display: block; margin: 0; font-weight: 600; }
+.field-stack > select, .field-stack > input { display: block; width: 100%; margin-top: .25rem; font-weight: 400; }
 .qr { display: block; margin: .5rem auto 1rem; width: 220px; height: 220px; background: #fff; padding: 8px; border-radius: var(--radius-xs); }
 .secret { font-family: ui-monospace, Consolas, monospace; letter-spacing: .08em; overflow-wrap: anywhere; }
 .codes { display: grid; grid-template-columns: repeat(2, 1fr); gap: .4rem; font-family: ui-monospace, Consolas, monospace; margin: 1rem 0; }

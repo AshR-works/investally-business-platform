@@ -3,8 +3,8 @@
 import { ReactNode, useEffect, useRef } from 'react';
 import { Icon } from './icon';
 
-/** Fenêtre modale accessible : Échap ferme, le focus entre dans la fenêtre, le fond est rendu inerte (`inert`), Tab reste dans la fenêtre et le focus revient à l'élément d'origine à la fermeture. */
-export function Modal({ title, onClose, children, size = 'default' }: { title: string; onClose: () => void; children: ReactNode; size?: 'default' | 'wide' }) {
+/** Fenêtre modale accessible : Échap ferme, le focus entre dans la fenêtre, le fond est rendu inerte (`inert`), Tab reste dans la fenêtre et le focus revient à l'élément d'origine à la fermeture. `actions` : pictogrammes d'action (ex. modifier) placés avant la croix, jamais de bouton « Fermer » en bas. */
+export function Modal({ title, onClose, children, size = 'default', actions }: { title: string; onClose: () => void; children: ReactNode; size?: 'default' | 'medium' | 'wide'; actions?: ReactNode }) {
   const ref = useRef<HTMLDivElement>(null);
   const close = useRef(onClose);
   close.current = onClose;
@@ -53,10 +53,13 @@ export function Modal({ title, onClose, children, size = 'default' }: { title: s
 
   return (
     <div className="overlay" role="presentation">
-      <div className={size === 'wide' ? 'dialog wide' : 'dialog'} role="dialog" aria-modal="true" aria-label={title} ref={ref}>
+      <div className={size === 'wide' ? 'dialog wide' : size === 'medium' ? 'dialog medium' : 'dialog'} role="dialog" aria-modal="true" aria-label={title} ref={ref}>
         <div className="dialog-head">
           <h2>{title}</h2>
-          <button type="button" className="dialog-close" onClick={onClose} aria-label="Fermer la fenêtre" title="Fermer"><Icon name="close" className="size-5" /></button>
+          <div className="dialog-head-actions">
+            {actions}
+            <button type="button" className="dialog-close" onClick={onClose} aria-label="Fermer la fenêtre" title="Fermer"><Icon name="close" className="size-5" /></button>
+          </div>
         </div>
         <div className="dialog-body">{children}</div>
       </div>

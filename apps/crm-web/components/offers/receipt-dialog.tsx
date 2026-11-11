@@ -195,7 +195,6 @@ export function ReceiptDialog({ offer, onClose, onChanged }: { offer: Offer; onC
           </ul>
         </section>
       )}
-      {valid && !cancelling && <div className="row end"><button type="button" className="secondary" onClick={onClose}>Fermer</button></div>}
     </Modal>
   );
 }
