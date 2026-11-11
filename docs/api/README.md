@@ -15,6 +15,8 @@ Une **API REST en JSON sur HTTP**, construite avec **NestJS** (Node.js), décrit
 | Protection | En-tête `Origin` contrôlé sur les requêtes qui modifient, limitation de débit (429), en-têtes de sécurité |
 | Données | Identifiants en UUID, dates en ISO 8601, **montants en texte décimal** (`"150000.00"`), jours civils `AAAA-MM-JJ` |
 
+**Pas à pas pour charger l'API et la tester** : [GUIDE-CHARGER-ET-TESTER-L-API.html](GUIDE-CHARGER-ET-TESTER-L-API.html) (page autonome, à ouvrir dans un navigateur). **Les tests en JSON** : [`tests-api.json`](tests-api.json) (catalogue lisible) et [`postman/Investally-API.postman_collection.json`](postman/Investally-API.postman_collection.json) (exécutable).
+
 La liste exhaustive des routes, avec la permission de chacune, est dans [REFERENCE-DES-ROUTES.md](REFERENCE-DES-ROUTES.md) (générée). La base de données est décrite dans [`../base-de-donnees/`](../base-de-donnees/README.md).
 
 ## Se connecter (3 appels)
@@ -40,7 +42,8 @@ Un compte qui n'a pas encore de second facteur l'enrôle par `POST /auth/mfa/enr
 ## Tests Postman
 Fichiers dans [`postman/`](postman/) :
 - `Investally-API.postman_collection.json` : la collection **avec ses tests** (générée, ne pas modifier à la main) ;
-- `Investally-local.postman_environment.json` : l'environnement, **sans aucun secret**.
+- `Investally-local.postman_environment.json` : l'environnement, **sans aucun secret** ;
+- [`tests-api.json`](tests-api.json) : le **catalogue des tests** en JSON, lisible sans Postman (chaque route, sa permission, ses statuts attendus, la liste de ses tests) ; généré avec la collection.
 
 ### Utiliser
 1. Postman › Import : les deux fichiers.

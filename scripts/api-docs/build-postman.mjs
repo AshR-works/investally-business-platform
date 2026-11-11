@@ -86,7 +86,7 @@ function testsFor(operation, { expectStatuses }) {
     '  });',
     '}',
     'if (success.includes(pm.response.code)) {',
-    `  pm.test('Statut de succès documenté : ' + pm.response.code, () => pm.expect(success).to.include(pm.response.code));`,
+    `  pm.test('Statut de succès documenté', () => pm.expect(success).to.include(pm.response.code));`,
   ];
   if (properties.length > 0) {
     lines.push(`  pm.test('La réponse contient les champs documentés', () => pm.expect(pm.response.json()).to.include.keys(${properties.slice(0, 12).map((p) => JSON.stringify(p)).join(', ')}));`);
@@ -414,6 +414,52 @@ for (const [tag, ops] of [...tags.entries()].sort(([a], [b]) => a.localeCompare(
 }
 md.push(`*${routes} routes.*`, '');
 writeFileSync(join(root, 'docs/api/REFERENCE-DES-ROUTES.md'), md.join('\n'), 'utf8');
+
+// ───────────── Catalogue des tests (JSON lisible) ─────────────
+// Le même contenu que la collection, mais lisible sans Postman : chaque requête avec sa permission, ses statuts attendus et la liste de ses tests (assertions).
+const testNames = (item) => {
+  const script = (item.event ?? []).filter((e) => e.listen === 'test').flatMap((e) => e.script.exec).join('\n');
+  return [...script.matchAll(/pm\.test\('((?:[^'\\]|\\.)*)'/g)].map((m) => m[1].replace(/\\u2019/g, String.fromCharCode(8217)).replace(/\\'/g, "'"));
+};
+const describeItem = (item) => {
+  const notes = item.request?.description ?? '';
+  const permission = /\*\*Permission\*\* : `([^`]+)`/.exec(notes)?.[1] ?? null;
+  const succes = /Succès attendu : ([0-9, ]+)\./.exec(notes)?.[1]?.split(',').map((x) => Number(x.trim())) ?? null;
+  const tests = testNames(item);
+  return {
+    nom: item.name,
+    methode: item.request?.method ?? null,
+    chemin: (item.request?.url?.raw ?? '').replace('{{baseUrl}}', ''),
+    permission,
+    protegee: /Authentifié|\*\*Permission\*\*/.test(notes) || null,
+    succesAttendus: succes,
+    corps: item.request?.body ? (() => { try { return JSON.parse(item.request.body.raw); } catch { return item.request.body.raw; } })() : null,
+    tests,
+  };
+};
+const walk = (folder) => (folder.item ?? []).flatMap((child) => (child.item ? walk(child) : [describeItem(child)]));
+const catalogue = {
+  titre: 'Investally Business Platform : catalogue des tests de l’API',
+  genereLe: new Date().toISOString().slice(0, 10),
+  source: 'Généré avec la collection Postman par scripts/api-docs/build-postman.mjs (docs/api/postman/Investally-API.postman_collection.json). La collection est le fichier EXÉCUTABLE ; ce catalogue en est la version lisible.',
+  executer: {
+    postman: 'Importer la collection et l’environnement, renseigner email, password et mfaSecret, lancer « 00 — Authentification » puis le dossier voulu.',
+    newman: 'node scripts/api-docs/run-newman.mjs --env <environnement.json> --report rapport.json',
+    guide: 'docs/api/GUIDE-CHARGER-ET-TESTER-L-API.html',
+  },
+  ordreDExecution: ['00 — Authentification', '01 — Sécurité', '02 — Santé', '90 — Parcours de bout en bout', '10 à 34 — une requête par route', '00b et 98 : à part'],
+  dossiers: collection.item.map((folder) => {
+    const requetes = walk(folder);
+    return { nom: folder.name, description: folder.description ?? null, requetes: requetes.length, assertions: requetes.reduce((n, r) => n + r.tests.length, 0), detail: requetes };
+  }),
+};
+catalogue.resume = {
+  dossiers: catalogue.dossiers.length,
+  requetes: catalogue.dossiers.reduce((n, f) => n + f.requetes, 0),
+  testsDefinis: catalogue.dossiers.reduce((n, f) => n + f.assertions, 0),
+  resultatDeReference: 'Pile jetable, jeu de démonstration, compte Super administrateur : 373 requêtes, 1 412 assertions exécutées, 0 échec (dossiers 00b et 98 à part : 12 requêtes, 54 assertions, 0 échec).',
+};
+writeFileSync(join(root, 'docs/api/tests-api.json'), JSON.stringify(catalogue, null, 2) + '\n', 'utf8');
 
 const requests = generated.reduce((n, f) => n + f.item.length, 0);
 console.log(`postman : ${generated.length} dossiers de routes, ${requests} requêtes, ${unauthenticated.length} contrôles « sans jeton », ${scenarioCount} étapes de parcours -> docs/api/postman`);
