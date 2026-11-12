@@ -56,6 +56,9 @@ describeDb('Jeu de données de démonstration (cas d’usage + PostgreSQL)', () 
     await db.courseModule.deleteMany({ where: { trainings: { none: {} }, title: { in: ['Fondations Économiques & Architecture de la Place Financière', 'Ingénierie des Instruments Financiers, Données & Acteurs de Marché', 'Asset Management, Construction & Évaluation de Portefeuille', 'Pratique du Trading, Décision d’Investissement & Analyse Quantitative', 'Ingénierie Financière, IPO & Levées de Fonds en Zone CEMAC', 'Réglementation des Marchés Financiers en Zone CEMAC & Pouvoirs de la COSUMAF', 'Portfolio Engineering, Asset Allocation & Live Trading (Capstone Project)'] } } });
     await db.room.deleteMany({ where: { name: { in: ['Salle de marchés', 'Salle de réunion'] } } });
     await db.trainer.deleteMany({ where: { emailKey: { endsWith: TRAINERS_MARKER } } });
+    await db.journeyTask.deleteMany({ where: { journey: { employee: { workEmail: { endsWith: RH_EMAIL_DOMAIN } } } } });
+    await db.journey.deleteMany({ where: { employee: { workEmail: { endsWith: RH_EMAIL_DOMAIN } } } });
+    await db.contract.deleteMany({ where: { employee: { workEmail: { endsWith: RH_EMAIL_DOMAIN } } } });
     await db.leaveRequest.deleteMany({ where: { employee: { workEmail: { endsWith: RH_EMAIL_DOMAIN } } } });
     await db.employee.updateMany({ where: { workEmail: { endsWith: RH_EMAIL_DOMAIN } }, data: { managerEmployeeId: null } });
     await db.employee.deleteMany({ where: { workEmail: { endsWith: RH_EMAIL_DOMAIN } } });
@@ -64,9 +67,17 @@ describeDb('Jeu de données de démonstration (cas d’usage + PostgreSQL)', () 
 
   it('charge tout le plan par les cas d’usage, sans erreur, puis refuse de recharger (idempotent)', async () => {
     const first = await runSeed(t.app as never, plan, { users });
-    expect(first).toMatchObject({ skipped: false, executed: plan.length, loaded: ['crm', 'catalogue', 'formateurs', 'sessions', 'inscriptions', 'rh', 'conges', 'particuliers'] });
+    expect(first).toMatchObject({ skipped: false, executed: plan.length, loaded: ['crm', 'catalogue', 'formateurs', 'sessions', 'inscriptions', 'rh', 'conges', 'contrats', 'parcours', 'particuliers'] });
     const second = await runSeed(t.app as never, plan, { users });
     expect(second).toMatchObject({ skipped: true, executed: 0 });
+    // Contrats et parcours : par les cas d'usage, dans les règles (un seul contrat en cours, motifs de la liste, coches datées).
+    const mine = { employee: { workEmail: { endsWith: RH_EMAIL_DOMAIN } } };
+    expect(await t.prisma.db.contract.count({ where: mine })).toBe(12);
+    expect(await t.prisma.db.contract.count({ where: { ...mine, status: 'ENDED', endReason: 'FIXED_TERM_END' } })).toBe(2);
+    expect(await t.prisma.db.contract.count({ where: { ...mine, status: 'ACTIVE' } })).toBe(10);
+    expect(await t.prisma.db.journey.count({ where: mine })).toBe(3);
+    expect(await t.prisma.db.journey.count({ where: { ...mine, status: 'COMPLETED' } })).toBe(1);
+    expect(await t.prisma.db.journeyTask.count({ where: { journey: mine, doneAt: { not: null }, doneByUserId: { not: null } } })).toBe(3 + 6);
     expect(await t.prisma.db.company.count({ where: { name: SEED_MARKER } })).toBe(1);
   }, 600_000);
 
@@ -151,10 +162,13 @@ describeDb('Jeu de données de démonstration (cas d’usage + PostgreSQL)', () 
     expect(gaps).toHaveLength(1);
     expect(gaps[0]).toMatchObject({ employeeName: expect.stringContaining('Nkodo'), hrManagerName: expect.stringContaining('Tchoumi'), accountManagerName: null });
     // Chargé seul sur une démo qui n'a pas de bloc RH.
+    await db.journeyTask.deleteMany({ where: { journey: { employee: { workEmail: { endsWith: RH_EMAIL_DOMAIN } } } } });
+    await db.journey.deleteMany({ where: { employee: { workEmail: { endsWith: RH_EMAIL_DOMAIN } } } });
+    await db.contract.deleteMany({ where: { employee: { workEmail: { endsWith: RH_EMAIL_DOMAIN } } } });
     await db.leaveRequest.deleteMany({ where: { employee: { workEmail: { endsWith: RH_EMAIL_DOMAIN } } } });
     await db.employee.updateMany({ where: { workEmail: { endsWith: RH_EMAIL_DOMAIN } }, data: { managerEmployeeId: null } });
     await db.employee.deleteMany({ where: { workEmail: { endsWith: RH_EMAIL_DOMAIN } } });
-    expect(await runSeed(t.app as never, plan, { users })).toMatchObject({ skipped: false, loaded: ['rh', 'conges'], executed: 12 + 9 });
+    expect(await runSeed(t.app as never, plan, { users })).toMatchObject({ skipped: false, loaded: ['rh', 'conges', 'contrats', 'parcours'], executed: 12 + 9 + 14 + 12 });
     expect(await runSeed(t.app as never, plan, { users })).toMatchObject({ skipped: true, loaded: [] });
   }, 300_000);
 

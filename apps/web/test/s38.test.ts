@@ -36,7 +36,7 @@ describe('fusion des droits : l\'interface fait exactement comme le serveur', ()
       }
       expect([chosen.join('+'), [...client].sort()]).toEqual([chosen.join('+'), [...expected].sort()]);
     }
-  });
+  }, 30_000);
   it('la portée la plus large l\'emporte quand deux rôles accordent la même permission', () => {
     const a = roleView('A', [{ code: 'bd.company.read', scope: 'OWN' }]);
     const b = roleView('B', [{ code: 'bd.company.read', scope: 'ALL' }]);

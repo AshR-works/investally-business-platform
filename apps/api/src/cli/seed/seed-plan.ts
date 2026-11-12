@@ -53,6 +53,10 @@ export type SeedOp =
   | { k: 'employeeLeave'; employee: string; leftOn: string; reason: string }
   | { k: 'leave'; key: string; employee: string; typeCode: string; start: string; end: string; startHalf?: boolean; endHalf?: boolean; note: string }
   | { k: 'leaveDecision'; leave: string; decision: 'APPROVE' | 'REJECT'; note?: string }
+  | { k: 'contract'; key: string; employee: string; typeCode: string; start: string; end?: string; probationEnd?: string }
+  | { k: 'contractEnd'; contract: string; endedOn: string; reason: string }
+  | { k: 'journey'; key: string; employee: string; kind: 'ONBOARDING' | 'OFFBOARDING'; referenceDate: string }
+  | { k: 'journeyTask'; journey: string; index: number }
   | { k: 'ambassador'; key: string; lastName: string; firstName: string; origin: 'CLIENT' | 'LEARNER'; company?: string; email: string; phone: string; appointedOn: string; note: string };
 
 export interface SeedEvent {
@@ -199,8 +203,8 @@ const FORMATEURS: SeedOp[] = TRAINERS.map(([lastName, firstName, specialties, lo
 }));
 
 /** Les blocs du jeu : chacun se charge seul sur une démo existante (marqueur propre), dans l'ordre des dépendances. */
-export type SeedBlock = 'crm' | 'catalogue' | 'formateurs' | 'sessions' | 'inscriptions' | 'rh' | 'conges' | 'particuliers';
-export const SEED_BLOCKS: readonly SeedBlock[] = ['crm', 'catalogue', 'formateurs', 'sessions', 'inscriptions', 'rh', 'conges', 'particuliers'];
+export type SeedBlock = 'crm' | 'catalogue' | 'formateurs' | 'sessions' | 'inscriptions' | 'rh' | 'conges' | 'contrats' | 'parcours' | 'particuliers';
+export const SEED_BLOCKS: readonly SeedBlock[] = ['crm', 'catalogue', 'formateurs', 'sessions', 'inscriptions', 'rh', 'conges', 'contrats', 'parcours', 'particuliers'];
 /** Entreprises clientes de formation du bloc « inscriptions » : la première sert de repère au chargement par blocs. */
 export const FORMATION_CLIENTS: readonly [string, 'Cameroun' | "Côte d'Ivoire" | 'Sénégal' | 'Gabon' | 'RDC'][] = [
   ['Académie Wouri Finance', 'Cameroun'], ['Cabinet Libreville Conseil', 'Gabon'], ['Institut Dakar Marchés', 'Sénégal'], ['Groupe Abidjan Capital', "Côte d'Ivoire"], ['Fonds Kinshasa Épargne', 'RDC'],
@@ -219,6 +223,8 @@ export function blockOf(op: SeedOp): SeedBlock {
   if (op.k === 'trainer') return 'formateurs';
   if (op.k === 'employee' || op.k === 'employeeLeave') return 'rh';
   if (op.k === 'leave' || op.k === 'leaveDecision') return 'conges';
+  if (op.k === 'contract' || op.k === 'contractEnd') return 'contrats';
+  if (op.k === 'journey' || op.k === 'journeyTask') return 'parcours';
   if (op.k === 'individual' || op.k === 'enrollIndividual' || op.k === 'individualConfirm') return 'particuliers';
   if (op.k === 'learner' || op.k === 'enroll' || op.k === 'enrollConfirm' || op.k === 'enrollCancel' || op.k === 'enrollReplace') return 'inscriptions';
   if (op.k === 'session' || op.k === 'sessionOpen' || op.k === 'sessionPostpone' || op.k === 'sessionCancel') return 'sessions';
@@ -630,6 +636,39 @@ export function buildPlan({ anchor, seed = 2026 }: PlanOptions): SeedEvent[] {
   leave('absence-investudy', leaveAt(1, 9), 'investudy', 'personnel-investudy', 'ANNUAL', span(40, 5), 'Congé annuel');
   events.push({ at: leaveAt(2, 15), who: 'commercial', op: { k: 'leaveDecision', leave: 'absence-compte3', decision: 'REJECT', note: 'Période de forte activité commerciale : à reporter après la clôture du trimestre.' } });
   events.push({ at: leaveAt(1, 15), who: 'commercial', op: { k: 'leaveDecision', leave: 'absence-compte2-conge', decision: 'APPROVE' } });
+
+  // Bloc « contrats » : un contrat en cours par membre du personnel, un ancien contrat à durée déterminée terminé puis suivi d'un CDI, et trois contrats proches de leur fin (dont un stage
+  // et une période d'essai) pour montrer l'écran « Contrats à échéance » ; l'ancien chargé de compte a un contrat terminé. Aucun salaire, aucun document (D67).
+  const ahead = (days: number) => isoDay(new Date(day0.getTime() + days * DAY));
+  const contractAt = (minute: number) => new Date(day0.getTime() - 19 * DAY + 9 * 3_600_000 + minute * 60_000);
+  const contract = (minute: number, key: string, employee: string, typeCode: string, start: string, extra: { end?: string; probationEnd?: string } = {}) =>
+    events.push({ at: contractAt(minute), who: 'rh', op: { k: 'contract', key, employee, typeCode, start, ...extra } });
+  const contractEnd = (minute: number, key: string, endedOn: string, reason: string) => events.push({ at: contractAt(minute), who: 'rh', op: { k: 'contractEnd', contract: key, endedOn, reason } });
+  contract(0, 'contrat-dg', 'personnel-dg', 'CDI', hired(1500));
+  contract(1, 'contrat-dga', 'personnel-dga', 'CDI', hired(1300));
+  contract(2, 'contrat-daf', 'personnel-daf', 'CDI', hired(1100));
+  contract(3, 'contrat-commercial', 'personnel-commercial', 'CDI', hired(1200));
+  contract(4, 'contrat-investudy', 'personnel-investudy', 'CDI', hired(900));
+  contract(5, 'contrat-compte1', 'personnel-compte1', 'CDI', hired(700), { probationEnd: hired(610) });
+  contract(6, 'contrat-compte2-cdd', 'personnel-compte2', 'CDD', hired(600), { end: hired(240), probationEnd: hired(540) });
+  contractEnd(7, 'contrat-compte2-cdd', hired(240), 'FIXED_TERM_END');
+  contract(8, 'contrat-compte2-cdi', 'personnel-compte2', 'CDI', hired(239));
+  contract(9, 'contrat-compte3', 'personnel-compte3', 'CDD', hired(200), { end: ahead(25), probationEnd: hired(140) });
+  contract(10, 'contrat-assistant', 'personnel-assistant-formation', 'STAGE', hired(300), { end: ahead(5), probationEnd: ahead(3) });
+  contract(11, 'contrat-support', 'personnel-support', 'CDD', hired(150), { end: ahead(75), probationEnd: ahead(12) });
+  contract(12, 'contrat-ancien', 'personnel-ancien', 'CDD', hired(800), { end: hired(60) });
+  contractEnd(13, 'contrat-ancien', hired(60), 'FIXED_TERM_END');
+
+  // Bloc « parcours » : une intégration en cours avec un retard (trois tâches cochées, une en retard), une intégration terminée, un départ à venir. Les dates des coches sont celles du chargement.
+  const journeyAt = (minute: number) => new Date(day0.getTime() - 5 * DAY + 9 * 3_600_000 + minute * 60_000);
+  const journey = (minute: number, key: string, employee: string, kind: 'ONBOARDING' | 'OFFBOARDING', referenceDate: string) =>
+    events.push({ at: journeyAt(minute), who: 'rh', op: { k: 'journey', key, employee, kind, referenceDate } });
+  const check = (minute: number, journeyKey: string, index: number) => events.push({ at: journeyAt(minute), who: 'rh', op: { k: 'journeyTask', journey: journeyKey, index } });
+  journey(0, 'parcours-support', 'personnel-support', 'ONBOARDING', ahead(-6));
+  for (const [i, index] of [0, 1, 2].entries()) check(10 + i, 'parcours-support', index);
+  journey(20, 'parcours-assistant', 'personnel-assistant-formation', 'ONBOARDING', ahead(-40));
+  for (const index of [0, 1, 2, 3, 4, 5]) check(30 + index, 'parcours-assistant', index);
+  journey(40, 'parcours-compte3-depart', 'personnel-compte3', 'OFFBOARDING', ahead(25));
 
   // Ordre chronologique stable (à date égale, l'ordre de construction est conservé).
   return events.map((event, order) => ({ event, order })).sort((a, b) => a.event.at.getTime() - b.event.at.getTime() || a.order - b.order).map((x) => x.event);
