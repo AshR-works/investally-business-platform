@@ -1,0 +1,52 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fiche de test — Présences</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="../../INDEX.html">Index</a> · <a href="../../GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="../../ARCHITECTURE.html">Architecture</a> · <a href="../../SECURITY.html">Sécurité</a> · <a href="../../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../../QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="../../TECH-DEBT.html">Dette</a> · <a href="../../CHARTE-DE-TESTS.html">Charte de tests</a> · <a href="../../tests/README.html">Fiches de test</a> · <a href="../../design/README.html">Design</a> · <a href="../../livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>Fiche de test — Présences</h1>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td><strong>Route</strong></td><td><code>/hr/presences</code></td></tr>
+<tr><td><strong>Livrée par</strong></td><td>RH-4b (API : RH-4a ; recette et mutants : RH-4c)</td></tr>
+<tr><td><strong>Accès</strong></td><td>Lecture : utilisateur qui détient <code>hr.presence.read</code> (tous les rôles ; en portée Tous pour la RH, la Direction et le Super administrateur ; sinon sa ligne et celles de ses subordonnés directs). Menu Ressources humaines › Présences.</td></tr>
+<tr><td><strong>Droits</strong></td><td><strong>Déclarer</strong> : <code>hr.presence.declare</code> en portée Propre (chacun pour soi) ou Tous (RH, Super administrateur : pour n'importe qui).</td></tr>
+<tr><td><strong>Rôles de test</strong></td><td>rh, sa, dir, cc, resp (responsable direct), sans (compte sans fiche employé)</td></tr>
+</tbody></table></div>
+<p><em>Fiche d'interface de la <a href="../../CHARTE-DE-TESTS.html">charte de tests</a>. À rejouer à chaque changement de l'écran. Cocher, dater, signer ; tout écart devient un défaut.</em></p>
+<h2>Préconditions</h2>
+<p>Pile locale avec le jeu de démonstration : dix personnes, une semaine et demie de présences (sur site, télétravail, déplacement), un congé validé pour l'agente de support. Valeurs de départ « à confirmer » : fenêtres de saisie 7 et 30 jours (RH : 90 et 90), trois modes, aucune validation par le responsable. <strong>Aucune heure, aucun lieu n'est enregistré.</strong></p>
+<h2>Scénarios</h2>
+<div class="table-wrap"><table><thead><tr><th>N°</th><th>Scénario</th><th>Étapes</th><th>Résultat attendu</th><th>Constaté (✔ / ✘)</th><th>Date et initiales</th></tr></thead><tbody>
+<tr><td>1</td><td><strong>Lecture (RH)</strong></td><td>Se connecter en RH ; ouvrir Présences.</td><td>Tableau de la semaine en cours : une ligne par personne, une colonne par jour ; mode dit par un symbole ET un texte ; jour d'absence validée marqué ✕ ; total du jour ; week-end grisé</td><td>☐</td><td></td></tr>
+<tr><td>2</td><td><strong>Naviguer</strong></td><td>Semaine précédente, suivante, « Cette semaine » ; filtre par service.</td><td>Le titre « Semaine du … au … » change et est annoncé ; le filtre ne garde que le service choisi</td><td>☐</td><td></td></tr>
+<tr><td>3</td><td><strong>Déclarer pour soi</strong></td><td>Se connecter en chargé de compte ; cliquer sa propre case d'aujourd'hui ; choisir « Télétravail » ; « Enregistrer ».</td><td>La fenêtre dit « Où travaillez-vous ce jour-là ? » ; la case passe à ⌂ ; le total du jour suit</td><td>☐</td><td></td></tr>
+<tr><td>4</td><td><strong>Changer, retirer</strong></td><td>Rouvrir la case ; changer de mode ; puis « Retirer la déclaration ».</td><td>Le mode change ; après le retrait la case redevient « + » (non déclaré) ; l'audit garde l'avant et l'après</td><td>☐</td><td></td></tr>
+<tr><td>5</td><td><strong>Aucun choix</strong></td><td>Ouvrir une case vide ; « Enregistrer » sans choisir.</td><td>« Choisissez une des trois possibilités. » ; le groupe de choix est relié à l'erreur ; rien n'est enregistré</td><td>☐</td><td></td></tr>
+<tr><td>6</td><td><strong>Fenêtre de saisie</strong></td><td>Employé : naviguer 2 semaines en arrière, puis 6 semaines en avant.</td><td>Les cases hors de 7 jours en arrière et 30 jours en avant ne sont pas modifiables</td><td>☐</td><td></td></tr>
+<tr><td>7</td><td><strong>La RH pour un autre</strong></td><td>En RH, cliquer la case d'un autre employé ; choisir un mode.</td><td>La fenêtre dit « Où travaille &lt;nom&gt; ce jour-là ? » ; la saisie est marquée « par un autre » côté API</td><td>☐</td><td></td></tr>
+<tr><td>8</td><td><strong>Absence validée</strong></td><td>Regarder la ligne de l'agente de support sur son congé.</td><td>Cases ✕ « absent (absence validée) », non modifiables ; un week-end au milieu du congé reste neutre et n'est pas compté absent</td><td>☐</td><td></td></tr>
+<tr><td>9</td><td><strong>Responsable</strong></td><td>Se connecter en Responsable commercial.</td><td>Sa ligne et celles de ses collaborateurs directs ; seule sa ligne est modifiable ; pas de filtre par service</td><td>☐</td><td></td></tr>
+<tr><td>10</td><td><strong>Collègue</strong></td><td>Se connecter en chargé de compte d'un autre responsable.</td><td>Sa seule ligne ; aucune ligne de collègue</td><td>☐</td><td></td></tr>
+<tr><td>11</td><td><strong>Direction</strong></td><td>Se connecter en Direction.</td><td>Tout le personnel en lecture ; seule sa propre ligne est modifiable (s'il en a une)</td><td>☐</td><td></td></tr>
+<tr><td>12</td><td><strong>Compte sans fiche</strong></td><td>Se connecter avec un compte sans fiche employé.</td><td>Message « Demandez à la RH de la relier » ; aucune case modifiable</td><td>☐</td><td></td></tr>
+<tr><td>13</td><td><strong>Erreur de chargement</strong></td><td>Couper l'API ; recharger l'écran.</td><td>Message d'erreur annoncé ; aucune donnée obsolète affichée</td><td>☐</td><td></td></tr>
+</tbody></table></div>
+<h2>Accessibilité</h2>
+<ul><li>☐ Clavier seul : navigation de semaine, filtre, chaque case modifiable, boutons de la fenêtre atteignables ; focus visible ; Échap ferme la fenêtre et le focus revient à la case.</li><li>☐ Lecteur d'écran : chaque case dit le nom, le jour et le mode (ou « non déclaré », « absent (absence validée) ») ; le titre de semaine est annoncé au changement ; le groupe de choix est nommé.</li><li>☐ Aucune information portée par la couleur ou le symbole seul ; contraste suffisant des symboles sur fond de mode et fond de week-end.</li><li>☐ Mode sombre et affichage étroit : tableau défilant horizontalement avec la colonne des noms fixe.</li></ul></main></body></html>

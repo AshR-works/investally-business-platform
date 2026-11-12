@@ -1,0 +1,48 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>RH-4c — recette complète des présences déclaratives : mutants, Newman, fiches de test</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="INDEX.html">Index</a> · <a href="GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="ARCHITECTURE.html">Architecture</a> · <a href="SECURITY.html">Sécurité</a> · <a href="METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="TECH-DEBT.html">Dette</a> · <a href="CHARTE-DE-TESTS.html">Charte de tests</a> · <a href="tests/README.html">Fiches de test</a> · <a href="design/README.html">Design</a> · <a href="livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>RH-4c — recette complète des présences déclaratives : mutants, Newman, fiches de test</h1>
+<p><em>Branche <code>feat/rh-4c-recette</code> · 2026-11-12 · décision D69 (<a href="adr/0015-presences-declaratives.html">ADR-0015</a>).</em></p>
+<p>Dernière tranche de RH-4 (après 4a, l'API, et 4b, l'écran). Elle n'ajoute pas de fonction : elle <strong>éprouve</strong> le travail des deux premières.</p>
+<h2>Ce qui est livré</h2>
+<div class="table-wrap"><table><thead><tr><th>Livrable</th><th>Contenu</th></tr></thead><tbody>
+<tr><td><strong>Mutants</strong></td><td><code>scripts/mutants/rh4-presences.py</code> : <strong>97 fautes</strong> injectées une à une (domaine, cas d'usage, routes, dépôt, règles de la base, droits des rôles, règles de saisie de l'interface, menu et droits des écrans) ; 1 retirée (code mort supprimé)</td></tr>
+<tr><td><strong>Tests ajoutés</strong></td><td>1 cas d'usage (retrait d'une présence restée après le départ d'un employé archivé) et 2 cas d'intégration (persistance : jours lus dans l'ordre, retrait d'un seul jour, dernier mode et dernier auteur gardés en base ; conflit d'unicité au niveau du dépôt)</td></tr>
+<tr><td><strong>Collection Postman</strong></td><td>nouveau parcours <strong>90.5</strong> (14 étapes) : employé de test, tableau du jour, déclarer (la RH saisit, ni heure ni lieu dans la réponse), redéclarer sans changement, changer de mode, mode hors liste refusé, heure refusée, jour trop ancien refusé, employé inexistant « introuvable », tableau avec la déclaration, retirer, retirer une absente « introuvable », période de plus de 93 jours refusée ; <strong>exécutée avec Newman</strong></td></tr>
+<tr><td><strong>Fiches de test</strong></td><td>session <code>rh-4</code> (14 vérifications) et fiche d'écran 39 (13 scénarios) ; index mis à jour</td></tr>
+<tr><td><strong>Un défaut trouvé et corrigé</strong></td><td>un contrôle inutile (jour après la date de départ) : un employé qui a une date de départ est toujours archivé, et déclarer pour un archivé est refusé avant. Code mort supprimé ; le retrait d'une présence restée après un départ reste permis (la RH nettoie), avec son test</td></tr>
+</tbody></table></div>
+<h2>Preuves</h2>
+<div class="table-wrap"><table><thead><tr><th>Contrôle</th><th>Résultat</th></tr></thead><tbody>
+<tr><td>Types, architecture</td><td><code>tsc</code> propre (API et interface) ; <code>pnpm arch</code> : aucune violation</td></tr>
+<tr><td>Tests unitaires de l'API</td><td><strong>1 495 réussis</strong> (82 suites)</td></tr>
+<tr><td>Tests de l'interface</td><td><strong>841 réussis</strong> (43 fichiers)</td></tr>
+<tr><td>Intégration (base jetable)</td><td><code>hr-presences-http</code> (14 cas), contrat anti-IDOR, droits : <strong>133 réussis</strong> (3 suites) ; <code>seed-demo</code> : 10 réussis</td></tr>
+<tr><td><strong>Mutants</strong></td><td>première passe : <strong>96 tués sur 97</strong>, 1 survivant. <strong>U11</strong> (« un jour après le départ est accepté ») : code mort, un employé qui a une date de départ est archivé, donc le contrôle n'est jamais atteint ; supprimé et retiré de la liste. Les six mutants voisins (fenêtres, entrée, archivé) rejoués après la suppression : tués. Bilan : <strong>96 tués sur 96 mutants valides</strong></td></tr>
+<tr><td><strong>Newman</strong> (pile jetable, démonstration, Super administrateur)</td><td><strong>443 requêtes, 1 626 assertions, 0 échec</strong>, en 49 secondes, dont les trois routes des présences (avec et sans jeton) et le parcours 90.5 (14 étapes)</td></tr>
+<tr><td>Navigateur (RH-4b)</td><td>écran parcouru en Super administrateur : affichage, saisie, changement de mode ; trois défauts corrigés (week-end au milieu d'une absence, totaux, libellé « vous »)</td></tr>
+</tbody></table></div>
+<h2>Limites connues</h2>
+<ul><li><strong>Profils employé et responsable non parcourus dans le navigateur</strong> : leur portée (sa ligne, ses subordonnés directs) n'est vérifiée que par l'API (tests d'intégration), la logique de l'écran (tests) et les mutants.</li><li><strong>Les trois corrections de l'écran</strong> (RH-4b) n'ont pas été revues dans le navigateur (la pile n'a pas été reconstruite) ; elles sont couvertes par des tests.</li><li><strong>axe-core non rejoué</strong> (D160) ; <strong>non vérifié</strong> : mode sombre, 1280 px, navigation au clavier, lecteur d'écran, contrastes des symboles.</li><li>Un premier passage des tests unitaires de l'API a montré 3 échecs pendant que la machine était saturée par d'autres exécutions ; rejoués seuls : 1 495 réussis. Même cause que pour les tests lents de l'interface (délais), pas un défaut du code.</li><li>Les dossiers 00b et 98 de la collection ne sont pas rejoués (ils ferment la session ou enrôlent un compte).</li><li><strong>Dettes ouvertes</strong> : D185 à D189 (voir <a href="TECH-DEBT.html">TECH-DEBT</a>), dont la durée de conservation des présences (D189).</li></ul>
+<h2>Comment rejouer</h2>
+<ol><li>Mutants : <code>python scripts/mutants/rh4-presences.py</code> (environ 1 h 30 sur une machine chargée ; <code>DRY=1</code> vérifie seulement les motifs ; <strong>jamais deux exécutions à la fois</strong>, et ne pas toucher à <code>apps/</code> pendant la passe).</li><li>Newman : pile jetable avec démonstration, environnement copié depuis <code>docs/api/postman/Investally-local.postman_environment.json</code> (adresse, e-mail, mot de passe et secret du second facteur <strong>hors du dépôt</strong>), puis <code>node scripts/api-docs/run-newman.mjs --env &lt;environnement&gt; --only 00,90</code>. Un code du second facteur ne vaut qu'une fois par période de 30 secondes : attendre entre deux exécutions.</li><li>Fiches : <code>docs/tests/sessions/rh-4.md</code> et <code>docs/tests/interfaces/39-presences.md</code>.</li><li>Pile locale : <strong>rebuild : oui</strong> (le code de l'API a changé, une ligne retirée) ; <strong>reset : non</strong>.</li></ol></main></body></html>

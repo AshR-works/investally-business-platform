@@ -3219,8 +3219,8 @@
     {
       "nom": "90 — Parcours de bout en bout",
       "description": "Scénarios qui créent leurs propres données et vérifient les règles métier (agrément, payeur, portée). À lancer après la connexion, avec un compte qui a les droits (par exemple le Super administrateur de test).",
-      "requetes": 39,
-      "assertions": 60,
+      "requetes": 52,
+      "assertions": 78,
       "detail": [
         {
           "nom": "Créer une entreprise",
@@ -3801,6 +3801,188 @@
           },
           "tests": [
             "Un parcours annulé ne se coche plus : statut 409"
+          ]
+        },
+        {
+          "nom": "Créer un employé pour les présences",
+          "methode": "POST",
+          "chemin": "/api/v1/hr/employees",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": {
+            "lastName": "Presence{{runId}}",
+            "firstName": "Noa",
+            "jobTitle": "Analyste",
+            "department": "Finance",
+            "hiredOn": "2020-01-01"
+          },
+          "tests": [
+            "Créer un employé pour les présences : statut 201"
+          ]
+        },
+        {
+          "nom": "Lire le tableau du jour : l’employé est là, sans déclaration",
+          "methode": "GET",
+          "chemin": "/api/v1/hr/presences?from={{presenceDay}}&to={{presenceDay}}",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": null,
+          "tests": [
+            "Lire le tableau du jour : l’employé est là, sans déclaration : statut 200",
+            "Une ligne, aucune déclaration, la RH déclare pour tous"
+          ]
+        },
+        {
+          "nom": "La RH déclare le télétravail pour cet employé",
+          "methode": "PUT",
+          "chemin": "/api/v1/hr/presences/{{presenceDay}}?employeeId={{presenceEmployeeId}}",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": {
+            "mode": "REMOTE"
+          },
+          "tests": [
+            "La RH déclare le télétravail pour cet employé : statut 200",
+            "Télétravail, saisie par un autre, ni heure ni lieu"
+          ]
+        },
+        {
+          "nom": "Redéclarer le même mode ne change rien",
+          "methode": "PUT",
+          "chemin": "/api/v1/hr/presences/{{presenceDay}}?employeeId={{presenceEmployeeId}}",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": {
+            "mode": "REMOTE"
+          },
+          "tests": [
+            "Redéclarer le même mode ne change rien : statut 200",
+            "Même déclaration"
+          ]
+        },
+        {
+          "nom": "Changer pour le déplacement",
+          "methode": "PUT",
+          "chemin": "/api/v1/hr/presences/{{presenceDay}}?employeeId={{presenceEmployeeId}}",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": {
+            "mode": "TRAVEL"
+          },
+          "tests": [
+            "Changer pour le déplacement : statut 200",
+            "Déplacement, même déclaration"
+          ]
+        },
+        {
+          "nom": "Un mode hors liste est refusé",
+          "methode": "PUT",
+          "chemin": "/api/v1/hr/presences/{{presenceDay}}?employeeId={{presenceEmployeeId}}",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": {
+            "mode": "HEURES"
+          },
+          "tests": [
+            "Un mode hors liste est refusé : statut 400"
+          ]
+        },
+        {
+          "nom": "Une heure ne s’envoie pas",
+          "methode": "PUT",
+          "chemin": "/api/v1/hr/presences/{{presenceDay}}?employeeId={{presenceEmployeeId}}",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": {
+            "mode": "REMOTE",
+            "checkIn": "08:30"
+          },
+          "tests": [
+            "Une heure ne s’envoie pas : statut 400"
+          ]
+        },
+        {
+          "nom": "Un jour trop ancien est refusé",
+          "methode": "PUT",
+          "chemin": "/api/v1/hr/presences/{{presenceOldDay}}?employeeId={{presenceEmployeeId}}",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": {
+            "mode": "REMOTE"
+          },
+          "tests": [
+            "Un jour trop ancien est refusé : statut 400"
+          ]
+        },
+        {
+          "nom": "Un employé inexistant est « introuvable »",
+          "methode": "PUT",
+          "chemin": "/api/v1/hr/presences/{{presenceDay}}?employeeId=00000000-0000-7000-8000-000000000000",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": {
+            "mode": "REMOTE"
+          },
+          "tests": [
+            "Un employé inexistant est « introuvable » : statut 404"
+          ]
+        },
+        {
+          "nom": "Lire le tableau : la déclaration apparaît",
+          "methode": "GET",
+          "chemin": "/api/v1/hr/presences?from={{presenceDay}}&to={{presenceDay}}",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": null,
+          "tests": [
+            "Lire le tableau : la déclaration apparaît : statut 200",
+            "Une déclaration : déplacement"
+          ]
+        },
+        {
+          "nom": "Retirer la déclaration",
+          "methode": "DELETE",
+          "chemin": "/api/v1/hr/presences/{{presenceDay}}?employeeId={{presenceEmployeeId}}",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": null,
+          "tests": [
+            "Retirer la déclaration : statut 204"
+          ]
+        },
+        {
+          "nom": "Retirer une déclaration absente est « introuvable »",
+          "methode": "DELETE",
+          "chemin": "/api/v1/hr/presences/{{presenceDay}}?employeeId={{presenceEmployeeId}}",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": null,
+          "tests": [
+            "Retirer une déclaration absente est « introuvable » : statut 404"
+          ]
+        },
+        {
+          "nom": "Une période de plus de 93 jours est refusée",
+          "methode": "GET",
+          "chemin": "/api/v1/hr/presences?from=2026-01-01&to=2026-12-31",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": null,
+          "tests": [
+            "Une période de plus de 93 jours est refusée : statut 400"
           ]
         }
       ]
@@ -8194,8 +8376,8 @@
   ],
   "resume": {
     "dossiers": 31,
-    "requetes": 440,
-    "testsDefinis": 1862,
-    "resultatDeReference": "Pile jetable, jeu de démonstration, compte Super administrateur : 424 requêtes, 1 584 assertions exécutées, 0 échec (dossiers 00b et 98 à part : 12 requêtes, 54 assertions, 0 échec)."
+    "requetes": 453,
+    "testsDefinis": 1880,
+    "resultatDeReference": "Pile jetable, jeu de démonstration, compte Super administrateur : 443 requêtes, 1 626 assertions exécutées, 0 échec (dossiers 00b et 98 à part : 12 requêtes, 54 assertions, 0 échec)."
   }
 }
