@@ -425,7 +425,7 @@ const environment = {
     { key: 'email', value: '', type: 'default', enabled: true },
     { key: 'password', value: '', type: 'secret', enabled: true },
     { key: 'mfaSecret', value: '', type: 'secret', enabled: true },
-    ...[...idVariables].sort().map((key) => ({ key, value: ZERO_UUID, type: 'default', enabled: true })),
+    ...[...idVariables].sort().map((key) => ({ key, value: key === 'day' ? '2026-11-10' : ZERO_UUID, type: 'default', enabled: true })),
   ],
   _postman_variable_scope: 'environment',
 };

@@ -10466,6 +10466,178 @@
               }
             }
           ]
+        },
+        {
+          "name": "GET /hr/presences",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/hr/presences",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "hr",
+                "presences"
+              ],
+              "variable": [],
+              "query": [
+                {
+                  "key": "from",
+                  "value": "2026-11-09",
+                  "disabled": false,
+                  "description": ""
+                },
+                {
+                  "key": "to",
+                  "value": "2026-11-15",
+                  "disabled": false,
+                  "description": ""
+                },
+                {
+                  "key": "department",
+                  "value": "texte",
+                  "disabled": true,
+                  "description": ""
+                }
+              ]
+            },
+            "description": "**Permission** : `hr.presence.read`\n\nSuccès attendu : 200.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Sans jeton : refusé (401)', () => pm.response.to.have.status(401));",
+                  "pm.test('Réponse « problem details »', () => pm.expect(pm.response.json()).to.include.keys('type', 'title', 'status'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PUT /hr/presences/{day}",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/hr/presences/{day}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "hr",
+                "presences",
+                ":day"
+              ],
+              "variable": [
+                {
+                  "key": "day",
+                  "value": "{{day}}",
+                  "description": "Identifiant : voir l’environnement (valeur par défaut : identifiant inexistant, la route répond « introuvable »)."
+                }
+              ],
+              "query": [
+                {
+                  "key": "employeeId",
+                  "value": "{{uuid}}",
+                  "disabled": true,
+                  "description": "Absent : l’employé du compte connecté. Seule la RH peut désigner un autre employé."
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mode\": \"ON_SITE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**Permission** : `hr.presence.declare`\n\nSuccès attendu : 200.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Sans jeton : refusé (401)', () => pm.response.to.have.status(401));",
+                  "pm.test('Réponse « problem details »', () => pm.expect(pm.response.json()).to.include.keys('type', 'title', 'status'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "DELETE /hr/presences/{day}",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/hr/presences/{day}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "hr",
+                "presences",
+                ":day"
+              ],
+              "variable": [
+                {
+                  "key": "day",
+                  "value": "{{day}}",
+                  "description": "Identifiant : voir l’environnement (valeur par défaut : identifiant inexistant, la route répond « introuvable »)."
+                }
+              ],
+              "query": [
+                {
+                  "key": "employeeId",
+                  "value": "{{uuid}}",
+                  "disabled": true,
+                  "description": "Absent : l’employé du compte connecté. Seule la RH peut désigner un autre employé."
+                }
+              ]
+            },
+            "description": "**Permission** : `hr.presence.declare`\n\nSuccès attendu : 204.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Sans jeton : refusé (401)', () => pm.response.to.have.status(401));",
+                  "pm.test('Réponse « problem details »', () => pm.expect(pm.response.json()).to.include.keys('type', 'title', 'status'));"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
@@ -20944,6 +21116,220 @@
               "query": []
             },
             "description": "**Permission** : `hr.directory.read`\n\nSuccès attendu : 200."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const documented = [200,400,403,404,409,415,422,429];",
+                  "const success = [200];",
+                  "pm.test('Pas d’erreur serveur (statut inférieur à 500)', () => pm.expect(pm.response.code).to.be.below(500));",
+                  "pm.test('Le jeton est accepté (pas de 401)', () => pm.expect(pm.response.code).to.not.eql(401));",
+                  "pm.test('Statut prévu (succès documenté ou refus métier standard)', () => pm.expect(documented).to.include(pm.response.code));",
+                  "pm.test('Temps de réponse raisonnable (moins de 3 s)', () => pm.expect(pm.response.responseTime).to.be.below(3000));",
+                  "if (pm.response.code !== 204 && pm.response.text().length > 0) {",
+                  "  pm.test('Réponse en JSON', () => pm.expect(pm.response.headers.get('Content-Type') || '').to.match(/json/));",
+                  "}",
+                  "if (pm.response.code >= 400 && pm.response.code < 500 && pm.response.text().length > 0) {",
+                  "  pm.test('Erreur au format « problem details » (RFC 7807)', () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body).to.include.keys('type', 'title', 'status');",
+                  "    pm.expect(body.status).to.eql(pm.response.code);",
+                  "  });",
+                  "}",
+                  "if (success.includes(pm.response.code)) {",
+                  "  pm.test('Statut de succès documenté', () => pm.expect(success).to.include(pm.response.code));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /hr/presences",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/hr/presences",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "hr",
+                "presences"
+              ],
+              "variable": [],
+              "query": [
+                {
+                  "key": "from",
+                  "value": "2026-11-09",
+                  "disabled": false,
+                  "description": ""
+                },
+                {
+                  "key": "to",
+                  "value": "2026-11-15",
+                  "disabled": false,
+                  "description": ""
+                },
+                {
+                  "key": "department",
+                  "value": "texte",
+                  "disabled": true,
+                  "description": ""
+                }
+              ]
+            },
+            "description": "**Permission** : `hr.presence.read`\n\nSuccès attendu : 200."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const documented = [200,400,403,404,409,415,422,429];",
+                  "const success = [200];",
+                  "pm.test('Pas d’erreur serveur (statut inférieur à 500)', () => pm.expect(pm.response.code).to.be.below(500));",
+                  "pm.test('Le jeton est accepté (pas de 401)', () => pm.expect(pm.response.code).to.not.eql(401));",
+                  "pm.test('Statut prévu (succès documenté ou refus métier standard)', () => pm.expect(documented).to.include(pm.response.code));",
+                  "pm.test('Temps de réponse raisonnable (moins de 3 s)', () => pm.expect(pm.response.responseTime).to.be.below(3000));",
+                  "if (pm.response.code !== 204 && pm.response.text().length > 0) {",
+                  "  pm.test('Réponse en JSON', () => pm.expect(pm.response.headers.get('Content-Type') || '').to.match(/json/));",
+                  "}",
+                  "if (pm.response.code >= 400 && pm.response.code < 500 && pm.response.text().length > 0) {",
+                  "  pm.test('Erreur au format « problem details » (RFC 7807)', () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body).to.include.keys('type', 'title', 'status');",
+                  "    pm.expect(body.status).to.eql(pm.response.code);",
+                  "  });",
+                  "}",
+                  "if (success.includes(pm.response.code)) {",
+                  "  pm.test('Statut de succès documenté', () => pm.expect(success).to.include(pm.response.code));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "DELETE /hr/presences/{day}",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/hr/presences/{day}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "hr",
+                "presences",
+                ":day"
+              ],
+              "variable": [
+                {
+                  "key": "day",
+                  "value": "{{day}}",
+                  "description": "Identifiant : voir l’environnement (valeur par défaut : identifiant inexistant, la route répond « introuvable »)."
+                }
+              ],
+              "query": [
+                {
+                  "key": "employeeId",
+                  "value": "{{uuid}}",
+                  "disabled": true,
+                  "description": "Absent : l’employé du compte connecté. Seule la RH peut désigner un autre employé."
+                }
+              ]
+            },
+            "description": "**Permission** : `hr.presence.declare`\n\nSuccès attendu : 204."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const documented = [204,400,403,404,409,415,422,429];",
+                  "const success = [204];",
+                  "pm.test('Pas d’erreur serveur (statut inférieur à 500)', () => pm.expect(pm.response.code).to.be.below(500));",
+                  "pm.test('Le jeton est accepté (pas de 401)', () => pm.expect(pm.response.code).to.not.eql(401));",
+                  "pm.test('Statut prévu (succès documenté ou refus métier standard)', () => pm.expect(documented).to.include(pm.response.code));",
+                  "pm.test('Temps de réponse raisonnable (moins de 3 s)', () => pm.expect(pm.response.responseTime).to.be.below(3000));",
+                  "if (pm.response.code !== 204 && pm.response.text().length > 0) {",
+                  "  pm.test('Réponse en JSON', () => pm.expect(pm.response.headers.get('Content-Type') || '').to.match(/json/));",
+                  "}",
+                  "if (pm.response.code >= 400 && pm.response.code < 500 && pm.response.text().length > 0) {",
+                  "  pm.test('Erreur au format « problem details » (RFC 7807)', () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body).to.include.keys('type', 'title', 'status');",
+                  "    pm.expect(body.status).to.eql(pm.response.code);",
+                  "  });",
+                  "}",
+                  "if (success.includes(pm.response.code)) {",
+                  "  pm.test('Statut de succès documenté', () => pm.expect(success).to.include(pm.response.code));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PUT /hr/presences/{day}",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/hr/presences/{day}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "hr",
+                "presences",
+                ":day"
+              ],
+              "variable": [
+                {
+                  "key": "day",
+                  "value": "{{day}}",
+                  "description": "Identifiant : voir l’environnement (valeur par défaut : identifiant inexistant, la route répond « introuvable »)."
+                }
+              ],
+              "query": [
+                {
+                  "key": "employeeId",
+                  "value": "{{uuid}}",
+                  "disabled": true,
+                  "description": "Absent : l’employé du compte connecté. Seule la RH peut désigner un autre employé."
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mode\": \"ON_SITE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**Permission** : `hr.presence.declare`\n\nSuccès attendu : 200."
           },
           "event": [
             {

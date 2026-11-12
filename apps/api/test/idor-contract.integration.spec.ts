@@ -105,6 +105,8 @@ const PROBES: Record<string, (api: Api, as: As, ids: Ids) => Promise<ApiResponse
   'POST /hr/journeys/:id/tasks/:taskId/complete': (api, as, ids) => api.call('POST', `/api/v1/hr/journeys/${ids.journey}/tasks/${ids.journeyTask}/complete`, { ...as, body: { version: 1 } }),
   'POST /hr/journeys/:id/tasks/:taskId/reopen': (api, as, ids) => api.call('POST', `/api/v1/hr/journeys/${ids.journeyReopen}/tasks/${ids.journeyReopenTask}/reopen`, { ...as, body: { version: 2 } }),
   'PUT /hr/journeys/templates/:kind': (api, as) => api.call('PUT', '/api/v1/hr/journeys/templates/OFFBOARDING', { ...as, body: { version: 1, tasks: [{ title: 'Tâche piratée', owner: 'HR', dueOffsetDays: 0 }] } }),
+  'PUT /hr/presences/:day': (api, as, ids) => api.call('PUT', `/api/v1/hr/presences/${dayFromNow(0)}?employeeId=${ids.employeeLeave}`, { ...as, body: { mode: 'TRAVEL' } }),
+  'DELETE /hr/presences/:day': (api, as, ids) => api.call('DELETE', `/api/v1/hr/presences/${dayFromNow(1)}?employeeId=${ids.employeeLeave}`, as),
   'POST /ambassadors/:id/status': (api, as, ids) => api.call('POST', `/api/v1/ambassadors/${ids.ambassador}/status`, { ...as, body: { version: 1, status: 'ARCHIVED', reason: 'Piraté' } }),
   'POST /offers/:id/withdraw': (api, as, ids) => api.call('POST', `/api/v1/offers/${ids.offerSent}/withdraw`, { ...as, body: { version: 2, reason: 'Retrait piraté' } }),
   'GET /facilitators/:id': (api, as, ids) => api.call('GET', `/api/v1/facilitators/${ids.facilitator}`, as),
@@ -132,6 +134,7 @@ const PROBES: Record<string, (api: Api, as: As, ids: Ids) => Promise<ApiResponse
 };
 
 /** Un lundi dans `weeks` semaines (une demande ne se pose pas dans le passé). */
+const dayFromNow = (days: number): string => new Date(Date.now() + days * 86_400_000).toISOString().slice(0, 10);
 const futureMonday = (weeks: number) => {
   const d = new Date();
   d.setUTCDate(d.getUTCDate() + weeks * 7);
@@ -317,6 +320,9 @@ describeDb('Contrat anti-IDOR : un acteur sans portée reçoit la réponse d\'un
     expect(journeyReopen.status).toBe(201);
     const checked = await api.call('POST', `/api/v1/hr/journeys/${journeyReopen.body.id}/tasks/${journeyReopen.body.tasks[0].id}/complete`, { ...hrSession, body: { version: 1 } });
     expect(checked.status).toBe(200);
+    // Présence : une déclaration de demain pour l'employé des absences (à retirer). Aucun texte libre n'y figure.
+    const presence = await api.call('PUT', `/api/v1/hr/presences/${dayFromNow(1)}?employeeId=${employeeLeave.body.id}`, { ...hrSession, body: { mode: 'REMOTE' } });
+    expect(presence.status).toBe(200);
     return {
       manager,
       marie: m,
@@ -371,7 +377,7 @@ describeDb('Contrat anti-IDOR : un acteur sans portée reçoit la réponse d\'un
     // Constater le paiement relève de la Finance (D41, FD-4), pas du Responsable commercial.
     // Débloquer et mettre en attente relèvent de la Finance ; verser, du chargé de compte ; annuler et fixer le montant, du Responsable commercial.
     const financeKeys = ['POST /approvals/:id/honor', 'POST /commissions/:id/release', 'POST /commissions/:id/hold'];
-    const hrKeys = ['POST /hr/employees', 'GET /hr/employees/:id', 'PUT /hr/employees/:id', 'POST /hr/employees/:id/status', 'POST /hr/leave/requests', 'GET /hr/leave/requests/:id', 'POST /hr/leave/requests/:id/decision', 'POST /hr/leave/requests/:id/cancel', 'GET /hr/leave/balance', 'PUT /hr/leave/types/:id', 'DELETE /hr/leave/holidays/:id', 'POST /hr/leave/adjustments', 'GET /hr/leave/adjustments', 'GET /hr/contracts/:id', 'PUT /hr/contracts/:id', 'POST /hr/contracts/:id/end', 'PUT /hr/contracts/types/:id', 'GET /hr/journeys/:id', 'POST /hr/journeys/:id/cancel', 'POST /hr/journeys/:id/tasks/:taskId/complete', 'POST /hr/journeys/:id/tasks/:taskId/reopen', 'PUT /hr/journeys/templates/:kind'];
+    const hrKeys = ['PUT /hr/presences/:day', 'DELETE /hr/presences/:day', 'POST /hr/employees', 'GET /hr/employees/:id', 'PUT /hr/employees/:id', 'POST /hr/employees/:id/status', 'POST /hr/leave/requests', 'GET /hr/leave/requests/:id', 'POST /hr/leave/requests/:id/decision', 'POST /hr/leave/requests/:id/cancel', 'GET /hr/leave/balance', 'PUT /hr/leave/types/:id', 'DELETE /hr/leave/holidays/:id', 'POST /hr/leave/adjustments', 'GET /hr/leave/adjustments', 'GET /hr/contracts/:id', 'PUT /hr/contracts/:id', 'POST /hr/contracts/:id/end', 'PUT /hr/contracts/types/:id', 'GET /hr/journeys/:id', 'POST /hr/journeys/:id/cancel', 'POST /hr/journeys/:id/tasks/:taskId/complete', 'POST /hr/journeys/:id/tasks/:taskId/reopen', 'PUT /hr/journeys/templates/:kind'];
     const trainingManagerKeys = ['DELETE /learners/:id', 'POST /enrollments/:id/confirm', 'POST /enrollments/:id/cancel', 'POST /enrollments/:id/replace'];
     const owner = hrKeys.includes(key) ? w.hr : trainingManagerKeys.includes(key) ? w.manager : financeKeys.includes(key) ? w.finance : ['POST /commissions/:id/cancel', 'POST /commissions/:id/amount'].includes(key) ? w.chef : ['POST /documents/:id/archive', 'DELETE /contacts/:id', 'POST /opportunities/:id/waiver', 'POST /opportunities/:id/close-won', 'POST /companies/:id/owner', 'PUT /ambassadors/:id', 'POST /ambassadors/:id/status', 'POST /approvals/:id/expire', 'POST /approvals/:id/cancel'].includes(key) ? w.chef : w.marie;
     const ok = await probe(api, owner, w.real);

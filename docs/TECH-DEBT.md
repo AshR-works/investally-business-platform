@@ -185,6 +185,11 @@
 | D182 | **Parcours : seule la RH coche les tâches** ; le responsable, l'employé et l'informatique ne cochent pas « leurs » tâches (le responsable d'une tâche est une étiquette) ; à confirmer avec la RH, une permission distincte serait alors créée | RH-3b | Claude | Moyenne |
 | D183 | **Parcours lancés à la main seulement** : aucune notification de retard, aucun lien automatique avec la fin d'un contrat ni l'archivage de l'employé | RH-3b | Claude | Faible |
 | D184 | **Modèles de parcours limités** : un par nature (pas de variante par service ou type de contrat), pas de description ni de document par tâche, modification en bloc sans historique propre (l'audit garde l'avant et l'après) | RH-3b | Claude | Faible |
+| D185 | **Aucun pointage horaire, retard ni rapport de présence** (par décision D69) : le modèle ne peut pas stocker une heure ni un lieu ; toute extension est de la surveillance et exige l'avis juridique (DEC-006) et une nouvelle décision | RH-4a | Claude | Voulu |
+| D186 | **Présence déclarée sans validation ni contrôle** : l'employé déclare ce qu'il veut, le responsable ne confirme pas, la RH corrige ; aucun rappel « non déclaré » ; à confirmer | RH-4a | Claude | Faible |
+| D187 | **Week-ends et jours fériés non contrôlés** : on peut déclarer un dimanche ; les fenêtres de saisie (7 jours en arrière et 30 en avant pour l'employé, 90 et 90 pour la RH) et la liste des trois modes sont des valeurs de départ « à confirmer » | RH-4a | Claude | Faible |
+| D188 | **Lecture limitée aux subordonnés directs** (organigramme, D58) : pas la descendance entière ; une demi-journée d'absence ou une demande en attente n'apparaît pas dans les jours d'absence du tableau | RH-4a | Claude | Faible |
+| D189 | **Durée de conservation des présences non définie** : aucune purge ; à valider avec l'avis juridique (D11, D65) avant la mise en production | RH-4a | Claude | Moyenne |
 | D105 | **Le statut « Cliente » n'est posé par rien** tant que l'agrément n'existe pas ; une entreprise ne peut donc pas encore devenir cliente | S4.3b | Claude | *Soldée par S4.4a* : l'agrément reçu pose « Cliente » |
 | D5 | Hypothèses de charge et de périmètre non confirmées | Phase 3 | Revue à la fin de S1 avec les chiffres réels | Ouverte |
 

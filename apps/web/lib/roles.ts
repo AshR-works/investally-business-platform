@@ -60,7 +60,7 @@ export const RESOURCE_LABELS: Record<string, string> = {
   'training.program': 'Programmes', 'training.training': 'Formations', 'training.session': 'Sessions', 'training.room': 'Salles',
   'training.trainer': 'Formateurs', 'training.learner': 'Apprenants', 'training.enrollment': 'Inscriptions', 'training.attendance': 'Présences',
   'training.evaluation': 'Évaluations', 'training.certification': 'Certifications et attestations',
-  'hr.employee': 'Personnel', 'hr.directory': 'Annuaire du personnel', 'hr.leave': 'Absences et congés', 'hr.contract': 'Contrats du personnel', 'hr.journey': 'Parcours d’intégration et de départ',
+  'hr.employee': 'Personnel', 'hr.directory': 'Annuaire du personnel', 'hr.leave': 'Absences et congés', 'hr.contract': 'Contrats du personnel', 'hr.journey': 'Parcours d’intégration et de départ', 'hr.presence': 'Présences déclaratives du personnel',
   'reporting.dashboard': 'Tableaux de bord', 'reporting.kpi': 'Indicateurs', 'reporting.report': 'Rapports',
 };
 
@@ -68,7 +68,7 @@ export const RESOURCE_LABELS: Record<string, string> = {
 export const ACTION_LABELS: Record<string, string> = {
   read: 'Consulter', create: 'Créer', update: 'Modifier', delete: 'Supprimer', archive: 'Archiver', export: 'Exporter',
   disable: 'Désactiver', assign_role: 'Attribuer des rôles', reset_mfa: 'Réinitialiser le MFA', reset_password: 'Réinitialiser le mot de passe',
-  approve: 'Valider', manage: 'Gérer', revoke: 'Révoquer', download: 'Télécharger', withdraw: 'Retirer', complete: 'Terminer', cancel: 'Annuler',
+  approve: 'Valider', manage: 'Gérer', declare: 'Déclarer', revoke: 'Révoquer', download: 'Télécharger', withdraw: 'Retirer', complete: 'Terminer', cancel: 'Annuler',
   advance: 'Faire avancer', close: 'Clore', close_lost: 'Clore : perdue', close_won: 'Clore : gagnée', reassign: 'Changer de responsable', honor: 'Honorer', release: 'Débloquer les fonds', pay: 'Constater le versement', override: 'Accorder une dérogation', record: 'Enregistrer', issue: 'Délivrer',
   account_manager: 'Chargé de compte', head_of_sales: 'Responsable commercial', training: 'Formation', direction: 'Direction', security: 'Sécurité', admin: 'Administration',
 };

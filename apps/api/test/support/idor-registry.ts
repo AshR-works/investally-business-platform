@@ -104,6 +104,8 @@ export const IDOR_ROUTES: Record<string, IdorClass> = {
   'POST /hr/journeys/:id/tasks/:taskId/complete': 'objet',
   'POST /hr/journeys/:id/tasks/:taskId/reopen': 'objet',
   'PUT /hr/journeys/templates/:kind': 'objet',
+  'PUT /hr/presences/:day': 'objet',
+  'DELETE /hr/presences/:day': 'objet',
   'GET /documents': 'objet',
   'POST /documents': 'objet',
   'GET /documents/:id': 'objet',
@@ -157,4 +159,4 @@ export const IDOR_ROUTES: Record<string, IdorClass> = {
 };
 
 /** Routes qui reçoivent un identifiant d'objet dans la requête sans le mettre dans le chemin (`?ownerId=`). */
-export const OBJECT_ID_IN_QUERY = ['GET /documents', 'POST /documents', 'GET /contacts', 'POST /contacts', 'GET /offers', 'POST /offers', 'GET /receipts', 'POST /receipts', 'GET /followups', 'POST /followups', 'GET /appointments', 'POST /appointments', 'GET /opportunities', 'POST /opportunities', 'GET /approvals', 'POST /approvals', 'GET /commissions', 'GET /learners', 'POST /learners', 'GET /enrollments', 'POST /enrollments', 'GET /enrollments/approval-options', 'POST /hr/employees', 'POST /hr/leave/requests', 'GET /hr/leave/balance', 'POST /hr/leave/adjustments', 'GET /hr/leave/adjustments'];
+export const OBJECT_ID_IN_QUERY = ['PUT /hr/presences/:day', 'DELETE /hr/presences/:day', 'GET /documents', 'POST /documents', 'GET /contacts', 'POST /contacts', 'GET /offers', 'POST /offers', 'GET /receipts', 'POST /receipts', 'GET /followups', 'POST /followups', 'GET /appointments', 'POST /appointments', 'GET /opportunities', 'POST /opportunities', 'GET /approvals', 'POST /approvals', 'GET /commissions', 'GET /learners', 'POST /learners', 'GET /enrollments', 'POST /enrollments', 'GET /enrollments/approval-options', 'POST /hr/employees', 'POST /hr/leave/requests', 'GET /hr/leave/balance', 'POST /hr/leave/adjustments', 'GET /hr/leave/adjustments'];

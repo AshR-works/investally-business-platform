@@ -209,6 +209,9 @@
 | PUT | `/hr/leave/types/{id}` |  | `hr.leave.manage` | 200 |
 | GET | `/hr/linkable-users` |  | `hr.employee.update` | 200 |
 | GET | `/hr/org-chart` |  | `hr.directory.read` | 200 |
+| GET | `/hr/presences` |  | `hr.presence.read` | 200 |
+| DELETE | `/hr/presences/{day}` |  | `hr.presence.declare` | 204 |
+| PUT | `/hr/presences/{day}` |  | `hr.presence.declare` | 200 |
 
 ## learners
 
@@ -325,4 +328,4 @@
 | PUT | `/trainings/{id}` |  | `training.training.update` | 200 |
 | POST | `/trainings/{id}/status` |  | `training.training.update` | 200 |
 
-*198 routes.*
+*201 routes.*
