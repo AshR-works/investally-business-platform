@@ -214,6 +214,8 @@ describe('plan du jeu de données de démonstration', () => {
     expect(byBlock.get('rh')).toBe(11 + 1); // onze fiches du personnel et une sortie
     expect(byBlock.get('contrats')).toBe(12 + 2); // douze contrats et deux fins de contrat
     expect(byBlock.get('parcours')).toBe(3 + 3 + 6); // trois parcours lancés, trois tâches cochées sur l'un, six sur l'autre
+    expect(byBlock.get('presences')).toBe(plan.filter((e) => e.op.k === 'presence').length);
+    expect(byBlock.get('presences')).toBeGreaterThanOrEqual(50); // une semaine et demie de présences sur dix personnes, moins les jours d'absence
     // Aucun bloc ne dépend d'un objet d'un autre : le catalogue et les formateurs n'utilisent que leurs propres clés.
     const keysOf = (block: string) => new Set(plan.filter((e) => blockOf(e.op) === block && 'key' in e.op).map((e) => (e.op as { key: string }).key));
     const catalogueKeys = keysOf('catalogue');
@@ -510,5 +512,38 @@ describe('plan de démonstration — blocs « contrats » et « parcours »', ()
   it('chaque bloc se charge après « rh » (dans l’ordre des dépendances)', () => {
     expect(SEED_BLOCKS.indexOf('contrats')).toBeGreaterThan(SEED_BLOCKS.indexOf('rh'));
     expect(SEED_BLOCKS.indexOf('parcours')).toBeGreaterThan(SEED_BLOCKS.indexOf('rh'));
+    expect(SEED_BLOCKS.indexOf('presences')).toBeGreaterThan(SEED_BLOCKS.indexOf('conges'));
+  });
+
+  it('présences : déclaratives, sur des jours ouvrés, jamais sur une absence validée, une par employé et par jour, déclarées par le compte de l’employé quand il en a un', () => {
+    const presences = plan.filter((e) => e.op.k === 'presence').map((e) => ({ ...(e.op as Extract<SeedOp, { k: 'presence' }>), who: e.who, at: e.at }));
+    expect(presences.length).toBeGreaterThan(0);
+    // Trois valeurs possibles, rien d'autre : aucune heure, aucun lieu.
+    expect(new Set(presences.map((p) => p.mode))).toEqual(new Set(['ON_SITE', 'REMOTE', 'TRAVEL']));
+    for (const p of presences) {
+      expect(Object.keys(p).sort()).toEqual(['at', 'day', 'employee', 'k', 'mode', 'who']);
+      expect([0, 6]).not.toContain(new Date(`${p.day}T00:00:00Z`).getUTCDay());
+    }
+    // Une seule déclaration par employé et par jour.
+    expect(new Set(presences.map((p) => `${p.employee}|${p.day}`)).size).toBe(presences.length);
+    // Des employés qui existent dans le bloc « rh », en poste (pas l'ancien chargé de compte).
+    const staff = new Map(plan.filter((e) => e.op.k === 'employee').map((e) => [(e.op as Extract<SeedOp, { k: 'employee' }>).key, (e.op as Extract<SeedOp, { k: 'employee' }>).account]));
+    for (const p of presences) {
+      expect(staff.has(p.employee)).toBe(true);
+      expect(p.employee).not.toBe('personnel-ancien');
+      // Le compte de l'employé déclare pour lui ; sans compte, la RH saisit.
+      expect(p.who).toBe(staff.get(p.employee) ?? 'rh');
+    }
+    // Jamais un jour d'absence validée : celle que la RH a saisie pour l'agente de support.
+    const supportLeave = plan.find((e) => e.op.k === 'leave' && e.op.key === 'absence-support')!.op as Extract<SeedOp, { k: 'leave' }>;
+    for (const p of presences.filter((x) => x.employee === 'personnel-support')) expect(p.day < supportLeave.start || p.day > supportLeave.end).toBe(true);
+    // Dans la fenêtre de saisie d'un employé (7 jours en arrière, 30 en avant) au moment de l'événement, et après les absences (déjà décidées).
+    for (const p of presences) {
+      const offset = (Date.parse(`${p.day}T00:00:00Z`) - Date.parse(`${p.at.toISOString().slice(0, 10)}T00:00:00Z`)) / 86_400_000;
+      expect(offset).toBeGreaterThanOrEqual(-7);
+      expect(offset).toBeLessThanOrEqual(30);
+    }
+    const lastLeave = Math.max(...plan.filter((e) => e.op.k === 'leave' || e.op.k === 'leaveDecision').map((e) => e.at.getTime()));
+    expect(Math.min(...presences.map((p) => p.at.getTime()))).toBeGreaterThan(lastLeave);
   });
 });

@@ -1,0 +1,46 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>RH-4b — écran « Présences » et données de démonstration</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="INDEX.html">Index</a> · <a href="GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="ARCHITECTURE.html">Architecture</a> · <a href="SECURITY.html">Sécurité</a> · <a href="METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="TECH-DEBT.html">Dette</a> · <a href="CHARTE-DE-TESTS.html">Charte de tests</a> · <a href="tests/README.html">Fiches de test</a> · <a href="design/README.html">Design</a> · <a href="livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>RH-4b — écran « Présences » et données de démonstration</h1>
+<p><em>Branche <code>feat/rh-4b-ecrans</code> (sur la branche de RH-4a) · 2026-11-12 · décision D69 (<a href="adr/0015-presences-declaratives.html">ADR-0015</a>).</em></p>
+<p>Deuxième tranche de RH-4 : l'<strong>écran</strong> et la <strong>démonstration</strong>. L'API, les droits et la base viennent de RH-4a ; la recette complète (mutants, Newman, fiches de test) viendra en RH-4c.</p>
+<h2>Ce qui est livré</h2>
+<div class="table-wrap"><table><thead><tr><th>Livrable</th><th>Contenu</th></tr></thead><tbody>
+<tr><td><strong>Écran « Présences »</strong> (<code>/hr/presences</code>)</td><td>un tableau par semaine (du lundi au dimanche) : une ligne par personne, une colonne par jour ; navigation d'une semaine à l'autre et retour à la semaine en cours ; filtre par service pour la RH et la Direction ; total du jour (sur site, télétravail, déplacement, absents)</td></tr>
+<tr><td><strong>Fenêtre de saisie</strong></td><td>trois choix (sur site, télétravail, déplacement), « Retirer la déclaration », erreur reliée au groupe de choix ; aucune heure, aucun lieu, aucun texte libre</td></tr>
+<tr><td><strong>Menu</strong></td><td>entrée « Présences » dans le domaine « Ressources humaines », pour qui a le droit <code>hr.presence.read</code></td></tr>
+<tr><td><strong>Démonstration</strong></td><td>bloc <code>presences</code> : une semaine et demie de présences sur dix personnes du personnel fictif, déclarées par leur propre compte quand elles en ont un, sinon saisies par la RH ; aucune déclaration sur le congé validé de l'agente de support</td></tr>
+<tr><td><strong>Libellés des droits</strong></td><td>« Présences déclaratives du personnel » et l'action « Déclarer » dans l'aperçu des droits</td></tr>
+</tbody></table></div>
+<h2>Règles de l'écran</h2>
+<ul><li>Chacun clique sur <strong>sa propre ligne</strong> (de 7 jours en arrière à 30 jours en avant) ; la RH clique sur <strong>n'importe quelle ligne</strong> (90 jours de part et d'autre). Les autres cases sont de simples indications.</li><li>Un <strong>jour d'absence validée</strong> n'est pas modifiable : la case dit « absent (absence validée) ».</li><li>Le mode est dit par <strong>un texte et un symbole</strong> (■ sur site, ⌂ télétravail, → déplacement, ✕ absence validée, · non déclaré), jamais par le symbole ou la couleur seuls.</li><li>Un compte sans fiche employé voit un message : « Demandez à la RH de la relier ».</li><li>Le serveur reste juge : l'écran reprend ses fenêtres de saisie, un test vérifie qu'elles sont identiques.</li></ul>
+<h2>Preuves</h2>
+<div class="table-wrap"><table><thead><tr><th>Contrôle</th><th>Résultat</th></tr></thead><tbody>
+<tr><td>Types</td><td><code>tsc</code> propre (API et interface)</td></tr>
+<tr><td>Tests de l'interface</td><td><code>rh-4b.test.ts</code> : 24 cas (semaine, modes, fenêtres aux bornes, qui saisit quelle case, contenu d'une case, totaux, menu, structure : ni heure, ni lieu, ni texte libre, groupe de choix nommé)</td></tr>
+<tr><td>Démonstration</td><td>plan : jours ouvrés, une déclaration par employé et par jour, jamais sur l'absence validée, dans la fenêtre de saisie, après les absences ; intégration : chargement par les cas d'usage, déclarations en base cohérentes avec les absences, chargement seul du bloc sur une démo qui a déjà le personnel</td></tr>
+</tbody></table></div>
+<h2>Limites connues</h2>
+<ul><li><strong>Pas encore vérifié dans le navigateur</strong> : l'écran n'a pas été parcouru sur une pile réelle au moment de cette PR (la pile jetable était encore en construction) ; seuls les tests de l'interface, de la démonstration et les types le couvrent. À faire avant la validation.</li><li><strong>Non vérifié</strong> : mode sombre, 1280 px, navigation au clavier, lecteur d'écran, axe-core (D160).</li><li><strong>Pas de mutants, de Newman ni de fiche de test</strong> : RH-4c.</li><li>La vue est <strong>hebdomadaire</strong> ; pas de vue mensuelle, pas d'export (D185).</li><li>Dettes ouvertes : D185 à D189 (voir <a href="TECH-DEBT.html">TECH-DEBT</a>).</li></ul>
+<h2>Comment rejouer</h2>
+<ol><li>Interface : <code>pnpm crm-web typecheck</code> puis, dans <code>apps/web</code>, <code>npx vitest run</code>.</li><li>Démonstration : <code>node scripts/test-db.mjs "--tests=seed-demo"</code> dans <code>apps/api</code>.</li><li>Pile locale : <code>node scripts/local-stack.mjs --demo --rebuild</code> : <strong>rebuild : oui</strong> (code de l'interface et de la démonstration changé) ; <strong>reset : non</strong> (le bloc <code>presences</code> se charge seul sur ta démonstration, sans rien effacer).</li></ol></main></body></html>

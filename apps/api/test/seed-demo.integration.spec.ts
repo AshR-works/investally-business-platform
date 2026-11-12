@@ -57,6 +57,7 @@ describeDb('Jeu de données de démonstration (cas d’usage + PostgreSQL)', () 
     await db.room.deleteMany({ where: { name: { in: ['Salle de marchés', 'Salle de réunion'] } } });
     await db.trainer.deleteMany({ where: { emailKey: { endsWith: TRAINERS_MARKER } } });
     await db.journeyTask.deleteMany({ where: { journey: { employee: { workEmail: { endsWith: RH_EMAIL_DOMAIN } } } } });
+    await db.presenceDeclaration.deleteMany({ where: { employee: { workEmail: { endsWith: RH_EMAIL_DOMAIN } } } });
     await db.journey.deleteMany({ where: { employee: { workEmail: { endsWith: RH_EMAIL_DOMAIN } } } });
     await db.contract.deleteMany({ where: { employee: { workEmail: { endsWith: RH_EMAIL_DOMAIN } } } });
     await db.leaveRequest.deleteMany({ where: { employee: { workEmail: { endsWith: RH_EMAIL_DOMAIN } } } });
@@ -67,12 +68,25 @@ describeDb('Jeu de données de démonstration (cas d’usage + PostgreSQL)', () 
 
   it('charge tout le plan par les cas d’usage, sans erreur, puis refuse de recharger (idempotent)', async () => {
     const first = await runSeed(t.app as never, plan, { users });
-    expect(first).toMatchObject({ skipped: false, executed: plan.length, loaded: ['crm', 'catalogue', 'formateurs', 'sessions', 'inscriptions', 'rh', 'conges', 'contrats', 'parcours', 'particuliers'] });
+    expect(first).toMatchObject({ skipped: false, executed: plan.length, loaded: ['crm', 'catalogue', 'formateurs', 'sessions', 'inscriptions', 'rh', 'conges', 'contrats', 'parcours', 'presences', 'particuliers'] });
     const second = await runSeed(t.app as never, plan, { users });
     expect(second).toMatchObject({ skipped: true, executed: 0 });
     // Contrats et parcours : par les cas d'usage, dans les règles (un seul contrat en cours, motifs de la liste, coches datées).
     const mine = { employee: { workEmail: { endsWith: RH_EMAIL_DOMAIN } } };
     expect(await t.prisma.db.contract.count({ where: mine })).toBe(12);
+    // Présences : déclaratives, par les cas d'usage (le compte de l'employé déclare pour lui, la RH pour les autres), une par employé et par jour, aucune sur un jour d'absence validée.
+    const presenceOps = plan.filter((e) => e.op.k === 'presence');
+    const declared = await t.prisma.db.presenceDeclaration.findMany({ where: mine, include: { employee: true } });
+    expect(declared).toHaveLength(presenceOps.length);
+    expect(new Set(declared.map((d) => `${d.employeeId}|${d.day.toISOString()}`)).size).toBe(declared.length);
+    expect(new Set(declared.map((d) => d.mode))).toEqual(new Set(['ON_SITE', 'REMOTE', 'TRAVEL']));
+    const approved = await t.prisma.db.leaveRequest.findMany({ where: { ...mine, status: 'APPROVED' } });
+    for (const d of declared) {
+      const covered = approved.some((l) => l.employeeId === d.employeeId && l.startDate <= d.day && l.endDate >= d.day && !l.startHalf && !l.endHalf);
+      expect([d.employee.workEmail, d.day.toISOString().slice(0, 10), covered]).toEqual([d.employee.workEmail, d.day.toISOString().slice(0, 10), false]);
+    }
+    // Une saisie faite par un autre (la RH) pour l'employé sans compte, une saisie personnelle pour celui qui a un compte.
+    expect(declared.some((d) => d.declaredByUserId !== users.rh)).toBe(true);
     expect(await t.prisma.db.contract.count({ where: { ...mine, status: 'ENDED', endReason: 'FIXED_TERM_END' } })).toBe(2);
     expect(await t.prisma.db.contract.count({ where: { ...mine, status: 'ACTIVE' } })).toBe(10);
     expect(await t.prisma.db.journey.count({ where: mine })).toBe(3);
@@ -163,12 +177,13 @@ describeDb('Jeu de données de démonstration (cas d’usage + PostgreSQL)', () 
     expect(gaps[0]).toMatchObject({ employeeName: expect.stringContaining('Nkodo'), hrManagerName: expect.stringContaining('Tchoumi'), accountManagerName: null });
     // Chargé seul sur une démo qui n'a pas de bloc RH.
     await db.journeyTask.deleteMany({ where: { journey: { employee: { workEmail: { endsWith: RH_EMAIL_DOMAIN } } } } });
+    await db.presenceDeclaration.deleteMany({ where: { employee: { workEmail: { endsWith: RH_EMAIL_DOMAIN } } } });
     await db.journey.deleteMany({ where: { employee: { workEmail: { endsWith: RH_EMAIL_DOMAIN } } } });
     await db.contract.deleteMany({ where: { employee: { workEmail: { endsWith: RH_EMAIL_DOMAIN } } } });
     await db.leaveRequest.deleteMany({ where: { employee: { workEmail: { endsWith: RH_EMAIL_DOMAIN } } } });
     await db.employee.updateMany({ where: { workEmail: { endsWith: RH_EMAIL_DOMAIN } }, data: { managerEmployeeId: null } });
     await db.employee.deleteMany({ where: { workEmail: { endsWith: RH_EMAIL_DOMAIN } } });
-    expect(await runSeed(t.app as never, plan, { users })).toMatchObject({ skipped: false, loaded: ['rh', 'conges', 'contrats', 'parcours'], executed: 12 + 9 + 14 + 12 });
+    expect(await runSeed(t.app as never, plan, { users })).toMatchObject({ skipped: false, loaded: ['rh', 'conges', 'contrats', 'parcours', 'presences'], executed: 12 + 9 + 14 + 12 + plan.filter((e) => e.op.k === 'presence').length });
     expect(await runSeed(t.app as never, plan, { users })).toMatchObject({ skipped: true, loaded: [] });
   }, 300_000);
 

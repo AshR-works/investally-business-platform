@@ -57,6 +57,7 @@ export type SeedOp =
   | { k: 'contractEnd'; contract: string; endedOn: string; reason: string }
   | { k: 'journey'; key: string; employee: string; kind: 'ONBOARDING' | 'OFFBOARDING'; referenceDate: string }
   | { k: 'journeyTask'; journey: string; index: number }
+  | { k: 'presence'; employee: string; day: string; mode: 'ON_SITE' | 'REMOTE' | 'TRAVEL' }
   | { k: 'ambassador'; key: string; lastName: string; firstName: string; origin: 'CLIENT' | 'LEARNER'; company?: string; email: string; phone: string; appointedOn: string; note: string };
 
 export interface SeedEvent {
@@ -203,8 +204,8 @@ const FORMATEURS: SeedOp[] = TRAINERS.map(([lastName, firstName, specialties, lo
 }));
 
 /** Les blocs du jeu : chacun se charge seul sur une démo existante (marqueur propre), dans l'ordre des dépendances. */
-export type SeedBlock = 'crm' | 'catalogue' | 'formateurs' | 'sessions' | 'inscriptions' | 'rh' | 'conges' | 'contrats' | 'parcours' | 'particuliers';
-export const SEED_BLOCKS: readonly SeedBlock[] = ['crm', 'catalogue', 'formateurs', 'sessions', 'inscriptions', 'rh', 'conges', 'contrats', 'parcours', 'particuliers'];
+export type SeedBlock = 'crm' | 'catalogue' | 'formateurs' | 'sessions' | 'inscriptions' | 'rh' | 'conges' | 'contrats' | 'parcours' | 'presences' | 'particuliers';
+export const SEED_BLOCKS: readonly SeedBlock[] = ['crm', 'catalogue', 'formateurs', 'sessions', 'inscriptions', 'rh', 'conges', 'contrats', 'parcours', 'presences', 'particuliers'];
 /** Entreprises clientes de formation du bloc « inscriptions » : la première sert de repère au chargement par blocs. */
 export const FORMATION_CLIENTS: readonly [string, 'Cameroun' | "Côte d'Ivoire" | 'Sénégal' | 'Gabon' | 'RDC'][] = [
   ['Académie Wouri Finance', 'Cameroun'], ['Cabinet Libreville Conseil', 'Gabon'], ['Institut Dakar Marchés', 'Sénégal'], ['Groupe Abidjan Capital', "Côte d'Ivoire"], ['Fonds Kinshasa Épargne', 'RDC'],
@@ -225,6 +226,7 @@ export function blockOf(op: SeedOp): SeedBlock {
   if (op.k === 'leave' || op.k === 'leaveDecision') return 'conges';
   if (op.k === 'contract' || op.k === 'contractEnd') return 'contrats';
   if (op.k === 'journey' || op.k === 'journeyTask') return 'parcours';
+  if (op.k === 'presence') return 'presences';
   if (op.k === 'individual' || op.k === 'enrollIndividual' || op.k === 'individualConfirm') return 'particuliers';
   if (op.k === 'learner' || op.k === 'enroll' || op.k === 'enrollConfirm' || op.k === 'enrollCancel' || op.k === 'enrollReplace') return 'inscriptions';
   if (op.k === 'session' || op.k === 'sessionOpen' || op.k === 'sessionPostpone' || op.k === 'sessionCancel') return 'sessions';
@@ -669,6 +671,28 @@ export function buildPlan({ anchor, seed = 2026 }: PlanOptions): SeedEvent[] {
   journey(20, 'parcours-assistant', 'personnel-assistant-formation', 'ONBOARDING', ahead(-40));
   for (const index of [0, 1, 2, 3, 4, 5]) check(30 + index, 'parcours-assistant', index);
   journey(40, 'parcours-compte3-depart', 'personnel-compte3', 'OFFBOARDING', ahead(25));
+
+  // Bloc « presences » : une semaine et demie de présences DÉCLARATIVES (sur site, télétravail, déplacement ; aucune heure, aucun lieu) sur le personnel en poste. Ceux qui ont un compte
+  // déclarent eux-mêmes ; les autres sont saisis par la RH (« saisie par un autre »). Aucune déclaration sur un jour d'absence validée (la RH-2 l'interdit).
+  const presenceAt = (minute: number) => new Date(day0.getTime() + 8 * 3_600_000 + minute * 60_000);
+  const presenceStaff: { key: string; account?: Who; leave?: { start: string; end: string } }[] = [
+    { key: 'personnel-dg' }, { key: 'personnel-dga', account: 'rh' }, { key: 'personnel-daf', account: 'finance' }, { key: 'personnel-commercial', account: 'commercial' },
+    { key: 'personnel-compte1', account: 'compte1' }, { key: 'personnel-compte2', account: 'compte2' }, { key: 'personnel-compte3', account: 'compte3' },
+    { key: 'personnel-investudy', account: 'investudy' }, { key: 'personnel-assistant-formation' }, { key: 'personnel-support', leave: span(1, 3) },
+  ];
+  const presenceModes: ('ON_SITE' | 'REMOTE' | 'TRAVEL')[] = ['ON_SITE', 'ON_SITE', 'REMOTE', 'ON_SITE', 'TRAVEL', 'REMOTE'];
+  let presenceMinute = 0;
+  for (const [row, person] of presenceStaff.entries()) {
+    let column = 0;
+    for (let offset = -3; offset <= 6; offset++) {
+      const date = new Date(day0.getTime() + offset * DAY);
+      if (date.getUTCDay() === 0 || date.getUTCDay() === 6) continue;
+      const iso = isoDay(date);
+      column += 1;
+      if (person.leave && iso >= person.leave.start && iso <= person.leave.end) continue;
+      events.push({ at: presenceAt(presenceMinute++), who: person.account ?? 'rh', op: { k: 'presence', employee: person.key, day: iso, mode: presenceModes[(row + column) % presenceModes.length]! } });
+    }
+  }
 
   // Ordre chronologique stable (à date égale, l'ordre de construction est conservé).
   return events.map((event, order) => ({ event, order })).sort((a, b) => a.event.at.getTime() - b.event.at.getTime() || a.order - b.order).map((x) => x.event);
