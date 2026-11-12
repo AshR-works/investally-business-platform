@@ -71,7 +71,7 @@ node scripts/api-docs/run-newman.mjs --env mon-environnement.json --report rappo
 ```
 La commande exclut automatiquement les dossiers 00b et 98 ; `--only 00,01,90` choisit des dossiers.
 
-**Résultat de référence** (pile jetable, jeu de démonstration, compte Super administrateur) : **424 requêtes, 1 584 assertions, 0 échec**, en 52 secondes ; 98 : 10 requêtes, 50 assertions, 0 échec ; 00b : 2 requêtes, 4 assertions, 0 échec.
+**Résultat de référence** (pile jetable, jeu de démonstration, compte Super administrateur) : **443 requêtes, 1 626 assertions, 0 échec**, en 49 secondes ; 98 : 10 requêtes, 50 assertions, 0 échec ; 00b : 2 requêtes, 4 assertions, 0 échec.
 
 ### Régénérer (à chaque changement de route)
 ```bash

@@ -1,4 +1,6 @@
 import 'reflect-metadata';
+import { PresenceDeclaration } from '../src/modules/hr/domain/presence';
+import { PrismaPresenceRepository } from '../src/modules/hr/infrastructure/prisma-presence.repository';
 import { RoleCode } from '../src/modules/iam/domain/roles';
 import { Api, createUserWithRoles, mfaSession, startRbacApp } from './support/rbac-http';
 import { TestApp } from './support/test-app';
@@ -180,6 +182,37 @@ describeDb('Présences déclaratives (HTTP + PostgreSQL)', () => {
     expect((await api.call('GET', `/api/v1/hr/presences?from=${today()}&to=${today()}`, {})).status).toBe(401);
     expect((await api.call('PUT', `/api/v1/hr/presences/${today()}`, { body: { mode: 'REMOTE' } })).status).toBe(401);
     expect((await api.call('DELETE', `/api/v1/hr/presences/${today()}`, {})).status).toBe(401);
+  });
+
+  it('persistance : jours lus dans l’ordre, retrait d’un seul jour, dernier mode et dernier auteur gardés en base', async () => {
+    const w = await world();
+    const day = today();
+    // Déclarés dans le désordre : le tableau les rend par jour croissant.
+    expect((await put(w.member, addDays(day, 2), 'ON_SITE')).status).toBe(200);
+    expect((await put(w.member, day, 'REMOTE')).status).toBe(200);
+    expect((await put(w.member, addDays(day, 1), 'TRAVEL')).status).toBe(200);
+    const row = ((await board(w.member, day, addDays(day, 2))).body.rows as { entries: { day: string; mode: string }[] }[])[0]!;
+    expect(row.entries).toEqual([{ day, mode: 'REMOTE' }, { day: addDays(day, 1), mode: 'TRAVEL' }, { day: addDays(day, 2), mode: 'ON_SITE' }]);
+    // Retirer un jour ne touche pas aux autres.
+    expect((await del(w.member, addDays(day, 1))).status).toBe(204);
+    const left = await t.prisma.db.presenceDeclaration.findMany({ where: { employeeId: w.memberEmp.id }, orderBy: { day: 'asc' } });
+    expect(left.map((d) => d.day.toISOString().slice(0, 10))).toEqual([day, addDays(day, 2)]);
+    // La RH change le mode : la base garde le nouveau mode, le nouvel auteur et une version de plus.
+    expect((await put(w.hr, day, 'TRAVEL', w.memberEmp.id)).status).toBe(200);
+    const changed = await t.prisma.db.presenceDeclaration.findFirstOrThrow({ where: { employeeId: w.memberEmp.id, day: new Date(`${day}T00:00:00Z`) } });
+    expect([changed.mode, changed.declaredByUserId, changed.version]).toEqual(['TRAVEL', w.hrUser.id, 2]);
+    expect((await board(w.member, day, day)).body.rows[0].entries).toEqual([{ day, mode: 'TRAVEL' }]);
+    expect((await put(w.member, day, 'TRAVEL')).body.enteredByOther).toBe(true);
+  });
+
+  it('le dépôt refuse une seconde déclaration du même jour par un conflit, même sans passer par le cas d’usage', async () => {
+    const w = await world();
+    const repo = new PrismaPresenceRepository(t.prisma);
+    const first = PresenceDeclaration.declare({ id: crypto.randomUUID(), employeeId: w.memberEmp.id, day: '2030-03-04', mode: 'REMOTE', declaredByUserId: w.hrUser.id, now: new Date() });
+    await repo.save(first);
+    const second = PresenceDeclaration.declare({ id: crypto.randomUUID(), employeeId: w.memberEmp.id, day: '2030-03-04', mode: 'TRAVEL', declaredByUserId: w.hrUser.id, now: new Date() });
+    await expect(repo.save(second)).rejects.toMatchObject({ code: 'CONFLICT', message: expect.stringMatching(/déjà déclarée/) });
+    expect((await repo.find(w.memberEmp.id, '2030-03-04'))!.mode).toBe('REMOTE');
   });
 
   describe('règles garanties par la base, quoi que fasse l’application', () => {

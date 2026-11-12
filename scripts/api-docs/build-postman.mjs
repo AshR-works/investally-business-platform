@@ -326,7 +326,28 @@ const scenarioFolders = () => {
     ],
     event: [runId],
   };
-  return [entreprises, formation, conges, contratsParcours];
+  const today = { listen: 'prerequest', script: { type: 'text/javascript', exec: ["pm.environment.set('presenceDay', new Date().toISOString().slice(0, 10));", "pm.environment.set('presenceOldDay', '2020-01-01');"] } };
+  const row = "pm.response.json().rows.find((r) => r.employeeId === pm.environment.get('presenceEmployeeId'))";
+  const presences = {
+    name: '90.5 — RH : présences déclaratives (RH-4)',
+    item: [
+      step('Créer un employé pour les présences', 'POST', '/hr/employees', { body: { lastName: `Presence${suffix}`, firstName: 'Noa', jobTitle: 'Analyste', department: 'Finance', hiredOn: '2020-01-01' }, expect: [201], save: { presenceEmployeeId: 'pm.response.json().id' } }),
+      step('Lire le tableau du jour : l’employé est là, sans déclaration', 'GET', '/hr/presences?from={{presenceDay}}&to={{presenceDay}}', { query: [{ key: 'from', value: '{{presenceDay}}' }, { key: 'to', value: '{{presenceDay}}' }], extraTests: [`pm.test('Une ligne, aucune déclaration, la RH déclare pour tous', () => { const r = ${row}; pm.expect(r).to.be.an('object'); pm.expect(r.entries).to.eql([]); pm.expect(pm.response.json().canDeclareForAll).to.eql(true); });`] }),
+      step('La RH déclare le télétravail pour cet employé', 'PUT', '/hr/presences/{{presenceDay}}?employeeId={{presenceEmployeeId}}', { query: [{ key: 'employeeId', value: '{{presenceEmployeeId}}' }], body: { mode: 'REMOTE' }, expect: [200], save: { presenceId: 'pm.response.json().id' }, extraTests: ["pm.test('Télétravail, saisie par un autre, ni heure ni lieu', () => { const p = pm.response.json(); pm.expect(p.mode).to.eql('REMOTE'); pm.expect(p.enteredByOther).to.eql(true); pm.expect(p).to.not.have.any.keys('checkIn', 'checkOut', 'place', 'location'); });"] }),
+      step('Redéclarer le même mode ne change rien', 'PUT', '/hr/presences/{{presenceDay}}?employeeId={{presenceEmployeeId}}', { query: [{ key: 'employeeId', value: '{{presenceEmployeeId}}' }], body: { mode: 'REMOTE' }, expect: [200], extraTests: ["pm.test('Même déclaration', () => pm.expect(pm.response.json().id).to.eql(pm.environment.get('presenceId')));"] }),
+      step('Changer pour le déplacement', 'PUT', '/hr/presences/{{presenceDay}}?employeeId={{presenceEmployeeId}}', { query: [{ key: 'employeeId', value: '{{presenceEmployeeId}}' }], body: { mode: 'TRAVEL' }, expect: [200], extraTests: ["pm.test('Déplacement, même déclaration', () => { const p = pm.response.json(); pm.expect(p.mode).to.eql('TRAVEL'); pm.expect(p.id).to.eql(pm.environment.get('presenceId')); });"] }),
+      step('Un mode hors liste est refusé', 'PUT', '/hr/presences/{{presenceDay}}?employeeId={{presenceEmployeeId}}', { query: [{ key: 'employeeId', value: '{{presenceEmployeeId}}' }], body: { mode: 'HEURES' }, expect: [400] }),
+      step('Une heure ne s’envoie pas', 'PUT', '/hr/presences/{{presenceDay}}?employeeId={{presenceEmployeeId}}', { query: [{ key: 'employeeId', value: '{{presenceEmployeeId}}' }], body: { mode: 'REMOTE', checkIn: '08:30' }, expect: [400] }),
+      step('Un jour trop ancien est refusé', 'PUT', '/hr/presences/{{presenceOldDay}}?employeeId={{presenceEmployeeId}}', { query: [{ key: 'employeeId', value: '{{presenceEmployeeId}}' }], body: { mode: 'REMOTE' }, expect: [400] }),
+      step('Un employé inexistant est « introuvable »', 'PUT', '/hr/presences/{{presenceDay}}?employeeId=00000000-0000-7000-8000-000000000000', { query: [{ key: 'employeeId', value: '00000000-0000-7000-8000-000000000000' }], body: { mode: 'REMOTE' }, expect: [404] }),
+      step('Lire le tableau : la déclaration apparaît', 'GET', '/hr/presences?from={{presenceDay}}&to={{presenceDay}}', { query: [{ key: 'from', value: '{{presenceDay}}' }, { key: 'to', value: '{{presenceDay}}' }], extraTests: [`pm.test('Une déclaration : déplacement', () => pm.expect(${row}.entries).to.eql([{ day: pm.environment.get('presenceDay'), mode: 'TRAVEL' }]));`] }),
+      step('Retirer la déclaration', 'DELETE', '/hr/presences/{{presenceDay}}?employeeId={{presenceEmployeeId}}', { query: [{ key: 'employeeId', value: '{{presenceEmployeeId}}' }], expect: [204] }),
+      step('Retirer une déclaration absente est « introuvable »', 'DELETE', '/hr/presences/{{presenceDay}}?employeeId={{presenceEmployeeId}}', { query: [{ key: 'employeeId', value: '{{presenceEmployeeId}}' }], expect: [404] }),
+      step('Une période de plus de 93 jours est refusée', 'GET', '/hr/presences?from=2026-01-01&to=2026-12-31', { query: [{ key: 'from', value: '2026-01-01' }, { key: 'to', value: '2026-12-31' }], expect: [400] }),
+    ],
+    event: [runId, today],
+  };
+  return [entreprises, formation, conges, contratsParcours, presences];
 };
 
 // ───────────────────────────── Assemblage ─────────────────────────────
@@ -490,7 +511,7 @@ catalogue.resume = {
   dossiers: catalogue.dossiers.length,
   requetes: catalogue.dossiers.reduce((n, f) => n + f.requetes, 0),
   testsDefinis: catalogue.dossiers.reduce((n, f) => n + f.assertions, 0),
-  resultatDeReference: 'Pile jetable, jeu de démonstration, compte Super administrateur : 424 requêtes, 1 584 assertions exécutées, 0 échec (dossiers 00b et 98 à part : 12 requêtes, 54 assertions, 0 échec).',
+  resultatDeReference: 'Pile jetable, jeu de démonstration, compte Super administrateur : 443 requêtes, 1 626 assertions exécutées, 0 échec (dossiers 00b et 98 à part : 12 requêtes, 54 assertions, 0 échec).',
 };
 writeFileSync(join(root, 'docs/api/tests-api.json'), JSON.stringify(catalogue, null, 2) + '\n', 'utf8');
 

@@ -36,7 +36,10 @@ async function targetOf(employees: EmployeeRepository, access: AccessContext, de
   return employee;
 }
 
-/** Le jour est dans la fenêtre de saisie du demandeur (courte pour l'employé, plus large pour la RH) et dans la période d'emploi de la fiche. */
+/**
+ * Le jour est dans la fenêtre de saisie du demandeur (courte pour l'employé, plus large pour la RH) et pas avant l'entrée de l'employé. Pas de contrôle sur la date de départ : un employé qui
+ * en a une est archivé, et déclarer pour un employé archivé est refusé avant d'arriver ici ; le retrait, lui, reste permis (la RH nettoie une présence restée après un départ).
+ */
 function assertDayAllowed(day: string, today: string, declare: Scope, employee: Employee): void {
   assertDay(day);
   const window = declare === Scope.All ? HR_WINDOW : SELF_WINDOW;
@@ -44,7 +47,6 @@ function assertDayAllowed(day: string, today: string, declare: Scope, employee: 
   if (offset < -window.past) throw new DomainError('VALIDATION', `Ce jour est trop ancien : la saisie remonte à ${window.past} jours au plus`);
   if (offset > window.future) throw new DomainError('VALIDATION', `Ce jour est trop lointain : la saisie va jusqu'à ${window.future} jours à l'avance`);
   if (day < employee.hiredOn) throw new DomainError('VALIDATION', "Le jour ne peut pas être avant la date d'entrée de l'employé");
-  if (employee.leftOn !== null && day > employee.leftOn) throw new DomainError('VALIDATION', 'Le jour ne peut pas être après la date de départ de l\'employé');
 }
 
 export interface DeclarePresenceCommand {

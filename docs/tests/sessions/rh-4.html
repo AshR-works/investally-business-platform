@@ -1,0 +1,55 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fiche de test — RH-4 — présences déclaratives</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="../../INDEX.html">Index</a> · <a href="../../GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="../../ARCHITECTURE.html">Architecture</a> · <a href="../../SECURITY.html">Sécurité</a> · <a href="../../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../../QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="../../TECH-DEBT.html">Dette</a> · <a href="../../CHARTE-DE-TESTS.html">Charte de tests</a> · <a href="../../tests/README.html">Fiches de test</a> · <a href="../../design/README.html">Design</a> · <a href="../../livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>Fiche de test — RH-4 — présences déclaratives</h1>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td><strong>Session</strong></td><td><code>rh-4</code></td></tr>
+<tr><td><strong>Recettes de référence</strong></td><td><a href="../../SPRINT-RH-4A-RECETTE.html"><code>SPRINT-RH-4A-RECETTE.md</code></a> (API, droits, base), <a href="../../SPRINT-RH-4B-RECETTE.html"><code>SPRINT-RH-4B-RECETTE.md</code></a> (écran, démonstration), <a href="../../SPRINT-RH-4C-RECETTE.html"><code>SPRINT-RH-4C-RECETTE.md</code></a> (mutants, Newman, fiches)</td></tr>
+<tr><td><strong>Étiquette</strong></td><td><code>rh-4a-validated</code>, <code>rh-4b-validated</code> (4c : à la validation)</td></tr>
+<tr><td><strong>Contexte</strong></td><td>Décision D69, <a href="../../adr/0015-presences-declaratives.html">ADR-0015</a> · valeurs de départ « à confirmer » avec la Direction produit · <strong>pas de pointage</strong></td></tr>
+<tr><td><strong>Écrans concernés</strong></td><td><a href="../interfaces/39-presences.html">Présences</a></td></tr>
+</tbody></table></div>
+<p><em>Fiche de session de la <a href="../../CHARTE-DE-TESTS.html">charte de tests</a>, <strong>dérivée des recettes</strong> du lot : en cas de doute, la recette fait foi.</em></p>
+<h2>Avant de commencer</h2>
+<ul><li>Réinitialiser la pile (<code>node scripts/local-stack.mjs reset</code>, puis <code>--demo --rebuild</code>) ; comptes de démonstration (mots de passe dans le fichier local, jamais dans le dépôt).</li><li>Rôles utiles : RH, Super administrateur, Direction, un employé avec compte (chargé de compte), son responsable (Responsable commercial), un employé tiers, un compte sans fiche employé.</li><li>Le jeu de démonstration contient dix personnes avec une semaine et demie de présences ; vérifier d'abord que le bloc « presences » est chargé.</li></ul>
+<h2>Vérifications à rejouer</h2>
+<div class="table-wrap"><table><thead><tr><th>N°</th><th>Vérification</th><th>Résultat attendu (d'après les recettes)</th><th>Constaté (✔ / ✘)</th><th>Date et initiales</th></tr></thead><tbody>
+<tr><td>1</td><td>Aucune surveillance</td><td>Une valeur parmi trois (sur site, télétravail, déplacement) par employé et par jour ; ni heure, ni lieu, ni retard, ni texte libre : la table et la réponse de l'API n'ont aucun champ pour cela ; une heure envoyée est refusée (400)</td><td>☐</td><td></td></tr>
+<tr><td>2</td><td>Une déclaration par employé et par jour</td><td>Redéclarer le même mode ne change rien et n'écrit rien dans le journal ; changer le mode écrit l'avant et l'après ; deux déclarations du même jour refusées par la base</td><td>☐</td><td></td></tr>
+<tr><td>3</td><td>Qui déclare pour qui</td><td>Un employé pour lui seulement ; la RH et le Super administrateur pour tous (saisie marquée « par un autre ») ; collègue, responsable, Direction : l'employé visé est « introuvable » (404, identique à un employé inexistant)</td><td>☐</td><td></td></tr>
+<tr><td>4</td><td>Fenêtre de saisie</td><td>Employé : 7 jours en arrière et 30 en avant, bornes comprises ; RH : 90 et 90 ; jamais avant l'entrée ni après le départ ; jamais pour un employé archivé</td><td>☐</td><td></td></tr>
+<tr><td>5</td><td>Cohérence avec les absences</td><td>Une absence validée sur la journée entière interdit la déclaration (409) ; une demi-journée laisse déclarer l'autre moitié ; une demande en attente ne bloque pas</td><td>☐</td><td></td></tr>
+<tr><td>6</td><td>Retirer une déclaration</td><td>Retire un seul jour ; audit avec l'ancienne valeur ; retirer une déclaration absente : « introuvable »</td><td>☐</td><td></td></tr>
+<tr><td>7</td><td>Tableau : qui voit quoi</td><td>RH, Direction, Super administrateur : tout le personnel en poste (filtre par service sans tenir compte de la casse) ; employé : sa ligne ; responsable : sa ligne et celles de ses subordonnés directs ; collègue : rien de plus que sa ligne ; compte sans fiche : aucune ligne</td><td>☐</td><td></td></tr>
+<tr><td>8</td><td>Tableau : période et jours d'absence</td><td>Période de 93 jours au plus, dates valides, fin après le début (un seul jour permis) ; les jours d'absence validée sont indiqués ; un week-end au milieu d'une absence n'est pas compté absent à l'écran</td><td>☐</td><td></td></tr>
+<tr><td>9</td><td>Compte sans fiche employé</td><td>Message clair : « Demandez à la RH de la relier » ; aucune case modifiable</td><td>☐</td><td></td></tr>
+<tr><td>10</td><td>Règles garanties par la base</td><td>Une seule ligne par employé et par jour (index unique), trois modes seulement, version positive, employé existant</td><td>☐</td><td></td></tr>
+<tr><td>11</td><td>Droits</td><td><code>hr.presence.read</code> et <code>hr.presence.declare</code> : tout rôle déclare pour soi (Propre) ; la RH et le Super administrateur déclarent pour tous ; la RH, la Direction et le Super administrateur lisent tout ; sans jeton : 401</td><td>☐</td><td></td></tr>
+<tr><td>12</td><td>Audit</td><td>Chaque création, changement et retrait écrit une ligne avec l'avant et l'après</td><td>☐</td><td></td></tr>
+<tr><td>13</td><td>Données de démonstration</td><td>Dix personnes, une semaine et demie ; déclarées par le compte de l'employé quand il en a un, sinon par la RH ; aucune déclaration sur le congé validé de l'agente de support</td><td>☐</td><td></td></tr>
+<tr><td>14</td><td>Preuves</td><td>Mutants : voir la recette 4c (tués, survivants traités) ; collection Postman (parcours 90.5) : exécutée contre une pile jetable</td><td>☐</td><td></td></tr>
+</tbody></table></div>
+<h2>Écarts constatés</h2>
+<div class="table-wrap"><table><thead><tr><th>Date</th><th>Vérification</th><th>Description</th><th>Défaut ouvert (D…)</th></tr></thead><tbody>
+<tr><td></td><td></td><td></td><td></td></tr>
+</tbody></table></div></main></body></html>

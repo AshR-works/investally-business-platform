@@ -7,6 +7,7 @@ import type { AccessContext } from '../../iam';
 import { RoleCode, Scope, resolveGrants } from '../../iam';
 import { Employee } from '../domain/employee';
 import { LeaveRequest } from '../domain/leave-request';
+import { PresenceDeclaration } from '../domain/presence';
 import { DeclarePresenceUseCase, GetPresenceBoardHandler, RemovePresenceUseCase } from './presence-use-cases';
 
 const uuid = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
@@ -184,6 +185,14 @@ describe('Présences : déclarer', () => {
 });
 
 describe('Présences : retirer', () => {
+  it('la RH retire une présence restée après le départ d’un employé archivé ; déclarer pour lui reste refusé', async () => {
+    const w = build();
+    w.presences.items.push(PresenceDeclaration.declare({ id: uuid(800), employeeId: ID.left, day: '2026-11-08', mode: 'REMOTE', declaredByUserId: 'u-hr', now }));
+    await expect(w.declare.execute({ employeeId: ID.left, day: '2026-11-09', mode: 'REMOTE', access: hr, actor: actorOf('u-hr') })).rejects.toMatchObject({ code: 'CONFLICT' });
+    await w.remove.execute({ employeeId: ID.left, day: '2026-11-08', access: hr, actor: actorOf('u-hr') });
+    expect(w.presences.items).toHaveLength(0);
+  });
+
   it('l’employé retire sa déclaration ; audit avec l’ancienne valeur', async () => {
     const w = build();
     await w.declare.execute({ day: TODAY, mode: 'REMOTE', access: sam, actor: actorOf('u-sam') });

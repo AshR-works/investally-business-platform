@@ -69,7 +69,7 @@ curl -s http://127.0.0.1:3001/api/v1/companies?pageSize=5 -H &quot;Authorization
 <pre><code>npm install -g newman
 node scripts/api-docs/run-newman.mjs --env mon-environnement.json --report rapport.json</code></pre>
 <p>La commande exclut automatiquement les dossiers 00b et 98 ; <code>--only 00,01,90</code> choisit des dossiers.</p>
-<p><strong>Résultat de référence</strong> (pile jetable, jeu de démonstration, compte Super administrateur) : <strong>424 requêtes, 1 584 assertions, 0 échec</strong>, en 52 secondes ; 98 : 10 requêtes, 50 assertions, 0 échec ; 00b : 2 requêtes, 4 assertions, 0 échec.</p>
+<p><strong>Résultat de référence</strong> (pile jetable, jeu de démonstration, compte Super administrateur) : <strong>443 requêtes, 1 626 assertions, 0 échec</strong>, en 49 secondes ; 98 : 10 requêtes, 50 assertions, 0 échec ; 00b : 2 requêtes, 4 assertions, 0 échec.</p>
 <h3>Régénérer (à chaque changement de route)</h3>
 <pre><code>cd apps/api &amp;&amp; npx tsc -p tsconfig.build.json --outDir dist-docs &amp;&amp; cd ../..
 DATABASE_URL=&lt;base jetable&gt; node scripts/api-docs/export-openapi.cjs --dist apps/api/dist-docs --out docs/api/openapi.json

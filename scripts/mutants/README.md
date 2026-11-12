@@ -27,6 +27,7 @@ Chaque lot du module commercial a son script. Les résultats (nombre de mutants 
 | `documents.py` | S3.x | module Documents |
 | `roles-ux.py` | S3.8 | sélecteur de rôles |
 | `rh3-contrats-parcours.py` | RH-3d | contrats et parcours (domaine, cas d'usage, routes, base, droits, interface) |
+| `rh4-presences.py` | RH-4c | présences déclaratives (domaine, cas d'usage, routes, base, droits, interface) |
 | `rapport-journalier.py` | hors lot | rapport journalier |
 
 ## Lancer
