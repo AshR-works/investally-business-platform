@@ -22,7 +22,7 @@ hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
 nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 @media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
 </style></head><body><main><nav class="top">Investally Business Platform — design · <a href="README.html">Mode d&#8217;emploi</a> · <a href="01-DESIGN-SYSTEM.html">Design system</a> · <a href="02-SPECIFICATIONS-FRONTEND.html">Spécifications frontend</a> · <a href="exigences/REGISTRE-EXD.html">Exigences</a> · <a href="04-ANALYSE-D-IMPACT.html">Analyse d&#8217;impact</a> · <a href="05-AIDE-A-LA-DECISION.html">Aide à la décision</a> · <a href="decisions/REGISTRE-DDR.html">Décisions (DDR)</a> · <a href="CHANGELOG-DESIGN.html">Journal</a> · <a href="prototype/index.html">Prototype</a></nav><h1>Spécifications frontend — Next.js, TypeScript, Tailwind CSS</h1>
-<p><strong>Objet</strong> : traduire le design system (<a href="01-DESIGN-SYSTEM.html">01-DESIGN-SYSTEM.md</a>) en code pour <code>apps/crm-web</code>, sans toucher aux règles de sécurité existantes. <strong>Statut</strong> : spécification <strong>à valider</strong> ; rien n'est encore appliqué à l'application.</p>
+<p><strong>Objet</strong> : traduire le design system (<a href="01-DESIGN-SYSTEM.html">01-DESIGN-SYSTEM.md</a>) en code pour <code>apps/web</code>, sans toucher aux règles de sécurité existantes. <strong>Statut</strong> : spécification <strong>à valider</strong> ; rien n'est encore appliqué à l'application.</p>
 <hr>
 <h2>1. Principes d'intégration</h2>
 <ol><li><strong>Les jetons sont des variables CSS</strong> (<code>tokens.css</code>) : une seule source, lisible par Tailwind, par le CSS classique et par les tests.</li><li><strong>Tailwind CSS v4, configuration par le CSS</strong> (<code>@theme</code>) : les classes utilitaires (<code>bg-surface</code>, <code>text-ink-2</code>, <code>rounded-card</code>…) pointent vers les variables ; le thème sombre est un changement de <strong>valeurs de variables</strong>, pas de classes dupliquées.</li><li><strong>Composants sans logique de sécurité</strong> : ils affichent ; l'API décide (aucune régression de <code>@Protected</code>, du step-up, de l'audit).</li><li><strong>Aucune ressource externe</strong> : polices et icônes <strong>hébergées</strong> dans l'application (politique CSP <code>default-src 'self'</code>).</li><li><strong>Pas de nouvelle dépendance sans justification</strong> : Tailwind et ses plugins sont les seules additions prévues pour l'habillage.</li></ol>
@@ -58,7 +58,7 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 }</code></pre>
 <p>Exemples d'usage : <code>bg-surface text-ink border border-line rounded-card</code>, <code>bg-brand text-brand-ink</code>, <code>text-ok bg-ok-bg</code>.</p>
 <h2>3. Structure des fichiers proposée</h2>
-<pre><code>apps/crm-web/
+<pre><code>apps/web/
 ├── app/
 │   ├── globals.css                 import de Tailwind et des jetons
 │   ├── (auth)/                     connexion, MFA, mot de passe oublié, invitation (gabarit « auth »)

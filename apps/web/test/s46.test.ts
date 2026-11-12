@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 // Cohérence interface ↔ serveur : le domaine RÉEL de la décharge valide les mêmes saisies.
-import { Receipt } from '../../crm-api/src/modules/business-development/domain/receipt';
+import { Receipt } from '../../api/src/modules/business-development/domain/receipt';
 import { availableActions, OFFER_ACTION_LABEL } from '../lib/offers';
 import { buildReceiptBody, EMPTY_RECEIPT_FORM, isRealDate, type ReceiptForm, todayIso, validateReceiptFields } from '../lib/receipts';
 

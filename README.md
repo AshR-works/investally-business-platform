@@ -10,7 +10,7 @@ Documentation : `docs/` (vision, architecture, ADR, risques, plan des sprints).
 ## Démarrage CRM API
 ```bash
 pnpm install
-cp .env.example apps/crm-api/.env        # renseigner DATABASE_URL (jamais committé)
+cp .env.example apps/api/.env        # renseigner DATABASE_URL (jamais committé)
 pnpm crm-api prisma:generate
 pnpm crm-api prisma:migrate:deploy        # sur une base dédiée
 pnpm crm-api start:dev                    # http://127.0.0.1:3001/api/docs

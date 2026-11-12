@@ -9,7 +9,7 @@
   "scripts": {
     "crm-api": "pnpm --filter @investally/crm-api",
     "crm-web": "pnpm --filter @investally/crm-web",
-    "arch": "depcruise apps/crm-api/src --config .dependency-cruiser.cjs",
+    "arch": "depcruise apps/api/src --config .dependency-cruiser.cjs",
     "test": "pnpm -r test",
     "typecheck": "pnpm -r typecheck",
     "ci": "pnpm typecheck && pnpm arch && pnpm test",

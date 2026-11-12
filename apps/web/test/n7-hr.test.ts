@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 // Cohérence interface ↔ serveur : le domaine RÉEL de l'employé valide les mêmes saisies.
-import { Employee } from '../../crm-api/src/modules/hr/domain/employee';
+import { Employee } from '../../api/src/modules/hr/domain/employee';
 import { entityHref } from '../lib/entity-links';
 import {
   buildEmployeeBody, buildOrgTree, countNodes, type DirectoryEntry, departmentsOf, EMPLOYEE_STATE_FILTERS, type Employee as EmployeeView, type EmployeeForm, employeeActions,

@@ -156,8 +156,8 @@ const FIX_RE = /^(fix|correctif|hotfix)\b|\bcorrect(if|ion)\b|\bcorrig/i;
 export function classify(commit, files) {
   const tags = new Set();
   const paths = files.map((f) => f.path);
-  if (paths.some((p) => p.startsWith('apps/crm-api/'))) tags.add('backend');
-  if (paths.some((p) => p.startsWith('apps/crm-web/'))) tags.add('frontend');
+  if (paths.some((p) => p.startsWith('apps/api/'))) tags.add('backend');
+  if (paths.some((p) => p.startsWith('apps/web/'))) tags.add('frontend');
   if (paths.some((p) => /^apps\/crm-web\/(components|app)\//.test(p) || /^docs\/design\//.test(p) || /UX/.test(p))) tags.add('ux');
   // D'après le message seulement : un commit qui touche le module d'identité sans parler de sécurité n'est pas une évolution de sécurité.
   if (SECURITY_RE.test(commit.subject)) tags.add('securite');
@@ -437,22 +437,22 @@ function buildAutoBlocks(data) {
     feedback.length ? `**Retours et demandes traités (d'après les messages de commit)**\n\n${feedback.map((c) => `- ${code(c.short)} ${c.subject}`).join('\n')}\n` : '',
   ].filter(Boolean).join('\n');
 
-  const be = [...allPaths].filter((p) => p.startsWith('apps/crm-api/'));
+  const be = [...allPaths].filter((p) => p.startsWith('apps/api/'));
   const pick = (re) => be.filter((p) => re.test(p)).sort();
   const sec = [...allPaths].filter((p) => /\/iam\/|SECURITY\.md|rbac|idor|guard|auth/i.test(p) && !/\.(html|png)$/.test(p)).sort();
   const backend = be.length || sec.length ? [
     ['Routes (contrôleurs)', pick(/controller/)], ['Services et cas d\'usage', pick(/use-case|service\.ts|queries?\.ts|handler/)], ['Modules', pick(/\.module\.ts$/)],
     ['Migrations', pick(/prisma\/migrations\//)], ['Prisma (schéma)', pick(/prisma\/schema\.prisma$/)], ['Tests', pick(/(^|\/)test\/|\.spec\.ts$/)],
-  ].filter(([, l]) => l.length).map(([title, l]) => `**${title}** (${l.length})\n\n${list(l.slice(0, 40), 'apps/crm-api/')}${l.length > 40 ? `\n- … et ${l.length - 40} autres` : ''}\n`).join('\n')
+  ].filter(([, l]) => l.length).map(([title, l]) => `**${title}** (${l.length})\n\n${list(l.slice(0, 40), 'apps/api/')}${l.length > 40 ? `\n- … et ${l.length - 40} autres` : ''}\n`).join('\n')
     + (sec.length ? `\n**Sécurité (fichiers concernés)** (${sec.length})\n\n${list(sec.slice(0, 30))}${sec.length > 30 ? `\n- … et ${sec.length - 30} autres` : ''}\n` : '')
     : '_Aucune évolution du backend._';
 
-  const fe = [...allPaths].filter((p) => p.startsWith('apps/crm-web/'));
+  const fe = [...allPaths].filter((p) => p.startsWith('apps/web/'));
   const fpick = (re) => fe.filter((p) => re.test(p)).sort();
   const a11y = [...allPaths].filter((p) => /accessibilite|a11y/i.test(p)).length;
   const frontend = fe.length ? [
     ['Pages', fpick(/page\.tsx$/)], ['Composants', fpick(/\/components\//)], ['Bibliothèque (lib)', fpick(/\/lib\//)], ['Styles et thème', fpick(/\.css$|tailwind|postcss/)], ['Tests', fpick(/\/test\//)],
-  ].filter(([, l]) => l.length).map(([title, l]) => `**${title}** (${l.length})\n\n${list(l.slice(0, 40), 'apps/crm-web/')}${l.length > 40 ? `\n- … et ${l.length - 40} autres` : ''}\n`).join('\n')
+  ].filter(([, l]) => l.length).map(([title, l]) => `**${title}** (${l.length})\n\n${list(l.slice(0, 40), 'apps/web/')}${l.length > 40 ? `\n- … et ${l.length - 40} autres` : ''}\n`).join('\n')
     + (a11y ? `\n**Accessibilité** : ${a11y} fichier(s) d'audit, de captures ou de protocole touché(s).\n` : '')
     : '_Aucune évolution du frontend._';
 

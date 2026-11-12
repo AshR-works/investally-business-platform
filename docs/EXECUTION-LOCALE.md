@@ -7,7 +7,7 @@
 | Élément | État réel | Conséquence |
 |---|---|---|
 | Modules livrés | Identité et accès (connexion, MFA, invitations, rôles, sessions), entreprises (Business Development), documents | On peut tester ces parcours **maintenant**. Opportunités, formations, finance, RH, reporting **n'existent pas encore** (S4 à S6) |
-| Base de données | PostgreSQL 17 : `docker-compose.yml` (service `db`, port 5433) ou base embarquée jetable (`apps/crm-api/scripts/test-db.mjs`) | La base embarquée ne demande **ni Docker ni identifiants** |
+| Base de données | PostgreSQL 17 : `docker-compose.yml` (service `db`, port 5433) ou base embarquée jetable (`apps/api/scripts/test-db.mjs`) | La base embarquée ne demande **ni Docker ni identifiants** |
 | Docker | Non détecté sur le poste de l'assistant ; le `docker-compose.yml` ne contient **que la base et l'API** (profil `full`), pas l'interface web, pas de migration ni de seed | Le Docker complet demande du travail avant d'être utile |
 | Node | `.nvmrc` = 22 ; le poste de l'assistant a Node 26.7 (Prisma 7 le supporte « officieusement ») | Installer Node 22 sur votre poste |
 | Configuration | L'API refuse de démarrer en production sans clés (JWT, MFA, documents). En développement, clés **éphémères** : jetons et secrets MFA perdus à chaque redémarrage | Pour tester sur la durée, il faut des secrets **persistants** locaux |
@@ -61,8 +61,8 @@ Navigateur ──► Next.js 16 (127.0.0.1:3000) ──/api/*──► NestJS 11
 
 ```
 investally-platform/
-├─ apps/crm-api/        NestJS, prisma/ (schéma, migrations), scripts/, src/modules/{iam,audit,business-development,documents}
-├─ apps/crm-web/        Next.js (app/, components/, lib/, test/)
+├─ apps/api/        NestJS, prisma/ (schéma, migrations), scripts/, src/modules/{iam,audit,business-development,documents}
+├─ apps/web/        Next.js (app/, components/, lib/, test/)
 ├─ docs/                architecture, sécurité, recettes, cadrages, design/ (prototype HTML), accessibilite/
 ├─ scripts/             local-stack.mjs (nouveau), a11y-audit.mjs, md-to-html.py
 ├─ .github/workflows/   ci.yml
@@ -95,7 +95,7 @@ Le script (`scripts/local-stack.mjs`, **testé le 2026-10-22 sur ports et dossie
 
 **Vérification** : `http://127.0.0.1:3000/login` s'affiche → connexion avec l'e-mail `admin@investally.test` → scan du QR → fiche entreprises remplie → `http://127.0.0.1:3001/api/docs` (Swagger). Commandes utiles : `--dev` (rechargement à chaud), `--rebuild`, `reset` (efface tout après confirmation). Les liens d'invitation sont dans `..\investally-local\logs\api.log`.
 
-Qualité sans Claude Code : `pnpm ci` (types, architecture, tests) puis `node apps/crm-api/scripts/test-db.mjs` (intégration, base jetable).
+Qualité sans Claude Code : `pnpm ci` (types, architecture, tests) puis `node apps/api/scripts/test-db.mjs` (intégration, base jetable).
 
 **Test réalisé** (base, ports et dossier jetables, Node 26.7) : premier démarrage complet (6 migrations, 95 permissions, 10 rôles, administrateur, 40 entreprises) ; redémarrage : données conservées, aucun second administrateur, démonstration idempotente (0 ajout) ; interface 200, proxy `/api` 401 attendu, connexion par mot de passe réussie à travers le proxy. **Non testé** : l'enrôlement MFA dans le navigateur (à faire par vous), Node 22, `--dev`. Deux défauts corrigés pendant le test : interface compilée pour un autre port d'API (recompilation automatique), `next build` refusait `NODE_ENV=development`.
 

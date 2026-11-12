@@ -57,7 +57,7 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <ul><li><strong>D41</strong> stockage sur disque local (adaptateur S3 et sauvegarde du dossier en S7.1) · <strong>D42 aucun antivirus : condition bloquante de la mise en production (S7.2)</strong> · <strong>D43</strong> un seul type d'objet propriétaire déclaré (entreprises) : les autres modules déclarent leur résolveur à leur livraison · <strong>D44</strong> fichier lu en mémoire (≤ 10 Mo) · <strong>D45</strong> durée de conservation et catégories par défaut, à confirmer.</li><li><strong>Sauvegarde</strong> : le dossier <code>DOCUMENTS_DIR</code> doit être sauvegardé avec la base.</li><li><strong>Production</strong> : <code>DOCUMENTS_DIR</code> (chemin absolu hors racine web) est <strong>obligatoire</strong> ; l'application refuse de démarrer sans.</li><li>Aucune vue de recherche plein texte, aucune prévisualisation, aucune signature électronique (hors périmètre).</li><li>L'écoute avec un vrai lecteur d'écran (D31) doit couvrir le panneau Documents (fenêtres, tableau, envoi de fichier).</li></ul>
 <h2>Rejouer les contrôles automatisés</h2>
 <pre><code>pnpm ci                                   # types, architecture, tests unitaires et interface
-node apps/crm-api/scripts/test-db.mjs     # tests d&#x27;intégration (base PostgreSQL jetable)
+node apps/api/scripts/test-db.mjs     # tests d&#x27;intégration (base PostgreSQL jetable)
 python scripts/mutants/documents.py   # mutants du lot (arbre de travail propre)</code></pre>
 <h2>Écarts constatés</h2>
 <div class="table-wrap"><table><thead><tr><th>Date</th><th>Vérification n°</th><th>Description</th><th>Défaut ouvert (D…)</th></tr></thead><tbody>

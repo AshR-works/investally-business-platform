@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 // Cohérence interface ↔ serveur : le domaine RÉEL de l'opportunité valide les mêmes saisies.
-import { LossReason, Opportunity, OpportunityStage } from '../../crm-api/src/modules/business-development/domain/opportunity';
+import { LossReason, Opportunity, OpportunityStage } from '../../api/src/modules/business-development/domain/opportunity';
 import { MODULES } from '../lib/modules';
 import {
   advanceLabel, buildOpportunityBody, EMPTY_OPPORTUNITY_FORM, formFromOpportunity, groupByStage, LOSS_REASONS, lossReasonLabel, OPPORTUNITY_FILTERS, OPPORTUNITY_SOURCES,

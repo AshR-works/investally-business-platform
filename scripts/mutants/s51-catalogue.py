@@ -2,8 +2,8 @@ from pathlib import Path
 # Racine du dépôt : ce script se trouve dans scripts/mutants/.
 REPO = Path(__file__).resolve().parents[2]
 import subprocess, os, sys
-api = str(REPO / 'apps' / 'crm-api')
-web = str(REPO / 'apps' / 'crm-web')
+api = str(REPO / 'apps' / 'api')
+web = str(REPO / 'apps' / 'web')
 base = os.path.join(api, 'src', 'modules', 'training')
 fields = os.path.join(base, 'domain', 'catalogue-fields.ts')
 trn = os.path.join(base, 'domain', 'training.ts')

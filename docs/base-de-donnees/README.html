@@ -32,7 +32,7 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td>Suppression</td><td>Jamais physique sur les données métier : archivage, annulation, suppression logique (<code>deleted_at</code>)</td></tr>
 <tr><td>Concurrence</td><td>Colonne <code>version</code> sur chaque agrégat (verrou optimiste)</td></tr>
 <tr><td>Audit</td><td>Table <code>audit.audit_logs</code> partitionnée par mois : qui, quoi, avant/après, session, adresse</td></tr>
-<tr><td>Migrations</td><td><code>apps/crm-api/prisma/migrations/</code> (28 au 2026-11-11), jamais modifiées une fois appliquées</td></tr>
+<tr><td>Migrations</td><td><code>apps/api/prisma/migrations/</code> (28 au 2026-11-11), jamais modifiées une fois appliquées</td></tr>
 </tbody></table></div>
 <h2>Les documents</h2>
 <ul><li><a href="DICTIONNAIRE.html"><strong>DICTIONNAIRE.md</strong></a> (généré) : les <strong>43 tables</strong>, leurs colonnes (type, nullité, défaut, description), clés, règles garanties par la base, index, types énumérés, un diagramme des relations par schéma, et la liste des références par identifiant.</li><li><a href="verifications.sql"><strong>verifications.sql</strong></a> : <strong>22 vérifications d'intégrité en lecture seule</strong>. Chacune renvoie zéro ligne quand tout va bien.</li></ul>

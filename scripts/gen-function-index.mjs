@@ -11,10 +11,10 @@ import { fileURLToPath } from 'node:url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const SOURCES = [
-  { dir: 'apps/crm-api/src', title: 'API (NestJS)' },
-  { dir: 'apps/crm-web/app', title: 'Interface web — pages (Next.js)' },
-  { dir: 'apps/crm-web/components', title: 'Interface web — composants' },
-  { dir: 'apps/crm-web/lib', title: 'Interface web — bibliothèque' },
+  { dir: 'apps/api/src', title: 'API (NestJS)' },
+  { dir: 'apps/web/app', title: 'Interface web — pages (Next.js)' },
+  { dir: 'apps/web/components', title: 'Interface web — composants' },
+  { dir: 'apps/web/lib', title: 'Interface web — bibliothèque' },
 ];
 
 function walk(dir) {

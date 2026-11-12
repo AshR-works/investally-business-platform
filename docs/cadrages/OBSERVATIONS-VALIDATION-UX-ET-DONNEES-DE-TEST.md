@@ -144,7 +144,7 @@ Créer des tables « en avance » pour Investudy ou la finance serait une **modi
 
 ### 5.3 Structure proposée
 ```
-apps/crm-api/seed/
+apps/api/seed/
   fixtures/                 données lisibles (JSON), versionnées
     organisation.json       fonctions, équipes, comptes de démonstration
     entreprises.json        ~40 entreprises (secteur, pays, statut, responsable)

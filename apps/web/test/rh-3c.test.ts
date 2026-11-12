@@ -230,7 +230,7 @@ describe('RH-3c — écrans : pas de salaire, pas de texte libre, pas de « Ferm
     expect(read('app/(app)/hr/journeys/[id]/page.tsx')).toContain("canAll(profile, 'hr.journey.manage')");
   });
   it('la liste des motifs de fin est celle du serveur', () => {
-    const server = readFileSync(join(root, '..', 'crm-api/src/modules/hr/domain/contract.ts'), 'utf8');
+    const server = readFileSync(join(root, '..', 'api/src/modules/hr/domain/contract.ts'), 'utf8');
     for (const { code } of END_REASONS) expect(server).toContain(`'${code}'`);
   });
 });

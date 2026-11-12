@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 // Cohérence interface ↔ serveur : le domaine RÉEL de l'offre valide les mêmes saisies.
-import { Offer as OfferDomain, OfferStatus } from '../../crm-api/src/modules/business-development/domain/offer';
+import { Offer as OfferDomain, OfferStatus } from '../../api/src/modules/business-development/domain/offer';
 import { availableActions, buildOfferBody, EMPTY_OFFER_FORM, formatAmount, formFromOffer, isValidAmount, normalizeAmount, validateOfferFields } from '../lib/offers';
 import { OFFER_STATUS } from '../lib/status';
 import type { Offer } from '../lib/types';

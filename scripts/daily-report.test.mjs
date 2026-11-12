@@ -70,7 +70,7 @@ describe('Git : libellés et attribution', () => {
     assert.equal(isNoise('docs/A.html', all), 'pages HTML générées');
     assert.equal(isNoise('docs/design/prototype/index.html', new Set(['docs/design/prototype/index.md'])), null);
     assert.equal(isNoise('docs/accessibilite/s36-captures/x.png', all), 'captures');
-    assert.equal(isNoise('apps/crm-api/src/main.ts', all), null);
+    assert.equal(isNoise('apps/api/src/main.ts', all), null);
   });
 });
 
@@ -86,7 +86,7 @@ describe('classification pour le changelog', () => {
     assert.equal(changelogCategory(commit('Merge sprint/x', { parents: ['a', 'b'] }), []), null);
   });
   it('toucher le module d\'identité ne suffit pas à parler de sécurité', () => {
-    assert.ok(!classify(commit('refactor: renommage'), [{ status: 'M', path: 'apps/crm-api/src/modules/iam/x.ts' }]).has('securite'));
+    assert.ok(!classify(commit('refactor: renommage'), [{ status: 'M', path: 'apps/api/src/modules/iam/x.ts' }]).has('securite'));
   });
 });
 

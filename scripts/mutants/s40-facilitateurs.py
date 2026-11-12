@@ -3,7 +3,7 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[2]
 import subprocess, sys, shutil
 
-API = str(REPO / 'apps' / 'crm-api')
+API = str(REPO / 'apps' / 'api')
 B = API + r'\src\modules\business-development'
 
 # (id, fichier, ancien, nouveau)

@@ -72,6 +72,6 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <h2>À valider par la direction produit</h2>
 <ol><li>Le rendu (ouvrir la pile de test ou consulter les captures) : coque, hub, recherche, thème sombre, mobile.</li><li>Les écarts ci-dessus, en particulier <strong>les indicateurs absents du hub</strong> et <strong>le bouton masqué sur le hub</strong>.</li><li>« Je valide H1 » → fusion <code>--no-ff</code> dans <code>main</code> et étiquette <code>h1-validated</code>.</li></ol>
 <h2>Rejouer la recette</h2>
-<pre><code>node apps/crm-api/scripts/test-db.mjs --keep      # base jetable
+<pre><code>node apps/api/scripts/test-db.mjs --keep      # base jetable
 pnpm --filter @investally/crm-web build           # puis démarrer l&#x27;API et le web (voir SPRINT-3.4-RECETTE.md)
 node scripts/a11y-audit.mjs --api-log &lt;journal de l&#x27;API&gt; --shots &lt;dossier de captures&gt;</code></pre></main></body></html>

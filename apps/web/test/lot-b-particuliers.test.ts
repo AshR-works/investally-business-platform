@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 // Cohérence interface ↔ serveur : le domaine RÉEL de l'API est interrogé sur les mêmes cas.
-import { normalizePayer } from '../../crm-api/src/modules/training/domain/enrollment';
-import { Learner as ServerLearner } from '../../crm-api/src/modules/training/domain/learner';
+import { normalizePayer } from '../../api/src/modules/training/domain/enrollment';
+import { Learner as ServerLearner } from '../../api/src/modules/training/domain/learner';
 import {
   EMPTY_ENROLL_FORM, EMPTY_LEARNER_FORM, enrollBody, type EnrollForm, formFromLearner, INDIVIDUAL_KINDS, isIndividual, LEARNER_KIND_FILTERS, LEARNER_KIND_LABEL, learnerBody, learnerOrigin,
   type Learner, type LearnerForm, PAYER_TYPE_OPTIONS, payerText, validateEnroll, validateLearner,

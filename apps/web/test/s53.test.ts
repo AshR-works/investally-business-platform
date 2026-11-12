@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 // Cohérence interface ↔ serveur : le domaine RÉEL de l'ambassadeur valide les mêmes saisies.
-import { Ambassador } from '../../crm-api/src/modules/business-development/domain/ambassador';
+import { Ambassador } from '../../api/src/modules/business-development/domain/ambassador';
 import {
   AMBASSADOR_ORIGINS, type AmbassadorForm, buildAmbassadorBody, EMPTY_AMBASSADOR_FORM, formFromAmbassador, originLabel, sinceLabel, validateAmbassadorFields,
 } from '../lib/ambassadors';

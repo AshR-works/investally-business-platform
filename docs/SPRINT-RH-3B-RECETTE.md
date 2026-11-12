@@ -35,5 +35,5 @@ Deuxième tranche de RH-3 (après 3a, les contrats). Restent **3c** (écrans et 
 - **Non vérifié** : concurrence au-delà de trois lancements simultanés ; cocher la même tâche depuis deux sessions en même temps (le verrou de version la refuse, testé en séquence).
 
 ## Comment vérifier
-1. `node apps/crm-api/scripts/test-db.mjs --tests=hr-journeys-http` (base jetable, environ une minute).
+1. `node apps/api/scripts/test-db.mjs --tests=hr-journeys-http` (base jetable, environ une minute).
 2. Collection Postman : dossiers « hr » (parcours, modèles) ; voir `docs/api/README.md`.

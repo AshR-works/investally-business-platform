@@ -4,7 +4,7 @@
 
 ## Vue d’ensemble
 
-- **Moteur** : PostgreSQL ; accès par Prisma (client généré) ; migrations versionnées dans `apps/crm-api/prisma/migrations`.
+- **Moteur** : PostgreSQL ; accès par Prisma (client généré) ; migrations versionnées dans `apps/api/prisma/migrations`.
 - **Un schéma PostgreSQL par contexte métier** (monolithe modulaire) : `iam`, `bd`, `training`, `hr`, `docs`, `audit`.
 - **Aucune clé étrangère entre deux schémas** : un contexte référence un autre **par identifiant** (colonne `*_id` sans contrainte) ; l’existence et l’appartenance sont contrôlées par les cas d’usage (test `core-schema`).
 - **Rien n’est supprimé physiquement** sur les données métier : archivage, annulation ou suppression logique (`deleted_at`) ; les clés étrangères sont en `RESTRICT`.

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 // Cohérence interface ↔ serveur : le domaine RÉEL de la relance valide les mêmes saisies.
-import { Followup } from '../../crm-api/src/modules/business-development/domain/followup';
+import { Followup } from '../../api/src/modules/business-development/domain/followup';
 import {
   addDays, buildFollowupBody, channelLabel, EMPTY_FOLLOWUP_FORM, FOLLOWUP_CHANNELS, FOLLOWUP_FILTERS, FOLLOWUP_STATUS, followupActions, followupListParams, formFromFollowup,
   type FollowupForm, validateClosingText, validateFollowupFields,

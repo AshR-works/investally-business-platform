@@ -51,7 +51,7 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <ul><li><strong>Aucun passage dans le navigateur réel pour ce lot</strong> : la machine n'avait que 27 Mo de mémoire libre et la pile locale de la direction produit occupait les ports de test. Les contrôles ci-dessus sont des tests de contrat sur le code et les styles, <strong>pas</strong> une vérification visuelle. Le script d'audit du navigateur a été étendu (croix, largeur minimale, zone non redimensionnable, surbrillance et focus, pays) et reste à jouer.</li><li><strong>Mise en page des petits écrans</strong> non vérifiée visuellement.</li></ul>
 <h2>Rejouer les contrôles automatisés</h2>
 <pre><code>pnpm ci                                   # types, architecture, tests unitaires et interface
-node apps/crm-api/scripts/test-db.mjs     # tests d&#x27;intégration (base PostgreSQL jetable)</code></pre>
+node apps/api/scripts/test-db.mjs     # tests d&#x27;intégration (base PostgreSQL jetable)</code></pre>
 <p><em>Pas de script de mutants versionné pour ce lot.</em></p>
 <h2>Écarts constatés</h2>
 <div class="table-wrap"><table><thead><tr><th>Date</th><th>Vérification n°</th><th>Description</th><th>Défaut ouvert (D…)</th></tr></thead><tbody>

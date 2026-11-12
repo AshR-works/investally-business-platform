@@ -32,4 +32,4 @@ Fenêtre 2 200 px : marges gauche et droite égales (à la barre de défilement 
 Réversible (un fichier de styles). Le libellé texte « Déplier » disparaît visuellement (il reste lu par les lecteurs d'écran). Dette : tester chaque nouvel écran à la largeur de repli.
 
 ## Réalisation (H1, 2026-10-21)
-Implémenté dans `apps/crm-web` (`components/app-shell.tsx`) avec les mêmes règles : grille à trois colonnes, repli automatique. Mesuré dans un navigateur réel : à 2 200 px marges de 373 px de chaque côté, à 1 280 px repli sans chevauchement. Le bouton est un `button` nommé « Navigation complète » (`aria-expanded`), info-bulle « Déplier / Replier la navigation ».
+Implémenté dans `apps/web` (`components/app-shell.tsx`) avec les mêmes règles : grille à trois colonnes, repli automatique. Mesuré dans un navigateur réel : à 2 200 px marges de 373 px de chaque côté, à 1 280 px repli sans chevauchement. Le bouton est un `button` nommé « Navigation complète » (`aria-expanded`), info-bulle « Déplier / Replier la navigation ».

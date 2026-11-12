@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 // Cohérence interface ↔ serveur : le domaine RÉEL de l'API applique la même règle, sur le même jeu d'essai.
-import { normalizePhone, phoneProblem as serverProblem } from '../../crm-api/src/modules/business-development/domain/contact-info';
-import { INVALID_PHONES, VALID_PHONES } from '../../crm-api/test/support/phone-cases';
+import { normalizePhone, phoneProblem as serverProblem } from '../../api/src/modules/business-development/domain/contact-info';
+import { INVALID_PHONES, VALID_PHONES } from '../../api/test/support/phone-cases';
 import { validateAmbassadorFields, EMPTY_AMBASSADOR_FORM } from '../lib/ambassadors';
 import { validateContactFields, EMPTY_CONTACT_FORM } from '../lib/contacts';
 import { cleanPhone, PHONE_HINT, phoneProblem } from '../lib/phone';

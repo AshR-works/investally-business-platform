@@ -23,7 +23,7 @@ import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const require = createRequire(join(root, 'apps/crm-web/package.json'));
+const require = createRequire(join(root, 'apps/web/package.json'));
 const axeSource = readFileSync(require.resolve('axe-core/axe.min.js'), 'utf8');
 
 const arg = (name, fallback) => { const i = process.argv.indexOf(`--${name}`); return i > -1 ? process.argv[i + 1] : fallback; };

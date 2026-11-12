@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 // Cohérence interface ↔ serveur : le domaine RÉEL de l'agrément valide les mêmes saisies.
-import { Approval } from '../../crm-api/src/modules/business-development/domain/approval';
+import { Approval } from '../../api/src/modules/business-development/domain/approval';
 import {
   APPROVAL_ACTION_LABEL, PAYER_TYPES, payerText, validateReceivedOn,
   APPROVAL_STATUS, approvalActions, buildApprovalBody, coverageText, eligibleOpportunities, EMPTY_APPROVAL_FORM, validateApprovalFields, validateReason,
