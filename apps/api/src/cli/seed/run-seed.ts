@@ -18,6 +18,7 @@ import { RegisterLearnerUseCase } from '../../modules/training/application/learn
 import { RegisterEmployeeUseCase, SetEmployeeStatusUseCase } from '../../modules/hr/application/employee-use-cases';
 import { CreateContractUseCase, EndContractUseCase } from '../../modules/hr/application/contract-use-cases';
 import { CompleteJourneyTaskUseCase, LaunchJourneyUseCase } from '../../modules/hr/application/journey-use-cases';
+import { DeclarePresenceUseCase } from '../../modules/hr/application/presence-use-cases';
 import { DecideLeaveUseCase, RequestLeaveUseCase } from '../../modules/hr/application/leave-use-cases';
 import { AuthorizationService } from '../../modules/iam/application/authorization.service';
 import type { AccessContext } from '../../modules/iam';
@@ -75,6 +76,7 @@ export async function runSeed(app: ProviderSource, allEvents: readonly SeedEvent
     conges: (await prisma.db.leaveRequest.count({ where: { employee: { workEmail: { endsWith: RH_EMAIL_DOMAIN } } } })) > 0,
     contrats: (await prisma.db.contract.count({ where: { employee: { workEmail: { endsWith: RH_EMAIL_DOMAIN } } } })) > 0,
     parcours: (await prisma.db.journey.count({ where: { employee: { workEmail: { endsWith: RH_EMAIL_DOMAIN } } } })) > 0,
+    presences: (await prisma.db.presenceDeclaration.count({ where: { employee: { workEmail: { endsWith: RH_EMAIL_DOMAIN } } } })) > 0,
   };
   const toLoad = SEED_BLOCKS.filter((block) => !present[block]);
   if (toLoad.length === 0) {
@@ -335,6 +337,10 @@ export async function runSeed(app: ProviderSource, allEvents: readonly SeedEvent
             await use(CompleteJourneyTaskUseCase).execute({ id: id(op.journey), taskId: tasks[op.index]!.id, version: await versionOf('journey', op.journey), access, actor });
             break;
           }
+          case 'presence':
+            // Un employé avec un compte déclare lui-même ; sinon la RH saisit pour lui. La fiche est toujours désignée : le contrôle de portée reste celui du serveur.
+            await use(DeclarePresenceUseCase).execute({ employeeId: await employeeIdOf(op.employee), day: op.day, mode: op.mode, access, actor });
+            break;
           case 'individual': {
             ids.set(op.key, (await use(RegisterLearnerUseCase).execute({ kind: op.kind, lastName: op.lastName, firstName: op.firstName, email: op.email, phone: op.phone, access, actor })).id);
             break;
