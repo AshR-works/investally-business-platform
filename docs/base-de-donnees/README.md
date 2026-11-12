@@ -15,6 +15,7 @@
 | Migrations | `apps/api/prisma/migrations/` (28 au 2026-11-11), jamais modifiées une fois appliquées |
 
 ## Les documents
+- [**BASE-V1-PRODUCTION.md**](BASE-V1-PRODUCTION.md) : la **base de production V1** (migrations figées, données de référence, vérification, répétition en local) et son [manifeste](V1-MANIFESTE.json).
 - [**DICTIONNAIRE.md**](DICTIONNAIRE.md) (généré) : les **43 tables**, leurs colonnes (type, nullité, défaut, description), clés, règles garanties par la base, index, types énumérés, un diagramme des relations par schéma, et la liste des références par identifiant.
 - [**verifications.sql**](verifications.sql) : **22 vérifications d'intégrité en lecture seule**. Chacune renvoie zéro ligne quand tout va bien.
 

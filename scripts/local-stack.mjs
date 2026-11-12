@@ -4,6 +4,8 @@
 //   node scripts/local-stack.mjs --demo     idem, et charge le jeu de données de démonstration fictif (idempotent)
 //   node scripts/local-stack.mjs --rebuild  force la recompilation de l'API et de l'interface
 //   node scripts/local-stack.mjs --dev      interface en mode développement (rechargement à chaud)
+//   node scripts/local-stack.mjs --db-only  base SEULE, comme en production : migrations et rôles, aucun compte, aucune donnée, ni API ni interface ;
+//                                           contrôle du manifeste V1 et vérifications d'intégrité, puis la base reste ouverte (Ctrl+C pour l'arrêter)
 //   node scripts/local-stack.mjs reset      supprime base, documents et secrets locaux (après confirmation)
 //
 // Tout vit dans INVESTALLY_LOCAL_HOME (défaut : dossier voisin du dépôt, hors OneDrive) : base PostgreSQL,
@@ -108,7 +110,7 @@ if (rebuild || !existsSync(join(apiDir, 'dist', 'src', 'main.js'))) {
 // L'adresse de l'API est figée dans l'interface à la compilation (réécriture /api/*) : on recompile si elle change.
 const webStamp = join(home, 'web-build.json');
 const builtFor = existsSync(webStamp) ? JSON.parse(readFileSync(webStamp, 'utf8')).apiUrl : null;
-if (!flag('dev') && (rebuild || builtFor !== appEnv.CRM_API_URL || !existsSync(join(webDir, '.next', 'BUILD_ID')))) {
+if (!flag('dev') && !flag('db-only') && (rebuild || builtFor !== appEnv.CRM_API_URL || !existsSync(join(webDir, '.next', 'BUILD_ID')))) {
   say('\n▶ Compilation de l\'interface');
   // `next build` exige NODE_ENV=production (sinon le prérendu de /_global-error échoue).
   node(webDir, nextCli, ['build'], { ...appEnv, NODE_ENV: 'production' }, 'compilation interface');
@@ -155,6 +157,18 @@ await admin.end();
 say('\n▶ Migrations et rôles');
 node(apiDir, prismaCli, ['migrate', 'deploy'], appEnv, 'migrations');
 node(apiDir, join('dist', 'src', 'cli', 'seed-core.js'), [], appEnv, 'seed des rôles');
+
+// --- base seule, comme en production (--db-only) ------------------------------------------------------------------
+if (flag('db-only')) {
+  say('\n▶ Base V1 : manifeste des migrations et données de référence, puis vérifications d\'intégrité');
+  const dbEnv = { ...process.env, DATABASE_URL: dbUrl };
+  const manifest = spawnSync(process.execPath, [join(repo, 'scripts', 'db-docs', 'v1-manifest.mjs'), 'check', '--fresh'], { stdio: 'inherit', env: dbEnv });
+  const integrity = spawnSync(process.execPath, [join(repo, 'scripts', 'db-docs', 'run-verifications.mjs')], { stdio: 'inherit', env: dbEnv });
+  if (manifest.status !== 0 || integrity.status !== 0) say('\n⚠ La base n\'est pas conforme à la V1 : voir ci-dessus.');
+  say(`\n✔ Base prête, sans compte ni donnée métier.\n   DATABASE_URL=${dbUrl}\n   Ctrl+C pour l\'arrêter ; les données sont conservées dans ${pgData}.`);
+  setInterval(() => undefined, 1 << 30);
+  await new Promise(() => undefined);
+}
 
 // --- premier administrateur --------------------------------------------------------------------------------------
 const db = new pg.Client({ connectionString: dbUrl });
