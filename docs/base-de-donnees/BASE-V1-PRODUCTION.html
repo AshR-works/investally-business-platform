@@ -1,0 +1,53 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Base de données V1 (production)</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="../INDEX.html">Index</a> · <a href="../GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="../ARCHITECTURE.html">Architecture</a> · <a href="../SECURITY.html">Sécurité</a> · <a href="../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="../TECH-DEBT.html">Dette</a> · <a href="../CHARTE-DE-TESTS.html">Charte de tests</a> · <a href="../tests/README.html">Fiches de test</a> · <a href="../design/README.html">Design</a> · <a href="../livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>Base de données V1 (production)</h1>
+<p><em>2026-11-12 · Complète <a href="../EXPLOITATION-V1.html">EXPLOITATION-V1</a> · Le serveur de production <strong>n'existe pas encore</strong> (hébergement non décidé) : cette V1 est une base <strong>décrite, figée, vérifiable et répétée en local</strong>, prête à être installée le jour où le serveur existe.</em></p>
+<h2>Ce qu'est la V1</h2>
+<p>Une base PostgreSQL <strong>neuve</strong>, obtenue en appliquant <strong>les 31 migrations</strong> du dépôt puis en chargeant les <strong>rôles et les droits</strong> (c'est exactement ce que fait le service <code>migrate</code> de la composition de production : <code>prisma migrate deploy</code> puis <code>seed-core</code>). Elle contient :</p>
+<div class="table-wrap"><table><thead><tr><th>Contenu</th><th>Détail</th></tr></thead><tbody>
+<tr><td><strong>Schémas et tables</strong></td><td>6 schémas (<code>iam</code>, <code>bd</code>, <code>training</code>, <code>hr</code>, <code>docs</code>, <code>audit</code>), <strong>50 tables</strong> (<a href="DICTIONNAIRE.html">dictionnaire</a>)</td></tr>
+<tr><td><strong>Données de référence</strong> (livrées avec la base)</td><td>10 rôles, 124 permissions, 442 attributions ; règles de congés (1) et 5 types d'absence ; 4 types de contrat ; 2 modèles de parcours (11 tâches). Le détail est dans <a href="V1-MANIFESTE.json">V1-MANIFESTE.json</a></td></tr>
+<tr><td><strong>Aucun compte</strong></td><td>Il n'existe aucun utilisateur : le premier super administrateur se crée à la main (<a href="../EXPLOITATION-V1.html">EXPLOITATION-V1, § 3</a>)</td></tr>
+<tr><td><strong>Aucune donnée métier</strong></td><td>Ni entreprise, ni apprenant, ni employé, ni démonstration. Le jeu de démonstration n'est <strong>jamais</strong> chargé en production</td></tr>
+</tbody></table></div>
+<h2>Les règles de la V1</h2>
+<ol><li><strong>Une migration de la V1 ne se modifie jamais.</strong> Le manifeste garde le nom et la somme de contrôle de chacune des 31 ; un test unitaire (<code>v1-manifest.spec.ts</code>) et le script <code>v1-manifest.mjs</code> échouent si l'une change, disparaît ou si une migration est insérée avant la fin de la V1.</li><li><strong>Les évolutions s'ajoutent après</strong> : une nouvelle migration (nom daté plus récent) est permise, listée « après la V1 », et la base de production la reçoit à la mise à jour suivante (sauvegarde d'abord, <a href="../EXPLOITATION-V1.html">EXPLOITATION-V1, § 4</a>).</li><li><strong>Les droits et les rôles viennent du code</strong> (<code>seed-core</code>), rejoué à chaque démarrage : leur nombre peut croître après la V1, il ne doit jamais manquer (le contrôle dit « au moins »).</li></ol>
+<h2>Vérifier une base</h2>
+<pre><code># Dépôt seul (sans base) : les migrations de la V1 sont-elles intactes ?
+node scripts/db-docs/v1-manifest.mjs check
+
+# Une base : migrations appliquées avec les mêmes sommes de contrôle, données de référence présentes ;
+# --fresh exige en plus qu&#x27;AUCUNE donnée métier n&#x27;existe (base neuve, avant le premier compte)
+DATABASE_URL=postgresql://… node scripts/db-docs/v1-manifest.mjs check --fresh
+
+# Les 22 vérifications d&#x27;intégrité (lecture seule), voir README
+DATABASE_URL=postgresql://… node scripts/db-docs/run-verifications.mjs</code></pre>
+<p>Les deux scripts sont en <strong>lecture seule</strong>. Sortie : code 0 si tout est conforme, 1 sinon.</p>
+<h2>La répéter en local (sans serveur, sans Docker)</h2>
+<pre><code>node scripts/local-stack.mjs --db-only          # variables : INVESTALLY_LOCAL_HOME, LOCAL_DB_PORT</code></pre>
+<p>Démarre <strong>la base seule</strong> : migrations et rôles, aucun compte, ni API ni interface ; contrôle le manifeste en mode <code>--fresh</code> puis les 22 vérifications ; la base reste ouverte (Ctrl+C pour l'arrêter) et ses données sont conservées. Résultat de référence (2026-11-12) : <strong>31 migrations appliquées avec les mêmes sommes de contrôle, base neuve, 22 / 22 vérifications</strong>.</p>
+<h2>Installer en production (le jour venu)</h2>
+<ol><li>Serveur, domaine et relais d'e-mail prêts (<a href="../EXPLOITATION-V1.html">EXPLOITATION-V1, § 2</a>).</li><li><code>docker compose -f docker-compose.prod.yml up -d --build</code> : le service <code>migrate</code> construit la base V1.</li><li>Vérifier : <code>DATABASE_URL=… node scripts/db-docs/v1-manifest.mjs check --fresh</code>.</li><li>Créer le premier, puis un second super administrateur (<a href="../EXPLOITATION-V1.html">EXPLOITATION-V1, § 3</a>).</li><li>Faire une <strong>première sauvegarde</strong> et vérifier qu'elle se restaure (<a href="../EXPLOITATION-V1.html">EXPLOITATION-V1, § 6</a>).</li></ol>
+<h2>Ce qui reste ouvert</h2>
+<ul><li><strong>Hébergement, domaine, emplacement des sauvegardes hors du serveur</strong> : décisions de la Direction produit, non prises (D60 à D63 posent le cadre, pas les choix).</li><li><strong>Durée de conservation des données du personnel</strong> (dont les présences, D189) : à valider avec l'avis juridique avant la mise en production.</li><li><strong>Jamais exécuté sur un vrai serveur</strong> : la composition de production n'a pas été lancée (aucun Docker sur la machine de développement) ; seule la base V1 a été répétée, avec le moteur PostgreSQL embarqué (PostgreSQL 17).</li><li><strong>Pas de sauvegarde de la V1 répétée en local</strong> : l'outil <code>pg_dump</code> n'est pas disponible avec le moteur embarqué ; la restauration reste à éprouver avec le service <code>backup</code> de la composition.</li></ul></main></body></html>

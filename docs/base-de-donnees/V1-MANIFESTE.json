@@ -1,0 +1,141 @@
+{
+  "version": "V1",
+  "description": "Base de données de production V1 : migrations figées (jamais modifiées) et données de référence d'une base neuve (aucun compte, aucune donnée métier).",
+  "migrations": [
+    {
+      "name": "20261020000000_s1_company_audit",
+      "sha256": "c7c2b8c00ee173df71b92e93d5a7dd3e084b9c04413027b70a951f6d1b8a820f"
+    },
+    {
+      "name": "20261021000000_s2_core_iam_docs_audit_partition",
+      "sha256": "cd61ebe8878f8e395244b9d3fd6ecd34ae8380d9812dbae1747c3760a6889d97"
+    },
+    {
+      "name": "20261022000000_s3_2_mfa",
+      "sha256": "5001fe6c028653628361d3d9e3924c86a8bd6eb3f1f6b6b42b81cc0b1f75d24b"
+    },
+    {
+      "name": "20261023000000_s3_3_ownership_invitations",
+      "sha256": "8f59137525142f8e3ef9abfba7a8a7bf5a62ebf0ca09c27bfcc804ab625f0e27"
+    },
+    {
+      "name": "20261024000000_s3_5_password_reset",
+      "sha256": "c2ceb5e72c64d623429c58d21ef19df0cc7de7a0c934bcfa7bbe41c51a1b930e"
+    },
+    {
+      "name": "20261025000000_s3_6_documents",
+      "sha256": "8836802a59a56c729a1f53b3749ef8f359ec7a56eb1be8028a70fac8895eb308"
+    },
+    {
+      "name": "20261029000000_s4_0_facilitators",
+      "sha256": "ec349fce6d7dfd7d7cf063ba8b79f621f5138408e88475b37a597e43a956b6c3"
+    },
+    {
+      "name": "20261030000000_s4_1_contacts",
+      "sha256": "af210e3fbd5e2f47f1ae81983aea3e63d3a836df26ad86f424861a1f097d9ee0"
+    },
+    {
+      "name": "20261031000000_s4_2a_offers",
+      "sha256": "5119e463ff13176b4e172e720f5f9991258f16aff8fb590b78c86a89302d4016"
+    },
+    {
+      "name": "20261102000000_s4_2b_receipts",
+      "sha256": "368738b4a233fd8bba3e5dc1763ed0675d81ddb1e77bd639600d0be416a67510"
+    },
+    {
+      "name": "20261103000000_s4_2c_followups",
+      "sha256": "214873c9a3c6f64f4ed8f43f3b8ffb1d58773da93311f0144be2ef232e709ceb"
+    },
+    {
+      "name": "20261104000000_s4_2d_appointments",
+      "sha256": "2f8dbe0bb7ef18ab99a1645cc9a61e3238116ff7f34acf2caaa4605c8f33eda6"
+    },
+    {
+      "name": "20261105000000_s4_3_opportunities",
+      "sha256": "236cd835903781728b82e75a0c45eada0923b5fbdf0493c8e9fe6392eb3fa861"
+    },
+    {
+      "name": "20261106000000_s4_3c_appointment_opportunity",
+      "sha256": "c55758542d9b36a6d1df58d79535665b9e3da72fac2be64f2de9fbb6642e68dc"
+    },
+    {
+      "name": "20261107000000_s4_4a_approvals",
+      "sha256": "ef1d12ae347f883e0a664fe59151075afffb092c4ae66622ccb1641bb9aa5407"
+    },
+    {
+      "name": "20261108000000_s4_4b_ambassadors",
+      "sha256": "3e62021aa3861149eac7cb0b311b369d0c7928c28453fb6b4b3973274b988a14"
+    },
+    {
+      "name": "20261109000000_s4_4a_bis_requested_status",
+      "sha256": "01b513b6b63f74ca00bd9be2edb33552afe3a6096233a5dc40ac3b2930d02831"
+    },
+    {
+      "name": "20261109000100_s4_4a_bis_payer_and_request",
+      "sha256": "6caa8bf153fab465bc683c74397822736fc9b8d9109a3c2ae48648c1d155e3b2"
+    },
+    {
+      "name": "20261110000000_phone_format",
+      "sha256": "1ae2be8e395da1a74f44ac0b772fa9be230e933805a767f7475dc542fe5463c5"
+    },
+    {
+      "name": "20261111000000_s4_4c_commission_payouts",
+      "sha256": "a47c09b1ff3c515d02c562b5e973fce110742830adc8c76e5db9d58d5bca120a"
+    },
+    {
+      "name": "20261112000000_s5_1_catalogue",
+      "sha256": "2908e9fe5844326223f0b2b434eeb6a1296a2d93ff914d2a31d95fa6568e4ce9"
+    },
+    {
+      "name": "20261113000000_s5_2a_sessions",
+      "sha256": "338cb00c22e2f980aa2f36e0dddeb3b4c4d5e8253d7d2736e3671a1683842397"
+    },
+    {
+      "name": "20261114000000_s5_2b_inscriptions",
+      "sha256": "d4e72bc066c9da7b23eed3e0d15ec70e493e8f557f38eb67450a9a76ebdbb5f2"
+    },
+    {
+      "name": "20261114000001_s5_2b_no_cross_schema_fk",
+      "sha256": "1d475f4075d572672fa8343cf0935f573c65343de869aecb118a2271b114bd4e"
+    },
+    {
+      "name": "20261115000000_n5_ambassadors_archive",
+      "sha256": "0110a17463f439e0d258220dc85db3c0ec7a80d2ad483996b22d81670ec3d9a3"
+    },
+    {
+      "name": "20261116000000_rh_1a_employees",
+      "sha256": "d885f5292971f007825552c48ba630813f121f0f723ade079ba13dd1de4bbbfd"
+    },
+    {
+      "name": "20261117000000_rh_2a_leave",
+      "sha256": "9be161c08ab8910817453c653f744e79b1245a657f4b36409528a0ef78c34ab8"
+    },
+    {
+      "name": "20261118000000_lot_b_apprenant_particulier",
+      "sha256": "fa6721dd0a08d6c8fc7559ebd697204215cd6bdc527b78a249972bc5ad52537e"
+    },
+    {
+      "name": "20261119000000_rh_3a_contracts",
+      "sha256": "99db0f575d0814cdf6836901f0c065b24316ef601b3fd7d818604b83e43fd007"
+    },
+    {
+      "name": "20261120000000_rh_3b_journeys",
+      "sha256": "a8e82a16666488009354376ecd931625db7284d008936b3f1594a3d5177775af"
+    },
+    {
+      "name": "20261121000000_rh_4a_presences",
+      "sha256": "0bce6c55d4f83e953124dc9db0861a2fcc11be2807e8a2111d7cf7fbce515c73"
+    }
+  ],
+  "referenceData": {
+    "iam.roles": 10,
+    "iam.permissions": 124,
+    "iam.role_permissions": 442,
+    "hr.leave_types": 5,
+    "hr.leave_settings": 1,
+    "hr.contract_types": 4,
+    "hr.journey_templates": 2,
+    "hr.journey_template_tasks": 11
+  },
+  "tablesCount": 50
+}
