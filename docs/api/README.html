@@ -71,8 +71,8 @@ node scripts/api-docs/run-newman.mjs --env mon-environnement.json --report rappo
 <p>La commande exclut automatiquement les dossiers 00b et 98 ; <code>--only 00,01,90</code> choisit des dossiers.</p>
 <p><strong>Résultat de référence</strong> (pile jetable, jeu de démonstration, compte Super administrateur) : <strong>424 requêtes, 1 584 assertions, 0 échec</strong>, en 52 secondes ; 98 : 10 requêtes, 50 assertions, 0 échec ; 00b : 2 requêtes, 4 assertions, 0 échec.</p>
 <h3>Régénérer (à chaque changement de route)</h3>
-<pre><code>cd apps/crm-api &amp;&amp; npx tsc -p tsconfig.build.json --outDir dist-docs &amp;&amp; cd ../..
-DATABASE_URL=&lt;base jetable&gt; node scripts/api-docs/export-openapi.cjs --dist apps/crm-api/dist-docs --out docs/api/openapi.json
+<pre><code>cd apps/api &amp;&amp; npx tsc -p tsconfig.build.json --outDir dist-docs &amp;&amp; cd ../..
+DATABASE_URL=&lt;base jetable&gt; node scripts/api-docs/export-openapi.cjs --dist apps/api/dist-docs --out docs/api/openapi.json
 node scripts/api-docs/build-postman.mjs</code></pre>
 <p>La construction <strong>échoue</strong> si une étape d'un parcours vise une route qui n'existe plus : la collection ne peut pas dériver du code sans qu'on le voie.</p>
 <h3>Précautions</h3>

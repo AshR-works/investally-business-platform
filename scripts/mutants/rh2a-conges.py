@@ -2,7 +2,7 @@ from pathlib import Path
 # Racine du dépôt : ce script se trouve dans scripts/mutants/.
 REPO = Path(__file__).resolve().parents[2]
 import subprocess, os, sys
-api = str(REPO / 'apps' / 'crm-api')
+api = str(REPO / 'apps' / 'api')
 hr = os.path.join(api, 'src', 'modules', 'hr')
 cal = os.path.join(hr, 'domain', 'leave-calendar.ts')
 req = os.path.join(hr, 'domain', 'leave-request.ts')

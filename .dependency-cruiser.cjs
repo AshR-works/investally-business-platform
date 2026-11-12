@@ -1,5 +1,5 @@
 /** Contrat d'architecture (docs/ARCHITECTURE.md). Toute violation fait échouer la CI. */
-const MODULES = '^apps/crm-api/src/modules/([^/]+)';
+const MODULES = '^apps/api/src/modules/([^/]+)';
 
 module.exports = {
   forbidden: [
@@ -8,8 +8,8 @@ module.exports = {
       comment:
         "ADR-0007 : le module Stocks est autonome (hébergé dans le monolithe, conçu pour être extrait vers l'ERP). Il n'importe AUCUN module métier du CRM ; seuls shared-kernel et les interfaces publiques de iam, audit et notifications lui sont ouverts.",
       severity: 'error',
-      from: { path: '^apps/crm-api/src/modules/stock' },
-      to: { path: '^apps/crm-api/src/modules/(business-development|training|agenda|reporting)' },
+      from: { path: '^apps/api/src/modules/stock' },
+      to: { path: '^apps/api/src/modules/(business-development|training|agenda|reporting)' },
     },
     {
       name: 'domain-pur',
@@ -26,16 +26,16 @@ module.exports = {
           'node_modules/express',
           'node_modules/uuid',
           `${MODULES}/(application|infrastructure|presentation)`,
-          '^apps/crm-api/src/platform',
+          '^apps/api/src/platform',
         ],
       },
     },
     {
       name: 'shared-kernel-pur',
       severity: 'error',
-      from: { path: '^apps/crm-api/src/shared-kernel' },
+      from: { path: '^apps/api/src/shared-kernel' },
       to: {
-        path: ['node_modules/@nestjs', 'node_modules/@prisma', '^apps/crm-api/src/modules', '^apps/crm-api/src/platform'],
+        path: ['node_modules/@nestjs', 'node_modules/@prisma', '^apps/api/src/modules', '^apps/api/src/platform'],
       },
     },
     {
@@ -49,7 +49,7 @@ module.exports = {
           'node_modules/express',
           'node_modules/pg',
           `${MODULES}/(infrastructure|presentation)`,
-          '^apps/crm-api/src/platform',
+          '^apps/api/src/platform',
         ],
       },
     },
@@ -59,15 +59,15 @@ module.exports = {
       severity: 'error',
       from: { path: `${MODULES}/presentation` },
       to: {
-        path: ['node_modules/@prisma', `${MODULES}/infrastructure`, `${MODULES}/domain`, '^apps/crm-api/src/platform'],
+        path: ['node_modules/@prisma', `${MODULES}/infrastructure`, `${MODULES}/domain`, '^apps/api/src/platform'],
       },
     },
     {
       name: 'prisma-confine',
       comment: 'Seuls infrastructure/ et platform/ importent Prisma (ou son client généré).',
       severity: 'error',
-      from: { pathNot: [`${MODULES}/infrastructure`, '^apps/crm-api/src/platform', '^apps/crm-api/prisma'] },
-      to: { path: ['node_modules/@prisma', 'apps/crm-api/generated/prisma'] },
+      from: { pathNot: [`${MODULES}/infrastructure`, '^apps/api/src/platform', '^apps/api/prisma'] },
+      to: { path: ['node_modules/@prisma', 'apps/api/generated/prisma'] },
     },
     {
       name: 'frontiere-de-module',
@@ -76,18 +76,18 @@ module.exports = {
       severity: 'error',
       from: { path: `${MODULES}/` },
       to: {
-        path: '^apps/crm-api/src/modules/',
+        path: '^apps/api/src/modules/',
         pathNot: [
-          '^apps/crm-api/src/modules/$1/',
-          '^apps/crm-api/src/modules/[^/]+/index\\.ts$',
-          '^apps/crm-api/src/modules/[^/]+/[^/]+\\.module\\.ts$',
+          '^apps/api/src/modules/$1/',
+          '^apps/api/src/modules/[^/]+/index\\.ts$',
+          '^apps/api/src/modules/[^/]+/[^/]+\\.module\\.ts$',
         ],
       },
     },
     { name: 'pas-de-cycle', severity: 'error', from: {}, to: { circular: true } },
   ],
   options: {
-    doNotFollow: { path: 'node_modules|apps/crm-api/generated' },
+    doNotFollow: { path: 'node_modules|apps/api/generated' },
     tsPreCompilationDeps: true,
     exclude: { path: '\\.spec\\.ts$' },
   },

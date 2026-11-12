@@ -2,7 +2,7 @@ from pathlib import Path
 # Racine du dépôt : ce script se trouve dans scripts/mutants/.
 REPO = Path(__file__).resolve().parents[2]
 import shutil, subprocess
-W = str(REPO / 'apps' / 'crm-web')
+W = str(REPO / 'apps' / 'web')
 LIB = W + r'\lib\roles.ts'
 PICK = W + r'\components\admin\role-picker.tsx'
 PAGE = W + r'\app\(app)\admin\users\page.tsx'

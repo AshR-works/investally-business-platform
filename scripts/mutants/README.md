@@ -44,7 +44,7 @@ Chaque mutant s'affiche `TUÉ`, `SURVIVANT` ou `INCONCLUANT` ; la dernière lign
 
 - **Ces scripts modifient temporairement le code source**, puis le restaurent à l'identique (même en cas d'échec). Lancez-les sur un **arbre de travail propre** (`git status` vide) et **ne touchez à rien pendant l'exécution** : ni édition, ni compilation, ni autre série de tests.
 - Ne lancez **pas deux scripts à la fois** (ils partagent la base jetable et les mêmes fichiers).
-- Les mutants « base » utilisent la **base PostgreSQL jetable** de `apps/crm-api/scripts/test-db.mjs` (port 54341 par défaut, variable `TEST_DB_PORT`) : jamais une base réelle.
+- Les mutants « base » utilisent la **base PostgreSQL jetable** de `apps/api/scripts/test-db.mjs` (port 54341 par défaut, variable `TEST_DB_PORT`) : jamais une base réelle.
 - Un script correspond au code **de son lot** : il échoue proprement (`MOTIF 0`) si le fichier visé a depuis été réécrit. Dans ce cas, mettez le motif à jour.
 - La durée va de quelques minutes (mutants « unitaires ») à plus d'une demi-heure (mutants « base »).
 

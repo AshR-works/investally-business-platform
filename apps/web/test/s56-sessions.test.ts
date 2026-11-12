@@ -2,9 +2,9 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 // Cohérence interface ↔ serveur : les domaines RÉELS de l'API sont interrogés sur les mêmes cas.
-import { RHYTHMS } from '../../crm-api/src/modules/training/domain/rhythms';
-import { endDateFor as serverEndDate, isWorkingDay as serverWorkingDay } from '../../crm-api/src/modules/training/domain/session-dates';
-import { TrainingSession as ServerSession } from '../../crm-api/src/modules/training/domain/training-session';
+import { RHYTHMS } from '../../api/src/modules/training/domain/rhythms';
+import { endDateFor as serverEndDate, isWorkingDay as serverWorkingDay } from '../../api/src/modules/training/domain/session-dates';
+import { TrainingSession as ServerSession } from '../../api/src/modules/training/domain/training-session';
 import { availableModules } from '../lib/modules';
 import {
   capacityText, dateText, EMPTY_PLAN_FORM, editBody, endDateFor, formFromSession, hasStarted, isIsoDate, isWorkingDay, periodText, planBody, type PlanForm, type Session,

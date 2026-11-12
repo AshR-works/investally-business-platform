@@ -3,9 +3,9 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 // Test de cohérence interface ↔ serveur : on importe la matrice et la règle de décision RÉELLES du serveur (modules purs,
 // sans dépendance), uniquement dans ce test.
-import { widestScope } from '../../crm-api/src/modules/iam/domain/access-policy';
-import { PERMISSIONS, RESOURCES } from '../../crm-api/src/modules/iam/domain/permission-catalog';
-import { ROLES, resolveGrants } from '../../crm-api/src/modules/iam/domain/roles';
+import { widestScope } from '../../api/src/modules/iam/domain/access-policy';
+import { PERMISSIONS, RESOURCES } from '../../api/src/modules/iam/domain/permission-catalog';
+import { ROLES, resolveGrants } from '../../api/src/modules/iam/domain/roles';
 import {
   ACTION_LABELS, diffRoles, effectiveRights, groupRoles, MODULE_LABELS, mergeGrants, RESOURCE_LABELS, ROLE_GROUPS, sameRoles, selectionSummary,
   toggleRole,

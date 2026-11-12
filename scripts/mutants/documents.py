@@ -2,7 +2,7 @@ from pathlib import Path
 # Racine du dépôt : ce script se trouve dans scripts/mutants/.
 REPO = Path(__file__).resolve().parents[2]
 import subprocess, shutil, os, sys
-API = str(REPO / 'apps' / 'crm-api')
+API = str(REPO / 'apps' / 'api')
 D = API + r'\src\modules\documents'
 SPECS = ['test/documents-policy.spec.ts', 'test/documents-use-cases.spec.ts', 'test/local-disk-storage.spec.ts']
 MUTANTS = [

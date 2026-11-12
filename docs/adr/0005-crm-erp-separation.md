@@ -8,7 +8,7 @@ Décision produit : le CRM est la priorité et doit être séparé de l'ERP. Pé
 
 ## Décision
 1. Le dépôt reste un **monorepo** avec deux produits déployables indépendamment :
-   - `apps/crm-api` + `apps/crm-web` : **CRM** (livré en premier) ;
+   - `apps/api` + `apps/web` : **CRM** (livré en premier) ;
    - `apps/erp-api` + `apps/erp-web` : **ERP** (créé plus tard, pas de squelette vide d'ici là).
 2. **Une base PostgreSQL par produit**, aucune lecture croisée. Les produits s'échangent des **événements** versionnés (contrats documentés), jamais de requêtes sur la base de l'autre.
 3. Chaque produit reste un **monolithe modulaire** (ADR-0001 s'applique à l'intérieur de chaque produit) avec la même discipline Clean Architecture.

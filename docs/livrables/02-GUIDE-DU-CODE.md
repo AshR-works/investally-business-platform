@@ -11,7 +11,7 @@
 ```
 investally-platform/
 ├── apps/
-│   ├── crm-api/          API (NestJS) — toute la logique, tous les contrôles de sécurité
+│   ├── api/              API (NestJS) — toute la logique, tous les contrôles de sécurité
 │   │   ├── src/
 │   │   │   ├── shared-kernel/      vocabulaire commun (erreurs, ports, événements) — sans dépendance
 │   │   │   ├── platform/           technique commun : base de données, configuration, horloge, gardes globales
@@ -24,7 +24,7 @@ investally-platform/
 │   │   ├── prisma/                 schéma de base de données et migrations (SQL versionné)
 │   │   ├── scripts/                outils (base de test jetable, clés, seed, documents générés)
 │   │   └── test/                   tests de bout en bout et matrices de droits
-│   └── crm-web/          Interface (Next.js / React) — aucune règle de sécurité n'y est « décisive »
+│   └── web/              Interface (Next.js / React) — aucune règle de sécurité n'y est « décisive »
 │       ├── app/                    pages (connexion, MFA, invitation, mot de passe oublié, administration, compte et sessions, vue d'ensemble, entreprises et leur fiche, contacts, offres, relances, agenda, opportunités)
 │       ├── components/             composants partagés (fenêtre modale, confirmation MFA, garde d'accès)
 │       └── lib/                    client HTTP, état d'authentification, droits, utilitaires
@@ -82,11 +82,11 @@ L'utilisateur ouvre le lien → `app/reset-password/page.tsx` (jeton lu dans le 
 | Type | Où | Lancer | Ce qu'ils prouvent |
 |---|---|---|---|
 | Unitaires (API) | `src/**/*.spec.ts`, `test/*.spec.ts` | `pnpm test` | Règles métier et cas d'usage, sur des faux en mémoire (rapides) |
-| Intégration (API + base) | `test/*.integration.spec.ts` | `node apps/crm-api/scripts/test-db.mjs` | Parcours HTTP réels sur PostgreSQL jetable : droits, courses, audit, migrations |
+| Intégration (API + base) | `test/*.integration.spec.ts` | `node apps/api/scripts/test-db.mjs` | Parcours HTTP réels sur PostgreSQL jetable : droits, courses, audit, migrations |
 | Matrice de droits | `test/rbac-http.integration.spec.ts` | idem | Chaque rôle × chaque route : autorisé exactement là où la matrice le prévoit |
 | Protection des routes | `test/route-protection.spec.ts` | `pnpm test` | **Aucune route ne peut être ouverte par oubli** (test qui parcourt toutes les routes montées) |
 | Migration | `scripts/check-upgrade.mjs` | `pnpm --filter @investally/crm-api check:upgrade` | Une migration préserve les données existantes |
-| Interface | `apps/crm-web/test/*.test.ts` | `pnpm test` | Client HTTP (rafraîchissement, MFA, anti-rejeu), parseurs, droits |
+| Interface | `apps/web/test/*.test.ts` | `pnpm test` | Client HTTP (rafraîchissement, MFA, anti-rejeu), parseurs, droits |
 | Architecture | `.dependency-cruiser.cjs` | `pnpm arch` | Les couches ne se contournent pas |
 
 La base de test est **jetable** (PostgreSQL embarqué, mot de passe aléatoire) : elle n'est jamais votre vraie base.

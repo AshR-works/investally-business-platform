@@ -27,8 +27,8 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <div class="table-wrap"><table><thead><tr><th>Niveau</th><th>Cible</th><th>Outils</th><th>Part</th></tr></thead><tbody>
 <tr><td>Unitaires du Domain</td><td>Agrégats, VO, services de domaine — sans base, sans NestJS</td><td>Jest</td><td>majorité</td></tr>
 <tr><td>Use cases</td><td>Application avec repositories en mémoire / faux ports</td><td>Jest</td><td>forte</td></tr>
-<tr><td>Intégration et API</td><td>Routes réelles (HTTP), RBAC, validation, erreurs, repositories Prisma, contraintes de la base, audit : base PostgreSQL <strong>jetable</strong> lancée par <code>apps/crm-api/scripts/test-db.mjs</code></td><td>Jest + helpers HTTP de <code>test/support</code></td><td>moyenne</td></tr>
-<tr><td>Interface</td><td>Logique des écrans, cohérence avec le domaine réel du serveur</td><td>Vitest (<code>apps/crm-web/test</code>)</td><td>moyenne</td></tr>
+<tr><td>Intégration et API</td><td>Routes réelles (HTTP), RBAC, validation, erreurs, repositories Prisma, contraintes de la base, audit : base PostgreSQL <strong>jetable</strong> lancée par <code>apps/api/scripts/test-db.mjs</code></td><td>Jest + helpers HTTP de <code>test/support</code></td><td>moyenne</td></tr>
+<tr><td>Interface</td><td>Logique des écrans, cohérence avec le domaine réel du serveur</td><td>Vitest (<code>apps/web/test</code>)</td><td>moyenne</td></tr>
 <tr><td>Mutation</td><td>Les tests détectent-ils les fautes injectées ?</td><td>scripts <code>scripts/mutants/</code></td><td>chaque lot</td></tr>
 <tr><td>Architecture</td><td>Règles de dépendances</td><td>dependency-cruiser / eslint-plugin-boundaries</td><td>obligatoire, bloquant</td></tr>
 <tr><td>Navigateur réel et accessibilité</td><td>Parcours scriptés dans Edge sans fenêtre, axe-core à chaque état d'écran (Playwright non retenu)</td><td><code>scripts/a11y-audit.mjs</code></td><td>chaque lot qui touche un écran</td></tr>

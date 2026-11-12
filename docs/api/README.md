@@ -75,8 +75,8 @@ La commande exclut automatiquement les dossiers 00b et 98 ; `--only 00,01,90` ch
 
 ### Régénérer (à chaque changement de route)
 ```bash
-cd apps/crm-api && npx tsc -p tsconfig.build.json --outDir dist-docs && cd ../..
-DATABASE_URL=<base jetable> node scripts/api-docs/export-openapi.cjs --dist apps/crm-api/dist-docs --out docs/api/openapi.json
+cd apps/api && npx tsc -p tsconfig.build.json --outDir dist-docs && cd ../..
+DATABASE_URL=<base jetable> node scripts/api-docs/export-openapi.cjs --dist apps/api/dist-docs --out docs/api/openapi.json
 node scripts/api-docs/build-postman.mjs
 ```
 La construction **échoue** si une étape d'un parcours vise une route qui n'existe plus : la collection ne peut pas dériver du code sans qu'on le voie.

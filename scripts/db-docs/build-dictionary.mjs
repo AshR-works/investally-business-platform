@@ -11,7 +11,7 @@ import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
-const require = createRequire(join(root, 'apps/crm-api/package.json'));
+const require = createRequire(join(root, 'apps/api/package.json'));
 const pg = require('pg');
 const url = process.env.DATABASE_URL;
 if (!url) throw new Error('DATABASE_URL est obligatoire (base jetable ou locale).');
@@ -31,7 +31,7 @@ const SCHEMA_LABEL = {
 };
 
 // ───────────── Commentaires du schéma Prisma (`///`) ─────────────
-const prisma = readFileSync(join(root, 'apps/crm-api/prisma/schema.prisma'), 'utf8').replace(/\r\n/g, '\n').split('\n');
+const prisma = readFileSync(join(root, 'apps/api/prisma/schema.prisma'), 'utf8').replace(/\r\n/g, '\n').split('\n');
 const docs = new Map(); // "schema.table.column" -> texte ; "schema.table" -> texte de la table
 {
   let model = null;
@@ -106,7 +106,7 @@ const out = [
   '# Dictionnaire de la base de données', '',
   `*Généré depuis la base réelle (PostgreSQL ${version}, ${migrations.length} migrations appliquées) et les commentaires du schéma Prisma, par \`scripts/db-docs/build-dictionary.mjs\`. Ne pas modifier à la main : régénérer.*`, '',
   '## Vue d’ensemble', '',
-  '- **Moteur** : PostgreSQL ; accès par Prisma (client généré) ; migrations versionnées dans `apps/crm-api/prisma/migrations`.',
+  '- **Moteur** : PostgreSQL ; accès par Prisma (client généré) ; migrations versionnées dans `apps/api/prisma/migrations`.',
   '- **Un schéma PostgreSQL par contexte métier** (monolithe modulaire) : `iam`, `bd`, `training`, `hr`, `docs`, `audit`.',
   '- **Aucune clé étrangère entre deux schémas** : un contexte référence un autre **par identifiant** (colonne `*_id` sans contrainte) ; l’existence et l’appartenance sont contrôlées par les cas d’usage (test `core-schema`).',
   '- **Rien n’est supprimé physiquement** sur les données métier : archivage, annulation ou suppression logique (`deleted_at`) ; les clés étrangères sont en `RESTRICT`.',

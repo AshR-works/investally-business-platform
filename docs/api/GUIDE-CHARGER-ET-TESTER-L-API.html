@@ -232,11 +232,11 @@ node scripts/db-docs/run-verifications.mjs</code></pre>
 
 <h2 id="regenerer">8. Régénérer après un changement</h2>
 <p>La collection et le catalogue ne s'écrivent <strong>jamais à la main</strong> : ils sont produits depuis le code, pour ne pas dériver. Après l'ajout ou la modification d'une route :</p>
-<pre><code>cd apps\crm-api
+<pre><code>cd apps\api
 npx tsc -p tsconfig.build.json --outDir dist-docs
 cd ..\..
-# DATABASE_URL : une base JETABLE migrée (par exemple lancée par « node apps/crm-api/scripts/test-db.mjs --keep »)
-node scripts/api-docs/export-openapi.cjs --dist apps/crm-api/dist-docs --out docs/api/openapi.json
+# DATABASE_URL : une base JETABLE migrée (par exemple lancée par « node apps/api/scripts/test-db.mjs --keep »)
+node scripts/api-docs/export-openapi.cjs --dist apps/api/dist-docs --out docs/api/openapi.json
 node scripts/api-docs/build-postman.mjs</code></pre>
 <p>La dernière commande réécrit la collection, l'environnement, <code>tests-api.json</code> et la référence des routes. Elle <strong>échoue</strong> si un parcours vise une route qui n'existe plus : une dérive ne passe pas inaperçue.</p>
 

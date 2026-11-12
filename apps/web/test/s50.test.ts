@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 // Cohérence interface ↔ serveur : le domaine RÉEL de l'entreprise accepte exactement les transitions que l'interface propose.
-import { Company } from '../../crm-api/src/modules/business-development/domain/company';
-import { CompanyStatus, MANUAL_STATUS_TRANSITIONS } from '../../crm-api/src/modules/business-development/domain/company-status';
+import { Company } from '../../api/src/modules/business-development/domain/company';
+import { CompanyStatus, MANUAL_STATUS_TRANSITIONS } from '../../api/src/modules/business-development/domain/company-status';
 import { COMPANY_COLUMNS, DEFAULT_COLUMNS } from '../lib/company-table';
 import { type OwnerCandidate, otherOwners, STATUS_STEPS, statusActions } from '../lib/company-lifecycle';
 import { COMPANY_STATUS } from '../lib/status';

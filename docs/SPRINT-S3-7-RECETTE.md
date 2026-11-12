@@ -9,7 +9,7 @@
 | **UX-03** Confirmation avant régénération | Fenêtre `ConfirmDialog` « Remplacer vos codes de secours ? » : codes actuels invalidés immédiatement, action irréversible, nouveaux codes affichés une seule fois. **Focus initial sur « Annuler »**, Échap annule, bouton rouge « Remplacer mes codes ». Le MFA récent est ensuite demandé comme avant |
 | **UX-04** Codes de secours à affichage unique | Composant `SecretCodesPanel` partagé par l'activation MFA et Mon compte : **Copier**, **Télécharger (.txt)**, **Imprimer ou enregistrer en PDF** (feuille imprimée sans nom ni e-mail). Case « J'ai conservé ces codes » ; garde de sortie (fermeture, rechargement, **liens internes**) tant qu'elle n'est pas cochée ; bouton « Terminer » qui efface les codes de la mémoire. Sur Mon compte, la copie, l'export et la garde de sortie **n'existaient pas** |
 
-Sans changement d'API ni de base : tout est dans l'interface (`apps/crm-web`).
+Sans changement d'API ni de base : tout est dans l'interface (`apps/web`).
 
 ## Preuves
 | Contrôle | Résultat |
