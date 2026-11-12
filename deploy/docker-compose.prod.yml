@@ -8,7 +8,7 @@
 
 x-api-build: &api-build
   context: ..
-  dockerfile: apps/crm-api/Dockerfile
+  dockerfile: apps/api/Dockerfile
 
 x-api-env: &api-env
   NODE_ENV: production
@@ -51,7 +51,7 @@ services:
     image: investally-api:prod
     restart: "no"
     environment: *api-env
-    working_dir: /repo/apps/crm-api
+    working_dir: /repo/apps/api
     command: ["sh", "-c", "node node_modules/prisma/build/index.js migrate deploy && node dist/src/cli/seed-core.js"]
     depends_on:
       db:
@@ -77,7 +77,7 @@ services:
   web:
     build:
       context: ..
-      dockerfile: apps/crm-web/Dockerfile
+      dockerfile: apps/web/Dockerfile
       args:
         CRM_API_URL: http://api:3001
     image: investally-web:prod

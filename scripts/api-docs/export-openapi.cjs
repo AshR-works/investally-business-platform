@@ -1,18 +1,18 @@
 // Exporte la description OpenAPI RÉELLE de l'API (celle de /api/docs) en y ajoutant ce que le code sait et que Swagger ignore : la permission exigée de chaque route,
 // la portée minimale, et si un second facteur récent (« step-up ») est demandé.
 //
-//   node scripts/api-docs/export-openapi.cjs --dist apps/crm-api/dist-docs --out docs/api/openapi.json
+//   node scripts/api-docs/export-openapi.cjs --dist apps/api/dist-docs --out docs/api/openapi.json
 //
-// Pré-requis : l'API est compilée dans --dist (`npx tsc -p tsconfig.build.json --outDir <dist>` dans apps/crm-api) et DATABASE_URL pointe une base JETABLE
+// Pré-requis : l'API est compilée dans --dist (`npx tsc -p tsconfig.build.json --outDir <dist>` dans apps/api) et DATABASE_URL pointe une base JETABLE
 // (le démarrage de l'application se connecte à la base ; rien n'y est écrit). Aucune écoute réseau : le document est produit en mémoire.
 const fs = require('node:fs');
 const path = require('node:path');
 
 const arg = (name, fallback) => { const i = process.argv.indexOf(`--${name}`); return i > -1 ? process.argv[i + 1] : fallback; };
 const root = path.resolve(__dirname, '..', '..');
-const dist = path.resolve(root, arg('dist', 'apps/crm-api/dist-docs'));
+const dist = path.resolve(root, arg('dist', 'apps/api/dist-docs'));
 const out = path.resolve(root, arg('out', 'docs/api/openapi.json'));
-const apiRequire = require('node:module').createRequire(path.join(root, 'apps', 'crm-api', 'package.json'));
+const apiRequire = require('node:module').createRequire(path.join(root, 'apps', 'api', 'package.json'));
 
 require(apiRequire.resolve('reflect-metadata'));
 const { NestFactory } = apiRequire('@nestjs/core');

@@ -20,11 +20,11 @@ Dire **ce que nous testons, comment, avec quelles preuves**, et à quelles condi
 | Niveau | Ce qu'il prouve | Outil et emplacement | Quand |
 |---|---|---|---|
 | **Types et architecture** | Le code compile ; la Clean Architecture est respectée (domaine pur, application sans persistance ni HTTP, frontières de module, pas de cycle) | `tsc`, `pnpm arch` (dependency-cruiser) | à chaque changement ; bloquant en CI |
-| **Unitaires du domaine** | Les règles métier d'un agrégat, sans base ni framework | Jest, `apps/crm-api/src/**/*.spec.ts` | toute règle métier |
+| **Unitaires du domaine** | Les règles métier d'un agrégat, sans base ni framework | Jest, `apps/api/src/**/*.spec.ts` | toute règle métier |
 | **Cas d'usage** | L'orchestration (droits, portée, version, audit, transaction) avec des dépôts en mémoire (`test/support/in-memory-*.ts`) | Jest, `src/**/*-use-cases.spec.ts` | tout cas d'usage |
-| **Intégration (HTTP + PostgreSQL)** | La route réelle, les droits par rôle, les erreurs (400, 403, 404, 409, 422), les **contraintes de la base**, le verrou optimiste, l'audit | Jest + base jetable, `apps/crm-api/test/*.integration.spec.ts` (lancés par `apps/crm-api/scripts/test-db.mjs`) | toute route, toute migration |
+| **Intégration (HTTP + PostgreSQL)** | La route réelle, les droits par rôle, les erreurs (400, 403, 404, 409, 422), les **contraintes de la base**, le verrou optimiste, l'audit | Jest + base jetable, `apps/api/test/*.integration.spec.ts` (lancés par `apps/api/scripts/test-db.mjs`) | toute route, toute migration |
 | **Contrat anti-IDOR** | Un objet hors portée répond **comme un objet inexistant** (404 identique, aucune fuite, aucune écriture) | `test/idor-contract*.spec.ts`, registre `test/support/idor-registry.ts` | toute route désignant un objet |
-| **Interface** | Logique des écrans (saisie, actions selon l'état et les droits, formats), **cohérence avec le domaine réel du serveur** | Vitest, `apps/crm-web/test/*.test.ts` | toute logique d'écran |
+| **Interface** | Logique des écrans (saisie, actions selon l'état et les droits, formats), **cohérence avec le domaine réel du serveur** | Vitest, `apps/web/test/*.test.ts` | toute logique d'écran |
 | **Mutation** | Que les tests ci-dessus détectent bien les fautes | scripts [`scripts/mutants/`](../scripts/mutants/) | chaque lot, avant la validation |
 | **Navigateur réel et accessibilité** | Le parcours dans un vrai navigateur ; absence de violation WCAG 2.1 AA (axe-core) ; messages annoncés ; clavier | `scripts/a11y-audit.mjs` (Edge sans fenêtre) | chaque lot qui touche un écran |
 | **Recette utilisateur** | Que le résultat convient à l'usage | fiches de test (§ 9), exécutées par la direction produit | avant « Je valide » |
@@ -47,7 +47,7 @@ Non couverts à ce jour (assumés, voir § 11) : tests de bout en bout dans plus
 **Un écran** — voir la fiche d'interface (§ 9) : scénarios, droits, clavier, titres, champs non conformes (surbrillance **et** message écrit, jamais la couleur seule), annonces (`role=alert`, `aria-live`), états vide / chargement / erreur.
 
 ## 5. Données et environnements
-- **Base jetable** : `node apps/crm-api/scripts/test-db.mjs` (port 54340 par défaut ; 54341 pour les mutants ; pile d'audit 54360/3001/3000). Jamais la base locale de travail.
+- **Base jetable** : `node apps/api/scripts/test-db.mjs` (port 54340 par défaut ; 54341 pour les mutants ; pile d'audit 54360/3001/3000). Jamais la base locale de travail.
 - **Comptes** : créés par les tests ; en local, comptes de démonstration (mots de passe dans le fichier local de comptes de démonstration, **jamais dans le dépôt**). Aucun mot de passe réel n'est saisi dans un test ou une capture.
 - **API sur 127.0.0.1 seulement.** Aucun courriel réel n'est envoyé (les liens d'invitation et de réinitialisation sont écrits dans le journal local de l'API).
 - **Une pile à la fois** : deux audits ou deux séries de mutants en parallèle se disputent les ports et les fichiers.

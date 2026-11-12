@@ -21,7 +21,7 @@
 | 2 | Vie commerciale complète | **617 événements** en dix scénarios en rotation (de l'entreprise « cible » seule à la cliente avec ambassadeur) : 96 contacts (dont des **doublons probables** et des contacts « autres »), 68 changements de statut, 65 rendez-vous (tenus, annulés, **reportés**, **12 à venir**), 36 offres (brouillon, déposées, décharge reçue, acceptées, refusées, retirées), 32 décharges (dont 4 **annulées puis ressaisies**), 24 … | ☐ | |
 | 3 | Passe par les vrais cas d'usage | Mêmes règles que l'interface (validation, états, versions, portée, audit) ; l'horloge est avancée de date en date : chaque objet a **sa vraie date de création** ; chaque action est faite **par le bon rôle** (chargé de compte propriétaire, Responsable commercial pour les dérogations, les gains et les annulations d'agrément, Finance pour constater le paiement) | ☐ | |
 | 4 | Équipe | Un troisième chargé de compte (`compte3@`) s'ajoute aux comptes de démonstration : trois chargés de compte sous un Responsable commercial (portées « propres objets » et « équipe » testables) ; la Finance existait déjà | ☐ | |
-| 5 | Rejouable | Si le jeu est déjà chargé, la commande ne fait rien ; elle est intégrée à `node scripts/local-stack.mjs --demo` (elle remplace les 40 « Démo Entreprise » génériques) et se lance seule : `node apps/crm-api/dist/src/cli/seed-demo.js` | ☐ | |
+| 5 | Rejouable | Si le jeu est déjà chargé, la commande ne fait rien ; elle est intégrée à `node scripts/local-stack.mjs --demo` (elle remplace les 40 « Démo Entreprise » génériques) et se lance seule : `node apps/api/dist/src/cli/seed-demo.js` | ☐ | |
 | 6 | Garde-fous | Refuse la **production** et toute **base qui n'est pas locale** (hôte autre que `localhost`, `127.0.0.1`, `::1`) ; refuse sans les comptes de démonstration, avec un message qui dit quoi lancer | ☐ | |
 | 7 | Données sans risque | Adresses e-mail en `.test` (domaine réservé, jamais joignable) ; numéros de téléphone du **motif fictif** (`+indicatif préfixe 00 nnnn`) et **valides selon la nouvelle règle** ; aucune vraie marque ni personne | ☐ | |
 
@@ -51,7 +51,7 @@
 ## Rejouer les contrôles automatisés
 ```bash
 pnpm ci                                   # types, architecture, tests unitaires et interface
-node apps/crm-api/scripts/test-db.mjs     # tests d'intégration (base PostgreSQL jetable)
+node apps/api/scripts/test-db.mjs     # tests d'intégration (base PostgreSQL jetable)
 ```
 
 *Pas de script de mutants versionné pour ce lot.*

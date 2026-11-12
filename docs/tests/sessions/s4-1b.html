@@ -54,7 +54,7 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <ul><li>Un premier passage de mes mutants n'était pas fiable (sortie mal lue, puis base de test occupée) ; la série finale est stricte (un passage sans résultat de test interrompt le script).</li><li>Pas de passage au lecteur d'écran réel ; testé sous Node 26.7 seulement.</li><li><strong>Responsable, valeur et dernière activité</strong> ne sont pas livrés (D67, S4.3) ; le tri sur le statut suit l'ordre alphabétique des codes (D68).</li><li>Les <strong>changements de statut</strong> d'une entreprise (manuels ou automatiques, CU-C-05) ne sont pas traités ici : décision encore à prendre avec S4.3.</li><li>Le prototype et le wireframe 04 ne montrent pas encore ces filtres (D49).</li><li><strong>D66 à D69</strong> (<code>docs/TECH-DEBT.md</code>) ; <strong>D38</strong> partiellement soldée.</li><li><strong>D30 à confirmer</strong> : tableau pour les entreprises, cartes pour les opportunités ; ou vue « Cartes » dès maintenant pour les entreprises.</li></ul>
 <h2>Rejouer les contrôles automatisés</h2>
 <pre><code>pnpm ci                                   # types, architecture, tests unitaires et interface
-node apps/crm-api/scripts/test-db.mjs     # tests d&#x27;intégration (base PostgreSQL jetable)
+node apps/api/scripts/test-db.mjs     # tests d&#x27;intégration (base PostgreSQL jetable)
 python scripts/mutants/s41b-tableau-entreprises.py   # mutants du lot (arbre de travail propre)</code></pre>
 <h2>Écarts constatés</h2>
 <div class="table-wrap"><table><thead><tr><th>Date</th><th>Vérification n°</th><th>Description</th><th>Défaut ouvert (D…)</th></tr></thead><tbody>

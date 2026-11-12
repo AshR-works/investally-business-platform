@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 // Cohérence interface ↔ serveur : le domaine RÉEL du versement valide les mêmes saisies.
-import { CommissionPayout } from '../../crm-api/src/modules/business-development/domain/commission-payout';
+import { CommissionPayout } from '../../api/src/modules/business-development/domain/commission-payout';
 import {
   PAYOUT_ACTION_LABEL, PAYOUT_STATUS, PAYOUT_STATUS_OPTIONS, payoutActions, payoutAmountText, payoutDefinitionText, validatePaidOn, validatePayoutAmount,
   type PayoutRights,

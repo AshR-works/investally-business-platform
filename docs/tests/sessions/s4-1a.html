@@ -57,7 +57,7 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <ul><li>Passage au lecteur d'écran réel non fait (protocole existant, hors de ce lot).</li><li>Testé sous Node 26.7, pas rejoué sous Node 22.</li><li>Les valeurs par défaut ci-dessous restent à confirmer par la direction produit (D29).</li><li>Le prototype n'est pas mis à jour (version 0.5.0 à décider, D49).</li><li><strong>D62 à D65</strong> (<code>docs/TECH-DEBT.md</code>).</li><li><strong>D29 — à confirmer</strong> : liste des fonctions (DAF, Décideur, Autre), suppression réservée au Responsable commercial, un contact rattaché à une seule entreprise.</li></ul>
 <h2>Rejouer les contrôles automatisés</h2>
 <pre><code>pnpm ci                                   # types, architecture, tests unitaires et interface
-node apps/crm-api/scripts/test-db.mjs     # tests d&#x27;intégration (base PostgreSQL jetable)
+node apps/api/scripts/test-db.mjs     # tests d&#x27;intégration (base PostgreSQL jetable)
 python scripts/mutants/s41a-contacts.py   # mutants du lot (arbre de travail propre)</code></pre>
 <h2>Écarts constatés</h2>
 <div class="table-wrap"><table><thead><tr><th>Date</th><th>Vérification n°</th><th>Description</th><th>Défaut ouvert (D…)</th></tr></thead><tbody>

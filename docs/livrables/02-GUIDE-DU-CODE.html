@@ -28,7 +28,7 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <h2>1. Vue d'ensemble</h2>
 <pre><code>investally-platform/
 ├── apps/
-│   ├── crm-api/          API (NestJS) — toute la logique, tous les contrôles de sécurité
+│   ├── api/              API (NestJS) — toute la logique, tous les contrôles de sécurité
 │   │   ├── src/
 │   │   │   ├── shared-kernel/      vocabulaire commun (erreurs, ports, événements) — sans dépendance
 │   │   │   ├── platform/           technique commun : base de données, configuration, horloge, gardes globales
@@ -41,7 +41,7 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 │   │   ├── prisma/                 schéma de base de données et migrations (SQL versionné)
 │   │   ├── scripts/                outils (base de test jetable, clés, seed, documents générés)
 │   │   └── test/                   tests de bout en bout et matrices de droits
-│   └── crm-web/          Interface (Next.js / React) — aucune règle de sécurité n&#x27;y est « décisive »
+│   └── web/              Interface (Next.js / React) — aucune règle de sécurité n&#x27;y est « décisive »
 │       ├── app/                    pages (connexion, MFA, invitation, mot de passe oublié, administration, compte et sessions, vue d&#x27;ensemble, entreprises et leur fiche, contacts, offres, relances, agenda, opportunités)
 │       ├── components/             composants partagés (fenêtre modale, confirmation MFA, garde d&#x27;accès)
 │       └── lib/                    client HTTP, état d&#x27;authentification, droits, utilitaires
@@ -78,11 +78,11 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <h2>5. Où sont les tests, et que prouvent-ils ?</h2>
 <div class="table-wrap"><table><thead><tr><th>Type</th><th>Où</th><th>Lancer</th><th>Ce qu'ils prouvent</th></tr></thead><tbody>
 <tr><td>Unitaires (API)</td><td><code>src/<em>*/</em>.spec.ts</code>, <code>test/*.spec.ts</code></td><td><code>pnpm test</code></td><td>Règles métier et cas d'usage, sur des faux en mémoire (rapides)</td></tr>
-<tr><td>Intégration (API + base)</td><td><code>test/*.integration.spec.ts</code></td><td><code>node apps/crm-api/scripts/test-db.mjs</code></td><td>Parcours HTTP réels sur PostgreSQL jetable : droits, courses, audit, migrations</td></tr>
+<tr><td>Intégration (API + base)</td><td><code>test/*.integration.spec.ts</code></td><td><code>node apps/api/scripts/test-db.mjs</code></td><td>Parcours HTTP réels sur PostgreSQL jetable : droits, courses, audit, migrations</td></tr>
 <tr><td>Matrice de droits</td><td><code>test/rbac-http.integration.spec.ts</code></td><td>idem</td><td>Chaque rôle × chaque route : autorisé exactement là où la matrice le prévoit</td></tr>
 <tr><td>Protection des routes</td><td><code>test/route-protection.spec.ts</code></td><td><code>pnpm test</code></td><td><strong>Aucune route ne peut être ouverte par oubli</strong> (test qui parcourt toutes les routes montées)</td></tr>
 <tr><td>Migration</td><td><code>scripts/check-upgrade.mjs</code></td><td><code>pnpm --filter @investally/crm-api check:upgrade</code></td><td>Une migration préserve les données existantes</td></tr>
-<tr><td>Interface</td><td><code>apps/crm-web/test/*.test.ts</code></td><td><code>pnpm test</code></td><td>Client HTTP (rafraîchissement, MFA, anti-rejeu), parseurs, droits</td></tr>
+<tr><td>Interface</td><td><code>apps/web/test/*.test.ts</code></td><td><code>pnpm test</code></td><td>Client HTTP (rafraîchissement, MFA, anti-rejeu), parseurs, droits</td></tr>
 <tr><td>Architecture</td><td><code>.dependency-cruiser.cjs</code></td><td><code>pnpm arch</code></td><td>Les couches ne se contournent pas</td></tr>
 </tbody></table></div>
 <p>La base de test est <strong>jetable</strong> (PostgreSQL embarqué, mot de passe aléatoire) : elle n'est jamais votre vraie base.</p>

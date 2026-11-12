@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 // Cohérence interface ↔ serveur : le domaine RÉEL de l'API est interrogé sur les mêmes cas.
-import { Learner as ServerLearner } from '../../crm-api/src/modules/training/domain/learner';
+import { Learner as ServerLearner } from '../../api/src/modules/training/domain/learner';
 import { availableModules } from '../lib/modules';
 import {
   type ApprovalOption, coverText, EMPTY_ENROLL_FORM, EMPTY_LEARNER_FORM, type Enrollment, ENROLLMENT_STATUS, ENROLLMENT_STATUS_OPTIONS, enrollBody, enrollmentActions, formFromLearner,

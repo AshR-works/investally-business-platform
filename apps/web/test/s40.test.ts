@@ -2,9 +2,9 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 // Cohérence interface ↔ serveur : les méthodes de contact et les validations viennent du domaine RÉEL du serveur.
-import { Commission, DEFAULT_CURRENCY as ServerDefaultCurrency } from '../../crm-api/src/modules/business-development/domain/commission';
-import { ContactMethod } from '../../crm-api/src/modules/business-development/domain/facilitation';
-import { normalizeEmail, normalizePhone } from '../../crm-api/src/modules/business-development/domain/contact-info';
+import { Commission, DEFAULT_CURRENCY as ServerDefaultCurrency } from '../../api/src/modules/business-development/domain/commission';
+import { ContactMethod } from '../../api/src/modules/business-development/domain/facilitation';
+import { normalizeEmail, normalizePhone } from '../../api/src/modules/business-development/domain/contact-info';
 import { buildCompanyBody, COMMISSION_TYPES, CONTACT_METHODS, contactMethodLabel, DEFAULT_CURRENCY, EMPTY_COMPANY_FORM, formatCommission, normalizeCurrency, validateCompanyForm, type CompanyForm } from '../lib/facilitation';
 
 const root = join(__dirname, '..');

@@ -12,7 +12,7 @@
 | Suppression | Jamais physique sur les données métier : archivage, annulation, suppression logique (`deleted_at`) |
 | Concurrence | Colonne `version` sur chaque agrégat (verrou optimiste) |
 | Audit | Table `audit.audit_logs` partitionnée par mois : qui, quoi, avant/après, session, adresse |
-| Migrations | `apps/crm-api/prisma/migrations/` (28 au 2026-11-11), jamais modifiées une fois appliquées |
+| Migrations | `apps/api/prisma/migrations/` (28 au 2026-11-11), jamais modifiées une fois appliquées |
 
 ## Les documents
 - [**DICTIONNAIRE.md**](DICTIONNAIRE.md) (généré) : les **43 tables**, leurs colonnes (type, nullité, défaut, description), clés, règles garanties par la base, index, types énumérés, un diagramme des relations par schéma, et la liste des références par identifiant.

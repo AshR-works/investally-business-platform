@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 // Cohérence interface ↔ serveur : le domaine RÉEL du contact valide les mêmes saisies.
-import { Contact, ContactRole } from '../../crm-api/src/modules/business-development/domain/contact';
+import { Contact, ContactRole } from '../../api/src/modules/business-development/domain/contact';
 import { buildContactBody, CONTACT_ROLES, contactRoleLabel, EMPTY_CONTACT_FORM, formFromContact, isDuplicateConflict, validateContactFields, type ContactForm } from '../lib/contacts';
 import { MODULES, availableModules } from '../lib/modules';
 import type { Contact as ContactView, Profile } from '../lib/types';

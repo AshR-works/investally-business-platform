@@ -51,7 +51,7 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <ul><li>Les deux couches (résolveur du propriétaire et garde des documents) sont volontairement redondantes : ne pas en retirer une en croyant qu'aucun test ne l'exige.</li><li>Les routes de S4 à S6 devront être classées dans le registre avant d'être fusionnées.</li><li>Hors périmètre : propriété d'un objet côté liste de l'interface, autorisations d'export.</li></ul>
 <h2>Rejouer les contrôles automatisés</h2>
 <pre><code>pnpm ci                                   # types, architecture, tests unitaires et interface
-node apps/crm-api/scripts/test-db.mjs     # tests d&#x27;intégration (base PostgreSQL jetable)</code></pre>
+node apps/api/scripts/test-db.mjs     # tests d&#x27;intégration (base PostgreSQL jetable)</code></pre>
 <p><em>Pas de script de mutants versionné pour ce lot.</em></p>
 <h2>Écarts constatés</h2>
 <div class="table-wrap"><table><thead><tr><th>Date</th><th>Vérification n°</th><th>Description</th><th>Défaut ouvert (D…)</th></tr></thead><tbody>

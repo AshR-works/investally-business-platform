@@ -38,6 +38,6 @@
 - Aucun écran, aucune donnée de démonstration d'absences (RH-2b) ; le module reste masqué si `RELEASED_DOMAINS` n'inclut pas `hr`.
 
 ## Comment vérifier
-1. Lire les tests : `apps/crm-api/src/modules/hr/application/leave-use-cases.spec.ts` (72 scénarios nommés en français) et `test/hr-leave-http.integration.spec.ts`.
+1. Lire les tests : `apps/api/src/modules/hr/application/leave-use-cases.spec.ts` (72 scénarios nommés en français) et `test/hr-leave-http.integration.spec.ts`.
 2. Les règles se changent sans code : `PUT /hr/leave/settings`, `/hr/leave/types`, `/hr/leave/holidays` (RH ou Super administrateur).
 3. Les écrans de RH-2b rendront ces vérifications visibles ; en attendant, l'API se lit dans `/api/docs`.

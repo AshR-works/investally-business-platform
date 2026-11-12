@@ -23,7 +23,7 @@ Un seul système, sécurisé et audité, pour piloter l'activité commerciale, l
 |---|---|---|
 | Monorepo | pnpm 12 | `pnpm install --frozen-lockfile` ; scripts d'installation à déclarer dans `allowBuilds` |
 | API | NestJS 11 (CommonJS), Prisma 7 multiSchema (`bd`, `audit`, `iam`, `docs`) | Node **22** (`.nvmrc`) |
-| Base | PostgreSQL 17 | tests : base **jetable** (`apps/crm-api/scripts/test-db.mjs`) |
+| Base | PostgreSQL 17 | tests : base **jetable** (`apps/api/scripts/test-db.mjs`) |
 | Web | Next.js 16.4.2, React 19, Tailwind CSS 4.3.3 (figé) | jetons copiés du design, test d'identité |
 | Tests | Jest (API), Vitest (web), dependency-cruiser, axe-core via `scripts/a11y-audit.mjs` | `pnpm ci` = types + architecture + tests |
 
@@ -44,7 +44,7 @@ Monolithe modulaire, Clean Architecture ; règles testées par `pnpm arch` (doma
 ADR-0001 monolithe modulaire · 0002 Prisma confiné à l'infrastructure · 0003 domaine distinct de la persistance · 0004 stratégie d'audit · 0005 CRM séparé de l'ERP · 0006 accès et sécurité · 0007 Stocks autonome hébergé · 0008 stockage des documents derrière un port. Liste complète : `docs/adr/`.
 
 ## Dossiers importants
-`apps/crm-api/` (API) · `apps/crm-web/` (interface) · `docs/` (documentation, `cadrages/`, `design/`, `accessibilite/`, `daily-reports/`, `livrables/`) · `scripts/` (audit d'accessibilité, lancement local, rapports journaliers, conversion HTML).
+`apps/api/` (API) · `apps/web/` (interface) · `docs/` (documentation, `cadrages/`, `design/`, `accessibilite/`, `daily-reports/`, `livrables/`) · `scripts/` (audit d'accessibilité, lancement local, rapports journaliers, conversion HTML).
 
 ## Roadmap et backlog (résumé)
 Ordre décidé (DEC-005) : cadrage UX (fait) → S4.1 à S4.4 (S4.1 à S4.4c livrés : module commercial terminé) → S5 (Investudy : S5.1 catalogue et S5.2a sessions livrés) → S6 (reporting) → Stocks → S7 (production). Sources : `docs/GANTT-PROJET.md`, `docs/RESTE-A-FAIRE-DEVELOPPEMENT.md`, `docs/livrables/05-ETAT-D-AVANCEMENT.md`.
@@ -56,7 +56,7 @@ Ordre décidé (DEC-005) : cadrage UX (fait) → S4.1 à S4.4 (S4.1 à S4.4c liv
 - **Décisions structurantes** : méthode d'arbitrage (options, grille pondérée, recommandation) ; ne jamais décider à la place de l'utilisateur.
 - **Design** : toute modification du design met à jour `docs/design/` (changelog, version, registre EXD, DDR, captures, prototype) dans le même lot.
 - **Règles de fer** : ne jamais coller ni copier dans ce dépôt du contenu d'un autre projet (leçon du 2026-10-22 : un prompt d'un autre projet avait écrasé `docs/design/releases/index.json`, restauré depuis Git) ; base **jetable** uniquement, jamais la vraie ; pas de mot de passe administrateur par défaut ; l'API n'écoute que sur `127.0.0.1` ; ne jamais tester le service Microsoft 365 réel ; ne jamais supprimer l'ancienne copie OneDrive sans accord ; ne pas utiliser les maquettes PDF tierces de `C:\dev\external ressources` sans demande.
-- **Commandes** : installer `pnpm install --frozen-lockfile` · qualité `pnpm ci` · intégration `node apps/crm-api/scripts/test-db.mjs` · lancer en local `node scripts/local-stack.mjs --demo` · clôturer la journée `pnpm report:close`.
+- **Commandes** : installer `pnpm install --frozen-lockfile` · qualité `pnpm ci` · intégration `node apps/api/scripts/test-db.mjs` · lancer en local `node scripts/local-stack.mjs --demo` · clôturer la journée `pnpm report:close`.
 - **Pièges connus** : Node 26 local alors que le projet vise Node 22 ; pnpm 12 refuse les scripts d'installation non déclarés (CI Linux) ; les réécritures Next.js sont figées à la compilation (recompiler si le port de l'API change) ; `scripts/test-db.mjs` doit sortir en erreur si un test échoue.
 
 ## Priorités actuelles

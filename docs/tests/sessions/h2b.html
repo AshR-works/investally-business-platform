@@ -52,7 +52,7 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <ul><li><strong>Adresse IP</strong> : c'est celle que le serveur voit. En production, derrière un proxy, elle n'est exacte que si <code>TRUST_PROXY</code> est configuré correctement (dette D40, à vérifier en S7).</li><li><strong>Avis juridique</strong> sur la conservation et l'affichage des adresses IP et appareils : <strong>toujours à obtenir</strong> (Étape 0). La fenêtre de 90 jours et la visibilité réservée à l'intéressé sont les mesures de minimisation retenues en attendant.</li><li>Pas de vue administrateur de l'historique (décision CAD-H2-2 A) ; extensible sans migration si la direction produit le décide.</li><li>Nombre de codes de secours restants (D39) : non traité, en attente de votre décision.</li><li>L'écoute avec un vrai lecteur d'écran (D31) doit couvrir : les six cases du code, les tableaux de sessions et d'historique, les fenêtres de confirmation.</li></ul>
 <h2>Rejouer les contrôles automatisés</h2>
 <pre><code>pnpm ci                                   # types, architecture, tests unitaires et interface
-node apps/crm-api/scripts/test-db.mjs     # tests d&#x27;intégration (base PostgreSQL jetable)</code></pre>
+node apps/api/scripts/test-db.mjs     # tests d&#x27;intégration (base PostgreSQL jetable)</code></pre>
 <p><em>Pas de script de mutants versionné pour ce lot.</em></p>
 <h2>Écarts constatés</h2>
 <div class="table-wrap"><table><thead><tr><th>Date</th><th>Vérification n°</th><th>Description</th><th>Défaut ouvert (D…)</th></tr></thead><tbody>

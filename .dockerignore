@@ -6,10 +6,10 @@
 **/dist
 **/coverage
 **/*.tsbuildinfo
-apps/crm-api/generated
-apps/crm-api/.agents
-apps/crm-api/.claude
-apps/crm-api/.windsurf
+apps/api/generated
+apps/api/.agents
+apps/api/.claude
+apps/api/.windsurf
 docs
 deploy
 .env
@@ -18,4 +18,4 @@ deploy
 **/.env.*
 *.log
 # Les tests de l'interface importent du code de l'API (hors du contexte de l'image web) : inutiles dans l'image, et ils feraient échouer la vérification de types de la construction.
-apps/crm-web/test
+apps/web/test

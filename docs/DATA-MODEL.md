@@ -1,6 +1,6 @@
 # Modèle de données Core — CRM (Sprint 2)
 
-> Source de vérité : `apps/crm-api/prisma/schema.prisma` + migrations SQL. Ce document l'explique ; en cas de divergence, le schéma prévaut.
+> Source de vérité : `apps/api/prisma/schema.prisma` + migrations SQL. Ce document l'explique ; en cas de divergence, le schéma prévaut.
 > Périmètre : schémas `iam`, `audit`, `docs` + `bd.companies` (tranche S1). Les autres contextes arrivent aux sprints S4 et S5.
 
 ## 1. Principes
