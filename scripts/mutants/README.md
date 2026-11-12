@@ -26,6 +26,7 @@ Chaque lot du module commercial a son script. Les résultats (nombre de mutants 
 | `correctifs-recette-1.py` | Correctifs 1 | téléphones, fenêtres, barres de défilement, tableaux |
 | `documents.py` | S3.x | module Documents |
 | `roles-ux.py` | S3.8 | sélecteur de rôles |
+| `rh3-contrats-parcours.py` | RH-3d | contrats et parcours (domaine, cas d'usage, routes, base, droits, interface) |
 | `rapport-journalier.py` | hors lot | rapport journalier |
 
 ## Lancer

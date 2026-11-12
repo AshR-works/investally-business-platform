@@ -1,0 +1,56 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fiche de test — RH-3 — contrats et parcours</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="../../INDEX.html">Index</a> · <a href="../../GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="../../ARCHITECTURE.html">Architecture</a> · <a href="../../SECURITY.html">Sécurité</a> · <a href="../../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../../QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="../../TECH-DEBT.html">Dette</a> · <a href="../../CHARTE-DE-TESTS.html">Charte de tests</a> · <a href="../../tests/README.html">Fiches de test</a> · <a href="../../design/README.html">Design</a> · <a href="../../livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>Fiche de test — RH-3 — contrats et parcours</h1>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td><strong>Session</strong></td><td><code>rh-3</code></td></tr>
+<tr><td><strong>Recettes de référence</strong></td><td><a href="../../SPRINT-RH-3A-RECETTE.html"><code>SPRINT-RH-3A-RECETTE.md</code></a> (API des contrats), <a href="../../SPRINT-RH-3B-RECETTE.html"><code>SPRINT-RH-3B-RECETTE.md</code></a> (API des parcours), <a href="../../SPRINT-RH-3C-RECETTE.html"><code>SPRINT-RH-3C-RECETTE.md</code></a> (écrans), <a href="../../SPRINT-RH-3D-RECETTE.html"><code>SPRINT-RH-3D-RECETTE.md</code></a> (recette complète et mutants)</td></tr>
+<tr><td><strong>Étiquette</strong></td><td><code>rh-3a-validated</code>, <code>rh-3b-validated</code> (3c et 3d : à la validation)</td></tr>
+<tr><td><strong>Contexte</strong></td><td>Décisions D67 et D68, <a href="../../adr/0013-contrats-du-personnel-sans-donnees-sensibles.html">ADR-0013</a>, <a href="../../adr/0014-parcours-d-integration-et-de-depart.html">ADR-0014</a> · valeurs de départ « à confirmer » avec la RH</td></tr>
+<tr><td><strong>Écrans concernés</strong></td><td><a href="../interfaces/34-contrats.html">Contrats</a>, <a href="../interfaces/35-contrats-a-echeance.html">Contrats à échéance</a>, <a href="../interfaces/36-parcours.html">Parcours</a>, <a href="../interfaces/37-un-parcours.html">Un parcours</a>, <a href="../interfaces/38-modeles-de-parcours.html">Modèles de parcours</a></td></tr>
+</tbody></table></div>
+<p><em>Fiche de session de la <a href="../../CHARTE-DE-TESTS.html">charte de tests</a>, <strong>dérivée des recettes</strong> du lot : en cas de doute, la recette fait foi.</em></p>
+<h2>Avant de commencer</h2>
+<ul><li>Réinitialiser la pile (<code>node scripts/local-stack.mjs reset</code>, puis <code>--demo --rebuild</code>) ; comptes de démonstration (mots de passe dans le fichier local, jamais dans le dépôt).</li><li>Rôles utiles : RH, Super administrateur, Direction, un employé avec compte (chargé de compte), son responsable (Responsable commercial), un employé tiers.</li><li>Le jeu de démonstration contient 12 contrats (2 terminés) et 3 parcours (1 terminé) ; vérifier d'abord que les blocs « contrats » et « parcours » sont chargés.</li></ul>
+<h2>Vérifications à rejouer</h2>
+<div class="table-wrap"><table><thead><tr><th>N°</th><th>Vérification</th><th>Résultat attendu (d'après les recettes)</th><th>Constaté (✔ / ✘)</th><th>Date et initiales</th></tr></thead><tbody>
+<tr><td>1</td><td>Aucune donnée sensible</td><td>Ni salaire, ni document, ni avenant, ni texte libre : le motif de fin se choisit dans une liste de cinq ; les colonnes de la base et la réponse de l'API n'en contiennent pas</td><td>☐</td><td></td></tr>
+<tr><td>2</td><td>Un seul contrat en cours par employé</td><td>Créer un second contrat en cours pour le même employé : refusé avec le message du serveur ; trois créations simultanées : une réussit, deux sont refusées</td><td>☐</td><td></td></tr>
+<tr><td>3</td><td>Types de contrat</td><td>CDI, CDD, Stage, Prestation au départ ; un type à durée déterminée exige une fin, un CDI n'en a pas ; un type se désactive sans se supprimer ; aucune règle légale n'est appliquée</td><td>☐</td><td></td></tr>
+<tr><td>4</td><td>Dates</td><td>Fin avant le début refusée (le même jour est permis) ; fin d'essai dans le contrat, bornes comprises ; début avant l'entrée de l'employé refusé ; contrat qui recouvre un contrat terminé refusé</td><td>☐</td><td></td></tr>
+<tr><td>5</td><td>Ajuster et terminer</td><td>Prolonger la fin et déplacer l'essai (le début ne change jamais) ; terminer avec une date entre le début et la fin prévue et un motif de la liste ; un contrat terminé est conservé et ne se modifie plus</td><td>☐</td><td></td></tr>
+<tr><td>6</td><td>Visibilité des contrats</td><td>RH et Super administrateur : tout ; Direction : lecture ; employé : le sien ; responsable direct et collègue : rien (404, identique à un contrat inexistant)</td><td>☐</td><td></td></tr>
+<tr><td>7</td><td>Échéances</td><td>Fin de contrat et fin d'essai dans la fenêtre (60 jours par défaut, 1 à 365), jours restants, tri par date ; réservées à la RH à l'écran ; aucun courriel</td><td>☐</td><td></td></tr>
+<tr><td>8</td><td>Modèles de parcours</td><td>Deux modèles (Intégration 6 tâches, Départ 5) ; remplacer les tâches : 1 à 30, titres distincts, responsable en liste fermée, échéance entre -365 et 365 ; version périmée refusée ; audit avant et après</td><td>☐</td><td></td></tr>
+<tr><td>9</td><td>Lancer un parcours</td><td>Employé en poste ; un seul parcours en cours par employé et par nature ; date de référence par défaut (entrée ou aujourd'hui) ; tâches copiées : modifier le modèle ensuite ne change pas le parcours</td><td>☐</td><td></td></tr>
+<tr><td>10</td><td>Cocher, décocher, annuler</td><td>Cocher garde la date et l'auteur ; la dernière tâche termine le parcours ; décocher rouvre (refusé si un autre parcours de même nature est en cours) ; annuler conserve les tâches ; parcours annulé : plus rien ne se coche</td><td>☐</td><td></td></tr>
+<tr><td>11</td><td>Retards</td><td>Tâche non cochée dont l'échéance est passée : « En retard » ; pas pour un parcours terminé ou annulé ; pas pour une tâche due aujourd'hui</td><td>☐</td><td></td></tr>
+<tr><td>12</td><td>Visibilité des parcours</td><td>RH et Super administrateur : tout gérer et cocher ; Direction : lecture ; employé : les siens, sans cocher ; responsable et tiers : rien</td><td>☐</td><td></td></tr>
+<tr><td>13</td><td>Règles garanties par la base</td><td>Un seul contrat et un seul parcours en cours (index), états cohérents (dates et motif), coche avec auteur, bornes des échéances, aucune suppression d'un employé ou d'un type qui a des contrats</td><td>☐</td><td></td></tr>
+<tr><td>14</td><td>Audit</td><td>Chaque création, ajustement, fin, lancement, coche, annulation et modification de modèle écrit une ligne avec l'avant et l'après</td><td>☐</td><td></td></tr>
+<tr><td>15</td><td>Preuves</td><td>Mutants : voir la recette 3d (tués, survivants traités) ; collection Postman : exécutée contre une pile jetable</td><td>☐</td><td></td></tr>
+</tbody></table></div>
+<h2>Écarts constatés</h2>
+<div class="table-wrap"><table><thead><tr><th>Date</th><th>Vérification</th><th>Description</th><th>Défaut ouvert (D…)</th></tr></thead><tbody>
+<tr><td></td><td></td><td></td><td></td></tr>
+</tbody></table></div></main></body></html>

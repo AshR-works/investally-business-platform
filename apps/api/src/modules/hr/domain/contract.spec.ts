@@ -85,6 +85,13 @@ describe('Contract', () => {
     expect(() => cdi.finish({ endedOn: '2040-01-01', reason: 'RESIGNATION' })).not.toThrow();
   });
 
+  it('la fin effective prime sur la fin prévue : un contrat terminé en avance a pour dernier jour sa fin effective', () => {
+    const c = cdd();
+    expect(c.lastDay).toBe('2027-05-31');
+    c.finish({ endedOn: '2027-01-15', reason: 'RESIGNATION' });
+    expect(c.lastDay).toBe('2027-01-15');
+  });
+
   it('un contrat terminé ne se modifie ni ne se termine plus', () => {
     const c = cdd();
     c.finish({ endedOn: '2027-01-01', reason: 'OTHER' });

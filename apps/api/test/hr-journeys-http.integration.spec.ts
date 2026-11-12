@@ -1,4 +1,5 @@
 import 'reflect-metadata';
+import { PrismaJourneyTemplateRepository } from '../src/modules/hr/infrastructure/prisma-journey.repositories';
 import { RoleCode } from '../src/modules/iam/domain/roles';
 import { Api, createUserWithRoles, mfaSession, startRbacApp } from './support/rbac-http';
 import { TestApp } from './support/test-app';
@@ -223,6 +224,43 @@ describeDb('Parcours d’intégration et de départ (HTTP + PostgreSQL)', () => 
     expect(Object.keys(made.body.tasks[0]).sort()).toEqual(['doneAt', 'doneByName', 'doneByUserId', 'done', 'dueOn', 'id', 'overdue', 'owner', 'ownerLabel', 'title'].sort());
     const columns = await t.prisma.db.$queryRawUnsafe<{ column_name: string }[]>(`SELECT column_name FROM information_schema.columns WHERE table_schema = 'hr' AND table_name IN ('journeys', 'journey_tasks', 'journey_templates', 'journey_template_tasks')`);
     expect(columns.map((c) => c.column_name).join()).not.toMatch(/note|comment|reason|motif|salary|salaire|document|file/i);
+  });
+
+  it('liste : filtre de nature appliqué en base, du plus récent au plus ancien', async () => {
+    const w = await world();
+    const employeeId = await fresh(w);
+    const on = await launch(w.hr, { employeeId, kind: 'ONBOARDING' });
+    const off = await launch(w.hr, { employeeId, kind: 'OFFBOARDING' });
+    expect([on.status, off.status]).toEqual([201, 201]);
+    const ids = async (query: string) => ((await api.call('GET', `/api/v1/hr/journeys?employeeId=${employeeId}${query}`, w.hr)).body.items as { id: string }[]).map((j) => j.id);
+    expect(await ids('&kind=OFFBOARDING')).toEqual([off.body.id]);
+    expect(await ids('&kind=ONBOARDING')).toEqual([on.body.id]);
+    expect(await ids('')).toEqual([off.body.id, on.body.id]);
+  });
+
+  it('les tâches d’un parcours sont lues dans l’ordre enregistré, pas dans l’ordre physique de la table', async () => {
+    const w = await world();
+    const made = await launch(w.hr, { employeeId: await fresh(w), kind: 'ONBOARDING' });
+    const [a, b] = made.body.tasks as { id: string }[];
+    await t.prisma.db.$executeRawUnsafe(`UPDATE hr.journey_tasks SET sort_order = 5 WHERE id = '${b!.id}'::uuid`);
+    const got = await api.call('GET', `/api/v1/hr/journeys/${made.body.id}`, w.hr);
+    expect((got.body.tasks as { id: string }[]).slice(0, 2).map((x) => x.id)).toEqual([b!.id, a!.id]);
+  });
+
+  it('le dépôt des modèles refuse une version périmée par un conflit, même sans passer par le cas d’usage', async () => {
+    const repo = new PrismaJourneyTemplateRepository(t.prisma);
+    const stale = (await repo.get('OFFBOARDING'))!;
+    const original = stale.tasks.map((x) => ({ ...x }));
+    stale.replaceTasks([{ title: 'Tâche de contrôle', owner: 'HR', dueOffsetDays: 0 }]);
+    await repo.save(stale);
+    await expect(repo.save(stale)).rejects.toMatchObject({ code: 'CONFLICT' });
+    const current = (await repo.get('OFFBOARDING'))!;
+    expect(current.tasks.map((x) => x.title)).toEqual(['Tâche de contrôle']);
+    current.replaceTasks(original);
+    await repo.save(current);
+    expect((await repo.get('OFFBOARDING'))!.tasks).toHaveLength(original.length);
+    // Les autres suites (contrat anti-IDOR) comptent sur la version de départ du modèle de départ.
+    await t.prisma.db.$executeRawUnsafe(`UPDATE hr.journey_templates SET version = 1 WHERE kind = 'OFFBOARDING'`);
   });
 
   describe('règles garanties par la base, quoi que fasse l’application', () => {

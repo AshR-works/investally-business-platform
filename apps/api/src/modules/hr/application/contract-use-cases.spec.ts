@@ -3,7 +3,7 @@ import { InMemoryEmployees } from '../../../../test/support/in-memory-employees'
 import { ActorContext } from '../../../shared-kernel';
 import { AuditAction, AuditRecord } from '../../audit';
 import type { AccessContext } from '../../iam';
-import { RoleCode, resolveGrants } from '../../iam';
+import { RoleCode, Scope, resolveGrants } from '../../iam';
 import { Contract, ContractType } from '../domain/contract';
 import { Employee } from '../domain/employee';
 import {
@@ -22,6 +22,8 @@ const sam = as(RoleCode.Support, 'u-sam');
 const hr = as(RoleCode.Hr, 'u-hr');
 const root = as(RoleCode.SuperAdmin, 'u-root');
 const nobody: AccessContext = { actorId: 'u-none', grants: [], teamMemberIds: [] };
+// Droit de gérer accordé en portée réduite (Équipe ou Propre) : il ne suffit jamais, la gestion exige la portée Tous.
+const narrowManage = (scope: Scope): AccessContext => ({ actorId: 'u-narrow', grants: [{ permission: 'hr.contract.manage', scope }, { permission: 'hr.contract.read', scope: Scope.All }], teamMemberIds: [uuid(4)] });
 
 const ID = { boss: uuid(1), claire: uuid(2), sam: uuid(4), hr: uuid(6), ghost: uuid(7), left: uuid(8) };
 const TYPE = { cdi: uuid(101), cdd: uuid(102), old: uuid(103) };
@@ -118,6 +120,19 @@ describe('Contrats : créer', () => {
     await expect(w.create.execute({ ...cdiFor(ID.sam, '2026-03-01'), access: hr })).rejects.toMatchObject({ code: 'VALIDATION', message: expect.stringMatching(/entrée/) });
     await expect(w.create.execute({ employeeId: ID.sam, contractTypeId: TYPE.cdd, start: '2026-04-01', actor, access: hr })).rejects.toMatchObject({ code: 'VALIDATION' });
     expect(w.contracts.items).toHaveLength(0);
+  });
+});
+
+describe('Contrats : le droit de gérer exige la portée Tous', () => {
+  it.each([[Scope.Team], [Scope.Own]])('refuse le droit de gérer en portée %s (créer, types, ajuster, terminer)', async (scope) => {
+    const w = build();
+    const made = await w.create.execute({ ...cdiFor(ID.sam), access: hr });
+    const access = narrowManage(scope);
+    await expect(w.create.execute({ ...cdiFor(ID.claire), access })).rejects.toMatchObject({ code: 'FORBIDDEN' });
+    await expect(w.createType.execute({ code: 'NOUVEAU', label: 'Nouveau', fixedTerm: false, access, actor })).rejects.toMatchObject({ code: 'FORBIDDEN' });
+    await expect(w.adjust.execute({ id: made.id, version: 1, probationEnd: '2026-06-01', access, actor })).rejects.toMatchObject({ code: 'FORBIDDEN' });
+    await expect(w.end.execute({ id: made.id, version: 1, endedOn: '2026-08-01', reason: 'OTHER', access, actor })).rejects.toMatchObject({ code: 'FORBIDDEN' });
+    expect(w.contracts.items).toHaveLength(1);
   });
 });
 
@@ -237,6 +252,13 @@ describe('Contrats : échéances', () => {
       ['Sam Test', 'CONTRACT_END', '2026-12-31', 51],
       ['Claire Test', 'CONTRACT_END', '2027-01-09', 60],
     ]);
+  });
+
+  it('une fin de contrat aujourd’hui est une échéance du jour (zéro jour restant)', async () => {
+    const w = build();
+    await w.create.execute({ employeeId: ID.sam, contractTypeId: TYPE.cdd, start: '2026-04-01', end: '2026-11-10', access: hr, actor });
+    const rows = await w.deadlines.execute({ access: hr });
+    expect(rows.map((r) => [r.kind, r.date, r.daysLeft])).toEqual([['CONTRACT_END', '2026-11-10', 0]]);
   });
 
   it('une fenêtre plus large inclut l’échéance suivante ; hors bornes, refusé', async () => {

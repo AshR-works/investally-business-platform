@@ -1,0 +1,58 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fiche de test — Contrats</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="../../INDEX.html">Index</a> · <a href="../../GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="../../ARCHITECTURE.html">Architecture</a> · <a href="../../SECURITY.html">Sécurité</a> · <a href="../../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../../QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="../../TECH-DEBT.html">Dette</a> · <a href="../../CHARTE-DE-TESTS.html">Charte de tests</a> · <a href="../../tests/README.html">Fiches de test</a> · <a href="../../design/README.html">Design</a> · <a href="../../livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>Fiche de test — Contrats</h1>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td><strong>Route</strong></td><td><code>/hr/contracts</code></td></tr>
+<tr><td><strong>Livrée par</strong></td><td>RH-3c (API : RH-3a ; recette et mutants : RH-3d)</td></tr>
+<tr><td><strong>Accès</strong></td><td>Utilisateur qui détient <code>hr.contract.read</code> : menu Ressources humaines › Contrats. La RH, la Direction et le Super administrateur voient tous les contrats ; un employé voit le sien (l'écran s'intitule alors « Mon contrat »).</td></tr>
+<tr><td><strong>Droits</strong></td><td><strong>Créer, ajuster, terminer, gérer les types</strong> : <code>hr.contract.manage</code> en portée Tous (RH, Super administrateur). La Direction lit sans écrire. Responsables et collègues : aucune donnée.</td></tr>
+<tr><td><strong>Rôles de test</strong></td><td>rh, sa, dir, cc (employé), resp (responsable direct)</td></tr>
+</tbody></table></div>
+<p><em>Fiche d'interface de la <a href="../../CHARTE-DE-TESTS.html">charte de tests</a>. À rejouer à chaque changement de l'écran. Cocher, dater, signer ; tout écart devient un défaut.</em></p>
+<h2>Préconditions</h2>
+<p>Pile locale avec le jeu de démonstration : 12 contrats (10 en cours, 2 terminés), 4 types. Comptes RH, Direction, un chargé de compte avec fiche d'employé et son responsable.</p>
+<h2>Scénarios</h2>
+<div class="table-wrap"><table><thead><tr><th>N°</th><th>Scénario</th><th>Étapes</th><th>Résultat attendu</th><th>Constaté (✔ / ✘)</th><th>Date et initiales</th></tr></thead><tbody>
+<tr><td>1</td><td><strong>Liste (RH)</strong></td><td>Se connecter en RH ; ouvrir Contrats.</td><td>Filtre « En cours » par défaut, dix contrats : employé, type, début, fin (ou « Durée indéterminée »), fin d'essai, état, motif de fin ; onglets « Contrats » et « À échéance »</td><td>☐</td><td></td></tr>
+<tr><td>2</td><td><strong>Filtres</strong></td><td>Choisir « Terminés », puis « Tous ».</td><td>Deux contrats terminés avec leur motif (« Fin du contrat à durée déterminée ») ; douze au total</td><td>☐</td><td></td></tr>
+<tr><td>3</td><td><strong>Nouveau contrat</strong></td><td>« Nouveau contrat » : employé sans contrat en cours, type CDD, début, fin, fin d'essai ; Enregistrer.</td><td>Message « Le contrat est enregistré. » ; le contrat apparaît en cours ; le champ « Fin » n'existe pas pour un CDI</td><td>☐</td><td></td></tr>
+<tr><td>4</td><td><strong>Un seul contrat en cours</strong></td><td>Créer un contrat pour un employé qui en a déjà un.</td><td>Le message du serveur s'affiche dans la fenêtre (« Un contrat est déjà en cours… »), la fenêtre reste ouverte</td><td>☐</td><td></td></tr>
+<tr><td>5</td><td><strong>Règles de dates</strong></td><td>Fin avant le début ; CDD sans fin ; fin d'essai après la fin ; début avant l'entrée.</td><td>Chaque cas est signalé sous le champ concerné ou par le serveur, rien n'est créé</td><td>☐</td><td></td></tr>
+<tr><td>6</td><td><strong>Ajuster</strong></td><td>Menu de ligne › « Ajuster (fin, essai) » sur un CDD : prolonger la fin, vider l'essai.</td><td>Enregistré ; le début n'est pas modifiable ; pour un CDI, seul l'essai est proposé</td><td>☐</td><td></td></tr>
+<tr><td>7</td><td><strong>Mettre fin</strong></td><td>Menu de ligne › « Mettre fin au contrat » : date, motif de la liste.</td><td>Contrat « Terminé » avec date et motif ; plus d'action sur la ligne ; l'audit garde l'avant et l'après</td><td>☐</td><td></td></tr>
+<tr><td>8</td><td><strong>Types de contrat</strong></td><td>Section « Types de contrat » : nouveau type (code, libellé, durée déterminée), modifier, désactiver.</td><td>Le code et la nature ne changent plus après création ; un type désactivé n'est plus proposé pour un nouveau contrat mais reste sur les contrats existants</td><td>☐</td><td></td></tr>
+<tr><td>9</td><td><strong>Direction</strong></td><td>Se connecter en Direction.</td><td>Tous les contrats en lecture ; ni « Nouveau contrat », ni menu de ligne, ni section Types</td><td>☐</td><td></td></tr>
+<tr><td>10</td><td><strong>Employé</strong></td><td>Se connecter en chargé de compte.</td><td>« Mon contrat » : le sien seulement, sans colonne « Employé » ni action</td><td>☐</td><td></td></tr>
+<tr><td>11</td><td><strong>Responsable direct</strong></td><td>Se connecter en Responsable commercial.</td><td>Aucun contrat de son équipe (seulement le sien) ; l'adresse d'un contrat de l'équipe dit « introuvable »</td><td>☐</td><td></td></tr>
+</tbody></table></div>
+<h2>Accessibilité</h2>
+<ul><li>☐ Clavier seul : filtres, « Nouveau contrat », menus de ligne et fenêtres atteignables ; focus visible ; Échap ferme une fenêtre.</li><li>☐ Un seul titre de niveau 1 ; le tableau a une légende pour les lecteurs d'écran ; chaque menu de ligne est nommé (« Actions pour le contrat de … »).</li><li>☐ Les erreurs de saisie sont annoncées et reliées à leur champ ; les messages de succès et d'erreur du serveur le sont aussi.</li><li>☐ L'état n'est pas porté par la couleur seule (texte « En cours » / « Terminé »).</li><li>☐ Lisible à 200 % de zoom et à 375 px de large, sans défilement horizontal de la page ; mode sombre.</li></ul>
+<h2>Tests automatisés qui couvrent cet écran</h2>
+<ul><li>API : <code>hr-contracts-http.integration</code> (cycle complet, un seul contrat en cours même simultané, refus métier, droits par rôle, échéances, types, absence de salaire, règles de la base), <code>contract.spec</code>, <code>contract-use-cases.spec</code>, sondes anti-IDOR, matrice des rôles.</li><li>Web : <code>rh-3c.test</code> (règles de saisie identiques au serveur, actions par état et droit, menu par profil, aucun champ de rémunération ni de texte libre) ; mutants RH-3 (voir la recette 3d) ; audit navigateur : non rejoué.</li></ul>
+<h2>Limites connues</h2>
+<ul><li>Ni salaire, ni document, ni avenant (D179) ; aucune règle légale codée (D180) ; pas de notification (D181).</li><li>Les contrats d'un employé n'apparaissent pas encore sur sa fiche.</li></ul>
+<h2>Écarts constatés</h2>
+<div class="table-wrap"><table><thead><tr><th>Date</th><th>Scénario</th><th>Description</th><th>Défaut ouvert (D…)</th></tr></thead><tbody>
+<tr><td></td><td></td><td></td><td></td></tr>
+</tbody></table></div></main></body></html>
