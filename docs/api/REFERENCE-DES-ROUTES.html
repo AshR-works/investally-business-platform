@@ -202,6 +202,9 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td>PUT</td><td><code>/hr/leave/types/{id}</code></td><td></td><td><code>hr.leave.manage</code></td><td>200</td></tr>
 <tr><td>GET</td><td><code>/hr/linkable-users</code></td><td></td><td><code>hr.employee.update</code></td><td>200</td></tr>
 <tr><td>GET</td><td><code>/hr/org-chart</code></td><td></td><td><code>hr.directory.read</code></td><td>200</td></tr>
+<tr><td>GET</td><td><code>/hr/presences</code></td><td></td><td><code>hr.presence.read</code></td><td>200</td></tr>
+<tr><td>DELETE</td><td><code>/hr/presences/{day}</code></td><td></td><td><code>hr.presence.declare</code></td><td>204</td></tr>
+<tr><td>PUT</td><td><code>/hr/presences/{day}</code></td><td></td><td><code>hr.presence.declare</code></td><td>200</td></tr>
 </tbody></table></div>
 <h2>learners</h2>
 <div class="table-wrap"><table><thead><tr><th>Méthode</th><th>Chemin</th><th>Résumé</th><th>Permission</th><th>Succès</th></tr></thead><tbody>
@@ -296,4 +299,4 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td>PUT</td><td><code>/trainings/{id}</code></td><td></td><td><code>training.training.update</code></td><td>200</td></tr>
 <tr><td>POST</td><td><code>/trainings/{id}/status</code></td><td></td><td><code>training.training.update</code></td><td>200</td></tr>
 </tbody></table></div>
-<p><em>198 routes.</em></p></main></body></html>
+<p><em>201 routes.</em></p></main></body></html>

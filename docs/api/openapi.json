@@ -7627,6 +7627,143 @@
         "x-permission": "hr.journey.manage",
         "x-protected": true
       }
+    },
+    "/api/v1/hr/presences": {
+      "get": {
+        "operationId": "PresencesController_all",
+        "parameters": [
+          {
+            "name": "from",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "example": "2026-11-09",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "example": "2026-11-15",
+              "type": "string"
+            }
+          },
+          {
+            "name": "department",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maxLength": 100,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "hr"
+        ],
+        "x-permission": "hr.presence.read",
+        "x-protected": true
+      }
+    },
+    "/api/v1/hr/presences/{day}": {
+      "put": {
+        "operationId": "PresencesController_put",
+        "parameters": [
+          {
+            "name": "day",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "employeeId",
+            "required": false,
+            "in": "query",
+            "description": "Absent : l’employé du compte connecté. Seule la RH peut désigner un autre employé.",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeclarePresenceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "hr"
+        ],
+        "x-permission": "hr.presence.declare",
+        "x-protected": true
+      },
+      "delete": {
+        "operationId": "PresencesController_delete",
+        "parameters": [
+          {
+            "name": "day",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "employeeId",
+            "required": false,
+            "in": "query",
+            "description": "Absent : l’employé du compte connecté. Seule la RH peut désigner un autre employé.",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "hr"
+        ],
+        "x-permission": "hr.presence.declare",
+        "x-protected": true
+      }
     }
   },
   "info": {
@@ -10070,6 +10207,23 @@
         },
         "required": [
           "version"
+        ]
+      },
+      "DeclarePresenceDto": {
+        "type": "object",
+        "properties": {
+          "mode": {
+            "type": "string",
+            "enum": [
+              "ON_SITE",
+              "REMOTE",
+              "TRAVEL"
+            ],
+            "description": "Sur site, télétravail ou déplacement. Aucune heure, aucun lieu."
+          }
+        },
+        "required": [
+          "mode"
         ]
       }
     }

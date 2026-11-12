@@ -22,7 +22,7 @@
 |---|---|---|---|---|
 | **RH-2 Absences et congés** | Types d'absence, demande, validation par le responsable, solde, calendrier d'équipe, paramètres (jours par an, jours fériés) | Moyenne (une absence maladie est une donnée de santé indirecte : on ne stocke **jamais** de diagnostic) | Règles de congés (valeurs par défaut proposées § 5) | Faisable maintenant |
 | **RH-3 Contrats et parcours** | Type de relation (CDI, CDD, stage, prestation), dates, période d'essai, fin de contrat, **liste de contrôle d'intégration et de départ** | Moyenne (sans salaire, sans pièce) | Types de contrat réels | Faisable après RH-2 |
-| **RH-4 Présences** | Pointage, retards, heures | **Élevée** (surveillance des salariés) | Avis juridique, besoin réel à confirmer | Non recommandé maintenant |
+| **RH-4 Présences** | Pointage, retards, heures | **Élevée** (surveillance des salariés) | Avis juridique, besoin réel à confirmer | Pointage : non recommandé. **Présences déclaratives (sans pointage) lancées le 2026-11-12, D69 / ADR-0015** |
 | **RH-5 Dossier du personnel** | Documents RH : contrat signé, attestations, pièces | **Élevée** | **Antivirus (D42)**, stockage d'objets (D41), avis juridique | Bloqué |
 | **RH-6 Évaluations et performance** | Entretiens, objectifs, notes | **Élevée** | **Avis juridique (DEC-006)** | Bloqué |
 | **RH-7 Paie** | Salaires, bulletins, charges | **Très élevée** | **L'ERP** (ADR-0009) | Hors CRM |

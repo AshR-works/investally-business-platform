@@ -1238,6 +1238,7 @@ model Employee {
   leaveAdjustments  LeaveAdjustment[]
   contracts         Contract[]
   journeys          Journey[]
+  presences         PresenceDeclaration[]
 
   @@index([managerEmployeeId])
   @@index([status])
@@ -1501,5 +1502,32 @@ model LeaveAdjustment {
 
   @@index([employeeId, year])
   @@map("leave_adjustments")
+  @@schema("hr")
+}
+
+/// Mode de présence déclaré pour un jour (RH-4a, D69) : sur site, télétravail ou déplacement. Aucune heure, aucun lieu.
+enum PresenceMode {
+  ON_SITE
+  REMOTE
+  TRAVEL
+
+  @@schema("hr")
+}
+
+/// Présence DÉCLARATIVE d'un employé pour un jour (RH-4a, D69) : une valeur parmi trois, au plus une par employé et par jour. Aucune donnée sensible.
+model PresenceDeclaration {
+  id               String       @id @db.Uuid
+  employeeId       String       @map("employee_id") @db.Uuid
+  day              DateTime     @db.Date
+  mode             PresenceMode
+  declaredByUserId String       @map("declared_by_user_id") @db.Uuid
+  version          Int          @default(1)
+  createdAt        DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime     @updatedAt @map("updated_at") @db.Timestamptz(6)
+  employee         Employee     @relation(fields: [employeeId], references: [id], onDelete: Restrict)
+
+  @@unique([employeeId, day])
+  @@index([day])
+  @@map("presence_declarations")
   @@schema("hr")
 }

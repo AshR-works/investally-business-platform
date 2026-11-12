@@ -1,0 +1,48 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>RH-4a — présences déclaratives du personnel (API)</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="INDEX.html">Index</a> · <a href="GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="ARCHITECTURE.html">Architecture</a> · <a href="SECURITY.html">Sécurité</a> · <a href="METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="TECH-DEBT.html">Dette</a> · <a href="CHARTE-DE-TESTS.html">Charte de tests</a> · <a href="tests/README.html">Fiches de test</a> · <a href="design/README.html">Design</a> · <a href="livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>RH-4a — présences déclaratives du personnel (API)</h1>
+<p><em>Branche <code>feat/rh-4a-presences</code> · 2026-11-12 · décision D69 (<a href="adr/0015-presences-declaratives.html">ADR-0015</a>).</em></p>
+<p>Première tranche de RH-4 : l'<strong>API</strong>, les droits et la base. Les écrans et la démonstration viennent en RH-4b, la recette complète (mutants, Newman, fiches de test) en RH-4c, comme pour RH-2 et RH-3.</p>
+<p><strong>Périmètre retenu par la Direction produit : l'option B, présences déclaratives.</strong> Le cadrage RH classait les présences « non recommandé » (pointage = surveillance des salariés) ; il n'y a donc <strong>ni heure, ni lieu, ni retard, ni texte libre</strong>.</p>
+<h2>Ce qui est livré</h2>
+<div class="table-wrap"><table><thead><tr><th>Livrable</th><th>Contenu</th></tr></thead><tbody>
+<tr><td><strong>Base</strong></td><td>migration <code>20261121000000_rh_4a_presences</code> : table <code>hr.presence_declarations</code>, énumération <code>PresenceMode</code> (sur site, télétravail, déplacement), <strong>une ligne au plus par employé et par jour</strong> (index unique), version positive, clé vers l'employé</td></tr>
+<tr><td><strong>Domaine</strong></td><td><code>presence.ts</code> : la déclaration (trois modes, jour valide), les fenêtres de saisie, <code>coversWholeDay</code> (une absence couvre-t-elle la journée entière ?)</td></tr>
+<tr><td><strong>Cas d'usage</strong></td><td><code>DeclarePresenceUseCase</code> (idempotent, audité), <code>RemovePresenceUseCase</code>, <code>GetPresenceBoardHandler</code> (tableau d'une période de 93 jours au plus, avec les jours d'absence validée)</td></tr>
+<tr><td><strong>Routes</strong></td><td><code>GET /hr/presences?from&amp;to[&amp;department]</code>, <code>PUT /hr/presences/:day[?employeeId]</code>, <code>DELETE /hr/presences/:day[?employeeId]</code></td></tr>
+<tr><td><strong>Droits</strong></td><td><code>hr.presence.read</code> et <code>hr.presence.declare</code> : chacun déclare pour soi (Propre) et lit sa ligne et celles de ses subordonnés directs ; la RH et le Super administrateur déclarent pour tous ; la RH, la Direction et le Super administrateur lisent tout</td></tr>
+<tr><td><strong>Documentation</strong></td><td>ADR-0015, décision D69, dettes D185 à D189, droits régénérés (124 permissions), dictionnaire de la base, référence des routes et collection Postman</td></tr>
+</tbody></table></div>
+<h2>Règles</h2>
+<ul><li>Un employé déclare <strong>pour lui seulement</strong>, de 7 jours en arrière à 30 jours en avant ; la RH, de 90 jours en arrière à 90 en avant, pour n'importe qui (saisie marquée « par un autre »).</li><li>Jamais avant l'entrée ni après le départ de l'employé, jamais pour un employé archivé.</li><li>Une <strong>absence validée sur la journée entière</strong> interdit la déclaration (409) ; une demi-journée d'absence laisse déclarer l'autre moitié ; une demande en attente ne bloque pas.</li><li>Redéclarer le même mode ne change rien et n'écrit rien dans l'audit ; changer écrit l'avant et l'après ; retirer écrit l'ancienne valeur.</li><li>Un employé hors périmètre (collègue, responsable, Direction pour une saisie) est <strong>« introuvable »</strong> : même réponse qu'un employé inexistant (contrat anti-IDOR, deux routes ajoutées au registre).</li><li>Un compte sans fiche employé reçoit un message clair (« demandez à la RH de la relier »).</li></ul>
+<h2>Preuves</h2>
+<div class="table-wrap"><table><thead><tr><th>Contrôle</th><th>Résultat</th></tr></thead><tbody>
+<tr><td>Types</td><td><code>tsc</code> propre (API)</td></tr>
+<tr><td>Tests unitaires</td><td><code>presence.spec.ts</code> (domaine) et <code>presence-use-cases.spec.ts</code> (27 cas : droits, fenêtres aux bornes, absences, idempotence, audit, tableau par portée et par service) ; matrice des droits <code>roles.spec.ts</code> (test dédié aux présences)</td></tr>
+<tr><td>Intégration (base jetable)</td><td><code>hr-presences-http</code> (12 cas : cycle complet audité, RH pour un autre, compte sans fiche, validation, fenêtres, absence validée, tableau par portée, période bornée, sans jeton, trois règles de la base) ; contrat anti-IDOR (sondes <code>PUT</code> et <code>DELETE</code>, contrôle positif par la RH) ; droits ; schéma</td></tr>
+</tbody></table></div>
+<h2>Limites connues</h2>
+<ul><li><strong>Aucun écran</strong> : RH-4b. <strong>Aucune démonstration</strong> : RH-4b. <strong>Ni mutants, ni Newman, ni fiches de test</strong> : RH-4c.</li><li>Les fenêtres de saisie, les trois modes et l'absence de validation par le responsable sont des valeurs de départ « à confirmer » (D186, D187).</li><li>Lecture limitée aux subordonnés directs ; une demi-journée d'absence n'apparaît pas dans les jours d'absence du tableau (D188).</li><li><strong>Durée de conservation non définie</strong> (D189) : à valider avant la mise en production.</li><li><strong>Dettes ouvertes</strong> : D185 à D189 (voir <a href="TECH-DEBT.html">TECH-DEBT</a>).</li></ul>
+<h2>Comment rejouer</h2>
+<ol><li>Unitaires : <code>pnpm crm-api test</code> (ou <code>npx jest src/modules/hr</code> dans <code>apps/api</code>).</li><li>Intégration : <code>node scripts/test-db.mjs "--tests=hr-presences|idor-contract|rbac-http|core-schema"</code> dans <code>apps/api</code>.</li><li>Mise à jour de ta pile locale : <strong>rebuild : oui</strong> (code de l'API changé) ; <strong>reset : non</strong> (la migration s'applique seule au lancement).</li></ol></main></body></html>

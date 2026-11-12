@@ -1,6 +1,6 @@
 # Dictionnaire de la base de données
 
-*Généré depuis la base réelle (PostgreSQL 17.10, 28 migrations appliquées) et les commentaires du schéma Prisma, par `scripts/db-docs/build-dictionary.mjs`. Ne pas modifier à la main : régénérer.*
+*Généré depuis la base réelle (PostgreSQL 17.10, 31 migrations appliquées) et les commentaires du schéma Prisma, par `scripts/db-docs/build-dictionary.mjs`. Ne pas modifier à la main : régénérer.*
 
 ## Vue d’ensemble
 
@@ -17,7 +17,7 @@
 | `iam` | Identité et accès : comptes, rôles, sessions, MFA, invitations | 12 |
 | `bd` | Business Development : entreprises, contacts, offres, relances, rendez-vous, opportunités, agréments, ambassadeurs, commissions | 13 |
 | `training` | Investudy : catalogue, sessions, salles, formateurs, apprenants, inscriptions | 9 |
-| `hr` | Ressources humaines : personnel, absences et congés | 6 |
+| `hr` | Ressources humaines : personnel, absences et congés | 13 |
 | `docs` | Documents (métadonnées ; les fichiers sont stockés à part) | 2 |
 | `audit` | Journal d’audit (partitionné par mois) | 1 |
 
@@ -1212,11 +1212,85 @@ Ressources humaines : personnel, absences et congés
 
 ```mermaid
 erDiagram
+  contract_types ||--o{ contracts : "contract_type_id"
+  employees ||--o{ contracts : "employee_id"
   employees ||--o{ employees : "manager_employee_id"
+  journeys ||--o{ journey_tasks : "journey_id"
+  journey_templates ||--o{ journey_template_tasks : "template_id"
+  employees ||--o{ journeys : "employee_id"
   employees ||--o{ leave_adjustments : "employee_id"
   employees ||--o{ leave_requests : "employee_id"
   leave_types ||--o{ leave_requests : "leave_type_id"
+  employees ||--o{ presence_declarations : "employee_id"
 ```
+
+### `hr.contract_types`
+
+Type de contrat PARAMÉTRABLE par la RH (RH-3, D67) : `fixedTerm` = date de fin obligatoire. Jamais supprimé : il se désactive.
+
+| Colonne | Type | Null | Défaut | Description |
+|---|---|---|---|---|
+| `id` | uuid | non |  |  |
+| `code` | character varying(30) | non |  |  |
+| `label` | character varying(100) | non |  |  |
+| `fixed_term` | boolean | non | `false` |  |
+| `active` | boolean | non | `true` |  |
+| `sort_order` | integer | non | `0` |  |
+| `version` | integer | non | `1` |  |
+| `created_at` | timestamp(6) with time zone | non | `CURRENT_TIMESTAMP` |  |
+| `updated_at` | timestamp(6) with time zone | non |  |  |
+
+**Clé primaire** : `(id)`
+
+**Règles garanties par la base (CHECK)**
+
+- `contract_types_code_format` : `(COALESCE(((code)::text ~ '^[A-Z][A-Z0-9_]{1,29}$'::text), false))`
+- `contract_types_label_not_blank` : `(COALESCE((length(btrim((label)::text)) > 0), false))`
+- `contract_types_sort_order_range` : `(COALESCE(((sort_order >= 0) AND (sort_order <= 10000)), false))`
+- `contract_types_version_positive` : `((version >= 1))`
+
+**Index**
+
+- `contract_types_code_key` : `UNIQUE USING btree (code)`
+
+### `hr.contracts`
+
+Contrat d'un employé : AUCUN salaire, document ni donnée sensible. Plusieurs au fil du temps, un seul en cours.
+
+| Colonne | Type | Null | Défaut | Description |
+|---|---|---|---|---|
+| `id` | uuid | non |  |  |
+| `employee_id` | uuid | non |  |  |
+| `contract_type_id` | uuid | non |  |  |
+| `start_date` | date | non |  |  |
+| `end_date` | date | oui |  |  |
+| `probation_end_date` | date | oui |  |  |
+| `status` | hr."ContractStatus" | non | `'ACTIVE'::hr."ContractStatus"` |  |
+| `ended_on` | date | oui |  |  |
+| `end_reason` | hr."ContractEndReason" | oui |  |  |
+| `version` | integer | non | `1` |  |
+| `created_at` | timestamp(6) with time zone | non | `CURRENT_TIMESTAMP` |  |
+| `updated_at` | timestamp(6) with time zone | non |  |  |
+
+**Clé primaire** : `(id)`
+
+**Clés étrangères**
+
+- `contracts_contract_type_id_fkey` : FOREIGN KEY (contract_type_id) REFERENCES hr.contract_types(id) ON UPDATE CASCADE ON DELETE RESTRICT
+- `contracts_employee_id_fkey` : FOREIGN KEY (employee_id) REFERENCES hr.employees(id) ON UPDATE CASCADE ON DELETE RESTRICT
+
+**Règles garanties par la base (CHECK)**
+
+- `contracts_end_after_start` : `(COALESCE(((end_date IS NULL) OR (end_date >= start_date)), false))`
+- `contracts_probation_within` : `(COALESCE(((probation_end_date IS NULL) OR ((probation_end_date >= start_date) AND ((end_date IS NULL) OR (probation_end_date <= end_date)))), false))`
+- `contracts_status_consistent` : `(COALESCE((((status = 'ACTIVE'::hr."ContractStatus") AND (ended_on IS NULL) AND (end_reason IS NULL)) OR ((status = 'ENDED'::hr."ContractStatus") AND (ended_on IS NOT NULL) AND (end_reason IS NOT NULL) AND (ended_on >= start_date) AND ((end_date IS NULL) OR (ended_on <= end_date)))), false))`
+- `contracts_version_positive` : `((version >= 1))`
+
+**Index**
+
+- `contracts_employee_id_start_date_idx` : `USING btree (employee_id, start_date)`
+- `contracts_one_active_per_employee` : `UNIQUE USING btree (employee_id) WHERE (status = 'ACTIVE'::hr."ContractStatus")`
+- `contracts_status_idx` : `USING btree (status)`
 
 ### `hr.employees`
 
@@ -1265,6 +1339,116 @@ Employé : identité PROFESSIONNELLE seulement (jamais de salaire, pièce d'iden
 - `employees_status_idx` : `USING btree (status)`
 - `employees_user_id_unique` : `UNIQUE USING btree (user_id) WHERE (user_id IS NOT NULL)`
 - `employees_work_email_unique` : `UNIQUE USING btree (lower((work_email)::text)) WHERE (work_email IS NOT NULL)`
+
+### `hr.journey_tasks`
+
+| Colonne | Type | Null | Défaut | Description |
+|---|---|---|---|---|
+| `id` | uuid | non |  |  |
+| `journey_id` | uuid | non |  |  |
+| `title` | character varying(150) | non |  |  |
+| `owner` | hr."JourneyTaskOwner" | non |  |  |
+| `due_on` | date | non |  |  |
+| `sort_order` | integer | non |  |  |
+| `done_at` | timestamp(6) with time zone | oui |  |  |
+| `done_by_user_id` | uuid | oui |  |  |
+
+**Clé primaire** : `(id)`
+
+**Clés étrangères**
+
+- `journey_tasks_journey_id_fkey` : FOREIGN KEY (journey_id) REFERENCES hr.journeys(id) ON UPDATE CASCADE ON DELETE RESTRICT
+
+**Règles garanties par la base (CHECK)**
+
+- `journey_tasks_done_consistent` : `(((done_at IS NULL) = (done_by_user_id IS NULL)))`
+- `journey_tasks_title_not_blank` : `(COALESCE((length(btrim((title)::text)) > 0), false))`
+
+**Index**
+
+- `journey_tasks_journey_id_sort_order_idx` : `USING btree (journey_id, sort_order)`
+
+### `hr.journey_template_tasks`
+
+| Colonne | Type | Null | Défaut | Description |
+|---|---|---|---|---|
+| `id` | uuid | non |  |  |
+| `template_id` | uuid | non |  |  |
+| `title` | character varying(150) | non |  |  |
+| `owner` | hr."JourneyTaskOwner" | non |  |  |
+| `due_offset_days` | integer | non |  | Jours par rapport à la date de référence (entrée ou départ) ; négatif = avant. |
+| `sort_order` | integer | non |  |  |
+
+**Clé primaire** : `(id)`
+
+**Clés étrangères**
+
+- `journey_template_tasks_template_id_fkey` : FOREIGN KEY (template_id) REFERENCES hr.journey_templates(id) ON UPDATE CASCADE ON DELETE CASCADE
+
+**Règles garanties par la base (CHECK)**
+
+- `journey_template_tasks_offset_range` : `(COALESCE(((due_offset_days >= '-365'::integer) AND (due_offset_days <= 365)), false))`
+- `journey_template_tasks_title_not_blank` : `(COALESCE((length(btrim((title)::text)) > 0), false))`
+
+**Index**
+
+- `journey_template_tasks_template_id_sort_order_idx` : `USING btree (template_id, sort_order)`
+
+### `hr.journey_templates`
+
+Modèle de parcours (RH-3b, D67) : UN par nature, modifiable par la RH. Les tâches lancées sont des copies : modifier le modèle ne change pas les parcours en cours.
+
+| Colonne | Type | Null | Défaut | Description |
+|---|---|---|---|---|
+| `id` | uuid | non |  |  |
+| `kind` | hr."JourneyKind" | non |  |  |
+| `version` | integer | non | `1` |  |
+| `updated_at` | timestamp(6) with time zone | non |  |  |
+
+**Clé primaire** : `(id)`
+
+**Règles garanties par la base (CHECK)**
+
+- `journey_templates_version_positive` : `((version >= 1))`
+
+**Index**
+
+- `journey_templates_kind_key` : `UNIQUE USING btree (kind)`
+
+### `hr.journeys`
+
+Parcours lancé à la main pour un employé. Aucune donnée sensible.
+
+| Colonne | Type | Null | Défaut | Description |
+|---|---|---|---|---|
+| `id` | uuid | non |  |  |
+| `employee_id` | uuid | non |  |  |
+| `kind` | hr."JourneyKind" | non |  |  |
+| `reference_date` | date | non |  |  |
+| `status` | hr."JourneyStatus" | non | `'ACTIVE'::hr."JourneyStatus"` |  |
+| `launched_by_user_id` | uuid | non |  |  |
+| `completed_at` | timestamp(6) with time zone | oui |  |  |
+| `cancelled_at` | timestamp(6) with time zone | oui |  |  |
+| `version` | integer | non | `1` |  |
+| `created_at` | timestamp(6) with time zone | non | `CURRENT_TIMESTAMP` |  |
+| `updated_at` | timestamp(6) with time zone | non |  |  |
+
+**Clé primaire** : `(id)`
+
+**Clés étrangères**
+
+- `journeys_employee_id_fkey` : FOREIGN KEY (employee_id) REFERENCES hr.employees(id) ON UPDATE CASCADE ON DELETE RESTRICT
+
+**Règles garanties par la base (CHECK)**
+
+- `journeys_status_consistent` : `(COALESCE((((status = 'ACTIVE'::hr."JourneyStatus") AND (completed_at IS NULL) AND (cancelled_at IS NULL)) OR ((status = 'COMPLETED'::hr."JourneyStatus") AND (completed_at IS NOT NULL) AND (cancelled_at IS NULL)) OR ((status = 'CANCELLED'::hr."JourneyStatus") AND (cancelled_at IS NOT NULL) AND (completed_at IS NULL))), false))`
+- `journeys_version_positive` : `((version >= 1))`
+
+**Index**
+
+- `journeys_employee_id_kind_idx` : `USING btree (employee_id, kind)`
+- `journeys_one_active_per_employee_kind` : `UNIQUE USING btree (employee_id, kind) WHERE (status = 'ACTIVE'::hr."JourneyStatus")`
+- `journeys_status_idx` : `USING btree (status)`
 
 ### `hr.leave_adjustments`
 
@@ -1398,6 +1582,36 @@ Type d'absence PARAMÉTRABLE par la RH (RH-2, D64) : seul un type qui « décomp
 
 - `leave_types_code_key` : `UNIQUE USING btree (code)`
 
+### `hr.presence_declarations`
+
+Présence DÉCLARATIVE d'un employé pour un jour (RH-4a, D69) : une valeur parmi trois, au plus une par employé et par jour. Aucune donnée sensible.
+
+| Colonne | Type | Null | Défaut | Description |
+|---|---|---|---|---|
+| `id` | uuid | non |  |  |
+| `employee_id` | uuid | non |  |  |
+| `day` | date | non |  |  |
+| `mode` | hr."PresenceMode" | non |  |  |
+| `declared_by_user_id` | uuid | non |  |  |
+| `version` | integer | non | `1` |  |
+| `created_at` | timestamp(6) with time zone | non | `CURRENT_TIMESTAMP` |  |
+| `updated_at` | timestamp(6) with time zone | non |  |  |
+
+**Clé primaire** : `(id)`
+
+**Clés étrangères**
+
+- `presence_declarations_employee_id_fkey` : FOREIGN KEY (employee_id) REFERENCES hr.employees(id) ON UPDATE CASCADE ON DELETE RESTRICT
+
+**Règles garanties par la base (CHECK)**
+
+- `presence_declarations_version_positive` : `((version >= 1))`
+
+**Index**
+
+- `presence_declarations_day_idx` : `USING btree (day)`
+- `presence_declarations_employee_id_day_key` : `UNIQUE USING btree (employee_id, day)`
+
 ### `hr.public_holidays`
 
 Jour férié saisi par la RH (la liste est VIDE au départ : aucune liste légale n'est présumée). Ne compte pas comme jour d'absence.
@@ -1423,8 +1637,14 @@ Jour férié saisi par la RH (la liste est VIDE au départ : aucune liste légal
 
 | Type | Valeurs |
 |---|---|
+| `ContractEndReason` | `FIXED_TERM_END`, `PROBATION_END`, `RESIGNATION`, `MISSION_END`, `OTHER` |
+| `ContractStatus` | `ACTIVE`, `ENDED` |
 | `EmployeeStatus` | `ACTIVE`, `ARCHIVED` |
+| `JourneyKind` | `ONBOARDING`, `OFFBOARDING` |
+| `JourneyStatus` | `ACTIVE`, `COMPLETED`, `CANCELLED` |
+| `JourneyTaskOwner` | `HR`, `MANAGER`, `EMPLOYEE`, `IT` |
 | `LeaveStatus` | `PENDING`, `APPROVED`, `REJECTED`, `CANCELLED` |
+| `PresenceMode` | `ON_SITE`, `REMOTE`, `TRAVEL` |
 
 ## Schéma `docs`
 
@@ -1558,9 +1778,12 @@ Journal append-only, partitionné par mois (SQL). Jamais de UPDATE ni DELETE (d�
 | `bd.facilitators` | `owner_user_id` | non |
 | `docs.documents` | `owner_id` | non |
 | `hr.employees` | `user_id` | oui |
+| `hr.journey_tasks` | `done_by_user_id` | oui |
+| `hr.journeys` | `launched_by_user_id` | non |
 | `hr.leave_adjustments` | `created_by_user_id` | non |
 | `hr.leave_requests` | `requested_by_user_id` | non |
 | `hr.leave_requests` | `decided_by_user_id` | oui |
+| `hr.presence_declarations` | `declared_by_user_id` | non |
 | `iam.login_attempts` | `user_id` | oui |
 | `iam.refresh_tokens` | `family_id` | non |
 | `iam.refresh_tokens` | `replaced_by_id` | oui |
@@ -1600,3 +1823,6 @@ Journal append-only, partitionné par mois (SQL). Jamais de UPDATE ni DELETE (d�
 - `20261116000000_rh_1a_employees`
 - `20261117000000_rh_2a_leave`
 - `20261118000000_lot_b_apprenant_particulier`
+- `20261119000000_rh_3a_contracts`
+- `20261120000000_rh_3b_journeys`
+- `20261121000000_rh_4a_presences`

@@ -1,6 +1,6 @@
 {
   "titre": "Investally Business Platform : catalogue des tests de l’API",
-  "genereLe": "2026-11-11",
+  "genereLe": "2026-11-12",
   "source": "Généré avec la collection Postman par scripts/api-docs/build-postman.mjs (docs/api/postman/Investally-API.postman_collection.json). La collection est le fichier EXÉCUTABLE ; ce catalogue en est la version lisible.",
   "executer": {
     "postman": "Importer la collection et l’environnement, renseigner email, password et mfaSecret, lancer « 00 — Authentification » puis le dossier voulu.",
@@ -103,8 +103,8 @@
     {
       "nom": "01 — Sécurité : sans jeton, toute route protégée refuse",
       "description": null,
-      "requetes": 191,
-      "assertions": 382,
+      "requetes": 194,
+      "assertions": 388,
       "detail": [
         {
           "nom": "POST /auth/logout",
@@ -3130,6 +3130,53 @@
             "Sans jeton : refusé (401)",
             "Réponse « problem details »"
           ]
+        },
+        {
+          "nom": "GET /hr/presences",
+          "methode": "GET",
+          "chemin": "/api/v1/hr/presences",
+          "permission": "hr.presence.read",
+          "protegee": true,
+          "succesAttendus": [
+            200
+          ],
+          "corps": null,
+          "tests": [
+            "Sans jeton : refusé (401)",
+            "Réponse « problem details »"
+          ]
+        },
+        {
+          "nom": "PUT /hr/presences/{day}",
+          "methode": "PUT",
+          "chemin": "/api/v1/hr/presences/{day}",
+          "permission": "hr.presence.declare",
+          "protegee": true,
+          "succesAttendus": [
+            200
+          ],
+          "corps": {
+            "mode": "ON_SITE"
+          },
+          "tests": [
+            "Sans jeton : refusé (401)",
+            "Réponse « problem details »"
+          ]
+        },
+        {
+          "nom": "DELETE /hr/presences/{day}",
+          "methode": "DELETE",
+          "chemin": "/api/v1/hr/presences/{day}",
+          "permission": "hr.presence.declare",
+          "protegee": true,
+          "succesAttendus": [
+            204
+          ],
+          "corps": null,
+          "tests": [
+            "Sans jeton : refusé (401)",
+            "Réponse « problem details »"
+          ]
         }
       ]
     },
@@ -5665,8 +5712,8 @@
     {
       "nom": "23 — hr",
       "description": null,
-      "requetes": 43,
-      "assertions": 301,
+      "requetes": 46,
+      "assertions": 322,
       "detail": [
         {
           "nom": "GET /hr/contracts",
@@ -6553,6 +6600,68 @@
             200
           ],
           "corps": null,
+          "tests": [
+            "Pas d’erreur serveur (statut inférieur à 500)",
+            "Le jeton est accepté (pas de 401)",
+            "Statut prévu (succès documenté ou refus métier standard)",
+            "Temps de réponse raisonnable (moins de 3 s)",
+            "Réponse en JSON",
+            "Erreur au format « problem details » (RFC 7807)",
+            "Statut de succès documenté"
+          ]
+        },
+        {
+          "nom": "GET /hr/presences",
+          "methode": "GET",
+          "chemin": "/api/v1/hr/presences",
+          "permission": "hr.presence.read",
+          "protegee": true,
+          "succesAttendus": [
+            200
+          ],
+          "corps": null,
+          "tests": [
+            "Pas d’erreur serveur (statut inférieur à 500)",
+            "Le jeton est accepté (pas de 401)",
+            "Statut prévu (succès documenté ou refus métier standard)",
+            "Temps de réponse raisonnable (moins de 3 s)",
+            "Réponse en JSON",
+            "Erreur au format « problem details » (RFC 7807)",
+            "Statut de succès documenté"
+          ]
+        },
+        {
+          "nom": "DELETE /hr/presences/{day}",
+          "methode": "DELETE",
+          "chemin": "/api/v1/hr/presences/{day}",
+          "permission": "hr.presence.declare",
+          "protegee": true,
+          "succesAttendus": [
+            204
+          ],
+          "corps": null,
+          "tests": [
+            "Pas d’erreur serveur (statut inférieur à 500)",
+            "Le jeton est accepté (pas de 401)",
+            "Statut prévu (succès documenté ou refus métier standard)",
+            "Temps de réponse raisonnable (moins de 3 s)",
+            "Réponse en JSON",
+            "Erreur au format « problem details » (RFC 7807)",
+            "Statut de succès documenté"
+          ]
+        },
+        {
+          "nom": "PUT /hr/presences/{day}",
+          "methode": "PUT",
+          "chemin": "/api/v1/hr/presences/{day}",
+          "permission": "hr.presence.declare",
+          "protegee": true,
+          "succesAttendus": [
+            200
+          ],
+          "corps": {
+            "mode": "ON_SITE"
+          },
           "tests": [
             "Pas d’erreur serveur (statut inférieur à 500)",
             "Le jeton est accepté (pas de 401)",
@@ -8085,8 +8194,8 @@
   ],
   "resume": {
     "dossiers": 31,
-    "requetes": 434,
-    "testsDefinis": 1835,
+    "requetes": 440,
+    "testsDefinis": 1862,
     "resultatDeReference": "Pile jetable, jeu de démonstration, compte Super administrateur : 424 requêtes, 1 584 assertions exécutées, 0 échec (dossiers 00b et 98 à part : 12 requêtes, 54 assertions, 0 échec)."
   }
 }

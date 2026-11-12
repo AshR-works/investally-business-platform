@@ -22,14 +22,14 @@ hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
 nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 @media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
 </style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="../INDEX.html">Index</a> · <a href="../GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="../ARCHITECTURE.html">Architecture</a> · <a href="../SECURITY.html">Sécurité</a> · <a href="../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="../TECH-DEBT.html">Dette</a> · <a href="../CHARTE-DE-TESTS.html">Charte de tests</a> · <a href="../tests/README.html">Fiches de test</a> · <a href="../design/README.html">Design</a> · <a href="../livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>Dictionnaire de la base de données</h1>
-<p><em>Généré depuis la base réelle (PostgreSQL 17.10, 28 migrations appliquées) et les commentaires du schéma Prisma, par <code>scripts/db-docs/build-dictionary.mjs</code>. Ne pas modifier à la main : régénérer.</em></p>
+<p><em>Généré depuis la base réelle (PostgreSQL 17.10, 31 migrations appliquées) et les commentaires du schéma Prisma, par <code>scripts/db-docs/build-dictionary.mjs</code>. Ne pas modifier à la main : régénérer.</em></p>
 <h2>Vue d’ensemble</h2>
 <ul><li><strong>Moteur</strong> : PostgreSQL ; accès par Prisma (client généré) ; migrations versionnées dans <code>apps/api/prisma/migrations</code>.</li><li><strong>Un schéma PostgreSQL par contexte métier</strong> (monolithe modulaire) : <code>iam</code>, <code>bd</code>, <code>training</code>, <code>hr</code>, <code>docs</code>, <code>audit</code>.</li><li><strong>Aucune clé étrangère entre deux schémas</strong> : un contexte référence un autre <strong>par identifiant</strong> (colonne <code>*_id</code> sans contrainte) ; l’existence et l’appartenance sont contrôlées par les cas d’usage (test <code>core-schema</code>).</li><li><strong>Rien n’est supprimé physiquement</strong> sur les données métier : archivage, annulation ou suppression logique (<code>deleted_at</code>) ; les clés étrangères sont en <code>RESTRICT</code>.</li><li><strong>Verrou optimiste</strong> : chaque agrégat a une colonne <code>version</code> ; une écriture avec une version périmée est refusée.</li><li><strong>Règles garanties par la base</strong> (CHECK, index uniques) en plus de celles de l’application : une règle violée est refusée même en contournant l’API.</li><li><strong>Identifiants</strong> : UUID (v7) générés par l’application ; dates en <code>timestamptz</code> (UTC) ; jours civils en <code>date</code>.</li></ul>
 <div class="table-wrap"><table><thead><tr><th>Schéma</th><th>Rôle</th><th>Tables</th></tr></thead><tbody>
 <tr><td><code>iam</code></td><td>Identité et accès : comptes, rôles, sessions, MFA, invitations</td><td>12</td></tr>
 <tr><td><code>bd</code></td><td>Business Development : entreprises, contacts, offres, relances, rendez-vous, opportunités, agréments, ambassadeurs, commissions</td><td>13</td></tr>
 <tr><td><code>training</code></td><td>Investudy : catalogue, sessions, salles, formateurs, apprenants, inscriptions</td><td>9</td></tr>
-<tr><td><code>hr</code></td><td>Ressources humaines : personnel, absences et congés</td><td>6</td></tr>
+<tr><td><code>hr</code></td><td>Ressources humaines : personnel, absences et congés</td><td>13</td></tr>
 <tr><td><code>docs</code></td><td>Documents (métadonnées ; les fichiers sont stockés à part)</td><td>2</td></tr>
 <tr><td><code>audit</code></td><td>Journal d’audit (partitionné par mois)</td><td>1</td></tr>
 </tbody></table></div>
@@ -805,10 +805,57 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <h2>Schéma <code>hr</code></h2>
 <p>Ressources humaines : personnel, absences et congés</p>
 <pre><code>erDiagram
+  contract_types ||--o{ contracts : &quot;contract_type_id&quot;
+  employees ||--o{ contracts : &quot;employee_id&quot;
   employees ||--o{ employees : &quot;manager_employee_id&quot;
+  journeys ||--o{ journey_tasks : &quot;journey_id&quot;
+  journey_templates ||--o{ journey_template_tasks : &quot;template_id&quot;
+  employees ||--o{ journeys : &quot;employee_id&quot;
   employees ||--o{ leave_adjustments : &quot;employee_id&quot;
   employees ||--o{ leave_requests : &quot;employee_id&quot;
-  leave_types ||--o{ leave_requests : &quot;leave_type_id&quot;</code></pre>
+  leave_types ||--o{ leave_requests : &quot;leave_type_id&quot;
+  employees ||--o{ presence_declarations : &quot;employee_id&quot;</code></pre>
+<h3><code>hr.contract_types</code></h3>
+<p>Type de contrat PARAMÉTRABLE par la RH (RH-3, D67) : <code>fixedTerm</code> = date de fin obligatoire. Jamais supprimé : il se désactive.</p>
+<div class="table-wrap"><table><thead><tr><th>Colonne</th><th>Type</th><th>Null</th><th>Défaut</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>code</code></td><td>character varying(30)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>label</code></td><td>character varying(100)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>fixed_term</code></td><td>boolean</td><td>non</td><td><code>false</code></td><td></td></tr>
+<tr><td><code>active</code></td><td>boolean</td><td>non</td><td><code>true</code></td><td></td></tr>
+<tr><td><code>sort_order</code></td><td>integer</td><td>non</td><td><code>0</code></td><td></td></tr>
+<tr><td><code>version</code></td><td>integer</td><td>non</td><td><code>1</code></td><td></td></tr>
+<tr><td><code>created_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td><code>CURRENT_TIMESTAMP</code></td><td></td></tr>
+<tr><td><code>updated_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td></td><td></td></tr>
+</tbody></table></div>
+<p><strong>Clé primaire</strong> : <code>(id)</code></p>
+<p><strong>Règles garanties par la base (CHECK)</strong></p>
+<ul><li><code>contract_types_code_format</code> : <code>(COALESCE(((code)::text ~ '^[A-Z][A-Z0-9_]{1,29}$'::text), false))</code></li><li><code>contract_types_label_not_blank</code> : <code>(COALESCE((length(btrim((label)::text)) &gt; 0), false))</code></li><li><code>contract_types_sort_order_range</code> : <code>(COALESCE(((sort_order &gt;= 0) AND (sort_order &lt;= 10000)), false))</code></li><li><code>contract_types_version_positive</code> : <code>((version &gt;= 1))</code></li></ul>
+<p><strong>Index</strong></p>
+<ul><li><code>contract_types_code_key</code> : <code>UNIQUE USING btree (code)</code></li></ul>
+<h3><code>hr.contracts</code></h3>
+<p>Contrat d'un employé : AUCUN salaire, document ni donnée sensible. Plusieurs au fil du temps, un seul en cours.</p>
+<div class="table-wrap"><table><thead><tr><th>Colonne</th><th>Type</th><th>Null</th><th>Défaut</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>employee_id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>contract_type_id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>start_date</code></td><td>date</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>end_date</code></td><td>date</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>probation_end_date</code></td><td>date</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>status</code></td><td>hr."ContractStatus"</td><td>non</td><td><code>'ACTIVE'::hr."ContractStatus"</code></td><td></td></tr>
+<tr><td><code>ended_on</code></td><td>date</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>end_reason</code></td><td>hr."ContractEndReason"</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>version</code></td><td>integer</td><td>non</td><td><code>1</code></td><td></td></tr>
+<tr><td><code>created_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td><code>CURRENT_TIMESTAMP</code></td><td></td></tr>
+<tr><td><code>updated_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td></td><td></td></tr>
+</tbody></table></div>
+<p><strong>Clé primaire</strong> : <code>(id)</code></p>
+<p><strong>Clés étrangères</strong></p>
+<ul><li><code>contracts_contract_type_id_fkey</code> : FOREIGN KEY (contract_type_id) REFERENCES hr.contract_types(id) ON UPDATE CASCADE ON DELETE RESTRICT</li><li><code>contracts_employee_id_fkey</code> : FOREIGN KEY (employee_id) REFERENCES hr.employees(id) ON UPDATE CASCADE ON DELETE RESTRICT</li></ul>
+<p><strong>Règles garanties par la base (CHECK)</strong></p>
+<ul><li><code>contracts_end_after_start</code> : <code>(COALESCE(((end_date IS NULL) OR (end_date &gt;= start_date)), false))</code></li><li><code>contracts_probation_within</code> : <code>(COALESCE(((probation_end_date IS NULL) OR ((probation_end_date &gt;= start_date) AND ((end_date IS NULL) OR (probation_end_date &lt;= end_date)))), false))</code></li><li><code>contracts_status_consistent</code> : <code>(COALESCE((((status = 'ACTIVE'::hr."ContractStatus") AND (ended_on IS NULL) AND (end_reason IS NULL)) OR ((status = 'ENDED'::hr."ContractStatus") AND (ended_on IS NOT NULL) AND (end_reason IS NOT NULL) AND (ended_on &gt;= start_date) AND ((end_date IS NULL) OR (ended_on &lt;= end_date)))), false))</code></li><li><code>contracts_version_positive</code> : <code>((version &gt;= 1))</code></li></ul>
+<p><strong>Index</strong></p>
+<ul><li><code>contracts_employee_id_start_date_idx</code> : <code>USING btree (employee_id, start_date)</code></li><li><code>contracts_one_active_per_employee</code> : <code>UNIQUE USING btree (employee_id) WHERE (status = 'ACTIVE'::hr."ContractStatus")</code></li><li><code>contracts_status_idx</code> : <code>USING btree (status)</code></li></ul>
 <h3><code>hr.employees</code></h3>
 <p>Employé : identité PROFESSIONNELLE seulement (jamais de salaire, pièce d'identité, adresse personnelle, date de naissance : D57). Distinct du compte (<code>userId</code> facultatif, sans clé étrangère).</p>
 <div class="table-wrap"><table><thead><tr><th>Colonne</th><th>Type</th><th>Null</th><th>Défaut</th><th>Description</th></tr></thead><tbody>
@@ -838,6 +885,75 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <ul><li><code>employees_left_after_hired</code> : <code>(COALESCE(((left_on IS NULL) OR (left_on &gt;= hired_on)), false))</code></li><li><code>employees_names_not_blank</code> : <code>(COALESCE(((length(btrim((last_name)::text)) &gt; 0) AND (length(btrim((first_name)::text)) &gt; 0) AND (length(btrim((job_title)::text)) &gt; 0) AND (length(btrim((department)::text)) &gt; 0)), false))</code></li><li><code>employees_not_own_manager</code> : <code>(COALESCE(((manager_employee_id IS NULL) OR (manager_employee_id &lt;&gt; id)), false))</code></li><li><code>employees_status_consistent</code> : <code>(COALESCE((((status = 'ARCHIVED'::hr."EmployeeStatus") AND (archived_at IS NOT NULL)) OR ((status = 'ACTIVE'::hr."EmployeeStatus") AND (archived_at IS NULL) AND (archive_reason IS NULL) AND (left_on IS NULL))), false))</code></li><li><code>employees_version_positive</code> : <code>((version &gt;= 1))</code></li></ul>
 <p><strong>Index</strong></p>
 <ul><li><code>employees_department_idx</code> : <code>USING btree (department)</code></li><li><code>employees_manager_employee_id_idx</code> : <code>USING btree (manager_employee_id)</code></li><li><code>employees_matricule_unique</code> : <code>UNIQUE USING btree (upper((matricule)::text)) WHERE (matricule IS NOT NULL)</code></li><li><code>employees_status_idx</code> : <code>USING btree (status)</code></li><li><code>employees_user_id_unique</code> : <code>UNIQUE USING btree (user_id) WHERE (user_id IS NOT NULL)</code></li><li><code>employees_work_email_unique</code> : <code>UNIQUE USING btree (lower((work_email)::text)) WHERE (work_email IS NOT NULL)</code></li></ul>
+<h3><code>hr.journey_tasks</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Colonne</th><th>Type</th><th>Null</th><th>Défaut</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>journey_id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>title</code></td><td>character varying(150)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>owner</code></td><td>hr."JourneyTaskOwner"</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>due_on</code></td><td>date</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>sort_order</code></td><td>integer</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>done_at</code></td><td>timestamp(6) with time zone</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>done_by_user_id</code></td><td>uuid</td><td>oui</td><td></td><td></td></tr>
+</tbody></table></div>
+<p><strong>Clé primaire</strong> : <code>(id)</code></p>
+<p><strong>Clés étrangères</strong></p>
+<ul><li><code>journey_tasks_journey_id_fkey</code> : FOREIGN KEY (journey_id) REFERENCES hr.journeys(id) ON UPDATE CASCADE ON DELETE RESTRICT</li></ul>
+<p><strong>Règles garanties par la base (CHECK)</strong></p>
+<ul><li><code>journey_tasks_done_consistent</code> : <code>(((done_at IS NULL) = (done_by_user_id IS NULL)))</code></li><li><code>journey_tasks_title_not_blank</code> : <code>(COALESCE((length(btrim((title)::text)) &gt; 0), false))</code></li></ul>
+<p><strong>Index</strong></p>
+<ul><li><code>journey_tasks_journey_id_sort_order_idx</code> : <code>USING btree (journey_id, sort_order)</code></li></ul>
+<h3><code>hr.journey_template_tasks</code></h3>
+<div class="table-wrap"><table><thead><tr><th>Colonne</th><th>Type</th><th>Null</th><th>Défaut</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>template_id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>title</code></td><td>character varying(150)</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>owner</code></td><td>hr."JourneyTaskOwner"</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>due_offset_days</code></td><td>integer</td><td>non</td><td></td><td>Jours par rapport à la date de référence (entrée ou départ) ; négatif = avant.</td></tr>
+<tr><td><code>sort_order</code></td><td>integer</td><td>non</td><td></td><td></td></tr>
+</tbody></table></div>
+<p><strong>Clé primaire</strong> : <code>(id)</code></p>
+<p><strong>Clés étrangères</strong></p>
+<ul><li><code>journey_template_tasks_template_id_fkey</code> : FOREIGN KEY (template_id) REFERENCES hr.journey_templates(id) ON UPDATE CASCADE ON DELETE CASCADE</li></ul>
+<p><strong>Règles garanties par la base (CHECK)</strong></p>
+<ul><li><code>journey_template_tasks_offset_range</code> : <code>(COALESCE(((due_offset_days &gt;= '-365'::integer) AND (due_offset_days &lt;= 365)), false))</code></li><li><code>journey_template_tasks_title_not_blank</code> : <code>(COALESCE((length(btrim((title)::text)) &gt; 0), false))</code></li></ul>
+<p><strong>Index</strong></p>
+<ul><li><code>journey_template_tasks_template_id_sort_order_idx</code> : <code>USING btree (template_id, sort_order)</code></li></ul>
+<h3><code>hr.journey_templates</code></h3>
+<p>Modèle de parcours (RH-3b, D67) : UN par nature, modifiable par la RH. Les tâches lancées sont des copies : modifier le modèle ne change pas les parcours en cours.</p>
+<div class="table-wrap"><table><thead><tr><th>Colonne</th><th>Type</th><th>Null</th><th>Défaut</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>kind</code></td><td>hr."JourneyKind"</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>version</code></td><td>integer</td><td>non</td><td><code>1</code></td><td></td></tr>
+<tr><td><code>updated_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td></td><td></td></tr>
+</tbody></table></div>
+<p><strong>Clé primaire</strong> : <code>(id)</code></p>
+<p><strong>Règles garanties par la base (CHECK)</strong></p>
+<ul><li><code>journey_templates_version_positive</code> : <code>((version &gt;= 1))</code></li></ul>
+<p><strong>Index</strong></p>
+<ul><li><code>journey_templates_kind_key</code> : <code>UNIQUE USING btree (kind)</code></li></ul>
+<h3><code>hr.journeys</code></h3>
+<p>Parcours lancé à la main pour un employé. Aucune donnée sensible.</p>
+<div class="table-wrap"><table><thead><tr><th>Colonne</th><th>Type</th><th>Null</th><th>Défaut</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>employee_id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>kind</code></td><td>hr."JourneyKind"</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>reference_date</code></td><td>date</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>status</code></td><td>hr."JourneyStatus"</td><td>non</td><td><code>'ACTIVE'::hr."JourneyStatus"</code></td><td></td></tr>
+<tr><td><code>launched_by_user_id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>completed_at</code></td><td>timestamp(6) with time zone</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>cancelled_at</code></td><td>timestamp(6) with time zone</td><td>oui</td><td></td><td></td></tr>
+<tr><td><code>version</code></td><td>integer</td><td>non</td><td><code>1</code></td><td></td></tr>
+<tr><td><code>created_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td><code>CURRENT_TIMESTAMP</code></td><td></td></tr>
+<tr><td><code>updated_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td></td><td></td></tr>
+</tbody></table></div>
+<p><strong>Clé primaire</strong> : <code>(id)</code></p>
+<p><strong>Clés étrangères</strong></p>
+<ul><li><code>journeys_employee_id_fkey</code> : FOREIGN KEY (employee_id) REFERENCES hr.employees(id) ON UPDATE CASCADE ON DELETE RESTRICT</li></ul>
+<p><strong>Règles garanties par la base (CHECK)</strong></p>
+<ul><li><code>journeys_status_consistent</code> : <code>(COALESCE((((status = 'ACTIVE'::hr."JourneyStatus") AND (completed_at IS NULL) AND (cancelled_at IS NULL)) OR ((status = 'COMPLETED'::hr."JourneyStatus") AND (completed_at IS NOT NULL) AND (cancelled_at IS NULL)) OR ((status = 'CANCELLED'::hr."JourneyStatus") AND (cancelled_at IS NOT NULL) AND (completed_at IS NULL))), false))</code></li><li><code>journeys_version_positive</code> : <code>((version &gt;= 1))</code></li></ul>
+<p><strong>Index</strong></p>
+<ul><li><code>journeys_employee_id_kind_idx</code> : <code>USING btree (employee_id, kind)</code></li><li><code>journeys_one_active_per_employee_kind</code> : <code>UNIQUE USING btree (employee_id, kind) WHERE (status = 'ACTIVE'::hr."JourneyStatus")</code></li><li><code>journeys_status_idx</code> : <code>USING btree (status)</code></li></ul>
 <h3><code>hr.leave_adjustments</code></h3>
 <p>Ajustement de solde (report, correction) : AJOUT SEUL, motif obligatoire, jamais modifié ni supprimé.</p>
 <div class="table-wrap"><table><thead><tr><th>Colonne</th><th>Type</th><th>Null</th><th>Défaut</th><th>Description</th></tr></thead><tbody>
@@ -921,6 +1037,25 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <ul><li><code>leave_types_code_format</code> : <code>(COALESCE(((code)::text ~ '^[A-Z][A-Z0-9_]{1,29}$'::text), false))</code></li><li><code>leave_types_label_not_blank</code> : <code>(COALESCE((length(btrim((label)::text)) &gt; 0), false))</code></li><li><code>leave_types_max_days_positive</code> : <code>(COALESCE(((max_days_per_request IS NULL) OR ((max_days_per_request &gt; (0)::numeric) AND ((max_days_per_request * (2)::numeric) = round((max_days_per_request * (2)::numeric))))), false))</code></li><li><code>leave_types_version_positive</code> : <code>((version &gt;= 1))</code></li></ul>
 <p><strong>Index</strong></p>
 <ul><li><code>leave_types_code_key</code> : <code>UNIQUE USING btree (code)</code></li></ul>
+<h3><code>hr.presence_declarations</code></h3>
+<p>Présence DÉCLARATIVE d'un employé pour un jour (RH-4a, D69) : une valeur parmi trois, au plus une par employé et par jour. Aucune donnée sensible.</p>
+<div class="table-wrap"><table><thead><tr><th>Colonne</th><th>Type</th><th>Null</th><th>Défaut</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>employee_id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>day</code></td><td>date</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>mode</code></td><td>hr."PresenceMode"</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>declared_by_user_id</code></td><td>uuid</td><td>non</td><td></td><td></td></tr>
+<tr><td><code>version</code></td><td>integer</td><td>non</td><td><code>1</code></td><td></td></tr>
+<tr><td><code>created_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td><code>CURRENT_TIMESTAMP</code></td><td></td></tr>
+<tr><td><code>updated_at</code></td><td>timestamp(6) with time zone</td><td>non</td><td></td><td></td></tr>
+</tbody></table></div>
+<p><strong>Clé primaire</strong> : <code>(id)</code></p>
+<p><strong>Clés étrangères</strong></p>
+<ul><li><code>presence_declarations_employee_id_fkey</code> : FOREIGN KEY (employee_id) REFERENCES hr.employees(id) ON UPDATE CASCADE ON DELETE RESTRICT</li></ul>
+<p><strong>Règles garanties par la base (CHECK)</strong></p>
+<ul><li><code>presence_declarations_version_positive</code> : <code>((version &gt;= 1))</code></li></ul>
+<p><strong>Index</strong></p>
+<ul><li><code>presence_declarations_day_idx</code> : <code>USING btree (day)</code></li><li><code>presence_declarations_employee_id_day_key</code> : <code>UNIQUE USING btree (employee_id, day)</code></li></ul>
 <h3><code>hr.public_holidays</code></h3>
 <p>Jour férié saisi par la RH (la liste est VIDE au départ : aucune liste légale n'est présumée). Ne compte pas comme jour d'absence.</p>
 <div class="table-wrap"><table><thead><tr><th>Colonne</th><th>Type</th><th>Null</th><th>Défaut</th><th>Description</th></tr></thead><tbody>
@@ -936,8 +1071,14 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <ul><li><code>public_holidays_day_key</code> : <code>UNIQUE USING btree (day)</code></li></ul>
 <h3>Types énumérés de <code>hr</code></h3>
 <div class="table-wrap"><table><thead><tr><th>Type</th><th>Valeurs</th></tr></thead><tbody>
+<tr><td><code>ContractEndReason</code></td><td><code>FIXED_TERM_END</code>, <code>PROBATION_END</code>, <code>RESIGNATION</code>, <code>MISSION_END</code>, <code>OTHER</code></td></tr>
+<tr><td><code>ContractStatus</code></td><td><code>ACTIVE</code>, <code>ENDED</code></td></tr>
 <tr><td><code>EmployeeStatus</code></td><td><code>ACTIVE</code>, <code>ARCHIVED</code></td></tr>
+<tr><td><code>JourneyKind</code></td><td><code>ONBOARDING</code>, <code>OFFBOARDING</code></td></tr>
+<tr><td><code>JourneyStatus</code></td><td><code>ACTIVE</code>, <code>COMPLETED</code>, <code>CANCELLED</code></td></tr>
+<tr><td><code>JourneyTaskOwner</code></td><td><code>HR</code>, <code>MANAGER</code>, <code>EMPLOYEE</code>, <code>IT</code></td></tr>
 <tr><td><code>LeaveStatus</code></td><td><code>PENDING</code>, <code>APPROVED</code>, <code>REJECTED</code>, <code>CANCELLED</code></td></tr>
+<tr><td><code>PresenceMode</code></td><td><code>ON_SITE</code>, <code>REMOTE</code>, <code>TRAVEL</code></td></tr>
 </tbody></table></div>
 <h2>Schéma <code>docs</code></h2>
 <p>Documents (métadonnées ; les fichiers sont stockés à part)</p>
@@ -1028,9 +1169,12 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td><code>bd.facilitators</code></td><td><code>owner_user_id</code></td><td>non</td></tr>
 <tr><td><code>docs.documents</code></td><td><code>owner_id</code></td><td>non</td></tr>
 <tr><td><code>hr.employees</code></td><td><code>user_id</code></td><td>oui</td></tr>
+<tr><td><code>hr.journey_tasks</code></td><td><code>done_by_user_id</code></td><td>oui</td></tr>
+<tr><td><code>hr.journeys</code></td><td><code>launched_by_user_id</code></td><td>non</td></tr>
 <tr><td><code>hr.leave_adjustments</code></td><td><code>created_by_user_id</code></td><td>non</td></tr>
 <tr><td><code>hr.leave_requests</code></td><td><code>requested_by_user_id</code></td><td>non</td></tr>
 <tr><td><code>hr.leave_requests</code></td><td><code>decided_by_user_id</code></td><td>oui</td></tr>
+<tr><td><code>hr.presence_declarations</code></td><td><code>declared_by_user_id</code></td><td>non</td></tr>
 <tr><td><code>iam.login_attempts</code></td><td><code>user_id</code></td><td>oui</td></tr>
 <tr><td><code>iam.refresh_tokens</code></td><td><code>family_id</code></td><td>non</td></tr>
 <tr><td><code>iam.refresh_tokens</code></td><td><code>replaced_by_id</code></td><td>oui</td></tr>
@@ -1041,4 +1185,4 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td><code>training.trainers</code></td><td><code>user_id</code></td><td>oui</td></tr>
 </tbody></table></div>
 <h2>Migrations appliquées</h2>
-<ul><li><code>20261020000000_s1_company_audit</code></li><li><code>20261021000000_s2_core_iam_docs_audit_partition</code></li><li><code>20261022000000_s3_2_mfa</code></li><li><code>20261023000000_s3_3_ownership_invitations</code></li><li><code>20261024000000_s3_5_password_reset</code></li><li><code>20261025000000_s3_6_documents</code></li><li><code>20261029000000_s4_0_facilitators</code></li><li><code>20261030000000_s4_1_contacts</code></li><li><code>20261031000000_s4_2a_offers</code></li><li><code>20261102000000_s4_2b_receipts</code></li><li><code>20261103000000_s4_2c_followups</code></li><li><code>20261104000000_s4_2d_appointments</code></li><li><code>20261105000000_s4_3_opportunities</code></li><li><code>20261106000000_s4_3c_appointment_opportunity</code></li><li><code>20261107000000_s4_4a_approvals</code></li><li><code>20261108000000_s4_4b_ambassadors</code></li><li><code>20261109000000_s4_4a_bis_requested_status</code></li><li><code>20261109000100_s4_4a_bis_payer_and_request</code></li><li><code>20261110000000_phone_format</code></li><li><code>20261111000000_s4_4c_commission_payouts</code></li><li><code>20261112000000_s5_1_catalogue</code></li><li><code>20261113000000_s5_2a_sessions</code></li><li><code>20261114000000_s5_2b_inscriptions</code></li><li><code>20261114000001_s5_2b_no_cross_schema_fk</code></li><li><code>20261115000000_n5_ambassadors_archive</code></li><li><code>20261116000000_rh_1a_employees</code></li><li><code>20261117000000_rh_2a_leave</code></li><li><code>20261118000000_lot_b_apprenant_particulier</code></li></ul></main></body></html>
+<ul><li><code>20261020000000_s1_company_audit</code></li><li><code>20261021000000_s2_core_iam_docs_audit_partition</code></li><li><code>20261022000000_s3_2_mfa</code></li><li><code>20261023000000_s3_3_ownership_invitations</code></li><li><code>20261024000000_s3_5_password_reset</code></li><li><code>20261025000000_s3_6_documents</code></li><li><code>20261029000000_s4_0_facilitators</code></li><li><code>20261030000000_s4_1_contacts</code></li><li><code>20261031000000_s4_2a_offers</code></li><li><code>20261102000000_s4_2b_receipts</code></li><li><code>20261103000000_s4_2c_followups</code></li><li><code>20261104000000_s4_2d_appointments</code></li><li><code>20261105000000_s4_3_opportunities</code></li><li><code>20261106000000_s4_3c_appointment_opportunity</code></li><li><code>20261107000000_s4_4a_approvals</code></li><li><code>20261108000000_s4_4b_ambassadors</code></li><li><code>20261109000000_s4_4a_bis_requested_status</code></li><li><code>20261109000100_s4_4a_bis_payer_and_request</code></li><li><code>20261110000000_phone_format</code></li><li><code>20261111000000_s4_4c_commission_payouts</code></li><li><code>20261112000000_s5_1_catalogue</code></li><li><code>20261113000000_s5_2a_sessions</code></li><li><code>20261114000000_s5_2b_inscriptions</code></li><li><code>20261114000001_s5_2b_no_cross_schema_fk</code></li><li><code>20261115000000_n5_ambassadors_archive</code></li><li><code>20261116000000_rh_1a_employees</code></li><li><code>20261117000000_rh_2a_leave</code></li><li><code>20261118000000_lot_b_apprenant_particulier</code></li><li><code>20261119000000_rh_3a_contracts</code></li><li><code>20261120000000_rh_3b_journeys</code></li><li><code>20261121000000_rh_4a_presences</code></li></ul></main></body></html>
