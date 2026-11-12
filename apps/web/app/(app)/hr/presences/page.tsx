@@ -129,7 +129,7 @@ export default function PresencesPage() {
                     const content = cell.kind === 'leave'
                       ? (<><span aria-hidden="true">✕</span><span className="sr-only">absent (absence validée)</span></>)
                       : cell.kind === 'mode'
-                        ? (<><span aria-hidden="true">{modeSymbol(cell.mode)}</span><span className="sr-only">{modeLabel(cell.mode)}</span></>)
+                        ? (<><span aria-hidden="true" className="text-base">{modeSymbol(cell.mode)}</span><span className="sr-only">{modeLabel(cell.mode)}</span></>)
                         : (<><span aria-hidden="true">·</span><span className="sr-only">non déclaré</span></>);
                     return (
                       <td key={d} className={`p-0 text-center ${isWeekend(d) ? 'bg-surface-2' : ''} ${cell.kind === 'mode' ? 'bg-brand-soft text-brand-strong' : ''}`}>
@@ -140,7 +140,7 @@ export default function PresencesPage() {
                             aria-label={`Présence de ${row.employeeName}, ${weekdayName(d)} ${dayText(d)} : ${cell.kind === 'mode' ? modeLabel(cell.mode) : 'non déclaré'}. Modifier`}
                             onClick={() => setEditing({ row, day: d, current: cell.kind === 'mode' ? cell.mode : null })}
                           >
-                            <span aria-hidden="true">{cell.kind === 'mode' ? modeSymbol(cell.mode) : '+'}</span>
+                            <span aria-hidden="true" className="text-base">{cell.kind === 'mode' ? modeSymbol(cell.mode) : '+'}</span>
                           </button>
                         ) : (
                           <span className="block p-2">{content}</span>
@@ -154,13 +154,15 @@ export default function PresencesPage() {
             {board && board.rows.length > 1 && (
               <tfoot>
                 <tr className="border-t border-line-strong">
-                  <th scope="row" className="sticky left-0 z-10 bg-surface p-2 text-left">Total du jour</th>
+                  <th scope="row" className="sticky left-0 z-10 bg-surface p-2 text-left">Total du jour<span className="block text-xs font-normal text-ink-2">■ sur site · ⌂ télétravail · → déplacement · ✕ absents</span></th>
                   {days.map((d) => {
                     const totals = dayTotals(board.rows, d);
                     return (
                       <td key={d} className="p-1 text-center text-xs text-ink-2">
-                        {MODE_OPTIONS.map((m) => <span key={m.code} className="block">{m.label} : {totals[m.code]}</span>)}
-                        <span className="block">Absents : {totals.LEAVE}</span>
+                        {MODE_OPTIONS.map((m) => (
+                          <span key={m.code} className="block"><span aria-hidden="true">{m.symbol} {totals[m.code]}</span><span className="sr-only">{m.label} : {totals[m.code]}</span></span>
+                        ))}
+                        <span className="block"><span aria-hidden="true">✕ {totals.LEAVE}</span><span className="sr-only">Absents : {totals.LEAVE}</span></span>
                       </td>
                     );
                   })}
@@ -177,6 +179,7 @@ export default function PresencesPage() {
         <PresenceDialog
           employeeId={editing.row.employeeId}
           employeeName={editing.row.employeeName}
+          self={editing.row.employeeId === board?.viewerEmployeeId}
           day={editing.day}
           current={editing.current}
           onClose={() => setEditing(null)}

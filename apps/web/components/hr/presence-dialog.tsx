@@ -13,9 +13,11 @@ const failure = (e: unknown, fallback: string): string => (e instanceof ApiError
  * déclarer pour n'importe qui (la saisie est alors marquée « par un autre »). Une absence validée sur la journée entière interdit la déclaration : la case n'est pas
  * proposée, et le serveur refuse de toute façon.
  */
-export function PresenceDialog({ employeeId, employeeName, day, current, onClose, onDone }: {
+export function PresenceDialog({ employeeId, employeeName, self, day, current, onClose, onDone }: {
   employeeId: string;
   employeeName: string;
+  /** Vrai si la saisie concerne le demandeur lui-même (« vous ») ; faux si la RH saisit pour un autre. */
+  self: boolean;
   day: string;
   current: PresenceMode | null;
   onClose: () => void;
@@ -60,7 +62,7 @@ export function PresenceDialog({ employeeId, employeeName, day, current, onClose
         <strong>{employeeName}</strong>, {weekdayName(day)} {dayText(day)}
       </p>
       <fieldset aria-describedby={missing ? 'presence-error' : undefined} className="m-0 mb-3 border-0 p-0">
-        <legend className="mb-2 p-0 font-semibold">Où travaillez-vous ce jour-là ?</legend>
+        <legend className="mb-2 p-0 font-semibold">{self ? 'Où travaillez-vous ce jour-là ?' : `Où travaille ${employeeName} ce jour-là ?`}</legend>
         {MODE_OPTIONS.map((option) => (
           <label key={option.code} className="mb-2 flex items-center gap-2 font-normal">
             <input type="radio" name="presence-mode" value={option.code} checked={mode === option.code} onChange={() => setMode(option.code)} style={{ width: 'auto', marginTop: 0 }} />

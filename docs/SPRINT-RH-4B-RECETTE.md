@@ -28,7 +28,8 @@ Deuxième tranche de RH-4 : l'**écran** et la **démonstration**. L'API, les dr
 | Démonstration | plan : jours ouvrés, une déclaration par employé et par jour, jamais sur l'absence validée, dans la fenêtre de saisie, après les absences ; intégration : chargement par les cas d'usage, déclarations en base cohérentes avec les absences, chargement seul du bloc sur une démo qui a déjà le personnel |
 
 ## Limites connues
-- **Pas encore vérifié dans le navigateur** : l'écran n'a pas été parcouru sur une pile réelle au moment de cette PR (la pile jetable était encore en construction) ; seuls les tests de l'interface, de la démonstration et les types le couvrent. À faire avant la validation.
+- **Vérifié dans le navigateur, profil Super administrateur seulement** (pile jetable, démonstration chargée) : l'écran s'affiche avec les dix personnes, la fenêtre de saisie s'ouvre, un changement de mode (sur site vers télétravail) est enregistré et la case se met à jour. Trois défauts trouvés et corrigés ensuite, **non revus à l'écran** (la pile jetable n'a pas été reconstruite) mais couverts par des tests : un week-end au milieu d'une absence était compté « absent » ; les totaux du jour se coupaient mal ; la fenêtre disait « vous » même quand la RH saisit pour un autre.
+- **Profils employé et responsable non parcourus dans le navigateur** : la portée (sa ligne, ses subordonnés directs) n'est vérifiée que par l'API (tests d'intégration) et par la logique de l'écran (tests).
 - **Non vérifié** : mode sombre, 1280 px, navigation au clavier, lecteur d'écran, axe-core (D160).
 - **Pas de mutants, de Newman ni de fiche de test** : RH-4c.
 - La vue est **hebdomadaire** ; pas de vue mensuelle, pas d'export (D185).

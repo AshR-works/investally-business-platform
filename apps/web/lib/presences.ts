@@ -76,7 +76,8 @@ export function canEditCell(board: Pick<PresenceBoard, 'viewerEmployeeId' | 'can
 
 export type Cell = { kind: 'leave' } | { kind: 'mode'; mode: PresenceMode } | { kind: 'none' };
 export function cellOf(row: Pick<PresenceRow, 'entries' | 'leaveDays'>, day: string): Cell {
-  if (row.leaveDays.includes(day)) return { kind: 'leave' };
+  // Un week-end au milieu d'une absence n'est pas une journée d'absence (comme dans le calendrier des absences) : la case reste neutre.
+  if (row.leaveDays.includes(day) && !isWeekend(day)) return { kind: 'leave' };
   const entry = row.entries.find((e) => e.day === day);
   return entry ? { kind: 'mode', mode: entry.mode } : { kind: 'none' };
 }

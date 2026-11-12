@@ -117,6 +117,16 @@ describe('RH-4b — contenu d’une case et totaux du jour', () => {
     expect(cellOf(row({ entries: [{ day: '2026-11-11', mode: 'REMOTE' }] }), TODAY)).toEqual({ kind: 'none' });
   });
 
+  it('un week-end au milieu d’une absence n’est pas un jour d’absence : la case reste neutre et n’est pas comptée', () => {
+    const away = row({ leaveDays: ['2026-11-13', '2026-11-14', '2026-11-15', '2026-11-16'] });
+    expect(cellOf(away, '2026-11-13')).toEqual({ kind: 'leave' });
+    expect(cellOf(away, '2026-11-14')).toEqual({ kind: 'none' });
+    expect(cellOf(away, '2026-11-15')).toEqual({ kind: 'none' });
+    expect(cellOf(away, '2026-11-16')).toEqual({ kind: 'leave' });
+    expect(dayTotals([away], '2026-11-14').LEAVE).toBe(0);
+    expect(dayTotals([away], '2026-11-13').LEAVE).toBe(1);
+  });
+
   it('compte chaque mode et les absents', () => {
     const rows = [
       row({ employeeId: 'a', entries: [{ day: TODAY, mode: 'ON_SITE' }] }), row({ employeeId: 'b', entries: [{ day: TODAY, mode: 'ON_SITE' }] }),
@@ -162,6 +172,11 @@ describe('RH-4b — écrans : déclaratifs, sans heure ni lieu ni texte libre', 
     expect(page).toContain('className="sr-only">{modeLabel(cell.mode)}');
     expect(page).toContain('absent (absence validée)');
     expect(page).toContain('non déclaré');
+  });
+  it('la fenêtre parle de « vous » seulement pour soi-même ; la RH qui saisit pour un autre voit son nom', () => {
+    const dialog = read('components/hr/presence-dialog.tsx');
+    expect(dialog).toContain("self ? 'Où travaillez-vous ce jour-là ?' : `Où travaille ${employeeName} ce jour-là ?`");
+    expect(read('app/(app)/hr/presences/page.tsx')).toContain('self={editing.row.employeeId === board?.viewerEmployeeId}');
   });
   it('la fenêtre se lit comme un groupe nommé de trois choix, et l’erreur est reliée au groupe', () => {
     const dialog = read('components/hr/presence-dialog.tsx');
