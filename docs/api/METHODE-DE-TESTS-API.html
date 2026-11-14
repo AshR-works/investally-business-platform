@@ -1,0 +1,76 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Méthode complète pour tester l&#x27;API à la main</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="../INDEX.html">Index</a> · <a href="../GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="../ARCHITECTURE.html">Architecture</a> · <a href="../SECURITY.html">Sécurité</a> · <a href="../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="../TECH-DEBT.html">Dette</a> · <a href="../CHARTE-DE-TESTS.html">Charte de tests</a> · <a href="../tests/README.html">Fiches de test</a> · <a href="../design/README.html">Design</a> · <a href="../livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>Méthode complète pour tester l'API à la main</h1>
+<p><em>2026-11-14. Ce document explique <strong>comment</strong> tester l'API manuellement (environnement, Postman, vérification en base) et <strong>pourquoi</strong> chaque choix a été fait. Il complète <a href="README.html"><code>README.md</code></a> (référence Postman) sans le remplacer, et s'inscrit dans la <a href="../CHARTE-DE-TESTS.html">charte de tests</a> du projet (§3, niveau « Intégration »). Décision d'environnement : <a href="../cadrages/ARBITRAGE-ENVIRONNEMENTS-DE-TEST.html">ARBITRAGE-ENVIRONNEMENTS-DE-TEST</a>.</em></p>
+<h2>1. Ce que ce document couvre, et ce qu'il ne couvre pas</h2>
+<p>Il couvre le test <strong>manuel</strong> de l'API par la Direction produit, avec de vraies requêtes HTTP contre une vraie base locale — pas les tests automatiques (unitaires, cas d'usage, intégration Jest) qui tournent en continu sur le code et sont décrits dans la charte de tests. Les deux se complètent : les tests automatiques prouvent que le code respecte ses règles à chaque changement ; le test manuel prouve que l'API <strong>réellement démarrée</strong> répond et écrit comme attendu, dans les conditions où on la fera tourner.</p>
+<h2>2. L'environnement local</h2>
+<h3>2.1 Un seul environnement, un seed nommé</h3>
+<p>Une seule pile, pilotée par <code>node scripts/local-stack.mjs</code>, à laquelle on indique le <strong>seed</strong> (jeu de données) voulu au démarrage :</p>
+<pre><code>node scripts/local-stack.mjs --seed=demo                   # jeu fictif complet, un compte par rôle
+node scripts/local-stack.mjs --seed=organisation            # 10 fiches réelles, administrateur lié à sa fiche
+node scripts/local-stack.mjs --seed=organisation-complete   # + catalogue réel + personas
+node scripts/local-stack.mjs --seed=organisation --sans-interface   # n&#x27;importe quel seed, sans interface (API seule)</code></pre>
+<p><strong>Toujours <code>reset</code> avant de changer de seed</strong> (<code>node scripts/local-stack.mjs reset</code>, taper OUI) : on ne charge jamais un seed par-dessus un autre.</p>
+<p><strong>Justification</strong> : un seul jeu de secrets, un seul port à retenir, un état propre en une commande — voir la grille de l'arbitrage pour le détail des critères face aux cinq dossiers séparés que ce système remplace. Implémenté et vérifié le 2026-11-14 (§6 de l'arbitrage).</p>
+<h3>2.2 Dossiers annexes restants</h3>
+<p>Les quatre anciens dossiers séparés par usage (<code>investally-local-api-backend</code>, <code>investally-local-api-tests</code>, les scripts de lancement de <code>investally-local-demo-dg</code>, <code>investally-local-v1-prod</code>) sont redondants depuis §2.1, mais <strong>pas supprimés</strong> : <code>investally-local-demo-dg</code> garde en particulier son rôle de porte-données (<code>employes-reels.json</code>, lu par les seeds <code>organisation*</code> via <code>ORGANISATION_DATA_DIR</code>). Leur retrait reste une décision séparée de la Direction produit.</p>
+<h3>2.3 Pourquoi une base locale, jamais la base de travail</h3>
+<p><strong>Jamais contre une base de production ou une base partagée.</strong> Les parcours de bout en bout créent des données (préfixées « Postman »), les requêtes de route peuvent écrire, et une erreur de manipulation (mauvais environnement sélectionné dans Postman) doit rester sans conséquence. C'est pour ça que <code>baseUrl</code> est systématiquement vérifié avant d'écrire (§4), et que la collection le rappelle dans sa description : « Ne jamais viser une base de production ».</p>
+<h2>3. La collection Postman : structure et justification</h2>
+<p>La collection (<code>docs/api/postman/Investally-API.postman_collection.json</code>) n'est <strong>jamais écrite à la main</strong> : elle est régénérée depuis la description OpenAPI réelle de l'API (<code>node scripts/api-docs/build-postman.mjs</code>, qui lit <code>docs/api/openapi.json</code>).</p>
+<p><strong>Pourquoi générée plutôt qu'écrite à la main</strong> : une collection à la main dérive inévitablement du code (une route renommée, un champ ajouté, et la collection teste encore l'ancienne forme sans qu'on s'en aperçoive). En la dérivant d'OpenAPI, la <strong>construction échoue</strong> si un parcours (dossier 90) vise une route qui n'existe plus — la collection ne peut matériellement pas mentir sur ce que l'API expose aujourd'hui.</p>
+<div class="table-wrap"><table><thead><tr><th>Dossier</th><th>Contenu</th><th>Ce qu'il prouve</th><th>Pourquoi il existe</th></tr></thead><tbody>
+<tr><td>00 — Authentification</td><td>Connexion, puis second facteur (code TOTP <strong>calculé automatiquement</strong> depuis le secret de l'environnement)</td><td>Le jeton est remis, puis vérifié par MFA</td><td>Sans ça, aucune autre requête n'est acceptée (MFA obligatoire sur tout)</td></tr>
+<tr><td>00b — Première connexion</td><td>Enrôlement du second facteur d'un compte neuf</td><td>Secret et codes de secours remis</td><td>À lancer une seule fois par compte ; exclu des lancements automatiques (Newman) pour ne pas ré-enrôler à chaque passage</td></tr>
+<tr><td>01 — Sécurité</td><td>Chaque route protégée, appelée <strong>sans jeton</strong></td><td>401 systématique, au format RFC 7807</td><td>Contrat de sécurité : aucune route protégée ne doit répondre autrement que par un refus sans jeton, aussi bête que ça paraisse à vérifier</td></tr>
+<tr><td>02 — Santé</td><td><code>/health/live</code>, <code>/health/ready</code></td><td>200</td><td>Vérifie que l'API répond du tout, avant d'aller plus loin</td></tr>
+<tr><td>90 — Parcours de bout en bout</td><td>Scénarios qui créent leurs propres données et vérifient des règles métier (agrément, payeur, portée, verrou de version, contrat et parcours RH, présences)</td><td>Le <strong>comportement réel</strong>, pas juste le format de la réponse</td><td>Une requête isolée peut répondre 200 sans que la règle métier soit respectée ; un parcours enchaîne les étapes et vérifie l'état après chacune</td></tr>
+<tr><td>91 — Écritures de test</td><td>Requêtes d'écriture au corps modifiable à la main, avec le SQL de contrôle en description</td><td>Qu'un JSON envoyé par Postman se retrouve <strong>en base</strong>, avec sa trace d'audit</td><td>Ajouté le 2026-13/14 novembre pour répondre au besoin exprimé : « soumettre un JSON et vérifier qu'il s'est appliqué, en parcourant la base » — voir §4</td></tr>
+<tr><td>10 à 34 — une requête par route</td><td>Une requête par route de l'API, groupée par domaine</td><td>Jeton accepté, statut prévu, forme JSON correcte, erreurs au format RFC 7807, champs documentés présents</td><td>Couverture systématique : toute route existante a au moins une requête qui l'appelle</td></tr>
+<tr><td>98 — Actions de session</td><td>Déconnexion, changement de mot de passe, rafraîchissement, régénération des codes de secours</td><td>Ces actions fonctionnent</td><td>Isolées exprès : elles ferment la session ou changent un secret, donc cassent l'enchaînement si elles tournent au milieu des autres</td></tr>
+</tbody></table></div>
+<h2>4. Soumettre un JSON et vérifier qu'il s'applique en base (dossier 91)</h2>
+<p>C'est le besoin concret exprimé : écrire depuis Postman, puis constater le résultat en base, sans avoir à deviner où chercher.</p>
+<ol><li><strong>Lancer l'authentification</strong> (dossier 00) sur l'environnement voulu.</li><li><strong>Ouvrir une requête du dossier 91</strong>, modifier son corps JSON (onglet <em>Body</em>), l'envoyer.</li><li><strong>Lire le résultat affiché par la requête</strong> (statut, identifiant créé, enregistré automatiquement dans l'environnement — <code>ecrHolidayId</code>, <code>ecrCompanyId</code>…) et la <strong>console Postman</strong>, qui affiche un message explicite.</li><li><strong>Contrôler en base</strong> avec le SQL donné dans la description de la requête (copier-coller dans <code>psql</code>, via <code>acces-bd.cmd</code>, ou dans Prisma Studio) : on y retrouve la ligne, avec les mêmes valeurs, et sa trace dans <code>audit.audit_logs</code> (auteur, avant/après).</li><li>Les requêtes suivantes du dossier (modifier, supprimer) réutilisent l'identifiant enregistré : on peut rejouer le cycle complet (créer → modifier → vérifier → supprimer → vérifier la disparition).</li></ol>
+<p><strong>Pourquoi ce dossier reste à lancer requête par requête, jamais avec le bouton « Run »</strong> : il est fait pour être observé à chaque étape (on regarde la base entre deux requêtes), pas pour tourner seul ; c'est pour ça qu'il est exclu de Newman au même titre que 00b et 98.</p>
+<h2>5. En ligne de commande (Newman) : automatiser sans perdre la preuve</h2>
+<pre><code>npm install -g newman        # une fois
+node scripts/api-docs/run-newman.mjs --env mon-environnement.json --report rapport.json</code></pre>
+<p>Exclut automatiquement 00b, 91 et 98 (ils ne doivent jamais tourner seuls, en boucle). <strong>Résultat de référence</strong> (pile jetable, jeu de démonstration, compte Super administrateur) : 443 requêtes, 1 626 assertions, 0 échec. <strong>Pourquoi Newman en plus de Postman à la main</strong> : rejouer toute la collection après un changement, sans cliquer dossier par dossier, avec un rapport JSON qu'on peut comparer dans le temps ou joindre à une recette.</p>
+<h2>6. Vérifications complémentaires, hors Postman</h2>
+<p>Postman prouve que l'API répond correctement à une requête isolée ou à un parcours ; ces scripts prouvent des propriétés plus larges, difficiles à voir requête par requête :</p>
+<div class="table-wrap"><table><thead><tr><th>Script</th><th>Ce qu'il prouve</th><th>Pourquoi Postman seul n'y suffit pas</th></tr></thead><tbody>
+<tr><td><code>verifier-lien-api-bd.mjs</code></td><td>L'API lit et écrit bien dans <strong>sa propre</strong> base (les chiffres renvoyés par l'API égalent ceux lus directement en base ; une écriture par l'API se relit en base, puis disparaît quand l'API la supprime)</td><td>Postman voit la réponse de l'API, jamais la base elle-même : il faut une deuxième lecture indépendante (SQL direct) pour exclure qu'un décalage existe entre ce que l'API dit et ce qui est réellement stocké</td></tr>
+<tr><td><code>verifier-audit.mjs</code></td><td>Chaque écriture par appel d'API est attribuée (compte, session, adresse, appareil, avant/après) ; la seule écriture sans auteur est la création en ligne de commande du tout premier administrateur</td><td>L'obligation d'audit (registre des décisions, §A) porte sur <strong>l'attribution</strong>, pas seulement sur l'existence d'une ligne de journal ; il faut vérifier qui, pas seulement que</td></tr>
+<tr><td><code>scripts/mutants/*.py</code> (mutation testing)</td><td>Que les tests automatiques détectent vraiment une faute injectée délibérément dans le code</td><td>Un test qui ne peut pas échouer ne prouve rien (principe n° 3 de la charte de tests) ; la couverture de code ne dit pas si les assertions sont pertinentes, seulement si la ligne a été exécutée</td></tr>
+<tr><td><code>scripts/db-docs/v1-manifest.mjs</code> et <code>run-verifications.mjs</code></td><td>La base part d'un jeu de migrations connu et contrôlé (empreintes), et ne contient aucune référence orpheline entre schémas (décision D70)</td><td>Spécifique à la base de référence V1 (<code>--db-only</code>), avant tout déploiement ; Postman ne regarde jamais le schéma ni les contraintes inter-schémas</td></tr>
+</tbody></table></div>
+<h2>7. Régénérer la collection (après tout changement de route)</h2>
+<pre><code>cd apps/api &amp;&amp; npx tsc -p tsconfig.build.json --outDir dist-docs &amp;&amp; cd ../..
+DATABASE_URL=&lt;base jetable&gt; node scripts/api-docs/export-openapi.cjs --dist apps/api/dist-docs --out docs/api/openapi.json
+node scripts/api-docs/build-postman.mjs</code></pre>
+<p>Échoue volontairement si un parcours (90 ou 91) vise une route qui n'existe plus (§3).</p>
+<h2>8. Ce que cette méthode ne couvre pas</h2>
+<ul><li><strong>Les droits par rôle</strong> : la collection tourne avec un seul compte (Super administrateur en général). La matrice des permissions par rôle est vérifiée par les tests automatiques (<code>roles.spec</code>, contrat anti-IDOR), pas par ce test manuel.</li><li><strong>L'envoi de fichiers</strong> (documents, pièces jointes) : à essayer à la main, hors collection.</li><li><strong>La recette utilisateur</strong> (l'écran convient-il à l'usage) : fiches de test dans <code>docs/tests/</code>, rejouées par la Direction produit — un registre différent, voir la charte de tests §9.</li></ul></main></body></html>

@@ -1,13 +1,19 @@
-// Pile LOCALE PERSISTANTE de l'application, sans Docker et sans Claude Code.
+// Pile LOCALE PERSISTANTE de l'application, sans Docker et sans Claude Code — UN SEUL environnement, chargé avec le SEED voulu
+// (arbitrage docs/cadrages/ARBITRAGE-ENVIRONNEMENTS-DE-TEST.md, décision D71) : remplace les anciens dossiers séparés par usage.
 //
-//   node scripts/local-stack.mjs            démarre base + API + interface (Ctrl+C pour tout arrêter)
-//   node scripts/local-stack.mjs --demo     idem, et charge le jeu de données de démonstration fictif (idempotent)
-//   node scripts/local-stack.mjs --rebuild  force la recompilation de l'API et de l'interface
-//   node scripts/local-stack.mjs --dev      interface en mode développement (rechargement à chaud)
-//   node scripts/local-stack.mjs --db-only  base SEULE, comme en production : migrations et rôles, aucun compte, aucune donnée, ni API ni interface ;
-//                                           contrôle du manifeste V1 et vérifications d'intégrité, puis la base reste ouverte (Ctrl+C pour l'arrêter)
-//   node scripts/local-stack.mjs reset      supprime base, documents et secrets locaux (après confirmation)
+//   node scripts/local-stack.mjs                        démarre base + API + interface, sans donnée (Ctrl+C pour tout arrêter)
+//   node scripts/local-stack.mjs --seed=demo             + jeu de données de démonstration fictif (40 entreprises, un compte par rôle)
+//   node scripts/local-stack.mjs --seed=organisation     + les 10 fiches réelles du personnel et leur hiérarchie, administrateur lié à sa fiche
+//   node scripts/local-stack.mjs --seed=organisation-complete   + le vrai catalogue de formation et les comptes des personas liés aux fiches
+//   node scripts/local-stack.mjs --sans-interface        n'importe quel seed ci-dessus, SANS démarrer l'interface (API seule)
+//   node scripts/local-stack.mjs --demo                  alias historique de --seed=demo
+//   node scripts/local-stack.mjs --rebuild                force la recompilation de l'API et de l'interface
+//   node scripts/local-stack.mjs --dev                     interface en mode développement (rechargement à chaud)
+//   node scripts/local-stack.mjs --db-only                base SEULE, comme en production : migrations et rôles, aucun compte, aucune donnée, ni API ni interface ;
+//                                                           contrôle du manifeste V1 et vérifications d'intégrité, puis la base reste ouverte (Ctrl+C pour l'arrêter)
+//   node scripts/local-stack.mjs reset                     supprime base, documents et secrets locaux (après confirmation)
 //
+// Changer de seed : TOUJOURS `reset` d'abord, puis relancer avec le seed voulu (jamais charger un seed par-dessus un autre).
 // Tout vit dans INVESTALLY_LOCAL_HOME (défaut : dossier voisin du dépôt, hors OneDrive) : base PostgreSQL,
 // documents téléversés, secrets générés (droits restreints), journaux. Rien n'est écrit dans le dépôt.
 // Ce script n'ouvre que 127.0.0.1. Il ne se connecte JAMAIS à une autre base que la sienne.
@@ -28,7 +34,14 @@ const API_PORT = Number(process.env.LOCAL_API_PORT ?? 3001);
 const WEB_PORT = Number(process.env.LOCAL_WEB_PORT ?? 3000);
 const args = process.argv.slice(2);
 const flag = (name) => args.includes(`--${name}`);
-const adminEmail = args.find((a) => a.startsWith('--email='))?.slice(8) ?? 'admin@investally.test';
+const opt = (name) => args.find((a) => a.startsWith(`--${name}=`))?.slice(name.length + 3);
+// Seed nommé (D71) : --seed=<nom> ; --demo reste un alias de --seed=demo pour ne pas casser les habitudes prises.
+const seed = opt('seed') ?? (flag('demo') ? 'demo' : null);
+const ORGANISATION_SEEDS = ['organisation', 'organisation-complete'];
+if (seed && !['demo', ...ORGANISATION_SEEDS].includes(seed)) fail(`Seed inconnu : « ${seed} ». Valeurs possibles : demo, organisation, organisation-complete.`);
+const sansInterface = flag('sans-interface');
+const adminEmail = opt('email') ?? (ORGANISATION_SEEDS.includes(seed) ? 'h.bebey@investally.test' : 'admin@investally.test');
+const adminName = ORGANISATION_SEEDS.includes(seed) ? 'Henri Bebey' : 'Administrateur local';
 
 const say = (msg) => console.log(msg);
 const fail = (msg) => {
@@ -61,6 +74,8 @@ if (!existsSync(join(repo, 'node_modules')) || !existsSync(join(apiDir, 'node_mo
 
 mkdirSync(join(home, 'documents'), { recursive: true });
 mkdirSync(join(home, 'logs'), { recursive: true });
+
+say(`\n▶ Seed actif : ${seed ?? 'aucun (base vide, aucun compte hors administrateur)'}${sansInterface ? ' — sans interface' : ''}`);
 
 // --- secrets locaux persistants (clés de jetons, chiffrement MFA, mot de passe de la base) ------------------------
 const secretsFile = join(home, 'secrets.json');
@@ -110,7 +125,7 @@ if (rebuild || !existsSync(join(apiDir, 'dist', 'src', 'main.js'))) {
 // L'adresse de l'API est figée dans l'interface à la compilation (réécriture /api/*) : on recompile si elle change.
 const webStamp = join(home, 'web-build.json');
 const builtFor = existsSync(webStamp) ? JSON.parse(readFileSync(webStamp, 'utf8')).apiUrl : null;
-if (!flag('dev') && !flag('db-only') && (rebuild || builtFor !== appEnv.CRM_API_URL || !existsSync(join(webDir, '.next', 'BUILD_ID')))) {
+if (!flag('dev') && !flag('db-only') && !sansInterface && (rebuild || builtFor !== appEnv.CRM_API_URL || !existsSync(join(webDir, '.next', 'BUILD_ID')))) {
   say('\n▶ Compilation de l\'interface');
   // `next build` exige NODE_ENV=production (sinon le prérendu de /_global-error échoue).
   node(webDir, nextCli, ['build'], { ...appEnv, NODE_ENV: 'production' }, 'compilation interface');
@@ -176,7 +191,7 @@ await db.connect();
 const users = await db.query('SELECT count(*)::int AS n FROM iam.users');
 if (users.rows[0].n === 0) {
   const password = process.env.BOOTSTRAP_ADMIN_PASSWORD ?? `${randomBytes(6).toString('hex')}-${randomBytes(6).toString('hex')}-${randomBytes(6).toString('hex')}`;
-  node(apiDir, join('dist', 'src', 'cli', 'create-admin.js'), ['--email', adminEmail, '--name', 'Administrateur local'], { ...appEnv, BOOTSTRAP_ADMIN_PASSWORD: password }, 'création de l\'administrateur');
+  node(apiDir, join('dist', 'src', 'cli', 'create-admin.js'), ['--email', adminEmail, '--name', adminName], { ...appEnv, BOOTSTRAP_ADMIN_PASSWORD: password }, 'création de l\'administrateur');
   say('\n┌───────────────────────────────────────────────────────────────────────────┐');
   say(`│ Compte administrateur créé (affiché UNE SEULE FOIS, notez-le) :`);
   say(`│   e-mail       : ${adminEmail}`);
@@ -185,8 +200,8 @@ if (users.rows[0].n === 0) {
   say('└───────────────────────────────────────────────────────────────────────────┘');
 }
 
-// --- données de démonstration (facultatif) -----------------------------------------------------------------------
-if (flag('demo')) {
+// --- seed « demo » : jeu de données fictif (facultatif) -----------------------------------------------------------
+if (seed === 'demo') {
   // Un compte par rôle (mots de passe aléatoires, conservés dans demo-accounts.json, droits restreints).
   const accountsFile = join(home, 'demo-accounts.json');
   const before = existsSync(accountsFile) ? JSON.parse(readFileSync(accountsFile, 'utf8')).length : 0;
@@ -202,6 +217,22 @@ if (flag('demo')) {
   } else {
     say(`✔ Comptes de démonstration déjà présents (mots de passe : ${accountsFile})`);
   }
+}
+
+// --- seeds « organisation » et « organisation-complete » : organisation réelle d'Investally (facultatif) ----------
+// Les données réelles (noms, hiérarchie) restent hors du dépôt, dans ORGANISATION_DATA_DIR (jamais poussées) ;
+// ces deux scripts sont ceux qui servaient à la « Démo DG » (docs/cadrages/ARBITRAGE-ENVIRONNEMENTS-DE-TEST.md).
+if (ORGANISATION_SEEDS.includes(seed)) {
+  const dataDir = resolve(process.env.ORGANISATION_DATA_DIR ?? join(repo, '..', 'investally-local-demo-dg'));
+  if (!existsSync(join(dataDir, 'employes-reels.json'))) fail(`Données de l'organisation introuvables : ${join(dataDir, 'employes-reels.json')} (variable ORGANISATION_DATA_DIR pour changer de dossier).`);
+  const orgEnv = {
+    ...appEnv,
+    DG_HOME: home, DG_DATA_DIR: dataDir, DG_DB_PORT: String(PG_PORT), DG_API_PORT: String(API_PORT), DG_WEB_PORT: String(WEB_PORT),
+    DG_ADMIN_EMAIL: adminEmail, DG_ACCOUNT_KEY: process.env.ORGANISATION_ACCOUNT_KEY ?? 'bebey',
+    ...(seed === 'organisation' ? { DG_SKIP_CATALOGUE: '1' } : {}),
+  };
+  node(dataDir, join(dataDir, 'charger-demo-dg.cjs'), [], orgEnv, 'organisation réelle (employés et hiérarchie)');
+  if (seed === 'organisation-complete') node(dataDir, join(dataDir, 'creer-personas.cjs'), [], orgEnv, 'personas liés aux fiches');
 }
 await db.end();
 
@@ -233,12 +264,13 @@ async function waitFor(url, label) {
 
 start('api', apiDir, join('dist', 'src', 'main.js'), []);
 await waitFor(`http://127.0.0.1:${API_PORT}/api/v1/auth/me`, 'API');
-start('web', webDir, nextCli, flag('dev') ? ['dev', '-H', '127.0.0.1', '-p', String(WEB_PORT)] : ['start', '-H', '127.0.0.1', '-p', String(WEB_PORT)]);
-await waitFor(`http://127.0.0.1:${WEB_PORT}/login`, 'Interface');
+if (!sansInterface) {
+  start('web', webDir, nextCli, flag('dev') ? ['dev', '-H', '127.0.0.1', '-p', String(WEB_PORT)] : ['start', '-H', '127.0.0.1', '-p', String(WEB_PORT)]);
+  await waitFor(`http://127.0.0.1:${WEB_PORT}/login`, 'Interface');
+}
 
-say(`\n✔ Prêt.
-   Interface      http://127.0.0.1:${WEB_PORT}
-   API (Swagger)  http://127.0.0.1:${API_PORT}/api/docs
+say(`\n✔ Prêt. Seed actif : ${seed ?? 'aucun'}${sansInterface ? ' — sans interface' : ''}
+   ${sansInterface ? '(Aucune interface : le port web ne sert que d\'origine autorisée pour les appels qui écrivent.)\n   ' : `Interface      http://127.0.0.1:${WEB_PORT}\n   `}API (Swagger)  http://127.0.0.1:${API_PORT}/api/docs
    Journaux       ${join(home, 'logs')}
    E-mails        (invitations, réinitialisations) : liens écrits dans ${join(home, 'logs', 'api.log')}
    Ctrl+C pour tout arrêter ; les données sont conservées.`);

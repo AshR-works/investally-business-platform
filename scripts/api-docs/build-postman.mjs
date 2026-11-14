@@ -350,6 +350,46 @@ const scenarioFolders = () => {
   return [entreprises, formation, conges, contratsParcours, presences];
 };
 
+// ───────────────────────────── Écritures de test (à rejouer à la main) ─────────────────────────────
+// Dossier 91 : des requêtes d'ÉCRITURE dont le corps JSON est prêt à être modifié, pour vérifier ensuite dans la base locale (psql, Prisma Studio) que l'écriture s'est appliquée.
+// Chaque requête porte dans sa description la requête SQL de contrôle. Ne tourne pas sous Newman (voir run-newman.mjs).
+const manualFolder = () => {
+  const withNote = (item, note) => ({ ...item, request: { ...item.request, description: note } });
+  const raw = (item, text) => ({ ...item, request: { ...item.request, header: [{ key: 'Content-Type', value: 'application/json' }], body: { mode: 'raw', raw: text, options: { raw: { language: 'json' } } } } });
+  const today = { listen: 'prerequest', script: { type: 'text/javascript', exec: ["pm.environment.set('ecrDay', new Date().toISOString().slice(0, 10));"] } };
+  const sql = (lines) => ['**Contrôle en base** (acces-bd.cmd, sans accents dans les requêtes) :', '', '```sql', ...lines, '```'].join('\n');
+  const log = (text) => `console.log(${JSON.stringify(text)});`;
+  return {
+    name: '91 — Écritures de test : envoyer un JSON, puis le retrouver en base',
+    description: [
+      '**À rejouer à la main**, un dossier à lancer par requêtes successives (pas avec « Run » sur toute la collection : Newman l’ignore).',
+      'Modifiez le corps JSON de la requête (onglet Body), envoyez-la, puis contrôlez la ligne en base avec le SQL donné dans la description de la requête.',
+      'Les identifiants renvoyés sont conservés dans l’environnement (`ecrHolidayId`, `ecrCompanyId`, `ecrEmployeeId`…) et affichés dans la console Postman.',
+      'Les entreprises et les fiches du personnel ne se suppriment pas : elles restent en base après le test (préfixe « Test Henri » pour les retrouver).',
+      '**Base visée : celle de l’environnement sélectionné.** Vérifiez `baseUrl` avant d’écrire.',
+    ].join('\n'),
+    item: [
+      withNote(raw(step('1. Jour férié : créer', 'POST', '/hr/leave/holidays', { expect: [201], save: { ecrHolidayId: 'pm.response.json().id' }, extraTests: [log('Jour férié créé, id enregistré dans ecrHolidayId : contrôlez-le en base.')] }), JSON.stringify({ day: '2031-12-25', label: 'Test Henri : Noël' }, null, 2)),
+        sql(["SELECT id, day, label FROM hr.public_holidays WHERE label LIKE 'Test Henri%';", "SELECT action, user_id, new_value FROM audit.audit_logs ORDER BY created_at DESC LIMIT 3;"])),
+      withNote(step('2. Jour férié : supprimer', 'DELETE', '/hr/leave/holidays/{{ecrHolidayId}}', { expect: [204] }),
+        sql(["SELECT count(*) FROM hr.public_holidays WHERE label LIKE 'Test Henri%';  -- 0 attendu", "SELECT action, old_value FROM audit.audit_logs ORDER BY created_at DESC LIMIT 1;  -- DELETE"])),
+      withNote(raw(step('3. Entreprise : créer', 'POST', '/companies', { expect: [201], save: { ecrCompanyId: 'pm.response.json().id', ecrCompanyVersion: 'pm.response.json().version' }, extraTests: [log('Entreprise créée, id enregistré dans ecrCompanyId.')] }), JSON.stringify({ name: 'Test Henri : Société', sector: 'Banque', country: 'Cameroun' }, null, 2)),
+        sql(["SELECT id, name, sector, country, version FROM bd.companies WHERE name LIKE 'Test Henri%';"])),
+      withNote(raw(step('4. Entreprise : modifier (verrou de version)', 'PUT', '/companies/{{ecrCompanyId}}', { expect: [200], save: { ecrCompanyVersion: 'pm.response.json().version' } }), '{\n  "version": {{ecrCompanyVersion}},\n  "sector": "Assurance"\n}'),
+        sql(["SELECT name, sector, version FROM bd.companies WHERE name LIKE 'Test Henri%';  -- secteur Assurance, version +1", "SELECT old_value, new_value FROM audit.audit_logs WHERE entity_id = '<ecrCompanyId>' ORDER BY created_at;"])),
+      withNote(raw(step('5. Employé : créer', 'POST', '/hr/employees', { expect: [201], save: { ecrEmployeeId: 'pm.response.json().id', ecrEmployeeVersion: 'pm.response.json().version' }, extraTests: [log('Fiche créée, id enregistré dans ecrEmployeeId.')] }), JSON.stringify({ lastName: 'Test Henri', firstName: 'Noa', jobTitle: 'Analyste', department: 'Finance', hiredOn: '2026-01-01' }, null, 2)),
+        sql(["SELECT id, last_name, first_name, job_title, department, version FROM hr.employees WHERE last_name = 'Test Henri';"])),
+      withNote(raw(step('6. Employé : modifier (verrou de version)', 'PUT', '/hr/employees/{{ecrEmployeeId}}', { expect: [200], save: { ecrEmployeeVersion: 'pm.response.json().version' } }), '{\n  "version": {{ecrEmployeeVersion}},\n  "jobTitle": "Analyste senior"\n}'),
+        sql(["SELECT job_title, version FROM hr.employees WHERE last_name = 'Test Henri';  -- Analyste senior, version +1"])),
+      withNote(raw(step('7. Présence : déclarer (télétravail, aujourd’hui)', 'PUT', '/hr/presences/{{ecrDay}}?employeeId={{ecrEmployeeId}}', { query: [{ key: 'employeeId', value: '{{ecrEmployeeId}}' }], expect: [200] }), JSON.stringify({ mode: 'REMOTE' }, null, 2)),
+        sql(["SELECT day, mode FROM hr.presence_declarations WHERE employee_id = '<ecrEmployeeId>';  -- une ligne REMOTE"])),
+      withNote(step('8. Présence : retirer', 'DELETE', '/hr/presences/{{ecrDay}}?employeeId={{ecrEmployeeId}}', { query: [{ key: 'employeeId', value: '{{ecrEmployeeId}}' }], expect: [204] }),
+        sql(["SELECT count(*) FROM hr.presence_declarations WHERE employee_id = '<ecrEmployeeId>';  -- 0 attendu"])),
+    ],
+    event: [today],
+  };
+};
+
 // ───────────────────────────── Assemblage ─────────────────────────────
 const tags = new Map();
 for (const [path, operations] of Object.entries(spec.paths)) {
@@ -426,6 +466,7 @@ const collection = {
     { name: '01 — Sécurité : sans jeton, toute route protégée refuse', item: unauthenticated },
     { name: '02 — Santé', item: health },
     { name: '90 — Parcours de bout en bout', item: scenarioFolders(), description: 'Scénarios qui créent leurs propres données et vérifient les règles métier (agrément, payeur, portée). À lancer après la connexion, avec un compte qui a les droits (par exemple le Super administrateur de test).' },
+    manualFolder(),
     ...generated.map((folder, index) => ({ ...folder, name: `${String(10 + index).padStart(2, '0')} — ${folder.name}` })),
     { name: '98 — Actions de session (à lancer à part)', item: [...sessionActions].sort((a, b) => rank(a) - rank(b)), description: 'Déconnexion, changement de mot de passe, rafraîchissement, second facteur, invitations, réinitialisation : **elles ferment la session ou changent un secret**. Ne les mettez jamais dans un enchaînement courant ; lancez-les une par une.' },
   ],
@@ -501,7 +542,7 @@ const catalogue = {
     newman: 'node scripts/api-docs/run-newman.mjs --env <environnement.json> --report rapport.json',
     guide: 'docs/api/GUIDE-CHARGER-ET-TESTER-L-API.html',
   },
-  ordreDExecution: ['00 — Authentification', '01 — Sécurité', '02 — Santé', '90 — Parcours de bout en bout', '10 à 34 — une requête par route', '00b et 98 : à part'],
+  ordreDExecution: ['00 — Authentification', '01 — Sécurité', '02 — Santé', '90 — Parcours de bout en bout', '10 à 34 — une requête par route', '00b, 91 et 98 : à part'],
   dossiers: collection.item.map((folder) => {
     const requetes = walk(folder);
     return { nom: folder.name, description: folder.description ?? null, requetes: requetes.length, assertions: requetes.reduce((n, r) => n + r.tests.length, 0), detail: requetes };

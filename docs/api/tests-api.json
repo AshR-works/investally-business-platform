@@ -1,6 +1,6 @@
 {
   "titre": "Investally Business Platform : catalogue des tests de l’API",
-  "genereLe": "2026-11-12",
+  "genereLe": "2026-11-14",
   "source": "Généré avec la collection Postman par scripts/api-docs/build-postman.mjs (docs/api/postman/Investally-API.postman_collection.json). La collection est le fichier EXÉCUTABLE ; ce catalogue en est la version lisible.",
   "executer": {
     "postman": "Importer la collection et l’environnement, renseigner email, password et mfaSecret, lancer « 00 — Authentification » puis le dossier voulu.",
@@ -13,7 +13,7 @@
     "02 — Santé",
     "90 — Parcours de bout en bout",
     "10 à 34 — une requête par route",
-    "00b et 98 : à part"
+    "00b, 91 et 98 : à part"
   ],
   "dossiers": [
     {
@@ -3983,6 +3983,125 @@
           "corps": null,
           "tests": [
             "Une période de plus de 93 jours est refusée : statut 400"
+          ]
+        }
+      ]
+    },
+    {
+      "nom": "91 — Écritures de test : envoyer un JSON, puis le retrouver en base",
+      "description": "**À rejouer à la main**, un dossier à lancer par requêtes successives (pas avec « Run » sur toute la collection : Newman l’ignore).\nModifiez le corps JSON de la requête (onglet Body), envoyez-la, puis contrôlez la ligne en base avec le SQL donné dans la description de la requête.\nLes identifiants renvoyés sont conservés dans l’environnement (`ecrHolidayId`, `ecrCompanyId`, `ecrEmployeeId`…) et affichés dans la console Postman.\nLes entreprises et les fiches du personnel ne se suppriment pas : elles restent en base après le test (préfixe « Test Henri » pour les retrouver).\n**Base visée : celle de l’environnement sélectionné.** Vérifiez `baseUrl` avant d’écrire.",
+      "requetes": 8,
+      "assertions": 8,
+      "detail": [
+        {
+          "nom": "1. Jour férié : créer",
+          "methode": "POST",
+          "chemin": "/api/v1/hr/leave/holidays",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": {
+            "day": "2031-12-25",
+            "label": "Test Henri : Noël"
+          },
+          "tests": [
+            "1. Jour férié : créer : statut 201"
+          ]
+        },
+        {
+          "nom": "2. Jour férié : supprimer",
+          "methode": "DELETE",
+          "chemin": "/api/v1/hr/leave/holidays/{{ecrHolidayId}}",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": null,
+          "tests": [
+            "2. Jour férié : supprimer : statut 204"
+          ]
+        },
+        {
+          "nom": "3. Entreprise : créer",
+          "methode": "POST",
+          "chemin": "/api/v1/companies",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": {
+            "name": "Test Henri : Société",
+            "sector": "Banque",
+            "country": "Cameroun"
+          },
+          "tests": [
+            "3. Entreprise : créer : statut 201"
+          ]
+        },
+        {
+          "nom": "4. Entreprise : modifier (verrou de version)",
+          "methode": "PUT",
+          "chemin": "/api/v1/companies/{{ecrCompanyId}}",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": "{\n  \"version\": {{ecrCompanyVersion}},\n  \"sector\": \"Assurance\"\n}",
+          "tests": [
+            "4. Entreprise : modifier (verrou de version) : statut 200"
+          ]
+        },
+        {
+          "nom": "5. Employé : créer",
+          "methode": "POST",
+          "chemin": "/api/v1/hr/employees",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": {
+            "lastName": "Test Henri",
+            "firstName": "Noa",
+            "jobTitle": "Analyste",
+            "department": "Finance",
+            "hiredOn": "2026-01-01"
+          },
+          "tests": [
+            "5. Employé : créer : statut 201"
+          ]
+        },
+        {
+          "nom": "6. Employé : modifier (verrou de version)",
+          "methode": "PUT",
+          "chemin": "/api/v1/hr/employees/{{ecrEmployeeId}}",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": "{\n  \"version\": {{ecrEmployeeVersion}},\n  \"jobTitle\": \"Analyste senior\"\n}",
+          "tests": [
+            "6. Employé : modifier (verrou de version) : statut 200"
+          ]
+        },
+        {
+          "nom": "7. Présence : déclarer (télétravail, aujourd’hui)",
+          "methode": "PUT",
+          "chemin": "/api/v1/hr/presences/{{ecrDay}}?employeeId={{ecrEmployeeId}}",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": {
+            "mode": "REMOTE"
+          },
+          "tests": [
+            "7. Présence : déclarer (télétravail, aujourd’hui) : statut 200"
+          ]
+        },
+        {
+          "nom": "8. Présence : retirer",
+          "methode": "DELETE",
+          "chemin": "/api/v1/hr/presences/{{ecrDay}}?employeeId={{ecrEmployeeId}}",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": null,
+          "tests": [
+            "8. Présence : retirer : statut 204"
           ]
         }
       ]
@@ -8375,9 +8494,9 @@
     }
   ],
   "resume": {
-    "dossiers": 31,
-    "requetes": 453,
-    "testsDefinis": 1880,
+    "dossiers": 32,
+    "requetes": 461,
+    "testsDefinis": 1888,
     "resultatDeReference": "Pile jetable, jeu de démonstration, compte Super administrateur : 443 requêtes, 1 626 assertions exécutées, 0 échec (dossiers 00b et 98 à part : 12 requêtes, 54 assertions, 0 échec)."
   }
 }

@@ -27,8 +27,23 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <pre><code>cd C:\dev\investally\investally-platform
 git checkout main &amp;&amp; git pull             # la branche d&#x27;exécution locale est fusionnée
 pnpm install                              # une seule fois, puis après chaque mise à jour des dépendances
-node scripts/local-stack.mjs --demo --rebuild   # ou : pnpm local --demo --rebuild</code></pre>
+node scripts/local-stack.mjs --seed=demo --rebuild   # ou : pnpm local --seed=demo --rebuild (--demo reste accepté, alias)</code></pre>
 <p><code>--rebuild</code> est nécessaire après chaque mise à jour du code : il recompile l'API et l'interface, et les nouvelles migrations sont appliquées au démarrage. Prérequis : Node 22 LTS, pnpm 12, une application TOTP (téléphone ou extension navigateur).</p>
+<h2>Un seul environnement, un seed nommé</h2>
+<p>Décision D71 (<a href="cadrages/ARBITRAGE-ENVIRONNEMENTS-DE-TEST.html">ARBITRAGE-ENVIRONNEMENTS-DE-TEST</a>) : il n'y a qu'<strong>un seul</strong> environnement local (ce dossier, ces ports) ; on choisit son contenu avec <code>--seed=&lt;nom&gt;</code> au lieu d'ouvrir un dossier différent par usage.</p>
+<div class="table-wrap"><table><thead><tr><th>Seed</th><th>Contenu</th><th>Remplace l'ancien dossier</th></tr></thead><tbody>
+<tr><td><em>(aucun)</em></td><td>Base migrée, rôles et permissions, aucune donnée métier</td><td>—</td></tr>
+<tr><td><code>demo</code> (alias historique : <code>--demo</code>)</td><td>Jeu de démonstration fictif complet (§ ci-dessous), un compte par rôle</td><td><code>investally-local</code> (déjà en place)</td></tr>
+<tr><td><code>organisation</code></td><td>Les 10 fiches réelles du personnel d'Investally et leur hiérarchie ; administrateur <code>h.bebey@investally.test</code> <strong>lié à sa fiche</strong></td><td><code>investally-local-api-backend</code></td></tr>
+<tr><td><code>organisation-complete</code></td><td><code>organisation</code> + le vrai catalogue de formation + les comptes des personas liés aux fiches (DG, DGA, responsable commercial…)</td><td><code>investally-local-demo-dg</code></td></tr>
+</tbody></table></div>
+<p><strong>Toujours <code>reset</code> avant de changer de seed</strong> (jamais charger un seed par-dessus un autre, au risque de mélanger les données) :</p>
+<pre><code>node scripts/local-stack.mjs reset              # tapez OUI
+node scripts/local-stack.mjs --seed=organisation-complete</code></pre>
+<p><code>--sans-interface</code> démarre la base et l'API, <strong>sans l'interface</strong> (remplace <code>investally-local-api-backend</code> / <code>lancer-api-seule.mjs</code>) — se combine avec n'importe quel seed :</p>
+<pre><code>node scripts/local-stack.mjs --seed=organisation --sans-interface</code></pre>
+<p><code>--db-only</code> reste inchangé (base seule, comme en production, sans compte ni donnée — remplace <code>investally-local-v1-prod</code>).</p>
+<p>Les données réelles de l'organisation (noms, hiérarchie) restent <strong>hors du dépôt</strong>, lues depuis <code>ORGANISATION_DATA_DIR</code> (par défaut, le dossier <code>investally-local-demo-dg</code> existant, qui garde son rôle de porte-données mais n'a plus besoin d'être lancé pour lui-même).</p>
 <h2>Ce que fait la commande</h2>
 <ol><li>Génère les secrets locaux (une fois) dans <code>C:\dev\investally\investally-local\secrets.json</code>.</li><li>Compile l'API et l'interface (long la première fois seulement).</li><li>Démarre PostgreSQL (données dans <code>..\investally-local\pgdata</code>), applique les migrations, crée rôles et permissions.</li><li>Crée <code>admin@investally.test</code> si aucun utilisateur n'existe : mot de passe aléatoire <strong>affiché une seule fois</strong>.</li><li>Avec <code>--demo</code> : un compte par rôle, puis le <strong>jeu de données de démonstration</strong> : 40 entreprises fictives (banques, fintechs, assurances, gestion de patrimoine, bourse, télécoms, industries, PME) réparties entre <code>compte1</code>, <code>compte2</code> et <code>compte3</code>, avec leur vie commerciale sur douze mois : contacts, facilitateurs et commissions, offres, décharges, relances (faites, à venir, en retard), rendez-vous (tenus, annulés, à venir), opportunités à toutes les étapes (perdues, gagnées, dérogations), agréments (demandé, reçu, honoré, expiré, annulé, payeur tiers) et ambassadeurs. Les données sont <strong>entièrement fictives</strong> et passent par les vrais cas d'usage ; le chargement est <strong>rejouable sans doublon</strong> (commande seule : <code>node apps/api/dist/src/cli/seed-demo.js</code> après la compilation).</li><li>Démarre l'API puis l'interface et affiche les adresses.</li></ol>
 <h2>Utiliser</h2>
@@ -49,10 +64,13 @@ node scripts/local-stack.mjs --demo --rebuild   # ou : pnpm local --demo --rebui
 <tr><td>Arrêter (données conservées)</td><td><code>Ctrl+C</code> dans la console</td></tr>
 <tr><td>Relancer</td><td>même commande (rapide, sans doublon)</td></tr>
 <tr><td>Recompiler après mise à jour du code</td><td>ajouter <code>--rebuild</code></td></tr>
+<tr><td>Changer de seed</td><td><code>reset</code> (taper OUI) puis relancer avec <code>--seed=&lt;nom&gt;</code></td></tr>
+<tr><td>API seule, sans interface</td><td>ajouter <code>--sans-interface</code></td></tr>
 <tr><td>Interface en mode développement</td><td>ajouter <code>--dev</code> (non testé)</td></tr>
 <tr><td>Tout effacer</td><td><code>node scripts/local-stack.mjs reset</code> (taper OUI)</td></tr>
 <tr><td>Autre dossier de données</td><td>variable <code>INVESTALLY_LOCAL_HOME</code></td></tr>
 <tr><td>Autres ports</td><td><code>LOCAL_DB_PORT</code>, <code>LOCAL_API_PORT</code>, <code>LOCAL_WEB_PORT</code></td></tr>
+<tr><td>Autre dossier pour les données réelles de l'organisation</td><td>variable <code>ORGANISATION_DATA_DIR</code> (seeds <code>organisation</code>, <code>organisation-complete</code>)</td></tr>
 </tbody></table></div>
 <h2>Valider la qualité sans la pile</h2>
 <pre><code>pnpm ci                                   # types, architecture, tests unitaires
