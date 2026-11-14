@@ -13039,6 +13039,382 @@
       "description": "Scénarios qui créent leurs propres données et vérifient les règles métier (agrément, payeur, portée). À lancer après la connexion, avec un compte qui a les droits (par exemple le Super administrateur de test)."
     },
     {
+      "name": "91 — Écritures de test : envoyer un JSON, puis le retrouver en base",
+      "description": "**À rejouer à la main**, un dossier à lancer par requêtes successives (pas avec « Run » sur toute la collection : Newman l’ignore).\nModifiez le corps JSON de la requête (onglet Body), envoyez-la, puis contrôlez la ligne en base avec le SQL donné dans la description de la requête.\nLes identifiants renvoyés sont conservés dans l’environnement (`ecrHolidayId`, `ecrCompanyId`, `ecrEmployeeId`…) et affichés dans la console Postman.\nLes entreprises et les fiches du personnel ne se suppriment pas : elles restent en base après le test (préfixe « Test Henri » pour les retrouver).\n**Base visée : celle de l’environnement sélectionné.** Vérifiez `baseUrl` avant d’écrire.",
+      "item": [
+        {
+          "name": "1. Jour férié : créer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/hr/leave/holidays",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "hr",
+                "leave",
+                "holidays"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"day\": \"2031-12-25\",\n  \"label\": \"Test Henri : Noël\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**Contrôle en base** (acces-bd.cmd, sans accents dans les requêtes) :\n\n```sql\nSELECT id, day, label FROM hr.public_holidays WHERE label LIKE 'Test Henri%';\nSELECT action, user_id, new_value FROM audit.audit_logs ORDER BY created_at DESC LIMIT 3;\n```"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('1. Jour férié : créer : statut 201', () => pm.expect([201]).to.include(pm.response.code));",
+                  "if ([201].includes(pm.response.code)) pm.environment.set('ecrHolidayId', String(pm.response.json().id));",
+                  "console.log(\"Jour férié créé, id enregistré dans ecrHolidayId : contrôlez-le en base.\");"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2. Jour férié : supprimer",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/hr/leave/holidays/{{ecrHolidayId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "hr",
+                "leave",
+                "holidays",
+                "{{ecrHolidayId}}"
+              ]
+            },
+            "description": "**Contrôle en base** (acces-bd.cmd, sans accents dans les requêtes) :\n\n```sql\nSELECT count(*) FROM hr.public_holidays WHERE label LIKE 'Test Henri%';  -- 0 attendu\nSELECT action, old_value FROM audit.audit_logs ORDER BY created_at DESC LIMIT 1;  -- DELETE\n```"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('2. Jour férié : supprimer : statut 204', () => pm.expect([204]).to.include(pm.response.code));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3. Entreprise : créer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/companies",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "companies"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test Henri : Société\",\n  \"sector\": \"Banque\",\n  \"country\": \"Cameroun\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**Contrôle en base** (acces-bd.cmd, sans accents dans les requêtes) :\n\n```sql\nSELECT id, name, sector, country, version FROM bd.companies WHERE name LIKE 'Test Henri%';\n```"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('3. Entreprise : créer : statut 201', () => pm.expect([201]).to.include(pm.response.code));",
+                  "if ([201].includes(pm.response.code)) pm.environment.set('ecrCompanyId', String(pm.response.json().id));",
+                  "if ([201].includes(pm.response.code)) pm.environment.set('ecrCompanyVersion', String(pm.response.json().version));",
+                  "console.log(\"Entreprise créée, id enregistré dans ecrCompanyId.\");"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4. Entreprise : modifier (verrou de version)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/companies/{{ecrCompanyId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "companies",
+                "{{ecrCompanyId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"version\": {{ecrCompanyVersion}},\n  \"sector\": \"Assurance\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**Contrôle en base** (acces-bd.cmd, sans accents dans les requêtes) :\n\n```sql\nSELECT name, sector, version FROM bd.companies WHERE name LIKE 'Test Henri%';  -- secteur Assurance, version +1\nSELECT old_value, new_value FROM audit.audit_logs WHERE entity_id = '<ecrCompanyId>' ORDER BY created_at;\n```"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('4. Entreprise : modifier (verrou de version) : statut 200', () => pm.expect([200]).to.include(pm.response.code));",
+                  "if ([200].includes(pm.response.code)) pm.environment.set('ecrCompanyVersion', String(pm.response.json().version));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "5. Employé : créer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/hr/employees",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "hr",
+                "employees"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"lastName\": \"Test Henri\",\n  \"firstName\": \"Noa\",\n  \"jobTitle\": \"Analyste\",\n  \"department\": \"Finance\",\n  \"hiredOn\": \"2026-01-01\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**Contrôle en base** (acces-bd.cmd, sans accents dans les requêtes) :\n\n```sql\nSELECT id, last_name, first_name, job_title, department, version FROM hr.employees WHERE last_name = 'Test Henri';\n```"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('5. Employé : créer : statut 201', () => pm.expect([201]).to.include(pm.response.code));",
+                  "if ([201].includes(pm.response.code)) pm.environment.set('ecrEmployeeId', String(pm.response.json().id));",
+                  "if ([201].includes(pm.response.code)) pm.environment.set('ecrEmployeeVersion', String(pm.response.json().version));",
+                  "console.log(\"Fiche créée, id enregistré dans ecrEmployeeId.\");"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "6. Employé : modifier (verrou de version)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/hr/employees/{{ecrEmployeeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "hr",
+                "employees",
+                "{{ecrEmployeeId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"version\": {{ecrEmployeeVersion}},\n  \"jobTitle\": \"Analyste senior\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**Contrôle en base** (acces-bd.cmd, sans accents dans les requêtes) :\n\n```sql\nSELECT job_title, version FROM hr.employees WHERE last_name = 'Test Henri';  -- Analyste senior, version +1\n```"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('6. Employé : modifier (verrou de version) : statut 200', () => pm.expect([200]).to.include(pm.response.code));",
+                  "if ([200].includes(pm.response.code)) pm.environment.set('ecrEmployeeVersion', String(pm.response.json().version));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "7. Présence : déclarer (télétravail, aujourd’hui)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/hr/presences/{{ecrDay}}?employeeId={{ecrEmployeeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "hr",
+                "presences",
+                "{{ecrDay}}"
+              ],
+              "query": [
+                {
+                  "key": "employeeId",
+                  "value": "{{ecrEmployeeId}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mode\": \"REMOTE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**Contrôle en base** (acces-bd.cmd, sans accents dans les requêtes) :\n\n```sql\nSELECT day, mode FROM hr.presence_declarations WHERE employee_id = '<ecrEmployeeId>';  -- une ligne REMOTE\n```"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('7. Présence : déclarer (télétravail, aujourd’hui) : statut 200', () => pm.expect([200]).to.include(pm.response.code));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "8. Présence : retirer",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/hr/presences/{{ecrDay}}?employeeId={{ecrEmployeeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "hr",
+                "presences",
+                "{{ecrDay}}"
+              ],
+              "query": [
+                {
+                  "key": "employeeId",
+                  "value": "{{ecrEmployeeId}}"
+                }
+              ]
+            },
+            "description": "**Contrôle en base** (acces-bd.cmd, sans accents dans les requêtes) :\n\n```sql\nSELECT count(*) FROM hr.presence_declarations WHERE employee_id = '<ecrEmployeeId>';  -- 0 attendu\n```"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('8. Présence : retirer : statut 204', () => pm.expect([204]).to.include(pm.response.code));"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.environment.set('ecrDay', new Date().toISOString().slice(0, 10));"
+            ]
+          }
+        }
+      ]
+    },
+    {
       "name": "10 — admin",
       "item": [
         {

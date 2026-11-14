@@ -7,10 +7,35 @@
 cd C:\dev\investally\investally-platform
 git checkout main && git pull             # la branche d'exécution locale est fusionnée
 pnpm install                              # une seule fois, puis après chaque mise à jour des dépendances
-node scripts/local-stack.mjs --demo --rebuild   # ou : pnpm local --demo --rebuild
+node scripts/local-stack.mjs --seed=demo --rebuild   # ou : pnpm local --seed=demo --rebuild (--demo reste accepté, alias)
 ```
 `--rebuild` est nécessaire après chaque mise à jour du code : il recompile l'API et l'interface, et les nouvelles migrations sont appliquées au démarrage.
 Prérequis : Node 22 LTS, pnpm 12, une application TOTP (téléphone ou extension navigateur).
+
+## Un seul environnement, un seed nommé
+Décision D71 ([ARBITRAGE-ENVIRONNEMENTS-DE-TEST](cadrages/ARBITRAGE-ENVIRONNEMENTS-DE-TEST.md)) : il n'y a qu'**un seul** environnement local (ce dossier, ces ports) ; on choisit son contenu avec `--seed=<nom>` au lieu d'ouvrir un dossier différent par usage.
+
+| Seed | Contenu | Remplace l'ancien dossier |
+|---|---|---|
+| *(aucun)* | Base migrée, rôles et permissions, aucune donnée métier | — |
+| `demo` (alias historique : `--demo`) | Jeu de démonstration fictif complet (§ ci-dessous), un compte par rôle | `investally-local` (déjà en place) |
+| `organisation` | Les 10 fiches réelles du personnel d'Investally et leur hiérarchie ; administrateur `h.bebey@investally.test` **lié à sa fiche** | `investally-local-api-backend` |
+| `organisation-complete` | `organisation` + le vrai catalogue de formation + les comptes des personas liés aux fiches (DG, DGA, responsable commercial…) | `investally-local-demo-dg` |
+
+**Toujours `reset` avant de changer de seed** (jamais charger un seed par-dessus un autre, au risque de mélanger les données) :
+```bash
+node scripts/local-stack.mjs reset              # tapez OUI
+node scripts/local-stack.mjs --seed=organisation-complete
+```
+
+`--sans-interface` démarre la base et l'API, **sans l'interface** (remplace `investally-local-api-backend` / `lancer-api-seule.mjs`) — se combine avec n'importe quel seed :
+```bash
+node scripts/local-stack.mjs --seed=organisation --sans-interface
+```
+
+`--db-only` reste inchangé (base seule, comme en production, sans compte ni donnée — remplace `investally-local-v1-prod`).
+
+Les données réelles de l'organisation (noms, hiérarchie) restent **hors du dépôt**, lues depuis `ORGANISATION_DATA_DIR` (par défaut, le dossier `investally-local-demo-dg` existant, qui garde son rôle de porte-données mais n'a plus besoin d'être lancé pour lui-même).
 
 ## Ce que fait la commande
 1. Génère les secrets locaux (une fois) dans `C:\dev\investally\investally-local\secrets.json`.
@@ -45,10 +70,13 @@ Mots de passe : `..\investally-local\demo-accounts.json` (local, hors dépôt, a
 | Arrêter (données conservées) | `Ctrl+C` dans la console |
 | Relancer | même commande (rapide, sans doublon) |
 | Recompiler après mise à jour du code | ajouter `--rebuild` |
+| Changer de seed | `reset` (taper OUI) puis relancer avec `--seed=<nom>` |
+| API seule, sans interface | ajouter `--sans-interface` |
 | Interface en mode développement | ajouter `--dev` (non testé) |
 | Tout effacer | `node scripts/local-stack.mjs reset` (taper OUI) |
 | Autre dossier de données | variable `INVESTALLY_LOCAL_HOME` |
 | Autres ports | `LOCAL_DB_PORT`, `LOCAL_API_PORT`, `LOCAL_WEB_PORT` |
+| Autre dossier pour les données réelles de l'organisation | variable `ORGANISATION_DATA_DIR` (seeds `organisation`, `organisation-complete`) |
 
 ## Valider la qualité sans la pile
 ```bash

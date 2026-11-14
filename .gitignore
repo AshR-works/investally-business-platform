@@ -17,3 +17,7 @@ apps/api/.agents/
 apps/api/.claude/
 apps/api/.windsurf/
 apps/api/skills-lock.json
+
+# Vault local de synchronisation Git de l'application Postman (environnements avec mots de passe et secrets TOTP en clair) : jamais versionné.
+apps/api/.postman/
+apps/api/postman/
