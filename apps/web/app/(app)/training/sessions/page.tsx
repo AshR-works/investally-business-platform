@@ -32,7 +32,10 @@ export default function SessionsPage() {
   const { profile } = useAuth();
   const canRead = can(profile, SESSION_PERMISSIONS.read);
   const canCreate = can(profile, SESSION_PERMISSIONS.create);
-  const rights = { update: can(profile, SESSION_PERMISSIONS.update), cancel: can(profile, SESSION_PERMISSIONS.cancel) };
+  const rights = {
+    update: can(profile, SESSION_PERMISSIONS.update), cancel: can(profile, SESSION_PERMISSIONS.cancel),
+    close: can(profile, SESSION_PERMISSIONS.close), reopen: can(profile, SESSION_PERMISSIONS.reopen),
+  };
   const [status, setStatus] = useState('');
   const [roomId, setRoomId] = useState('');
   const [trainerId, setTrainerId] = useState('');
@@ -92,12 +95,14 @@ export default function SessionsPage() {
   const actionsFor = (s: Session) => {
     const allowed = sessionActions(s, rights, today);
     const name = `${s.trainingTitle}, ${dateText(s.startDate)}`;
-    if (!allowed.edit && !allowed.open && !allowed.postpone && !allowed.cancel) return <span className="sr-only">Aucune action</span>;
+    if (!allowed.edit && !allowed.open && !allowed.postpone && !allowed.cancel && !allowed.close && !allowed.reopen) return <span className="sr-only">Aucune action</span>;
     return (
       <RowActions label={`Actions pour la session ${name}`}>
         {allowed.edit && <RowAction onClick={() => setDialog({ kind: 'edit', session: s })}>Modifier</RowAction>}
         {allowed.open && <RowAction onClick={() => setDialog({ kind: 'open', session: s })}>Ouvrir aux inscriptions</RowAction>}
         {allowed.postpone && <RowAction onClick={() => setDialog({ kind: 'postpone', session: s })}>Reporter</RowAction>}
+        {allowed.close && <RowAction onClick={() => setDialog({ kind: 'close', session: s })}>Clôturer</RowAction>}
+        {allowed.reopen && <RowAction onClick={() => setDialog({ kind: 'reopen', session: s })}>Rouvrir</RowAction>}
         {allowed.cancel && <RowAction danger onClick={() => setDialog({ kind: 'cancel', session: s })}>Annuler la session</RowAction>}
       </RowActions>
     );

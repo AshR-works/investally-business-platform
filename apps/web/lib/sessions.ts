@@ -47,7 +47,10 @@ export const SESSION_STATUS_OPTIONS = [
   { value: 'CANCELLED', label: 'Annulées' },
 ] as const;
 
-export const SESSION_PERMISSIONS = { read: 'training.session.read', create: 'training.session.create', update: 'training.session.update', cancel: 'training.session.cancel' } as const;
+export const SESSION_PERMISSIONS = {
+  read: 'training.session.read', create: 'training.session.create', update: 'training.session.update', cancel: 'training.session.cancel',
+  close: 'training.session.close', reopen: 'training.session.reopen',
+} as const;
 
 const DAY_MS = 86_400_000;
 const ISO = /^(\d{4})-(\d{2})-(\d{2})$/;
@@ -190,18 +193,32 @@ export function validateCancel(reason: string): string | undefined {
   return undefined;
 }
 
+/** Réouverture d'une session clôturée (S7) : motif obligatoire, même règle que l'annulation ou le report. */
+export function validateReopen(reason: string): string | undefined {
+  const text = reason.trim();
+  if (!text) return 'Le motif de la réouverture est obligatoire';
+  if (text.length > 500) return 'Le motif ne peut dépasser 500 caractères';
+  return undefined;
+}
+
 /** Une session commencée (début atteint) ne change plus de salle ni de formateur ; ni report. */
 export const hasStarted = (session: Pick<Session, 'startDate'>, today: string): boolean => session.startDate <= today;
 
-export interface SessionActions { edit: boolean; open: boolean; postpone: boolean; cancel: boolean }
+export interface SessionActions { edit: boolean; open: boolean; postpone: boolean; cancel: boolean; close: boolean; reopen: boolean }
 
 /** Actions possibles sur une ligne selon l'état de la session, ses dates et les droits de l'utilisateur. */
-export function sessionActions(session: Pick<Session, 'status' | 'startDate'>, can: { update: boolean; cancel: boolean }, today: string): SessionActions {
+export function sessionActions(
+  session: Pick<Session, 'status' | 'startDate'>,
+  can: { update: boolean; cancel: boolean; close: boolean; reopen: boolean },
+  today: string,
+): SessionActions {
   const live = session.status === 'PLANNED' || session.status === 'OPEN';
   return {
     edit: can.update && live,
     open: can.update && session.status === 'PLANNED',
     postpone: can.update && live && !hasStarted(session, today),
     cancel: can.cancel && live,
+    close: can.close && session.status === 'OPEN',
+    reopen: can.reopen && session.status === 'CLOSED',
   };
 }

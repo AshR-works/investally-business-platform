@@ -7,19 +7,22 @@ import { Badge } from '../../../../../components/data/badge';
 import { Card } from '../../../../../components/data/card';
 import { PageHeader } from '../../../../../components/data/page-header';
 import { PageHeading } from '../../../../../components/page-heading';
+import { AttendanceSheetTable } from '../../../../../components/training/attendance-sheet';
 import { EnrollmentDialogs, type EnrollmentDialogState } from '../../../../../components/training/enrollment-dialogs';
 import { EnrollmentsTable } from '../../../../../components/training/enrollments-table';
+import { SessionDialogs, type SessionDialogState } from '../../../../../components/training/session-dialogs';
 import { api, ApiError } from '../../../../../lib/api';
 import { useAuth } from '../../../../../lib/auth-context';
 import type { Training } from '../../../../../lib/catalogue';
 import { ENROLLMENT_PERMISSIONS, isFull, seatsFill } from '../../../../../lib/enrollments';
 import { can } from '../../../../../lib/permissions';
-import { dateText, periodText, SESSION_PHASE_LABEL, SESSION_STATUS, type Session } from '../../../../../lib/sessions';
+import { dateText, periodText, SESSION_PERMISSIONS, SESSION_PHASE_LABEL, SESSION_STATUS, type Session } from '../../../../../lib/sessions';
 import { ROOM_KIND_LABEL } from '../../../../../lib/catalogue';
 
 /**
- * Fiche d'une session (S5.2b) : le certificat et ses modules, les dates, la salle, le formateur, la jauge de places et la liste des inscrits
- * avec leurs actions. Le formateur n'ouvre que ses propres sessions (le serveur répond « introuvable » sinon).
+ * Fiche d'une session (S5.2b, puis clôture et présences S5.3a) : le certificat et ses modules, les dates, la salle, le formateur, la jauge de
+ * places, la liste des inscrits et la feuille de présence par séance. Le formateur n'ouvre que ses propres sessions (le serveur répond
+ * « introuvable » sinon).
  */
 export default function SessionSheetPage() {
   const { id } = useParams<{ id: string }>();
@@ -28,6 +31,7 @@ export default function SessionSheetPage() {
   const [training, setTraining] = useState<Training | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [dialog, setDialog] = useState<EnrollmentDialogState | null>(null);
+  const [sessionDialog, setSessionDialog] = useState<SessionDialogState | null>(null);
   const [refresh, setRefresh] = useState(0);
 
   const load = useCallback(async () => {
@@ -57,7 +61,10 @@ export default function SessionSheetPage() {
   }
 
   const canEnroll = can(profile, ENROLLMENT_PERMISSIONS.enroll) && session.status === 'OPEN';
+  const canClose = can(profile, SESSION_PERMISSIONS.close) && session.status === 'OPEN';
+  const canReopen = can(profile, SESSION_PERMISSIONS.reopen) && session.status === 'CLOSED';
   const full = isFull(session.enrolled, session.capacity);
+  const refreshAll = async () => { setSessionDialog(null); setDialog(null); await load(); setRefresh((n) => n + 1); };
   return (
     <>
       <PageHeader
@@ -65,7 +72,13 @@ export default function SessionSheetPage() {
         eyebrow="Session de formation"
         title={session.trainingTitle}
         description={`${session.programName} · ${periodText(session)} · ${session.rhythm.label}`}
-        actions={canEnroll ? <button type="button" disabled={full} onClick={() => setDialog({ kind: 'enroll', session })}>Inscrire un apprenant</button> : undefined}
+        actions={(
+          <>
+            {canEnroll && <button type="button" disabled={full} onClick={() => setDialog({ kind: 'enroll', session })}>Inscrire un apprenant</button>}
+            {canClose && <button type="button" className="secondary" onClick={() => setSessionDialog({ kind: 'close', session })}>Clôturer</button>}
+            {canReopen && <button type="button" className="secondary" onClick={() => setSessionDialog({ kind: 'reopen', session })}>Rouvrir</button>}
+          </>
+        )}
       />
       <p className="m-0 mb-3"><Link href="/training/sessions">← Sessions de formation</Link></p>
       <Card>
@@ -96,7 +109,9 @@ export default function SessionSheetPage() {
       {session.status === 'CANCELLED' && <p className="mt-3 text-ink-2">La session est annulée : ses inscriptions sont « à replacer » sur une autre session.</p>}
       <h2 className="mt-6">Inscrits</h2>
       <EnrollmentsTable caption={`Inscriptions à la session ${session.trainingTitle} du ${dateText(session.startDate)}`} sessionId={session.id} refreshKey={refresh} onChanged={() => { void load(); setRefresh((n) => n + 1); }} />
-      <EnrollmentDialogs dialog={dialog} onClose={() => setDialog(null)} onDone={async () => { setDialog(null); await load(); setRefresh((n) => n + 1); }} />
+      {session.status !== 'PLANNED' && session.status !== 'CANCELLED' && <AttendanceSheetTable sessionId={session.id} refreshKey={refresh} />}
+      <EnrollmentDialogs dialog={dialog} onClose={() => setDialog(null)} onDone={refreshAll} />
+      <SessionDialogs dialog={sessionDialog} onClose={() => setSessionDialog(null)} onDone={refreshAll} />
     </>
   );
 }
