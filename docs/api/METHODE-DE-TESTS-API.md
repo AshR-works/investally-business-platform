@@ -20,6 +20,10 @@ node scripts/local-stack.mjs --seed=organisation --sans-interface   # n'importe 
 ```
 **Toujours `reset` avant de changer de seed** (`node scripts/local-stack.mjs reset`, taper OUI) : on ne charge jamais un seed par-dessus un autre.
 
+**Lequel choisir, selon le but** (`--sans-interface` n'est pas « tester l'API plus proprement » : c'est toujours la même API, la même base — la seule différence est le confort d'avoir ou non un navigateur à côté) :
+- **Avec interface (par défaut)** : pour toute manipulation **à la main** — regarder une écriture Postman apparaître dans l'organigramme, enrôler le second facteur par QR code au lieu de jongler avec le secret brut, naviguer dans la base par l'écran plutôt que par SQL. C'est le bon choix pour la quasi-totalité des essais manuels.
+- **`--sans-interface`** : réservé à deux cas précis où l'interface n'apporte rien — Newman/CI (aucun navigateur, inutile de compiler et servir l'interface pour appeler une API) ; ou vérifier, au moins une fois, que l'API ne dépend pas en cachette de l'interface pour fonctionner (une propriété d'architecture, pas un confort de test).
+
 **Justification** : un seul jeu de secrets, un seul port à retenir, un état propre en une commande — voir la grille de l'arbitrage pour le détail des critères face aux cinq dossiers séparés que ce système remplace. Implémenté et vérifié le 2026-11-14 (§6 de l'arbitrage).
 
 ### 2.2 Dossiers annexes restants
