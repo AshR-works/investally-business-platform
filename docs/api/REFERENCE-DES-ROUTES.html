@@ -280,8 +280,12 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td>GET</td><td><code>/sessions/{id}</code></td><td></td><td><code>training.session.read</code></td><td>200</td></tr>
 <tr><td>PUT</td><td><code>/sessions/{id}</code></td><td></td><td><code>training.session.update</code></td><td>200</td></tr>
 <tr><td>POST</td><td><code>/sessions/{id}/cancel</code></td><td></td><td><code>training.session.cancel</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/sessions/{id}/close</code></td><td></td><td><code>training.session.close</code></td><td>200</td></tr>
 <tr><td>POST</td><td><code>/sessions/{id}/open</code></td><td></td><td><code>training.session.update</code></td><td>200</td></tr>
 <tr><td>POST</td><td><code>/sessions/{id}/postpone</code></td><td></td><td><code>training.session.update</code></td><td>200</td></tr>
+<tr><td>POST</td><td><code>/sessions/{id}/reopen</code></td><td></td><td><code>training.session.reopen</code></td><td>200</td></tr>
+<tr><td>GET</td><td><code>/sessions/{sessionId}/attendance</code></td><td></td><td><code>training.attendance.read</code></td><td>200</td></tr>
+<tr><td>PUT</td><td><code>/sessions/{sessionId}/attendance/{enrollmentId}/{day}</code></td><td></td><td><code>training.attendance.record</code></td><td>200</td></tr>
 </tbody></table></div>
 <h2>trainers</h2>
 <div class="table-wrap"><table><thead><tr><th>Méthode</th><th>Chemin</th><th>Résumé</th><th>Permission</th><th>Succès</th></tr></thead><tbody>
@@ -299,4 +303,4 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td>PUT</td><td><code>/trainings/{id}</code></td><td></td><td><code>training.training.update</code></td><td>200</td></tr>
 <tr><td>POST</td><td><code>/trainings/{id}/status</code></td><td></td><td><code>training.training.update</code></td><td>200</td></tr>
 </tbody></table></div>
-<p><em>201 routes.</em></p></main></body></html>
+<p><em>205 routes.</em></p></main></body></html>

@@ -5,10 +5,13 @@ import {
   TrainingViews, UpdateRoomUseCase, UpdateTrainerUseCase,
 } from '../../src/modules/training/application/catalogue-use-cases';
 import {
-  CancelSessionUseCase, GetSessionHandler, ListSessionsHandler, OpenSessionUseCase, PlanSessionUseCase, PostponeSessionUseCase, SessionRules, SessionViews, UpdateSessionUseCase,
+  CancelSessionUseCase, CloseSessionUseCase, GetSessionHandler, ListSessionsHandler, OpenSessionUseCase, PlanSessionUseCase, PostponeSessionUseCase, ReopenSessionUseCase, SessionRules, SessionViews,
+  UpdateSessionUseCase,
 } from '../../src/modules/training/application/session-use-cases';
+import { GetAttendanceSheetHandler, RecordAttendanceUseCase } from '../../src/modules/training/application/attendance-use-cases';
 import { ActorContext } from '../../src/shared-kernel';
 import { AuditRecord } from '../../src/modules/audit';
+import { InMemoryAttendances } from './in-memory-attendance';
 import { InMemoryModules, InMemoryPrograms, InMemoryRooms, InMemoryTrainers, InMemoryTrainings } from './in-memory-catalogue';
 import { InMemoryDirectory, InMemoryEnrollments, InMemoryLearners } from './in-memory-enrollments';
 import { InMemorySessions } from './in-memory-sessions';
@@ -30,6 +33,7 @@ export async function buildTrainingWorld(clock: { now: () => Date }) {
   const directory = new InMemoryDirectory();
   const learners = new InMemoryLearners(directory);
   const enrollments = new InMemoryEnrollments(sessions, directory);
+  const attendances = new InMemoryAttendances();
   const audit: AuditRecord[] = [];
   let seq = 0;
   const recorder = { record: async (r: AuditRecord) => { audit.push(r); } };
@@ -64,6 +68,11 @@ export async function buildTrainingWorld(clock: { now: () => Date }) {
     open: new OpenSessionUseCase(sessions, views, recorder, unitOfWork),
     postpone: new PostponeSessionUseCase(sessions, rules, views, recorder, unitOfWork, clock),
     cancel: new CancelSessionUseCase(sessions, enrollments, views, recorder, unitOfWork),
+    close: new CloseSessionUseCase(sessions, views, recorder, unitOfWork),
+    reopenSession: new ReopenSessionUseCase(sessions, views, recorder, unitOfWork),
+    attendances,
+    recordAttendance: new RecordAttendanceUseCase(sessions, enrollments, attendances, recorder, unitOfWork, clock, ids),
+    attendanceSheet: new GetAttendanceSheetHandler(sessions, enrollments, learners, attendances),
     get: new GetSessionHandler(sessions, trainers, views),
     list: new ListSessionsHandler(sessions, views),
     updateRoom: new UpdateRoomUseCase(rooms, recorder, unitOfWork),

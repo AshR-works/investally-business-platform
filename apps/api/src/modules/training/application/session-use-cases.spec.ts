@@ -157,6 +157,21 @@ describe('Sessions — modifier, ouvrir, reporter, annuler', () => {
     await rejects(w.update.execute({ id: view.id, version: 1, capacity: 5, actor }), 'INVARIANT_VIOLATION', /annulée/);
     await rejects(w.open.execute({ id: view.id, version: 1, actor }), 'INVARIANT_VIOLATION', /planifiée/);
   });
+
+  it('clôture une session ouverte, trace avant/après, puis la rouvre avec un motif obligatoire tracé (S5.3a)', async () => {
+    const w = await build();
+    const view = await w.plan.execute(base(w));
+    await rejects(w.close.execute({ id: view.id, version: 1, actor }), 'INVARIANT_VIOLATION', /ouverte/);
+    await w.open.execute({ id: view.id, version: 1, actor });
+    const closed = await w.close.execute({ id: view.id, version: 1, actor });
+    expect(closed.status).toBe('CLOSED');
+    expect(w.audit.at(-1)).toMatchObject({ action: AuditAction.Update, oldValue: { status: 'OPEN' }, newValue: { status: 'CLOSED' } });
+    await rejects(w.reopenSession.execute({ id: view.id, version: 1, reason: '', actor }), 'VALIDATION', /motif/);
+    const reopened = await w.reopenSession.execute({ id: view.id, version: 1, reason: 'Correction après coup', actor });
+    expect(reopened.status).toBe('OPEN');
+    expect(w.audit.at(-1)).toMatchObject({ newValue: { status: 'OPEN', reopenReason: 'Correction après coup' } });
+    await rejects(w.reopenSession.execute({ id: view.id, version: 1, reason: 'Encore', actor }), 'INVARIANT_VIOLATION', /clôturée/);
+  });
 });
 
 describe('Sessions — lecture et portée', () => {

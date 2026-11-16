@@ -60,6 +60,8 @@ export interface EnrollmentRepository {
   listSeats(sessionId: string): Promise<Enrollment[]>;
   /** L'apprenant a-t-il une inscription confirmée ? (suppression logique) */
   hasConfirmed(learnerId: string): Promise<boolean>;
+  /** Inscriptions CONFIRMÉES de la session, triées par apprenant (feuille de présence, S5.3a : seuls les inscrits confirmés y figurent). */
+  listConfirmed(sessionId: string): Promise<Enrollment[]>;
   list(query: EnrollmentListQuery): Promise<Page<Enrollment>>;
 }
 

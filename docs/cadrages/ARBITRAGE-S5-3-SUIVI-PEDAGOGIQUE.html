@@ -1,0 +1,81 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Arbitrage — S5.3, suivi pédagogique d&#x27;Investudy</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — cadrages · <a href="README.html">Index des cadrages</a> · <a href="../INDEX.html">Documentation</a> · <a href="../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../design/05-AIDE-A-LA-DECISION.html">Aide à la décision</a></nav><h1>Arbitrage — S5.3, suivi pédagogique d'Investudy</h1>
+<p><em>2026-11-12 · Méthode : <a href="../METHODE-D-ARBITRAGE.html">METHODE-D-ARBITRAGE</a> (options dont le statu quo, grille recalculée, recommandation, <strong>décision laissée à la Direction produit</strong>). <strong>Aucun code n'est écrit</strong> tant que la décision n'est pas prise.</em></p>
+<h2>1. La question</h2>
+<p>Comment construire S5.3 : les <strong>présences</strong>, les <strong>évaluations</strong>, la <strong>clôture de session</strong>, puis les <strong>certificats et attestations</strong> (avec la suggestion d'ambassadeur au chargé de compte) ? C'est la dernière pièce du module Investudy ; elle débloque les tableaux de bord Investudy (S6.2).</p>
+<h2>2. Ce qui existe et ce qui contraint</h2>
+<div class="table-wrap"><table><thead><tr><th>Fait</th><th>Source</th></tr></thead><tbody>
+<tr><td>Une session a quatre états (Planifiée, Ouverte, Clôturée, Annulée) ; <strong>la clôture n'est pas encore faite</strong> ; une session clôturée ne se modifie plus et ne s'annule pas</td><td>D48, recette S5.2a</td></tr>
+<tr><td>Les inscriptions ont les états En attente, Confirmée, Annulée, À remplacer ; seuls les <strong>inscrits confirmés</strong> apparaissent à la feuille de présence</td><td>S5.2b, CU-I-50</td></tr>
+<tr><td><strong>Aucune table</strong> de présence, d'évaluation ni de certification n'existe ; les permissions <code>training.attendance</code>, <code>training.evaluation</code>, <code>training.certification</code> sont dans le catalogue</td><td>catalogue des droits</td></tr>
+<tr><td>Les <strong>formateurs sont externes et sans accès à l'application</strong> ; le flux I3 les fait pourtant saisir présences et évaluations. <strong>FD-11</strong> (option B recommandée : le responsable saisit, sans compte formateur) <strong>n'a pas de réponse enregistrée</strong></td><td>FD-11, D31</td></tr>
+<tr><td>Aucun responsable Investudy n'est désigné ; le CEO l'est de fait (à confirmer)</td><td>FD-11</td></tr>
+<tr><td>Seuils de départ <strong>proposés, non validés</strong> : 80 % de présence et 10 sur 20 pour un certificat ; 80 % de présence pour une attestation</td><td>D31, CU-I-60</td></tr>
+<tr><td>Le chargé de compte n'a <strong>aucun droit de lecture</strong> sur les certifications, alors que la suggestion d'ambassadeur en dépend</td><td>D31, CU-I-62</td></tr>
+<tr><td>Le rendu <strong>PDF</strong> par le serveur attend la charte des documents</td><td>D61</td></tr>
+<tr><td>La <strong>durée de conservation</strong> des données des apprenants n'est pas validée juridiquement</td><td>D11, D65</td></tr>
+<tr><td>Une absence ne stocke jamais de diagnostic ; pas de donnée sensible dans le CRM (ADR-0009) : à tenir pour les observations de présence</td><td>ADR-0009, ADR-0013</td></tr>
+</tbody></table></div>
+<h2>3. Options</h2>
+<div class="table-wrap"><table><thead><tr><th>Option</th><th>Contenu</th></tr></thead><tbody>
+<tr><td><strong>A. Statu quo</strong></td><td>Ne pas faire S5.3 maintenant (le module Investudy s'arrête aux inscriptions)</td></tr>
+<tr><td><strong>B. Tout en un lot</strong></td><td>Clôture, présences, évaluations, certificats, attestations, révocation, suggestion d'ambassadeur, PDF</td></tr>
+<tr><td><strong>C. Trois lots</strong></td><td><strong>(a)</strong> clôture + présences ; <strong>(b)</strong> évaluations + seuils (calcul et suggestion) ; <strong>(c)</strong> certificats et attestations (délivrance, révocation, numérotation), suggestion d'ambassadeur. Chaque lot est livré, recetté et validé</td></tr>
+<tr><td><strong>D. Minimum</strong></td><td>Clôture + présences + <strong>attestation de suivi seule</strong> ; ni évaluations, ni certificat de réussite</td></tr>
+</tbody></table></div>
+<h2>4. Grille (5 critères, poids de 1 à 5, notes de 1 à 5 ; maximum 95)</h2>
+<div class="table-wrap"><table><thead><tr><th>Critère (poids)</th><th>A</th><th>B</th><th>C</th><th>D</th></tr></thead><tbody>
+<tr><td>Valeur pour Investudy (5)</td><td>1</td><td>5</td><td>4</td><td>3</td></tr>
+<tr><td>Règles métier connues (4)</td><td>5</td><td>2</td><td>3</td><td>4</td></tr>
+<tr><td>Tenable à court terme (4)</td><td>5</td><td>1</td><td>4</td><td>5</td></tr>
+<tr><td>Réversibilité (3)</td><td>5</td><td>2</td><td>4</td><td>4</td></tr>
+<tr><td>Débloque la suite : S6.2, ambassadeurs (3)</td><td>1</td><td>5</td><td>5</td><td>3</td></tr>
+<tr><td><strong>Total</strong></td><td><strong>63</strong></td><td><strong>58</strong></td><td><strong>75</strong></td><td><strong>72</strong></td></tr>
+</tbody></table></div>
+<p><em>Calculs : A = 5 + 20 + 20 + 15 + 3 = 63 ; B = 25 + 8 + 4 + 6 + 15 = 58 ; C = 20 + 12 + 16 + 12 + 15 = 75 ; D = 15 + 16 + 20 + 12 + 9 = 72.</em></p>
+<p><strong>Écart entre la grille et la recommandation.</strong> L'écart entre C et D est faible (3 points). D est presque le premier lot de C : les deux commencent de la même façon, par la clôture et les présences. La différence est ce qu'on s'engage à faire après. Je recommande C parce qu'il garde la possibilité de s'arrêter après le lot (a) ou (b) sans avoir tout figé. A a un total honorable parce que ne rien faire ne coûte rien, mais il laisse Investudy sans présence ni certificat, et bloque S6.2.</p>
+<h2>5. Risques et dette de l'option recommandée (C)</h2>
+<ul><li><strong>Règles encore inconnues</strong> (seuils, barème, réouverture) : elles sont posées comme valeurs de départ « à confirmer » et rendues <strong>paramétrables</strong> plutôt que codées, comme pour les congés et les contrats.</li><li><strong>Saisie par une seule personne</strong> si FD-11 B est retenu : charge de saisie pour le responsable (le CEO de fait) ; pas de traçabilité à la source (le formateur ne saisit pas).</li><li><strong>Données personnelles des apprenants</strong> (présences, notes) : la durée de conservation n'est pas validée (D11, D65). Dette ouverte, à inscrire au lot (a).</li><li><strong>Dette créée</strong> : PDF des certificats reporté à la charte des documents (D61) ; réouverture d'une session clôturée à cadrer ; pas de notification (la suggestion d'ambassadeur reste dans l'écran).</li></ul>
+<h2>6. Recommandation</h2>
+<p><strong>Option C, en trois lots</strong>, en commençant par le lot (a) : clôture de session et présences. Un lot = une demande de fusion, une recette, vos « Je valide », comme pour RH-2 à RH-4.</p>
+<h2>7. Décision attendue</h2>
+<p><strong>Réponse courte : « C » (ou A, B, D), puis les sous-décisions ci-dessous.</strong> « Applique les recommandations » vaut décision pour tout ce qui est recommandé.</p>
+<div class="table-wrap"><table><thead><tr><th>N°</th><th>Sous-décision</th><th>Options</th><th>Ma recommandation</th></tr></thead><tbody>
+<tr><td><strong>S1</strong></td><td><strong>Qui saisit les présences et les évaluations</strong> (FD-11, sans réponse enregistrée)</td><td>A comptes formateurs · <strong>B le responsable saisit</strong> (feuille d'émargement du formateur) · C mixte</td><td><strong>B</strong> : conforme à l'organisation (formateurs externes sans accès) ; C reste possible plus tard</td></tr>
+<tr><td><strong>S2</strong></td><td><strong>Modèle de présence</strong></td><td>A matin / après-midi / retard / observation (CU-I-50) · <strong>B par séance : présent, retard, absent</strong> (sans texte libre)</td><td><strong>B</strong> : plus simple, adapté aux sessions du jour et du soir (D46), pas de texte libre sensible</td></tr>
+<tr><td><strong>S3</strong></td><td><strong>Calcul du taux de présence</strong></td><td>Retard compte comme présent · retard compte comme absent</td><td>Retard = présent, <strong>sauf</strong> décision contraire</td></tr>
+<tr><td><strong>S4</strong></td><td><strong>Barème des évaluations</strong> (CU-I-52)</td><td><strong>Note sur 20</strong> · acquis / non acquis · compétences</td><td><strong>Note sur 20</strong> (seuil 10/20), sans commentaire libre</td></tr>
+<tr><td><strong>S5</strong></td><td><strong>Seuils de départ</strong> (D31)</td><td>Confirmer 80 % et 10/20 (certificat), 80 % (attestation) · corriger</td><td><strong>Confirmer</strong>, comme valeurs paramétrables « à confirmer »</td></tr>
+<tr><td><strong>S6</strong></td><td><strong>Délivrance</strong></td><td>Automatique dès les seuils · <strong>suggérée puis délivrée à la main</strong> par le responsable</td><td><strong>Suggérée puis manuelle</strong> (jamais automatique, comme la suggestion d'ambassadeur)</td></tr>
+<tr><td><strong>S7</strong></td><td><strong>Réouverture d'une session clôturée</strong></td><td>Interdite · <strong>permission dédiée, motif obligatoire, tracée</strong></td><td><strong>Permission dédiée</strong> (D31)</td></tr>
+<tr><td><strong>S8</strong></td><td><strong>Visibilité pour le chargé de compte</strong> (suggestion d'ambassadeur)</td><td><strong>Suggestion seule, sans lecture des certifications</strong> · lecture limitée à ses entreprises</td><td><strong>Suggestion seule</strong> (moins de droits à ouvrir)</td></tr>
+<tr><td><strong>S9</strong></td><td><strong>PDF du certificat</strong></td><td>Attendre la charte (D61) · <strong>enregistrement + aperçu écran d'abord</strong></td><td><strong>Enregistrement + aperçu</strong> ; PDF avec la charte</td></tr>
+<tr><td><strong>S10</strong></td><td><strong>Conservation des données des apprenants</strong> (D11, D65)</td><td>Avis juridique avant la mise en production · durée fixée maintenant</td><td><strong>Avis juridique</strong> ; dette inscrite au lot (a)</td></tr>
+</tbody></table></div>
+<h2>8. Ce que fera le lot (a), si C est retenu</h2>
+<p>Clôture de session (permission dédiée, confirmation, présences figées) ; feuille de présence par séance pour les inscrits confirmés ; correction avant la clôture avec auteur, date et ancienne valeur dans l'audit ; consultation par la Direction ; écran, démonstration, recette (mutants, Newman, fiches de test). Aucune évaluation ni certificat dans ce lot.</p>
+<h2>9. Décision</h2>
+<p><strong>Décidé</strong> (2026-11-16, Direction produit : « Applique les recommandations ») : <strong>option C</strong>, en trois lots, en commençant par le lot (a). Toutes les sous-décisions S1 à S10 sont retenues telles que recommandées (tableau §7). Consigné en <strong>D72</strong> du registre des décisions ; ADR-0016.</p>
+<p><strong>Lot (a) — API livrée et vérifiée le 2026-11-16</strong> : clôture/réouverture de session, présences aux séances (domaine, migration, cas d'usage, routes, tests unitaires et d'intégration). <strong>Reste à livrer séparément</strong> : l'écran et la démonstration (lot a-écran), puis la recette complète — mutants, Newman, fiches de test (lot a-recette) — avant de passer au lot (b).</p></main></body></html>

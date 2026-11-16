@@ -305,8 +305,12 @@
 | GET | `/sessions/{id}` |  | `training.session.read` | 200 |
 | PUT | `/sessions/{id}` |  | `training.session.update` | 200 |
 | POST | `/sessions/{id}/cancel` |  | `training.session.cancel` | 200 |
+| POST | `/sessions/{id}/close` |  | `training.session.close` | 200 |
 | POST | `/sessions/{id}/open` |  | `training.session.update` | 200 |
 | POST | `/sessions/{id}/postpone` |  | `training.session.update` | 200 |
+| POST | `/sessions/{id}/reopen` |  | `training.session.reopen` | 200 |
+| GET | `/sessions/{sessionId}/attendance` |  | `training.attendance.read` | 200 |
+| PUT | `/sessions/{sessionId}/attendance/{enrollmentId}/{day}` |  | `training.attendance.record` | 200 |
 
 ## trainers
 
@@ -328,4 +332,4 @@
 | PUT | `/trainings/{id}` |  | `training.training.update` | 200 |
 | POST | `/trainings/{id}/status` |  | `training.training.update` | 200 |
 
-*201 routes.*
+*205 routes.*

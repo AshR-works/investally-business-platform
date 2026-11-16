@@ -313,6 +313,58 @@ export class CancelSessionUseCase {
   }
 }
 
+export interface CloseSessionCommand { id: string; version: number; actor: ActorContext }
+export interface ReopenSessionCommand { id: string; version: number; reason: string; actor: ActorContext }
+
+/** Clôture la session (S5.3a) : les présences sont alors figées (`RecordAttendanceUseCase` les refuse tant qu'elle n'est pas rouverte). */
+@Injectable()
+export class CloseSessionUseCase {
+  constructor(
+    @Inject(SESSION_REPOSITORY) private readonly sessions: SessionRepository,
+    private readonly views: SessionViews,
+    @Inject(AUDIT_RECORDER) private readonly audit: AuditRecorder,
+    @Inject(UNIT_OF_WORK) private readonly unitOfWork: UnitOfWork,
+  ) {}
+
+  execute(command: CloseSessionCommand): Promise<SessionView> {
+    return this.unitOfWork.run(async () => {
+      const session = await loadForWrite(this.sessions, command.id, command.version);
+      const before = await this.views.of(session);
+      session.close();
+      await this.sessions.save(session);
+      const after = await this.views.of((await this.sessions.findById(session.id)) ?? session);
+      await this.audit.record({ actor: command.actor, module: 'training', entityType: 'TrainingSession', entityId: session.id, action: AuditAction.Update, oldValue: { ...before }, newValue: { ...after } });
+      return after;
+    });
+  }
+}
+
+/** Rouvre une session clôturée (S7) : permission dédiée, motif obligatoire, tracé dans l'audit (jamais stocké sur la session elle-même). */
+@Injectable()
+export class ReopenSessionUseCase {
+  constructor(
+    @Inject(SESSION_REPOSITORY) private readonly sessions: SessionRepository,
+    private readonly views: SessionViews,
+    @Inject(AUDIT_RECORDER) private readonly audit: AuditRecorder,
+    @Inject(UNIT_OF_WORK) private readonly unitOfWork: UnitOfWork,
+  ) {}
+
+  execute(command: ReopenSessionCommand): Promise<SessionView> {
+    return this.unitOfWork.run(async () => {
+      const session = await loadForWrite(this.sessions, command.id, command.version);
+      const before = await this.views.of(session);
+      session.reopen(command.reason);
+      await this.sessions.save(session);
+      const after = await this.views.of((await this.sessions.findById(session.id)) ?? session);
+      await this.audit.record({
+        actor: command.actor, module: 'training', entityType: 'TrainingSession', entityId: session.id, action: AuditAction.Update,
+        oldValue: { ...before }, newValue: { ...after, reopenReason: command.reason.trim() },
+      });
+      return after;
+    });
+  }
+}
+
 // ───────────────────────────── Lectures ─────────────────────────────
 
 /**

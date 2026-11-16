@@ -139,7 +139,7 @@ export const ROLE_GRANTS: Record<RoleCode, readonly Grant[]> = {
     g('hr.employee.read', Own), g('hr.directory.read', All), g('hr.leave.read', Own), g('hr.contract.read', Own), g('hr.journey.read', Own), g('hr.presence.read', Own), g('hr.presence.declare', Own), g('hr.leave.create', Own), g('hr.leave.approve', Own),
     g('training.program.read', All), g('training.room.read', All),
     g('training.session.read', Own), g('training.learner.read', Own),
-    g('training.attendance.read', Own), g('training.attendance.record', Own),
+    // Présences : jamais saisies par le formateur (externe, sans compte, S1/ADR-0016) ; retiré ici (S5.3a).
     g('training.evaluation.read', Own), g('training.evaluation.record', Own),
     g('training.certification.read', Own),
     g('docs.document.read', Own), g('docs.document.download', Own),

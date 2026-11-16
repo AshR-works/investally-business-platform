@@ -1189,14 +1189,44 @@ model Enrollment {
   createdAt     DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt     DateTime         @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  session  TrainingSession @relation(fields: [sessionId], references: [id], onDelete: Restrict)
-  learner  Learner         @relation(fields: [learnerId], references: [id], onDelete: Restrict)
+  session     TrainingSession @relation(fields: [sessionId], references: [id], onDelete: Restrict)
+  learner     Learner         @relation(fields: [learnerId], references: [id], onDelete: Restrict)
+  attendances Attendance[]
 
   @@index([sessionId, status])
   @@index([learnerId, status])
   @@index([approvalId, status])
   @@index([companyId])
   @@map("enrollments")
+  @@schema("training")
+}
+
+/// Présence à une séance (S5.3a, ADR-0016) : une valeur parmi trois, par inscription CONFIRMÉE et par jour de la session. Aucune heure, aucun retard chiffré,
+/// aucun texte libre. Saisie par le responsable Investudy (les formateurs sont externes, sans accès à l'application, FD-11 B) tant que la session n'est pas clôturée.
+enum AttendanceStatus {
+  PRESENT
+  LATE
+  ABSENT
+
+  @@schema("training")
+}
+
+model Attendance {
+  id               String           @id @db.Uuid
+  enrollmentId     String           @map("enrollment_id") @db.Uuid
+  day              DateTime         @db.Date
+  status           AttendanceStatus
+  /// Compte qui a saisi ou corrigé en dernier (hors contexte iam : pas de clé étrangère entre schémas, D70).
+  recordedByUserId String           @map("recorded_by_user_id") @db.Uuid
+  version          Int              @default(1)
+  createdAt        DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime         @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  enrollment Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Restrict)
+
+  @@unique([enrollmentId, day])
+  @@index([day])
+  @@map("attendances")
   @@schema("training")
 }
 
