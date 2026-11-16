@@ -1,0 +1,32 @@
+import { Attendance, AttendanceStatus } from '../domain/attendance';
+
+export interface AttendanceView {
+  id: string;
+  enrollmentId: string;
+  day: string;
+  status: AttendanceStatus;
+  recordedByUserId: string;
+  version: number;
+}
+
+export const toAttendanceView = (attendance: Attendance): AttendanceView => ({
+  id: attendance.id, enrollmentId: attendance.enrollmentId, day: attendance.day, status: attendance.status, recordedByUserId: attendance.recordedByUserId, version: attendance.version,
+});
+
+/** Une ligne par inscrit confirmé : son nom, et ses présences déjà saisies (les jours sans entrée n'ont pas encore été saisis). */
+export interface AttendanceSheetRow {
+  enrollmentId: string;
+  learnerId: string;
+  learnerName: string;
+  entries: { day: string; status: AttendanceStatus }[];
+}
+
+export interface AttendanceSheetView {
+  sessionId: string;
+  sessionStatus: string;
+  /** Un jour de cours par séance, du début à la fin de la session (lundi–vendredi). */
+  days: string[];
+  rows: AttendanceSheetRow[];
+  /** La session n'est pas clôturée : la saisie reste possible (sinon figée, S7). */
+  canRecord: boolean;
+}

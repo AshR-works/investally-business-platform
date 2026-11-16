@@ -38,7 +38,7 @@ export const RESOURCES: readonly ResourceDefinition[] = [
   // Training / Investudy
   { module: 'training', resource: 'program', label: 'Programmes', actions: [...CRUD, 'archive'] },
   { module: 'training', resource: 'training', label: 'Formations', actions: [...CRUD] },
-  { module: 'training', resource: 'session', label: 'Sessions', actions: [...CRUD, 'cancel', 'close'] },
+  { module: 'training', resource: 'session', label: 'Sessions', actions: [...CRUD, 'cancel', 'close', 'reopen'] },
   { module: 'training', resource: 'room', label: 'Salles', actions: ['read', 'manage'] },
   { module: 'training', resource: 'trainer', label: 'Formateurs', actions: ['read', 'manage'] },
   { module: 'training', resource: 'learner', label: 'Apprenants', actions: [...CRUD, 'delete'] },

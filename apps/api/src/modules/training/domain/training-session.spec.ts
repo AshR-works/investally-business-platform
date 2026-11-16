@@ -135,3 +135,24 @@ describe('Session de formation', () => {
     expectError(() => s.update({ capacity: 5 }, TODAY), 'INVARIANT_VIOLATION', /clôturée/);
   });
 });
+
+describe('Clôture et réouverture (S5.3a)', () => {
+  it('ne se clôture que depuis « Ouverte », pas deux fois', () => {
+    const planned = plan();
+    expectError(() => planned.close(), 'INVARIANT_VIOLATION', /ouverte/);
+    planned.open();
+    planned.close();
+    expect(planned.status).toBe('CLOSED');
+    expectError(() => planned.close(), 'INVARIANT_VIOLATION', /déjà clôturée/);
+  });
+
+  it('se rouvre avec un motif, redevient « Ouverte », jamais sans motif ni depuis un autre état', () => {
+    const open = plan();
+    open.open();
+    expectError(() => open.reopen('Erreur de saisie'), 'INVARIANT_VIOLATION', /clôturée/);
+    open.close();
+    expectError(() => open.reopen('   '), 'VALIDATION', /motif/);
+    open.reopen('Correction après coup');
+    expect(open.status).toBe('OPEN');
+  });
+});

@@ -146,6 +146,10 @@ export const IDOR_ROUTES: Record<string, IdorClass> = {
   'POST /sessions/:id/open': 'referentiel',
   'POST /sessions/:id/postpone': 'referentiel',
   'POST /sessions/:id/cancel': 'referentiel',
+  'POST /sessions/:id/close': 'referentiel',
+  'POST /sessions/:id/reopen': 'referentiel',
+  'GET /sessions/:sessionId/attendance': 'referentiel',
+  'PUT /sessions/:sessionId/attendance/:enrollmentId/:day': 'referentiel',
 
   'GET /admin/users/:id': 'admin',
   'PATCH /admin/users/:id': 'admin',

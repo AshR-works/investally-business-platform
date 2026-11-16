@@ -85,6 +85,7 @@ export class InMemoryEnrollments implements EnrollmentRepository {
   async seatLearnerIds(sessionId: string) { return this.items.filter((e) => e.sessionId === sessionId && e.occupiesSeat).map((e) => e.learnerId); }
   async listSeats(sessionId: string) { return this.items.filter((e) => e.sessionId === sessionId && e.occupiesSeat); }
   async hasConfirmed(learnerId: string) { return this.items.some((e) => e.learnerId === learnerId && e.status === 'CONFIRMED'); }
+  async listConfirmed(sessionId: string) { return this.items.filter((e) => e.sessionId === sessionId && e.status === 'CONFIRMED'); }
   async list(query: EnrollmentListQuery) {
     const rows = this.items
       .filter((e) => !query.sessionId || e.sessionId === query.sessionId)

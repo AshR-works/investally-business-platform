@@ -1,6 +1,6 @@
 {
   "titre": "Investally Business Platform : catalogue des tests de l’API",
-  "genereLe": "2026-11-14",
+  "genereLe": "2026-11-16",
   "source": "Généré avec la collection Postman par scripts/api-docs/build-postman.mjs (docs/api/postman/Investally-API.postman_collection.json). La collection est le fichier EXÉCUTABLE ; ce catalogue en est la version lisible.",
   "executer": {
     "postman": "Importer la collection et l’environnement, renseigner email, password et mfaSecret, lancer « 00 — Authentification » puis le dossier voulu.",
@@ -103,8 +103,8 @@
     {
       "nom": "01 — Sécurité : sans jeton, toute route protégée refuse",
       "description": null,
-      "requetes": 194,
-      "assertions": 388,
+      "requetes": 198,
+      "assertions": 396,
       "detail": [
         {
           "nom": "POST /auth/logout",
@@ -2260,6 +2260,41 @@
           ]
         },
         {
+          "nom": "POST /sessions/{id}/close",
+          "methode": "POST",
+          "chemin": "/api/v1/sessions/{id}/close",
+          "permission": "training.session.close",
+          "protegee": true,
+          "succesAttendus": [
+            200
+          ],
+          "corps": {
+            "version": 1
+          },
+          "tests": [
+            "Sans jeton : refusé (401)",
+            "Réponse « problem details »"
+          ]
+        },
+        {
+          "nom": "POST /sessions/{id}/reopen",
+          "methode": "POST",
+          "chemin": "/api/v1/sessions/{id}/reopen",
+          "permission": "training.session.reopen",
+          "protegee": true,
+          "succesAttendus": [
+            200
+          ],
+          "corps": {
+            "version": 1,
+            "reason": "texte"
+          },
+          "tests": [
+            "Sans jeton : refusé (401)",
+            "Réponse « problem details »"
+          ]
+        },
+        {
           "nom": "POST /learners",
           "methode": "POST",
           "chemin": "/api/v1/learners",
@@ -2445,6 +2480,38 @@
           "corps": {
             "version": 1,
             "sessionId": "{{uuid}}"
+          },
+          "tests": [
+            "Sans jeton : refusé (401)",
+            "Réponse « problem details »"
+          ]
+        },
+        {
+          "nom": "GET /sessions/{sessionId}/attendance",
+          "methode": "GET",
+          "chemin": "/api/v1/sessions/{sessionId}/attendance",
+          "permission": "training.attendance.read",
+          "protegee": true,
+          "succesAttendus": [
+            200
+          ],
+          "corps": null,
+          "tests": [
+            "Sans jeton : refusé (401)",
+            "Réponse « problem details »"
+          ]
+        },
+        {
+          "nom": "PUT /sessions/{sessionId}/attendance/{enrollmentId}/{day}",
+          "methode": "PUT",
+          "chemin": "/api/v1/sessions/{sessionId}/attendance/{enrollmentId}/{day}",
+          "permission": "training.attendance.record",
+          "protegee": true,
+          "succesAttendus": [
+            200
+          ],
+          "corps": {
+            "status": "PRESENT"
           },
           "tests": [
             "Sans jeton : refusé (401)",
@@ -7944,8 +8011,8 @@
     {
       "nom": "32 — sessions",
       "description": null,
-      "requetes": 7,
-      "assertions": 49,
+      "requetes": 11,
+      "assertions": 77,
       "detail": [
         {
           "nom": "GET /sessions",
@@ -8053,6 +8120,28 @@
           ]
         },
         {
+          "nom": "POST /sessions/{id}/close",
+          "methode": "POST",
+          "chemin": "/api/v1/sessions/{id}/close",
+          "permission": "training.session.close",
+          "protegee": true,
+          "succesAttendus": [
+            200
+          ],
+          "corps": {
+            "version": 1
+          },
+          "tests": [
+            "Pas d’erreur serveur (statut inférieur à 500)",
+            "Le jeton est accepté (pas de 401)",
+            "Statut prévu (succès documenté ou refus métier standard)",
+            "Temps de réponse raisonnable (moins de 3 s)",
+            "Réponse en JSON",
+            "Erreur au format « problem details » (RFC 7807)",
+            "Statut de succès documenté"
+          ]
+        },
+        {
           "nom": "POST /sessions/{id}/open",
           "methode": "POST",
           "chemin": "/api/v1/sessions/{id}/open",
@@ -8087,6 +8176,71 @@
             "version": 1,
             "startDate": "2026-11-23",
             "reason": "texte"
+          },
+          "tests": [
+            "Pas d’erreur serveur (statut inférieur à 500)",
+            "Le jeton est accepté (pas de 401)",
+            "Statut prévu (succès documenté ou refus métier standard)",
+            "Temps de réponse raisonnable (moins de 3 s)",
+            "Réponse en JSON",
+            "Erreur au format « problem details » (RFC 7807)",
+            "Statut de succès documenté"
+          ]
+        },
+        {
+          "nom": "POST /sessions/{id}/reopen",
+          "methode": "POST",
+          "chemin": "/api/v1/sessions/{id}/reopen",
+          "permission": "training.session.reopen",
+          "protegee": true,
+          "succesAttendus": [
+            200
+          ],
+          "corps": {
+            "version": 1,
+            "reason": "texte"
+          },
+          "tests": [
+            "Pas d’erreur serveur (statut inférieur à 500)",
+            "Le jeton est accepté (pas de 401)",
+            "Statut prévu (succès documenté ou refus métier standard)",
+            "Temps de réponse raisonnable (moins de 3 s)",
+            "Réponse en JSON",
+            "Erreur au format « problem details » (RFC 7807)",
+            "Statut de succès documenté"
+          ]
+        },
+        {
+          "nom": "GET /sessions/{sessionId}/attendance",
+          "methode": "GET",
+          "chemin": "/api/v1/sessions/{sessionId}/attendance",
+          "permission": "training.attendance.read",
+          "protegee": true,
+          "succesAttendus": [
+            200
+          ],
+          "corps": null,
+          "tests": [
+            "Pas d’erreur serveur (statut inférieur à 500)",
+            "Le jeton est accepté (pas de 401)",
+            "Statut prévu (succès documenté ou refus métier standard)",
+            "Temps de réponse raisonnable (moins de 3 s)",
+            "Réponse en JSON",
+            "Erreur au format « problem details » (RFC 7807)",
+            "Statut de succès documenté"
+          ]
+        },
+        {
+          "nom": "PUT /sessions/{sessionId}/attendance/{enrollmentId}/{day}",
+          "methode": "PUT",
+          "chemin": "/api/v1/sessions/{sessionId}/attendance/{enrollmentId}/{day}",
+          "permission": "training.attendance.record",
+          "protegee": true,
+          "succesAttendus": [
+            200
+          ],
+          "corps": {
+            "status": "PRESENT"
           },
           "tests": [
             "Pas d’erreur serveur (statut inférieur à 500)",
@@ -8495,8 +8649,8 @@
   ],
   "resume": {
     "dossiers": 32,
-    "requetes": 461,
-    "testsDefinis": 1888,
+    "requetes": 469,
+    "testsDefinis": 1924,
     "resultatDeReference": "Pile jetable, jeu de démonstration, compte Super administrateur : 443 requêtes, 1 626 assertions exécutées, 0 échec (dossiers 00b et 98 à part : 12 requêtes, 54 assertions, 0 échec)."
   }
 }

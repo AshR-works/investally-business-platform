@@ -90,3 +90,17 @@ export class CancelSessionDto {
   @ApiProperty({ maxLength: 500 }) @IsString() @IsNotEmpty() @MaxLength(500)
   reason!: string;
 }
+
+/** Clôture : gardée par la version lue, pas de motif (symétrique à l'ouverture). */
+export class CloseSessionDto {
+  @ApiProperty({ minimum: 1 }) @IsInt() @Min(1)
+  version!: number;
+}
+
+export class ReopenSessionDto {
+  @ApiProperty({ minimum: 1 }) @IsInt() @Min(1)
+  version!: number;
+
+  @ApiProperty({ maxLength: 500 }) @IsString() @IsNotEmpty() @MaxLength(500)
+  reason!: string;
+}

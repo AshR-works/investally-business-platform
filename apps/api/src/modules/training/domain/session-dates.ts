@@ -41,6 +41,19 @@ export function endDateFor(start: IsoDate, rhythm: Rhythm): IsoDate {
   return toIsoDate(cursor);
 }
 
+/** Jours de cours (lundi–vendredi) entre deux dates, bornes incluses : une séance par jour renvoyé (S5.3a). */
+export function workingDaysBetween(start: IsoDate, end: IsoDate): IsoDate[] {
+  const days: IsoDate[] = [];
+  let cursor = dateOf(start);
+  const last = dateOf(end);
+  while (cursor <= last) {
+    const iso = toIsoDate(cursor);
+    if (isWorkingDay(iso)) days.push(iso);
+    cursor = new Date(cursor.getTime() + DAY_MS);
+  }
+  return days;
+}
+
 /** Deux périodes (bornes incluses) se recouvrent-elles ? */
 export function overlaps(aStart: IsoDate, aEnd: IsoDate, bStart: IsoDate, bEnd: IsoDate): boolean {
   return aStart <= bEnd && bStart <= aEnd;

@@ -5,9 +5,9 @@ import { actorContextFrom } from '../../../shared-kernel';
 import { Access, CurrentActor, Protected } from '../../iam';
 import type { AccessContext, AuthenticatedActor } from '../../iam';
 import {
-  CancelSessionUseCase, GetSessionHandler, ListSessionsHandler, OpenSessionUseCase, PlanSessionUseCase, PostponeSessionUseCase, UpdateSessionUseCase,
+  CancelSessionUseCase, CloseSessionUseCase, GetSessionHandler, ListSessionsHandler, OpenSessionUseCase, PlanSessionUseCase, PostponeSessionUseCase, ReopenSessionUseCase, UpdateSessionUseCase,
 } from '../application/session-use-cases';
-import { CancelSessionDto, ListSessionsDto, OpenSessionDto, PlanSessionDto, PostponeSessionDto, UpdateSessionDto } from './dto/session.dto';
+import { CancelSessionDto, CloseSessionDto, ListSessionsDto, OpenSessionDto, PlanSessionDto, PostponeSessionDto, ReopenSessionDto, UpdateSessionDto } from './dto/session.dto';
 
 /*
  * Sessions de formation. Les écritures (planifier, modifier, ouvrir, reporter, annuler) sont réservées aux rôles qui détiennent la permission
@@ -24,6 +24,8 @@ export class SessionsController {
     private readonly open: OpenSessionUseCase,
     private readonly postpone: PostponeSessionUseCase,
     private readonly cancel: CancelSessionUseCase,
+    private readonly close: CloseSessionUseCase,
+    private readonly reopen: ReopenSessionUseCase,
     private readonly getOne: GetSessionHandler,
     private readonly listAll: ListSessionsHandler,
   ) {}
@@ -63,5 +65,17 @@ export class SessionsController {
   @Post(':id/cancel') @HttpCode(200) @Protected('training.session.cancel')
   abort(@Param('id', ParseUUIDPipe) id: string, @Body() dto: CancelSessionDto, @CurrentActor() actor: AuthenticatedActor, @Req() req: Request) {
     return this.cancel.execute({ ...dto, id, actor: actorContextFrom(req, actor) });
+  }
+
+  /** Clôture la session (S5.3a) : les présences sont alors figées. */
+  @Post(':id/close') @HttpCode(200) @Protected('training.session.close')
+  closeSession(@Param('id', ParseUUIDPipe) id: string, @Body() dto: CloseSessionDto, @CurrentActor() actor: AuthenticatedActor, @Req() req: Request) {
+    return this.close.execute({ ...dto, id, actor: actorContextFrom(req, actor) });
+  }
+
+  /** Rouvre une session clôturée (permission dédiée, motif obligatoire, S7). */
+  @Post(':id/reopen') @HttpCode(200) @Protected('training.session.reopen')
+  reopenSession(@Param('id', ParseUUIDPipe) id: string, @Body() dto: ReopenSessionDto, @CurrentActor() actor: AuthenticatedActor, @Req() req: Request) {
+    return this.reopen.execute({ ...dto, id, actor: actorContextFrom(req, actor) });
   }
 }

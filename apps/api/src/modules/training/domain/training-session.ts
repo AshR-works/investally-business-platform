@@ -119,6 +119,21 @@ export class TrainingSession extends AggregateRoot {
     this.props = { ...this.props, status: 'OPEN' };
   }
 
+  /** Clôture la session (S5.3a) : seule une session ouverte se clôture ; les présences sont alors figées (plus aucune saisie ni correction). */
+  close(): void {
+    if (this.props.status === 'CLOSED') throw new DomainError('INVARIANT_VIOLATION', 'La session est déjà clôturée');
+    if (this.props.status !== 'OPEN') throw new DomainError('INVARIANT_VIOLATION', 'Seule une session ouverte peut être clôturée');
+    this.props = { ...this.props, status: 'CLOSED' };
+  }
+
+  /** Rouvre une session clôturée (S7, permission dédiée) : motif obligatoire, pour corriger une présence après coup. Redevient « Ouverte ». */
+  reopen(reason: string): void {
+    if (this.props.status !== 'CLOSED') throw new DomainError('INVARIANT_VIOLATION', "Seule une session clôturée peut être rouverte");
+    const motive = optionalText(reason, 'Le motif', 500);
+    if (!motive) throw new DomainError('VALIDATION', 'Le motif de la réouverture est obligatoire');
+    this.props = { ...this.props, status: 'OPEN' };
+  }
+
   /** Annule la session, motif obligatoire. Aucune inscription n'est supprimée (elles passeront « à replacer », S5.2b). */
   cancel(reason: string): void {
     if (this.props.status === 'CANCELLED') throw new DomainError('INVARIANT_VIOLATION', 'La session est déjà annulée');

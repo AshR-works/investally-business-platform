@@ -5502,6 +5502,86 @@
         "x-protected": true
       }
     },
+    "/api/v1/sessions/{id}/close": {
+      "post": {
+        "operationId": "SessionsController_closeSession",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CloseSessionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "sessions"
+        ],
+        "x-permission": "training.session.close",
+        "x-protected": true
+      }
+    },
+    "/api/v1/sessions/{id}/reopen": {
+      "post": {
+        "operationId": "SessionsController_reopenSession",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReopenSessionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "sessions"
+        ],
+        "x-permission": "training.session.reopen",
+        "x-protected": true
+      }
+    },
     "/api/v1/learners": {
       "post": {
         "operationId": "LearnersController_create",
@@ -6007,6 +6087,92 @@
           "enrollments"
         ],
         "x-permission": "training.enrollment.cancel",
+        "x-protected": true
+      }
+    },
+    "/api/v1/sessions/{sessionId}/attendance": {
+      "get": {
+        "operationId": "AttendanceController_get",
+        "parameters": [
+          {
+            "name": "sessionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "sessions"
+        ],
+        "x-permission": "training.attendance.read",
+        "x-protected": true
+      }
+    },
+    "/api/v1/sessions/{sessionId}/attendance/{enrollmentId}/{day}": {
+      "put": {
+        "operationId": "AttendanceController_put",
+        "parameters": [
+          {
+            "name": "sessionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "enrollmentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "day",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecordAttendanceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "sessions"
+        ],
+        "x-permission": "training.attendance.record",
         "x-protected": true
       }
     },
@@ -9405,6 +9571,35 @@
           "reason"
         ]
       },
+      "CloseSessionDto": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "number",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "version"
+        ]
+      },
+      "ReopenSessionDto": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "number",
+            "minimum": 1
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "version",
+          "reason"
+        ]
+      },
       "CreateLearnerDto": {
         "type": "object",
         "properties": {
@@ -9621,6 +9816,22 @@
         "required": [
           "version",
           "sessionId"
+        ]
+      },
+      "RecordAttendanceDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "PRESENT",
+              "LATE",
+              "ABSENT"
+            ]
+          }
+        },
+        "required": [
+          "status"
         ]
       },
       "RegisterEmployeeDto": {

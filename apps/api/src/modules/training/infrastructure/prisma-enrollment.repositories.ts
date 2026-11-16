@@ -172,6 +172,11 @@ export class PrismaEnrollmentRepository implements EnrollmentRepository {
     return (await this.prisma.db.enrollment.count({ where: { learnerId, status: 'CONFIRMED' } })) > 0;
   }
 
+  async listConfirmed(sessionId: string): Promise<Enrollment[]> {
+    const rows = await this.prisma.db.enrollment.findMany({ where: { sessionId, status: 'CONFIRMED' }, orderBy: [{ createdAt: 'asc' }, { id: 'asc' }] });
+    return rows.map(enrollmentOf);
+  }
+
   async list(query: EnrollmentListQuery): Promise<Page<Enrollment>> {
     const where: Prisma.EnrollmentWhereInput = {
       ...(query.sessionId ? { sessionId: query.sessionId } : {}),
