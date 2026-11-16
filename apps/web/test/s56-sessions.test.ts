@@ -8,7 +8,7 @@ import { TrainingSession as ServerSession } from '../../api/src/modules/training
 import { availableModules } from '../lib/modules';
 import {
   capacityText, dateText, EMPTY_PLAN_FORM, editBody, endDateFor, formFromSession, hasStarted, isIsoDate, isWorkingDay, periodText, planBody, type PlanForm, type Session,
-  SESSION_STATUS, SESSION_STATUS_OPTIONS, sessionActions, todayIso, validateCancel, validateEdit, validatePlan, validatePostpone,
+  SESSION_STATUS, SESSION_STATUS_OPTIONS, sessionActions, todayIso, validateCancel, validateEdit, validatePlan, validatePostpone, validateReopen,
 } from '../lib/sessions';
 import type { Profile } from '../lib/types';
 
@@ -131,23 +131,39 @@ describe('sessions : modification, report, annulation', () => {
 });
 
 describe('sessions : actions selon l\'état, les dates et les droits', () => {
-  const full = { update: true, cancel: true };
-  it('une session planifiée avant son début : tout est possible', () => {
-    expect(sessionActions(session(), full, TODAY)).toEqual({ edit: true, open: true, postpone: true, cancel: true });
+  const full = { update: true, cancel: true, close: true, reopen: true };
+  it('une session planifiée avant son début : tout est possible, sauf clôturer/rouvrir', () => {
+    expect(sessionActions(session(), full, TODAY)).toEqual({ edit: true, open: true, postpone: true, cancel: true, close: false, reopen: false });
   });
-  it('une session ouverte ne s\'ouvre plus mais se modifie, se reporte, s\'annule', () => {
-    expect(sessionActions(session({ status: 'OPEN' }), full, TODAY)).toEqual({ edit: true, open: false, postpone: true, cancel: true });
+  it('une session ouverte ne s\'ouvre plus mais se modifie, se reporte, s\'annule, et peut se clôturer', () => {
+    expect(sessionActions(session({ status: 'OPEN' }), full, TODAY)).toEqual({ edit: true, open: false, postpone: true, cancel: true, close: true, reopen: false });
   });
   it('une session commencée ne se reporte plus', () => {
     expect(hasStarted(session({ startDate: '2026-11-06' }), TODAY)).toBe(true);
-    expect(sessionActions(session({ status: 'OPEN', startDate: '2026-11-03' }), full, TODAY)).toEqual({ edit: true, open: false, postpone: false, cancel: true });
+    expect(sessionActions(session({ status: 'OPEN', startDate: '2026-11-03' }), full, TODAY)).toEqual({ edit: true, open: false, postpone: false, cancel: true, close: true, reopen: false });
   });
-  it('une session annulée ou clôturée n\'offre plus aucune action', () => {
-    for (const status of ['CANCELLED', 'CLOSED'] as const) expect(sessionActions(session({ status }), full, TODAY)).toEqual({ edit: false, open: false, postpone: false, cancel: false });
+  it('une session annulée n\'offre plus aucune action', () => {
+    expect(sessionActions(session({ status: 'CANCELLED' }), full, TODAY)).toEqual({ edit: false, open: false, postpone: false, cancel: false, close: false, reopen: false });
+  });
+  it('une session clôturée n\'offre plus que la réouverture (figée sinon)', () => {
+    expect(sessionActions(session({ status: 'CLOSED' }), full, TODAY)).toEqual({ edit: false, open: false, postpone: false, cancel: false, close: false, reopen: true });
+  });
+  it('sans droit de clôturer ou rouvrir, ces actions n\'apparaissent pas même au bon état', () => {
+    const none = { update: true, cancel: true, close: false, reopen: false };
+    expect(sessionActions(session({ status: 'OPEN' }), none, TODAY).close).toBe(false);
+    expect(sessionActions(session({ status: 'CLOSED' }), none, TODAY).reopen).toBe(false);
   });
   it('sans droit d\'écriture, aucune action ; annuler dépend de son propre droit', () => {
-    expect(sessionActions(session(), { update: false, cancel: false }, TODAY)).toEqual({ edit: false, open: false, postpone: false, cancel: false });
-    expect(sessionActions(session(), { update: false, cancel: true }, TODAY)).toEqual({ edit: false, open: false, postpone: false, cancel: true });
+    expect(sessionActions(session(), { update: false, cancel: false, close: false, reopen: false }, TODAY)).toEqual({ edit: false, open: false, postpone: false, cancel: false, close: false, reopen: false });
+    expect(sessionActions(session(), { update: false, cancel: true, close: false, reopen: false }, TODAY)).toEqual({ edit: false, open: false, postpone: false, cancel: true, close: false, reopen: false });
+  });
+});
+
+describe('sessions : réouverture (S5.3a, S7)', () => {
+  it('exige un motif, comme l\'annulation ou le report', () => {
+    expect(validateReopen('   ')).toMatch(/obligatoire/);
+    expect(validateReopen('x'.repeat(501))).toMatch(/500/);
+    expect(validateReopen('Correction après coup')).toBeUndefined();
   });
 });
 

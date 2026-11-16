@@ -5,7 +5,7 @@ import { api, ApiError } from '../../lib/api';
 import type { CourseModule, Room, Trainer, Training } from '../../lib/catalogue';
 import {
   dateText, EMPTY_PLAN_FORM, type EditForm, editBody, endDateFor, formFromSession, hasStarted, isIsoDate, isWorkingDay, planBody, type PlanForm, type PostponeForm, type Session,
-  todayIso, validateCancel, validateEdit, validatePlan, validatePostpone,
+  todayIso, validateCancel, validateEdit, validatePlan, validatePostpone, validateReopen,
 } from '../../lib/sessions';
 import type { Page } from '../../lib/types';
 import { FormField, fieldProps } from '../form-field';
@@ -18,7 +18,9 @@ export type SessionDialogState =
   | { kind: 'edit'; session: Session }
   | { kind: 'open'; session: Session }
   | { kind: 'postpone'; session: Session }
-  | { kind: 'cancel'; session: Session };
+  | { kind: 'cancel'; session: Session }
+  | { kind: 'close'; session: Session }
+  | { kind: 'reopen'; session: Session };
 
 interface RhythmOption { code: string; label: string; weeks: number; open: boolean; totalHours: number }
 
@@ -34,6 +36,8 @@ export function SessionDialogs({ dialog, onClose, onDone }: { dialog: SessionDia
     case 'open': return <OpenDialog session={dialog.session} onClose={onClose} onDone={onDone} />;
     case 'postpone': return <PostponeDialog session={dialog.session} onClose={onClose} onDone={onDone} />;
     case 'cancel': return <CancelDialog session={dialog.session} onClose={onClose} onDone={onDone} />;
+    case 'close': return <CloseDialog session={dialog.session} onClose={onClose} onDone={onDone} />;
+    case 'reopen': return <ReopenDialog session={dialog.session} onClose={onClose} onDone={onDone} />;
   }
 }
 
@@ -270,6 +274,70 @@ function OpenDialog({ session, onClose, onDone }: { session: Session; onClose: (
       <div className="row end">
         <button type="button" className="secondary" onClick={onClose}>Retour</button>
         <button type="button" disabled={busy} onClick={() => void confirm()}>Ouvrir aux inscriptions</button>
+      </div>
+    </Modal>
+  );
+}
+
+function CloseDialog({ session, onClose, onDone }: { session: Session; onClose: () => void; onDone: () => Promise<void> }) {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  async function confirm() {
+    setBusy(true);
+    setError(null);
+    try {
+      await api(`/sessions/${session.id}/close`, { method: 'POST', body: { version: session.version } });
+      await onDone();
+    } catch (e) {
+      setBusy(false);
+      setError(e instanceof ApiError ? e.message : 'Action impossible');
+    }
+  }
+  return (
+    <Modal title="Clôturer la session" onClose={onClose}>
+      <p className="m-0 mb-3">
+        La session « {session.trainingTitle} » ({dateText(session.startDate)} → {dateText(session.endDate)}) sera clôturée : les présences seront figées, plus aucune saisie ni correction tant qu'elle n'est pas rouverte.
+      </p>
+      {error && <p role="alert" className="error">{error}</p>}
+      <div className="row end">
+        <button type="button" className="secondary" onClick={onClose}>Retour</button>
+        <button type="button" disabled={busy} onClick={() => void confirm()}>Clôturer</button>
+      </div>
+    </Modal>
+  );
+}
+
+function ReopenDialog({ session, onClose, onDone }: { session: Session; onClose: () => void; onDone: () => Promise<void> }) {
+  const [reason, setReason] = useState('');
+  const [submitted, setSubmitted] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const reasonError = validateReopen(reason);
+  async function confirm() {
+    setSubmitted(true);
+    if (reasonError) return;
+    setBusy(true);
+    setError(null);
+    try {
+      await api(`/sessions/${session.id}/reopen`, { method: 'POST', body: { version: session.version, reason: reason.trim() } });
+      await onDone();
+    } catch (e) {
+      setBusy(false);
+      setError(e instanceof ApiError ? e.message : 'Action impossible');
+    }
+  }
+  return (
+    <Modal title="Rouvrir la session" onClose={onClose}>
+      <p className="m-0 mb-3">
+        La session « {session.trainingTitle} » redevient ouverte : les présences pourront de nouveau être saisies ou corrigées. Le motif est obligatoire et conservé.
+      </p>
+      <FormField prefix="catalogue" name="reopen-reason" label="Motif de la réouverture" error={submitted ? reasonError : undefined}>
+        <textarea {...fieldProps('catalogue', 'reopen-reason', submitted ? reasonError : undefined)} value={reason} onChange={(e) => setReason(e.target.value)} rows={3} maxLength={500} required aria-required="true" />
+      </FormField>
+      {error && <p role="alert" className="error">{error}</p>}
+      <div className="row end">
+        <button type="button" className="secondary" onClick={onClose}>Retour</button>
+        <button type="button" disabled={busy} onClick={() => void confirm()}>Rouvrir</button>
       </div>
     </Modal>
   );
