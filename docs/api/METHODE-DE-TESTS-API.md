@@ -26,7 +26,16 @@ node scripts/local-stack.mjs --seed=organisation --sans-interface   # n'importe 
 
 Les quatre anciens dossiers séparés par usage (`investally-local-api-backend`, `investally-local-api-tests`, les scripts de lancement de `investally-local-demo-dg`, `investally-local-v1-prod`) sont redondants depuis §2.1, mais **pas supprimés** : `investally-local-demo-dg` garde en particulier son rôle de porte-données (`employes-reels.json`, lu par les seeds `organisation*` via `ORGANISATION_DATA_DIR`). Leur retrait reste une décision séparée de la Direction produit.
 
-### 2.3 Pourquoi une base locale, jamais la base de travail
+### 2.3 Tester les trois ensemble (base, API, interface)
+
+Sans `--sans-interface`, la base, l'API **et** l'interface tournent en même temps, sur la même base : une écriture faite d'un côté (Postman, SQL direct) se voit immédiatement de l'autre (l'interface), et réciproquement. Exemple concret, pour vérifier que les trois s'accordent :
+1. Postman, dossier 91 : créer un employé.
+2. Interface (`/hr/org-chart`) : rafraîchir, la nouvelle fiche apparaît sans rien relancer.
+3. Interface : modifier son intitulé de poste.
+4. Postman (`GET /hr/employees/{id}`) : relire la fiche, la nouvelle valeur est là, version incrémentée.
+5. SQL direct (psql ou Studio) : même valeur, même version, en base.
+
+### 2.4 Pourquoi une base locale, jamais la base de travail
 
 **Jamais contre une base de production ou une base partagée.** Les parcours de bout en bout créent des données (préfixées « Postman »), les requêtes de route peuvent écrire, et une erreur de manipulation (mauvais environnement sélectionné dans Postman) doit rester sans conséquence. C'est pour ça que `baseUrl` est systématiquement vérifié avant d'écrire (§4), et que la collection le rappelle dans sa description : « Ne jamais viser une base de production ».
 
@@ -87,7 +96,17 @@ node scripts/api-docs/build-postman.mjs
 ```
 Échoue volontairement si un parcours (90 ou 91) vise une route qui n'existe plus (§3).
 
-## 8. Ce que cette méthode ne couvre pas
+## 8. Pièges pratiques dans l'application Postman
+
+Rencontrés en marge du code, à régler dans Postman lui-même, pas dans le dépôt :
+
+- **Ne jamais mettre une vraie valeur à l'intérieur des accolades** (`"email": "{{h.bebey@investally.test}}"` ne fonctionne pas : Postman cherche une variable nommée littéralement `h.bebey@investally.test`, qui n'existe pas, et envoie le texte tel quel → 401 « Identifiants invalides »). Le corps de la requête garde toujours `{{email}}`, `{{password}}` ; la **vraie valeur** se met dans la colonne *Value* de l'environnement, jamais dans le corps.
+- **Mode « Local » (synchronisation Git) déconseillé pour cette collection** : ouvrir le dossier du dépôt dans Postman (« Open folder », bouton *Local mode* en bas à gauche) peut scaffolder une représentation incomplète de la collection (des dossiers entiers, comme « 00 — Authentification », absents sans message d'erreur). Importer directement le fichier JSON (`Ctrl+O` → sélectionner `Investally-API.postman_collection.json`) dans l'espace de travail normal évite le problème.
+- **Une collection volumineuse (plusieurs centaines de requêtes) peut sembler tronquée en scrollant** dans la barre de gauche : utiliser la **recherche** (champ en haut de la barre) plutôt que de scroller, pour vérifier si un dossier existe vraiment avant de conclure à un problème d'import.
+- **Un environnement ouvert n'est pas forcément sélectionné** : son onglet peut être ouvert (visible, modifiable) alors que le menu en haut à droite affiche encore « No Environment ». Toujours vérifier ce menu avant d'envoyer une requête.
+- **Secret du second facteur perdu** : il n'est affiché qu'une fois, à l'enrôlement. S'il n'a pas été noté dans `mfaSecret` et que l'application d'authentification (téléphone) fonctionne encore, pas besoin de tout réinitialiser : taper le code actuel à la main dans le corps de la requête « 2 — Vérifier le code », après avoir désactivé le script qui le calcule automatiquement. Si l'application est perdue aussi, il faut réinitialiser le second facteur du compte (`POST /admin/users/:id/mfa/reset`, exige soi-même un second facteur récent — donc à faire *avant* de le perdre, pas après) puis ré-enrôler : le nouveau secret s'affiche une fois, à copier immédiatement dans `mfaSecret`.
+
+## 9. Ce que cette méthode ne couvre pas
 
 - **Les droits par rôle** : la collection tourne avec un seul compte (Super administrateur en général). La matrice des permissions par rôle est vérifiée par les tests automatiques (`roles.spec`, contrat anti-IDOR), pas par ce test manuel.
 - **L'envoi de fichiers** (documents, pièces jointes) : à essayer à la main, hors collection.
