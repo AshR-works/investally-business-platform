@@ -13264,6 +13264,660 @@
               }
             }
           ]
+        },
+        {
+          "name": "90.6 — Formation : clôture de session et présences aux séances (S5.3a)",
+          "item": [
+            {
+              "name": "Planifier une session (réutilise le certificat, la salle et le formateur de 90.2)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/sessions",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "sessions"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"trainingId\": \"{{trainingId}}\",\n  \"rhythm\": \"DAY\",\n  \"startDate\": \"{{s53aStart}}\",\n  \"roomId\": \"{{roomId}}\",\n  \"trainerId\": \"{{trainerId}}\",\n  \"capacity\": 5\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.collectionVariables.set('s53aStart', (() => { const d = new Date(); d.setUTCDate(d.getUTCDate() + 14); d.setUTCDate(d.getUTCDate() + ((8 - d.getUTCDay()) % 7 || 7)); return d.toISOString().slice(0, 10); })().replace(/(\\d{4}-\\d{2}-\\d{2})/, (d) => { const dt = new Date(d); dt.setUTCDate(dt.getUTCDate() + 7); return dt.toISOString().slice(0, 10); }));"
+                    ]
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Session planifiée', () => pm.expect([201]).to.include(pm.response.code));",
+                      "pm.environment.set('s53aSessionId', pm.response.json().id);"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Ouvrir la session",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/sessions/{{s53aSessionId}}/open",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "sessions",
+                    "{{s53aSessionId}}",
+                    "open"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"version\": 1\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Ouvrir la session : statut 200', () => pm.expect([200]).to.include(pm.response.code));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Inscrire un étudiant, payeur lui-même",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/enrollments",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "enrollments"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"sessionId\": \"{{s53aSessionId}}\",\n  \"learnerId\": \"{{learnerId}}\",\n  \"payer\": {\n    \"kind\": \"SELF\"\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Inscrire un étudiant, payeur lui-même : statut 201', () => pm.expect([201]).to.include(pm.response.code));",
+                      "if ([201].includes(pm.response.code)) pm.environment.set('s53aEnrollmentId', String(pm.response.json().id));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Confirmer l’inscription",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/enrollments/{{s53aEnrollmentId}}/confirm",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "enrollments",
+                    "{{s53aEnrollmentId}}",
+                    "confirm"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"version\": 1\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Confirmer l’inscription : statut 200', () => pm.expect([200]).to.include(pm.response.code));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Feuille de présence : l’inscrit confirmé y figure, sans entrée",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/sessions/{{s53aSessionId}}/attendance",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "sessions",
+                    "{{s53aSessionId}}",
+                    "attendance"
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Feuille de présence : l’inscrit confirmé y figure, sans entrée : statut 200', () => pm.expect([200]).to.include(pm.response.code));",
+                      "pm.test('Un inscrit, pas encore saisi, saisie possible', () => { const b = pm.response.json(); pm.expect(b.rows).to.have.lengthOf(1); pm.expect(b.rows[0].entries).to.eql([]); pm.expect(b.canRecord).to.eql(true); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Saisir une présence : présent",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/sessions/{{s53aSessionId}}/attendance/{{s53aEnrollmentId}}/{{s53aStart}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "sessions",
+                    "{{s53aSessionId}}",
+                    "attendance",
+                    "{{s53aEnrollmentId}}",
+                    "{{s53aStart}}"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"PRESENT\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Saisir une présence : présent : statut 200', () => pm.expect([200]).to.include(pm.response.code));",
+                      "pm.test('Présent', () => pm.expect(pm.response.json().status).to.eql('PRESENT'));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Redéclarer la même présence ne change rien",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/sessions/{{s53aSessionId}}/attendance/{{s53aEnrollmentId}}/{{s53aStart}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "sessions",
+                    "{{s53aSessionId}}",
+                    "attendance",
+                    "{{s53aEnrollmentId}}",
+                    "{{s53aStart}}"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"PRESENT\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Redéclarer la même présence ne change rien : statut 200', () => pm.expect([200]).to.include(pm.response.code));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Un statut hors liste est refusé",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/sessions/{{s53aSessionId}}/attendance/{{s53aEnrollmentId}}/{{s53aStart}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "sessions",
+                    "{{s53aSessionId}}",
+                    "attendance",
+                    "{{s53aEnrollmentId}}",
+                    "{{s53aStart}}"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"EN_PAUSE\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Un statut hors liste est refusé : statut 400', () => pm.expect([400]).to.include(pm.response.code));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Clôturer la session",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/sessions/{{s53aSessionId}}/close",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "sessions",
+                    "{{s53aSessionId}}",
+                    "close"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"version\": 2\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Clôturer la session : statut 200', () => pm.expect([200]).to.include(pm.response.code));",
+                      "pm.test('Clôturée', () => pm.expect(pm.response.json().status).to.eql('CLOSED'));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Clôturer une seconde fois : refusé",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/sessions/{{s53aSessionId}}/close",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "sessions",
+                    "{{s53aSessionId}}",
+                    "close"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"version\": 3\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Clôturer une seconde fois : refusé : statut 422', () => pm.expect([422]).to.include(pm.response.code));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Présence refusée une fois la session clôturée",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/sessions/{{s53aSessionId}}/attendance/{{s53aEnrollmentId}}/{{s53aStart}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "sessions",
+                    "{{s53aSessionId}}",
+                    "attendance",
+                    "{{s53aEnrollmentId}}",
+                    "{{s53aStart}}"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"ABSENT\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Présence refusée une fois la session clôturée : statut 422', () => pm.expect([422]).to.include(pm.response.code));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Rouvrir sans motif : refusé",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/sessions/{{s53aSessionId}}/reopen",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "sessions",
+                    "{{s53aSessionId}}",
+                    "reopen"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"version\": 3,\n  \"reason\": \"\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Rouvrir sans motif : refusé : statut 400', () => pm.expect([400]).to.include(pm.response.code));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Rouvrir avec motif",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/sessions/{{s53aSessionId}}/reopen",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "sessions",
+                    "{{s53aSessionId}}",
+                    "reopen"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"version\": 3,\n  \"reason\": \"Correction Postman\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Rouvrir avec motif : statut 200', () => pm.expect([200]).to.include(pm.response.code));",
+                      "pm.test('Ouverte de nouveau', () => pm.expect(pm.response.json().status).to.eql('OPEN'));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Présence de nouveau possible, corrigée : en retard",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/sessions/{{s53aSessionId}}/attendance/{{s53aEnrollmentId}}/{{s53aStart}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "sessions",
+                    "{{s53aSessionId}}",
+                    "attendance",
+                    "{{s53aEnrollmentId}}",
+                    "{{s53aStart}}"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"LATE\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Présence de nouveau possible, corrigée : en retard : statut 200', () => pm.expect([200]).to.include(pm.response.code));",
+                      "pm.test('En retard', () => pm.expect(pm.response.json().status).to.eql('LATE'));"
+                    ]
+                  }
+                }
+              ]
+            }
+          ],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get('runId')) pm.collectionVariables.set('runId', Math.random().toString(36).slice(2, 8));"
+                ]
+              }
+            }
+          ]
         }
       ],
       "description": "Scénarios qui créent leurs propres données et vérifient les règles métier (agrément, payeur, portée). À lancer après la connexion, avec un compte qui a les droits (par exemple le Super administrateur de test)."

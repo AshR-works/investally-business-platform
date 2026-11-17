@@ -1,5 +1,8 @@
 import 'reflect-metadata';
+import { randomUUID } from 'node:crypto';
 import { RoleCode } from '../src/modules/iam/domain/roles';
+import { Attendance } from '../src/modules/training/domain/attendance';
+import { ATTENDANCE_REPOSITORY, AttendanceRepository } from '../src/modules/training/domain/attendance-repositories';
 import { SESSION_REPOSITORY, SessionRepository } from '../src/modules/training/domain/session-repositories';
 import { Api, createUserWithRoles, mfaSession, startRbacApp } from './support/rbac-http';
 import { TestApp } from './support/test-app';
@@ -24,13 +27,19 @@ describeDb('Sessions de formation (HTTP + PostgreSQL)', () => {
   const ip = () => `10.98.${Math.floor(seq / 250)}.${(seq++ % 250) + 1}`;
   const unique = () => Math.random().toString(36).slice(2, 8);
   type As = { token: string; ip: string; sessionId: string };
-  const created = { programs: [] as string[], modules: [] as string[], rooms: [] as string[], trainers: [] as string[], trainings: [] as string[], sessions: [] as string[] };
+  const created = {
+    programs: [] as string[], modules: [] as string[], rooms: [] as string[], trainers: [] as string[], trainings: [] as string[], sessions: [] as string[],
+    learners: [] as string[], enrollments: [] as string[],
+  };
 
   beforeAll(async () => {
     ({ t, api } = await startRbacApp());
   }, 60_000);
   afterAll(async () => {
     const db = t.prisma.db;
+    await db.attendance.deleteMany({ where: { enrollmentId: { in: created.enrollments } } });
+    await db.enrollment.deleteMany({ where: { id: { in: created.enrollments } } });
+    await db.learner.deleteMany({ where: { id: { in: created.learners } } });
     await db.trainingSession.deleteMany({ where: { id: { in: created.sessions } } });
     await db.trainingSession.deleteMany({ where: { OR: [{ roomId: { in: created.rooms } }, { trainerId: { in: created.trainers } }] } });
     await db.training.deleteMany({ where: { programId: { in: created.programs } } });
@@ -63,7 +72,8 @@ describeDb('Sessions de formation (HTTP + PostgreSQL)', () => {
     const magistral = await moduleOf('Fondations', false);
     const pratique = await moduleOf('Trading sur poste', true);
     const trainingOf = async (title: string, moduleIds: string[]) => {
-      const tr = await api.call('POST', '/api/v1/trainings', { ...manager, body: { programId: program.body.id, title: `${title} ${unique()}`, moduleIds } });
+      // Prix complet obligatoire : un étudiant ou un particulier (S5.3a, payeur lui-même) s'inscrit sans agrément, pour le prix du certificat.
+      const tr = await api.call('POST', '/api/v1/trainings', { ...manager, body: { programId: program.body.id, title: `${title} ${unique()}`, moduleIds, priceAmount: '100000' } });
       expect(tr.status).toBe(201);
       created.trainings.push(tr.body.id);
       return tr.body.id as string;
@@ -263,5 +273,123 @@ describeDb('Sessions de formation (HTTP + PostgreSQL)', () => {
     await expect(db.room.delete({ where: { id: w.marches } })).rejects.toThrow(); // jamais de suppression d'une salle utilisée
     await expect(db.trainer.delete({ where: { id: w.internal } })).rejects.toThrow();
     await expect(db.training.delete({ where: { id: w.trading } })).rejects.toThrow();
+  });
+
+  /** Un inscrit confirmé, sans agrément ni entreprise (étudiant, payeur lui-même) : le chemin le plus court pour obtenir une inscription confirmée. */
+  async function confirmedEnrollment(w: World, session: { id: string }) {
+    const learner = await api.call('POST', '/api/v1/learners', { ...w.manager, body: { kind: 'STUDENT', lastName: `Présence${unique()}`, firstName: 'Noa' } });
+    expect(learner.status).toBe(201);
+    created.learners.push(learner.body.id);
+    const enrolled = await api.call('POST', '/api/v1/enrollments', { ...w.manager, body: { sessionId: session.id, learnerId: learner.body.id, payer: { kind: 'SELF' } } });
+    expect(enrolled.status).toBe(201);
+    created.enrollments.push(enrolled.body.id);
+    const confirmed = await api.call('POST', `/api/v1/enrollments/${enrolled.body.id}/confirm`, { ...w.manager, body: { version: 1 } });
+    expect(confirmed.status).toBe(200);
+    return { enrollmentId: enrolled.body.id as string, learnerId: learner.body.id as string };
+  }
+
+  it('clôture et réouverture (S5.3a) : seule une session ouverte se clôture, les présences sont figées, la réouverture exige un motif', async () => {
+    const w = await world();
+    const s = await planned(w, { startDate: monday(3) });
+    expect((await api.call('POST', `/api/v1/sessions/${s.id}/close`, { ...w.manager, body: { version: 1 } })).status).toBe(422); // pas encore ouverte
+    await api.call('POST', `/api/v1/sessions/${s.id}/open`, { ...w.manager, body: { version: 1 } });
+    const { enrollmentId } = await confirmedEnrollment(w, s);
+    const day = s.startDate;
+    expect((await api.call('PUT', `/api/v1/sessions/${s.id}/attendance/${enrollmentId}/${day}`, { ...w.manager, body: { status: 'PRESENT' } })).status).toBe(200);
+
+    const closed = await api.call('POST', `/api/v1/sessions/${s.id}/close`, { ...w.manager, body: { version: 2 } });
+    expect(closed.status).toBe(200);
+    expect(closed.body).toMatchObject({ status: 'CLOSED', version: 3 });
+    expect((await api.call('POST', `/api/v1/sessions/${s.id}/close`, { ...w.manager, body: { version: 3 } })).status).toBe(422); // déjà clôturée
+    // Figée : ni nouvelle saisie ni correction.
+    expect((await api.call('PUT', `/api/v1/sessions/${s.id}/attendance/${enrollmentId}/${addDays(day, 1)}`, { ...w.manager, body: { status: 'PRESENT' } })).status).toBe(422);
+    expect((await api.call('PUT', `/api/v1/sessions/${s.id}/attendance/${enrollmentId}/${day}`, { ...w.manager, body: { status: 'ABSENT' } })).status).toBe(422);
+
+    expect((await api.call('POST', `/api/v1/sessions/${s.id}/reopen`, { ...w.manager, body: { version: 3, reason: '' } })).status).toBe(400); // motif obligatoire
+    const reopened = await api.call('POST', `/api/v1/sessions/${s.id}/reopen`, { ...w.manager, body: { version: 3, reason: 'Correction après coup' } });
+    expect(reopened.status).toBe(200);
+    expect(reopened.body).toMatchObject({ status: 'OPEN', version: 4 });
+    expect((await api.call('POST', `/api/v1/sessions/${s.id}/reopen`, { ...w.manager, body: { version: 4, reason: 'Encore' } })).status).toBe(422); // pas clôturée
+    expect((await api.call('PUT', `/api/v1/sessions/${s.id}/attendance/${enrollmentId}/${day}`, { ...w.manager, body: { status: 'ABSENT' } })).status).toBe(200); // de nouveau possible
+
+    const audit = await t.prisma.db.auditLog.findMany({ where: { entityType: 'TrainingSession', entityId: s.id }, orderBy: { createdAt: 'asc' } });
+    expect(audit.map((a) => a.action)).toEqual(['CREATE', 'UPDATE', 'UPDATE', 'UPDATE']); // ouvrir, clôturer, rouvrir
+    const reopenAudit = audit.at(-1) as unknown as { newValue: { reopenReason: string } };
+    expect(reopenAudit.newValue.reopenReason).toBe('Correction après coup');
+  });
+
+  it('présences aux séances (S5.3a) : seuls les inscrits confirmés, un jour de cours dans la session, idempotent, droits', async () => {
+    const w = await world();
+    const s = await planned(w, { startDate: monday(3) });
+    await api.call('POST', `/api/v1/sessions/${s.id}/open`, { ...w.manager, body: { version: 1 } });
+    const { enrollmentId, learnerId } = await confirmedEnrollment(w, s);
+    // Un second inscrit, jamais confirmé : ne doit pas apparaître sur la feuille.
+    const pendingLearner = await api.call('POST', '/api/v1/learners', { ...w.manager, body: { kind: 'STUDENT', lastName: `EnAttente${unique()}`, firstName: 'Paul' } });
+    created.learners.push(pendingLearner.body.id);
+    const pendingEnrolled = await api.call('POST', '/api/v1/enrollments', { ...w.manager, body: { sessionId: s.id, learnerId: pendingLearner.body.id, payer: { kind: 'SELF' } } });
+    created.enrollments.push(pendingEnrolled.body.id);
+
+    const day = s.startDate;
+    const put = (d: string, status: string) => api.call('PUT', `/api/v1/sessions/${s.id}/attendance/${enrollmentId}/${d}`, { ...w.manager, body: { status } });
+    expect((await put(day, 'INCONNU')).status).toBe(400);
+    expect((await put(addDays(day, 10), 'PRESENT')).status).toBe(400); // hors période
+    expect((await put(addDays(day, 5), 'PRESENT')).status).toBe(400); // samedi : pas un jour de cours
+    const recorded = await put(day, 'PRESENT');
+    expect(recorded.status).toBe(200);
+    expect(recorded.body).toMatchObject({ enrollmentId, day, status: 'PRESENT' });
+
+    // Une seconde séance, saisie après la première : la feuille les rend dans l'ordre des jours, jamais l'inverse.
+    const laterDay = addDays(day, 3); // jeudi : toujours un jour de cours
+    await put(laterDay, 'ABSENT');
+
+    const sheet = await api.call('GET', `/api/v1/sessions/${s.id}/attendance`, w.manager);
+    expect(sheet.status).toBe(200);
+    expect(sheet.body).toMatchObject({ sessionId: s.id, sessionStatus: 'OPEN', canRecord: true });
+    expect(sheet.body.days).toEqual([day, addDays(day, 1), addDays(day, 2), addDays(day, 3), addDays(day, 4)]);
+    expect(sheet.body.rows).toEqual([{ enrollmentId, learnerId, learnerName: expect.any(String), entries: [{ day, status: 'PRESENT' }, { day: laterDay, status: 'ABSENT' }] }]);
+
+    // Corriger : idempotent (même valeur, pas de nouvelle trace), puis changement tracé avant/après, avec le dernier auteur (un autre compte) et la version qui augmente.
+    const before = await t.prisma.db.auditLog.count({ where: { entityType: 'Attendance' } });
+    await put(day, 'PRESENT');
+    expect(await t.prisma.db.auditLog.count({ where: { entityType: 'Attendance' } })).toBe(before);
+    const otherManager = await login(RoleCode.TrainingManager);
+    const corrected = await api.call('PUT', `/api/v1/sessions/${s.id}/attendance/${enrollmentId}/${day}`, { ...otherManager, body: { status: 'LATE' } });
+    expect(corrected.body).toMatchObject({ status: 'LATE' });
+    const audit = await t.prisma.db.auditLog.findFirst({ where: { entityType: 'Attendance', action: 'UPDATE' }, orderBy: { createdAt: 'desc' } });
+    expect(audit).toMatchObject({ oldValue: { status: 'PRESENT' }, newValue: { status: 'LATE' } });
+    const row = await t.prisma.db.attendance.findFirst({ where: { enrollmentId, day: new Date(`${day}T00:00:00Z`) } });
+    expect(row?.recordedByUserId).toBe(otherManager.userId); // le dernier auteur, pas le premier, est retenu EN BASE
+    expect(row?.version).toBe(2); // incrémentée en base à chaque écriture (créée, puis corrigée une fois)
+
+    // Unicité garantie par la base, au niveau du dépôt : deux présences distinctes pour le même (inscription, jour).
+    const attendances = t.get(ATTENDANCE_REPOSITORY as never) as AttendanceRepository;
+    const neverTouched = addDays(day, 2); // mercredi : jamais saisi jusqu'ici
+    const first = Attendance.record({ id: randomUUID(), enrollmentId, day: neverTouched, status: 'PRESENT', recordedByUserId: w.manager.userId, now: new Date() });
+    const second = Attendance.record({ id: randomUUID(), enrollmentId, day: neverTouched, status: 'LATE', recordedByUserId: w.manager.userId, now: new Date() });
+    await attendances.save(first);
+    await expect(attendances.save(second)).rejects.toMatchObject({ code: 'CONFLICT' });
+
+    // Une inscription en attente de confirmation est « introuvable » pour la présence (comme un objet hors portée).
+    expect((await api.call('PUT', `/api/v1/sessions/${s.id}/attendance/${pendingEnrolled.body.id}/${day}`, { ...w.manager, body: { status: 'PRESENT' } })).status).toBe(422);
+
+    // Droits : Direction lit, ne saisit pas ; un chargé de compte ne voit ni ne saisit.
+    const direction = await login(RoleCode.Direction);
+    const am = await login(RoleCode.AccountManager);
+    expect((await api.call('GET', `/api/v1/sessions/${s.id}/attendance`, direction)).status).toBe(200);
+    expect((await api.call('PUT', `/api/v1/sessions/${s.id}/attendance/${enrollmentId}/${day}`, { ...direction, body: { status: 'ABSENT' } })).status).toBe(403);
+    expect((await api.call('GET', `/api/v1/sessions/${s.id}/attendance`, am)).status).toBe(403);
+  });
+
+  it('présences : garanties de la base (unicité par inscription et par jour, clé vers l\'inscription)', async () => {
+    const w = await world();
+    const s = await planned(w, { startDate: monday(3) });
+    await api.call('POST', `/api/v1/sessions/${s.id}/open`, { ...w.manager, body: { version: 1 } });
+    const { enrollmentId } = await confirmedEnrollment(w, s);
+    const db = t.prisma.db;
+    await db.attendance.create({ data: { id: randomUUID(), enrollmentId, day: new Date(`${s.startDate}T00:00:00Z`), status: 'PRESENT', recordedByUserId: w.manager.userId } });
+    await expect(db.attendance.create({ data: { id: randomUUID(), enrollmentId, day: new Date(`${s.startDate}T00:00:00Z`), status: 'ABSENT', recordedByUserId: w.manager.userId } })).rejects.toThrow(/attendances_enrollment_id_day_key/);
+    await expect(
+      db.attendance.create({ data: { id: randomUUID(), enrollmentId: '00000000-0000-7000-8000-000000000000', day: new Date(`${addDays(s.startDate, 1)}T00:00:00Z`), status: 'PRESENT', recordedByUserId: w.manager.userId } }),
+    ).rejects.toThrow();
   });
 });

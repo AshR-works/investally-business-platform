@@ -53,6 +53,13 @@ describe('Présences aux séances (S5.3a)', () => {
     expect(w.audit.at(-1)).toMatchObject({ action: AuditAction.Update, entityType: 'Attendance', oldValue: { status: 'PRESENT' }, newValue: { status: 'ABSENT' } });
   });
 
+  it('une inscription confirmée d\'une autre session est « introuvable », pas saisissable ici', async () => {
+    const { w, enrolledA } = await setup();
+    const other = await w.plan.execute({ trainingId: w.certTrading.id, rhythm: 'DAY', startDate: '2026-11-23', roomId: w.salleMarches.id, trainerId: w.interne.id, capacity: 5, actor });
+    await w.open.execute({ id: other.id, version: 1, actor });
+    await rejects(w.recordAttendance.execute({ sessionId: other.id, enrollmentId: enrolledA.id, day: '2026-11-23', status: 'PRESENT', access: inv, actor }), 'NOT_FOUND', /Inscription introuvable/);
+  });
+
   it('refuse une inscription non confirmée (en attente), un jour hors session, et une session inexistante', async () => {
     const { w, planned, enrolledB } = await setup();
     await rejects(w.recordAttendance.execute({ sessionId: planned.id, enrollmentId: enrolledB.id, day: '2026-11-17', status: 'PRESENT', access: inv, actor }), 'INVARIANT_VIOLATION', /confirmés/);

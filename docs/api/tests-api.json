@@ -3286,8 +3286,8 @@
     {
       "nom": "90 — Parcours de bout en bout",
       "description": "Scénarios qui créent leurs propres données et vérifient les règles métier (agrément, payeur, portée). À lancer après la connexion, avec un compte qui a les droits (par exemple le Super administrateur de test).",
-      "requetes": 52,
-      "assertions": 78,
+      "requetes": 66,
+      "assertions": 97,
       "detail": [
         {
           "nom": "Créer une entreprise",
@@ -4050,6 +4050,216 @@
           "corps": null,
           "tests": [
             "Une période de plus de 93 jours est refusée : statut 400"
+          ]
+        },
+        {
+          "nom": "Planifier une session (réutilise le certificat, la salle et le formateur de 90.2)",
+          "methode": "POST",
+          "chemin": "/api/v1/sessions",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": {
+            "trainingId": "{{trainingId}}",
+            "rhythm": "DAY",
+            "startDate": "{{s53aStart}}",
+            "roomId": "{{roomId}}",
+            "trainerId": "{{trainerId}}",
+            "capacity": 5
+          },
+          "tests": [
+            "Session planifiée"
+          ]
+        },
+        {
+          "nom": "Ouvrir la session",
+          "methode": "POST",
+          "chemin": "/api/v1/sessions/{{s53aSessionId}}/open",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": {
+            "version": 1
+          },
+          "tests": [
+            "Ouvrir la session : statut 200"
+          ]
+        },
+        {
+          "nom": "Inscrire un étudiant, payeur lui-même",
+          "methode": "POST",
+          "chemin": "/api/v1/enrollments",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": {
+            "sessionId": "{{s53aSessionId}}",
+            "learnerId": "{{learnerId}}",
+            "payer": {
+              "kind": "SELF"
+            }
+          },
+          "tests": [
+            "Inscrire un étudiant, payeur lui-même : statut 201"
+          ]
+        },
+        {
+          "nom": "Confirmer l’inscription",
+          "methode": "POST",
+          "chemin": "/api/v1/enrollments/{{s53aEnrollmentId}}/confirm",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": {
+            "version": 1
+          },
+          "tests": [
+            "Confirmer l’inscription : statut 200"
+          ]
+        },
+        {
+          "nom": "Feuille de présence : l’inscrit confirmé y figure, sans entrée",
+          "methode": "GET",
+          "chemin": "/api/v1/sessions/{{s53aSessionId}}/attendance",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": null,
+          "tests": [
+            "Feuille de présence : l’inscrit confirmé y figure, sans entrée : statut 200",
+            "Un inscrit, pas encore saisi, saisie possible"
+          ]
+        },
+        {
+          "nom": "Saisir une présence : présent",
+          "methode": "PUT",
+          "chemin": "/api/v1/sessions/{{s53aSessionId}}/attendance/{{s53aEnrollmentId}}/{{s53aStart}}",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": {
+            "status": "PRESENT"
+          },
+          "tests": [
+            "Saisir une présence : présent : statut 200",
+            "Présent"
+          ]
+        },
+        {
+          "nom": "Redéclarer la même présence ne change rien",
+          "methode": "PUT",
+          "chemin": "/api/v1/sessions/{{s53aSessionId}}/attendance/{{s53aEnrollmentId}}/{{s53aStart}}",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": {
+            "status": "PRESENT"
+          },
+          "tests": [
+            "Redéclarer la même présence ne change rien : statut 200"
+          ]
+        },
+        {
+          "nom": "Un statut hors liste est refusé",
+          "methode": "PUT",
+          "chemin": "/api/v1/sessions/{{s53aSessionId}}/attendance/{{s53aEnrollmentId}}/{{s53aStart}}",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": {
+            "status": "EN_PAUSE"
+          },
+          "tests": [
+            "Un statut hors liste est refusé : statut 400"
+          ]
+        },
+        {
+          "nom": "Clôturer la session",
+          "methode": "POST",
+          "chemin": "/api/v1/sessions/{{s53aSessionId}}/close",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": {
+            "version": 2
+          },
+          "tests": [
+            "Clôturer la session : statut 200",
+            "Clôturée"
+          ]
+        },
+        {
+          "nom": "Clôturer une seconde fois : refusé",
+          "methode": "POST",
+          "chemin": "/api/v1/sessions/{{s53aSessionId}}/close",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": {
+            "version": 3
+          },
+          "tests": [
+            "Clôturer une seconde fois : refusé : statut 422"
+          ]
+        },
+        {
+          "nom": "Présence refusée une fois la session clôturée",
+          "methode": "PUT",
+          "chemin": "/api/v1/sessions/{{s53aSessionId}}/attendance/{{s53aEnrollmentId}}/{{s53aStart}}",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": {
+            "status": "ABSENT"
+          },
+          "tests": [
+            "Présence refusée une fois la session clôturée : statut 422"
+          ]
+        },
+        {
+          "nom": "Rouvrir sans motif : refusé",
+          "methode": "POST",
+          "chemin": "/api/v1/sessions/{{s53aSessionId}}/reopen",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": {
+            "version": 3,
+            "reason": ""
+          },
+          "tests": [
+            "Rouvrir sans motif : refusé : statut 400"
+          ]
+        },
+        {
+          "nom": "Rouvrir avec motif",
+          "methode": "POST",
+          "chemin": "/api/v1/sessions/{{s53aSessionId}}/reopen",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": {
+            "version": 3,
+            "reason": "Correction Postman"
+          },
+          "tests": [
+            "Rouvrir avec motif : statut 200",
+            "Ouverte de nouveau"
+          ]
+        },
+        {
+          "nom": "Présence de nouveau possible, corrigée : en retard",
+          "methode": "PUT",
+          "chemin": "/api/v1/sessions/{{s53aSessionId}}/attendance/{{s53aEnrollmentId}}/{{s53aStart}}",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": {
+            "status": "LATE"
+          },
+          "tests": [
+            "Présence de nouveau possible, corrigée : en retard : statut 200",
+            "En retard"
           ]
         }
       ]
@@ -8649,8 +8859,8 @@
   ],
   "resume": {
     "dossiers": 32,
-    "requetes": 469,
-    "testsDefinis": 1924,
+    "requetes": 483,
+    "testsDefinis": 1943,
     "resultatDeReference": "Pile jetable, jeu de démonstration, compte Super administrateur : 443 requêtes, 1 626 assertions exécutées, 0 échec (dossiers 00b et 98 à part : 12 requêtes, 54 assertions, 0 échec)."
   }
 }

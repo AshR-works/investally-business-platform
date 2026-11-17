@@ -347,7 +347,30 @@ const scenarioFolders = () => {
     ],
     event: [runId, today],
   };
-  return [entreprises, formation, conges, contratsParcours, presences];
+  const cloturePresences = {
+    name: '90.6 — Formation : clôture de session et présences aux séances (S5.3a)',
+    item: [
+      { ...step('Planifier une session (réutilise le certificat, la salle et le formateur de 90.2)', 'POST', '/sessions', { body: { trainingId: '{{trainingId}}', rhythm: 'DAY', startDate: '{{s53aStart}}', roomId: '{{roomId}}', trainerId: '{{trainerId}}', capacity: 5 }, expect: [201] }), event: [
+        { listen: 'prerequest', script: { type: 'text/javascript', exec: [`pm.collectionVariables.set('s53aStart', ${nextMonday}.replace(/(\\d{4}-\\d{2}-\\d{2})/, (d) => { const dt = new Date(d); dt.setUTCDate(dt.getUTCDate() + 7); return dt.toISOString().slice(0, 10); }));`] } },
+        { listen: 'test', script: { type: 'text/javascript', exec: ["pm.test('Session planifiée', () => pm.expect([201]).to.include(pm.response.code));", "pm.environment.set('s53aSessionId', pm.response.json().id);"] } },
+      ] },
+      step('Ouvrir la session', 'POST', '/sessions/{{s53aSessionId}}/open', { body: { version: 1 }, expect: [200] }),
+      step('Inscrire un étudiant, payeur lui-même', 'POST', '/enrollments', { body: { sessionId: '{{s53aSessionId}}', learnerId: '{{learnerId}}', payer: { kind: 'SELF' } }, expect: [201], save: { s53aEnrollmentId: 'pm.response.json().id' } }),
+      step('Confirmer l’inscription', 'POST', '/enrollments/{{s53aEnrollmentId}}/confirm', { body: { version: 1 }, expect: [200] }),
+      step('Feuille de présence : l’inscrit confirmé y figure, sans entrée', 'GET', '/sessions/{{s53aSessionId}}/attendance', { extraTests: ["pm.test('Un inscrit, pas encore saisi, saisie possible', () => { const b = pm.response.json(); pm.expect(b.rows).to.have.lengthOf(1); pm.expect(b.rows[0].entries).to.eql([]); pm.expect(b.canRecord).to.eql(true); });"] }),
+      step('Saisir une présence : présent', 'PUT', '/sessions/{{s53aSessionId}}/attendance/{{s53aEnrollmentId}}/{{s53aStart}}', { body: { status: 'PRESENT' }, expect: [200], extraTests: ["pm.test('Présent', () => pm.expect(pm.response.json().status).to.eql('PRESENT'));"] }),
+      step('Redéclarer la même présence ne change rien', 'PUT', '/sessions/{{s53aSessionId}}/attendance/{{s53aEnrollmentId}}/{{s53aStart}}', { body: { status: 'PRESENT' }, expect: [200] }),
+      step('Un statut hors liste est refusé', 'PUT', '/sessions/{{s53aSessionId}}/attendance/{{s53aEnrollmentId}}/{{s53aStart}}', { body: { status: 'EN_PAUSE' }, expect: [400] }),
+      step('Clôturer la session', 'POST', '/sessions/{{s53aSessionId}}/close', { body: { version: 2 }, expect: [200], extraTests: ["pm.test('Clôturée', () => pm.expect(pm.response.json().status).to.eql('CLOSED'));"] }),
+      step('Clôturer une seconde fois : refusé', 'POST', '/sessions/{{s53aSessionId}}/close', { body: { version: 3 }, expect: [422] }),
+      step('Présence refusée une fois la session clôturée', 'PUT', '/sessions/{{s53aSessionId}}/attendance/{{s53aEnrollmentId}}/{{s53aStart}}', { body: { status: 'ABSENT' }, expect: [422] }),
+      step('Rouvrir sans motif : refusé', 'POST', '/sessions/{{s53aSessionId}}/reopen', { body: { version: 3, reason: '' }, expect: [400] }),
+      step('Rouvrir avec motif', 'POST', '/sessions/{{s53aSessionId}}/reopen', { body: { version: 3, reason: 'Correction Postman' }, expect: [200], extraTests: ["pm.test('Ouverte de nouveau', () => pm.expect(pm.response.json().status).to.eql('OPEN'));"] }),
+      step('Présence de nouveau possible, corrigée : en retard', 'PUT', '/sessions/{{s53aSessionId}}/attendance/{{s53aEnrollmentId}}/{{s53aStart}}', { body: { status: 'LATE' }, expect: [200], extraTests: ["pm.test('En retard', () => pm.expect(pm.response.json().status).to.eql('LATE'));"] }),
+    ],
+    event: [runId],
+  };
+  return [entreprises, formation, conges, contratsParcours, presences, cloturePresences];
 };
 
 // ───────────────────────────── Écritures de test (à rejouer à la main) ─────────────────────────────

@@ -1,0 +1,46 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>S5.3a — recette complète de la clôture de session et des présences aux séances : mutants, Newman, fiches de test</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="INDEX.html">Index</a> · <a href="GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="ARCHITECTURE.html">Architecture</a> · <a href="SECURITY.html">Sécurité</a> · <a href="METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="TECH-DEBT.html">Dette</a> · <a href="CHARTE-DE-TESTS.html">Charte de tests</a> · <a href="tests/README.html">Fiches de test</a> · <a href="design/README.html">Design</a> · <a href="livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>S5.3a — recette complète de la clôture de session et des présences aux séances : mutants, Newman, fiches de test</h1>
+<p><em>Branche <code>feat/s5-3a-recette</code> · 2026-11-17 · décision D72 (<a href="adr/0016-cloture-de-session-et-presences-aux-seances.html">ADR-0016</a>), arbitrage <a href="cadrages/ARBITRAGE-S5-3-SUIVI-PEDAGOGIQUE.html">ARBITRAGE-S5-3-SUIVI-PEDAGOGIQUE</a> (option C, lot a).</em></p>
+<p>Dernière tranche du lot (a) (après l'API et l'écran). Elle n'ajoute pas de fonction : elle <strong>éprouve</strong> le travail des deux premières.</p>
+<h2>Ce qui est livré</h2>
+<div class="table-wrap"><table><thead><tr><th>Livrable</th><th>Contenu</th></tr></thead><tbody>
+<tr><td><strong>Mutants</strong></td><td><code>scripts/mutants/s5-3a-cloture-presences.py</code> : <strong>43 fautes</strong> injectées une à une (domaine, cas d'usage, routes, dépôt, règles de la base, droits des rôles, bibliothèque de l'interface)</td></tr>
+<tr><td><strong>Tests ajoutés</strong></td><td>domaine (exclusion des week-ends sur une période qui en traverse un), cas d'usage (motif de réouverture non nettoyé, inscription d'une autre session acceptée à tort), rôles (le formateur ne saisit ni ne lit les présences ; clôturer/rouvrir au catalogue, réservés), intégration (cycle complet clôture/réouverture, feuille de présence dans l'ordre des jours, dernier auteur retenu en base, conflit d'unicité au niveau du dépôt)</td></tr>
+<tr><td><strong>Collection Postman</strong></td><td>nouveau parcours <strong>90.6</strong> (14 étapes) : planifier une session, ouvrir, inscrire et confirmer un apprenant, feuille vide, déclarer présent, redéclarer sans changement, statut hors liste refusé, clôturer, clôturer à nouveau refusé, présence refusée pendant la clôture, rouvrir sans motif refusé, rouvrir avec motif, présence de nouveau possible après réouverture</td></tr>
+<tr><td><strong>Fiches de test</strong></td><td>session <code>s5-3a</code> (14 vérifications) ; fiches d'écran 20 et 23 mises à jour ; index mis à jour</td></tr>
+</tbody></table></div>
+<h2>Preuves</h2>
+<div class="table-wrap"><table><thead><tr><th>Contrôle</th><th>Résultat</th></tr></thead><tbody>
+<tr><td>Tests unitaires et d'intégration (API + interface)</td><td><strong>1 516 réussis</strong> API (85 suites, 1 skip sans rapport), <strong>43 fichiers</strong> réussis côté interface — suite complète <code>pnpm -r test</code>, sans régression</td></tr>
+<tr><td>Dont, pour S5.3a</td><td><code>training-session.spec</code> (17 scénarios), <code>session-use-cases.spec</code> (19 scénarios), <code>attendance-use-cases.spec</code>, <code>roles.spec</code> (21 scénarios), <code>sessions-http.integration</code> (12 cas, dont le cycle complet clôture/réouverture et la feuille de présence)</td></tr>
+<tr><td><strong>Mutants</strong></td><td>première passe : <strong>30 tués sur 43</strong>, 13 survivants (<code>D13</code>, <code>U1</code>, <code>U3</code>, <code>U4</code>, <code>R1</code>, <code>R2</code>, <code>R3</code>, <code>P1</code>, <code>P2</code>, <code>P3</code>, <code>P4</code>, <code>L1</code>, <code>L2</code>). Après correction des tests et des mutants eux-mêmes, rejoués ciblés : <strong>12 tués sur 13</strong>. Bilan final : <strong>42 tués sur 43 mutants</strong>, 1 survivant expliqué (<code>R3</code>, voir Limites connues)</td></tr>
+<tr><td><strong>Newman</strong> (pile jetable, démonstration, Super administrateur)</td><td><strong>68 requêtes, 102 assertions, 0 échec</strong>, en 9,4 s, dont le cycle complet du parcours 90.6 (planification, ouverture, inscription confirmée, feuille de présence, saisie, redéclaration, statut refusé, clôture, clôture refusée, présence refusée, réouverture sans motif refusée, réouverture avec motif, présence corrigée)</td></tr>
+</tbody></table></div>
+<h2>Un défaut trouvé et corrigé en cours de route</h2>
+<p><code>AttendanceView</code> exposait un champ <code>version</code> resté en mémoire d'avant l'enregistrement (jamais relu après la sauvegarde), alors que la présence, comme la présence RH (<a href="adr/0015-presences-declaratives.html">ADR-0015</a>), n'a volontairement <strong>aucun verrou optimiste</strong> — « la dernière saisie gagne ». Champ retiré de la vue et du mappeur pour rester cohérent avec <code>PresenceView</code> ; les tests qui vérifiaient la version le font désormais par lecture directe en base, pas via la réponse de l'API.</p>
+<h2>Limites connues</h2>
+<ul><li><strong><code>R3</code> (clôturer et rouvrir exigent la même permission) reste survivant</strong> : aucun rôle actuel ne détient <code>training.session.close</code> sans <code>training.session.reopen</code> (les deux ne sont accordés qu'ensemble, via le joker <code>training.*</code> du Responsable Investudy et du Super administrateur) ; permuter les deux codes de permission entre les deux routes est donc actuellement invisible pour tout test utilisant les rôles réels. Ce n'est pas une lacune de couverture mais une conséquence de la matrice des rôles actuelle — à surveiller si un rôle intermédiaire (clôturer sans rouvrir) était introduit un jour.</li><li>Le week-end D13 n'est démontrable que par un test direct sur <code>workingDaysBetween</code> : aucun rythme de session actuellement ouvert (<code>DAY</code>, une semaine) ne traverse un week-end dans un parcours réel ; <code>EVENING</code> (deux semaines) le traverserait mais n'est pas encore <code>open</code>.</li></ul>
+<h2>Comment rejouer</h2>
+<ol><li>Mutants : <code>python scripts/mutants/s5-3a-cloture-presences.py</code> (<strong>jamais deux exécutions à la fois</strong>, et ne pas toucher à <code>apps/</code> pendant la passe). <code>DRY=1</code> vérifie seulement les motifs.</li><li>Newman : pile jetable avec démonstration, environnement copié depuis <code>docs/api/postman/Investally-local.postman_environment.json</code> (adresse, e-mail, mot de passe et secret du second facteur <strong>hors du dépôt</strong>), puis <code>node scripts/api-docs/run-newman.mjs --env &lt;environnement&gt; --only 00,90</code>.</li><li>Fiches : <code>docs/tests/sessions/s5-3a.md</code>, <code>docs/tests/interfaces/20-sessions-formation.md</code>, <code>docs/tests/interfaces/23-fiche-session.md</code>.</li><li>Pile locale : <strong>rebuild : oui</strong> (migration et code de l'API ajoutés) ; <strong>reset : non</strong> (aucune donnée existante affectée).</li></ol></main></body></html>
