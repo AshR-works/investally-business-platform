@@ -137,9 +137,9 @@ Pour quel(s) écran(s) de notre application : ______________
 | Étape | Contenu | Qui | Validation |
 |---|---|---|---|
 | 1 | Vous envoyez captures, éléments de marque et réponses du §3 | Vous | — |
-| 2 | Je rends le **guide de style** et le **prototype statique** | Claude | **Vous validez le prototype** |
-| 3 | J'applique le style aux écrans existants et je rejoue la recette | Claude | « Je valide » |
-| 4 | Le style devient la base des écrans du pipeline (S4+) | Claude + vous | Au fil des sprints |
+| 2 | Rendre le **guide de style** et le **prototype statique** | Henri Bebey | **Vous validez le prototype** |
+| 3 | Appliquer le style aux écrans existants et rejouer la recette | Henri Bebey | « Je valide » |
+| 4 | Le style devient la base des écrans du pipeline (S4+) | Henri Bebey | Au fil des sprints |
 
 **Où cela se place dans le plan** : idéalement **avant S4.1**, avec le *cadrage UX* déjà prévu : on évite de coder deux fois les écrans du pipeline. La séance de cadrage (5 écrans clés) peut alors partir directement de vos captures.
 

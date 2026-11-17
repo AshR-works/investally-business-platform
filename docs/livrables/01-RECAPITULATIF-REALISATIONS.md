@@ -2,7 +2,7 @@
 
 **Projet** : Investally Business Platform — CRM (Business Development + Investudy), puis ERP
 **Période couverte** : du cadrage (S0) à S3.5 · **Date** : 2026-10-21
-**Rédigé par** : Claude, avec l'ingénieur logiciel d'Investally · **Statut** : S0 à S3.3 validés et fusionnés ; S3.4 et S3.5 exécutés, **en attente de votre validation**
+**Rédigé par** : l'ingénieur logiciel d'Investally · **Statut** : S0 à S3.3 validés et fusionnés ; S3.4 et S3.5 exécutés, **en attente de votre validation**
 
 > Ce document dit **ce qui est fait, ce que ça prouve, et ce qui ne l'est pas**. Les commentaires de l'ingénieur (colonne ou encadré « Commentaire ») sont volontairement francs : un récapitulatif flatteur ne sert à personne.
 

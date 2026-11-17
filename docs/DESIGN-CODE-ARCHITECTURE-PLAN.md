@@ -6,7 +6,7 @@
 - **Stack cible** : Next.js + TypeScript (front), NestJS + TypeScript (back), PostgreSQL, Prisma, Docker. Migration future possible vers ASP.NET Core + EF sans réécriture du métier.
 - **Avantage différenciant (HYPOTHÈSE)** : le pipeline commercial B2B jusqu'à l'inscription Investudy (cœur), le reste étant support/générique.
 - **Charge (CONFIRMÉE le 2026-10-20)** : ≈ **20 utilisateurs** au démarrage (10 employés aujourd'hui), croissance possible si recrutement. Une seule base PostgreSQL, largement suffisante.
-- **Équipe et cadence (CONFIRMÉES le 2026-10-20)** : les sprints sont menés par l'ingénieur logiciel d'Investally et Claude, **durée maximale : 1 semaine**.
+- **Équipe et cadence (CONFIRMÉES le 2026-10-20)** : les sprints sont menés par l'ingénieur logiciel d'Investally, **durée maximale : 1 semaine**.
 - **Dépendances sortantes** : e-mail via **Microsoft 365** (décidé), stockage de documents. Paiement/banque/télé-déclaration fiscale : hors périmètre.
 - **Fiscalité (HYPOTHÈSE)** : Cameroun (OHADA, DGI, CNPS), devise XAF — concerne surtout l'ERP.
 
@@ -21,7 +21,7 @@
 | 6 — Design for failure | release-it | done (cadrage léger; valeurs à mesurer) | RELIABILITY.md | 2026-10-20 |
 | 7 — Prove wiring, lock in habits | pragmatic-programmer | done | TESTING.md + TECH-DEBT.md | 2026-10-20 |
 | 8 — Cut scope to essential | 37signals-way | done (voir Périmètre v1) | VISION.md + ARCHITECTURE.md | 2026-10-20 |
-| Optional — Align teams | team-topologies | skipped: équipe de deux (ingénieur + Claude) | OPERATIONS.md | |
+| Optional — Align teams | team-topologies | skipped: équipe d'une personne (ingénieur) | OPERATIONS.md | |
 
 ## Cadence de travail
 - **Sprint = 1 semaine maximum**, un objectif livrable et vérifiable. Un sprint trop gros est découpé, jamais prolongé.
@@ -75,7 +75,7 @@
 | 2026-10-20 | S2 | Accès et sécurité : TRAINING_MANAGER ajouté, **SuperAdmin accès complet**, **MFA obligatoire pour tous**, équipe = subordonnés directs, durées de session confirmées, e-mail Microsoft 365, audit 10 ans (ADR-0006) | Décisions de la direction produit |
 | 2026-10-20 | 2 | **Agrément formation = promesse de paiement**, propriété de Business Development ; plusieurs opportunités par entreprise ; apprenant sans accès au CRM ; ambassadeur manuel | Décisions métier |
 | 2026-10-20 | 3 | Charge confirmée ≈ 20 utilisateurs ; Support lecture seule ; Direction lit l'audit ; XAF par défaut ; pas de suivi de paiement dans le CRM | Décisions et recommandations appliquées |
-| 2026-10-20 | — | Sprints d'une semaine maximum, menés par l'ingénieur et Claude | Décision de la direction produit |
+| 2026-10-20 | — | Sprints d'une semaine maximum, menés par l'ingénieur | Décision de la direction produit |
 
 ## Next Actions
 - [ ] Consulter `QUESTIONS-ET-DECISIONS.md` : registre des questions sensibles, décisions et questions ouvertes (§D)
