@@ -3,7 +3,7 @@
 **Projet** : Investally Business Platform · **Période** : du 2026-10-20 (16 h 30) au 2026-10-21 · **Mis à jour** : 2026-10-21
 **Source** : historique Git (dates réelles des commits, des fusions et des étiquettes), plans de recette, registre des décisions et échanges avec la direction produit.
 
-> **Comment lire ce document** — une *session* est un sprint mené par l'ingénieur logiciel d'Investally et Claude. Chaque fiche dit **ce qui était demandé, ce qui a été livré, ce qui a été validé (et par qui), ce qui a mal tourné et ce qui est reporté**. Rien n'y est arrondi : un suivi flatteur ne permet pas de décider.
+> **Comment lire ce document** — une *session* est un sprint mené par l'ingénieur logiciel d'Investally. Chaque fiche dit **ce qui était demandé, ce qui a été livré, ce qui a été validé (et par qui), ce qui a mal tourné et ce qui est reporté**. Rien n'y est arrondi : un suivi flatteur ne permet pas de décider.
 
 ---
 
@@ -213,4 +213,4 @@
 | 7 | Validation juridique : audit 10 ans, données personnelles | Juridique | S2 | mise en production | ⏳ |
 | 8 | Revue de `SECURITY.md` (valeurs de départ) | RSSI | S2 | mise en production | ⏳ |
 | 9 | Suppression de l'ancienne copie OneDrive | Ingénieur logiciel | S2 | à votre convenance | ⏳ |
-| 10 | Exécuter Docker et la CI pour de vrai | Ingénieur + Claude | S1 | S7.2 | ⏳ |
+| 10 | Exécuter Docker et la CI pour de vrai | Ingénieur logiciel | S1 | S7.2 | ⏳ |
