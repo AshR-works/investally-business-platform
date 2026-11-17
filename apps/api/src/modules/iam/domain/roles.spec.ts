@@ -154,4 +154,19 @@ describe('Matrice rôles → permissions', () => {
     const hos = resolveGrants(RoleCode.HeadOfSales).find((g) => g.permission === 'bd.opportunity.read');
     expect(hos?.scope).toBe(Scope.All);
   });
+
+  it("ne donne jamais au formateur le droit de saisir ou lire les présences (S1/ADR-0016 : externe, sans compte)", () => {
+    expect(codesOf(RoleCode.Trainer).filter((c) => c.startsWith('training.attendance.'))).toEqual([]);
+  });
+
+  it('le catalogue distingue clôturer et rouvrir une session (S5.3a, S7) ; seul le Responsable Investudy et le Super administrateur les détiennent', () => {
+    expect(PERMISSION_CODES.has('training.session.close')).toBe(true);
+    expect(PERMISSION_CODES.has('training.session.reopen')).toBe(true);
+    for (const role of [RoleCode.TrainingManager, RoleCode.SuperAdmin]) {
+      expect(codesOf(role)).toContain('training.session.reopen');
+    }
+    for (const role of Object.values(RoleCode).filter((r) => r !== RoleCode.TrainingManager && r !== RoleCode.SuperAdmin)) {
+      expect(codesOf(role)).not.toContain('training.session.reopen');
+    }
+  });
 });

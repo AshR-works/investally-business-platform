@@ -167,8 +167,9 @@ describe('Sessions — modifier, ouvrir, reporter, annuler', () => {
     expect(closed.status).toBe('CLOSED');
     expect(w.audit.at(-1)).toMatchObject({ action: AuditAction.Update, oldValue: { status: 'OPEN' }, newValue: { status: 'CLOSED' } });
     await rejects(w.reopenSession.execute({ id: view.id, version: 1, reason: '', actor }), 'VALIDATION', /motif/);
-    const reopened = await w.reopenSession.execute({ id: view.id, version: 1, reason: 'Correction après coup', actor });
+    const reopened = await w.reopenSession.execute({ id: view.id, version: 1, reason: '  Correction après coup  ', actor });
     expect(reopened.status).toBe('OPEN');
+    // Le motif est nettoyé avant d'être tracé (espaces superflus retirés), comme pour l'annulation et le report.
     expect(w.audit.at(-1)).toMatchObject({ newValue: { status: 'OPEN', reopenReason: 'Correction après coup' } });
     await rejects(w.reopenSession.execute({ id: view.id, version: 1, reason: 'Encore', actor }), 'INVARIANT_VIOLATION', /clôturée/);
   });

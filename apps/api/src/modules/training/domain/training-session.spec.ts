@@ -1,6 +1,6 @@
 import { DomainError } from '../../../shared-kernel';
 import { RHYTHMS } from './rhythms';
-import { endDateFor, isWorkingDay, overlaps, parseIsoDate } from './session-dates';
+import { endDateFor, isWorkingDay, overlaps, parseIsoDate, workingDaysBetween } from './session-dates';
 import { TrainingSession } from './training-session';
 
 const NOW = new Date('2026-11-06T09:00:00.000Z'); // vendredi
@@ -43,6 +43,15 @@ describe('Dates de session', () => {
     expect(endDateFor('2026-11-16', DAY)).toBe('2026-11-20');
     expect(endDateFor('2026-11-18', DAY)).toBe('2026-11-24'); // mercredi → mardi suivant (le week-end n'est pas compté)
     expect(endDateFor('2026-11-16', EVENING)).toBe('2026-11-27'); // deux semaines
+  });
+
+  it('les jours de cours d’une période excluent les week-ends, même au milieu (S5.3a)', () => {
+    expect(workingDaysBetween('2026-11-16', '2026-11-20')).toEqual(['2026-11-16', '2026-11-17', '2026-11-18', '2026-11-19', '2026-11-20']);
+    // Rythme du soir (deux semaines) : la période traverse un week-end (21-22 novembre), absent du résultat.
+    expect(workingDaysBetween('2026-11-16', '2026-11-27')).toEqual([
+      '2026-11-16', '2026-11-17', '2026-11-18', '2026-11-19', '2026-11-20',
+      '2026-11-23', '2026-11-24', '2026-11-25', '2026-11-26', '2026-11-27',
+    ]);
   });
 
   it('deux périodes se recouvrent bornes incluses', () => {

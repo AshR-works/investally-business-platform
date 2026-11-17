@@ -5,7 +5,7 @@
 | **Route** | `/training/sessions` |
 | **Livrée par** | S5.2a |
 | **Accès** | Utilisateur avec `training.session.read` (module « Sessions de formation » du hub, et lien depuis le catalogue). |
-| **Droits** | **Lire** : Direction, Responsable commercial, chargé de compte, Support, Finance (toutes les sessions), **formateur : seulement les siennes** (formateur lié à son compte). **Écrire** (planifier, modifier, ouvrir, reporter, annuler) : Responsable Investudy et Super administrateur. RH et Fiscalité : aucun accès. |
+| **Droits** | **Lire** : Direction, Responsable commercial, chargé de compte, Support, Finance (toutes les sessions), **formateur : seulement les siennes** (formateur lié à son compte). **Écrire** (planifier, modifier, ouvrir, reporter, annuler, **clôturer**, **rouvrir**) : Responsable Investudy et Super administrateur. RH et Fiscalité : aucun accès. |
 | **Rôles de test** | sa, inv, dir, cc, sup |
 
 *Fiche d'interface de la [charte de tests](../../CHARTE-DE-TESTS.md). À rejouer à chaque changement de l'écran. Cocher, dater, signer ; tout écart devient un défaut.*
@@ -30,6 +30,8 @@ Pile locale avec le jeu de démonstration (7 sessions de démonstration : deux t
 | 12 | **Portée du formateur** | Se connecter comme formateur lié à un compte. | Il ne voit que les sessions dont le formateur est lui ; il n'a aucun bouton d'écriture. | ☐ | |
 | 13 | **Droits de lecture seule** | Direction ou chargé de compte. | Aucun bouton « Nouvelle session » ni menu d'actions de ligne. | ☐ | |
 | 14 | **Modification concurrente** | Ouvrir une session dans deux onglets, la modifier dans l'un, puis dans l'autre. | Le second enregistrement est refusé : « modifiée par un autre utilisateur » (aucun écrasement silencieux). | ☐ | |
+| 15 | **Clôturer (S5.3a)** | Menu de la ligne d'une session ouverte : « Clôturer », confirmer. | La session passe « Clôturée » ; « Ouvrir aux inscriptions », « Reporter » et « Annuler » disparaissent ; seule « Rouvrir » reste proposée. | ☐ | |
+| 16 | **Rouvrir sans puis avec motif** | Menu d'une session clôturée : « Rouvrir » ; valider sans motif, puis avec. | Sans motif : refusé avant l'envoi ; avec motif : la session redevient « Ouverte », « Clôturer » réapparaît. | ☐ | |
 
 ## Accessibilité
 - ☐ Clavier seul : Tab et Maj+Tab parcourent tous les contrôles dans un ordre logique ; le focus est toujours visible ; aucun piège de focus hors fenêtre modale.
@@ -41,11 +43,12 @@ Pile locale avec le jeu de démonstration (7 sessions de démonstration : deux t
 - ☐ Le tableau a un titre (caption) ; chaque menu d'actions de ligne porte le nom de la session ; les filtres d'état forment un groupe de boutons à bascule nommé ; le nombre de sessions est annoncé (`aria-live`) ; la date de fin calculée est annoncée en direct ; les erreurs de saisie sont annoncées et la fenêtre reste ouverte.
 
 ## Tests automatisés qui couvrent cet écran
-- API : `training-session.spec` (15 scénarios), `session-use-cases.spec` (18 scénarios), `sessions-http.integration` (9 scénarios dont la concurrence et la portée du formateur), `idor-contract` (classe « lecture-formateur »)
-- Web : `s56-sessions` (19 scénarios, dont la comparaison avec le domaine réel du serveur) ; audit navigateur : parcours écrit dans `scripts/a11y-audit.mjs`, non rejoué
+- API : `training-session.spec` (17 scénarios, dont clôturer/rouvrir), `session-use-cases.spec` (19 scénarios), `sessions-http.integration` (12 scénarios dont la concurrence, la portée du formateur, la clôture et la réouverture), `idor-contract` (classe « référentiel » pour clôturer/rouvrir, « lecture-formateur » pour la lecture)
+- Web : `s56-sessions` (25 scénarios, dont `sessionActions` étendu pour clôturer/rouvrir et `validateReopen`) ; audit navigateur : parcours écrit dans `scripts/a11y-audit.mjs`, non rejoué
 
 ## Limites connues
 - Pas de vue calendrier (D150) ; pas d'inscriptions ni de contrôle sur le nombre d'inscrits (S5.2b, D151) ; pas de signalement quand une panne réduit les places utiles (D152) ; « aujourd'hui » compté en UTC et jours fériés ignorés (D153, D147).
+- Pas d'alerte avant l'oubli de clôturer une session terminée (S5.3a) ; la réouverture ne notifie personne.
 
 ## Écarts constatés
 | Date | Scénario | Description | Défaut ouvert (D…) |
