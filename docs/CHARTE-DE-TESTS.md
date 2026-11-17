@@ -1,6 +1,6 @@
 # Charte de tests
 
-*Investally Business Platform — version 1.0, 2026-11-08. Elle complète la stratégie technique de [`TESTING.md`](TESTING.md) et s'applique à toute l'équipe technique, session après session.*
+*Investally Business Platform — version 1.1, 2026-11-17 (D73 : mutants et Newman réservés aux lots à risque réel, § 7). Elle complète la stratégie technique de [`TESTING.md`](TESTING.md) et s'applique à toute l'équipe technique, session après session.*
 
 ## 1. Objet
 Dire **ce que nous testons, comment, avec quelles preuves**, et à quelles conditions un lot est déclaré « terminé » et présenté à la validation. La charte est la règle ; les **fiches de test** en sont l'application :
@@ -25,7 +25,7 @@ Dire **ce que nous testons, comment, avec quelles preuves**, et à quelles condi
 | **Intégration (HTTP + PostgreSQL)** | La route réelle, les droits par rôle, les erreurs (400, 403, 404, 409, 422), les **contraintes de la base**, le verrou optimiste, l'audit | Jest + base jetable, `apps/api/test/*.integration.spec.ts` (lancés par `apps/api/scripts/test-db.mjs`) | toute route, toute migration |
 | **Contrat anti-IDOR** | Un objet hors portée répond **comme un objet inexistant** (404 identique, aucune fuite, aucune écriture) | `test/idor-contract*.spec.ts`, registre `test/support/idor-registry.ts` | toute route désignant un objet |
 | **Interface** | Logique des écrans (saisie, actions selon l'état et les droits, formats), **cohérence avec le domaine réel du serveur** | Vitest, `apps/web/test/*.test.ts` | toute logique d'écran |
-| **Mutation** | Que les tests ci-dessus détectent bien les fautes | scripts [`scripts/mutants/`](../scripts/mutants/) | chaque lot, avant la validation |
+| **Mutation** | Que les tests ci-dessus détectent bien les fautes | scripts [`scripts/mutants/`](../scripts/mutants/) | lot **à risque réel** seulement (§ 7), avant la validation |
 | **Navigateur réel et accessibilité** | Le parcours dans un vrai navigateur ; absence de violation WCAG 2.1 AA (axe-core) ; messages annoncés ; clavier | `scripts/a11y-audit.mjs` (Edge sans fenêtre) | chaque lot qui touche un écran |
 | **Recette utilisateur** | Que le résultat convient à l'usage | fiches de test (§ 9), exécutées par la direction produit | avant « Je valide » |
 
@@ -56,8 +56,16 @@ Non couverts à ce jour (assumés, voir § 11) : tests de bout en bout dans plus
 ## 6. Intégration continue
 Fusion possible seulement si le contrôle `verify` est vert : types, architecture, tests unitaires et d'intégration, interface, construction. Les protections de `main` l'imposent (PR obligatoire, pas de poussée forcée).
 
-## 7. Tests de mutation
-Pour chaque lot : au moins **un mutant par règle importante** (règle métier, droit de route, portée, contrainte de base, persistance, lecture/affichage). Tous doivent être **tués**. Un **survivant** n'est jamais ignoré : soit le test manque (on l'ajoute, puis on retue le mutant), soit le mutant est équivalent (on l'explique dans la recette). Les scripts sont versionnés dans `scripts/mutants/`, un par lot.
+## 7. Tests de mutation et Newman : réservés aux lots à risque réel (D73, 2026-11-17)
+Les mutants et l'exécution Newman de la collection Postman ne sont **plus systématiques à chaque lot**. Ils sont dus quand le lot touche au moins un des risques suivants :
+- **argent** (paiements, commissions, agréments, facturation) ;
+- **droits et accès** (permissions, portée, authentification, MFA) ;
+- **données sensibles** (personnelles, de santé, RH, mineurs) ;
+- ou une **règle qui, violée silencieusement, ne serait détectée par personne** (aucune relecture humaine du résultat avant qu'il ne produise un effet — ex. clôture d'une session, irréversible).
+
+Pour un lot sans ces risques (écran de confort, affichage, tri, filtre, libellé), les niveaux du § 3 suffisent (unitaires, cas d'usage, intégration, IDOR, interface) ; la recette du lot le dit explicitement (« risque réel : non — mutants et Newman non exécutés »).
+
+Pour un lot à risque réel : au moins **un mutant par règle importante** (règle métier, droit de route, portée, contrainte de base, persistance, lecture/affichage). Tous doivent être **tués**. Un **survivant** n'est jamais ignoré : soit le test manque (on l'ajoute, puis on retue le mutant), soit le mutant est équivalent (on l'explique dans la recette). Les scripts sont versionnés dans `scripts/mutants/`, un par lot.
 
 ## 8. Audit navigateur et accessibilité
 - Parcours scripté dans Edge sans fenêtre, avec axe-core à chaque état d'écran ; objectif : **0 violation**, et les points « à vérifier » analysés.
@@ -82,7 +90,7 @@ Un lot n'est présenté à la validation que si **toutes** les cases sont coché
 - [ ] tests unitaires et d'intégration verts (suite complète, pas seulement les nouveaux) ;
 - [ ] tests d'interface verts ;
 - [ ] contrat IDOR étendu aux nouvelles routes ;
-- [ ] mutants : tous tués, survivants expliqués ;
+- [ ] **si le lot touche un risque réel (§ 7)** : mutants tous tués (survivants expliqués) et Newman exécuté ; **sinon**, la recette dit explicitement pourquoi ce n'est pas requis ;
 - [ ] audit navigateur : 0 violation sur les états nouveaux ; réserves écrites ;
 - [ ] recette du lot (`docs/SPRINT-*-RECETTE.md`) avec **chiffres réels**, défauts, réserves, valeurs par défaut « à confirmer » ;
 - [ ] fiche de session et fiches d'interface touchées mises à jour ;

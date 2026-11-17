@@ -21,6 +21,10 @@ allowBuilds:
 
 # Correctifs de sécurité (audit du 2026-10-27) : dépendances indirectes de @nestjs/platform-express (déni de service).
 # À retirer quand @nestjs/platform-express embarquera ces versions.
+# Correctif de sécurité (audit du 2026-11-17, D73) : lodash vulnérable (injection de code via _.template),
+# dépendance indirecte de prisma (devDependency, outil Studio local, jamais exécuté dans l'API déployée).
+# À retirer quand @prisma/studio-core embarquera lodash >=4.18.1.
 overrides:
   body-parser: '>=2.4.0'
   multer: '>=2.5.0'
+  lodash@<4.18.1: '>=4.18.1'
