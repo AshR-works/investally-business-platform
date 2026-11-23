@@ -1189,10 +1189,12 @@ model Enrollment {
   createdAt     DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt     DateTime         @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  session     TrainingSession @relation(fields: [sessionId], references: [id], onDelete: Restrict)
-  learner     Learner         @relation(fields: [learnerId], references: [id], onDelete: Restrict)
-  attendances Attendance[]
-  evaluation  Evaluation?
+  session              TrainingSession       @relation(fields: [sessionId], references: [id], onDelete: Restrict)
+  learner              Learner               @relation(fields: [learnerId], references: [id], onDelete: Restrict)
+  attendances          Attendance[]
+  evaluation           Evaluation?
+  certification        Certification?
+  ambassadorSuggestion AmbassadorSuggestion?
 
   @@index([sessionId, status])
   @@index([learnerId, status])
@@ -1258,6 +1260,62 @@ model TrainingThresholds {
   updatedAt                  DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   @@map("training_thresholds")
+  @@schema("training")
+}
+
+/// Type délivré (S5.3c) : certificat de réussite (les deux seuils atteints) ou attestation de suivi (seule la présence atteinte).
+enum CertificationKind {
+  CERTIFICATE
+  ATTESTATION
+
+  @@schema("training")
+}
+
+/// Toujours délivrée (jamais « en attente ») ; révoquée reste consultable, jamais supprimée.
+enum CertificationStatus {
+  ISSUED
+  REVOKED
+
+  @@schema("training")
+}
+
+/// Certificat ou attestation délivrés à un inscrit confirmé (S5.3c, CU-I-60/61) : au plus un par inscription, suggéré puis délivré à la
+/// main par le responsable Investudy, seulement une fois la session clôturée. Révocable avec justification obligatoire.
+model Certification {
+  id               String              @id @db.Uuid
+  enrollmentId     String              @unique @map("enrollment_id") @db.Uuid
+  kind             CertificationKind
+  /// Numéro de référence, attribué une fois pour toutes (séquence `training.certification_reference_seq`) ; valeur de départ « à confirmer » (CU-I-64).
+  referenceNumber  String              @unique @map("reference_number") @db.VarChar(40)
+  status           CertificationStatus @default(ISSUED)
+  issuedByUserId   String              @map("issued_by_user_id") @db.Uuid
+  issuedAt         DateTime            @map("issued_at") @db.Timestamptz(6)
+  revokedByUserId  String?             @map("revoked_by_user_id") @db.Uuid
+  revokedAt        DateTime?           @map("revoked_at") @db.Timestamptz(6)
+  revokeReason     String?             @map("revoke_reason") @db.VarChar(500)
+  version          Int                 @default(1)
+
+  enrollment Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Restrict)
+
+  @@map("certifications")
+  @@schema("training")
+}
+
+/// Suggestion d'ambassadeur au chargé de compte (CU-I-62, S8) : créée à la délivrance d'une certification pour un apprenant
+/// d'entreprise ; copie les données nécessaires, jamais d'accès à la certification elle-même pour le chargé de compte.
+model AmbassadorSuggestion {
+  id           String   @id @db.Uuid
+  enrollmentId String   @unique @map("enrollment_id") @db.Uuid
+  learnerId    String   @map("learner_id") @db.Uuid
+  /// Hors contexte iam/bd : pas de clé étrangère entre schémas (D70).
+  companyId    String   @map("company_id") @db.Uuid
+  ownerUserId  String   @map("owner_user_id") @db.Uuid
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  enrollment Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Restrict)
+
+  @@index([ownerUserId])
+  @@map("ambassador_suggestions")
   @@schema("training")
 }
 

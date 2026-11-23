@@ -39,6 +39,8 @@ describeDb('Sessions de formation (HTTP + PostgreSQL)', () => {
   }, 60_000);
   afterAll(async () => {
     const db = t.prisma.db;
+    await db.ambassadorSuggestion.deleteMany({ where: { enrollmentId: { in: created.enrollments } } });
+    await db.certification.deleteMany({ where: { enrollmentId: { in: created.enrollments } } });
     await db.evaluation.deleteMany({ where: { enrollmentId: { in: created.enrollments } } });
     await db.attendance.deleteMany({ where: { enrollmentId: { in: created.enrollments } } });
     await db.enrollment.deleteMany({ where: { id: { in: created.enrollments } } });
@@ -544,5 +546,92 @@ describeDb('Sessions de formation (HTTP + PostgreSQL)', () => {
   it('seuils d\'éligibilité : garanties de la base (une seule ligne)', async () => {
     const db = t.prisma.db;
     await expect(db.$executeRawUnsafe(`INSERT INTO training.training_thresholds (id, updated_at) VALUES (2, now())`)).rejects.toThrow();
+  });
+
+  it('certifications (S5.3c, CU-I-60/61) : seulement une session clôturée, seuils respectés, révocation justifiée, droits', async () => {
+    const w = await world();
+    const s = await planned(w, { startDate: monday(3) }); // rythme DAY : 5 jours de cours
+    await api.call('POST', `/api/v1/sessions/${s.id}/open`, { ...w.manager, body: { version: 1 } });
+    const days = [0, 1, 2, 3, 4].map((n) => addDays(s.startDate, n));
+    const { enrollmentId } = await confirmedEnrollment(w, s);
+    for (const d of days) await api.call('PUT', `/api/v1/sessions/${s.id}/attendance/${enrollmentId}/${d}`, { ...w.manager, body: { status: 'PRESENT' } });
+
+    // Pas encore clôturée : refusé.
+    expect((await api.call('POST', `/api/v1/sessions/${s.id}/certifications/${enrollmentId}`, { ...w.manager, body: { kind: 'ATTESTATION' } })).status).toBe(422);
+
+    // Note insuffisante : attestation possible, certificat refusé.
+    await api.call('PUT', `/api/v1/sessions/${s.id}/evaluations/${enrollmentId}`, { ...w.manager, body: { score: 5 } });
+    const closed = await api.call('POST', `/api/v1/sessions/${s.id}/close`, { ...w.manager, body: { version: 2 } });
+    expect(closed.status).toBe(200);
+    expect((await api.call('POST', `/api/v1/sessions/${s.id}/certifications/${enrollmentId}`, { ...w.manager, body: { kind: 'CERTIFICATE' } })).status).toBe(422);
+    const issued = await api.call('POST', `/api/v1/sessions/${s.id}/certifications/${enrollmentId}`, { ...w.manager, body: { kind: 'ATTESTATION' } });
+    expect(issued.status).toBe(201);
+    expect(issued.body).toMatchObject({ enrollmentId, kind: 'ATTESTATION', status: 'ISSUED', referenceNumber: expect.stringMatching(/^CERT-\d{4}-\d{6}$/) });
+
+    // Une seconde délivrance pour la même inscription est refusée.
+    expect((await api.call('POST', `/api/v1/sessions/${s.id}/certifications/${enrollmentId}`, { ...w.manager, body: { kind: 'ATTESTATION' } })).status).toBe(422);
+
+    // Feuille des délivrances.
+    const sheet = await api.call('GET', `/api/v1/sessions/${s.id}/certifications`, w.manager);
+    expect(sheet.status).toBe(200);
+    expect(sheet.body.rows).toEqual([{ enrollmentId, learnerId: expect.any(String), learnerName: expect.any(String), certification: issued.body }]);
+    expect(sheet.body.canIssue).toBe(true);
+
+    // Révocation : justification obligatoire, tracée, le document reste consultable.
+    expect((await api.call('POST', `/api/v1/sessions/${s.id}/certifications/${enrollmentId}/revoke`, { ...w.manager, body: { reason: '' } })).status).toBe(400);
+    const revoked = await api.call('POST', `/api/v1/sessions/${s.id}/certifications/${enrollmentId}/revoke`, { ...w.manager, body: { reason: 'Fraude constatée' } });
+    expect(revoked.status).toBe(200);
+    expect(revoked.body).toMatchObject({ status: 'REVOKED', revokeReason: 'Fraude constatée' });
+    expect((await api.call('GET', `/api/v1/sessions/${s.id}/certifications`, w.manager)).body.rows[0].certification).toMatchObject({ status: 'REVOKED' });
+    expect((await api.call('POST', `/api/v1/sessions/${s.id}/certifications/${enrollmentId}/revoke`, { ...w.manager, body: { reason: 'Encore' } })).status).toBe(422); // déjà révoquée
+
+    // Droits : Direction lit, ne délivre ni ne révoque ; un chargé de compte ne voit ni ne délivre.
+    const direction = await login(RoleCode.Direction);
+    const am = await login(RoleCode.AccountManager);
+    expect((await api.call('GET', `/api/v1/sessions/${s.id}/certifications`, direction)).status).toBe(200);
+    expect((await api.call('POST', `/api/v1/sessions/${s.id}/certifications/${enrollmentId}`, { ...direction, body: { kind: 'ATTESTATION' } })).status).toBe(403);
+    expect((await api.call('GET', `/api/v1/sessions/${s.id}/certifications`, am)).status).toBe(403);
+
+    // Le formateur lié ne voit que ses propres sessions.
+    expect((await api.call('GET', `/api/v1/sessions/${s.id}/certifications`, w.trainerUser)).status).toBe(200);
+    const other = await planned(w, { startDate: monday(5), trainerId: w.external });
+    expect((await api.call('GET', `/api/v1/sessions/${other.id}/certifications`, w.trainerUser)).status).toBe(404);
+
+    // Aucune suggestion d'ambassadeur pour un apprenant sans entreprise (étudiant, payeur lui-même).
+    const suggestion = await t.prisma.db.ambassadorSuggestion.findUnique({ where: { enrollmentId } });
+    expect(suggestion).toBeNull();
+  });
+
+  it('certifications : garanties de la base (unicité par inscription et par numéro de référence, cohérence de la révocation, clé vers l\'inscription)', async () => {
+    const w = await world();
+    const s = await planned(w, { startDate: monday(3) });
+    await api.call('POST', `/api/v1/sessions/${s.id}/open`, { ...w.manager, body: { version: 1 } });
+    const { enrollmentId } = await confirmedEnrollment(w, s);
+    const db = t.prisma.db;
+    const now = new Date();
+    await db.certification.create({ data: { id: randomUUID(), enrollmentId, kind: 'ATTESTATION', referenceNumber: `TEST-${unique()}`, issuedByUserId: w.manager.userId, issuedAt: now } });
+    await expect(db.certification.create({ data: { id: randomUUID(), enrollmentId, kind: 'ATTESTATION', referenceNumber: `TEST-${unique()}`, issuedByUserId: w.manager.userId, issuedAt: now } })).rejects.toThrow(/certifications_enrollment_id_key/);
+    await expect(
+      db.certification.create({ data: { id: randomUUID(), enrollmentId: '00000000-0000-7000-8000-000000000000', kind: 'ATTESTATION', referenceNumber: `TEST-${unique()}`, issuedByUserId: w.manager.userId, issuedAt: now } }),
+    ).rejects.toThrow();
+    const { enrollmentId: otherEnrollmentId } = await confirmedEnrollment(w, s);
+    const sameRef = `TEST-SAME-${unique()}`;
+    await db.certification.create({ data: { id: randomUUID(), enrollmentId: otherEnrollmentId, kind: 'ATTESTATION', referenceNumber: sameRef, issuedByUserId: w.manager.userId, issuedAt: now } });
+    const { enrollmentId: thirdEnrollmentId } = await confirmedEnrollment(w, s);
+    await expect(
+      db.certification.create({ data: { id: randomUUID(), enrollmentId: thirdEnrollmentId, kind: 'ATTESTATION', referenceNumber: sameRef, issuedByUserId: w.manager.userId, issuedAt: now } }),
+    ).rejects.toThrow(/certifications_reference_number_key/);
+    // Cohérence de la révocation : révoquée sans auteur/date/motif, ou délivrée avec l'un d'eux renseigné, est refusée.
+    await expect(db.certification.update({ where: { enrollmentId }, data: { status: 'REVOKED' } })).rejects.toThrow(/certifications_revoke_coherent/);
+    await expect(db.certification.update({ where: { enrollmentId }, data: { revokedByUserId: w.manager.userId } })).rejects.toThrow(/certifications_revoke_coherent/);
+  });
+
+  it('suggestions d\'ambassadeur (CU-I-62, S8) : lecture scindée des droits sur les certifications', async () => {
+    const w = await world();
+    const am = await login(RoleCode.AccountManager);
+    const trainerOnly = w.trainerUser;
+    expect((await api.call('GET', '/api/v1/ambassador-suggestions', w.manager)).status).toBe(200); // Responsable Investudy : portée Tous sur bd.ambassador.read
+    expect((await api.call('GET', '/api/v1/ambassador-suggestions', trainerOnly)).status).toBe(403); // le formateur n'a aucun droit sur les ambassadeurs
+    expect((await api.call('GET', '/api/v1/ambassador-suggestions', am)).status).toBe(200); // portée Own : liste vide si aucune suggestion ne lui appartient
   });
 });

@@ -103,8 +103,8 @@
     {
       "nom": "01 — Sécurité : sans jeton, toute route protégée refuse",
       "description": null,
-      "requetes": 202,
-      "assertions": 404,
+      "requetes": 206,
+      "assertions": 412,
       "detail": [
         {
           "nom": "POST /auth/logout",
@@ -2581,6 +2581,70 @@
           ]
         },
         {
+          "nom": "GET /sessions/{sessionId}/certifications",
+          "methode": "GET",
+          "chemin": "/api/v1/sessions/{sessionId}/certifications",
+          "permission": "training.certification.read",
+          "protegee": true,
+          "succesAttendus": [
+            200
+          ],
+          "corps": null,
+          "tests": [
+            "Sans jeton : refusé (401)",
+            "Réponse « problem details »"
+          ]
+        },
+        {
+          "nom": "POST /sessions/{sessionId}/certifications/{enrollmentId}",
+          "methode": "POST",
+          "chemin": "/api/v1/sessions/{sessionId}/certifications/{enrollmentId}",
+          "permission": "training.certification.issue",
+          "protegee": true,
+          "succesAttendus": [
+            201
+          ],
+          "corps": {
+            "kind": "CERTIFICATE"
+          },
+          "tests": [
+            "Sans jeton : refusé (401)",
+            "Réponse « problem details »"
+          ]
+        },
+        {
+          "nom": "POST /sessions/{sessionId}/certifications/{enrollmentId}/revoke",
+          "methode": "POST",
+          "chemin": "/api/v1/sessions/{sessionId}/certifications/{enrollmentId}/revoke",
+          "permission": "training.certification.revoke",
+          "protegee": true,
+          "succesAttendus": [
+            200
+          ],
+          "corps": {
+            "reason": "texte"
+          },
+          "tests": [
+            "Sans jeton : refusé (401)",
+            "Réponse « problem details »"
+          ]
+        },
+        {
+          "nom": "GET /ambassador-suggestions",
+          "methode": "GET",
+          "chemin": "/api/v1/ambassador-suggestions",
+          "permission": "bd.ambassador.read",
+          "protegee": true,
+          "succesAttendus": [
+            200
+          ],
+          "corps": null,
+          "tests": [
+            "Sans jeton : refusé (401)",
+            "Réponse « problem details »"
+          ]
+        },
+        {
           "nom": "GET /hr/directory",
           "methode": "GET",
           "chemin": "/api/v1/hr/directory",
@@ -4917,9 +4981,29 @@
     {
       "nom": "11 — ambassadors",
       "description": null,
-      "requetes": 5,
-      "assertions": 35,
+      "requetes": 6,
+      "assertions": 42,
       "detail": [
+        {
+          "nom": "GET /ambassador-suggestions",
+          "methode": "GET",
+          "chemin": "/api/v1/ambassador-suggestions",
+          "permission": "bd.ambassador.read",
+          "protegee": true,
+          "succesAttendus": [
+            200
+          ],
+          "corps": null,
+          "tests": [
+            "Pas d’erreur serveur (statut inférieur à 500)",
+            "Le jeton est accepté (pas de 401)",
+            "Statut prévu (succès documenté ou refus métier standard)",
+            "Temps de réponse raisonnable (moins de 3 s)",
+            "Réponse en JSON",
+            "Erreur au format « problem details » (RFC 7807)",
+            "Statut de succès documenté"
+          ]
+        },
         {
           "nom": "GET /ambassadors",
           "methode": "GET",
@@ -8477,8 +8561,8 @@
     {
       "nom": "32 — sessions",
       "description": null,
-      "requetes": 13,
-      "assertions": 91,
+      "requetes": 16,
+      "assertions": 112,
       "detail": [
         {
           "nom": "GET /sessions",
@@ -8707,6 +8791,70 @@
           ],
           "corps": {
             "status": "PRESENT"
+          },
+          "tests": [
+            "Pas d’erreur serveur (statut inférieur à 500)",
+            "Le jeton est accepté (pas de 401)",
+            "Statut prévu (succès documenté ou refus métier standard)",
+            "Temps de réponse raisonnable (moins de 3 s)",
+            "Réponse en JSON",
+            "Erreur au format « problem details » (RFC 7807)",
+            "Statut de succès documenté"
+          ]
+        },
+        {
+          "nom": "GET /sessions/{sessionId}/certifications",
+          "methode": "GET",
+          "chemin": "/api/v1/sessions/{sessionId}/certifications",
+          "permission": "training.certification.read",
+          "protegee": true,
+          "succesAttendus": [
+            200
+          ],
+          "corps": null,
+          "tests": [
+            "Pas d’erreur serveur (statut inférieur à 500)",
+            "Le jeton est accepté (pas de 401)",
+            "Statut prévu (succès documenté ou refus métier standard)",
+            "Temps de réponse raisonnable (moins de 3 s)",
+            "Réponse en JSON",
+            "Erreur au format « problem details » (RFC 7807)",
+            "Statut de succès documenté"
+          ]
+        },
+        {
+          "nom": "POST /sessions/{sessionId}/certifications/{enrollmentId}",
+          "methode": "POST",
+          "chemin": "/api/v1/sessions/{sessionId}/certifications/{enrollmentId}",
+          "permission": "training.certification.issue",
+          "protegee": true,
+          "succesAttendus": [
+            201
+          ],
+          "corps": {
+            "kind": "CERTIFICATE"
+          },
+          "tests": [
+            "Pas d’erreur serveur (statut inférieur à 500)",
+            "Le jeton est accepté (pas de 401)",
+            "Statut prévu (succès documenté ou refus métier standard)",
+            "Temps de réponse raisonnable (moins de 3 s)",
+            "Réponse en JSON",
+            "Erreur au format « problem details » (RFC 7807)",
+            "Statut de succès documenté"
+          ]
+        },
+        {
+          "nom": "POST /sessions/{sessionId}/certifications/{enrollmentId}/revoke",
+          "methode": "POST",
+          "chemin": "/api/v1/sessions/{sessionId}/certifications/{enrollmentId}/revoke",
+          "permission": "training.certification.revoke",
+          "protegee": true,
+          "succesAttendus": [
+            200
+          ],
+          "corps": {
+            "reason": "texte"
           },
           "tests": [
             "Pas d’erreur serveur (statut inférieur à 500)",
@@ -9205,8 +9353,8 @@
   ],
   "resume": {
     "dossiers": 33,
-    "requetes": 504,
-    "testsDefinis": 1998,
+    "requetes": 512,
+    "testsDefinis": 2034,
     "resultatDeReference": "Pile jetable, jeu de démonstration, compte Super administrateur : 443 requêtes, 1 626 assertions exécutées, 0 échec (dossiers 00b et 98 à part : 12 requêtes, 54 assertions, 0 échec)."
   }
 }

@@ -69,7 +69,7 @@ export class RecordEvaluationUseCase {
 }
 
 /** Taux de présence (S3 : un retard compte comme présent), arrondi à deux décimales ; 0 si la session n'a aucun jour de cours. */
-function attendanceRateOf(entries: readonly { status: string }[], totalDays: number): number {
+export function attendanceRateOf(entries: readonly { status: string }[], totalDays: number): number {
   if (totalDays === 0) return 0;
   const counted = entries.filter((e) => e.status === 'PRESENT' || e.status === 'LATE').length;
   return Math.round((counted / totalDays) * 10_000) / 100;

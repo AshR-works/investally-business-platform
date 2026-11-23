@@ -10,10 +10,12 @@ import {
 } from '../../src/modules/training/application/session-use-cases';
 import { GetAttendanceSheetHandler, RecordAttendanceUseCase } from '../../src/modules/training/application/attendance-use-cases';
 import { GetEvaluationSheetHandler, GetTrainingThresholdsHandler, RecordEvaluationUseCase, UpdateTrainingThresholdsUseCase } from '../../src/modules/training/application/evaluation-use-cases';
+import { GetAmbassadorSuggestionsHandler, GetCertificationSheetHandler, IssueCertificationUseCase, RevokeCertificationUseCase } from '../../src/modules/training/application/certification-use-cases';
 import { ActorContext } from '../../src/shared-kernel';
 import { AuditRecord } from '../../src/modules/audit';
 import { InMemoryAttendances } from './in-memory-attendance';
 import { InMemoryEvaluations, InMemoryTrainingThresholds } from './in-memory-evaluation';
+import { InMemoryAmbassadorSuggestions, InMemoryCertifications } from './in-memory-certification';
 import { InMemoryModules, InMemoryPrograms, InMemoryRooms, InMemoryTrainers, InMemoryTrainings } from './in-memory-catalogue';
 import { InMemoryDirectory, InMemoryEnrollments, InMemoryLearners } from './in-memory-enrollments';
 import { InMemorySessions } from './in-memory-sessions';
@@ -38,6 +40,8 @@ export async function buildTrainingWorld(clock: { now: () => Date }) {
   const attendances = new InMemoryAttendances();
   const evaluations = new InMemoryEvaluations();
   const thresholds = new InMemoryTrainingThresholds();
+  const certifications = new InMemoryCertifications();
+  const ambassadorSuggestions = new InMemoryAmbassadorSuggestions();
   const audit: AuditRecord[] = [];
   let seq = 0;
   const recorder = { record: async (r: AuditRecord) => { audit.push(r); } };
@@ -83,6 +87,11 @@ export async function buildTrainingWorld(clock: { now: () => Date }) {
     evaluationSheet: new GetEvaluationSheetHandler(sessions, enrollments, learners, evaluations, attendances, thresholds),
     getThresholds: new GetTrainingThresholdsHandler(thresholds),
     updateThresholds: new UpdateTrainingThresholdsUseCase(thresholds, recorder, unitOfWork),
+    certifications, ambassadorSuggestions,
+    issueCertification: new IssueCertificationUseCase(sessions, enrollments, evaluations, attendances, thresholds, certifications, ambassadorSuggestions, directory, recorder, unitOfWork, clock, ids),
+    revokeCertification: new RevokeCertificationUseCase(certifications, recorder, unitOfWork, clock),
+    certificationSheet: new GetCertificationSheetHandler(sessions, enrollments, learners, certifications, trainers, directory),
+    ambassadorSuggestionsHandler: new GetAmbassadorSuggestionsHandler(ambassadorSuggestions),
     get: new GetSessionHandler(sessions, trainers, views),
     list: new ListSessionsHandler(sessions, views),
     updateRoom: new UpdateRoomUseCase(rooms, recorder, unitOfWork),

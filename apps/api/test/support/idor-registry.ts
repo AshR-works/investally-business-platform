@@ -14,8 +14,13 @@
  * - `lecture-formateur` : lecture d'un référentiel partagé dont la portée est réduite pour un seul rôle : le formateur (« Propre ») ne voit que les
  *   sessions dont le formateur est lié à son compte ; tous les autres rôles lisent en portée Tous. Hors portée = « introuvable » (même réponse que
  *   pour un objet inexistant), vérifié par `sessions-http.integration.spec.ts`.
+ * - `lecture-mixte` : la portée diffère **par rôle**, selon un axe différent chacun (ex. le formateur par la session qu'il anime, le
+ *   Responsable commercial par l'entreprise de l'inscrit) : « introuvable » seulement pour le rôle dont l'objet de portée (la session, via
+ *   le formateur) est lui-même hors de portée — jamais pour un rôle qui voit déjà la session par ailleurs (ex. `training.session.read` en
+ *   portée Tous) : pour lui, un inscrit hors portée est simplement absent de la liste, sans erreur globale. Chaque rôle a sa propre vérification
+ *   explicite dans `idor-contract.spec.ts` (pas de règle unique « Propre pour un seul rôle, Tous pour les autres »).
  */
-export type IdorClass = 'objet' | 'admin' | 'portee-tous' | 'referentiel' | 'lecture-formateur';
+export type IdorClass = 'objet' | 'admin' | 'portee-tous' | 'referentiel' | 'lecture-formateur' | 'lecture-mixte';
 
 export const IDOR_ROUTES: Record<string, IdorClass> = {
   'GET /admin/exports/:kind': 'admin',
@@ -154,6 +159,9 @@ export const IDOR_ROUTES: Record<string, IdorClass> = {
   'PUT /sessions/:sessionId/evaluations/:enrollmentId': 'referentiel',
   'GET /training/thresholds': 'referentiel',
   'PUT /training/thresholds': 'referentiel',
+  'GET /sessions/:sessionId/certifications': 'lecture-mixte',
+  'POST /sessions/:sessionId/certifications/:enrollmentId': 'referentiel',
+  'POST /sessions/:sessionId/certifications/:enrollmentId/revoke': 'referentiel',
 
   'GET /admin/users/:id': 'admin',
   'PATCH /admin/users/:id': 'admin',
