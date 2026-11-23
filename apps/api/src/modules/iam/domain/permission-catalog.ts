@@ -44,7 +44,8 @@ export const RESOURCES: readonly ResourceDefinition[] = [
   { module: 'training', resource: 'learner', label: 'Apprenants', actions: [...CRUD, 'delete'] },
   { module: 'training', resource: 'enrollment', label: 'Inscriptions', actions: [...CRUD, 'cancel'] },
   { module: 'training', resource: 'attendance', label: 'Présences', actions: ['read', 'record'] },
-  { module: 'training', resource: 'evaluation', label: 'Évaluations', actions: ['read', 'record'] },
+  // 'manage' (S5.3b) : seuils d'éligibilité à un certificat ou une attestation (D31, S5) ; paramétrables, jamais codés en dur.
+  { module: 'training', resource: 'evaluation', label: 'Évaluations', actions: ['read', 'record', 'manage'] },
   { module: 'training', resource: 'certification', label: 'Certifications et attestations', actions: ['read', 'issue', 'revoke'] },
   // Ressources humaines (RH légère, ADR-0009) : identité professionnelle seulement
   { module: 'hr', resource: 'employee', label: 'Personnel', actions: ['read', 'create', 'update', 'archive'] },

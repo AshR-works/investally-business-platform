@@ -28,7 +28,7 @@ describe('Résolution des droits (B1)', () => {
     }
     const both = await w.createDefaultUser([RoleCode.AccountManager, RoleCode.Trainer], 'double@investally.test');
     const context = await w.authorization.contextFor(both.id);
-    expect(context.grants.some((g) => g.permission === 'training.evaluation.record')).toBe(true);
+    expect(context.grants.some((g) => g.permission === 'training.certification.read')).toBe(true);
     expect(context.grants.some((g) => g.permission === 'bd.company.create')).toBe(true);
   });
 

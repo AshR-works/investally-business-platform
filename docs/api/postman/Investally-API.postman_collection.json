@@ -8433,6 +8433,202 @@
           ]
         },
         {
+          "name": "GET /sessions/{sessionId}/evaluations",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/sessions/{sessionId}/evaluations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sessions",
+                ":sessionId",
+                "evaluations"
+              ],
+              "variable": [
+                {
+                  "key": "sessionId",
+                  "value": "{{sessionId}}",
+                  "description": "Identifiant : voir l’environnement (valeur par défaut : identifiant inexistant, la route répond « introuvable »)."
+                }
+              ],
+              "query": []
+            },
+            "description": "**Permission** : `training.evaluation.read`\n\nSuccès attendu : 200.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Sans jeton : refusé (401)', () => pm.response.to.have.status(401));",
+                  "pm.test('Réponse « problem details »', () => pm.expect(pm.response.json()).to.include.keys('type', 'title', 'status'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PUT /sessions/{sessionId}/evaluations/{enrollmentId}",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/sessions/{sessionId}/evaluations/{enrollmentId}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sessions",
+                ":sessionId",
+                "evaluations",
+                ":enrollmentId"
+              ],
+              "variable": [
+                {
+                  "key": "sessionId",
+                  "value": "{{sessionId}}",
+                  "description": "Identifiant : voir l’environnement (valeur par défaut : identifiant inexistant, la route répond « introuvable »)."
+                },
+                {
+                  "key": "enrollmentId",
+                  "value": "{{enrollmentId}}",
+                  "description": "Identifiant : voir l’environnement (valeur par défaut : identifiant inexistant, la route répond « introuvable »)."
+                }
+              ],
+              "query": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"score\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**Permission** : `training.evaluation.record`\n\nSuccès attendu : 200.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Sans jeton : refusé (401)', () => pm.response.to.have.status(401));",
+                  "pm.test('Réponse « problem details »', () => pm.expect(pm.response.json()).to.include.keys('type', 'title', 'status'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /training/thresholds",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/training/thresholds",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "training",
+                "thresholds"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "description": "**Permission** : `training.evaluation.read`\n\nSuccès attendu : 200.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Sans jeton : refusé (401)', () => pm.response.to.have.status(401));",
+                  "pm.test('Réponse « problem details »', () => pm.expect(pm.response.json()).to.include.keys('type', 'title', 'status'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PUT /training/thresholds",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/training/thresholds",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "training",
+                "thresholds"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**Permission** : `training.evaluation.manage`\n\nSuccès attendu : 200.\n\n_Corps vide envoyé volontairement : la route refuse (400) sans rien créer. Le corps documenté est :_\n\n```json\n{\n  \"version\": 1,\n  \"attendanceThresholdPercent\": 0,\n  \"scoreThreshold\": 0\n}\n```\n\nLes créations réelles sont testées dans le dossier « 90 — Parcours de bout en bout ».",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Sans jeton : refusé (401)', () => pm.response.to.have.status(401));",
+                  "pm.test('Réponse « problem details »', () => pm.expect(pm.response.json()).to.include.keys('type', 'title', 'status'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
           "name": "GET /hr/directory",
           "request": {
             "method": "GET",
@@ -26989,6 +27185,142 @@
               }
             }
           ]
+        },
+        {
+          "name": "GET /sessions/{sessionId}/evaluations",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/sessions/{sessionId}/evaluations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sessions",
+                ":sessionId",
+                "evaluations"
+              ],
+              "variable": [
+                {
+                  "key": "sessionId",
+                  "value": "{{sessionId}}",
+                  "description": "Identifiant : voir l’environnement (valeur par défaut : identifiant inexistant, la route répond « introuvable »)."
+                }
+              ],
+              "query": []
+            },
+            "description": "**Permission** : `training.evaluation.read`\n\nSuccès attendu : 200."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const documented = [200,400,403,404,409,415,422,429];",
+                  "const success = [200];",
+                  "pm.test('Pas d’erreur serveur (statut inférieur à 500)', () => pm.expect(pm.response.code).to.be.below(500));",
+                  "pm.test('Le jeton est accepté (pas de 401)', () => pm.expect(pm.response.code).to.not.eql(401));",
+                  "pm.test('Statut prévu (succès documenté ou refus métier standard)', () => pm.expect(documented).to.include(pm.response.code));",
+                  "pm.test('Temps de réponse raisonnable (moins de 3 s)', () => pm.expect(pm.response.responseTime).to.be.below(3000));",
+                  "if (pm.response.code !== 204 && pm.response.text().length > 0) {",
+                  "  pm.test('Réponse en JSON', () => pm.expect(pm.response.headers.get('Content-Type') || '').to.match(/json/));",
+                  "}",
+                  "if (pm.response.code >= 400 && pm.response.code < 500 && pm.response.text().length > 0) {",
+                  "  pm.test('Erreur au format « problem details » (RFC 7807)', () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body).to.include.keys('type', 'title', 'status');",
+                  "    pm.expect(body.status).to.eql(pm.response.code);",
+                  "  });",
+                  "}",
+                  "if (success.includes(pm.response.code)) {",
+                  "  pm.test('Statut de succès documenté', () => pm.expect(success).to.include(pm.response.code));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PUT /sessions/{sessionId}/evaluations/{enrollmentId}",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/sessions/{sessionId}/evaluations/{enrollmentId}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sessions",
+                ":sessionId",
+                "evaluations",
+                ":enrollmentId"
+              ],
+              "variable": [
+                {
+                  "key": "sessionId",
+                  "value": "{{sessionId}}",
+                  "description": "Identifiant : voir l’environnement (valeur par défaut : identifiant inexistant, la route répond « introuvable »)."
+                },
+                {
+                  "key": "enrollmentId",
+                  "value": "{{enrollmentId}}",
+                  "description": "Identifiant : voir l’environnement (valeur par défaut : identifiant inexistant, la route répond « introuvable »)."
+                }
+              ],
+              "query": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"score\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**Permission** : `training.evaluation.record`\n\nSuccès attendu : 200."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const documented = [200,400,403,404,409,415,422,429];",
+                  "const success = [200];",
+                  "pm.test('Pas d’erreur serveur (statut inférieur à 500)', () => pm.expect(pm.response.code).to.be.below(500));",
+                  "pm.test('Le jeton est accepté (pas de 401)', () => pm.expect(pm.response.code).to.not.eql(401));",
+                  "pm.test('Statut prévu (succès documenté ou refus métier standard)', () => pm.expect(documented).to.include(pm.response.code));",
+                  "pm.test('Temps de réponse raisonnable (moins de 3 s)', () => pm.expect(pm.response.responseTime).to.be.below(3000));",
+                  "if (pm.response.code !== 204 && pm.response.text().length > 0) {",
+                  "  pm.test('Réponse en JSON', () => pm.expect(pm.response.headers.get('Content-Type') || '').to.match(/json/));",
+                  "}",
+                  "if (pm.response.code >= 400 && pm.response.code < 500 && pm.response.text().length > 0) {",
+                  "  pm.test('Erreur au format « problem details » (RFC 7807)', () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body).to.include.keys('type', 'title', 'status');",
+                  "    pm.expect(body.status).to.eql(pm.response.code);",
+                  "  });",
+                  "}",
+                  "if (success.includes(pm.response.code)) {",
+                  "  pm.test('Statut de succès documenté', () => pm.expect(success).to.include(pm.response.code));",
+                  "}"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
@@ -27337,7 +27669,128 @@
       ]
     },
     {
-      "name": "34 — trainings",
+      "name": "34 — training",
+      "item": [
+        {
+          "name": "GET /training/thresholds",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/training/thresholds",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "training",
+                "thresholds"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "description": "**Permission** : `training.evaluation.read`\n\nSuccès attendu : 200."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const documented = [200,400,403,404,409,415,422,429];",
+                  "const success = [200];",
+                  "pm.test('Pas d’erreur serveur (statut inférieur à 500)', () => pm.expect(pm.response.code).to.be.below(500));",
+                  "pm.test('Le jeton est accepté (pas de 401)', () => pm.expect(pm.response.code).to.not.eql(401));",
+                  "pm.test('Statut prévu (succès documenté ou refus métier standard)', () => pm.expect(documented).to.include(pm.response.code));",
+                  "pm.test('Temps de réponse raisonnable (moins de 3 s)', () => pm.expect(pm.response.responseTime).to.be.below(3000));",
+                  "if (pm.response.code !== 204 && pm.response.text().length > 0) {",
+                  "  pm.test('Réponse en JSON', () => pm.expect(pm.response.headers.get('Content-Type') || '').to.match(/json/));",
+                  "}",
+                  "if (pm.response.code >= 400 && pm.response.code < 500 && pm.response.text().length > 0) {",
+                  "  pm.test('Erreur au format « problem details » (RFC 7807)', () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body).to.include.keys('type', 'title', 'status');",
+                  "    pm.expect(body.status).to.eql(pm.response.code);",
+                  "  });",
+                  "}",
+                  "if (success.includes(pm.response.code)) {",
+                  "  pm.test('Statut de succès documenté', () => pm.expect(success).to.include(pm.response.code));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PUT /training/thresholds",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/training/thresholds",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "training",
+                "thresholds"
+              ],
+              "variable": [],
+              "query": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "**Permission** : `training.evaluation.manage`\n\nSuccès attendu : 200.\n\n_Corps vide envoyé volontairement : la route refuse (400) sans rien créer. Le corps documenté est :_\n\n```json\n{\n  \"version\": 1,\n  \"attendanceThresholdPercent\": 0,\n  \"scoreThreshold\": 0\n}\n```\n\nLes créations réelles sont testées dans le dossier « 90 — Parcours de bout en bout »."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const documented = [200,400,403,404,409,415,422,429];",
+                  "const success = [200];",
+                  "pm.test('Pas d’erreur serveur (statut inférieur à 500)', () => pm.expect(pm.response.code).to.be.below(500));",
+                  "pm.test('Le jeton est accepté (pas de 401)', () => pm.expect(pm.response.code).to.not.eql(401));",
+                  "pm.test('Statut prévu (succès documenté ou refus métier standard)', () => pm.expect(documented).to.include(pm.response.code));",
+                  "pm.test('Temps de réponse raisonnable (moins de 3 s)', () => pm.expect(pm.response.responseTime).to.be.below(3000));",
+                  "if (pm.response.code !== 204 && pm.response.text().length > 0) {",
+                  "  pm.test('Réponse en JSON', () => pm.expect(pm.response.headers.get('Content-Type') || '').to.match(/json/));",
+                  "}",
+                  "if (pm.response.code >= 400 && pm.response.code < 500 && pm.response.text().length > 0) {",
+                  "  pm.test('Erreur au format « problem details » (RFC 7807)', () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body).to.include.keys('type', 'title', 'status');",
+                  "    pm.expect(body.status).to.eql(pm.response.code);",
+                  "  });",
+                  "}",
+                  "if (success.includes(pm.response.code)) {",
+                  "  pm.test('Statut de succès documenté', () => pm.expect(success).to.include(pm.response.code));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "35 — trainings",
       "item": [
         {
           "name": "GET /trainings",

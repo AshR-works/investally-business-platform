@@ -25,6 +25,12 @@ import { GetAttendanceSheetHandler, RecordAttendanceUseCase } from './applicatio
 import { ATTENDANCE_REPOSITORY } from './domain/attendance-repositories';
 import { PrismaAttendanceRepository } from './infrastructure/prisma-attendance.repository';
 import { AttendanceController } from './presentation/attendance.controller';
+import { GetEvaluationSheetHandler, GetTrainingThresholdsHandler, RecordEvaluationUseCase, UpdateTrainingThresholdsUseCase } from './application/evaluation-use-cases';
+import { EVALUATION_REPOSITORY, TRAINING_THRESHOLDS_REPOSITORY } from './domain/evaluation-repositories';
+import { PrismaEvaluationRepository } from './infrastructure/prisma-evaluation.repository';
+import { PrismaTrainingThresholdsRepository } from './infrastructure/prisma-training-thresholds.repository';
+import { EvaluationController } from './presentation/evaluation.controller';
+import { TrainingThresholdsController } from './presentation/training-thresholds.controller';
 import { MODULE_REPOSITORY, PROGRAM_REPOSITORY, ROOM_REPOSITORY, TRAINER_REPOSITORY, TRAINING_REPOSITORY } from './domain/catalogue-repositories';
 import { PrismaModuleRepository, PrismaProgramRepository, PrismaRoomRepository, PrismaTrainerRepository, PrismaTrainingRepository } from './infrastructure/prisma-catalogue.repositories';
 import { ModulesController, ProgramsController, RhythmsController, RoomsController, TrainersController, TrainingsController } from './presentation/catalogue.controllers';
@@ -34,6 +40,7 @@ import { ModulesController, ProgramsController, RhythmsController, RoomsControll
   imports: [AuditModule, IamModule, BusinessDevelopmentModule],
   controllers: [
     ProgramsController, TrainingsController, ModulesController, RhythmsController, RoomsController, TrainersController, SessionsController, LearnersController, EnrollmentsController, AttendanceController,
+    EvaluationController, TrainingThresholdsController,
   ],
   providers: [
     CreateProgramUseCase, UpdateProgramUseCase, ChangeProgramStatusUseCase, GetProgramHandler, ListProgramsHandler,
@@ -46,10 +53,13 @@ import { ModulesController, ProgramsController, RhythmsController, RoomsControll
     RegisterLearnerUseCase, UpdateLearnerUseCase, DeleteLearnerUseCase, GetLearnerHandler, ListLearnersHandler,
     EnrollLearnerUseCase, ConfirmEnrollmentUseCase, CancelEnrollmentUseCase, ReplaceEnrollmentUseCase, GetEnrollmentHandler, ListEnrollmentsHandler, ListApprovalOptionsHandler, EnrollmentViews, EnrollmentRules,
     RecordAttendanceUseCase, GetAttendanceSheetHandler,
+    RecordEvaluationUseCase, GetEvaluationSheetHandler, GetTrainingThresholdsHandler, UpdateTrainingThresholdsUseCase,
     { provide: LEARNER_REPOSITORY, useClass: PrismaLearnerRepository },
     { provide: ENROLLMENT_REPOSITORY, useClass: PrismaEnrollmentRepository },
     { provide: SESSION_REPOSITORY, useClass: PrismaSessionRepository },
     { provide: ATTENDANCE_REPOSITORY, useClass: PrismaAttendanceRepository },
+    { provide: EVALUATION_REPOSITORY, useClass: PrismaEvaluationRepository },
+    { provide: TRAINING_THRESHOLDS_REPOSITORY, useClass: PrismaTrainingThresholdsRepository },
     { provide: PROGRAM_REPOSITORY, useClass: PrismaProgramRepository },
     { provide: TRAINING_REPOSITORY, useClass: PrismaTrainingRepository },
     { provide: MODULE_REPOSITORY, useClass: PrismaModuleRepository },

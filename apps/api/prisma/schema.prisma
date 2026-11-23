@@ -1192,6 +1192,7 @@ model Enrollment {
   session     TrainingSession @relation(fields: [sessionId], references: [id], onDelete: Restrict)
   learner     Learner         @relation(fields: [learnerId], references: [id], onDelete: Restrict)
   attendances Attendance[]
+  evaluation  Evaluation?
 
   @@index([sessionId, status])
   @@index([learnerId, status])
@@ -1227,6 +1228,36 @@ model Attendance {
   @@unique([enrollmentId, day])
   @@index([day])
   @@map("attendances")
+  @@schema("training")
+}
+
+/// Évaluation d'un inscrit confirmé (S5.3b, lot b de S5.3) : une note sur 20, sans commentaire libre (S4). Au plus une par inscription.
+/// Saisie par le responsable Investudy (même règle que les présences, S1/ADR-0016) tant que la session n'est pas clôturée.
+model Evaluation {
+  id               String   @id @db.Uuid
+  enrollmentId     String   @unique @map("enrollment_id") @db.Uuid
+  score            Decimal  @db.Decimal(4, 2)
+  /// Compte qui a saisi ou corrigé en dernier (hors contexte iam : pas de clé étrangère entre schémas, D70).
+  recordedByUserId String   @map("recorded_by_user_id") @db.Uuid
+  version          Int      @default(1)
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  enrollment Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Restrict)
+
+  @@map("evaluations")
+  @@schema("training")
+}
+
+/// Seuils d'éligibilité à un certificat ou une attestation (S5, D31) : une seule ligne, valeurs de départ « à confirmer », paramétrables.
+model TrainingThresholds {
+  id                         Int      @id @default(1)
+  attendanceThresholdPercent Decimal  @default(80) @map("attendance_threshold_percent") @db.Decimal(5, 2)
+  scoreThreshold             Decimal  @default(10) @map("score_threshold") @db.Decimal(4, 2)
+  version                    Int      @default(1)
+  updatedAt                  DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@map("training_thresholds")
   @@schema("training")
 }
 
