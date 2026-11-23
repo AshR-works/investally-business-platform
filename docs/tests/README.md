@@ -52,7 +52,7 @@
 | 38 | [Modèles de parcours](interfaces/38-modeles-de-parcours.md) | `/hr/journeys/templates` | RH-3c, RH-3d | |
 | 39 | [Présences](interfaces/39-presences.md) | `/hr/presences` | RH-4b, RH-4c | |
 
-## Fiches de session (41)
+## Fiches de session (42)
 
 | Session | Intitulé | Étiquette | Vérifications | Dernière exécution |
 |---|---|---|---|---|
@@ -99,6 +99,7 @@
 | [rh-3](sessions/rh-3.md) | RH-3 — contrats et parcours | `rh-3a-validated`, `rh-3b-validated` | 15 | |
 | [rh-4](sessions/rh-4.md) | RH-4 — présences déclaratives | `rh-4a-validated`, `rh-4b-validated` | 14 | |
 | [s5-3a](sessions/s5-3a.md) | S5.3a — clôture de session et présences aux séances | — | 14 | |
+| [s5-3b](sessions/s5-3b.md) | S5.3b — évaluations et seuils d'éligibilité | — | 13 | |
 
 ## Remarques
 - Les fiches de session sont **dérivées des recettes** : en cas de doute, la recette fait foi. Celles des premiers sprints (S1 à S3.5) sont surtout des tests automatisés ; leurs « vérifications » rappellent ce que chaque contrôle prouve.

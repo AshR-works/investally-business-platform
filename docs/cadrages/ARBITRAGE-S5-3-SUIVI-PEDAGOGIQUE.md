@@ -75,4 +75,4 @@ Clôture de session (permission dédiée, confirmation, présences figées) ; fe
 
 **Lot (a) — API, écran et recette livrés et validés** (2026-11-16/17) : clôture/réouverture de session, présences aux séances, mutants (42/43, un survivant expliqué), Newman, fiches de test. ADR-0016.
 
-**Lot (b) — API livrée le 2026-11-23** : évaluations (note sur 20) et seuils d'éligibilité (calcul et suggestion, jamais de délivrance), domaine, migration, cas d'usage, routes, tests unitaires et d'intégration. ADR-0017. Classé **à risque réel** pour la recette (D73, D75) : la recette (sous-lot b-recette) comportera mutants et Newman. **Reste à livrer séparément** : l'écran et la démonstration (lot b-écran), puis la recette (lot b-recette), avant de passer au lot (c).
+**Lot (b) — API, écran et recette livrés et validés le 2026-11-23** : évaluations (note sur 20) et seuils d'éligibilité (calcul et suggestion, jamais de délivrance), mutants (35/36, un survivant expliqué), Newman, fiches de test. ADR-0017. **Reste à faire** : lot (c) — certificats, attestations, révocation, suggestion d'ambassadeur (S6, S8, S9) — sur feu vert de la Direction produit.

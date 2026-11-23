@@ -370,7 +370,29 @@ const scenarioFolders = () => {
     ],
     event: [runId],
   };
-  return [entreprises, formation, conges, contratsParcours, presences, cloturePresences];
+  const evaluationsSeuils = {
+    name: '90.7 — Formation : évaluations et seuils d’éligibilité (S5.3b)',
+    item: [
+      { ...step('Planifier une session (réutilise le certificat, la salle et le formateur de 90.2)', 'POST', '/sessions', { body: { trainingId: '{{trainingId}}', rhythm: 'DAY', startDate: '{{s53bStart}}', roomId: '{{roomId}}', trainerId: '{{trainerId}}', capacity: 5 }, expect: [201] }), event: [
+        { listen: 'prerequest', script: { type: 'text/javascript', exec: [`pm.collectionVariables.set('s53bStart', ${nextMonday}.replace(/(\\d{4}-\\d{2}-\\d{2})/, (d) => { const dt = new Date(d); dt.setUTCDate(dt.getUTCDate() + 14); return dt.toISOString().slice(0, 10); }));`] } },
+        { listen: 'test', script: { type: 'text/javascript', exec: ["pm.test('Session planifiée', () => pm.expect([201]).to.include(pm.response.code));", "pm.environment.set('s53bSessionId', pm.response.json().id);"] } },
+      ] },
+      step('Ouvrir la session', 'POST', '/sessions/{{s53bSessionId}}/open', { body: { version: 1 }, expect: [200] }),
+      step('Inscrire un étudiant, payeur lui-même', 'POST', '/enrollments', { body: { sessionId: '{{s53bSessionId}}', learnerId: '{{learnerId}}', payer: { kind: 'SELF' } }, expect: [201], save: { s53bEnrollmentId: 'pm.response.json().id' } }),
+      step('Confirmer l’inscription', 'POST', '/enrollments/{{s53bEnrollmentId}}/confirm', { body: { version: 1 }, expect: [200] }),
+      step('Feuille d’évaluation : l’inscrit confirmé y figure, sans note', 'GET', '/sessions/{{s53bSessionId}}/evaluations', { extraTests: ["pm.test('Un inscrit, pas encore noté, saisie possible', () => { const b = pm.response.json(); pm.expect(b.rows).to.have.lengthOf(1); pm.expect(b.rows[0].score).to.eql(null); pm.expect(b.canRecord).to.eql(true); });"] }),
+      step('Saisir une note', 'PUT', '/sessions/{{s53bSessionId}}/evaluations/{{s53bEnrollmentId}}', { body: { score: 15 }, expect: [200], extraTests: ["pm.test('15 sur 20', () => pm.expect(pm.response.json().score).to.eql(15));"] }),
+      step('Redéclarer la même note ne change rien', 'PUT', '/sessions/{{s53bSessionId}}/evaluations/{{s53bEnrollmentId}}', { body: { score: 15 }, expect: [200] }),
+      step('Une note hors barème est refusée', 'PUT', '/sessions/{{s53bSessionId}}/evaluations/{{s53bEnrollmentId}}', { body: { score: 21 }, expect: [400] }),
+      step('Lire les seuils d’éligibilité (valeurs de départ)', 'GET', '/training/thresholds', { extraTests: ["pm.test('80 % et 10 sur 20 par défaut', () => { const b = pm.response.json(); pm.expect(b.attendanceThresholdPercent).to.eql(80); pm.expect(b.scoreThreshold).to.eql(10); });"] }),
+      step('Clôturer la session', 'POST', '/sessions/{{s53bSessionId}}/close', { body: { version: 2 }, expect: [200], extraTests: ["pm.test('Clôturée', () => pm.expect(pm.response.json().status).to.eql('CLOSED'));"] }),
+      step('Note refusée une fois la session clôturée', 'PUT', '/sessions/{{s53bSessionId}}/evaluations/{{s53bEnrollmentId}}', { body: { score: 12 }, expect: [422] }),
+      step('Rouvrir avec motif', 'POST', '/sessions/{{s53bSessionId}}/reopen', { body: { version: 3, reason: 'Correction Postman' }, expect: [200], extraTests: ["pm.test('Ouverte de nouveau', () => pm.expect(pm.response.json().status).to.eql('OPEN'));"] }),
+      step('Note de nouveau possible, corrigée', 'PUT', '/sessions/{{s53bSessionId}}/evaluations/{{s53bEnrollmentId}}', { body: { score: 8 }, expect: [200], extraTests: ["pm.test('8 sur 20', () => pm.expect(pm.response.json().score).to.eql(8));"] }),
+    ],
+    event: [runId],
+  };
+  return [entreprises, formation, conges, contratsParcours, presences, cloturePresences, evaluationsSeuils];
 };
 
 // ───────────────────────────── Écritures de test (à rejouer à la main) ─────────────────────────────

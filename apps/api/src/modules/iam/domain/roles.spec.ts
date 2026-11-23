@@ -163,6 +163,12 @@ describe('Matrice rôles → permissions', () => {
     expect(codesOf(RoleCode.Trainer).filter((c) => c.startsWith('training.evaluation.'))).toEqual([]);
   });
 
+  it('le catalogue distingue gérer les seuils d\'éligibilité des autres actions sur les évaluations (S5.3b, D31)', () => {
+    expect(PERMISSION_CODES.has('training.evaluation.manage')).toBe(true);
+    expect(PERMISSION_CODES.has('training.evaluation.read')).toBe(true);
+    expect(PERMISSION_CODES.has('training.evaluation.record')).toBe(true);
+  });
+
   it('le catalogue distingue clôturer et rouvrir une session (S5.3a, S7) ; seul le Responsable Investudy et le Super administrateur les détiennent', () => {
     expect(PERMISSION_CODES.has('training.session.close')).toBe(true);
     expect(PERMISSION_CODES.has('training.session.reopen')).toBe(true);

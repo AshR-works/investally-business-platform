@@ -1,0 +1,54 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fiche de test — S5.3b — évaluations et seuils d&#x27;éligibilité</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="../../INDEX.html">Index</a> · <a href="../../GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="../../ARCHITECTURE.html">Architecture</a> · <a href="../../SECURITY.html">Sécurité</a> · <a href="../../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../../QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="../../TECH-DEBT.html">Dette</a> · <a href="../../CHARTE-DE-TESTS.html">Charte de tests</a> · <a href="../../tests/README.html">Fiches de test</a> · <a href="../../design/README.html">Design</a> · <a href="../../livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>Fiche de test — S5.3b — évaluations et seuils d'éligibilité</h1>
+<div class="table-wrap"><table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td><strong>Session</strong></td><td><code>s5-3b</code></td></tr>
+<tr><td><strong>Recette de référence</strong></td><td><a href="../../SPRINT-S5-3B-RECETTE.html"><code>SPRINT-S5-3B-RECETTE.md</code></a> (API, écran, mutants, Newman, fiche)</td></tr>
+<tr><td><strong>Étiquette</strong></td><td><code>s5-3b-validated</code> (à la validation)</td></tr>
+<tr><td><strong>Contexte</strong></td><td>Décision D75, arbitrage <a href="../../cadrages/ARBITRAGE-S5-3-SUIVI-PEDAGOGIQUE.html">ARBITRAGE-S5-3-SUIVI-PEDAGOGIQUE</a> (option C, lot b), <a href="../../adr/0017-evaluations-et-seuils-d-eligibilite.html">ADR-0017</a></td></tr>
+<tr><td><strong>Écrans concernés</strong></td><td><a href="../interfaces/23-fiche-session.html">Fiche d'une session</a> (feuille d'évaluation), Seuils d'éligibilité (<code>/training/thresholds</code>)</td></tr>
+</tbody></table></div>
+<p><em>Fiche de session de la <a href="../../CHARTE-DE-TESTS.html">charte de tests</a>, <strong>dérivée de la recette</strong> du lot : en cas de doute, la recette fait foi. Lot classé <strong>à risque réel</strong> (D73) : mutants et Newman exécutés.</em></p>
+<h2>Avant de commencer</h2>
+<ul><li>Pile locale prête (<code>node scripts/local-stack.mjs --seed=demo --rebuild</code>) ; comptes de démonstration (mots de passe dans le fichier local, jamais dans le dépôt).</li><li>Rôles utiles : Responsable Investudy, Super administrateur, Direction, un chargé de compte.</li><li>Préparer une session ouverte (ou en cours) avec au moins un inscrit <strong>confirmé</strong>.</li></ul>
+<h2>Vérifications à rejouer</h2>
+<div class="table-wrap"><table><thead><tr><th>N°</th><th>Vérification</th><th>Résultat attendu (d'après la recette)</th><th>Constaté (✔ / ✘)</th><th>Date et initiales</th></tr></thead><tbody>
+<tr><td>1</td><td>Une note sur 20, sans commentaire libre</td><td><code>training.evaluation.record</code> : Responsable Investudy et Super administrateur seulement ; au plus une évaluation par inscrit <strong>confirmé</strong> ; un nombre hors 0-20 ou à plus de deux décimales est refusé (400)</td><td>☐</td><td></td></tr>
+<tr><td>2</td><td>Qui saisit, qui lit</td><td>Saisie : Responsable Investudy et Super administrateur — <strong>jamais le formateur</strong> (même règle que les présences, S1) ; lecture : les deux, et la Direction ; un chargé de compte n'a ni l'un ni l'autre</td><td>☐</td><td></td></tr>
+<tr><td>3</td><td>Figée à la clôture</td><td>Toute saisie ou correction est refusée (422) tant que la session est clôturée ; de nouveau possible après réouverture</td><td>☐</td><td></td></tr>
+<tr><td>4</td><td>Idempotent, dernier auteur retenu</td><td>Resaisir la même note ne change rien et n'écrit rien dans le journal ; une correction par un autre compte écrit l'avant et l'après, et retient ce dernier auteur <strong>en base</strong></td><td>☐</td><td></td></tr>
+<tr><td>5</td><td>Une inscription hors de la session ou non confirmée</td><td>« Introuvable » (422/404 selon le cas), jamais une évaluation saisie sur une inscription qui n'appartient pas à cette session ou qui n'est pas confirmée</td><td>☐</td><td></td></tr>
+<tr><td>6</td><td>Qui figure sur la feuille</td><td>Seuls les inscrits <strong>confirmés</strong> (en attente, annulés, à replacer : absents)</td><td>☐</td><td></td></tr>
+<tr><td>7</td><td>Calcul du taux de présence (S3)</td><td>Un retard compte comme présent ; le taux est calculé sur les jours de cours de la session, pas sur les jours saisis seulement</td><td>☐</td><td></td></tr>
+<tr><td>8</td><td>Suggestion d'éligibilité, jamais de délivrance</td><td>Certificat : les deux seuils atteints (présence <strong>et</strong> note) ; attestation : seule la présence atteinte (note absente ou insuffisante) ; sinon aucune suggestion. La feuille ne délivre, ni ne révoque, rien (lot c)</td><td>☐</td><td></td></tr>
+<tr><td>9</td><td>Seuils paramétrables</td><td><code>/training/thresholds</code> : lecture par tout détenteur de <code>training.evaluation.read</code> ; modification réservée à <code>training.evaluation.manage</code> (verrou optimiste, version périmée refusée avec 409) ; valeurs hors bornes refusées (400)</td><td>☐</td><td></td></tr>
+<tr><td>10</td><td>Règles garanties par la base</td><td>Au plus une évaluation par inscription (index unique, conflit 409 au niveau du dépôt) ; clé vers l'inscription ; note entre 0 et 20 (contrainte de la base) ; une seule ligne de seuils</td><td>☐</td><td></td></tr>
+<tr><td>11</td><td>Écran : feuille d'évaluation</td><td>Un inscrit confirmé par ligne, note, taux de présence et suggestion affichés ; bouton Saisir/Corriger selon l'état ; figée (lecture seule) une fois la session clôturée, avec message explicite</td><td>☐</td><td></td></tr>
+<tr><td>12</td><td>Écran : seuils d'éligibilité</td><td>Réservé à qui gère ; formulaire à deux champs, enregistrement avec confirmation ; les autres profils voient un message de restriction</td><td>☐</td><td></td></tr>
+<tr><td>13</td><td>Preuves</td><td>Mutants : voir la recette (35 tués sur 36, 1 survivant expliqué) ; collection Postman (parcours 90.7) : exécutée avec Newman</td><td>☐</td><td></td></tr>
+</tbody></table></div>
+<h2>Écarts constatés</h2>
+<div class="table-wrap"><table><thead><tr><th>Date</th><th>Vérification</th><th>Description</th><th>Défaut ouvert (D…)</th></tr></thead><tbody>
+<tr><td></td><td></td><td></td><td></td></tr>
+</tbody></table></div></main></body></html>

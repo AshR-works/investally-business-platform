@@ -14114,6 +14114,596 @@
               }
             }
           ]
+        },
+        {
+          "name": "90.7 — Formation : évaluations et seuils d’éligibilité (S5.3b)",
+          "item": [
+            {
+              "name": "Planifier une session (réutilise le certificat, la salle et le formateur de 90.2)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/sessions",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "sessions"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"trainingId\": \"{{trainingId}}\",\n  \"rhythm\": \"DAY\",\n  \"startDate\": \"{{s53bStart}}\",\n  \"roomId\": \"{{roomId}}\",\n  \"trainerId\": \"{{trainerId}}\",\n  \"capacity\": 5\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.collectionVariables.set('s53bStart', (() => { const d = new Date(); d.setUTCDate(d.getUTCDate() + 14); d.setUTCDate(d.getUTCDate() + ((8 - d.getUTCDay()) % 7 || 7)); return d.toISOString().slice(0, 10); })().replace(/(\\d{4}-\\d{2}-\\d{2})/, (d) => { const dt = new Date(d); dt.setUTCDate(dt.getUTCDate() + 14); return dt.toISOString().slice(0, 10); }));"
+                    ]
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Session planifiée', () => pm.expect([201]).to.include(pm.response.code));",
+                      "pm.environment.set('s53bSessionId', pm.response.json().id);"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Ouvrir la session",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/sessions/{{s53bSessionId}}/open",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "sessions",
+                    "{{s53bSessionId}}",
+                    "open"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"version\": 1\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Ouvrir la session : statut 200', () => pm.expect([200]).to.include(pm.response.code));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Inscrire un étudiant, payeur lui-même",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/enrollments",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "enrollments"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"sessionId\": \"{{s53bSessionId}}\",\n  \"learnerId\": \"{{learnerId}}\",\n  \"payer\": {\n    \"kind\": \"SELF\"\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Inscrire un étudiant, payeur lui-même : statut 201', () => pm.expect([201]).to.include(pm.response.code));",
+                      "if ([201].includes(pm.response.code)) pm.environment.set('s53bEnrollmentId', String(pm.response.json().id));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Confirmer l’inscription",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/enrollments/{{s53bEnrollmentId}}/confirm",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "enrollments",
+                    "{{s53bEnrollmentId}}",
+                    "confirm"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"version\": 1\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Confirmer l’inscription : statut 200', () => pm.expect([200]).to.include(pm.response.code));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Feuille d’évaluation : l’inscrit confirmé y figure, sans note",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/sessions/{{s53bSessionId}}/evaluations",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "sessions",
+                    "{{s53bSessionId}}",
+                    "evaluations"
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Feuille d’évaluation : l’inscrit confirmé y figure, sans note : statut 200', () => pm.expect([200]).to.include(pm.response.code));",
+                      "pm.test('Un inscrit, pas encore noté, saisie possible', () => { const b = pm.response.json(); pm.expect(b.rows).to.have.lengthOf(1); pm.expect(b.rows[0].score).to.eql(null); pm.expect(b.canRecord).to.eql(true); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Saisir une note",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/sessions/{{s53bSessionId}}/evaluations/{{s53bEnrollmentId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "sessions",
+                    "{{s53bSessionId}}",
+                    "evaluations",
+                    "{{s53bEnrollmentId}}"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"score\": 15\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Saisir une note : statut 200', () => pm.expect([200]).to.include(pm.response.code));",
+                      "pm.test('15 sur 20', () => pm.expect(pm.response.json().score).to.eql(15));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Redéclarer la même note ne change rien",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/sessions/{{s53bSessionId}}/evaluations/{{s53bEnrollmentId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "sessions",
+                    "{{s53bSessionId}}",
+                    "evaluations",
+                    "{{s53bEnrollmentId}}"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"score\": 15\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Redéclarer la même note ne change rien : statut 200', () => pm.expect([200]).to.include(pm.response.code));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Une note hors barème est refusée",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/sessions/{{s53bSessionId}}/evaluations/{{s53bEnrollmentId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "sessions",
+                    "{{s53bSessionId}}",
+                    "evaluations",
+                    "{{s53bEnrollmentId}}"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"score\": 21\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Une note hors barème est refusée : statut 400', () => pm.expect([400]).to.include(pm.response.code));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Lire les seuils d’éligibilité (valeurs de départ)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/training/thresholds",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "training",
+                    "thresholds"
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Lire les seuils d’éligibilité (valeurs de départ) : statut 200', () => pm.expect([200]).to.include(pm.response.code));",
+                      "pm.test('80 % et 10 sur 20 par défaut', () => { const b = pm.response.json(); pm.expect(b.attendanceThresholdPercent).to.eql(80); pm.expect(b.scoreThreshold).to.eql(10); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Clôturer la session",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/sessions/{{s53bSessionId}}/close",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "sessions",
+                    "{{s53bSessionId}}",
+                    "close"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"version\": 2\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Clôturer la session : statut 200', () => pm.expect([200]).to.include(pm.response.code));",
+                      "pm.test('Clôturée', () => pm.expect(pm.response.json().status).to.eql('CLOSED'));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Note refusée une fois la session clôturée",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/sessions/{{s53bSessionId}}/evaluations/{{s53bEnrollmentId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "sessions",
+                    "{{s53bSessionId}}",
+                    "evaluations",
+                    "{{s53bEnrollmentId}}"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"score\": 12\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Note refusée une fois la session clôturée : statut 422', () => pm.expect([422]).to.include(pm.response.code));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Rouvrir avec motif",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/sessions/{{s53bSessionId}}/reopen",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "sessions",
+                    "{{s53bSessionId}}",
+                    "reopen"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"version\": 3,\n  \"reason\": \"Correction Postman\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Rouvrir avec motif : statut 200', () => pm.expect([200]).to.include(pm.response.code));",
+                      "pm.test('Ouverte de nouveau', () => pm.expect(pm.response.json().status).to.eql('OPEN'));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Note de nouveau possible, corrigée",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/sessions/{{s53bSessionId}}/evaluations/{{s53bEnrollmentId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "sessions",
+                    "{{s53bSessionId}}",
+                    "evaluations",
+                    "{{s53bEnrollmentId}}"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"score\": 8\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Note de nouveau possible, corrigée : statut 200', () => pm.expect([200]).to.include(pm.response.code));",
+                      "pm.test('8 sur 20', () => pm.expect(pm.response.json().score).to.eql(8));"
+                    ]
+                  }
+                }
+              ]
+            }
+          ],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get('runId')) pm.collectionVariables.set('runId', Math.random().toString(36).slice(2, 8));"
+                ]
+              }
+            }
+          ]
         }
       ],
       "description": "Scénarios qui créent leurs propres données et vérifient les règles métier (agrément, payeur, portée). À lancer après la connexion, avec un compte qui a les droits (par exemple le Super administrateur de test)."

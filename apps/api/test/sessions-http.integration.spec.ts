@@ -4,7 +4,7 @@ import { RoleCode } from '../src/modules/iam/domain/roles';
 import { Attendance } from '../src/modules/training/domain/attendance';
 import { ATTENDANCE_REPOSITORY, AttendanceRepository } from '../src/modules/training/domain/attendance-repositories';
 import { Evaluation } from '../src/modules/training/domain/evaluation';
-import { EVALUATION_REPOSITORY, EvaluationRepository } from '../src/modules/training/domain/evaluation-repositories';
+import { EVALUATION_REPOSITORY, EvaluationRepository, TRAINING_THRESHOLDS_REPOSITORY, TrainingThresholdsRepository } from '../src/modules/training/domain/evaluation-repositories';
 import { SESSION_REPOSITORY, SessionRepository } from '../src/modules/training/domain/session-repositories';
 import { Api, createUserWithRoles, mfaSession, startRbacApp } from './support/rbac-http';
 import { TestApp } from './support/test-app';
@@ -498,13 +498,21 @@ describeDb('Sessions de formation (HTTP + PostgreSQL)', () => {
     await attendOn(none.enrollmentId, days.slice(0, 2));
     await scoreOf(none.enrollmentId, 18);
 
+    // Un inscrit en attente de confirmation n'apparaît pas sur la feuille d'évaluation (comme pour la présence).
+    const pendingLearner = await api.call('POST', '/api/v1/learners', { ...w.manager, body: { kind: 'STUDENT', lastName: `EnAttenteNote${unique()}`, firstName: 'Léna' } });
+    created.learners.push(pendingLearner.body.id);
+    const pendingEnrolled = await api.call('POST', '/api/v1/enrollments', { ...w.manager, body: { sessionId: s.id, learnerId: pendingLearner.body.id, payer: { kind: 'SELF' } } });
+    created.enrollments.push(pendingEnrolled.body.id);
+
     const sheet = await api.call('GET', `/api/v1/sessions/${s.id}/evaluations`, w.manager);
     expect(sheet.status).toBe(200);
     expect(sheet.body.sessionId).toBe(s.id);
+    expect(sheet.body.rows).toHaveLength(3); // l'inscrit en attente n'y figure pas
     const rowOf = (enrollmentId: string) => (sheet.body.rows as { enrollmentId: string }[]).find((r) => r.enrollmentId === enrollmentId);
     expect(rowOf(certified.enrollmentId)).toMatchObject({ score: 15, attendanceRatePercent: 100, suggestion: 'CERTIFICATE' });
     expect(rowOf(attested.enrollmentId)).toMatchObject({ score: 5, attendanceRatePercent: 80, suggestion: 'ATTESTATION' });
     expect(rowOf(none.enrollmentId)).toMatchObject({ score: 18, attendanceRatePercent: 40, suggestion: 'NONE' });
+    expect(rowOf(pendingEnrolled.body.id)).toBeUndefined();
 
     // Réglages des seuils : lecture par défaut, modification avec verrou optimiste, droits réservés à qui gère (training.evaluation.manage).
     const defaults = await api.call('GET', '/api/v1/training/thresholds', w.manager);
@@ -512,6 +520,10 @@ describeDb('Sessions de formation (HTTP + PostgreSQL)', () => {
     expect(defaults.body).toMatchObject({ attendanceThresholdPercent: 80, scoreThreshold: 10 });
     const am = await login(RoleCode.AccountManager);
     expect((await api.call('PUT', '/api/v1/training/thresholds', { ...am, body: { version: defaults.body.version, attendanceThresholdPercent: 90, scoreThreshold: 12 } })).status).toBe(403);
+    // Direction lit les seuils (training.evaluation.read) mais ne les gère pas (training.evaluation.manage) : deux droits distincts.
+    const direction = await login(RoleCode.Direction);
+    expect((await api.call('GET', '/api/v1/training/thresholds', direction)).status).toBe(200);
+    expect((await api.call('PUT', '/api/v1/training/thresholds', { ...direction, body: { version: defaults.body.version, attendanceThresholdPercent: 90, scoreThreshold: 12 } })).status).toBe(403);
     expect((await api.call('PUT', '/api/v1/training/thresholds', { ...w.manager, body: { version: defaults.body.version, attendanceThresholdPercent: 101, scoreThreshold: 12 } })).status).toBe(400);
     const raised = await api.call('PUT', '/api/v1/training/thresholds', { ...w.manager, body: { version: defaults.body.version, attendanceThresholdPercent: 90, scoreThreshold: 12 } });
     expect(raised.body).toMatchObject({ attendanceThresholdPercent: 90, scoreThreshold: 12, version: defaults.body.version + 1 });
@@ -519,7 +531,18 @@ describeDb('Sessions de formation (HTTP + PostgreSQL)', () => {
     const afterRaise = await api.call('GET', `/api/v1/sessions/${s.id}/evaluations`, w.manager);
     expect((afterRaise.body.rows as { enrollmentId: string; suggestion: string }[]).find((r) => r.enrollmentId === attested.enrollmentId)?.suggestion).toBe('NONE');
     expect((await api.call('PUT', '/api/v1/training/thresholds', { ...w.manager, body: { version: defaults.body.version, attendanceThresholdPercent: 85, scoreThreshold: 11 } })).status).toBe(409); // version périmée
+
+    // Verrou optimiste garanti par le dépôt lui-même, pas seulement par le cas d'usage (qui vérifie déjà la version avant d'appeler le dépôt).
+    const thresholdsRepo = t.get(TRAINING_THRESHOLDS_REPOSITORY as never) as TrainingThresholdsRepository;
+    const beforeRepo = await thresholdsRepo.get();
+    await expect(thresholdsRepo.save({ ...beforeRepo, version: beforeRepo.version + 99 })).rejects.toMatchObject({ code: 'CONFLICT' });
+
     // Remis à la valeur de départ pour ne pas affecter les autres tests (réglage partagé, une seule ligne).
     await api.call('PUT', '/api/v1/training/thresholds', { ...w.manager, body: { version: raised.body.version, attendanceThresholdPercent: 80, scoreThreshold: 10 } });
+  });
+
+  it('seuils d\'éligibilité : garanties de la base (une seule ligne)', async () => {
+    const db = t.prisma.db;
+    await expect(db.$executeRawUnsafe(`INSERT INTO training.training_thresholds (id, updated_at) VALUES (2, now())`)).rejects.toThrow();
   });
 });

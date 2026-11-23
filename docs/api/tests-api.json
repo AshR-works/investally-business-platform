@@ -3348,8 +3348,8 @@
     {
       "nom": "90 — Parcours de bout en bout",
       "description": "Scénarios qui créent leurs propres données et vérifient les règles métier (agrément, payeur, portée). À lancer après la connexion, avec un compte qui a les droits (par exemple le Super administrateur de test).",
-      "requetes": 66,
-      "assertions": 97,
+      "requetes": 79,
+      "assertions": 116,
       "detail": [
         {
           "nom": "Créer une entreprise",
@@ -4322,6 +4322,200 @@
           "tests": [
             "Présence de nouveau possible, corrigée : en retard : statut 200",
             "En retard"
+          ]
+        },
+        {
+          "nom": "Planifier une session (réutilise le certificat, la salle et le formateur de 90.2)",
+          "methode": "POST",
+          "chemin": "/api/v1/sessions",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": {
+            "trainingId": "{{trainingId}}",
+            "rhythm": "DAY",
+            "startDate": "{{s53bStart}}",
+            "roomId": "{{roomId}}",
+            "trainerId": "{{trainerId}}",
+            "capacity": 5
+          },
+          "tests": [
+            "Session planifiée"
+          ]
+        },
+        {
+          "nom": "Ouvrir la session",
+          "methode": "POST",
+          "chemin": "/api/v1/sessions/{{s53bSessionId}}/open",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": {
+            "version": 1
+          },
+          "tests": [
+            "Ouvrir la session : statut 200"
+          ]
+        },
+        {
+          "nom": "Inscrire un étudiant, payeur lui-même",
+          "methode": "POST",
+          "chemin": "/api/v1/enrollments",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": {
+            "sessionId": "{{s53bSessionId}}",
+            "learnerId": "{{learnerId}}",
+            "payer": {
+              "kind": "SELF"
+            }
+          },
+          "tests": [
+            "Inscrire un étudiant, payeur lui-même : statut 201"
+          ]
+        },
+        {
+          "nom": "Confirmer l’inscription",
+          "methode": "POST",
+          "chemin": "/api/v1/enrollments/{{s53bEnrollmentId}}/confirm",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": {
+            "version": 1
+          },
+          "tests": [
+            "Confirmer l’inscription : statut 200"
+          ]
+        },
+        {
+          "nom": "Feuille d’évaluation : l’inscrit confirmé y figure, sans note",
+          "methode": "GET",
+          "chemin": "/api/v1/sessions/{{s53bSessionId}}/evaluations",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": null,
+          "tests": [
+            "Feuille d’évaluation : l’inscrit confirmé y figure, sans note : statut 200",
+            "Un inscrit, pas encore noté, saisie possible"
+          ]
+        },
+        {
+          "nom": "Saisir une note",
+          "methode": "PUT",
+          "chemin": "/api/v1/sessions/{{s53bSessionId}}/evaluations/{{s53bEnrollmentId}}",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": {
+            "score": 15
+          },
+          "tests": [
+            "Saisir une note : statut 200",
+            "15 sur 20"
+          ]
+        },
+        {
+          "nom": "Redéclarer la même note ne change rien",
+          "methode": "PUT",
+          "chemin": "/api/v1/sessions/{{s53bSessionId}}/evaluations/{{s53bEnrollmentId}}",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": {
+            "score": 15
+          },
+          "tests": [
+            "Redéclarer la même note ne change rien : statut 200"
+          ]
+        },
+        {
+          "nom": "Une note hors barème est refusée",
+          "methode": "PUT",
+          "chemin": "/api/v1/sessions/{{s53bSessionId}}/evaluations/{{s53bEnrollmentId}}",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": {
+            "score": 21
+          },
+          "tests": [
+            "Une note hors barème est refusée : statut 400"
+          ]
+        },
+        {
+          "nom": "Lire les seuils d’éligibilité (valeurs de départ)",
+          "methode": "GET",
+          "chemin": "/api/v1/training/thresholds",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": null,
+          "tests": [
+            "Lire les seuils d’éligibilité (valeurs de départ) : statut 200",
+            "80 % et 10 sur 20 par défaut"
+          ]
+        },
+        {
+          "nom": "Clôturer la session",
+          "methode": "POST",
+          "chemin": "/api/v1/sessions/{{s53bSessionId}}/close",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": {
+            "version": 2
+          },
+          "tests": [
+            "Clôturer la session : statut 200",
+            "Clôturée"
+          ]
+        },
+        {
+          "nom": "Note refusée une fois la session clôturée",
+          "methode": "PUT",
+          "chemin": "/api/v1/sessions/{{s53bSessionId}}/evaluations/{{s53bEnrollmentId}}",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": {
+            "score": 12
+          },
+          "tests": [
+            "Note refusée une fois la session clôturée : statut 422"
+          ]
+        },
+        {
+          "nom": "Rouvrir avec motif",
+          "methode": "POST",
+          "chemin": "/api/v1/sessions/{{s53bSessionId}}/reopen",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": {
+            "version": 3,
+            "reason": "Correction Postman"
+          },
+          "tests": [
+            "Rouvrir avec motif : statut 200",
+            "Ouverte de nouveau"
+          ]
+        },
+        {
+          "nom": "Note de nouveau possible, corrigée",
+          "methode": "PUT",
+          "chemin": "/api/v1/sessions/{{s53bSessionId}}/evaluations/{{s53bEnrollmentId}}",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": {
+            "score": 8
+          },
+          "tests": [
+            "Note de nouveau possible, corrigée : statut 200",
+            "8 sur 20"
           ]
         }
       ]
@@ -9011,8 +9205,8 @@
   ],
   "resume": {
     "dossiers": 33,
-    "requetes": 491,
-    "testsDefinis": 1979,
+    "requetes": 504,
+    "testsDefinis": 1998,
     "resultatDeReference": "Pile jetable, jeu de démonstration, compte Super administrateur : 443 requêtes, 1 626 assertions exécutées, 0 échec (dossiers 00b et 98 à part : 12 requêtes, 54 assertions, 0 échec)."
   }
 }
