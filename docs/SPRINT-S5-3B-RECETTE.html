@@ -1,0 +1,57 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>S5.3b — recette complète des évaluations et seuils d&#x27;éligibilité : mutants, Newman, fiches de test</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — documentation · <a href="INDEX.html">Index</a> · <a href="GUIDE-EXECUTION-LOCALE.html">Exécution locale</a> · <a href="ARCHITECTURE.html">Architecture</a> · <a href="SECURITY.html">Sécurité</a> · <a href="METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="QUESTIONS-ET-DECISIONS.html">Décisions</a> · <a href="TECH-DEBT.html">Dette</a> · <a href="CHARTE-DE-TESTS.html">Charte de tests</a> · <a href="tests/README.html">Fiches de test</a> · <a href="design/README.html">Design</a> · <a href="livrables/05-ETAT-D-AVANCEMENT.html">Avancement</a></nav><h1>S5.3b — recette complète des évaluations et seuils d'éligibilité : mutants, Newman, fiches de test</h1>
+<p><em>Branche <code>feat/s5-3b-recette</code> · 2026-11-23 · décision D75, lot (b) de S5.3 (<a href="adr/0017-evaluations-et-seuils-d-eligibilite.html">ADR-0017</a>).</em></p>
+<p>Dernière tranche du lot (b) (après l'API et l'écran). N'ajoute aucune fonction : elle <strong>éprouve</strong> le travail des deux premières. Classé <strong>à risque réel</strong> (D73, D75) : un seuil mal calculé oriente une décision humaine (certificat ou attestation) qui ne revérifie pas le calcul.</p>
+<h2>Ce qui est livré</h2>
+<div class="table-wrap"><table><thead><tr><th>Livrable</th><th>Contenu</th></tr></thead><tbody>
+<tr><td><strong>Mutants</strong></td><td><code>scripts/mutants/s5-3b-evaluations-et-seuils.py</code> : <strong>36 fautes</strong> injectées une à une (domaine, cas d'usage, routes, dépôt, règles de la base, droits)</td></tr>
+<tr><td><strong>Tests ajoutés</strong></td><td>domaine (<code>evaluation.spec.ts</code>, nouveau) et cas d'usage (<code>evaluation-use-cases.spec.ts</code>, nouveau) : note hors barème, calcul d'éligibilité, verrou optimiste des seuils ; intégration (<code>sessions-http.integration.spec.ts</code>) : inscrit en attente absent de la feuille, droits de lecture/gestion des seuils distincts (Direction), garantie d'unicité des seuils en base</td></tr>
+<tr><td><strong>Un défaut trouvé et corrigé</strong></td><td>le rôle Formateur détenait encore <code>training.evaluation.read</code>/<code>.record</code> (Own) — même hypothèse d'un compte formateur jamais retenue que pour les présences (S1/ADR-0016), oubliée lors du retrait équivalent en S5.3a. Retiré ; <code>roles.spec.ts</code> vérifie désormais qu'aucune permission <code>training.evaluation.*</code> n'est accordée au Formateur</td></tr>
+<tr><td><strong>Parcours Postman 90.7</strong> ajouté (13 étapes) : planifier, ouvrir, inscrire et confirmer, feuille vide, saisir une note, redéclarer sans changement, note hors barème refusée, lire les seuils (valeurs de départ), clôturer, note refusée une fois clôturée, rouvrir avec motif, note de nouveau possible ; <strong>exécutée avec Newman</strong></td></tr>
+<tr><td><strong>Fiche de test</strong></td><td>session <code>s5-3b</code> (voir ci-dessous) ; index mis à jour</td></tr>
+</tbody></table></div>
+<h2>Preuves</h2>
+<div class="table-wrap"><table><thead><tr><th>Contrôle</th><th>Résultat</th></tr></thead><tbody>
+<tr><td>Tests unitaires et d'intégration (API + interface)</td><td><strong>87 suites</strong> API (dont <code>evaluation.spec.ts</code> et <code>evaluation-use-cases.spec.ts</code>, nouvelles), <strong>43 fichiers</strong> interface — suite complète <code>pnpm -r test</code>, sans régression</td></tr>
+<tr><td>Intégration HTTP + PostgreSQL (base jetable)</td><td><code>sessions-http</code> : <strong>16 cas</strong> (dont le cycle complet évaluation/clôture/réouverture, le calcul d'éligibilité à trois profils, les droits distincts lecture/gestion des seuils, et la garantie d'unicité des seuils en base)</td></tr>
+<tr><td><strong>Mutants</strong></td><td>première passe : <strong>28 tués sur 36</strong>, 8 survivants. Après correction des tests (jamais du code) : <strong>7 tués sur 8</strong> rejoués. Bilan final : <strong>35 tués sur 36 mutants</strong>, 1 survivant expliqué (<code>R3</code>, voir ci-dessous)</td></tr>
+<tr><td><strong>Newman</strong> (pile locale persistante, Super administrateur)</td><td><strong>81 requêtes, 121 assertions, 0 échec</strong>, en 17,4 s, dont le parcours 90.7 (13 étapes)</td></tr>
+</tbody></table></div>
+<h2>Mutants : les 8 survivants de la première passe, expliqués</h2>
+<p>Tous corrigés par un test manquant, sauf un (<code>R3</code>), qui s'explique par la conception elle-même.</p>
+<div class="table-wrap"><table><thead><tr><th>Mutant</th><th>Cause</th><th>Correction</th></tr></thead><tbody>
+<tr><td><code>U7</code> un retard ne compte plus comme présent (S3)</td><td>le test n'utilisait jamais le statut <code>LATE</code></td><td>test étendu : un jour <code>LATE</code> sur quatre comptabilisé dans le taux</td></tr>
+<tr><td><code>U8</code> la feuille montre les inscrits non confirmés</td><td>aucune assertion sur l'absence d'un inscrit en attente</td><td>assertion ajoutée (intégration et, implicitement, le test unitaire <code>rows).toHaveLength(1)</code>)</td></tr>
+<tr><td><code>U9</code> la feuille peut se saisir même clôturée</td><td><code>canRecord</code> jamais vérifié à <code>false</code></td><td>test dédié : clôture puis réouverture, <code>canRecord</code> suivi</td></tr>
+<tr><td><code>U10</code> les lignes sont triées à l'envers</td><td>un seul inscrit dans le test unitaire : aucun ordre à casser</td><td>second inscrit ajouté, ordre alphabétique vérifié explicitement</td></tr>
+<tr><td><code>R3</code> lire et gérer les seuils exigent la même permission</td><td><strong>conception, pas une lacune</strong> : le cas d'usage (<code>requireManage</code>, <code>scopeOf</code>) revérifie lui-même le droit exact, indépendamment de la permission déclarée sur la route. Muter la seule route ne change donc rien à l'issue observable — une double vérification, pas un trou</td><td>aucune (documenté)</td></tr>
+<tr><td><code>P4</code> une version périmée des seuils s'enregistre quand même</td><td>le cas d'usage vérifie déjà la version avant d'appeler le dépôt : le test par HTTP n'atteint jamais le verrou du dépôt lui-même</td><td>test direct sur le dépôt (<code>TrainingThresholdsRepository.save</code>), contournant le cas d'usage</td></tr>
+<tr><td><code>G4</code> plusieurs lignes de seuils sont permises</td><td>aucun test n'essayait d'insérer une seconde ligne</td><td>test direct : <code>INSERT ... VALUES (2, ...)</code> refusé</td></tr>
+<tr><td><code>L2</code> l'action « gérer les seuils » disparaît du catalogue</td><td>aucune assertion sur le catalogue des permissions pour cette action</td><td>assertion ajoutée à <code>roles.spec.ts</code></td></tr>
+</tbody></table></div>
+<h2>Limites connues</h2>
+<ul><li>Le survivant <code>R3</code> est documenté, pas corrigé : le comportement observable reste correct (double vérification), seule la mutation de la route seule est indétectable par un test HTTP de surface.</li><li>Pas de nouvelle dette : celle du lot (a) (conservation des données, D11/D65/S10) couvre aussi les notes.</li></ul>
+<h2>Comment rejouer</h2>
+<ol><li>Mutants : <code>python scripts/mutants/s5-3b-evaluations-et-seuils.py</code> (<strong>jamais deux exécutions à la fois</strong>, et ne pas toucher à <code>apps/</code> pendant la passe). <code>DRY=1</code> vérifie seulement les motifs.</li><li>Newman : pile locale (<code>node scripts/local-stack.mjs --seed=demo --rebuild</code> ou équivalent), environnement copié depuis <code>docs/api/postman/Investally-local.postman_environment.json</code> (adresse, e-mail, mot de passe et secret du second facteur <strong>hors du dépôt</strong>), puis <code>node scripts/api-docs/run-newman.mjs --env &lt;environnement&gt; --only 00,90</code>.</li><li>Fiche : <code>docs/tests/sessions/s5-3b.md</code>.</li><li>Pile locale : <strong>rebuild : non</strong> (aucun code ni migration ajoutés dans cette tranche, seulement des tests et de la documentation) ; <strong>reset : non</strong>.</li></ol></main></body></html>

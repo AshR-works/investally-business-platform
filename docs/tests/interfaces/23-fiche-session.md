@@ -5,7 +5,7 @@
 | **Route** | `/training/sessions/[id]` |
 | **Livrée par** | S5.2b |
 | **Accès** | Utilisateur avec `training.session.read` : depuis le titre du certificat dans la liste des sessions. |
-| **Droits** | **Lire** : comme la liste des sessions (le formateur n'ouvre que ses sessions). **Inscrire** : chargé de compte et Responsable Investudy, sur une session ouverte et non complète. **Clôturer / rouvrir** et **saisir une présence** : Responsable Investudy et Super administrateur ; **lire la feuille de présence** : les deux, et la Direction. |
+| **Droits** | **Lire** : comme la liste des sessions (le formateur n'ouvre que ses sessions). **Inscrire** : chargé de compte et Responsable Investudy, sur une session ouverte et non complète. **Clôturer / rouvrir**, **saisir une présence** et **saisir une évaluation** : Responsable Investudy et Super administrateur ; **lire la feuille de présence** ou **d'évaluation** : les deux, et la Direction. |
 | **Rôles de test** | sa, inv, dir, cc, sup |
 
 *Fiche d'interface de la [charte de tests](../../CHARTE-DE-TESTS.md). À rejouer à chaque changement de l'écran. Cocher, dater, signer ; tout écart devient un défaut.*
@@ -29,6 +29,9 @@ Pile locale avec le jeu de démonstration ; ouvrir la session « en cours » ou 
 | 11 | **Rouvrir sans puis avec motif** | Bouton « Rouvrir » ; valider sans motif, puis avec un motif. | Sans motif : refusé avant l'envoi (« motif de la réouverture obligatoire ») ; avec motif : la session redevient « Ouverte », les cases redeviennent cliquables. | ☐ | |
 | 12 | **Session sans inscrit confirmé** | Ouvrir une session ouverte sans aucune confirmation. | Message « la feuille de présence apparaît une fois les premières inscriptions confirmées » à la place du tableau. | ☐ | |
 | 13 | **Session planifiée** | Ouvrir une session planifiée. | Ni bouton « Clôturer », ni feuille de présence (pas encore d'inscrits confirmés possibles). | ☐ | |
+| 14 | **Feuille d'évaluation (S5.3b)** | Ouvrir une session ouverte avec un inscrit confirmé. | Note (« non saisie » par défaut), taux de présence (%) et suggestion (« Aucune suggestion », « Attestation » ou « Certificat ») par ligne ; bouton « Saisir » puis « Corriger ». | ☐ | |
+| 15 | **Saisir ou corriger une note** | Bouton « Saisir » ; indiquer une note sur 20 ; enregistrer. | Champ numérique seul (pas de commentaire libre) ; une note hors 0-20 est refusée avant l'envoi ; après enregistrement, le bouton devient « Corriger ». | ☐ | |
+| 16 | **Évaluation figée à la clôture** | Clôturer la session. | Message « les évaluations sont figées » sous le titre « Évaluations » ; plus de bouton Saisir/Corriger ; redevient possible après réouverture. | ☐ | |
 
 ## Accessibilité
 - ☐ Clavier seul : Tab et Maj+Tab parcourent tous les contrôles dans un ordre logique ; le focus est toujours visible ; aucun piège de focus hors fenêtre modale.
@@ -39,13 +42,14 @@ Pile locale avec le jeu de démonstration ; ouvrir la session « en cours » ou 
 - ☐ Lisible à 200 % de zoom et à 375 px de large, sans défilement horizontal de la page.
 - ☐ La jauge est un élément `meter` nommé ; les informations sont dans une liste de définitions ; le bouton d'inscription expose son état désactivé.
 - ☐ La feuille de présence : chaque case cliquable nomme l'apprenant, le jour et le statut actuel dans son `aria-label` ; une case non éditable (session clôturée) porte la même information en texte caché (`sr-only`), jamais la couleur seule.
+- ☐ La feuille d'évaluation : la suggestion est un badge avec texte **et** teinte (jamais la couleur seule) ; le bouton Saisir/Corriger nomme l'apprenant visé dans un texte caché (`sr-only`).
 
 ## Tests automatisés qui couvrent cet écran
-- API : `sessions-http.integration` (portée du formateur, clôture/réouverture, présences : 12 scénarios), `enrollments-http.integration`
+- API : `sessions-http.integration` (portée du formateur, clôture/réouverture, présences, évaluations et seuils : 16 scénarios), `enrollments-http.integration`, `evaluation.spec` (domaine), `evaluation-use-cases.spec` (cas d'usage)
 - Web : `s57-enrollments` (contrôle des droits de la fiche) ; `s56-sessions` (`sessionActions`, `validateReopen`) ; audit navigateur : non rejoué
 
 ## Limites connues
-- Pas d'évaluations ni de certificats (lots b et c de S5.3) ; pas de calendrier (D150).
+- Pas de certificats ni d'attestations délivrés, ni de suggestion d'ambassadeur (lot c de S5.3) ; pas de calendrier (D150).
 - Pas d'alerte avant l'oubli de clôturer ; la réouverture ne notifie personne.
 
 ## Écarts constatés

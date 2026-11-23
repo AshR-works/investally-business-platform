@@ -9,9 +9,11 @@ import {
   UpdateSessionUseCase,
 } from '../../src/modules/training/application/session-use-cases';
 import { GetAttendanceSheetHandler, RecordAttendanceUseCase } from '../../src/modules/training/application/attendance-use-cases';
+import { GetEvaluationSheetHandler, GetTrainingThresholdsHandler, RecordEvaluationUseCase, UpdateTrainingThresholdsUseCase } from '../../src/modules/training/application/evaluation-use-cases';
 import { ActorContext } from '../../src/shared-kernel';
 import { AuditRecord } from '../../src/modules/audit';
 import { InMemoryAttendances } from './in-memory-attendance';
+import { InMemoryEvaluations, InMemoryTrainingThresholds } from './in-memory-evaluation';
 import { InMemoryModules, InMemoryPrograms, InMemoryRooms, InMemoryTrainers, InMemoryTrainings } from './in-memory-catalogue';
 import { InMemoryDirectory, InMemoryEnrollments, InMemoryLearners } from './in-memory-enrollments';
 import { InMemorySessions } from './in-memory-sessions';
@@ -34,6 +36,8 @@ export async function buildTrainingWorld(clock: { now: () => Date }) {
   const learners = new InMemoryLearners(directory);
   const enrollments = new InMemoryEnrollments(sessions, directory);
   const attendances = new InMemoryAttendances();
+  const evaluations = new InMemoryEvaluations();
+  const thresholds = new InMemoryTrainingThresholds();
   const audit: AuditRecord[] = [];
   let seq = 0;
   const recorder = { record: async (r: AuditRecord) => { audit.push(r); } };
@@ -73,6 +77,12 @@ export async function buildTrainingWorld(clock: { now: () => Date }) {
     attendances,
     recordAttendance: new RecordAttendanceUseCase(sessions, enrollments, attendances, recorder, unitOfWork, clock, ids),
     attendanceSheet: new GetAttendanceSheetHandler(sessions, enrollments, learners, attendances),
+    evaluations,
+    thresholds,
+    recordEvaluation: new RecordEvaluationUseCase(sessions, enrollments, evaluations, recorder, unitOfWork, clock, ids),
+    evaluationSheet: new GetEvaluationSheetHandler(sessions, enrollments, learners, evaluations, attendances, thresholds),
+    getThresholds: new GetTrainingThresholdsHandler(thresholds),
+    updateThresholds: new UpdateTrainingThresholdsUseCase(thresholds, recorder, unitOfWork),
     get: new GetSessionHandler(sessions, trainers, views),
     list: new ListSessionsHandler(sessions, views),
     updateRoom: new UpdateRoomUseCase(rooms, recorder, unitOfWork),
