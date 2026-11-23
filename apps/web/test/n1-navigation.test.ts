@@ -19,7 +19,7 @@ describe('menu par domaines (D51)', () => {
   it('le CRM et Investudy listent leurs écrans dans l\'ordre du cadrage', () => {
     const ids = (domain: string) => MODULES.filter((m) => m.group === domain && m.href).map((m) => m.id);
     expect(ids('CRM')).toEqual(['companies', 'contacts', 'opportunities', 'offers', 'approvals', 'followups', 'agenda', 'ambassadors']);
-    expect(ids('Investudy')).toEqual(['training', 'sessions', 'enrollments', 'learners']);
+    expect(ids('Investudy')).toEqual(['training', 'sessions', 'enrollments', 'learners', 'training-thresholds']);
   });
 
   it('les Commissions vivent sous Finance, une seule fois (D54)', () => {
