@@ -41,6 +41,7 @@ export const MODULES: readonly AppModule[] = [
   { id: 'sessions', label: 'Sessions de formation', description: 'Planifier, ouvrir, reporter et annuler les sessions', icon: 'cal', group: 'Investudy', href: '/training/sessions', permission: 'training.session.read' },
   { id: 'enrollments', label: 'Inscriptions', description: 'Inscriptions aux sessions : confirmer, annuler, replacer', icon: 'doc', group: 'Investudy', href: '/training/enrollments', permission: 'training.enrollment.read' },
   { id: 'learners', label: 'Apprenants', description: 'Personnes inscrites aux formations, par entreprise', icon: 'users', group: 'Investudy', href: '/training/learners', permission: 'training.learner.read' },
+  { id: 'training-thresholds', label: 'Seuils d’éligibilité', description: 'Taux de présence et note minimale pour un certificat ou une attestation', icon: 'gear', group: 'Investudy', href: '/training/thresholds', permission: 'training.evaluation.manage', allScope: true },
   { id: 'commissions', label: 'Commissions', description: 'Commissions des facilitateurs à verser', icon: 'card', group: 'Finance', href: '/commissions', permission: 'bd.commission.read' },
   { id: 'finance', label: 'Facturation et paiements', description: 'Facturation et suivi des paiements', icon: 'card', group: 'Finance' },
   { id: 'tax', label: 'Fiscalité', description: 'Obligations et déclarations', icon: 'doc', group: 'Finance' },
