@@ -311,6 +311,8 @@
 | POST | `/sessions/{id}/reopen` |  | `training.session.reopen` | 200 |
 | GET | `/sessions/{sessionId}/attendance` |  | `training.attendance.read` | 200 |
 | PUT | `/sessions/{sessionId}/attendance/{enrollmentId}/{day}` |  | `training.attendance.record` | 200 |
+| GET | `/sessions/{sessionId}/evaluations` |  | `training.evaluation.read` | 200 |
+| PUT | `/sessions/{sessionId}/evaluations/{enrollmentId}` |  | `training.evaluation.record` | 200 |
 
 ## trainers
 
@@ -322,6 +324,13 @@
 | PUT | `/trainers/{id}` |  | `training.trainer.manage` | 200 |
 | POST | `/trainers/{id}/status` |  | `training.trainer.manage` | 200 |
 
+## training
+
+| Méthode | Chemin | Résumé | Permission | Succès |
+|---|---|---|---|---|
+| GET | `/training/thresholds` |  | `training.evaluation.read` | 200 |
+| PUT | `/training/thresholds` |  | `training.evaluation.manage` | 200 |
+
 ## trainings
 
 | Méthode | Chemin | Résumé | Permission | Succès |
@@ -332,4 +341,4 @@
 | PUT | `/trainings/{id}` |  | `training.training.update` | 200 |
 | POST | `/trainings/{id}/status` |  | `training.training.update` | 200 |
 
-*205 routes.*
+*209 routes.*

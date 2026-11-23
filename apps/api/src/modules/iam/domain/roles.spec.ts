@@ -159,6 +159,10 @@ describe('Matrice rôles → permissions', () => {
     expect(codesOf(RoleCode.Trainer).filter((c) => c.startsWith('training.attendance.'))).toEqual([]);
   });
 
+  it("ne donne jamais au formateur le droit de saisir ou lire les évaluations (S1/ADR-0016 : même hypothèse jamais retenue qu'un compte formateur, S5.3b)", () => {
+    expect(codesOf(RoleCode.Trainer).filter((c) => c.startsWith('training.evaluation.'))).toEqual([]);
+  });
+
   it('le catalogue distingue clôturer et rouvrir une session (S5.3a, S7) ; seul le Responsable Investudy et le Super administrateur les détiennent', () => {
     expect(PERMISSION_CODES.has('training.session.close')).toBe(true);
     expect(PERMISSION_CODES.has('training.session.reopen')).toBe(true);

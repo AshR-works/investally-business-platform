@@ -3,6 +3,8 @@ import { randomUUID } from 'node:crypto';
 import { RoleCode } from '../src/modules/iam/domain/roles';
 import { Attendance } from '../src/modules/training/domain/attendance';
 import { ATTENDANCE_REPOSITORY, AttendanceRepository } from '../src/modules/training/domain/attendance-repositories';
+import { Evaluation } from '../src/modules/training/domain/evaluation';
+import { EVALUATION_REPOSITORY, EvaluationRepository } from '../src/modules/training/domain/evaluation-repositories';
 import { SESSION_REPOSITORY, SessionRepository } from '../src/modules/training/domain/session-repositories';
 import { Api, createUserWithRoles, mfaSession, startRbacApp } from './support/rbac-http';
 import { TestApp } from './support/test-app';
@@ -37,6 +39,7 @@ describeDb('Sessions de formation (HTTP + PostgreSQL)', () => {
   }, 60_000);
   afterAll(async () => {
     const db = t.prisma.db;
+    await db.evaluation.deleteMany({ where: { enrollmentId: { in: created.enrollments } } });
     await db.attendance.deleteMany({ where: { enrollmentId: { in: created.enrollments } } });
     await db.enrollment.deleteMany({ where: { id: { in: created.enrollments } } });
     await db.learner.deleteMany({ where: { id: { in: created.learners } } });
@@ -391,5 +394,132 @@ describeDb('Sessions de formation (HTTP + PostgreSQL)', () => {
     await expect(
       db.attendance.create({ data: { id: randomUUID(), enrollmentId: '00000000-0000-7000-8000-000000000000', day: new Date(`${addDays(s.startDate, 1)}T00:00:00Z`), status: 'PRESENT', recordedByUserId: w.manager.userId } }),
     ).rejects.toThrow();
+  });
+
+  it('évaluations (S5.3b) : seuls les inscrits confirmés, une note sur 20, figée à la clôture, idempotente, droits', async () => {
+    const w = await world();
+    const s = await planned(w, { startDate: monday(3) });
+    await api.call('POST', `/api/v1/sessions/${s.id}/open`, { ...w.manager, body: { version: 1 } });
+    const { enrollmentId } = await confirmedEnrollment(w, s);
+    const pendingLearner = await api.call('POST', '/api/v1/learners', { ...w.manager, body: { kind: 'STUDENT', lastName: `EnAttenteNote${unique()}`, firstName: 'Zoé' } });
+    created.learners.push(pendingLearner.body.id);
+    const pendingEnrolled = await api.call('POST', '/api/v1/enrollments', { ...w.manager, body: { sessionId: s.id, learnerId: pendingLearner.body.id, payer: { kind: 'SELF' } } });
+    created.enrollments.push(pendingEnrolled.body.id);
+
+    const put = (score: unknown, as = w.manager) => api.call('PUT', `/api/v1/sessions/${s.id}/evaluations/${enrollmentId}`, { ...as, body: { score } });
+    expect((await put(21)).status).toBe(400); // hors barème
+    expect((await put(-1)).status).toBe(400);
+    const recorded = await put(15.5);
+    expect(recorded.status).toBe(200);
+    expect(recorded.body).toMatchObject({ enrollmentId, score: 15.5 });
+    expect(recorded.body.version).toBeUndefined(); // pas de verrou optimiste exposé (comme la présence)
+
+    // Idempotent : la même note ne réécrit rien.
+    const before = await t.prisma.db.auditLog.count({ where: { entityType: 'Evaluation' } });
+    await put(15.5);
+    expect(await t.prisma.db.auditLog.count({ where: { entityType: 'Evaluation' } })).toBe(before);
+
+    // Correction par un autre compte : l'avant/après est tracé, le dernier auteur est retenu EN BASE, la version augmente.
+    const otherManager = await login(RoleCode.TrainingManager);
+    const corrected = await api.call('PUT', `/api/v1/sessions/${s.id}/evaluations/${enrollmentId}`, { ...otherManager, body: { score: 8 } });
+    expect(corrected.body).toMatchObject({ score: 8 });
+    const audit = await t.prisma.db.auditLog.findFirst({ where: { entityType: 'Evaluation', action: 'UPDATE' }, orderBy: { createdAt: 'desc' } });
+    expect(audit).toMatchObject({ oldValue: { score: 15.5 }, newValue: { score: 8 } });
+    const row = await t.prisma.db.evaluation.findUnique({ where: { enrollmentId } });
+    expect(row?.recordedByUserId).toBe(otherManager.userId);
+    expect(row?.version).toBe(2);
+
+    // Une inscription en attente de confirmation est « introuvable » pour l'évaluation (comme pour la présence).
+    expect((await put(10, w.manager)).status).toBe(200); // remet une valeur connue avant de tester l'inscription en attente
+    expect((await api.call('PUT', `/api/v1/sessions/${s.id}/evaluations/${pendingEnrolled.body.id}`, { ...w.manager, body: { score: 10 } })).status).toBe(422);
+
+    // Figée à la clôture, de nouveau possible après réouverture.
+    const closed = await api.call('POST', `/api/v1/sessions/${s.id}/close`, { ...w.manager, body: { version: 2 } });
+    expect(closed.status).toBe(200);
+    expect((await put(12)).status).toBe(422);
+    await api.call('POST', `/api/v1/sessions/${s.id}/reopen`, { ...w.manager, body: { version: 3, reason: 'Correction après coup' } });
+    expect((await put(12)).status).toBe(200);
+
+    // Droits : Direction lit, ne saisit pas ; un chargé de compte ne voit ni ne saisit ; le formateur n'a ni l'un ni l'autre (S1/ADR-0016).
+    const direction = await login(RoleCode.Direction);
+    const am = await login(RoleCode.AccountManager);
+    expect((await api.call('GET', `/api/v1/sessions/${s.id}/evaluations`, direction)).status).toBe(200);
+    expect((await put(10, direction)).status).toBe(403);
+    expect((await api.call('GET', `/api/v1/sessions/${s.id}/evaluations`, am)).status).toBe(403);
+    expect((await put(10, w.trainerUser)).status).toBe(403);
+    expect((await api.call('GET', `/api/v1/sessions/${s.id}/evaluations`, w.trainerUser)).status).toBe(403);
+
+    // Unicité garantie par la base, au niveau du dépôt : deux évaluations distinctes pour la même inscription.
+    const evaluations = t.get(EVALUATION_REPOSITORY as never) as EvaluationRepository;
+    const { enrollmentId: otherEnrollmentId } = await confirmedEnrollment(w, s);
+    const first = Evaluation.record({ id: randomUUID(), enrollmentId: otherEnrollmentId, score: 12, recordedByUserId: w.manager.userId, now: new Date() });
+    const second = Evaluation.record({ id: randomUUID(), enrollmentId: otherEnrollmentId, score: 18, recordedByUserId: w.manager.userId, now: new Date() });
+    await evaluations.save(first);
+    await expect(evaluations.save(second)).rejects.toMatchObject({ code: 'CONFLICT' });
+  });
+
+  it('évaluations : garanties de la base (unicité par inscription, note entre 0 et 20, clé vers l\'inscription)', async () => {
+    const w = await world();
+    const s = await planned(w, { startDate: monday(3) });
+    await api.call('POST', `/api/v1/sessions/${s.id}/open`, { ...w.manager, body: { version: 1 } });
+    const { enrollmentId } = await confirmedEnrollment(w, s);
+    const db = t.prisma.db;
+    await db.evaluation.create({ data: { id: randomUUID(), enrollmentId, score: 12, recordedByUserId: w.manager.userId } });
+    await expect(db.evaluation.create({ data: { id: randomUUID(), enrollmentId, score: 5, recordedByUserId: w.manager.userId } })).rejects.toThrow(/evaluations_enrollment_id_key/);
+    await expect(db.evaluation.update({ where: { enrollmentId }, data: { score: 21 } })).rejects.toThrow(/evaluations_score_range/);
+    await expect(db.evaluation.update({ where: { enrollmentId }, data: { score: -1 } })).rejects.toThrow(/evaluations_score_range/);
+    await expect(
+      db.evaluation.create({ data: { id: randomUUID(), enrollmentId: '00000000-0000-7000-8000-000000000000', score: 10, recordedByUserId: w.manager.userId } }),
+    ).rejects.toThrow();
+  });
+
+  it('seuils d\'éligibilité (S5.3b, D31) : calcul et suggestion à partir de la présence et de la note, jamais de délivrance', async () => {
+    const w = await world();
+    const s = await planned(w, { startDate: monday(3) }); // rythme DAY : exactement 5 jours de cours (lundi-vendredi)
+    await api.call('POST', `/api/v1/sessions/${s.id}/open`, { ...w.manager, body: { version: 1 } });
+    const days = [0, 1, 2, 3, 4].map((n) => addDays(s.startDate, n));
+
+    const attendOn = async (enrollmentId: string, presentDays: readonly string[]) => {
+      for (const d of days) {
+        await api.call('PUT', `/api/v1/sessions/${s.id}/attendance/${enrollmentId}/${d}`, { ...w.manager, body: { status: presentDays.includes(d) ? 'PRESENT' : 'ABSENT' } });
+      }
+    };
+    const scoreOf = (enrollmentId: string, score: number) => api.call('PUT', `/api/v1/sessions/${s.id}/evaluations/${enrollmentId}`, { ...w.manager, body: { score } });
+
+    const certified = await confirmedEnrollment(w, s); // 5/5 présent (100 %), note 15 : seuils des deux côtés atteints
+    await attendOn(certified.enrollmentId, days);
+    await scoreOf(certified.enrollmentId, 15);
+
+    const attested = await confirmedEnrollment(w, s); // 4/5 présent (80 %), note 5 : présence atteinte, pas la note
+    await attendOn(attested.enrollmentId, days.slice(0, 4));
+    await scoreOf(attested.enrollmentId, 5);
+
+    const none = await confirmedEnrollment(w, s); // 2/5 présent (40 %) : aucun seuil atteint, même avec une bonne note
+    await attendOn(none.enrollmentId, days.slice(0, 2));
+    await scoreOf(none.enrollmentId, 18);
+
+    const sheet = await api.call('GET', `/api/v1/sessions/${s.id}/evaluations`, w.manager);
+    expect(sheet.status).toBe(200);
+    expect(sheet.body.sessionId).toBe(s.id);
+    const rowOf = (enrollmentId: string) => (sheet.body.rows as { enrollmentId: string }[]).find((r) => r.enrollmentId === enrollmentId);
+    expect(rowOf(certified.enrollmentId)).toMatchObject({ score: 15, attendanceRatePercent: 100, suggestion: 'CERTIFICATE' });
+    expect(rowOf(attested.enrollmentId)).toMatchObject({ score: 5, attendanceRatePercent: 80, suggestion: 'ATTESTATION' });
+    expect(rowOf(none.enrollmentId)).toMatchObject({ score: 18, attendanceRatePercent: 40, suggestion: 'NONE' });
+
+    // Réglages des seuils : lecture par défaut, modification avec verrou optimiste, droits réservés à qui gère (training.evaluation.manage).
+    const defaults = await api.call('GET', '/api/v1/training/thresholds', w.manager);
+    expect(defaults.status).toBe(200);
+    expect(defaults.body).toMatchObject({ attendanceThresholdPercent: 80, scoreThreshold: 10 });
+    const am = await login(RoleCode.AccountManager);
+    expect((await api.call('PUT', '/api/v1/training/thresholds', { ...am, body: { version: defaults.body.version, attendanceThresholdPercent: 90, scoreThreshold: 12 } })).status).toBe(403);
+    expect((await api.call('PUT', '/api/v1/training/thresholds', { ...w.manager, body: { version: defaults.body.version, attendanceThresholdPercent: 101, scoreThreshold: 12 } })).status).toBe(400);
+    const raised = await api.call('PUT', '/api/v1/training/thresholds', { ...w.manager, body: { version: defaults.body.version, attendanceThresholdPercent: 90, scoreThreshold: 12 } });
+    expect(raised.body).toMatchObject({ attendanceThresholdPercent: 90, scoreThreshold: 12, version: defaults.body.version + 1 });
+    // À 90 %, l'inscrit qui était à 80 % (attestation) retombe à « aucune suggestion ».
+    const afterRaise = await api.call('GET', `/api/v1/sessions/${s.id}/evaluations`, w.manager);
+    expect((afterRaise.body.rows as { enrollmentId: string; suggestion: string }[]).find((r) => r.enrollmentId === attested.enrollmentId)?.suggestion).toBe('NONE');
+    expect((await api.call('PUT', '/api/v1/training/thresholds', { ...w.manager, body: { version: defaults.body.version, attendanceThresholdPercent: 85, scoreThreshold: 11 } })).status).toBe(409); // version périmée
+    // Remis à la valeur de départ pour ne pas affecter les autres tests (réglage partagé, une seule ligne).
+    await api.call('PUT', '/api/v1/training/thresholds', { ...w.manager, body: { version: raised.body.version, attendanceThresholdPercent: 80, scoreThreshold: 10 } });
   });
 });

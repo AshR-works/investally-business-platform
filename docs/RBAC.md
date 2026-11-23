@@ -187,6 +187,7 @@ Cellule : **O**, **É**, **T** = portée accordée ; vide = non accordée.
 | `training.session.update` | T |  |  |  | T |  |  |  |  |  |
 | `training.session.cancel` | T |  |  |  | T |  |  |  |  |  |
 | `training.session.close` | T |  |  |  | T |  |  |  |  |  |
+| `training.session.reopen` | T |  |  |  | T |  |  |  |  |  |
 | `training.room.read` | T |  |  |  | T | T |  |  |  |  |
 | `training.room.manage` | T |  |  |  | T |  |  |  |  |  |
 | `training.trainer.read` | T |  |  |  | T |  |  |  |  |  |
@@ -199,8 +200,8 @@ Cellule : **O**, **É**, **T** = portée accordée ; vide = non accordée.
 | `training.enrollment.create` | T |  |  | O | T |  |  |  |  |  |
 | `training.enrollment.update` | T |  |  |  | T |  |  |  |  |  |
 | `training.enrollment.cancel` | T |  |  |  | T |  |  |  |  |  |
-| `training.attendance.read` | T | T |  |  | T | O |  |  |  |  |
-| `training.attendance.record` | T |  |  |  | T | O |  |  |  |  |
+| `training.attendance.read` | T | T |  |  | T |  |  |  |  |  |
+| `training.attendance.record` | T |  |  |  | T |  |  |  |  |  |
 | `training.evaluation.read` | T | T |  |  | T | O |  |  |  |  |
 | `training.evaluation.record` | T |  |  |  | T | O |  |  |  |  |
 | `training.certification.read` | T | T | E |  | T | O |  |  |  |  |

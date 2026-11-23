@@ -6176,6 +6176,134 @@
         "x-protected": true
       }
     },
+    "/api/v1/sessions/{sessionId}/evaluations": {
+      "get": {
+        "operationId": "EvaluationController_get",
+        "parameters": [
+          {
+            "name": "sessionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "sessions"
+        ],
+        "x-permission": "training.evaluation.read",
+        "x-protected": true
+      }
+    },
+    "/api/v1/sessions/{sessionId}/evaluations/{enrollmentId}": {
+      "put": {
+        "operationId": "EvaluationController_put",
+        "parameters": [
+          {
+            "name": "sessionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "enrollmentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecordEvaluationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "sessions"
+        ],
+        "x-permission": "training.evaluation.record",
+        "x-protected": true
+      }
+    },
+    "/api/v1/training/thresholds": {
+      "get": {
+        "operationId": "TrainingThresholdsController_get",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "training"
+        ],
+        "x-permission": "training.evaluation.read",
+        "x-protected": true
+      },
+      "put": {
+        "operationId": "TrainingThresholdsController_edit",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTrainingThresholdsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "training"
+        ],
+        "x-permission": "training.evaluation.manage",
+        "x-protected": true
+      }
+    },
     "/api/v1/hr/directory": {
       "get": {
         "operationId": "EmployeesController_directory",
@@ -9832,6 +9960,46 @@
         },
         "required": [
           "status"
+        ]
+      },
+      "RecordEvaluationDto": {
+        "type": "object",
+        "properties": {
+          "score": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 20,
+            "description": "Note sur 20, deux décimales au plus."
+          }
+        },
+        "required": [
+          "score"
+        ]
+      },
+      "UpdateTrainingThresholdsDto": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "number",
+            "minimum": 1
+          },
+          "attendanceThresholdPercent": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "Taux de présence minimal (%) pour un certificat ou une attestation."
+          },
+          "scoreThreshold": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 20,
+            "description": "Note minimale sur 20 pour un certificat."
+          }
+        },
+        "required": [
+          "version",
+          "attendanceThresholdPercent",
+          "scoreThreshold"
         ]
       },
       "RegisterEmployeeDto": {

@@ -286,6 +286,8 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td>POST</td><td><code>/sessions/{id}/reopen</code></td><td></td><td><code>training.session.reopen</code></td><td>200</td></tr>
 <tr><td>GET</td><td><code>/sessions/{sessionId}/attendance</code></td><td></td><td><code>training.attendance.read</code></td><td>200</td></tr>
 <tr><td>PUT</td><td><code>/sessions/{sessionId}/attendance/{enrollmentId}/{day}</code></td><td></td><td><code>training.attendance.record</code></td><td>200</td></tr>
+<tr><td>GET</td><td><code>/sessions/{sessionId}/evaluations</code></td><td></td><td><code>training.evaluation.read</code></td><td>200</td></tr>
+<tr><td>PUT</td><td><code>/sessions/{sessionId}/evaluations/{enrollmentId}</code></td><td></td><td><code>training.evaluation.record</code></td><td>200</td></tr>
 </tbody></table></div>
 <h2>trainers</h2>
 <div class="table-wrap"><table><thead><tr><th>Méthode</th><th>Chemin</th><th>Résumé</th><th>Permission</th><th>Succès</th></tr></thead><tbody>
@@ -295,6 +297,11 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td>PUT</td><td><code>/trainers/{id}</code></td><td></td><td><code>training.trainer.manage</code></td><td>200</td></tr>
 <tr><td>POST</td><td><code>/trainers/{id}/status</code></td><td></td><td><code>training.trainer.manage</code></td><td>200</td></tr>
 </tbody></table></div>
+<h2>training</h2>
+<div class="table-wrap"><table><thead><tr><th>Méthode</th><th>Chemin</th><th>Résumé</th><th>Permission</th><th>Succès</th></tr></thead><tbody>
+<tr><td>GET</td><td><code>/training/thresholds</code></td><td></td><td><code>training.evaluation.read</code></td><td>200</td></tr>
+<tr><td>PUT</td><td><code>/training/thresholds</code></td><td></td><td><code>training.evaluation.manage</code></td><td>200</td></tr>
+</tbody></table></div>
 <h2>trainings</h2>
 <div class="table-wrap"><table><thead><tr><th>Méthode</th><th>Chemin</th><th>Résumé</th><th>Permission</th><th>Succès</th></tr></thead><tbody>
 <tr><td>GET</td><td><code>/trainings</code></td><td></td><td><code>training.training.read</code></td><td>200</td></tr>
@@ -303,4 +310,4 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <tr><td>PUT</td><td><code>/trainings/{id}</code></td><td></td><td><code>training.training.update</code></td><td>200</td></tr>
 <tr><td>POST</td><td><code>/trainings/{id}/status</code></td><td></td><td><code>training.training.update</code></td><td>200</td></tr>
 </tbody></table></div>
-<p><em>205 routes.</em></p></main></body></html>
+<p><em>209 routes.</em></p></main></body></html>
