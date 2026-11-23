@@ -6304,6 +6304,153 @@
         "x-protected": true
       }
     },
+    "/api/v1/sessions/{sessionId}/certifications": {
+      "get": {
+        "operationId": "CertificationController_get",
+        "parameters": [
+          {
+            "name": "sessionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "sessions"
+        ],
+        "x-permission": "training.certification.read",
+        "x-protected": true
+      }
+    },
+    "/api/v1/sessions/{sessionId}/certifications/{enrollmentId}": {
+      "post": {
+        "operationId": "CertificationController_post",
+        "parameters": [
+          {
+            "name": "sessionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "enrollmentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IssueCertificationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "sessions"
+        ],
+        "x-permission": "training.certification.issue",
+        "x-protected": true
+      }
+    },
+    "/api/v1/sessions/{sessionId}/certifications/{enrollmentId}/revoke": {
+      "post": {
+        "operationId": "CertificationController_postRevoke",
+        "parameters": [
+          {
+            "name": "sessionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "enrollmentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RevokeCertificationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "sessions"
+        ],
+        "x-permission": "training.certification.revoke",
+        "x-protected": true
+      }
+    },
+    "/api/v1/ambassador-suggestions": {
+      "get": {
+        "operationId": "AmbassadorSuggestionsController_get",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "ambassadors"
+        ],
+        "x-permission": "bd.ambassador.read",
+        "x-protected": true
+      }
+    },
     "/api/v1/hr/directory": {
       "get": {
         "operationId": "EmployeesController_directory",
@@ -10000,6 +10147,34 @@
           "version",
           "attendanceThresholdPercent",
           "scoreThreshold"
+        ]
+      },
+      "IssueCertificationDto": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "CERTIFICATE",
+              "ATTESTATION"
+            ]
+          }
+        },
+        "required": [
+          "kind"
+        ]
+      },
+      "RevokeCertificationDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "reason"
         ]
       },
       "RegisterEmployeeDto": {

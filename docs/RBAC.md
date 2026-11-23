@@ -74,7 +74,7 @@ Légende : **L:x** lecture (consulter, télécharger, exporter, tableaux de bord
 | Audit | L:T | L:T | — | — | — | — | — | — | — | — |
 | Documents | L:T E:T | L:T | L:E E:E | L:O E:O | L:T E:T | L:O | — | — | — | — |
 | Business Development | L:T E:T | L:T | L:T E:E | L:O E:O | L:T | — | L:T | L:T E:T | — | — |
-| Investudy | L:T E:T | L:T | L:T | L:T E:O | L:T E:T | L:T E:O | L:T | L:T | — | — |
+| Investudy | L:T E:T | L:T | L:T | L:T E:O | L:T E:T | L:T | L:T | L:T | — | — |
 | Ressources humaines | L:T E:T | L:T E:O | L:T E:O | L:T E:O | L:T E:O | L:T E:O | L:T E:O | L:T E:O | L:T E:T | L:T E:O |
 | Reporting | L:T | L:T | L:T | L:O | L:T | L:O | — | L:T | — | — |
 
@@ -202,8 +202,9 @@ Cellule : **O**, **É**, **T** = portée accordée ; vide = non accordée.
 | `training.enrollment.cancel` | T |  |  |  | T |  |  |  |  |  |
 | `training.attendance.read` | T | T |  |  | T |  |  |  |  |  |
 | `training.attendance.record` | T |  |  |  | T |  |  |  |  |  |
-| `training.evaluation.read` | T | T |  |  | T | O |  |  |  |  |
-| `training.evaluation.record` | T |  |  |  | T | O |  |  |  |  |
+| `training.evaluation.read` | T | T |  |  | T |  |  |  |  |  |
+| `training.evaluation.record` | T |  |  |  | T |  |  |  |  |  |
+| `training.evaluation.manage` | T |  |  |  | T |  |  |  |  |  |
 | `training.certification.read` | T | T | E |  | T | O |  |  |  |  |
 | `training.certification.issue` | T |  |  |  | T |  |  |  |  |  |
 | `training.certification.revoke` | T |  |  |  | T |  |  |  |  |  |

@@ -31,6 +31,11 @@ import { PrismaEvaluationRepository } from './infrastructure/prisma-evaluation.r
 import { PrismaTrainingThresholdsRepository } from './infrastructure/prisma-training-thresholds.repository';
 import { EvaluationController } from './presentation/evaluation.controller';
 import { TrainingThresholdsController } from './presentation/training-thresholds.controller';
+import { GetAmbassadorSuggestionsHandler, GetCertificationSheetHandler, IssueCertificationUseCase, RevokeCertificationUseCase } from './application/certification-use-cases';
+import { AMBASSADOR_SUGGESTION_REPOSITORY, CERTIFICATION_REPOSITORY } from './domain/certification-repositories';
+import { PrismaAmbassadorSuggestionRepository, PrismaCertificationRepository } from './infrastructure/prisma-certification.repository';
+import { AmbassadorSuggestionsController } from './presentation/ambassador-suggestions.controller';
+import { CertificationController } from './presentation/certification.controller';
 import { MODULE_REPOSITORY, PROGRAM_REPOSITORY, ROOM_REPOSITORY, TRAINER_REPOSITORY, TRAINING_REPOSITORY } from './domain/catalogue-repositories';
 import { PrismaModuleRepository, PrismaProgramRepository, PrismaRoomRepository, PrismaTrainerRepository, PrismaTrainingRepository } from './infrastructure/prisma-catalogue.repositories';
 import { ModulesController, ProgramsController, RhythmsController, RoomsController, TrainersController, TrainingsController } from './presentation/catalogue.controllers';
@@ -40,7 +45,7 @@ import { ModulesController, ProgramsController, RhythmsController, RoomsControll
   imports: [AuditModule, IamModule, BusinessDevelopmentModule],
   controllers: [
     ProgramsController, TrainingsController, ModulesController, RhythmsController, RoomsController, TrainersController, SessionsController, LearnersController, EnrollmentsController, AttendanceController,
-    EvaluationController, TrainingThresholdsController,
+    EvaluationController, TrainingThresholdsController, CertificationController, AmbassadorSuggestionsController,
   ],
   providers: [
     CreateProgramUseCase, UpdateProgramUseCase, ChangeProgramStatusUseCase, GetProgramHandler, ListProgramsHandler,
@@ -54,12 +59,15 @@ import { ModulesController, ProgramsController, RhythmsController, RoomsControll
     EnrollLearnerUseCase, ConfirmEnrollmentUseCase, CancelEnrollmentUseCase, ReplaceEnrollmentUseCase, GetEnrollmentHandler, ListEnrollmentsHandler, ListApprovalOptionsHandler, EnrollmentViews, EnrollmentRules,
     RecordAttendanceUseCase, GetAttendanceSheetHandler,
     RecordEvaluationUseCase, GetEvaluationSheetHandler, GetTrainingThresholdsHandler, UpdateTrainingThresholdsUseCase,
+    IssueCertificationUseCase, RevokeCertificationUseCase, GetCertificationSheetHandler, GetAmbassadorSuggestionsHandler,
     { provide: LEARNER_REPOSITORY, useClass: PrismaLearnerRepository },
     { provide: ENROLLMENT_REPOSITORY, useClass: PrismaEnrollmentRepository },
     { provide: SESSION_REPOSITORY, useClass: PrismaSessionRepository },
     { provide: ATTENDANCE_REPOSITORY, useClass: PrismaAttendanceRepository },
     { provide: EVALUATION_REPOSITORY, useClass: PrismaEvaluationRepository },
     { provide: TRAINING_THRESHOLDS_REPOSITORY, useClass: PrismaTrainingThresholdsRepository },
+    { provide: CERTIFICATION_REPOSITORY, useClass: PrismaCertificationRepository },
+    { provide: AMBASSADOR_SUGGESTION_REPOSITORY, useClass: PrismaAmbassadorSuggestionRepository },
     { provide: PROGRAM_REPOSITORY, useClass: PrismaProgramRepository },
     { provide: TRAINING_REPOSITORY, useClass: PrismaTrainingRepository },
     { provide: MODULE_REPOSITORY, useClass: PrismaModuleRepository },

@@ -75,7 +75,7 @@ describe('Contrat anti-IDOR : classement de toutes les routes (structurel)', () 
     }
   });
 
-  it('les routes « lecture-formateur » (sessions) : seul le formateur lit en portée Propre, tous les autres rôles en portée Tous', () => {
+  it('les routes « lecture-formateur » : seul le formateur lit en portée Propre, tous les autres rôles en portée Tous', () => {
     const reads = routes.filter((r) => IDOR_ROUTES[r.key] === 'lecture-formateur');
     expect(reads.map((r) => r.key)).toEqual(['GET /sessions/:id']);
     for (const route of reads) {
@@ -84,6 +84,23 @@ describe('Contrat anti-IDOR : classement de toutes les routes (structurel)', () 
         for (const grant of resolveGrants(role).filter((g) => g.permission === route.permission)) {
           expect([route.key, role, grant.scope]).toEqual([route.key, role, role === RoleCode.Trainer ? Scope.Own : Scope.All]);
         }
+      }
+    }
+  });
+
+  it('les routes « lecture-mixte » : une portée différente par rôle, vérifiée explicitement pour chacun (certifications)', () => {
+    const reads = routes.filter((r) => IDOR_ROUTES[r.key] === 'lecture-mixte');
+    expect(reads.map((r) => r.key)).toEqual(['GET /sessions/:sessionId/certifications']);
+    const route = reads[0]!;
+    expect(route.permission).toBe('training.certification.read');
+    // Formateur : Propre (lié à la session, vérifié par certification-use-cases.spec.ts et sessions-http.integration.spec.ts).
+    expect(resolveGrants(RoleCode.Trainer).find((g) => g.permission === route.permission)?.scope).toBe(Scope.Own);
+    // Responsable commercial : Équipe, filtré par entreprise, jamais « introuvable » global (certification-use-cases.spec.ts).
+    expect(resolveGrants(RoleCode.HeadOfSales).find((g) => g.permission === route.permission)?.scope).toBe(Scope.Team);
+    // Tous les autres détenteurs : portée Tous (aucun filtrage à vérifier).
+    for (const role of Object.values(RoleCode).filter((r) => r !== RoleCode.Trainer && r !== RoleCode.HeadOfSales)) {
+      for (const grant of resolveGrants(role).filter((g) => g.permission === route.permission)) {
+        expect([role, grant.scope]).toEqual([role, Scope.All]);
       }
     }
   });

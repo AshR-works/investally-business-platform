@@ -24,6 +24,7 @@
 
 | Méthode | Chemin | Résumé | Permission | Succès |
 |---|---|---|---|---|
+| GET | `/ambassador-suggestions` |  | `bd.ambassador.read` | 200 |
 | GET | `/ambassadors` |  | `bd.ambassador.read` | 200 |
 | POST | `/ambassadors` |  | `bd.ambassador.create` | 201 |
 | GET | `/ambassadors/{id}` |  | `bd.ambassador.read` | 200 |
@@ -311,6 +312,9 @@
 | POST | `/sessions/{id}/reopen` |  | `training.session.reopen` | 200 |
 | GET | `/sessions/{sessionId}/attendance` |  | `training.attendance.read` | 200 |
 | PUT | `/sessions/{sessionId}/attendance/{enrollmentId}/{day}` |  | `training.attendance.record` | 200 |
+| GET | `/sessions/{sessionId}/certifications` |  | `training.certification.read` | 200 |
+| POST | `/sessions/{sessionId}/certifications/{enrollmentId}` |  | `training.certification.issue` | 201 |
+| POST | `/sessions/{sessionId}/certifications/{enrollmentId}/revoke` |  | `training.certification.revoke` | 200 |
 | GET | `/sessions/{sessionId}/evaluations` |  | `training.evaluation.read` | 200 |
 | PUT | `/sessions/{sessionId}/evaluations/{enrollmentId}` |  | `training.evaluation.record` | 200 |
 
@@ -341,4 +345,4 @@
 | PUT | `/trainings/{id}` |  | `training.training.update` | 200 |
 | POST | `/trainings/{id}/status` |  | `training.training.update` | 200 |
 
-*209 routes.*
+*213 routes.*

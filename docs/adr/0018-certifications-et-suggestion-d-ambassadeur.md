@@ -1,0 +1,29 @@
+# ADR-0018 — Certificats, attestations et suggestion d'ambassadeur (S5.3c)
+
+| | |
+|---|---|
+| **Statut** | Accepté (2026-11-24, Direction produit : « Lance le lot (c) », suite de D72, option **C** en trois lots, lot **(c)**). |
+| **Contexte** | Dernière pièce du module Investudy : délivrer un certificat ou une attestation à un inscrit confirmé une fois sa session clôturée (CU-I-60), le révoquer si besoin (CU-I-61), et suggérer un ambassadeur au chargé de compte sans lui donner accès aux certifications (CU-I-62, S8). |
+| **Lié à** | ADR-0016 (clôture, présences), ADR-0017 (évaluations, seuils), D72 (décision de l'arbitrage, sous-décisions S6/S8/S9), D11/D65 (avis juridique différé, S10) |
+
+## Options considérées
+1. **Délivrance automatique dès les seuils atteints**. Écartée (S6) : toujours **suggérée puis délivrée à la main** par le responsable Investudy.
+2. **Notification push au chargé de compte**. Écartée : aucune infrastructure de notification n'existe dans l'application (comme pour les congés, les contrats) ; une liste consultable suffit au besoin exprimé (CU-I-62).
+3. **Lecture des certifications ouverte au chargé de compte pour fonder sa suggestion**. Écartée (S8) : « suggestion seule, sans lecture des certifications ».
+4. **Numérotation avec vérification externe** (code de contrôle, page publique). Hors périmètre (CU-I-64) : l'application n'a aucun accès externe actuellement.
+
+## Décision
+- **Délivrance** (`training.Certification`, schéma `training`) : au plus une par **inscription confirmée**, **seulement une fois la session clôturée** (CU-I-60). Le type demandé doit être couvert par le calcul d'éligibilité déjà en place (ADR-0017, `computeEligibility`) : un **certificat** exige les deux seuils atteints ; une **attestation**, le taux de présence seul. Aucune nouvelle délivrance si une existe déjà pour l'inscription (révoquer avant d'en délivrer une autre — limite assumée, voir Conséquences).
+- **Numéro de référence** (CU-I-64) : attribué à la délivrance par une **séquence de la base** (`training.certification_reference_seq`), format `CERT-AAAA-NNNNNN`. **Valeur de départ « à confirmer »** : aucune vérification externe (l'application n'a aucun accès public), cohérent avec le reste du périmètre.
+- **Révocation** (CU-I-61) : justification **obligatoire**, tracée (avant/après) ; le document reste **consultable**, marqué révoqué, **jamais supprimé** ni réémis automatiquement.
+- **Qui délivre et révoque** : responsable Investudy et Super administrateur seulement (`training.certification.issue`/`.revoke`, déjà au catalogue). **Qui lit** (CU-I-63) : responsable Investudy et Direction (portée Tous), **formateur lié à la session** (portée Propre, comme pour la lecture d'une session), **et le Responsable commercial** (portée Équipe) — ce dernier grant existait déjà au catalogue (S5.1) sans être exploité : premier écran à le consommer.
+- **Portée mixte, pas « introuvable » global** : un rôle dont la portée est réduite **par entreprise** (Responsable commercial) voit la session (déjà en portée Tous sur `training.session.read`) mais seulement les inscrits dont l'entreprise lui appartient — jamais une erreur globale, contrairement au formateur (dont la portée réduite touche la session elle-même). Nouvelle classe au contrat anti-IDOR : `lecture-mixte` (une portée par rôle, vérifiée explicitement pour chacun, pas de règle unique).
+- **Suggestion d'ambassadeur** (`training.AmbassadorSuggestion`, schéma `training`, S8) : créée automatiquement à la délivrance, **seulement pour un apprenant d'une entreprise** (jamais étudiant ni particulier). Copie `enrollmentId`, `learnerId`, `companyId` et le **propriétaire de l'entreprise au moment de la délivrance** (`ownerUserId`) — jamais de clé vers la certification elle-même ni de droit de lecture dessus pour le chargé de compte. Lue via `bd.ambassador.read` (permission déjà existante, portée déjà correcte) ; **aucun suivi automatique** si la suggestion est suivie d'un ambassadeur effectivement créé (dette assumée, pas de couplage avec la création manuelle).
+- **Routes** : `GET /sessions/:sessionId/certifications` (feuille), `POST /sessions/:sessionId/certifications/:enrollmentId` (délivrer), `POST /sessions/:sessionId/certifications/:enrollmentId/revoke` (révoquer, motif obligatoire) ; `GET /ambassador-suggestions` (lecture scindée par portée, aucun paramètre : le périmètre vient entièrement du compte appelant).
+
+## Conséquences
+- **Nouvelles tables** `training.certifications` (unique par inscription et par numéro de référence, clé étrangère vers `training.enrollments`, contrainte de cohérence de la révocation) et `training.ambassador_suggestions` (unique par inscription, index sur le propriétaire).
+- **Nouvelle classe IDOR** `lecture-mixte`, documentée dans `test/support/idor-registry.ts` : à réutiliser si une future ressource a, comme ici, une portée qui diffère par rôle selon un axe différent chacun.
+- **Dette assumée** : pas de réémission après révocation (dette ouverte, à trancher si le besoin se présente) ; pas de suivi de la suggestion jusqu'à la création effective de l'ambassadeur ; numérotation sans vérification externe (CU-I-64, hors périmètre) ; conservation des données des apprenants toujours sans avis juridique (D11, D65, S10, dette du lot a).
+- **Non couvert par ce lot** : rendu PDF (D61, charte des documents), écran et démonstration (sous-lot c-écran), recette — mutants et Newman, lot classé à risque réel comme S5.3a/b (D73) — à suivre séparément.
+- **Réversibilité** : forte. `training.certifications` et `training.ambassador_suggestions` sont des tables isolées, sans clé vers un autre contexte ; la révocation est réversible dans son principe (un nouveau test de la règle « au plus une délivrance » serait à revoir si la réémission est décidée plus tard).
