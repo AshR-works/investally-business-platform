@@ -392,7 +392,39 @@ const scenarioFolders = () => {
     ],
     event: [runId],
   };
-  return [entreprises, formation, conges, contratsParcours, presences, cloturePresences, evaluationsSeuils];
+  const certificationsAmbassadeurs = {
+    name: '90.8 — Formation : certificats, attestations et suggestion d’ambassadeur (S5.3c)',
+    item: [
+      { ...step('Planifier une session (réutilise le certificat, la salle et le formateur de 90.2)', 'POST', '/sessions', { body: { trainingId: '{{trainingId}}', rhythm: 'DAY', startDate: '{{s53cStart}}', roomId: '{{roomId}}', trainerId: '{{trainerId}}', capacity: 5 }, expect: [201] }), event: [
+        { listen: 'prerequest', script: { type: 'text/javascript', exec: [
+          `pm.collectionVariables.set('s53cStart', ${nextMonday}.replace(/(\\d{4}-\\d{2}-\\d{2})/, (d) => { const dt = new Date(d); dt.setUTCDate(dt.getUTCDate() + 21); return dt.toISOString().slice(0, 10); }));`,
+          "for (let i = 0; i < 5; i++) { var base = pm.collectionVariables.get('s53cStart'); var dt = new Date(base + 'T00:00:00Z'); dt.setUTCDate(dt.getUTCDate() + i); pm.collectionVariables.set('s53cDay' + i, dt.toISOString().slice(0, 10)); }",
+        ] } },
+        { listen: 'test', script: { type: 'text/javascript', exec: ["pm.test('Session planifiée', () => pm.expect([201]).to.include(pm.response.code));", "pm.environment.set('s53cSessionId', pm.response.json().id);"] } },
+      ] },
+      step('Ouvrir la session', 'POST', '/sessions/{{s53cSessionId}}/open', { body: { version: 1 }, expect: [200] }),
+      step('Inscrire un étudiant, payeur lui-même', 'POST', '/enrollments', { body: { sessionId: '{{s53cSessionId}}', learnerId: '{{learnerId}}', payer: { kind: 'SELF' } }, expect: [201], save: { s53cEnrollmentId: 'pm.response.json().id' } }),
+      step('Confirmer l’inscription', 'POST', '/enrollments/{{s53cEnrollmentId}}/confirm', { body: { version: 1 }, expect: [200] }),
+      step('Présence jour 1 : présent', 'PUT', '/sessions/{{s53cSessionId}}/attendance/{{s53cEnrollmentId}}/{{s53cDay0}}', { body: { status: 'PRESENT' }, expect: [200] }),
+      step('Présence jour 2 : présent', 'PUT', '/sessions/{{s53cSessionId}}/attendance/{{s53cEnrollmentId}}/{{s53cDay1}}', { body: { status: 'PRESENT' }, expect: [200] }),
+      step('Présence jour 3 : présent', 'PUT', '/sessions/{{s53cSessionId}}/attendance/{{s53cEnrollmentId}}/{{s53cDay2}}', { body: { status: 'PRESENT' }, expect: [200] }),
+      step('Présence jour 4 : présent', 'PUT', '/sessions/{{s53cSessionId}}/attendance/{{s53cEnrollmentId}}/{{s53cDay3}}', { body: { status: 'PRESENT' }, expect: [200] }),
+      step('Présence jour 5 : présent', 'PUT', '/sessions/{{s53cSessionId}}/attendance/{{s53cEnrollmentId}}/{{s53cDay4}}', { body: { status: 'PRESENT' }, expect: [200] }),
+      step('Saisir une note : 15 sur 20', 'PUT', '/sessions/{{s53cSessionId}}/evaluations/{{s53cEnrollmentId}}', { body: { score: 15 }, expect: [200], extraTests: ["pm.test('15 sur 20', () => pm.expect(pm.response.json().score).to.eql(15));"] }),
+      step('Délivrer un certificat avant clôture : refusé', 'POST', '/sessions/{{s53cSessionId}}/certifications/{{s53cEnrollmentId}}', { body: { kind: 'CERTIFICATE' }, expect: [422] }),
+      step('Clôturer la session', 'POST', '/sessions/{{s53cSessionId}}/close', { body: { version: 2 }, expect: [200], extraTests: ["pm.test('Clôturée', () => pm.expect(pm.response.json().status).to.eql('CLOSED'));"] }),
+      step('Un type délivré invalide est refusé', 'POST', '/sessions/{{s53cSessionId}}/certifications/{{s53cEnrollmentId}}', { body: { kind: 'DIPLOMA' }, expect: [400] }),
+      step('Délivrer un certificat (présence et note atteignent les seuils)', 'POST', '/sessions/{{s53cSessionId}}/certifications/{{s53cEnrollmentId}}', { body: { kind: 'CERTIFICATE' }, expect: [201], extraTests: ["pm.test('Référence CERT-AAAA-NNNNNN, délivré', () => { const b = pm.response.json(); pm.expect(b.referenceNumber).to.match(/^CERT-\\d{4}-\\d{6}$/); pm.expect(b.status).to.eql('ISSUED'); pm.expect(b.kind).to.eql('CERTIFICATE'); });"] }),
+      step('Délivrer une seconde fois : refusé (délivrance déjà existante)', 'POST', '/sessions/{{s53cSessionId}}/certifications/{{s53cEnrollmentId}}', { body: { kind: 'ATTESTATION' }, expect: [422] }),
+      step('Feuille de délivrances : la certification apparaît', 'GET', '/sessions/{{s53cSessionId}}/certifications', { extraTests: ["pm.test('Un inscrit, certifié', () => { const b = pm.response.json(); pm.expect(b.rows).to.have.lengthOf(1); pm.expect(b.rows[0].certification.status).to.eql('ISSUED'); pm.expect(b.canIssue).to.eql(true); });"] }),
+      step('Révoquer sans motif : refusé', 'POST', '/sessions/{{s53cSessionId}}/certifications/{{s53cEnrollmentId}}/revoke', { body: {}, expect: [400] }),
+      step('Révoquer avec motif', 'POST', '/sessions/{{s53cSessionId}}/certifications/{{s53cEnrollmentId}}/revoke', { body: { reason: 'Erreur de saisie (parcours Postman)' }, expect: [200], extraTests: ["pm.test('Révoqué, motif conservé', () => { const b = pm.response.json(); pm.expect(b.status).to.eql('REVOKED'); pm.expect(b.revokeReason).to.eql('Erreur de saisie (parcours Postman)'); });"] }),
+      step('Délivrer de nouveau après révocation : refusé (une délivrance existe déjà pour cette inscription)', 'POST', '/sessions/{{s53cSessionId}}/certifications/{{s53cEnrollmentId}}', { body: { kind: 'ATTESTATION' }, expect: [422] }),
+      step('Lire les suggestions d’ambassadeur (contrat ; cet inscrit est sans entreprise, aucune suggestion créée pour lui)', 'GET', '/ambassador-suggestions', { extraTests: ["pm.test('Liste', () => pm.expect(pm.response.json()).to.be.an('array'));"] }),
+    ],
+    event: [runId],
+  };
+  return [entreprises, formation, conges, contratsParcours, presences, cloturePresences, evaluationsSeuils, certificationsAmbassadeurs];
 };
 
 // ───────────────────────────── Écritures de test (à rejouer à la main) ─────────────────────────────

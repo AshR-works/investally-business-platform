@@ -21,6 +21,10 @@ describe('Type délivré', () => {
     expect(parseCertificationKind('CERTIFICATE')).toBe('CERTIFICATE');
     expectError(() => parseCertificationKind('DIPLOME'), 'VALIDATION', /certificat ou une attestation/);
   });
+
+  it('la délivrance elle-même refuse un type invalide (pas seulement la validation d\'entrée)', () => {
+    expectError(() => Certification.issue({ id: 'c1', enrollmentId: 'en1', kind: 'DIPLOME', referenceNumber: 'CERT-2026-000099', issuedByUserId: 'u1', now: NOW }), 'VALIDATION', /certificat ou une attestation/);
+  });
 });
 
 describe('Délivrance', () => {
@@ -43,5 +47,10 @@ describe('Délivrance', () => {
     expectError(() => c.revoke({ reason: '   ', by: 'u1', now: NOW }), 'VALIDATION', /justification.*obligatoire/);
     c.revoke({ reason: 'Erreur de saisie', by: 'u1', now: NOW });
     expectError(() => c.revoke({ reason: 'Encore', by: 'u1', now: NOW }), 'INVARIANT_VIOLATION', /déjà révoquée/);
+  });
+
+  it('refuse un motif de révocation de plus de 500 caractères', () => {
+    const c = Certification.issue({ id: 'c1', enrollmentId: 'en1', kind: 'CERTIFICATE', referenceNumber: 'CERT-2026-000004', issuedByUserId: 'u1', now: NOW });
+    expectError(() => c.revoke({ reason: 'x'.repeat(501), by: 'u1', now: NOW }), 'VALIDATION', /500 caractères/);
   });
 });
