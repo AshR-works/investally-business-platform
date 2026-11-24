@@ -1,6 +1,6 @@
 {
   "titre": "Investally Business Platform : catalogue des tests de l’API",
-  "genereLe": "2026-11-23",
+  "genereLe": "2026-11-24",
   "source": "Généré avec la collection Postman par scripts/api-docs/build-postman.mjs (docs/api/postman/Investally-API.postman_collection.json). La collection est le fichier EXÉCUTABLE ; ce catalogue en est la version lisible.",
   "executer": {
     "postman": "Importer la collection et l’environnement, renseigner email, password et mfaSecret, lancer « 00 — Authentification » puis le dossier voulu.",
@@ -3412,8 +3412,8 @@
     {
       "nom": "90 — Parcours de bout en bout",
       "description": "Scénarios qui créent leurs propres données et vérifient les règles métier (agrément, payeur, portée). À lancer après la connexion, avec un compte qui a les droits (par exemple le Super administrateur de test).",
-      "requetes": 79,
-      "assertions": 116,
+      "requetes": 99,
+      "assertions": 142,
       "detail": [
         {
           "nom": "Créer une entreprise",
@@ -4580,6 +4580,295 @@
           "tests": [
             "Note de nouveau possible, corrigée : statut 200",
             "8 sur 20"
+          ]
+        },
+        {
+          "nom": "Planifier une session (réutilise le certificat, la salle et le formateur de 90.2)",
+          "methode": "POST",
+          "chemin": "/api/v1/sessions",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": {
+            "trainingId": "{{trainingId}}",
+            "rhythm": "DAY",
+            "startDate": "{{s53cStart}}",
+            "roomId": "{{roomId}}",
+            "trainerId": "{{trainerId}}",
+            "capacity": 5
+          },
+          "tests": [
+            "Session planifiée"
+          ]
+        },
+        {
+          "nom": "Ouvrir la session",
+          "methode": "POST",
+          "chemin": "/api/v1/sessions/{{s53cSessionId}}/open",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": {
+            "version": 1
+          },
+          "tests": [
+            "Ouvrir la session : statut 200"
+          ]
+        },
+        {
+          "nom": "Inscrire un étudiant, payeur lui-même",
+          "methode": "POST",
+          "chemin": "/api/v1/enrollments",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": {
+            "sessionId": "{{s53cSessionId}}",
+            "learnerId": "{{learnerId}}",
+            "payer": {
+              "kind": "SELF"
+            }
+          },
+          "tests": [
+            "Inscrire un étudiant, payeur lui-même : statut 201"
+          ]
+        },
+        {
+          "nom": "Confirmer l’inscription",
+          "methode": "POST",
+          "chemin": "/api/v1/enrollments/{{s53cEnrollmentId}}/confirm",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": {
+            "version": 1
+          },
+          "tests": [
+            "Confirmer l’inscription : statut 200"
+          ]
+        },
+        {
+          "nom": "Présence jour 1 : présent",
+          "methode": "PUT",
+          "chemin": "/api/v1/sessions/{{s53cSessionId}}/attendance/{{s53cEnrollmentId}}/{{s53cDay0}}",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": {
+            "status": "PRESENT"
+          },
+          "tests": [
+            "Présence jour 1 : présent : statut 200"
+          ]
+        },
+        {
+          "nom": "Présence jour 2 : présent",
+          "methode": "PUT",
+          "chemin": "/api/v1/sessions/{{s53cSessionId}}/attendance/{{s53cEnrollmentId}}/{{s53cDay1}}",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": {
+            "status": "PRESENT"
+          },
+          "tests": [
+            "Présence jour 2 : présent : statut 200"
+          ]
+        },
+        {
+          "nom": "Présence jour 3 : présent",
+          "methode": "PUT",
+          "chemin": "/api/v1/sessions/{{s53cSessionId}}/attendance/{{s53cEnrollmentId}}/{{s53cDay2}}",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": {
+            "status": "PRESENT"
+          },
+          "tests": [
+            "Présence jour 3 : présent : statut 200"
+          ]
+        },
+        {
+          "nom": "Présence jour 4 : présent",
+          "methode": "PUT",
+          "chemin": "/api/v1/sessions/{{s53cSessionId}}/attendance/{{s53cEnrollmentId}}/{{s53cDay3}}",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": {
+            "status": "PRESENT"
+          },
+          "tests": [
+            "Présence jour 4 : présent : statut 200"
+          ]
+        },
+        {
+          "nom": "Présence jour 5 : présent",
+          "methode": "PUT",
+          "chemin": "/api/v1/sessions/{{s53cSessionId}}/attendance/{{s53cEnrollmentId}}/{{s53cDay4}}",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": {
+            "status": "PRESENT"
+          },
+          "tests": [
+            "Présence jour 5 : présent : statut 200"
+          ]
+        },
+        {
+          "nom": "Saisir une note : 15 sur 20",
+          "methode": "PUT",
+          "chemin": "/api/v1/sessions/{{s53cSessionId}}/evaluations/{{s53cEnrollmentId}}",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": {
+            "score": 15
+          },
+          "tests": [
+            "Saisir une note : 15 sur 20 : statut 200",
+            "15 sur 20"
+          ]
+        },
+        {
+          "nom": "Délivrer un certificat avant clôture : refusé",
+          "methode": "POST",
+          "chemin": "/api/v1/sessions/{{s53cSessionId}}/certifications/{{s53cEnrollmentId}}",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": {
+            "kind": "CERTIFICATE"
+          },
+          "tests": [
+            "Délivrer un certificat avant clôture : refusé : statut 422"
+          ]
+        },
+        {
+          "nom": "Clôturer la session",
+          "methode": "POST",
+          "chemin": "/api/v1/sessions/{{s53cSessionId}}/close",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": {
+            "version": 2
+          },
+          "tests": [
+            "Clôturer la session : statut 200",
+            "Clôturée"
+          ]
+        },
+        {
+          "nom": "Un type délivré invalide est refusé",
+          "methode": "POST",
+          "chemin": "/api/v1/sessions/{{s53cSessionId}}/certifications/{{s53cEnrollmentId}}",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": {
+            "kind": "DIPLOMA"
+          },
+          "tests": [
+            "Un type délivré invalide est refusé : statut 400"
+          ]
+        },
+        {
+          "nom": "Délivrer un certificat (présence et note atteignent les seuils)",
+          "methode": "POST",
+          "chemin": "/api/v1/sessions/{{s53cSessionId}}/certifications/{{s53cEnrollmentId}}",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": {
+            "kind": "CERTIFICATE"
+          },
+          "tests": [
+            "Délivrer un certificat (présence et note atteignent les seuils) : statut 201",
+            "Référence CERT-AAAA-NNNNNN, délivré"
+          ]
+        },
+        {
+          "nom": "Délivrer une seconde fois : refusé (délivrance déjà existante)",
+          "methode": "POST",
+          "chemin": "/api/v1/sessions/{{s53cSessionId}}/certifications/{{s53cEnrollmentId}}",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": {
+            "kind": "ATTESTATION"
+          },
+          "tests": [
+            "Délivrer une seconde fois : refusé (délivrance déjà existante) : statut 422"
+          ]
+        },
+        {
+          "nom": "Feuille de délivrances : la certification apparaît",
+          "methode": "GET",
+          "chemin": "/api/v1/sessions/{{s53cSessionId}}/certifications",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": null,
+          "tests": [
+            "Feuille de délivrances : la certification apparaît : statut 200",
+            "Un inscrit, certifié"
+          ]
+        },
+        {
+          "nom": "Révoquer sans motif : refusé",
+          "methode": "POST",
+          "chemin": "/api/v1/sessions/{{s53cSessionId}}/certifications/{{s53cEnrollmentId}}/revoke",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": {},
+          "tests": [
+            "Révoquer sans motif : refusé : statut 400"
+          ]
+        },
+        {
+          "nom": "Révoquer avec motif",
+          "methode": "POST",
+          "chemin": "/api/v1/sessions/{{s53cSessionId}}/certifications/{{s53cEnrollmentId}}/revoke",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": {
+            "reason": "Erreur de saisie (parcours Postman)"
+          },
+          "tests": [
+            "Révoquer avec motif : statut 200",
+            "Révoqué, motif conservé"
+          ]
+        },
+        {
+          "nom": "Délivrer de nouveau après révocation : refusé (une délivrance existe déjà pour cette inscription)",
+          "methode": "POST",
+          "chemin": "/api/v1/sessions/{{s53cSessionId}}/certifications/{{s53cEnrollmentId}}",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": {
+            "kind": "ATTESTATION"
+          },
+          "tests": [
+            "Délivrer de nouveau après révocation : refusé (une délivrance existe déjà pour cette inscription) : statut 422"
+          ]
+        },
+        {
+          "nom": "Lire les suggestions d’ambassadeur (contrat ; cet inscrit est sans entreprise, aucune suggestion créée pour lui)",
+          "methode": "GET",
+          "chemin": "/api/v1/ambassador-suggestions",
+          "permission": null,
+          "protegee": null,
+          "succesAttendus": null,
+          "corps": null,
+          "tests": [
+            "Lire les suggestions d’ambassadeur (contrat ; cet inscrit est sans entreprise, aucune suggestion créée pour lui) : statut 200",
+            "Liste"
           ]
         }
       ]
@@ -9353,8 +9642,8 @@
   ],
   "resume": {
     "dossiers": 33,
-    "requetes": 512,
-    "testsDefinis": 2034,
+    "requetes": 532,
+    "testsDefinis": 2060,
     "resultatDeReference": "Pile jetable, jeu de démonstration, compte Super administrateur : 443 requêtes, 1 626 assertions exécutées, 0 échec (dossiers 00b et 98 à part : 12 requêtes, 54 assertions, 0 échec)."
   }
 }

@@ -100,6 +100,7 @@
 | [rh-4](sessions/rh-4.md) | RH-4 — présences déclaratives | `rh-4a-validated`, `rh-4b-validated` | 14 | |
 | [s5-3a](sessions/s5-3a.md) | S5.3a — clôture de session et présences aux séances | — | 14 | |
 | [s5-3b](sessions/s5-3b.md) | S5.3b — évaluations et seuils d'éligibilité | — | 13 | |
+| [s5-3c](sessions/s5-3c.md) | S5.3c — certificats, attestations et suggestion d'ambassadeur | — | 15 | |
 
 ## Remarques
 - Les fiches de session sont **dérivées des recettes** : en cas de doute, la recette fait foi. Celles des premiers sprints (S1 à S3.5) sont surtout des tests automatisés ; leurs « vérifications » rappellent ce que chaque contrôle prouve.

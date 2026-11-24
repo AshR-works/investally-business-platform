@@ -14913,6 +14913,926 @@
               }
             }
           ]
+        },
+        {
+          "name": "90.8 — Formation : certificats, attestations et suggestion d’ambassadeur (S5.3c)",
+          "item": [
+            {
+              "name": "Planifier une session (réutilise le certificat, la salle et le formateur de 90.2)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/sessions",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "sessions"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"trainingId\": \"{{trainingId}}\",\n  \"rhythm\": \"DAY\",\n  \"startDate\": \"{{s53cStart}}\",\n  \"roomId\": \"{{roomId}}\",\n  \"trainerId\": \"{{trainerId}}\",\n  \"capacity\": 5\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.collectionVariables.set('s53cStart', (() => { const d = new Date(); d.setUTCDate(d.getUTCDate() + 14); d.setUTCDate(d.getUTCDate() + ((8 - d.getUTCDay()) % 7 || 7)); return d.toISOString().slice(0, 10); })().replace(/(\\d{4}-\\d{2}-\\d{2})/, (d) => { const dt = new Date(d); dt.setUTCDate(dt.getUTCDate() + 21); return dt.toISOString().slice(0, 10); }));",
+                      "for (let i = 0; i < 5; i++) { var base = pm.collectionVariables.get('s53cStart'); var dt = new Date(base + 'T00:00:00Z'); dt.setUTCDate(dt.getUTCDate() + i); pm.collectionVariables.set('s53cDay' + i, dt.toISOString().slice(0, 10)); }"
+                    ]
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Session planifiée', () => pm.expect([201]).to.include(pm.response.code));",
+                      "pm.environment.set('s53cSessionId', pm.response.json().id);"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Ouvrir la session",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/sessions/{{s53cSessionId}}/open",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "sessions",
+                    "{{s53cSessionId}}",
+                    "open"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"version\": 1\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Ouvrir la session : statut 200', () => pm.expect([200]).to.include(pm.response.code));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Inscrire un étudiant, payeur lui-même",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/enrollments",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "enrollments"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"sessionId\": \"{{s53cSessionId}}\",\n  \"learnerId\": \"{{learnerId}}\",\n  \"payer\": {\n    \"kind\": \"SELF\"\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Inscrire un étudiant, payeur lui-même : statut 201', () => pm.expect([201]).to.include(pm.response.code));",
+                      "if ([201].includes(pm.response.code)) pm.environment.set('s53cEnrollmentId', String(pm.response.json().id));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Confirmer l’inscription",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/enrollments/{{s53cEnrollmentId}}/confirm",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "enrollments",
+                    "{{s53cEnrollmentId}}",
+                    "confirm"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"version\": 1\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Confirmer l’inscription : statut 200', () => pm.expect([200]).to.include(pm.response.code));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Présence jour 1 : présent",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/sessions/{{s53cSessionId}}/attendance/{{s53cEnrollmentId}}/{{s53cDay0}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "sessions",
+                    "{{s53cSessionId}}",
+                    "attendance",
+                    "{{s53cEnrollmentId}}",
+                    "{{s53cDay0}}"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"PRESENT\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Présence jour 1 : présent : statut 200', () => pm.expect([200]).to.include(pm.response.code));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Présence jour 2 : présent",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/sessions/{{s53cSessionId}}/attendance/{{s53cEnrollmentId}}/{{s53cDay1}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "sessions",
+                    "{{s53cSessionId}}",
+                    "attendance",
+                    "{{s53cEnrollmentId}}",
+                    "{{s53cDay1}}"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"PRESENT\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Présence jour 2 : présent : statut 200', () => pm.expect([200]).to.include(pm.response.code));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Présence jour 3 : présent",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/sessions/{{s53cSessionId}}/attendance/{{s53cEnrollmentId}}/{{s53cDay2}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "sessions",
+                    "{{s53cSessionId}}",
+                    "attendance",
+                    "{{s53cEnrollmentId}}",
+                    "{{s53cDay2}}"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"PRESENT\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Présence jour 3 : présent : statut 200', () => pm.expect([200]).to.include(pm.response.code));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Présence jour 4 : présent",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/sessions/{{s53cSessionId}}/attendance/{{s53cEnrollmentId}}/{{s53cDay3}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "sessions",
+                    "{{s53cSessionId}}",
+                    "attendance",
+                    "{{s53cEnrollmentId}}",
+                    "{{s53cDay3}}"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"PRESENT\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Présence jour 4 : présent : statut 200', () => pm.expect([200]).to.include(pm.response.code));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Présence jour 5 : présent",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/sessions/{{s53cSessionId}}/attendance/{{s53cEnrollmentId}}/{{s53cDay4}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "sessions",
+                    "{{s53cSessionId}}",
+                    "attendance",
+                    "{{s53cEnrollmentId}}",
+                    "{{s53cDay4}}"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"PRESENT\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Présence jour 5 : présent : statut 200', () => pm.expect([200]).to.include(pm.response.code));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Saisir une note : 15 sur 20",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/sessions/{{s53cSessionId}}/evaluations/{{s53cEnrollmentId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "sessions",
+                    "{{s53cSessionId}}",
+                    "evaluations",
+                    "{{s53cEnrollmentId}}"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"score\": 15\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Saisir une note : 15 sur 20 : statut 200', () => pm.expect([200]).to.include(pm.response.code));",
+                      "pm.test('15 sur 20', () => pm.expect(pm.response.json().score).to.eql(15));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Délivrer un certificat avant clôture : refusé",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/sessions/{{s53cSessionId}}/certifications/{{s53cEnrollmentId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "sessions",
+                    "{{s53cSessionId}}",
+                    "certifications",
+                    "{{s53cEnrollmentId}}"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"kind\": \"CERTIFICATE\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Délivrer un certificat avant clôture : refusé : statut 422', () => pm.expect([422]).to.include(pm.response.code));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Clôturer la session",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/sessions/{{s53cSessionId}}/close",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "sessions",
+                    "{{s53cSessionId}}",
+                    "close"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"version\": 2\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Clôturer la session : statut 200', () => pm.expect([200]).to.include(pm.response.code));",
+                      "pm.test('Clôturée', () => pm.expect(pm.response.json().status).to.eql('CLOSED'));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Un type délivré invalide est refusé",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/sessions/{{s53cSessionId}}/certifications/{{s53cEnrollmentId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "sessions",
+                    "{{s53cSessionId}}",
+                    "certifications",
+                    "{{s53cEnrollmentId}}"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"kind\": \"DIPLOMA\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Un type délivré invalide est refusé : statut 400', () => pm.expect([400]).to.include(pm.response.code));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Délivrer un certificat (présence et note atteignent les seuils)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/sessions/{{s53cSessionId}}/certifications/{{s53cEnrollmentId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "sessions",
+                    "{{s53cSessionId}}",
+                    "certifications",
+                    "{{s53cEnrollmentId}}"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"kind\": \"CERTIFICATE\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Délivrer un certificat (présence et note atteignent les seuils) : statut 201', () => pm.expect([201]).to.include(pm.response.code));",
+                      "pm.test('Référence CERT-AAAA-NNNNNN, délivré', () => { const b = pm.response.json(); pm.expect(b.referenceNumber).to.match(/^CERT-\\d{4}-\\d{6}$/); pm.expect(b.status).to.eql('ISSUED'); pm.expect(b.kind).to.eql('CERTIFICATE'); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Délivrer une seconde fois : refusé (délivrance déjà existante)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/sessions/{{s53cSessionId}}/certifications/{{s53cEnrollmentId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "sessions",
+                    "{{s53cSessionId}}",
+                    "certifications",
+                    "{{s53cEnrollmentId}}"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"kind\": \"ATTESTATION\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Délivrer une seconde fois : refusé (délivrance déjà existante) : statut 422', () => pm.expect([422]).to.include(pm.response.code));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Feuille de délivrances : la certification apparaît",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/sessions/{{s53cSessionId}}/certifications",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "sessions",
+                    "{{s53cSessionId}}",
+                    "certifications"
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Feuille de délivrances : la certification apparaît : statut 200', () => pm.expect([200]).to.include(pm.response.code));",
+                      "pm.test('Un inscrit, certifié', () => { const b = pm.response.json(); pm.expect(b.rows).to.have.lengthOf(1); pm.expect(b.rows[0].certification.status).to.eql('ISSUED'); pm.expect(b.canIssue).to.eql(true); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Révoquer sans motif : refusé",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/sessions/{{s53cSessionId}}/certifications/{{s53cEnrollmentId}}/revoke",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "sessions",
+                    "{{s53cSessionId}}",
+                    "certifications",
+                    "{{s53cEnrollmentId}}",
+                    "revoke"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Révoquer sans motif : refusé : statut 400', () => pm.expect([400]).to.include(pm.response.code));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Révoquer avec motif",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/sessions/{{s53cSessionId}}/certifications/{{s53cEnrollmentId}}/revoke",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "sessions",
+                    "{{s53cSessionId}}",
+                    "certifications",
+                    "{{s53cEnrollmentId}}",
+                    "revoke"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"reason\": \"Erreur de saisie (parcours Postman)\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Révoquer avec motif : statut 200', () => pm.expect([200]).to.include(pm.response.code));",
+                      "pm.test('Révoqué, motif conservé', () => { const b = pm.response.json(); pm.expect(b.status).to.eql('REVOKED'); pm.expect(b.revokeReason).to.eql('Erreur de saisie (parcours Postman)'); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Délivrer de nouveau après révocation : refusé (une délivrance existe déjà pour cette inscription)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/sessions/{{s53cSessionId}}/certifications/{{s53cEnrollmentId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "sessions",
+                    "{{s53cSessionId}}",
+                    "certifications",
+                    "{{s53cEnrollmentId}}"
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"kind\": \"ATTESTATION\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Délivrer de nouveau après révocation : refusé (une délivrance existe déjà pour cette inscription) : statut 422', () => pm.expect([422]).to.include(pm.response.code));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Lire les suggestions d’ambassadeur (contrat ; cet inscrit est sans entreprise, aucune suggestion créée pour lui)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/ambassador-suggestions",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "ambassador-suggestions"
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Lire les suggestions d’ambassadeur (contrat ; cet inscrit est sans entreprise, aucune suggestion créée pour lui) : statut 200', () => pm.expect([200]).to.include(pm.response.code));",
+                      "pm.test('Liste', () => pm.expect(pm.response.json()).to.be.an('array'));"
+                    ]
+                  }
+                }
+              ]
+            }
+          ],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get('runId')) pm.collectionVariables.set('runId', Math.random().toString(36).slice(2, 8));"
+                ]
+              }
+            }
+          ]
         }
       ],
       "description": "Scénarios qui créent leurs propres données et vérifient les règles métier (agrément, payeur, portée). À lancer après la connexion, avec un compte qui a les droits (par exemple le Super administrateur de test)."

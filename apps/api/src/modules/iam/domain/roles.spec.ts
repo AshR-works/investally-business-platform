@@ -155,6 +155,14 @@ describe('Matrice rôles → permissions', () => {
     expect(hos?.scope).toBe(Scope.All);
   });
 
+  it('certifications (S5.3c) : le Responsable commercial lit en portée Équipe (filtrée par entreprise), le formateur en portée Propre', () => {
+    const scope = (role: RoleCode, permission: string) => resolveGrants(role).find((g) => g.permission === permission)?.scope;
+    expect(scope(RoleCode.HeadOfSales, 'training.certification.read')).toBe(Scope.Team);
+    expect(scope(RoleCode.Trainer, 'training.certification.read')).toBe(Scope.Own);
+    expect(scope(RoleCode.Direction, 'training.certification.read')).toBe(Scope.All);
+    expect(codesOf(RoleCode.AccountManager).filter((c) => c.startsWith('training.certification.'))).toEqual([]);
+  });
+
   it("ne donne jamais au formateur le droit de saisir ou lire les présences (S1/ADR-0016 : externe, sans compte)", () => {
     expect(codesOf(RoleCode.Trainer).filter((c) => c.startsWith('training.attendance.'))).toEqual([]);
   });

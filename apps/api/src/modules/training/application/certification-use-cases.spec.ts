@@ -54,6 +54,22 @@ describe('Délivrance d\'un certificat ou d\'une attestation (S5.3c, CU-I-60)', 
     await rejects(w.issueCertification.execute({ sessionId: planned.id, enrollmentId: enrolled.id, kind: 'ATTESTATION', access: inv, actor }), 'INVARIANT_VIOLATION', /clôturée/);
   });
 
+  it('refuse pour un inscrit non confirmé (annulé)', async () => {
+    const { w, planned, enrolled } = await setup();
+    const current = await w.getEnrollment.execute({ id: enrolled.id, access: inv });
+    await w.cancelEnrollment.execute({ id: enrolled.id, version: current.version, reason: 'Test', access: inv, actor });
+    await w.close.execute({ id: planned.id, version: 1, actor });
+    await rejects(w.issueCertification.execute({ sessionId: planned.id, enrollmentId: enrolled.id, kind: 'ATTESTATION', access: inv, actor }), 'INVARIANT_VIOLATION', /confirmés/);
+  });
+
+  it('refuse une inscription qui n\'est pas celle de la session visée', async () => {
+    const { w, planned, enrolled } = await setupClosed();
+    const otherSession = await w.plan.execute({ trainingId: w.certTrading.id, rhythm: 'DAY', startDate: '2026-11-23', roomId: w.salleMarches.id, trainerId: w.interne.id, capacity: 5, actor });
+    await w.open.execute({ id: otherSession.id, version: 1, actor });
+    await w.close.execute({ id: otherSession.id, version: 1, actor });
+    await rejects(w.issueCertification.execute({ sessionId: otherSession.id, enrollmentId: enrolled.id, kind: 'ATTESTATION', access: inv, actor }), 'NOT_FOUND', /Inscription introuvable/);
+  });
+
   it('refuse un certificat si la note n\'atteint pas le seuil, même avec la présence', async () => {
     const { w, planned, enrolled } = await setup();
     await w.recordEvaluation.execute({ sessionId: planned.id, enrollmentId: enrolled.id, score: 5, access: inv, actor }); // sous le seuil (10)
@@ -110,6 +126,16 @@ describe('Révocation (CU-I-61)', () => {
 });
 
 describe('Feuille de délivrances (portée du formateur)', () => {
+  it('trie les lignes par nom d\'apprenant', async () => {
+    const { w, planned, enrolled: aicha } = await setup();
+    const brice = await w.registerLearner.execute({ companyId: 'c1', lastName: 'Sarr', firstName: 'Brice', access: am, actor });
+    const enrolledBrice = await w.enroll.execute({ sessionId: planned.id, learnerId: brice.id, approvalId: 'ap-places', access: am, actor });
+    await w.confirm.execute({ id: enrolledBrice.id, version: 1, access: inv, actor });
+    await w.close.execute({ id: planned.id, version: 1, actor });
+    const sheet = await w.certificationSheet.execute({ sessionId: planned.id, access: inv });
+    expect(sheet.rows.map((r) => r.learnerName)).toEqual(['Aïcha Mbarga', 'Brice Sarr']);
+  });
+
   it('le formateur lié ne voit que ses propres sessions ; une autre session est « introuvable »', async () => {
     const { w, planned } = await setupClosed();
     const trainerUser = as(RoleCode.Trainer, 'user-ida'); // lié au formateur « interne » du monde de test

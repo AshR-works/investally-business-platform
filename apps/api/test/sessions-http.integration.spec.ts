@@ -3,6 +3,8 @@ import { randomUUID } from 'node:crypto';
 import { RoleCode } from '../src/modules/iam/domain/roles';
 import { Attendance } from '../src/modules/training/domain/attendance';
 import { ATTENDANCE_REPOSITORY, AttendanceRepository } from '../src/modules/training/domain/attendance-repositories';
+import { Certification } from '../src/modules/training/domain/certification';
+import { CERTIFICATION_REPOSITORY, CertificationRepository } from '../src/modules/training/domain/certification-repositories';
 import { Evaluation } from '../src/modules/training/domain/evaluation';
 import { EVALUATION_REPOSITORY, EvaluationRepository, TRAINING_THRESHOLDS_REPOSITORY, TrainingThresholdsRepository } from '../src/modules/training/domain/evaluation-repositories';
 import { SESSION_REPOSITORY, SessionRepository } from '../src/modules/training/domain/session-repositories';
@@ -590,6 +592,7 @@ describeDb('Sessions de formation (HTTP + PostgreSQL)', () => {
     const am = await login(RoleCode.AccountManager);
     expect((await api.call('GET', `/api/v1/sessions/${s.id}/certifications`, direction)).status).toBe(200);
     expect((await api.call('POST', `/api/v1/sessions/${s.id}/certifications/${enrollmentId}`, { ...direction, body: { kind: 'ATTESTATION' } })).status).toBe(403);
+    expect((await api.call('POST', `/api/v1/sessions/${s.id}/certifications/${enrollmentId}/revoke`, { ...direction, body: { reason: 'Test' } })).status).toBe(403);
     expect((await api.call('GET', `/api/v1/sessions/${s.id}/certifications`, am)).status).toBe(403);
 
     // Le formateur lié ne voit que ses propres sessions.
@@ -611,6 +614,12 @@ describeDb('Sessions de formation (HTTP + PostgreSQL)', () => {
     const now = new Date();
     await db.certification.create({ data: { id: randomUUID(), enrollmentId, kind: 'ATTESTATION', referenceNumber: `TEST-${unique()}`, issuedByUserId: w.manager.userId, issuedAt: now } });
     await expect(db.certification.create({ data: { id: randomUUID(), enrollmentId, kind: 'ATTESTATION', referenceNumber: `TEST-${unique()}`, issuedByUserId: w.manager.userId, issuedAt: now } })).rejects.toThrow(/certifications_enrollment_id_key/);
+    // Le dépôt lui-même convertit le conflit d'unicité en erreur de domaine (pas seulement le cas d'usage, qui vérifie déjà l'existence avant d'appeler le dépôt).
+    const certifications = t.get(CERTIFICATION_REPOSITORY as never) as CertificationRepository;
+    const concurrent = Certification.issue({ id: randomUUID(), enrollmentId, kind: 'ATTESTATION', referenceNumber: `TEST-${unique()}`, issuedByUserId: w.manager.userId, now });
+    await expect(certifications.save(concurrent)).rejects.toMatchObject({ code: 'CONFLICT' });
+    // Le numéro de référence avance à chaque appel : jamais le même deux fois.
+    expect(await certifications.nextReferenceNumber()).not.toBe(await certifications.nextReferenceNumber());
     await expect(
       db.certification.create({ data: { id: randomUUID(), enrollmentId: '00000000-0000-7000-8000-000000000000', kind: 'ATTESTATION', referenceNumber: `TEST-${unique()}`, issuedByUserId: w.manager.userId, issuedAt: now } }),
     ).rejects.toThrow();
@@ -624,6 +633,10 @@ describeDb('Sessions de formation (HTTP + PostgreSQL)', () => {
     // Cohérence de la révocation : révoquée sans auteur/date/motif, ou délivrée avec l'un d'eux renseigné, est refusée.
     await expect(db.certification.update({ where: { enrollmentId }, data: { status: 'REVOKED' } })).rejects.toThrow(/certifications_revoke_coherent/);
     await expect(db.certification.update({ where: { enrollmentId }, data: { revokedByUserId: w.manager.userId } })).rejects.toThrow(/certifications_revoke_coherent/);
+    // L'inscription d'une suggestion d'ambassadeur est, elle aussi, contrôlée par la base.
+    await expect(
+      db.ambassadorSuggestion.create({ data: { id: randomUUID(), enrollmentId: '00000000-0000-7000-8000-000000000000', learnerId: randomUUID(), companyId: randomUUID(), ownerUserId: w.manager.userId } }),
+    ).rejects.toThrow(/ambassador_suggestions_enrollment_id_fkey/);
   });
 
   it('suggestions d\'ambassadeur (CU-I-62, S8) : lecture scindée des droits sur les certifications', async () => {
