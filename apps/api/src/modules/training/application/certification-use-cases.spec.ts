@@ -135,7 +135,7 @@ describe('Suggestions d\'ambassadeur (CU-I-62, S8)', () => {
     await w.issueCertification.execute({ sessionId: planned.id, enrollmentId: enrolled.id, kind: 'CERTIFICATE', access: inv, actor });
     const mine = await w.ambassadorSuggestionsHandler.execute({ access: am });
     expect(mine).toHaveLength(1);
-    expect(mine[0]).toMatchObject({ companyId: 'c1' });
+    expect(mine[0]).toMatchObject({ companyId: 'c1', companyName: 'Banque Test', learnerName: 'Aïcha Mbarga' });
     const other = await w.ambassadorSuggestionsHandler.execute({ access: as(RoleCode.AccountManager, 'am2') });
     expect(other).toHaveLength(0);
   });

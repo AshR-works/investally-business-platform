@@ -36,13 +36,16 @@ export interface CertificationSheetView {
   canIssue: boolean;
 }
 
+/** Le nom de l'apprenant et celui de l'entreprise sont résolus à la lecture (jamais stockés ici : ils peuvent changer après la suggestion). */
 export interface AmbassadorSuggestionView {
   id: string;
   learnerId: string;
+  learnerName: string;
   companyId: string;
+  companyName: string;
   createdAt: string;
 }
 
-export const toAmbassadorSuggestionView = (s: AmbassadorSuggestion): AmbassadorSuggestionView => ({
-  id: s.id, learnerId: s.learnerId, companyId: s.companyId, createdAt: s.createdAt.toISOString(),
+export const toAmbassadorSuggestionView = (s: AmbassadorSuggestion, learnerName: string, companyName: string): AmbassadorSuggestionView => ({
+  id: s.id, learnerId: s.learnerId, learnerName, companyId: s.companyId, companyName, createdAt: s.createdAt.toISOString(),
 });
