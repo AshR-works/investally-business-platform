@@ -41,6 +41,7 @@ export class IssueCertificationUseCase {
   constructor(
     @Inject(SESSION_REPOSITORY) private readonly sessions: SessionRepository,
     @Inject(ENROLLMENT_REPOSITORY) private readonly enrollments: EnrollmentRepository,
+    @Inject(LEARNER_REPOSITORY) private readonly learners: LearnerRepository,
     @Inject(EVALUATION_REPOSITORY) private readonly evaluations: EvaluationRepository,
     @Inject(ATTENDANCE_REPOSITORY) private readonly attendances: AttendanceRepository,
     @Inject(TRAINING_THRESHOLDS_REPOSITORY) private readonly thresholds: TrainingThresholdsRepository,
@@ -87,7 +88,9 @@ export class IssueCertificationUseCase {
         if (company?.ownerUserId) {
           const suggestion = AmbassadorSuggestion.create({ id: this.ids.next(), enrollmentId: enrollment.id, learnerId: enrollment.learnerId, companyId: enrollment.companyId, ownerUserId: company.ownerUserId, now });
           await this.suggestions.save(suggestion);
-          await this.audit.record({ actor: command.actor, module: 'training', entityType: 'AmbassadorSuggestion', entityId: suggestion.id, action: AuditAction.Create, newValue: { ...toAmbassadorSuggestionView(suggestion) } });
+          const names = await this.learners.namesOf([enrollment.learnerId]);
+          const suggestionView = toAmbassadorSuggestionView(suggestion, names.get(enrollment.learnerId) ?? '', company.name);
+          await this.audit.record({ actor: command.actor, module: 'training', entityType: 'AmbassadorSuggestion', entityId: suggestion.id, action: AuditAction.Create, newValue: { ...suggestionView } });
         }
       }
       return view;
@@ -178,12 +181,19 @@ export class GetCertificationSheetHandler {
 /** Suggestions d'ambassadeur du chargé de compte (CU-I-62, S8) : jamais de lecture des certifications depuis cette liste. */
 @Injectable()
 export class GetAmbassadorSuggestionsHandler {
-  constructor(@Inject(AMBASSADOR_SUGGESTION_REPOSITORY) private readonly suggestions: AmbassadorSuggestionRepository) {}
+  constructor(
+    @Inject(AMBASSADOR_SUGGESTION_REPOSITORY) private readonly suggestions: AmbassadorSuggestionRepository,
+    @Inject(LEARNER_REPOSITORY) private readonly learners: LearnerRepository,
+    @Inject(COMPANY_DIRECTORY) private readonly directory: CompanyDirectory,
+  ) {}
 
   async execute(query: { access: AccessContext }): Promise<AmbassadorSuggestionView[]> {
     const visibility = visibilityFor(query.access, 'bd.ambassador.read');
     if (!visibility.unrestricted && visibility.ownerIds.length === 0) throw new DomainError('FORBIDDEN', "Vous n'avez pas le droit de voir les suggestions d'ambassadeur");
     const rows = await this.suggestions.forOwners(visibility.unrestricted ? 'all' : visibility.ownerIds);
-    return rows.map(toAmbassadorSuggestionView);
+    const names = await this.learners.namesOf(rows.map((s) => s.learnerId));
+    const companyNames = new Map<string, string>();
+    for (const companyId of new Set(rows.map((s) => s.companyId))) companyNames.set(companyId, (await this.directory.company(companyId))?.name ?? '');
+    return rows.map((s) => toAmbassadorSuggestionView(s, names.get(s.learnerId) ?? '', companyNames.get(s.companyId) ?? ''));
   }
 }

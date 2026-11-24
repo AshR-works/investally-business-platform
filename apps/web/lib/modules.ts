@@ -37,6 +37,7 @@ export const MODULES: readonly AppModule[] = [
   { id: 'followups', label: 'Relances', description: 'Relances à faire sur les offres', icon: 'cal', group: 'CRM', href: '/followups', permission: 'bd.followup.read' },
   { id: 'agenda', label: 'Agenda', description: 'Rendez-vous et visites', icon: 'cal', group: 'CRM', href: '/agenda', permission: 'bd.appointment.read' },
   { id: 'ambassadors', label: 'Ambassadeurs', description: 'Clients et apprenants relais commerciaux', icon: 'users', group: 'CRM', href: '/ambassadors', permission: 'bd.ambassador.read' },
+  { id: 'ambassador-suggestions', label: 'Suggestions d’ambassadeur', description: 'Apprenants certifiés à envisager comme ambassadeurs, sans accès à leur certification', icon: 'users', group: 'CRM', href: '/ambassadors/suggestions', permission: 'bd.ambassador.read' },
   { id: 'training', label: 'Catalogue', description: 'Programmes, certificats, modules, salles et formateurs', icon: 'cap', group: 'Investudy', href: '/training', permission: 'training.program.read' },
   { id: 'sessions', label: 'Sessions de formation', description: 'Planifier, ouvrir, reporter et annuler les sessions', icon: 'cal', group: 'Investudy', href: '/training/sessions', permission: 'training.session.read' },
   { id: 'enrollments', label: 'Inscriptions', description: 'Inscriptions aux sessions : confirmer, annuler, replacer', icon: 'doc', group: 'Investudy', href: '/training/enrollments', permission: 'training.enrollment.read' },

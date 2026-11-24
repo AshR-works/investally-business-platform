@@ -8,6 +8,7 @@ import { Card } from '../../../../../components/data/card';
 import { PageHeader } from '../../../../../components/data/page-header';
 import { PageHeading } from '../../../../../components/page-heading';
 import { AttendanceSheetTable } from '../../../../../components/training/attendance-sheet';
+import { CertificationSheetTable } from '../../../../../components/training/certification-sheet';
 import { EnrollmentDialogs, type EnrollmentDialogState } from '../../../../../components/training/enrollment-dialogs';
 import { EvaluationSheetTable } from '../../../../../components/training/evaluation-sheet';
 import { EnrollmentsTable } from '../../../../../components/training/enrollments-table';
@@ -21,10 +22,10 @@ import { dateText, periodText, SESSION_PERMISSIONS, SESSION_PHASE_LABEL, SESSION
 import { ROOM_KIND_LABEL } from '../../../../../lib/catalogue';
 
 /**
- * Fiche d'une session (S5.2b, puis clôture et présences S5.3a, évaluations et seuils S5.3b) : le certificat et ses modules, les dates, la
- * salle, le formateur, la jauge de places, la liste des inscrits, la feuille de présence et la feuille d'évaluation par séance (note,
- * taux de présence, suggestion d'éligibilité — jamais de délivrance, lot c). Le formateur n'ouvre que ses propres sessions (le serveur
- * répond « introuvable » sinon).
+ * Fiche d'une session (S5.2b, puis clôture et présences S5.3a, évaluations et seuils S5.3b, certificats et attestations S5.3c) : le
+ * certificat et ses modules, les dates, la salle, le formateur, la jauge de places, la liste des inscrits, la feuille de présence,
+ * d'évaluation et de délivrance. Délivrer ou révoquer reste une décision manuelle du responsable Investudy, seulement une fois la
+ * session clôturée. Le formateur n'ouvre que ses propres sessions (le serveur répond « introuvable » sinon).
  */
 export default function SessionSheetPage() {
   const { id } = useParams<{ id: string }>();
@@ -113,6 +114,7 @@ export default function SessionSheetPage() {
       <EnrollmentsTable caption={`Inscriptions à la session ${session.trainingTitle} du ${dateText(session.startDate)}`} sessionId={session.id} refreshKey={refresh} onChanged={() => { void load(); setRefresh((n) => n + 1); }} />
       {session.status !== 'PLANNED' && session.status !== 'CANCELLED' && <AttendanceSheetTable sessionId={session.id} refreshKey={refresh} />}
       {session.status !== 'PLANNED' && session.status !== 'CANCELLED' && <EvaluationSheetTable sessionId={session.id} refreshKey={refresh} />}
+      {session.status !== 'PLANNED' && session.status !== 'CANCELLED' && <CertificationSheetTable sessionId={session.id} refreshKey={refresh} />}
       <EnrollmentDialogs dialog={dialog} onClose={() => setDialog(null)} onDone={refreshAll} />
       <SessionDialogs dialog={sessionDialog} onClose={() => setSessionDialog(null)} onDone={refreshAll} />
     </>

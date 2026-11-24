@@ -18,8 +18,8 @@ const PREFIX = 'ambassador';
  * toujours une **décision manuelle** du chargé de compte. L'origine ne se modifie pas ; un client est rattaché à son entreprise,
  * choisie parmi celles de sa portée. Champs non conformes en surbrillance après une première tentative d'envoi (EXD-16).
  */
-export function AmbassadorDialog({ ambassador, onClose, onDone }: { ambassador?: Ambassador; onClose: () => void; onDone: () => Promise<void> }) {
-  const [form, setForm] = useState<AmbassadorForm>(() => (ambassador ? formFromAmbassador(ambassador) : EMPTY_AMBASSADOR_FORM()));
+export function AmbassadorDialog({ ambassador, initial, initialCompanyName, onClose, onDone }: { ambassador?: Ambassador; initial?: Partial<AmbassadorForm>; initialCompanyName?: string; onClose: () => void; onDone: () => Promise<void> }) {
+  const [form, setForm] = useState<AmbassadorForm>(() => (ambassador ? formFromAmbassador(ambassador) : { ...EMPTY_AMBASSADOR_FORM(), ...initial }));
   const [companies, setCompanies] = useState<Company[]>([]);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -80,6 +80,7 @@ export function AmbassadorDialog({ ambassador, onClose, onDone }: { ambassador?:
               <option value="">{companyRequired ? '— Choisir —' : '— Aucune —'}</option>
               {companies.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
               {ambassador?.companyId && !companies.some((c) => c.id === ambassador.companyId) && <option value={ambassador.companyId}>{ambassador.companyName}</option>}
+              {!ambassador && form.companyId && !companies.some((c) => c.id === form.companyId) && <option value={form.companyId}>{initialCompanyName}</option>}
             </select>
           </FormField>
           <FormField prefix={PREFIX} name="email" label="E-mail" error={errors.email}>
