@@ -24,7 +24,12 @@ allowBuilds:
 # Correctif de sécurité (audit du 2026-11-17, D73) : lodash vulnérable (injection de code via _.template),
 # dépendance indirecte de prisma (devDependency, outil Studio local, jamais exécuté dans l'API déployée).
 # À retirer quand @prisma/studio-core embarquera lodash >=4.18.1.
+# Correctifs de sécurité (audit du 2026-11-24, D78) : effect (ReDoS) et fast-uri (usurpation/confusion d'URI),
+# dépendances indirectes de prisma (devDependency : @prisma/config, @prisma/dev), jamais exécutées dans l'API déployée.
+# À retirer quand prisma embarquera ces versions corrigées.
 overrides:
   body-parser: '>=2.4.0'
   multer: '>=2.5.0'
   lodash@<4.18.1: '>=4.18.1'
+  effect@<3.22.1: '>=3.22.1'
+  fast-uri@<3.1.9: '>=3.1.9'

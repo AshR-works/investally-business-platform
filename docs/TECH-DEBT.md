@@ -190,6 +190,7 @@
 | D187 | **Week-ends et jours fériés non contrôlés** : on peut déclarer un dimanche ; les fenêtres de saisie (7 jours en arrière et 30 en avant pour l'employé, 90 et 90 pour la RH) et la liste des trois modes sont des valeurs de départ « à confirmer » | RH-4a | Henri Bebey | Faible |
 | D188 | **Lecture limitée aux subordonnés directs** (organigramme, D58) : pas la descendance entière ; une demi-journée d'absence ou une demande en attente n'apparaît pas dans les jours d'absence du tableau | RH-4a | Henri Bebey | Faible |
 | D189 | **Durée de conservation des présences non définie** : aucune purge ; à valider avec l'avis juridique (D11, D65) avant la mise en production | RH-4a | Henri Bebey | Moyenne |
+| D190 | **`glob` et `minimatch` vulnérables (modérée, déni de service)** via `jest` (`babel-plugin-istanbul`) : outillage de test seul, jamais exécuté dans l'application déployée. Correctif disponible mais en version majeure (risque de casser la couverture de code de jest) ; `js-yaml` (D6) dans le même état (déjà accepté) | D78 | Henri Bebey | Risque accepté ; revoir si jest publie une version qui embarque les versions corrigées sans changement majeur |
 | D105 | **Le statut « Cliente » n'est posé par rien** tant que l'agrément n'existe pas ; une entreprise ne peut donc pas encore devenir cliente | S4.3b | Henri Bebey | *Soldée par S4.4a* : l'agrément reçu pose « Cliente » |
 | D5 | Hypothèses de charge et de périmètre non confirmées | Phase 3 | Revue à la fin de S1 avec les chiffres réels | Ouverte |
 
