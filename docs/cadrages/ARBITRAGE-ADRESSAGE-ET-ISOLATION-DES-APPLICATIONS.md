@@ -5,6 +5,8 @@
 ## 1. La question
 Les applications métier doivent-elles être servies à **trois ou quatre adresses différentes**, ou **à une seule adresse qui les héberge toutes** ? La Direction générale pose une **exigence ferme** : les différentes applications ne doivent **pas être exposées les unes aux autres**.
 
+**Précision de la Direction produit (2026-11-25) :** le DG a envisagé des **applications accessibles via des adresses différentes** ; l'idée de « métiers séparés » est la conclusion que la Direction produit en a tirée. Cela rend l'option 3 (une adresse par application) plus conforme à ce que le DG a lui-même imaginé, sans que sa raison soit connue (isolation technique ou simple organisation).
+
 Point à clarifier : le nombre d'applications. Quatre métiers ont été cités (CRM avec Investudy, RH, Assets Management, Finances) ; la question parle de trois. Cet arbitrage raisonne sur quatre.
 
 Lecture retenue de l'exigence : **la compromission ou la panne d'une application ne donne accès ni aux données ni aux sessions d'une autre.** Elle est traitée comme une condition d'entrée, non comme un critère noté.

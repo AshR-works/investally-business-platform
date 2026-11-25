@@ -3,7 +3,7 @@
 *2026-11-25 · Méthode : [METHODE-D-ARBITRAGE](../METHODE-D-ARBITRAGE.md) (options dont le statu quo, grille recalculée, recommandation, **décision laissée à la Direction produit**). **Aucun code n'est écrit** tant que la décision n'est pas prise. Les notes de la grille sont des jugements de l'équipe technique, à contester. Cet arbitrage doit être lu avec [ARBITRAGE-ADRESSAGE-ET-ISOLATION-DES-APPLICATIONS](ARBITRAGE-ADRESSAGE-ET-ISOLATION-DES-APPLICATIONS.md), qui le **rouvre en partie**.*
 
 ## 1. La question
-Quelle architecture donner à la restructuration demandée par la Direction générale après la démonstration du 2026-11-25 : une application proche d'un **intranet**, avec les **métiers séparés** ?
+Quelle architecture donner à la restructuration demandée par la Direction générale après la démonstration du 2026-11-25 : une application proche d'un **intranet**, avec des **applications accessibles à des adresses différentes** ? *Précision de la Direction produit : le DG a envisagé des applications à des adresses différentes ; la notion de « métiers séparés » est la conclusion que la Direction produit en a tirée, pas une formulation du DG.*
 
 Quatre métiers prioritaires :
 - **CRM**, qui absorbe Investudy ; ses menus multiples laissent place à une entrée qui condense les choix prioritaires.
@@ -22,7 +22,7 @@ L'état actuel est conservé et archivé sous le nom « Investally BP - Beta » 
 | Hébergement : serveur virtuel avec Docker Compose | D63 |
 | Développeur seul ; le patron d'échange entre modules et le système de notifications entre utilisateurs ont été **reportés** | Décision du 2026-11-24 |
 | Le menu compte sept domaines (CRM, Investudy, Finance, RH, Stocks, Reporting, Administration) | D51 |
-| Hypothèse de départ : « séparés » veut dire séparés pour les droits et la navigation, pas déployés séparément | **À confirmer — voir l'arbitrage d'adressage** |
+| Hypothèse de départ : « séparés » veut dire séparés pour les droits et la navigation, pas déployés séparément | **Probablement fausse** : le DG a envisagé des applications à des adresses différentes — voir l'arbitrage d'adressage |
 
 ## 3. Options
 | | Principe | Réversibilité |
