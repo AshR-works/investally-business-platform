@@ -3,7 +3,7 @@
 *Préparé le 2026-11-25 pour l'entretien avec la Direction générale. Document de travail : les propositions ci-dessous ne sont pas des décisions. Le détail technique de chaque point est dans les cinq arbitrages de [l'index des cadrages](README.md).*
 
 ## 1. L'essentiel en une page
-- **Ce qui est fait :** l'application couvre déjà l'accès sécurisé, le commercial, la formation Investudy et une grande partie des ressources humaines. Cette version est **archivée telle quelle** sous le nom « Investally BP - Beta » : la restructuration n'en détruit rien.
+- **Ce qui est fait :** l'application couvre déjà l'accès sécurisé, le suivi commercial, la formation Investudy et une grande partie des ressources humaines, mais pas encore les tableaux de bord. Cette version est **archivée telle quelle** sous le nom « Investally BP - Beta » : la restructuration n'en détruit rien.
 - **Ce que vous avez demandé :** une application proche d'un intranet, organisée en quatre plateformes (CRM qui absorbe Investudy, RH, Assets Management, Finances), chacune accessible par un lien propre et sans être exposée aux autres.
 - **Ce que nous proposons :** une connexion commune, un lien propre par plateforme, un compte qui n'ouvre que ce à quoi il a droit, une supervision qui voit que tout fonctionne sans lire les données des agents, et des échanges limités et contrôlés entre plateformes.
 - **Ce qu'il nous faut de vous :** huit réponses courtes (section 5). Sans elles, nous ne pouvons pas arrêter l'architecture.
@@ -13,13 +13,14 @@
 | Domaine | Ce qui est livré |
 |---|---|
 | **Accès et sécurité** | Connexion avec second facteur obligatoire pour tous, gestion des sessions, droits par rôle, journal d'audit, exports d'administration |
-| **Commercial (CRM)** | Entreprises, contacts, offres, relances, agenda, opportunités, agréments, ambassadeurs, commissions : module terminé |
-| **Investudy** | Catalogue, sessions, inscriptions, présences, évaluations, certificats et attestations, suggestions d'ambassadeur : module terminé |
+| **Commercial (CRM)** | Suivi des entreprises, contacts, opportunités, offres, agréments, relances, agenda, ambassadeurs et commissions livrés. **À venir** : tableaux de bord, rappels automatiques, lien avec Outlook |
+| **Investudy** | Catalogue, sessions, inscriptions, présences, évaluations, certificats et attestations, suggestions d'ambassadeur livrés. **À venir** : tableaux de bord |
 | **Ressources humaines** | Annuaire, organigramme, fiches du personnel, absences et congés, contrats, parcours d'intégration et de départ, présences déclaratives |
 | **Qualité** | Tests automatisés tous verts (environ 1 560 côté serveur, 844 côté interface) ; sur le dernier lot, 31 fautes volontairement injectées, toutes détectées ; un parcours complet de 514 requêtes sans échec |
 
 **À dire honnêtement :**
 - Les données de la démonstration sont **fictives**.
+- Plusieurs règles du commercial (agréments, commissions, offres) sont appliquées avec des valeurs par défaut que la Direction produit n'a pas encore confirmées.
 - Les certificats délivrés sont des documents internes : la note sur 20 est une appréciation du responsable, pas un examen certifiant par un tiers.
 - **Pas encore réalisés :** les tableaux de bord, la gestion des équipements (Assets), les Finances, le reporting.
 - **En attente d'éléments extérieurs :** l'envoi réel des e-mails (accès à la messagerie), l'avis juridique sur la conservation des données, un second administrateur nominatif, les logos officiels.
