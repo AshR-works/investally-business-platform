@@ -1,0 +1,80 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Arbitrage — échanges et événements entre les plateformes (informations transversales, audit, indicateurs, notifications)</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — cadrages · <a href="README.html">Index des cadrages</a> · <a href="../INDEX.html">Documentation</a> · <a href="../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../design/05-AIDE-A-LA-DECISION.html">Aide à la décision</a></nav><h1>Arbitrage — échanges et événements entre les plateformes (informations transversales, audit, indicateurs, notifications)</h1>
+<p><em>2026-11-25 · Méthode : <a href="../METHODE-D-ARBITRAGE.html">METHODE-D-ARBITRAGE</a> (options dont le statu quo, grille recalculée, recommandation, <strong>décision laissée à la Direction produit</strong>). <strong>Aucun code n'est écrit</strong> tant que la décision n'est pas prise. Les notes de la grille sont des jugements de l'équipe technique, à contester. À lire avec <a href="ARBITRAGE-ARCHITECTURE-RESTRUCTURATION.html">ARBITRAGE-ARCHITECTURE-RESTRUCTURATION</a>, <a href="ARBITRAGE-ADRESSAGE-ET-ISOLATION-DES-APPLICATIONS.html">ARBITRAGE-ADRESSAGE-ET-ISOLATION-DES-APPLICATIONS</a>, <a href="ARBITRAGE-PARCOURS-D-ENTREE-AUX-APPLICATIONS.html">ARBITRAGE-PARCOURS-D-ENTREE-AUX-APPLICATIONS</a> et <a href="ARBITRAGE-ADMINISTRATION-ET-SUPERVISION-DES-PLATEFORMES.html">ARBITRAGE-ADMINISTRATION-ET-SUPERVISION-DES-PLATEFORMES</a>, toujours en attente de décision.</em></p>
+<h2>1. La question</h2>
+<p>Quatre plateformes isolées (CRM avec Investudy, RH, Finances, Assets Management) ne s'exposent pas les unes aux autres, c'est l'exigence du DG. Comment échangent-elles pourtant les informations et les événements dont elles ont besoin ?</p>
+<p>Quatre sortes de flux sont concernées :</p>
+<ul><li>la <strong>supervision technique</strong>, y compris le journal d'audit ;</li><li>les <strong>données métier partagées</strong> (un employé RH utilisé par Assets, des commissions du CRM reprises en Finances, le budget d'une formation externe) ;</li><li>les <strong>indicateurs pour la Direction</strong> (tableaux de bord sur plusieurs métiers) ;</li><li>les <strong>notifications entre utilisateurs</strong> (validations, communications).</li></ul>
+<p>Cet arbitrage reprend deux points reportés le 2026-11-24 (le patron d'échange entre modules, le système de notifications) et la question encore sans réponse : le DG accepte-t-il que de petites informations circulent entre plateformes, sous contrôle ?</p>
+<h2>2. Ce qui existe et ce qui contraint</h2>
+<div class="table-wrap"><table><thead><tr><th>Fait</th><th>Source</th></tr></thead><tbody>
+<tr><td>Les modules communiquent aujourd'hui <strong>dans un seul processus</strong> ; la suggestion d'ambassadeur est créée par appel direct dans le cas d'usage de délivrance (précédent, non encore généralisé)</td><td>D77</td></tr>
+<tr><td>Les modules se référencent par identifiant, sans clé étrangère entre schémas</td><td>D161</td></tr>
+<tr><td>Le journal d'audit enregistre l'<strong>avant et l'après</strong> de chaque modification, donc des données métier</td><td>État actuel</td></tr>
+<tr><td>Aucune notification entre utilisateurs ; e-mails sans file durable</td><td>Valeur par défaut V8, D11, D26</td></tr>
+<tr><td>Les plateformes sont isolées, avec une identité centrale ; le superviseur lit sans écrire et <strong>sans le contenu des données</strong> (option C de l'administration, recommandée)</td><td>Arbitrages d'adressage et d'administration</td></tr>
+<tr><td>Besoins identifiés, à confirmer : employé RH vers Assets, commissions CRM vers Finances, budget d'une formation externe RH vers Finances (contenu à préciser avec la direction financière)</td><td>Retours du DG</td></tr>
+<tr><td>Développeur seul</td><td>—</td></tr>
+</tbody></table></div>
+<h2>3. Options</h2>
+<div class="table-wrap"><table><thead><tr><th></th><th>Principe</th><th>Respecte l'exigence du DG ?</th></tr></thead><tbody>
+<tr><td><strong>0. Statu quo</strong></td><td>Appels internes dans un seul processus</td><td><strong>Non</strong> : impossible avec des plateformes séparées</td></tr>
+<tr><td><strong>A. Aucun échange automatique</strong></td><td>Plateformes totalement étanches ; ressaisie à la main, exports et imports</td><td><strong>Oui</strong></td></tr>
+<tr><td><strong>B. Boîte d'envoi et interface interne signée</strong></td><td>Chaque plateforme publie des événements d'une liste fermée dans sa boîte d'envoi, une interface interne signée les transmet ; pas d'outil de plus</td><td><strong>Oui, sous contrôle</strong> : un seul canal, aucune lecture directe</td></tr>
+<tr><td><strong>C. Courtier de messages</strong></td><td>Un service de messagerie dédié entre les plateformes</td><td><strong>Oui, sous contrôle</strong></td></tr>
+<tr><td><strong>D. Accès libre</strong></td><td>Appels libres entre plateformes ou base de données partagée</td><td><strong>Non</strong> : chaque plateforme voit les autres</td></tr>
+</tbody></table></div>
+<h2>4. Grille (poids de 1 à 5, maximum 100)</h2>
+<div class="table-wrap"><table><thead><tr><th>Critère (poids)</th><th>0</th><th>A</th><th>B</th><th>C</th><th>D</th></tr></thead><tbody>
+<tr><td>Respect de l'exigence de non-exposition (5)</td><td>1</td><td>5</td><td>4</td><td>4</td><td>1</td></tr>
+<tr><td>Couverture des besoins : données partagées, supervision, indicateurs, notifications (5)</td><td>5</td><td>1</td><td>4</td><td>5</td><td>5</td></tr>
+<tr><td>Charge et délai pour un développeur seul (4)</td><td>5</td><td>5</td><td>3</td><td>2</td><td>4</td></tr>
+<tr><td>Fiabilité : un événement n'est ni perdu ni traité deux fois (3)</td><td>4</td><td>2</td><td>4</td><td>5</td><td>3</td></tr>
+<tr><td>Exploitation : peu d'infrastructure à surveiller (3)</td><td>5</td><td>5</td><td>4</td><td>2</td><td>3</td></tr>
+<tr><td><strong>Total</strong></td><td><strong>77</strong></td><td><strong>71</strong></td><td><strong>76</strong></td><td><strong>74</strong></td><td><strong>64</strong></td></tr>
+</tbody></table></div>
+<p>Totaux recalculés : 0 = 5 + 25 + 20 + 12 + 15 ; A = 25 + 5 + 20 + 6 + 15 ; B = 20 + 20 + 12 + 12 + 12 ; C = 20 + 25 + 8 + 15 + 6 ; D = 5 + 25 + 16 + 9 + 9.</p>
+<p><strong>L'option 0 arrive en tête mais elle est exclue</strong> : elle échoue à l'exigence ferme du DG et n'est pas applicable à des plateformes séparées, ce que la grille ne peut pas exprimer comme un score. D est exclue pour la même raison. Entre B et C, <strong>l'écart est de deux points</strong> : la grille ne les départage pas nettement.</p>
+<h2>5. Principes du contrat d'échange (valables pour B et C)</h2>
+<ul><li><strong>Un propriétaire par donnée</strong> : une seule plateforme la modifie et la publie ; les autres la reçoivent.</li><li><strong>Une liste fermée d'événements</strong>, versionnée, chacun documenté et validé ; ajouter un événement est une décision.</li><li><strong>Contenu minimal</strong> : une référence et les champs strictement nécessaires ; jamais l'avant/après complet ; jamais de donnée sensible RH.</li><li><strong>Copie de lecture</strong> : la plateforme destinataire garde ce dont elle a besoin ; elle n'accède jamais à la base d'une autre.</li><li><strong>Idempotence et reprise</strong> : chaque événement a un identifiant ; le traiter deux fois ne change rien ; un échec se rejoue.</li><li><strong>Authentification entre plateformes</strong> : un jeton de service propre à chaque plateforme, limité aux événements autorisés.</li></ul>
+<p>Événements candidats (à valider) :</p>
+<div class="table-wrap"><table><thead><tr><th>Événement</th><th>De</th><th>Vers</th><th>Contenu (indicatif)</th></tr></thead><tbody>
+<tr><td>Employé créé, modifié, sorti</td><td>RH</td><td>Assets</td><td>Identifiant, nom, service, responsable</td></tr>
+<tr><td>Commission due, débloquée, versée</td><td>CRM</td><td>Finances</td><td>Référence, montant, devise, statut</td></tr>
+<tr><td>Formation externe approuvée</td><td>RH</td><td>Finances</td><td>Référence, montant : <strong>à préciser avec la direction financière</strong></td></tr>
+<tr><td>Signaux techniques (erreurs, état, audit expurgé)</td><td>Toutes</td><td>Supervision</td><td>Plateforme, type, heure, acteur, type d'objet et identifiant opaque : <strong>jamais les valeurs</strong></td></tr>
+<tr><td>Indicateurs agrégés</td><td>Toutes</td><td>Espace central de la Direction</td><td>Totaux et compteurs, pas de données brutes</td></tr>
+<tr><td>Notification à un utilisateur</td><td>Toutes</td><td>Identité, qui sait où le joindre</td><td>Message court et lien</td></tr>
+</tbody></table></div>
+<h2>6. Risques et dette</h2>
+<ul><li><strong>Cohérence à terme</strong> : une copie peut avoir un léger retard sur le propriétaire ; garder une référence vers la donnée d'origine.</li><li><strong>Événements perdus ou doublés</strong> : boîte d'envoi, identifiants, traitement idempotent.</li><li><strong>Journal d'audit</strong> : ce qui remonte au superviseur doit être expurgé <strong>avant</strong> de quitter la plateforme ; c'est un travail à prévoir, pas un réglage.</li><li><strong>E-mails sans file durable (D26)</strong> : le même mécanisme de file durable peut les couvrir ; à traiter avec ce chantier.</li><li><strong>Évolution des événements</strong> : versionnement et compatibilité, sinon une plateforme met toutes les autres en erreur.</li><li><strong>Supervision du canal</strong> : une file en retard doit déclencher une alerte dans la console de supervision.</li><li><strong>Charge</strong> : B n'ajoute pas d'outil mais demande plus de code que le statu quo ; C ajoute un service à déployer et à surveiller.</li><li><strong>Dépend des autres arbitrages</strong> : si les plateformes ne sont finalement pas isolées, l'option 0 redevient applicable.</li></ul>
+<h2>7. Recommandation</h2>
+<p><strong>Option B</strong>, avec le contrat d'échange de la section 5 et une liste fermée d'événements. Elle respecte l'exigence du DG par un canal unique et contrôlé, couvre les besoins sans ajouter d'outil à exploiter, et reste évolutive vers C si la fiabilité ou le volume l'exigent.</p>
+<p>Si le DG répond que les plateformes ne doivent <strong>jamais</strong> échanger, c'est l'option A, au prix de ressaisies manuelles : par exemple recréer un employé dans Assets, et reprendre les commissions à la main en Finances.</p>
+<h2>8. Décision attendue</h2>
+<p><strong>Réponse courte</strong> : « B », « C », « A » (ou « 0 »).</p>
+<p>Sous-décisions :</p>
+<ol><li><strong>Réponse du DG</strong> : des échanges contrôlés sont-ils acceptés (recommandé) ou « jamais » (option A) ?</li><li><strong>Événements initiaux</strong> : valider ou corriger les six candidats de la section 5.</li><li><strong>Propriétaire de chaque donnée partagée</strong> : employé = RH, commission = CRM, etc. (à valider).</li><li><strong>Journal d'audit</strong> : remontée <strong>expurgée</strong> au superviseur, chaque plateforme gardant son journal complet (recommandé), ou journal central complet, ou aucune remontée ?</li><li><strong>Indicateurs pour la Direction</strong> : un espace central transverse (recommandé), ou un tableau de bord par plateforme ?</li><li><strong>Notifications entre utilisateurs</strong> : sur le même canal, dans un second temps (recommandé), ou plus tard ?</li><li><strong>Qui valide un nouvel événement</strong> : la Direction produit (recommandé), ou chaque plateforme pour les siens ?</li></ol>
+<p>Après la réponse : consignation au registre des décisions, ADR, puis seulement exécution.</p></main></body></html>

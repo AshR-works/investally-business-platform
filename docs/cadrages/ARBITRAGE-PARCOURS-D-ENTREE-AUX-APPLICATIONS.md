@@ -32,6 +32,39 @@ Condition d'entrée : plusieurs applications à adresses propres. Si la décisio
 | **B. S'authentifier d'abord, puis être orienté** | Une page commune de connexion, sans liste ; après la connexion, la plateforme s'ouvre selon les accès (un seul accès : ouverture directe ; plusieurs : un lanceur) |
 | **C. Lien propre par plateforme et connexion commune derrière** | Chaque plateforme a son adresse ; y entrer renvoie vers la connexion commune puis revient à elle. En plus, une page commune de connexion oriente (comme en B) pour qui ne connaît pas son lien |
 
+## 3 bis. Précisions du 2026-11-25 : où se connecte-t-on, et comment les deux entrées coexistent
+La Direction produit a demandé si le lien propre par plateforme et la connexion commune peuvent coexister, et où l'on se connecte. Réponse technique : **oui, c'est l'option C**, et la connexion se fait sur **une adresse centrale dédiée**, la même quelle que soit l'entrée.
+
+**Ce que porte l'adresse centrale :**
+- Les écrans qui quittent chaque plateforme : connexion, second facteur, mot de passe oublié, nouveau mot de passe, activation par invitation, mon compte, sessions et connexions. Il n'en reste qu'un exemplaire, au lieu de quatre.
+- La session centrale : le cookie de connexion vit sur cette adresse seulement ; chaque plateforme ne reçoit qu'un jeton qui lui est propre.
+- Aucune liste de plateformes avant la connexion. Arrivé par un lien propre, l'écran peut afficher le nom de cette seule plateforme, que l'utilisateur connaît puisqu'il a cliqué sur son lien.
+
+**Après la connexion :**
+| Cas | Comportement proposé |
+|---|---|
+| Un seul accès | La plateforme s'ouvre directement |
+| Plusieurs accès | Un lanceur ne montre que les plateformes autorisées, ou une plateforme par défaut s'ouvre avec un menu pour changer |
+| Aucun accès | Message neutre : le compte n'a accès à aucune plateforme, contacter l'administrateur |
+| Déjà connecté | Retour direct, sans redemander le mot de passe |
+
+**Règles pour que les deux entrées restent cohérentes :**
+- Le lien propre prime sur la plateforme par défaut : un utilisateur qui a accès à RH et CRM et entre par le lien RH arrive dans RH.
+- Un lien propre sans accès donne le même message neutre que « aucun accès », sans révéler le contenu de la plateforme (cohérent avec la règle actuelle « introuvable »).
+- Les deux entrées partagent une seule liste d'adresses autorisées pour le retour après connexion.
+
+**Table rôle vers plateformes** (indicative, à valider) :
+| Rôle | Plateforme(s) | Statut |
+|---|---|---|
+| Direction | Plusieurs, en lecture | À valider |
+| Responsable commercial, chargé de compte, Responsable Investudy, formateur | CRM (qui contient Investudy) | À valider |
+| RH | RH | À valider |
+| Finance | Finances | À valider |
+| Super administrateur | Les quatre | À valider |
+| Support, Fiscalité | **À définir** : ces rôles ont très peu de droits aujourd'hui | Ouvert |
+
+**Conséquence sur l'adressage :** la connexion centrale est une adresse de plus, donc cinq avec quatre plateformes. Voir [ARBITRAGE-ADRESSAGE-ET-ISOLATION-DES-APPLICATIONS](ARBITRAGE-ADRESSAGE-ET-ISOLATION-DES-APPLICATIONS.md).
+
 ## 4. Grille (poids de 1 à 5, maximum 100)
 | Critère (poids) | 0 | A | B | C |
 |---|---|---|---|---|
@@ -86,5 +119,7 @@ Sous-décisions :
 5. **Plateforme sans accès :** message neutre, sans révéler ce qu'elle contient (recommandé, cohérent avec la règle actuelle « introuvable »).
 6. **Un seul accès / plusieurs :** ouverture directe s'il n'y en a qu'un, lanceur s'il y en a plusieurs (recommandé).
 7. **Noms et adresses :** temporaires, tirés de la configuration.
+8. **Table rôle vers plateformes :** à valider, dont Support et Fiscalité, qui ne se rangent pas clairement.
+9. **Nom de l'adresse de connexion centrale :** à choisir, par exemple `connexion.` ou `compte.`.
 
 Après la réponse : consignation au registre des décisions (avec les deux arbitrages précédents), ADR, puis seulement exécution.
