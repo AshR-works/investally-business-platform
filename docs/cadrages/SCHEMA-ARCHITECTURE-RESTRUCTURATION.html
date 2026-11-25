@@ -1,0 +1,84 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Schéma annoté — architecture actuelle et cible proposée</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — cadrages · <a href="README.html">Index des cadrages</a> · <a href="../INDEX.html">Documentation</a> · <a href="../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../design/05-AIDE-A-LA-DECISION.html">Aide à la décision</a></nav><h1>Schéma annoté — architecture actuelle et cible proposée</h1>
+<p><em>2026-11-25 · Synthèse visuelle des cinq arbitrages de <a href="README.html">l'index des cadrages</a>. <strong>Tout ce qui figure dans la cible est recommandé, rien n'est décidé</strong> : chaque point attend la réponse du DG ou de la Direction produit. Aucun code n'est écrit.</em></p>
+<h2>1. Avant : l'architecture actuelle (« Investally BP - Beta »)</h2>
+<pre><code>+---------------------------- Un seul déploiement -----------------------------+
+|                                                                              |
+|   +--------------------------------------------------------------------+     |
+|   |                  Interface Next.js unique                          |  &lt;- Une session, un seul accès
+|   +---------------------------------+----------------------------------+     |
+|                                     v                                        |
+|   +--------------------------------------------------------------------+     |
+|   |                           API NestJS                               |  &lt;- Appels directs entre modules
+|   |        bd · training · hr · iam · audit · docs                     |     |
+|   +---------------------------------+----------------------------------+     |
+|                                     v                                        |
+|   +--------------------------------------------------------------------+     |
+|   |                  PostgreSQL, six schémas                           |  &lt;- Super administrateur : tous les droits
+|   +--------------------------------------------------------------------+     |
++------------------------------------------------------------------------------+</code></pre>
+<h2>2. Après : la cible proposée</h2>
+<pre><code>                +----------------------------------------+
+                |           CONNEXION COMMUNE            |   identité
+                |  Comptes, second facteur, sessions,    |
+                |  accès par plateforme                  |
+                +--+----------+----------+----------+----+
+                   |          |          |          |
+            +------v--+ +-----v---+ +----v----+ +---v-------+
+            |   CRM   | |   RH    | | Assets  | | Finances  |   plateformes,
+            | absorbe | | org.,   | | équipe- | | isolée en |   chacune avec
+            |Investudy| |absences | |  ments  | | priorité  |   son lien propre
+            +----^----+ +----^----+ +----^----+ +-----^-----+
+                 |           |           |            |
+            +----v-----------v-----------v------------v-----+
+            |  CANAL D&#x27;ÉCHANGE UNIQUE                       |   échanges
+            |  boîte d&#x27;envoi, interface signée, liste fermée|
+            +---------------------+-------------------------+
+                                  |
+                    +-------------+--------------+
+                    v                            v
+        +-----------------------+    +--------------------------+
+        | Supervision           |    | Espace central Direction |
+        | lecture seule, audit  |    | indicateurs agrégés      |
+        | expurgé, sans contenu |    |                          |
+        +-----------------------+    +--------------------------+</code></pre>
+<h2>3. Ce qui change</h2>
+<div class="table-wrap"><table><thead><tr><th>Changement</th><th>Avant</th><th>Après (proposé)</th><th>Statut</th></tr></thead><tbody>
+<tr><td><strong>Entrée</strong></td><td>Une adresse, un accès</td><td>Connexion commune, plus un lien propre par plateforme</td><td>Option C, <a href="ARBITRAGE-PARCOURS-D-ENTREE-AUX-APPLICATIONS.html">parcours d'entrée</a></td></tr>
+<tr><td><strong>Comptes et sessions</strong></td><td>Module <code>iam</code> dans l'API unique</td><td>Service d'identité à part, avec un accès par plateforme et des jetons à audience propre</td><td>Réutilise <code>iam</code>, les jetons ES256 et les sessions existantes</td></tr>
+<tr><td><strong>Plateformes</strong></td><td>Modules d'un même monolithe</td><td>Quatre plateformes : CRM (avec Investudy), RH, Assets, Finances</td><td>Finances isolée dès la conception (option D, <a href="ARBITRAGE-ARCHITECTURE-RESTRUCTURATION.html">architecture</a>)</td></tr>
+<tr><td><strong>Déploiement</strong></td><td>Un seul</td><td>Une application et une base par plateforme (option 3), ou regroupement (option 4)</td><td>À trancher selon le DG, <a href="ARBITRAGE-ADRESSAGE-ET-ISOLATION-DES-APPLICATIONS.html">adressage</a></td></tr>
+<tr><td><strong>Échanges</strong></td><td>Appels directs dans un processus</td><td>Canal unique : boîte d'envoi, interface signée, liste fermée d'événements</td><td>Option B, évolutive vers un courtier, <a href="ARBITRAGE-ECHANGES-ET-EVENEMENTS-ENTRE-PLATEFORMES.html">échanges</a></td></tr>
+<tr><td><strong>Rôles</strong></td><td>Super administrateur à tous les droits</td><td>Administrateur d'identité, superviseur en lecture seule, administrateur par plateforme, compte de secours</td><td>Option C, <a href="ARBITRAGE-ADMINISTRATION-ET-SUPERVISION-DES-PLATEFORMES.html">administration</a></td></tr>
+<tr><td><strong>Audit</strong></td><td>Avant et après, données métier incluses</td><td>Journal complet par plateforme, version expurgée vers la supervision</td><td>Travail à prévoir</td></tr>
+<tr><td><strong>Direction</strong></td><td>Lit tout</td><td>Espace central d'indicateurs agrégés</td><td>À valider</td></tr>
+</tbody></table></div>
+<h2>4. Réutilisé, nouveau, points durs</h2>
+<p><strong>Réutilisé :</strong> le module <code>iam</code>, le second facteur obligatoire, les jetons ES256, un schéma par module, les références par identifiant.</p>
+<p><strong>Nouveau :</strong></p>
+<ul><li>le service d'identité séparé ;</li><li>l'accès par plateforme ;</li><li>le canal d'échange ;</li><li>la console de supervision ;</li><li>l'expurgation de l'audit.</li></ul>
+<p><strong>Points durs :</strong></p>
+<ul><li>la déconnexion unique doit se propager à toutes les plateformes ;</li><li>le second facteur récent (step-up) doit être transporté d'une plateforme à l'autre ;</li><li>la connexion commune est un point de défaillance unique ;</li><li>cinq adresses sont nécessaires en option 3 (quatre plateformes et la connexion), et l'accès au DNS reste en attente (D62) ;</li><li>le chantier est confié à un seul développeur.</li></ul>
+<p><strong>Non vérifié :</strong> les durées exactes des jetons, et la question de savoir si l'API contrôle l'état de la session à chaque requête. Ces deux points pèsent sur la déconnexion unique.</p></main></body></html>
