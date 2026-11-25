@@ -1,6 +1,7 @@
 """Convertit les livrables Markdown en pages HTML autonomes, lisibles et imprimables (Fichier > Imprimer > PDF).
 
-    python scripts/md-to-html.py
+    python scripts/md-to-html.py                                  (régénère toute la documentation)
+    python scripts/md-to-html.py docs/cadrages/ARBITRAGE-X.md     (ne régénère que les fichiers cités)
 
 Gère : titres, paragraphes, listes, tableaux, citations, blocs de code, gras, italique, code en ligne, liens.
 Aucune dépendance externe ; la sortie est un fichier HTML unique par document (styles intégrés, mode sombre et impression).
@@ -8,6 +9,7 @@ Aucune dépendance externe ; la sortie est un fichier HTML unique par document (
 import html
 import os
 import re
+import sys
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'docs', 'livrables')
 
@@ -151,6 +153,8 @@ def main():
         )
     nav_cadrages = 'Investally Business Platform — cadrages · <a href="README.html">Index des cadrages</a> · <a href="../INDEX.html">Documentation</a> · <a href="../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../design/05-AIDE-A-LA-DECISION.html">Aide à la décision</a>'
     acc = os.path.join(docs_root, 'accessibilite')
+    wanted = {os.path.abspath(arg) for arg in sys.argv[1:]}
+    done = set()
     for folder, nav, only in (
         (ROOT, nav_livrables, None), (design, nav_design, None), (os.path.join(design, 'exigences'), design_nav('../'), None),
         (os.path.join(design, 'decisions'), design_nav('../'), None), (os.path.join(docs_root, 'cadrages'), nav_cadrages, None),
@@ -161,6 +165,9 @@ def main():
         (os.path.join(docs_root, 'tests', 'sessions'), root_nav('../../'), None),
     ):
         for name in sorted(n for n in os.listdir(folder) if n.endswith('.md') and (only is None or n in only)):
+            if wanted and os.path.abspath(os.path.join(folder, name)) not in wanted:
+                continue
+            done.add(os.path.abspath(os.path.join(folder, name)))
             md = open(os.path.join(folder, name), encoding='utf-8').read()
             title = re.search(r'^# (.+)$', md, re.M)
             page = (
@@ -172,6 +179,11 @@ def main():
             out = os.path.join(folder, name[:-3] + '.html')
             open(out, 'w', encoding='utf-8', newline=chr(10)).write(page)
             print('écrit', os.path.relpath(out, os.path.join(ROOT, '..')), len(page) // 1024, 'Ko')
+
+    missing = sorted(wanted - done)
+    if missing:
+        print('Fichier(s) non géré(s) par ce script (dossier non listé ou fichier absent) :', *missing, sep=chr(10) + '  ')
+        sys.exit(1)
 
 
 main()
