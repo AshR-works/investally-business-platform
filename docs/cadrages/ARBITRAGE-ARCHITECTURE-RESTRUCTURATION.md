@@ -48,6 +48,7 @@ Totaux recalculés : A = 25 + 20 + 8 + 12 + 6 ; B = 20 + 16 + 16 + 16 + 12 ; C =
 - **Conformité :** l'équipe technique construit la structure comptable, elle ne certifie pas la conformité OHADA, CEMAC ou COSUMAF. Un expert-comptable ou un juriste doit valider.
 - **Travail en amont :** le contrat de communication entre métiers doit être décidé maintenant (un bien Assets est affecté à un employé RH, Finances lit les commissions du CRM ; les demandes de formation des employés visent des formations **externes** et restent dans RH, sans lien avec l'ancien Investudy — ce qu'elles déclenchent côté Finances, budget ou paiement, reste à préciser). C'est le point reporté le 2026-11-24 ; il devient bloquant.
 - **Charge :** D coûte un peu plus que B au départ ; Finances étant le dernier métier à construire, ce surcoût n'arrive pas tout de suite.
+- **Identité centrale :** si les applications sont distinctes, la connexion, les comptes et les sessions deviennent un service à part, avec sa propre adresse (voir les arbitrages d'adressage et de parcours d'entrée). C'est le premier chantier de la restructuration.
 - **Limite de cet arbitrage :** aucune de ces options, prise seule, ne respecte l'exigence du DG de ne pas exposer les applications les unes aux autres. Voir [l'arbitrage d'adressage](ARBITRAGE-ADRESSAGE-ET-ISOLATION-DES-APPLICATIONS.md).
 
 ## 6. Recommandation
@@ -60,7 +61,7 @@ Totaux recalculés : A = 25 + 20 + 8 + 12 + 6 ; B = 20 + 16 + 16 + 16 + 12 ; C =
 
 Sous-décisions :
 1. **Un seul Next.js** avec un espace par métier (recommandé), ou plusieurs interfaces ?
-2. **Socle commun inchangé** : comptes, droits, audit, documents, futur système de notifications.
+2. **Socle commun** : comptes, droits, audit, documents, futur système de notifications. Si les applications sont distinctes, l'identité (comptes, connexion, sessions) devient un service central ; pour l'audit et les documents, central ou par plateforme reste à décider.
 3. **Schémas de base** : on garde `bd`, `training` et `hr` ; on regroupe `training` sous le CRM dans le code et l'interface seulement.
 4. **Reconstruction** : même dépôt, nouvelles branches parties de `investally-bp-beta` (recommandé), ou nouveau dépôt ?
 5. **Contrat entre métiers** : on le tranche avec cette architecture (recommandé), ou on le repousse encore ?

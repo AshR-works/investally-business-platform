@@ -27,7 +27,7 @@ Conséquence sur l'arbitrage d'architecture : l'hypothèse « séparés = droits
 |---|---|---|
 | **1. Statu quo** | Une adresse, une seule application, un espace par métier (`/crm`, `/rh`, …) | **Non** : un seul processus, une seule session, une seule base |
 | **2. Une adresse, plusieurs applications derrière une passerelle** | Applications et bases séparées, réseaux isolés, répartition par chemin | **En partie** : isolées côté serveur, mais même origine dans le navigateur ; une faille dans une page expose les sessions des autres |
-| **3. Une adresse par application** | `crm.`, `rh.`, `assets.`, `finances.` : chacune son application et sa base, un service d'identité central (connexion unique) | **Oui** |
+| **3. Une adresse par application** | `crm.`, `rh.`, `assets.`, `finances.` : chacune son application et sa base, un service d'identité central (connexion unique) qui a **sa propre adresse de connexion** | **Oui** |
 | **4. Hybride** | Un portail à l'adresse principale (accueil, identité), `rh.` et `finances.` à part (données personnelles et comptables), CRM et Assets regroupés | **En partie** : CRM et Assets restent exposés l'un à l'autre |
 
 ## 4. Grille (poids de 1 à 5, maximum 105)
@@ -46,7 +46,7 @@ Totaux recalculés : 1 = 5 + 25 + 20 + 20 + 15 ; 2 = 15 + 15 + 12 + 16 + 9 ; 3 =
 
 ## 5. Risques et dette
 - **Échanges entre métiers :** certains besoins traversent les applications (bien Assets affecté à un employé RH, Finances qui lit les commissions du CRM ; les demandes de formation des employés visent des formations **externes** et restent dans RH, mais ce qu'elles déclenchent côté Finances, budget ou paiement, reste à préciser). Avec des applications isolées, ils passent par un échange contrôlé (messages ou API interne minimale), **jamais par un accès direct à la base d'une autre**. Le patron d'événements reporté devient obligatoire.
-- **DNS :** les options 3 et 4 demandent de créer des sous-domaines et des certificats ; l'accès au DNS est un prérequis externe encore en attente (D62).
+- **DNS :** les options 3 et 4 demandent de créer des sous-domaines et des certificats ; l'accès au DNS est un prérequis externe encore en attente (D62). La connexion commune ajoute une adresse : **cinq en option 3** (quatre plateformes et la connexion), quatre en option 4 (la connexion est portée par le portail).
 - **Charge :** l'option 3 multiplie déploiements, bases et sauvegardes. Pour un développeur seul, c'est le vrai coût.
 - **Dette :** une connexion unique à construire (OIDC) ; sans elle, les comptes se dupliquent.
 
@@ -65,5 +65,6 @@ Sous-décisions :
 4. **Nombre d'applications** : trois ou quatre, et lesquelles ?
 5. **DNS** : qui peut créer les sous-domaines, et à quelle date ?
 6. **Hébergement** : un serveur avec des réseaux Docker isolés (recommandé), ou un serveur par application ?
+7. **Nom de l'adresse de connexion centrale** (temporaire), par exemple `connexion.` ou `compte.` devant le domaine.
 
 Après la réponse : consignation au registre des décisions (en même temps que l'arbitrage d'architecture), ADR, puis seulement exécution.
