@@ -1,0 +1,67 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Arbitrage — adressage et isolation des applications (une adresse ou plusieurs)</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — cadrages · <a href="README.html">Index des cadrages</a> · <a href="../INDEX.html">Documentation</a> · <a href="../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../design/05-AIDE-A-LA-DECISION.html">Aide à la décision</a></nav><h1>Arbitrage — adressage et isolation des applications (une adresse ou plusieurs)</h1>
+<p><em>2026-11-25 · Méthode : <a href="../METHODE-D-ARBITRAGE.html">METHODE-D-ARBITRAGE</a> (options dont le statu quo, grille recalculée, recommandation, <strong>décision laissée à la Direction produit</strong>). <strong>Aucun code n'est écrit</strong> tant que la décision n'est pas prise. Les notes de la grille sont des jugements de l'équipe technique, à contester. Cet arbitrage <strong>rouvre en partie</strong> <a href="ARBITRAGE-ARCHITECTURE-RESTRUCTURATION.html">ARBITRAGE-ARCHITECTURE-RESTRUCTURATION</a>.</em></p>
+<h2>1. La question</h2>
+<p>Les applications métier doivent-elles être servies à <strong>trois ou quatre adresses différentes</strong>, ou <strong>à une seule adresse qui les héberge toutes</strong> ? La Direction générale pose une <strong>exigence ferme</strong> : les différentes applications ne doivent <strong>pas être exposées les unes aux autres</strong>.</p>
+<p><strong>Précision de la Direction produit (2026-11-25) :</strong> le DG a envisagé des <strong>applications accessibles via des adresses différentes</strong> ; l'idée de « métiers séparés » est la conclusion que la Direction produit en a tirée. Cela rend l'option 3 (une adresse par application) plus conforme à ce que le DG a lui-même imaginé, sans que sa raison soit connue (isolation technique ou simple organisation).</p>
+<p>Point à clarifier : le nombre d'applications. Quatre métiers ont été cités (CRM avec Investudy, RH, Assets Management, Finances) ; la question parle de trois. Cet arbitrage raisonne sur quatre.</p>
+<p>Lecture retenue de l'exigence : <strong>la compromission ou la panne d'une application ne donne accès ni aux données ni aux sessions d'une autre.</strong> Elle est traitée comme une condition d'entrée, non comme un critère noté.</p>
+<h2>2. Ce qui existe et ce qui contraint</h2>
+<div class="table-wrap"><table><thead><tr><th>Fait</th><th>Source</th></tr></thead><tbody>
+<tr><td>Hébergement : serveur virtuel avec Docker Compose ; sous-domaine dédié « sans toucher au DNS du domaine principal » tant que la messagerie n'est pas migrée ; certificat automatique</td><td>D63</td></tr>
+<tr><td>Accès au DNS : prérequis externe encore en attente (constat DNS du 2026-11-10, fiche de rencontre avec la Direction générale)</td><td>D62</td></tr>
+<tr><td>Le registre prévoyait « l'extraction de l'identité vers une connexion unique » pour l'ERP</td><td>Reste à faire</td></tr>
+<tr><td>Aujourd'hui : une seule application, une seule session, une seule base (un schéma par module)</td><td>État actuel</td></tr>
+<tr><td>Développeur seul</td><td>—</td></tr>
+</tbody></table></div>
+<p>Conséquence sur l'arbitrage d'architecture : l'hypothèse « séparés = droits et navigation » est probablement <strong>insuffisante</strong>. L'option D (un seul déploiement) ne respecte pas à elle seule l'exigence du DG.</p>
+<h2>3. Options</h2>
+<div class="table-wrap"><table><thead><tr><th></th><th>Principe</th><th>Respecte l'exigence du DG ?</th></tr></thead><tbody>
+<tr><td><strong>1. Statu quo</strong></td><td>Une adresse, une seule application, un espace par métier (<code>/crm</code>, <code>/rh</code>, …)</td><td><strong>Non</strong> : un seul processus, une seule session, une seule base</td></tr>
+<tr><td><strong>2. Une adresse, plusieurs applications derrière une passerelle</strong></td><td>Applications et bases séparées, réseaux isolés, répartition par chemin</td><td><strong>En partie</strong> : isolées côté serveur, mais même origine dans le navigateur ; une faille dans une page expose les sessions des autres</td></tr>
+<tr><td><strong>3. Une adresse par application</strong></td><td><code>crm.</code>, <code>rh.</code>, <code>assets.</code>, <code>finances.</code> : chacune son application et sa base, un service d'identité central (connexion unique)</td><td><strong>Oui</strong></td></tr>
+<tr><td><strong>4. Hybride</strong></td><td>Un portail à l'adresse principale (accueil, identité), <code>rh.</code> et <code>finances.</code> à part (données personnelles et comptables), CRM et Assets regroupés</td><td><strong>En partie</strong> : CRM et Assets restent exposés l'un à l'autre</td></tr>
+</tbody></table></div>
+<h2>4. Grille (poids de 1 à 5, maximum 105)</h2>
+<div class="table-wrap"><table><thead><tr><th>Critère (poids)</th><th>1</th><th>2</th><th>3</th><th>4</th></tr></thead><tbody>
+<tr><td>Isolation entre applications (5)</td><td>1</td><td>3</td><td>5</td><td>4</td></tr>
+<tr><td>Charge et délai pour un développeur seul (5)</td><td>5</td><td>3</td><td>2</td><td>3</td></tr>
+<tr><td>Exploitation : DNS, certificats, supervision (4)</td><td>5</td><td>3</td><td>2</td><td>3</td></tr>
+<tr><td>Expérience intranet : connexion unique, passage fluide entre métiers (4)</td><td>5</td><td>4</td><td>3</td><td>4</td></tr>
+<tr><td>Réemploi de l'existant (3)</td><td>5</td><td>3</td><td>2</td><td>3</td></tr>
+<tr><td><strong>Total</strong></td><td><strong>85</strong></td><td><strong>67</strong></td><td><strong>61</strong></td><td><strong>72</strong></td></tr>
+</tbody></table></div>
+<p>Totaux recalculés : 1 = 5 + 25 + 20 + 20 + 15 ; 2 = 15 + 15 + 12 + 16 + 9 ; 3 = 25 + 10 + 8 + 12 + 6 ; 4 = 20 + 15 + 12 + 16 + 9.</p>
+<p><strong>L'option 1 arrive en tête mais elle est exclue</strong> : elle échoue à l'exigence ferme du DG, que la grille ne peut pas exprimer comme un score. Parmi les autres, c'est l'option 4 qui est devant, mais elle ne respecte l'exigence que si CRM et Assets peuvent partager une application.</p>
+<h2>5. Risques et dette</h2>
+<ul><li><strong>Échanges entre métiers :</strong> certains besoins traversent les applications (bien Assets affecté à un employé RH, Finances qui lit les commissions du CRM ; les demandes de formation des employés visent des formations <strong>externes</strong> et restent dans RH, mais ce qu'elles déclenchent côté Finances, budget ou paiement, reste à préciser). Avec des applications isolées, ils passent par un échange contrôlé (messages ou API interne minimale), <strong>jamais par un accès direct à la base d'une autre</strong>. Le patron d'événements reporté devient obligatoire.</li><li><strong>DNS :</strong> les options 3 et 4 demandent de créer des sous-domaines et des certificats ; l'accès au DNS est un prérequis externe encore en attente (D62).</li><li><strong>Charge :</strong> l'option 3 multiplie déploiements, bases et sauvegardes. Pour un développeur seul, c'est le vrai coût.</li><li><strong>Dette :</strong> une connexion unique à construire (OIDC) ; sans elle, les comptes se dupliquent.</li></ul>
+<h2>6. Recommandation</h2>
+<p><strong>Option 4, sous condition</strong> : c'est la meilleure note parmi celles qui approchent l'exigence, et elle isole les deux métiers les plus sensibles (RH : données personnelles ; Finances : données comptables). <strong>Si le DG veut littéralement quatre applications mutuellement fermées, c'est l'option 3</strong>, construite par étapes : l'identité d'abord, puis un métier à la fois.</p>
+<p>L'écart entre l'option 4 et la lecture littérale tient à CRM et Assets partagés : seul le DG peut dire s'il l'accepte.</p>
+<h2>7. Décision attendue</h2>
+<p><strong>Réponse courte</strong> : « option 4 » ou « option 3 ».</p>
+<p>Sous-décisions :</p>
+<ol><li><strong>Sens de « ne pas exposer »</strong> : serveur et données seulement, ou aussi que l'utilisateur d'une application ne voie pas qu'elle fait partie d'un ensemble (ni lien, ni menu commun) ?</li><li><strong>Identité</strong> : un service d'identité central avec connexion unique (recommandé), ou des comptes par application ?</li><li><strong>Échanges entre applications</strong> : messages et API interne minimale, jamais d'accès direct aux bases (recommandé) ?</li><li><strong>Nombre d'applications</strong> : trois ou quatre, et lesquelles ?</li><li><strong>DNS</strong> : qui peut créer les sous-domaines, et à quelle date ?</li><li><strong>Hébergement</strong> : un serveur avec des réseaux Docker isolés (recommandé), ou un serveur par application ?</li></ol>
+<p>Après la réponse : consignation au registre des décisions (en même temps que l'arbitrage d'architecture), ADR, puis seulement exécution.</p></main></body></html>
