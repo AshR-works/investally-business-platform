@@ -1,0 +1,78 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Investally Business Platform — entretien avec la Direction générale : état, retours et décisions à prendre</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — cadrages · <a href="README.html">Index des cadrages</a> · <a href="../INDEX.html">Documentation</a> · <a href="../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../design/05-AIDE-A-LA-DECISION.html">Aide à la décision</a></nav><h1>Investally Business Platform — entretien avec la Direction générale : état, retours et décisions à prendre</h1>
+<p><em>Préparé le 2026-11-25 pour l'entretien avec la Direction générale. Document de travail : les propositions ci-dessous ne sont pas des décisions. Le détail technique de chaque point est dans les cinq arbitrages de <a href="README.html">l'index des cadrages</a>.</em></p>
+<h2>1. L'essentiel en une page</h2>
+<ul><li><strong>Ce qui est fait :</strong> l'application couvre déjà l'accès sécurisé, le commercial, la formation Investudy et une grande partie des ressources humaines. Cette version est <strong>archivée telle quelle</strong> sous le nom « Investally BP - Beta » : la restructuration n'en détruit rien.</li><li><strong>Ce que vous avez demandé :</strong> une application proche d'un intranet, organisée en quatre plateformes (CRM qui absorbe Investudy, RH, Assets Management, Finances), chacune accessible par un lien propre et sans être exposée aux autres.</li><li><strong>Ce que nous proposons :</strong> une connexion commune, un lien propre par plateforme, un compte qui n'ouvre que ce à quoi il a droit, une supervision qui voit que tout fonctionne sans lire les données des agents, et des échanges limités et contrôlés entre plateformes.</li><li><strong>Ce qu'il nous faut de vous :</strong> huit réponses courtes (section 5). Sans elles, nous ne pouvons pas arrêter l'architecture.</li><li><strong>Ce qu'il faut savoir :</strong> c'est un chantier important, et la comptabilité conforme OHADA, CEMAC et COSUMAF demandera la validation d'un expert-comptable ou d'un juriste.</li></ul>
+<h2>2. Où nous en sommes</h2>
+<div class="table-wrap"><table><thead><tr><th>Domaine</th><th>Ce qui est livré</th></tr></thead><tbody>
+<tr><td><strong>Accès et sécurité</strong></td><td>Connexion avec second facteur obligatoire pour tous, gestion des sessions, droits par rôle, journal d'audit, exports d'administration</td></tr>
+<tr><td><strong>Commercial (CRM)</strong></td><td>Entreprises, contacts, offres, relances, agenda, opportunités, agréments, ambassadeurs, commissions : module terminé</td></tr>
+<tr><td><strong>Investudy</strong></td><td>Catalogue, sessions, inscriptions, présences, évaluations, certificats et attestations, suggestions d'ambassadeur : module terminé</td></tr>
+<tr><td><strong>Ressources humaines</strong></td><td>Annuaire, organigramme, fiches du personnel, absences et congés, contrats, parcours d'intégration et de départ, présences déclaratives</td></tr>
+<tr><td><strong>Qualité</strong></td><td>Tests automatisés tous verts (environ 1 560 côté serveur, 844 côté interface) ; sur le dernier lot, 31 fautes volontairement injectées, toutes détectées ; un parcours complet de 514 requêtes sans échec</td></tr>
+</tbody></table></div>
+<p><strong>À dire honnêtement :</strong></p>
+<ul><li>Les données de la démonstration sont <strong>fictives</strong>.</li><li>Les certificats délivrés sont des documents internes : la note sur 20 est une appréciation du responsable, pas un examen certifiant par un tiers.</li><li><strong>Pas encore réalisés :</strong> les tableaux de bord, la gestion des équipements (Assets), les Finances, le reporting.</li><li><strong>En attente d'éléments extérieurs :</strong> l'envoi réel des e-mails (accès à la messagerie), l'avis juridique sur la conservation des données, un second administrateur nominatif, les logos officiels.</li></ul>
+<h2>3. Ce que nous avons retenu de vos retours</h2>
+<div class="table-wrap"><table><thead><tr><th>Retour</th><th>Notre compréhension</th></tr></thead><tbody>
+<tr><td>Se rapprocher d'un <strong>intranet</strong></td><td>Une entrée commune, des plateformes distinctes</td></tr>
+<tr><td><strong>CRM</strong></td><td>Absorbe Investudy ; ses menus nombreux sont remplacés par une entrée qui condense les choix prioritaires</td></tr>
+<tr><td><strong>RH</strong></td><td>Trois axes : organigramme, absences (demandes et absences des employés), demandes de formation des employés, pour des formations <strong>externes</strong></td></tr>
+<tr><td><strong>Assets Management</strong></td><td>Gestion logistique : ordinateurs, écrans, avec toutes les informations liées</td></tr>
+<tr><td><strong>Finances</strong></td><td>Comptabilité complète, conforme à OHADA, CEMAC et COSUMAF</td></tr>
+<tr><td><strong>Adresses différentes</strong></td><td>Un lien propre par service ou par personne concernée</td></tr>
+<tr><td><strong>Ne pas exposer les applications les unes aux autres</strong></td><td>À préciser avec vous : voir la question 1</td></tr>
+</tbody></table></div>
+<h2>4. Ce que nous proposons</h2>
+<div class="table-wrap"><table><thead><tr><th>Sujet</th><th>Proposition</th><th>Ce que cela change pour un utilisateur</th></tr></thead><tbody>
+<tr><td><strong>Entrée</strong></td><td>Une adresse de connexion centrale, plus un lien propre par plateforme</td><td>Un seul identifiant ; on arrive directement dans sa plateforme ; aucune liste des plateformes avant la connexion</td></tr>
+<tr><td><strong>Accès</strong></td><td>Chaque compte n'ouvre que les plateformes autorisées</td><td>Un agent RH ne voit pas le CRM, et ignore ce que contient Finances</td></tr>
+<tr><td><strong>Isolation</strong></td><td>Une application par plateforme, chacune avec sa base ; Finances isolée en priorité</td><td>Un incident dans une plateforme n'atteint pas les autres</td></tr>
+<tr><td><strong>Administration</strong></td><td>Fonctions séparées : un administrateur des comptes, un superviseur en lecture seule, un administrateur par plateforme, un compte de secours</td><td>Personne ne détient toutes les clés</td></tr>
+<tr><td><strong>Supervision</strong></td><td>Voir que tout fonctionne (connexions, erreurs, état), <strong>sans lire le contenu des données</strong></td><td>La supervision technique est possible tout de suite ; voir l'activité des agents demande d'abord un avis juridique et RH</td></tr>
+<tr><td><strong>Échanges</strong></td><td>Un canal unique et contrôlé, une liste fermée d'informations autorisées</td><td>Un employé créé en RH est connu d'Assets ; les commissions du CRM arrivent en Finances ; rien d'autre ne circule</td></tr>
+</tbody></table></div>
+<h2>5. Les décisions que nous attendons de vous</h2>
+<p>Chaque question est accompagnée de notre recommandation.</p>
+<div class="table-wrap"><table><thead><tr><th>N°</th><th>Question</th><th>Notre recommandation</th></tr></thead><tbody>
+<tr><td>1</td><td><strong>Que doit-il être impossible de faire</strong> quand vous dites ne pas exposer les applications les unes aux autres : qu'un employé accède à un métier qui ne le concerne pas, ou qu'un incident dans une application atteigne les autres ?</td><td>Les deux, si possible ; la seconde coûte plus cher</td></tr>
+<tr><td>2</td><td><strong>Les quatre plateformes</strong> sont-elles bien quatre applications distinctes, ou certaines sont-elles regroupées ?</td><td>Quatre distinctes</td></tr>
+<tr><td>3</td><td><strong>Acceptez-vous des échanges contrôlés</strong> entre plateformes (employé RH vers Assets, commissions CRM vers Finances, budget d'une formation externe RH vers Finances) ?</td><td>Oui, sur une liste fermée validée par vous. Sinon, des ressaisies manuelles</td></tr>
+<tr><td>4</td><td><strong>Supervision</strong> : voulez-vous d'abord la supervision technique, en attendant l'avis juridique et RH pour suivre l'activité des agents ?</td><td>Oui</td></tr>
+<tr><td>5</td><td><strong>Qui administre</strong> chaque plateforme (par exemple RH pour RH, la direction financière pour Finances) ? Qui est le second administrateur nominatif des comptes, et qui détient le compte de secours ?</td><td>À nommer</td></tr>
+<tr><td>6</td><td><strong>Finances</strong> : quel périmètre exact, et quel expert-comptable ou juriste valide la conformité ? Quel est le rôle de COSUMAF : obligation de déclaration, ou norme comptable ?</td><td>Désigner l'expert avant de lancer ce chantier</td></tr>
+<tr><td>7</td><td><strong>Ordre de priorité</strong> des quatre plateformes et date visée</td><td>Commencer par l'identité commune et la page d'entrée, puis CRM, RH, Assets, Finances</td></tr>
+<tr><td>8</td><td><strong>Adresses</strong> : qui peut créer les adresses de chaque plateforme (sous-domaines et certificats) et à quelle date ?</td><td>À désigner : c'est un prérequis extérieur, déjà en attente</td></tr>
+</tbody></table></div>
+<h2>6. Phasage proposé, sans date</h2>
+<p>Proposition à valider après vos réponses.</p>
+<ol><li><strong>Décisions</strong> : les huit questions ci-dessus.</li><li><strong>Identité commune et page d'entrée</strong> : connexion unique, accès par plateforme. C'est le préalable de tout le reste.</li><li><strong>CRM</strong> : absorber Investudy, remplacer les menus par une entrée qui condense les choix prioritaires.</li><li><strong>RH</strong> : réorganiser autour de l'organigramme, des absences et des demandes de formation externes.</li><li><strong>Assets Management</strong>, puis <strong>Finances</strong>.</li></ol>
+<h2>7. Risques et points d'attention</h2>
+<ul><li><strong>Charge :</strong> la restructuration est un chantier important, mené par un développeur seul. Plus il y a de plateformes séparées, plus il y a à déployer, à surveiller et à sauvegarder.</li><li><strong>Comptabilité :</strong> nous construisons la structure, nous ne certifions pas la conformité. Une validation externe est indispensable.</li><li><strong>Connexion unique :</strong> si le service de connexion tombe, personne n'entre nulle part ; il doit être surveillé de près.</li><li><strong>Données sensibles :</strong> les données personnelles des employés restent exclues de l'application (salaire, paie, naissance, adresse personnelle). La supervision de l'activité des agents est soumise à l'avis juridique et RH.</li><li><strong>Délais :</strong> nous ne donnons pas de date tant que les décisions et les prérequis extérieurs (adresses, messagerie, expert-comptable) ne sont pas levés.</li></ul>
+<h2>8. Déroulé suggéré de l'entretien (environ 30 minutes) — notes pour l'intervenant, à retirer avant de remettre le document</h2>
+<ol><li><strong>Rappel de l'état</strong> (5 min) : section 2, en insistant sur ce qui est terminé et conservé.</li><li><strong>Vos retours et notre compréhension</strong> (5 min) : section 3, pour confirmer que nous avons bien compris.</li><li><strong>Nos propositions</strong> (10 min) : section 4, en ne détaillant que ce que le DG demande.</li><li><strong>Vos décisions</strong> (10 min) : section 5, en commençant par les questions 1 et 3, qui conditionnent le reste.</li></ol>
+<h2>9. Pour aller plus loin</h2>
+<p>Cinq arbitrages détaillés, avec options, grilles chiffrées et recommandations, sont disponibles :</p>
+<ul><li><a href="ARBITRAGE-ARCHITECTURE-RESTRUCTURATION.html">Architecture de la restructuration</a></li><li><a href="ARBITRAGE-ADRESSAGE-ET-ISOLATION-DES-APPLICATIONS.html">Adressage et isolation des applications</a></li><li><a href="ARBITRAGE-PARCOURS-D-ENTREE-AUX-APPLICATIONS.html">Parcours d'entrée aux applications</a></li><li><a href="ARBITRAGE-ADMINISTRATION-ET-SUPERVISION-DES-PLATEFORMES.html">Administration et supervision des plateformes</a></li><li><a href="ARBITRAGE-ECHANGES-ET-EVENEMENTS-ENTRE-PLATEFORMES.html">Échanges et événements entre les plateformes</a></li></ul></main></body></html>
