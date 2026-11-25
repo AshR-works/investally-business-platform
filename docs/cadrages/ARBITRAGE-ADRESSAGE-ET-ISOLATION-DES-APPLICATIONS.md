@@ -45,7 +45,7 @@ Totaux recalculés : 1 = 5 + 25 + 20 + 20 + 15 ; 2 = 15 + 15 + 12 + 16 + 9 ; 3 =
 **L'option 1 arrive en tête mais elle est exclue** : elle échoue à l'exigence ferme du DG, que la grille ne peut pas exprimer comme un score. Parmi les autres, c'est l'option 4 qui est devant, mais elle ne respecte l'exigence que si CRM et Assets peuvent partager une application.
 
 ## 5. Risques et dette
-- **Échanges entre métiers :** certains besoins traversent les applications (demande de formation RH vers l'ancien Investudy, bien Assets affecté à un employé RH, Finances qui lit les commissions du CRM). Avec des applications isolées, ils passent par un échange contrôlé (messages ou API interne minimale), **jamais par un accès direct à la base d'une autre**. Le patron d'événements reporté devient obligatoire.
+- **Échanges entre métiers :** certains besoins traversent les applications (bien Assets affecté à un employé RH, Finances qui lit les commissions du CRM ; les demandes de formation des employés visent des formations **externes** et restent dans RH, mais ce qu'elles déclenchent côté Finances, budget ou paiement, reste à préciser). Avec des applications isolées, ils passent par un échange contrôlé (messages ou API interne minimale), **jamais par un accès direct à la base d'une autre**. Le patron d'événements reporté devient obligatoire.
 - **DNS :** les options 3 et 4 demandent de créer des sous-domaines et des certificats ; l'accès au DNS est un prérequis externe encore en attente (D62).
 - **Charge :** l'option 3 multiplie déploiements, bases et sauvegardes. Pour un développeur seul, c'est le vrai coût.
 - **Dette :** une connexion unique à construire (OIDC) ; sans elle, les comptes se dupliquent.
