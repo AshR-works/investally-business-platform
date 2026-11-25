@@ -17,6 +17,7 @@ Chaque cadrage dit **ce que la session fait et ne fait pas**, **l'état de dépa
 | — | **Arbitrage** architecture de la restructuration (intranet, quatre applications) | [ARBITRAGE-ARCHITECTURE-RESTRUCTURATION.md](ARBITRAGE-ARCHITECTURE-RESTRUCTURATION.md) | Options A à D, 5 sous-décisions (**à trancher**, 2026-11-25) |
 | — | **Arbitrage** adressage et isolation des applications (une adresse ou plusieurs) | [ARBITRAGE-ADRESSAGE-ET-ISOLATION-DES-APPLICATIONS.md](ARBITRAGE-ADRESSAGE-ET-ISOLATION-DES-APPLICATIONS.md) | Options 1 à 4, 7 sous-décisions (**à trancher**, 2026-11-25) |
 | — | **Arbitrage** parcours d'entrée aux applications (connexion commune, liens propres) | [ARBITRAGE-PARCOURS-D-ENTREE-AUX-APPLICATIONS.md](ARBITRAGE-PARCOURS-D-ENTREE-AUX-APPLICATIONS.md) | Options 0, A, B, C, 9 sous-décisions (**à trancher**, 2026-11-25) |
+| — | **Arbitrage** administration et supervision transverses des plateformes (Super administrateur unique ou fonctions séparées) | [ARBITRAGE-ADMINISTRATION-ET-SUPERVISION-DES-PLATEFORMES.md](ARBITRAGE-ADMINISTRATION-ET-SUPERVISION-DES-PLATEFORMES.md) | Options A à D, 6 sous-décisions (**à trancher**, 2026-11-25) |
 | — | **Observations de recette** : téléphones, fenêtres qui débordent, cohérence visuelle, jeu de données de démonstration | [OBSERVATIONS-VALIDATION-UX-ET-DONNEES-DE-TEST.md](OBSERVATIONS-VALIDATION-UX-ET-DONNEES-DE-TEST.md) | Analyse et plan (2026-11-03) ; tâches T1 à T4, points Q1 à Q9 à confirmer |
 
 ## Recommandations en un coup d'œil
