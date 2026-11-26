@@ -21,6 +21,8 @@ Chaque cadrage dit **ce que la session fait et ne fait pas**, **l'état de dépa
 | — | **Arbitrage** échanges et événements entre les plateformes (informations transversales, audit, indicateurs, notifications) | [ARBITRAGE-ECHANGES-ET-EVENEMENTS-ENTRE-PLATEFORMES.md](ARBITRAGE-ECHANGES-ET-EVENEMENTS-ENTRE-PLATEFORMES.md) | Options 0, A à D, 7 sous-décisions (**à trancher**, 2026-11-25) |
 | — | **Rapport** pour l'entretien avec la Direction générale : état, retours, propositions et huit décisions à prendre | [RAPPORT-DG-ETAT-ET-DECISIONS.md](RAPPORT-DG-ETAT-ET-DECISIONS.md) | Document de travail (2026-11-25) |
 | — | **Schéma annoté** de l'architecture : actuelle et cible proposée, avec ce qui change | [SCHEMA-ARCHITECTURE-RESTRUCTURATION.md](SCHEMA-ARCHITECTURE-RESTRUCTURATION.md) | Synthèse, rien de décidé (2026-11-25) |
+| — | **Arbitrage** Finance : construire ou acheter le cœur comptable | [ARBITRAGE-FINANCE-CONSTRUIRE-OU-ACHETER.md](ARBITRAGE-FINANCE-CONSTRUIRE-OU-ACHETER.md) | Options 0, A à C (**à trancher**, 2026-11-26) |
+| — | **Finance** : référentiel réglementaire et architecture cible, version 0 | [Référentiel](FINANCE-01-REFERENTIEL-REGLEMENTAIRE.md) · [Architecture](FINANCE-02-ARCHITECTURE-CIBLE.md) | Proposition à valider (2026-11-26) |
 | — | **Observations de recette** : téléphones, fenêtres qui débordent, cohérence visuelle, jeu de données de démonstration | [OBSERVATIONS-VALIDATION-UX-ET-DONNEES-DE-TEST.md](OBSERVATIONS-VALIDATION-UX-ET-DONNEES-DE-TEST.md) | Analyse et plan (2026-11-03) ; tâches T1 à T4, points Q1 à Q9 à confirmer |
 
 ## Recommandations en un coup d'œil

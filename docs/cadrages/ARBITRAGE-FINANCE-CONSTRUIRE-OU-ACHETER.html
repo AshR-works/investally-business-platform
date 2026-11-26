@@ -1,0 +1,55 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Arbitrage — Finance : construire ou acheter le cœur comptable</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — cadrages · <a href="README.html">Index des cadrages</a> · <a href="../INDEX.html">Documentation</a> · <a href="../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../design/05-AIDE-A-LA-DECISION.html">Aide à la décision</a></nav><h1>Arbitrage — Finance : construire ou acheter le cœur comptable</h1>
+<p><em>2026-11-26 · Méthode : <a href="../METHODE-D-ARBITRAGE.html">METHODE-D-ARBITRAGE</a>. <strong>Décision laissée à la Direction produit.</strong> Les notes sont des jugements de l'équipe technique, à contester. Prix et fonctions des logiciels du marché non vérifiés.</em></p>
+<h2>1. La question</h2>
+<p>Qui tient les livres comptables de référence : une application développée en interne, ou un logiciel existant relié à Investally ?</p>
+<h2>2. Contraintes</h2>
+<ul><li>Développeur seul ; conformité qu'il ne peut pas certifier.</li><li>Exigences de l'AUDCIF sur l'informatique, art. 20 et 22 (voir <a href="FINANCE-01-REFERENTIEL-REGLEMENTAIRE.html">le référentiel</a>).</li><li>La demande vise une plateforme financière complète, familière aux utilisateurs de Sage.</li><li>Inconnus : outil comptable actuel, tenue interne ou par un cabinet, volume, effectif finance, budget.</li></ul>
+<h2>3. Options</h2>
+<div class="table-wrap"><table><thead><tr><th></th><th>Principe</th><th>Réversibilité</th></tr></thead><tbody>
+<tr><td><strong>0. Statu quo</strong></td><td>La comptabilité reste là où elle est ; rien n'est construit</td><td>Totale</td></tr>
+<tr><td><strong>A. Acheter</strong></td><td>Un logiciel comptable SYSCOHADA fait tout le financier ; échanges par fichiers ou interface</td><td>Moyenne (reprise de données)</td></tr>
+<tr><td><strong>B. Hybride</strong></td><td>Le logiciel tient les livres et les états ; Investally Finance porte les circuits (facturation liée au CRM, commissions, achats, approbations, budgets, pilotage) et lui transmet les écritures</td><td>Bonne : le grand livre interne reste possible plus tard</td></tr>
+<tr><td><strong>C. Construire</strong></td><td>Tout est développé</td><td>Faible</td></tr>
+</tbody></table></div>
+<h2>4. Grille (poids de 1 à 5, notes de 1 à 5, maximum 100)</h2>
+<div class="table-wrap"><table><thead><tr><th>Critère (poids)</th><th>0</th><th>A</th><th>B</th><th>C</th></tr></thead><tbody>
+<tr><td>Sécurité de conformité (5)</td><td>3</td><td>4</td><td>4</td><td>2</td></tr>
+<tr><td>Charge pour un développeur seul (5)</td><td>5</td><td>4</td><td>3</td><td>1</td></tr>
+<tr><td>Délai avant un résultat utile (4)</td><td>5</td><td>4</td><td>3</td><td>1</td></tr>
+<tr><td>Adéquation aux circuits Investally (3)</td><td>1</td><td>2</td><td>4</td><td>5</td></tr>
+<tr><td>Maîtrise et évolution à long terme (3)</td><td>1</td><td>2</td><td>4</td><td>5</td></tr>
+<tr><td><strong>Total</strong></td><td><strong>66</strong></td><td><strong>68</strong></td><td><strong>71</strong></td><td><strong>49</strong></td></tr>
+</tbody></table></div>
+<p>Totaux recalculés : 0 = 15 + 25 + 20 + 3 + 3 ; A = 20 + 20 + 16 + 6 + 6 ; B = 20 + 15 + 12 + 12 + 12 ; C = 10 + 5 + 4 + 15 + 15.</p>
+<p><strong>Les trois premières options sont proches (66 à 71) : la grille ne les départage pas nettement.</strong> Seule la construction complète décroche.</p>
+<h2>5. Risques et dette de B</h2>
+<ul><li>Deux systèmes à rapprocher : contrôle de concordance obligatoire.</li><li>Dépendance aux formats d'import du logiciel choisi : à prouver sur un export réel avant de s'engager.</li><li>Licences et accompagnement à chiffrer.</li><li>Risque de dériver vers C par ajouts successifs : le grand livre reste hors périmètre sauf nouvelle décision.</li></ul>
+<h2>6. Recommandation</h2>
+<p><strong>Option B</strong>, à confirmer après deux vérifications : l'outil réellement utilisé aujourd'hui et un essai d'import. Si la comptabilité est tenue par un cabinet et que les volumes sont faibles, <strong>0 ou A</strong> peuvent être préférables. La <a href="FINANCE-02-ARCHITECTURE-CIBLE.html">version 0 de l'architecture</a> décrit la cible complète ; avec A ou B, sa partie « grand livre » devient un cahier des charges pour choisir le logiciel.</p>
+<h2>7. Décision attendue</h2>
+<p><strong>Réponse courte</strong> : « B », « A », « C » ou « 0 ».</p>
+<p>Sous-décisions :</p>
+<ol><li>Quel outil comptable aujourd'hui, et qui tient les comptes ?</li><li>Statut réglementaire d'Investally (agréé, en cours, non agréé) ?</li><li>Investudy est-il une entité juridique distincte ?</li><li>Qui valide la conformité ?</li><li>Budget de licence envisageable ?</li></ol></main></body></html>
