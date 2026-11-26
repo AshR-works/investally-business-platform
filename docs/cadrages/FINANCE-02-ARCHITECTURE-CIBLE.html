@@ -1,0 +1,183 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Finance — 02. Architecture cible (version 0)</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — cadrages · <a href="README.html">Index des cadrages</a> · <a href="../INDEX.html">Documentation</a> · <a href="../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../design/05-AIDE-A-LA-DECISION.html">Aide à la décision</a></nav><h1>Finance — 02. Architecture cible (version 0)</h1>
+<p><em>2026-11-26 · Proposition, rien n'est décidé, aucun code. À lire après <a href="FINANCE-01-REFERENTIEL-REGLEMENTAIRE.html">01. Référentiel réglementaire</a> et avec <a href="ARBITRAGE-FINANCE-CONSTRUIRE-OU-ACHETER.html">l'arbitrage construire ou acheter</a>, <strong>qui conditionne ce qui suit</strong>.</em></p>
+<p>Les descriptions de Sage et des autres ERP viennent de connaissances générales <strong>non vérifiées sur documentation officielle</strong>. Les durées, droits et règles marqués « à valider » ne sont pas des exigences établies.</p>
+<h2>0. Contradictions avec l'existant, à lever d'abord</h2>
+<div class="table-wrap"><table><thead><tr><th>Sujet</th><th>Existant</th><th>Nouvelle demande</th><th>À trancher</th></tr></thead><tbody>
+<tr><td>Découpage</td><td>ADR-0005 : CRM d'un côté, ERP (Finance, RH, Fiscalité, reporting) de l'autre</td><td>Applications CRM, RH, Finance distinctes</td><td>Remplacer l'ADR-0005 par un nouvel ADR</td></tr>
+<tr><td>Assets Management</td><td>Quatrième application demandée après la démonstration</td><td>Non citée ; Finance porte les immobilisations</td><td>Qui possède le bien ? Proposé : Assets le physique, Finance la valeur</td></tr>
+<tr><td>Paie</td><td>D55 à D60 : salaires et paie exclus de l'application</td><td>Intégration RH : paie, avances, frais, indemnités</td><td>Proposé : Finance reçoit des écritures de paie <strong>agrégées</strong>, sans salaire individuel</td></tr>
+<tr><td>Commissions</td><td>D41 : le DAF seul débloque, sans seconde validation ni seuil</td><td>Séparation des tâches</td><td>Revoir D41 ou documenter l'exception</td></tr>
+<tr><td>Priorité</td><td>CRM prioritaire (ADR-0005)</td><td>Plateforme financière complète</td><td>Ordre à fixer avec le DG</td></tr>
+</tbody></table></div>
+<h2>1. Cartographie fonctionnelle (livrables 2 et 16)</h2>
+<div class="table-wrap"><table><thead><tr><th>Domaine</th><th>Fonctions</th><th>Priorité</th><th>Piste</th></tr></thead><tbody>
+<tr><td>Référentiels</td><td>Entités, exercices, plan comptable, journaux, axes analytiques, devises, banques, tiers, taux</td><td>P0</td><td>Socle</td></tr>
+<tr><td>Comptabilité générale</td><td>Saisie, validation, grand livre, balance, clôtures, états</td><td>P0</td><td>Logiciel ou interne selon l'arbitrage</td></tr>
+<tr><td>Auxiliaire</td><td>Clients, fournisseurs, partenaires, lettrage, balance âgée</td><td>P0</td><td>Idem</td></tr>
+<tr><td>Audit et conformité</td><td>Journal, versions, archivage</td><td>P0</td><td>Transverse, dès le premier jour</td></tr>
+<tr><td>Facturation</td><td>Devis, factures, avoirs, règlements</td><td>P1</td><td>Reprend les offres et agréments du CRM</td></tr>
+<tr><td>Trésorerie</td><td>Banques, caisses, rapprochements, prévisions</td><td>P1</td><td></td></tr>
+<tr><td>Fiscalité</td><td>TVA, retenues, déclarations, échéancier</td><td>P1</td><td></td></tr>
+<tr><td>Achats</td><td>Demande, commande, réception, rapprochement à trois</td><td>P2</td><td></td></tr>
+<tr><td>Immobilisations</td><td>Actif, amortissements, transferts, sortie</td><td>P2</td><td>Lien Assets</td></tr>
+<tr><td>Budgets</td><td>Annuel, départemental, prévisions, engagements</td><td>P2</td><td></td></tr>
+<tr><td>Contrôle de gestion</td><td>Indicateurs, écarts, rentabilité</td><td>P3</td><td></td></tr>
+<tr><td>Reporting</td><td>Opérationnel, Direction, DAF, réglementaire</td><td>P1 à P3</td><td></td></tr>
+<tr><td>Consolidation</td><td>Périmètre, éliminations, conversion</td><td>P3</td><td>Dès qu'une seconde entité juridique est confirmée</td></tr>
+</tbody></table></div>
+<h2>2. Architecture métier (livrable 3)</h2>
+<p>Contextes, chacun propriétaire de ses données :</p>
+<ul><li><strong>Référentiel financier</strong> : ce que tous utilisent.</li><li><strong>Grand livre</strong> : seul à écrire des écritures. Les autres lui <strong>demandent</strong> une comptabilisation.</li><li><strong>Tiers et auxiliaires</strong>, <strong>Facturation</strong>, <strong>Achats</strong>, <strong>Trésorerie</strong>, <strong>Immobilisations</strong> : produisent des pièces et des demandes.</li><li><strong>Fiscalité</strong> : règles datées, calcul, déclarations.</li><li><strong>Pilotage</strong> : budgets, contrôle de gestion, reporting ; lecture seule.</li><li><strong>Consolidation</strong> : lit les soldes validés, n'écrit jamais dans les livres des entités.</li></ul>
+<p>Chaîne type : pièce → contrôles → approbation → comptabilisation → paiement → lettrage → clôture → état → archive.</p>
+<p>Hors périmètre tant que le statut n'est pas fixé : tenue de comptes titres, fonds de clients, valorisation d'actifs gérés. Ce sont d'autres métiers, avec d'autres obligations.</p>
+<h2>3. Architecture applicative (livrable 4)</h2>
+<pre><code> Identité commune ──&gt; Finance (adresse propre, base propre)
+                        |-- interface web Finance
+                        |-- API Finance (monolithe modulaire, couches existantes)
+                        |     referentiel | grand-livre | tiers | facturation | achats
+                        |     tresorerie | immobilisations | fiscalite | pilotage | consolidation
+                        |-- base PostgreSQL Finance (écritures en ajout seul)
+                        |-- boîte d&#x27;envoi / réception ──&gt; CRM, RH, Assets (liste fermée)
+                        `-- archive des pièces (empreinte, conservation)</code></pre>
+<p>Réemploi : conventions NestJS, Prisma, contrôle <code>pnpm arch</code>, identité, audit. Pas de microservices. Les tâches longues (clôtures, états) passent par une file, sans nouvel outil au départ.</p>
+<h2>4. Architecture des données (livrable 5)</h2>
+<div class="table-wrap"><table><thead><tr><th>Objet</th><th>Contenu essentiel</th><th>Invariant</th></tr></thead><tbody>
+<tr><td><code>legal_entity</code></td><td>Forme, pays, régime, devise légale, référentiel</td><td>Chaque ligne métier porte l'entité ; cloisonnement en base</td></tr>
+<tr><td><code>fiscal_year</code>, <code>period</code></td><td>Dates, état</td><td>Pas d'écriture dans une période close</td></tr>
+<tr><td><code>account</code></td><td>Numéro, classe, nature, lettrable</td><td>Non supprimable s'il a servi</td></tr>
+<tr><td><code>journal</code></td><td>Code, type, séquence</td><td>Numérotation continue</td></tr>
+<tr><td><code>entry</code>, <code>entry_line</code></td><td>Date de valeur, pièce, origine, montants, devise, taux, axes</td><td>Équilibre ; immuable après validation ; correction liée</td></tr>
+<tr><td><code>third_party</code></td><td>Rôle, identifiants fiscaux, résidence, statut de vigilance</td><td>Référence l'entreprise CRM par identifiant, sans clé étrangère (D161)</td></tr>
+<tr><td><code>fx_rate</code></td><td>Paire, date, source, valeur</td><td>Jamais modifié, seulement ajouté</td></tr>
+<tr><td><code>tax_rule</code></td><td>Juridiction, taux, effet, source, valideur</td><td>Datée</td></tr>
+<tr><td><code>document</code></td><td>Type, empreinte, conservation</td><td>Immuable après émission</td></tr>
+<tr><td><code>approval</code></td><td>Demandeur, valideur, décision, motif</td><td>Valideur différent du demandeur</td></tr>
+</tbody></table></div>
+<p>Montants en décimaux exacts, jamais en virgule flottante ; règles d'arrondi par devise (XAF et XOF sans décimale [à valider]).</p>
+<h2>5. Architecture comptable SYSCOHADA (livrable 6)</h2>
+<ul><li>Plan de comptes SYSCOHADA livré comme référentiel versionné, subdivisions par entité (art. 18).</li><li>Journaux proposés : achats, ventes, banques (un par compte), caisse, opérations diverses, paie, immobilisations, à-nouveaux.</li><li>Cycle : <strong>brouillon → validé</strong> (numéro, date de validation) <strong>→ période close → exercice clos</strong>. Après validation : correction par inscription en négatif (art. 20).</li><li>Clôtures : mensuelle (centralisation, art. 19), informatique au moins trimestrielle (art. 22), annuelle avec inventaire, états arrêtés sous quatre mois (art. 23).</li><li>États : bilan, compte de résultat, flux de trésorerie, notes (art. 8) ; second jeu IFRS si appel public à l'épargne ou cotation.</li><li>Analytique : axes centre de coût, centre de profit, projet, produit, portés par les lignes.</li></ul>
+<h2>6. Architecture fiscale (livrable 7)</h2>
+<p>Moteur de règles datées : fait générateur → assiette → taux → compte → déclaration → échéance. Chaque calcul conserve la version de la règle. Les déclarations sont des documents préparés puis validés ; <strong>aucun envoi automatique</strong> à l'administration au départ. La facturation électronique camerounaise est à qualifier avant de concevoir la facturation.</p>
+<h2>7. Multi-filiales (livrable 11)</h2>
+<p>Une comptabilité par <strong>entité juridique</strong>. Investudy n'est une entité distincte que s'il a sa personnalité juridique (à confirmer) ; sinon c'est un centre de profit. Opérations intra-groupe : tiers marqués « groupe », double écriture rapprochée, écarts signalés. Consolidation : périmètre daté, méthode selon le contrôle, retraitements, éliminations (art. 74 et suivants).</p>
+<h2>8. Multi-devises (livrable 12)</h2>
+<p>XAF, XOF, EUR, USD, GBP, et table ouverte. Chaque ligne garde le montant d'origine, la devise, le taux, sa source, le montant en devise légale de l'entité (art. 17) ; le montant de reporting se calcule avec un taux daté. Écarts de change réalisés et latents comptabilisés par processus dédié. XAF et XOF sont deux devises distinctes, même à parité identique avec l'euro [à valider].</p>
+<h2>9. Architecture documentaire (livrable 8)</h2>
+<p>Chaîne commune : données sources → brouillon → validation → numéro → émission figée avec empreinte → envoi → archive. Durée : <strong>10 ans</strong> pour les livres et pièces comptables (AUDCIF art. 24) ; pour les autres, 10 ans proposés et <strong>à valider</strong>.</p>
+<div class="table-wrap"><table><thead><tr><th>Document</th><th>Sources</th><th>Validation proposée</th><th>Fondement</th></tr></thead><tbody>
+<tr><td>Devis</td><td>Offre CRM</td><td>Chargé de compte, puis RAF au-delà d'un seuil</td><td>À valider</td></tr>
+<tr><td>Facture, avoir</td><td>Devis, agrément, inscription</td><td>Comptable puis RAF</td><td>Pièce comptable ; fiscalité</td></tr>
+<tr><td>Demande d'achat</td><td>Service</td><td>Responsable puis budget</td><td>Contrôle interne</td></tr>
+<tr><td>Bon de commande</td><td>Demande approuvée</td><td>RAF ou DAF selon seuil</td><td>Contrôle interne</td></tr>
+<tr><td>Bon de réception, bon de sortie</td><td>Livraison, mouvement</td><td>Demandeur différent de l'acheteur</td><td>Contrôle interne</td></tr>
+<tr><td>Ordre de paiement</td><td>Facture rapprochée</td><td><strong>Deux signataires</strong></td><td>Contrôle interne</td></tr>
+<tr><td>Journaux, grand livre, balance</td><td>Écritures</td><td>Figés à la clôture</td><td>Art. 19, 22</td></tr>
+<tr><td>États financiers</td><td>Balance</td><td>DAF puis organe compétent</td><td>Art. 8, 23</td></tr>
+<tr><td>Rapport de gestion</td><td>Pilotage</td><td>Direction</td><td>À préciser</td></tr>
+<tr><td>Rapport de contrôle interne</td><td>Contrôles</td><td>Responsable conformité</td><td>COSUMAF art. 288, si agréé</td></tr>
+</tbody></table></div>
+<h2>10. RBAC et séparation des tâches (livrable 9)</h2>
+<div class="table-wrap"><table><thead><tr><th>Action</th><th>Comptable</th><th>RAF</th><th>Contrôleur de gestion</th><th>Auditeur</th><th>DAF</th><th>DG</th><th>DGA</th></tr></thead><tbody>
+<tr><td>Saisir</td><td>Oui</td><td>Oui</td><td>Non</td><td>Non</td><td>Non</td><td>Non</td><td>Non</td></tr>
+<tr><td>Valider une écriture</td><td>Non</td><td>Oui</td><td>Non</td><td>Non</td><td>Oui</td><td>Non</td><td>Non</td></tr>
+<tr><td>Clôturer une période</td><td>Non</td><td>Prépare</td><td>Non</td><td>Non</td><td>Oui</td><td>Non</td><td>Non</td></tr>
+<tr><td>Préparer un paiement</td><td>Oui</td><td>Oui</td><td>Non</td><td>Non</td><td>Non</td><td>Non</td><td>Non</td></tr>
+<tr><td>Signer un paiement</td><td>Non</td><td>1re</td><td>Non</td><td>Non</td><td>1re ou 2e</td><td>2e</td><td>2e par délégation</td></tr>
+<tr><td>Budgets</td><td>Lit</td><td>Propose</td><td>Prépare</td><td>Lit</td><td>Valide</td><td>Approuve</td><td>Approuve par délégation</td></tr>
+<tr><td>Paramétrer plan, taxes</td><td>Non</td><td>Propose</td><td>Non</td><td>Non</td><td>Valide</td><td>Non</td><td>Non</td></tr>
+<tr><td>Lire livres et audit</td><td>Ses journaux</td><td>Tout</td><td>Tout sauf pièces sensibles</td><td>Tout</td><td>Tout</td><td>États et synthèses</td><td>États et synthèses</td></tr>
+</tbody></table></div>
+<p>Règles : nul ne valide ce qu'il a saisi ; qui crée un tiers ou change un compte bancaire ne paie pas ; l'auditeur ne peut rien écrire ; délégations datées ; second facteur récent pour signer.</p>
+<p><strong>Limite :</strong> avec une petite équipe, ces séparations supposent assez de personnes distinctes. Sinon il faut des contrôles compensatoires écrits. Nombre de personnes en finance : <strong>à communiquer</strong>.</p>
+<h2>11. Architecture d'audit (livrable 10)</h2>
+<p>Journal en ajout seul : acteur, rôle, action, objet, avant, après, heure, origine. Chaînage par empreinte et export périodique hors de la base [proposé]. Chemin de révision : état → solde → écriture → pièce → approbations (art. 22). Les droits SQL de l'application interdisent la modification des écritures validées et du journal ; l'accès d'administration à la base reste un risque à couvrir par des sauvegardes séparées.</p>
+<h2>12. Intégrations</h2>
+<div class="table-wrap"><table><thead><tr><th>Source</th><th>Vers Finance</th><th>Retour</th></tr></thead><tbody>
+<tr><td>CRM</td><td>Entreprise facturable, offre acceptée, agrément, inscription confirmée, commission due</td><td>Facture émise, paiement, déblocage, versement</td></tr>
+<tr><td>RH</td><td>Écritures de paie agrégées, avances et frais approuvés, indemnités</td><td>Remboursement effectué</td></tr>
+<tr><td>Assets</td><td>Acquisition, mise en service, transfert, sortie</td><td>Numéro d'immobilisation, valeur nette</td></tr>
+<tr><td>Banques</td><td>Relevés importés</td><td>Ordres exportés, sans émission automatique</td></tr>
+</tbody></table></div>
+<h2>13. Inspirations Sage et ERP (livrable 14) — hypothèses à vérifier</h2>
+<div class="table-wrap"><table><thead><tr><th>Domaine</th><th>Modèle courant chez Sage</th><th>Repris</th><th>Validations et contrôles</th><th>Piste d'audit visée</th></tr></thead><tbody>
+<tr><td>Générale</td><td>Saisie par journal et période, brouillard puis validation, clôture des journaux</td><td>Oui</td><td>Équilibre, période ouverte</td><td>Numéro et date de validation</td></tr>
+<tr><td>Auxiliaire</td><td>Comptes tiers rattachés à un compte collectif, lettrage, échéances</td><td>Oui</td><td>Lettrage équilibré</td><td>Historique du lettrage</td></tr>
+<tr><td>Immobilisations</td><td>Familles, plans d'amortissement, dotations générées</td><td>Oui</td><td>Plan cohérent avec la valeur</td><td>Calcul rejouable</td></tr>
+<tr><td>Fiscalité</td><td>Codes taxes liés aux comptes et au registre</td><td>Oui, avec dates d'effet</td><td>Code obligatoire</td><td>Règle utilisée</td></tr>
+<tr><td>Trésorerie</td><td>Import de relevés, rapprochement, prévision</td><td>Oui</td><td>Écart expliqué</td><td>Rapprochement signé</td></tr>
+<tr><td>Budgets</td><td>Budgets par compte et section analytique</td><td>Oui</td><td>Disponible avant engagement</td><td>Versions</td></tr>
+<tr><td>Contrôle de gestion</td><td>Plans analytiques multiples</td><td>Oui</td><td>Ventilation à 100 %</td><td>Clés datées</td></tr>
+<tr><td>Reporting</td><td>États paramétrables</td><td>Oui</td><td>Concordance avec la balance</td><td>Version du modèle</td></tr>
+<tr><td>Audit</td><td>Journalisation dépendante de l'édition</td><td>Renforcé</td><td>Immuabilité</td><td>Section 11</td></tr>
+</tbody></table></div>
+<p>Sage X3, Dynamics 365 Finance et NetSuite inspirent le multi-sociétés et les approbations ; SAP Business One la traçabilité des documents liés ; Odoo la simplicité de saisie. <strong>Aucune de ces affirmations n'est une comparaison vérifiée.</strong></p>
+<p>Compatibilité Sage : import et export par fichiers à format paramétrable <a href="https://communityhub.sage.com/fr/sage-100/f/discussion-generale/270253/import-fec">forum Sage, à vérifier</a> ; vocabulaire et ordre des colonnes familiers ; tables de correspondance des comptes, journaux et tiers. Préalable : <strong>connaître la version de Sage réellement utilisée</strong> et obtenir un export réel anonymisé.</p>
+<h2>14. Matrice de conformité (livrable 13)</h2>
+<p>« — » : aucune source identifiée à ce stade. Sage et ERP : usages supposés.</p>
+<div class="table-wrap"><table><thead><tr><th>Fonction</th><th>OHADA</th><th>CEMAC</th><th>COSUMAF</th><th>Sage</th><th>ERP internationaux</th><th>Pourquoi elle existe</th></tr></thead><tbody>
+<tr><td>Écritures immuables</td><td>art. 20, 22</td><td>—</td><td>art. 277 (indirect)</td><td>Validation</td><td>Standard</td><td>Preuve</td></tr>
+<tr><td>Clôtures</td><td>art. 19, 22, 23</td><td>—</td><td>—</td><td>Clôture</td><td>Standard</td><td>Obligation</td></tr>
+<tr><td>Conservation</td><td>art. 24</td><td>Blanchiment, à lire</td><td>art. 105</td><td>Archivage</td><td>Standard</td><td>Obligation</td></tr>
+<tr><td>Tiers et vigilance</td><td>—</td><td>02/24</td><td>art. 105</td><td>Hors cœur comptable</td><td>Modules</td><td>Blanchiment</td></tr>
+<tr><td>Devises</td><td>art. 17</td><td>02/18</td><td>—</td><td>Multi-devises</td><td>Standard</td><td>Obligation et activité</td></tr>
+<tr><td>Facturation</td><td>art. 17 (pièces)</td><td>—</td><td>—</td><td>Gestion commerciale</td><td>Standard</td><td>Fiscalité</td></tr>
+<tr><td>Paiements à deux signatures</td><td>art. 6 (contrôle interne)</td><td>02/18 si devises</td><td>art. 287</td><td>Selon édition</td><td>Standard</td><td>Fraude</td></tr>
+<tr><td>Immobilisations</td><td>art. 36, 37</td><td>—</td><td>—</td><td>Module</td><td>Standard</td><td>Évaluation</td></tr>
+<tr><td>Budgets</td><td>—</td><td>—</td><td>—</td><td>Module</td><td>Standard</td><td>Pilotage, pas une obligation</td></tr>
+<tr><td>Consolidation</td><td>art. 74 à 77</td><td>—</td><td>—</td><td>Édition ou outil tiers</td><td>Standard</td><td>Groupe</td></tr>
+<tr><td>Contrôle interne</td><td>art. 6</td><td>—</td><td>art. 287 à 290</td><td>—</td><td>Modules</td><td>Obligation si agréé</td></tr>
+<tr><td>Prudentiel</td><td>—</td><td>—</td><td>art. 265 à 270</td><td>—</td><td>—</td><td>Seulement si intermédiaire</td></tr>
+</tbody></table></div>
+<h2>15. Feuille de route (livrable 15) — sans date</h2>
+<div class="table-wrap"><table><thead><tr><th>Lot</th><th>Contenu</th><th>Condition de passage</th></tr></thead><tbody>
+<tr><td>F0</td><td>Statut juridique, expert désigné, arbitrage construire ou acheter, état actuel de la comptabilité</td><td>Réponses écrites</td></tr>
+<tr><td>F1</td><td>Référentiels, identité, audit, import d'un exercice réel</td><td>Balance identique à la source</td></tr>
+<tr><td>F2</td><td>Facturation et encaissements reliés au CRM, commissions</td><td>Un mois facturé en parallèle</td></tr>
+<tr><td>F3</td><td>Trésorerie, rapprochement, fiscalité</td><td>Déclaration préparée égale à celle de l'expert</td></tr>
+<tr><td>F4</td><td>Comptabilité complète et clôtures (ou raccordement au logiciel choisi)</td><td>Un exercice clos validé</td></tr>
+<tr><td>F5</td><td>Achats, immobilisations, budgets</td><td>Selon besoin</td></tr>
+<tr><td>F6</td><td>Consolidation, reporting réglementaire, nouvelles juridictions</td><td>Seconde entité réelle</td></tr>
+</tbody></table></div>
+<h2>16. Risques réglementaires (livrable 17)</h2>
+<div class="table-wrap"><table><thead><tr><th>Risque</th><th>Parade</th></tr></thead><tbody>
+<tr><td>Statut mal qualifié : obligations oubliées ou construites pour rien</td><td>F0 avant tout</td></tr>
+<tr><td>Texte périmé ou mal lu</td><td>Référentiel daté, valideur, revue à chaque loi de finances</td></tr>
+<tr><td>Comptabilité non probante</td><td>Immuabilité, numérotation, test de clôture</td></tr>
+<tr><td>Facturation non conforme</td><td>Qualifier la facturation électronique</td></tr>
+<tr><td>Séparation des tâches impossible à effectif réduit</td><td>Contrôles compensatoires</td></tr>
+<tr><td>Données personnelles et paie</td><td>Agrégats seulement ; avis juridique</td></tr>
+<tr><td>Dépendance à un développeur seul</td><td>Logiciel éprouvé pour le cœur, documentation, passation</td></tr>
+<tr><td>Perte de données</td><td>Sauvegardes séparées et restauration testée</td></tr>
+</tbody></table></div>
+<h2>17. Recommandations à long terme (livrable 18)</h2>
+<ul><li>Une nouvelle juridiction s'ajoute par données (plan, règles, états), pas par code spécifique.</li><li>Séparer le référentiel comptable (SYSCOHADA, IFRS) des faits économiques.</li><li>Ne pas anticiper les métiers titres ou gestion d'actifs sans agrément ni besoin daté.</li><li>Viser 10 à 15 ans par des formats d'export ouverts : pouvoir <strong>quitter</strong> n'importe quel outil, y compris le nôtre.</li><li>Revoir le référentiel au moins une fois par an.</li></ul>
+<h2>18. Couverture des livrables</h2>
+<div class="table-wrap"><table><thead><tr><th>Livrables</th><th>État</th></tr></thead><tbody>
+<tr><td>1</td><td>Version 0 partielle (document 01)</td></tr>
+<tr><td>2, 3, 4, 8, 9, 15, 16, 17, 18</td><td>Première version</td></tr>
+<tr><td>5, 6, 7, 10, 11, 12</td><td>Principes ; modèle détaillé à faire</td></tr>
+<tr><td>13, 14</td><td>Ébauche ; sources Sage et ERP à vérifier</td></tr>
+</tbody></table></div></main></body></html>

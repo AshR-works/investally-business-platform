@@ -1,0 +1,89 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Finance — 01. Référentiel réglementaire (version 0)</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — cadrages · <a href="README.html">Index des cadrages</a> · <a href="../INDEX.html">Documentation</a> · <a href="../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../design/05-AIDE-A-LA-DECISION.html">Aide à la décision</a></nav><h1>Finance — 01. Référentiel réglementaire (version 0)</h1>
+<p><em>2026-11-26 · Base de travail à faire valider par un expert-comptable et un juriste. Ce document ne certifie aucune conformité.</em></p>
+<h2>0. Niveaux de preuve</h2>
+<div class="table-wrap"><table><thead><tr><th>Marque</th><th>Sens</th></tr></thead><tbody>
+<tr><td><strong>[V]</strong></td><td>Lu dans le texte officiel le 2026-11-26 (extraction locale du PDF)</td></tr>
+<tr><td><strong>[S]</strong></td><td>Source secondaire (résumé de recherche), texte officiel non lu</td></tr>
+<tr><td><strong>[A]</strong></td><td>Connaissance métier non vérifiée sur source : à confirmer</td></tr>
+</tbody></table></div>
+<h2>1. Question préalable : quel est le statut d'Investally ?</h2>
+<p>Les obligations COSUMAF dépendent d'un <strong>agrément</strong>. Le nom « Investally » <strong>ne figure pas</strong> dans le Règlement général ni dans la publication COSUMAF « L'Essentiel » du 1er semestre 2025, qui liste des intermédiaires [V]. Cela ne prouve pas l'absence d'agrément (autre dénomination, agrément postérieur, liste partiellement extraite).</p>
+<div class="table-wrap"><table><thead><tr><th>Hypothèse</th><th>Effet sur Finance</th></tr></thead><tbody>
+<tr><td>Société non agréée</td><td>OHADA, fiscalité, changes, LCB/FT selon l'activité. Les exigences COSUMAF des intermédiaires ne s'appliquent pas</td></tr>
+<tr><td>Conseiller en investissements financiers (art. 312) [V]</td><td>Agrément propre ; <strong>interdiction de recevoir des fonds ou instruments des clients</strong> (art. 313) [V]</td></tr>
+<tr><td>Intermédiaire de marché (société de bourse, etc.)</td><td>Capital, fonds propres, contrôle interne, enregistrements, reporting : voir section 4</td></tr>
+</tbody></table></div>
+<h2>2. OHADA — AUDCIF du 26 janvier 2017 et SYSCOHADA révisé</h2>
+<p>Texte numérisé de qualité moyenne : relire les articles cités sur un exemplaire propre.</p>
+<div class="table-wrap"><table><thead><tr><th>Article</th><th>Exigence (résumé)</th><th>Règle métier</th><th>Donnée et contrôle</th><th>Piste d'audit</th></tr></thead><tbody>
+<tr><td>7 [V]</td><td>Exercice de douze mois, coïncidant avec l'année civile, sauf cas de début ou de cessation</td><td>Exercices et périodes par entité</td><td><code>fiscal_year</code>, contrôle de non-chevauchement</td><td>Ouverture et clôture datées</td></tr>
+<tr><td>8 [V]</td><td>Bilan, compte de résultat, tableau des flux de trésorerie, notes annexes. <strong>IFRS en sus</strong> pour les entités cotées ou faisant appel public à l'épargne</td><td>Liasse par entité ; second référentiel si APE</td><td>Modèles d'états versionnés</td><td>Version de modèle jointe à chaque état</td></tr>
+<tr><td>13 [V]</td><td>Système minimal de trésorerie sous 60 M (négoce), 40 M (artisanat), 30 M FCFA (services) de chiffre d'affaires ; sinon système normal</td><td>Régime comptable paramétré par entité</td><td><code>legal_entity.regime</code></td><td>Changement de régime tracé</td></tr>
+<tr><td>15, 16 [V]</td><td>Enregistrement exhaustif et sans retard ; récapitulation par période n'excédant pas un mois ; manuel des procédures</td><td>Manuel versionné dans la gestion documentaire</td><td>Centralisation mensuelle</td><td>Historique du manuel</td></tr>
+<tr><td>17 [V]</td><td>Langue officielle et monnaie légale de l'État ; partie double ; pièces datées et référencées ; chronologie ; plan de comptes normalisé</td><td>Livres en monnaie légale par entité ; écriture refusée si déséquilibrée ou sans pièce</td><td>Contrainte débit = crédit en base</td><td>Référence de pièce obligatoire</td></tr>
+<tr><td>18 [V]</td><td>Classes de comptes ; subdivisions permises</td><td>Plan SYSCOHADA livré, extensible</td><td><code>chart_account</code> hiérarchique</td><td>Création et désactivation tracées</td></tr>
+<tr><td>19 [V]</td><td>Livre-journal, grand-livre, balance générale, livre d'inventaire ; journaux auxiliaires centralisés au moins chaque mois</td><td>Livres produits par requête, figés à la clôture</td><td>Empreinte des états figés</td><td>Qui a édité, quand</td></tr>
+<tr><td>20 [V]</td><td>Ni blanc ni altération ; erreur de l'exercice corrigée par <strong>inscription en négatif</strong> puis écriture exacte</td><td>Aucune modification ni suppression d'une écriture validée</td><td><code>reverses_entry_id</code>, droits SQL sans <code>UPDATE</code>/<code>DELETE</code></td><td>Lien correction → origine</td></tr>
+<tr><td>22 [V]</td><td>Informatique : origine et imputation conservées, restitution lisible, <strong>irréversibilité par validation</strong>, aucune insertion intercalaire, <strong>clôture informatique au moins trimestrielle</strong>, états numérotés et datés, chemin de révision reconstituable</td><td>Brouillon → validé (numéroté) → période close</td><td>Séquence sans trou par journal ; verrou de période</td><td>Journal en ajout seul</td></tr>
+<tr><td>23 [V]</td><td>États arrêtés au plus tard quatre mois après la clôture</td><td>Calendrier de clôture avec alertes</td><td>Échéance par entité</td><td>Date d'arrêté mentionnée</td></tr>
+<tr><td>24 [V]</td><td>Livres et pièces conservés <strong>dix ans</strong></td><td>Archivage et gel de suppression</td><td><code>retention_until</code></td><td>Journal des consultations [A]</td></tr>
+<tr><td>36, 37 [V]</td><td>Coût historique (acquisition ou production)</td><td>Fiche immobilisation avec composantes du coût</td><td>Rapprochement avec l'écriture</td><td>Pièces liées</td></tr>
+<tr><td>74 à 77 [V]</td><td>Comptes consolidés pour toute entité contrôlante (exclusif ou conjoint), avec exemptions ; IFRS pour les cotées ou APE</td><td>Périmètre et méthodes datés</td><td><code>consolidation_scope</code></td><td>Retraitements justifiés</td></tr>
+</tbody></table></div>
+<p>Non analysés dans cette version : évaluation, amortissements, provisions, conversion des devises, sanctions, détail du plan de comptes et des états du SYSCOHADA.</p>
+<h2>3. CEMAC — changes et lutte contre le blanchiment</h2>
+<div class="table-wrap"><table><thead><tr><th>Texte</th><th>Contenu connu</th><th>Impact Finance</th><th>Preuve</th></tr></thead><tbody>
+<tr><td>Règlement n°02/18/CEMAC/UMAC/CM du 21 décembre 2018 (changes)</td><td>Opérations de change, comptes des résidents et non-résidents, transactions courantes et financières, investissements, sanctions</td><td>Attribut résident ou non-résident des comptes et tiers ; autorisation et justificatifs par opération en devises ; contrôle avant paiement</td><td>[S] ; domiciliation et rapatriement <strong>non lus</strong>, instructions BEAC à vérifier</td></tr>
+<tr><td>Règlement n°02/24/CEMAC/UMAC/CM du 20 décembre 2024 (blanchiment, financement du terrorisme et de la prolifération)</td><td>Remplace le texte de 2016 ; vigilance, déclaration de soupçon, sanctions ; sanctions ciblées par le règlement n°04/24</td><td>Dossier tiers, filtrage, alertes, déclaration</td><td>[S] ; obligations détaillées et durées <strong>non lues</strong></td></tr>
+<tr><td>Règlement COBAC R-2023/01</td><td>Diligences des établissements assujettis bancaires</td><td>Seulement si Investally ou une filiale relève de la COBAC</td><td>[S]</td></tr>
+</tbody></table></div>
+<h2>4. COSUMAF — Règlement général du 23 mai 2023</h2>
+<p>S'appuie sur le Règlement n°01/22/CEMAC/UMAC/CM/COSUMAF du 21 juillet 2022 [V]. <strong>Applicable selon le statut (section 1).</strong></p>
+<div class="table-wrap"><table><thead><tr><th>Article</th><th>Exigence (résumé)</th><th>Composant et contrôle</th></tr></thead><tbody>
+<tr><td>5 [V]</td><td>Approche par les risques ; cartographie adressée avec le rapport de contrôle interne au plus tard le 31 mars</td><td>Registre des risques, échéancier</td></tr>
+<tr><td>105 [V]</td><td>Conservation <strong>dix ans</strong> des dossiers de relation (après sa fin) et des opérations (après exécution)</td><td>Politique de conservation par type d'objet</td></tr>
+<tr><td>265, 266 [V]</td><td>Capital libéré d'au moins 300 M FCFA pour les services listés, 1 Md pour certaines activités des sociétés de bourse ; fonds propres jamais inférieurs au capital</td><td>Indicateur prudentiel et alerte</td></tr>
+<tr><td>270 [V]</td><td>Concours aux dirigeants, actionnaires et personnel plafonnés à 20 % des fonds propres, avec sûretés</td><td>Contrôle bloquant sur les avances</td></tr>
+<tr><td>276, 277 [V]</td><td>Continuité d'activité ; procédures comptables fournissant rapidement une image fidèle à la COSUMAF</td><td>Plan de reprise testé ; extraction à la demande</td></tr>
+<tr><td>287 à 290 [V]</td><td>Responsable de la conformité et du contrôle interne indépendant ; rapport annuel transmis dans les trois mois suivant la clôture</td><td>Rôle dédié, workflow du rapport</td></tr>
+<tr><td>291 [V]</td><td>Enregistrement des communications liées aux transactions, dix ans, inaltérable</td><td><strong>Hors périmètre Finance</strong> : à attribuer</td></tr>
+<tr><td>313 [V]</td><td>Un conseiller en investissements ne reçoit ni fonds ni instruments</td><td>Blocage des comptes de fonds clients</td></tr>
+<tr><td>327 [V]</td><td>Teneur de compte : avoirs clients distingués des avoirs propres, ségrégation par client, rapprochements réguliers</td><td>Comptabilité titres séparée : <strong>autre produit</strong> que la comptabilité générale</td></tr>
+</tbody></table></div>
+<p>Instructions 2025 repérées dans « L'Essentiel » [V] mais <strong>non lues</strong> : contenu des rapports de contrôle interne (n°39-25, 40-25), fréquence et formats des reportings (n°41-25), agrément des conseillers (n°42-25). L'attribution exacte de chaque numéro est à confirmer sur le texte de chaque instruction.</p>
+<h2>5. Fiscalité (point de départ : Cameroun)</h2>
+<div class="table-wrap"><table><thead><tr><th>Point</th><th>Valeur rapportée</th><th>Preuve</th></tr></thead><tbody>
+<tr><td>TVA</td><td>19,25 %</td><td>[S]</td></tr>
+<tr><td>Retenues TVA et acompte d'impôt sur le revenu</td><td>Arrêté n°000001/MINFI/DGI du 5 janvier 2026 listant les entités chargées de retenir ; taux d'acompte variables selon le contribuable</td><td>[S]</td></tr>
+<tr><td>Attestations de retenue</td><td>Générées par le système de la DGI, sinon non déductibles</td><td>[S]</td></tr>
+<tr><td>Déclaration mensuelle de TVA</td><td>Avant le 15 du mois suivant</td><td>[S], non confirmé sur texte</td></tr>
+<tr><td>Facturation électronique et transmission</td><td>Évoquées, avec la loi de finances 2026</td><td>[S], <strong>à qualifier en priorité</strong></td></tr>
+</tbody></table></div>
+<p><strong>Règle de conception :</strong> aucun taux, seuil ou échéance en dur. Chaque règle porte une juridiction, une date d'effet, une date de fin, une source et un valideur.</p>
+<h2>6. À obtenir avant de coder</h2>
+<ol><li>Statut réglementaire d'Investally et d'Investudy, formes juridiques, liens de capital.</li><li>Exemplaires propres de l'AUDCIF, du plan de comptes et des modèles d'états SYSCOHADA.</li><li>Règlements de changes et de blanchiment, instructions BEAC et COSUMAF applicables.</li><li>Code général des impôts et loi de finances en vigueur.</li><li>Expert-comptable ou juriste désigné pour valider ce référentiel.</li></ol>
+<h2>Sources</h2>
+<ul><li><a href="https://www.oneccabf.org/wp-content/uploads/0.611.01.17-Acte-uniforme-du-26-janvier-2017_Droit-comptable.pdf">AUDCIF, Journal officiel OHADA du 15 février 2017</a></li><li><a href="https://cosumaf.org/files/documents/01KGCA9RV96SXYAY9EAHG1YBN1.pdf">Règlement général COSUMAF</a></li><li><a href="https://cosumaf.org/files/documents/01KHB49GPTWCGXGH2A7SRXPSDQ.pdf">COSUMAF, L'Essentiel, 1er semestre 2025</a></li><li><a href="https://www.droit-afrique.com/uploads/CEMAC-Reglement-2018-02-changes.pdf">Règlement des changes CEMAC 02/18</a></li><li><a href="https://app.maathis.com/droit/cemac/reglement/02-24-cemac-umac-cm-reglement-n0224cemacumaccm-portant-prevention-repression-bla">Règlement CEMAC 02/24, fiche</a></li><li><a href="https://www.impots.cm/sites/default/files/documents/arr%C3%AAt%C3%A9%20RTS%202026%20VF.pdf">Arrêté retenue à la source 2026</a></li><li><a href="https://lefisk.cm/blog/fiscalite-entreprises-cameroun-guide-complet">Guide fiscal Cameroun 2026 (tiers)</a></li></ul></main></body></html>
