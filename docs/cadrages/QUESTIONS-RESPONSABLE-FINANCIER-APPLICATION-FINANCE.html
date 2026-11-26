@@ -1,0 +1,100 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Application Finance : questions au responsable des affaires financières</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{nav{display:none}main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — cadrages · <a href="README.html">Index des cadrages</a> · <a href="../INDEX.html">Documentation</a> · <a href="../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../design/05-AIDE-A-LA-DECISION.html">Aide à la décision</a></nav><h1>Application Finance : questions au responsable des affaires financières</h1>
+<p><em>2026-11-26 · Les questions marquées ★ sont nécessaires avant tout développement. « Je ne sais pas » et « sans objet » sont des réponses utiles. Ne joindre aucun mot de passe, numéro de compte bancaire ni salaire individuel.</em></p>
+<h2>1. Vos priorités</h2>
+<div class="table-wrap"><table><thead><tr><th>N°</th><th>Question</th><th>Réponse</th></tr></thead><tbody>
+<tr><td>1 ★</td><td>Quelles sont les trois tâches qui vous coûtent le plus de temps ou causent le plus d'erreurs ?</td><td></td></tr>
+<tr><td>2 ★</td><td>Que doit résoudre la première version pour vous être utile, et à quelle date ?</td><td></td></tr>
+<tr><td>3</td><td>Qu'est-ce qui fonctionne bien aujourd'hui et ne doit pas changer ?</td><td></td></tr>
+</tbody></table></div>
+<h2>2. Organisation et outils</h2>
+<div class="table-wrap"><table><thead><tr><th>N°</th><th>Question</th><th>Réponse</th></tr></thead><tbody>
+<tr><td>4 ★</td><td>Qui tient la comptabilité : l'équipe, un cabinet, les deux ? Qui fait quoi ?</td><td></td></tr>
+<tr><td>5 ★</td><td>Quel logiciel, quelle version et quels modules (comptabilité, gestion commerciale, immobilisations, trésorerie, paie) ?</td><td></td></tr>
+<tr><td>6</td><td>Quels tableurs complètent le logiciel, et pour quoi ?</td><td></td></tr>
+<tr><td>7 ★</td><td>Combien de personnes travaillent en finance, avec quels rôles ? Qui remplace qui ?</td><td></td></tr>
+<tr><td>8 ★</td><td>Volumes par mois : factures émises, factures reçues, paiements, écritures ?</td><td></td></tr>
+</tbody></table></div>
+<h2>3. Statut et obligations</h2>
+<div class="table-wrap"><table><thead><tr><th>N°</th><th>Question</th><th>Réponse</th></tr></thead><tbody>
+<tr><td>9 ★</td><td>Quel régime comptable (système normal ou minimal de trésorerie) et quel régime fiscal pour chaque société ?</td><td></td></tr>
+<tr><td>10 ★</td><td>Quel est le statut auprès de la COSUMAF ? Quels rapports lui sont dus, à quelles dates ?</td><td></td></tr>
+<tr><td>11 ★</td><td>La société reçoit-elle ou détient-elle des fonds ou des titres de clients ?</td><td></td></tr>
+<tr><td>12</td><td>Des comptes selon les normes IFRS sont-ils exigés ou prévus ?</td><td></td></tr>
+<tr><td>13</td><td>Y a-t-il un commissaire aux comptes ? Quelles remarques lors du dernier contrôle ou audit ?</td><td></td></tr>
+<tr><td>14</td><td>Quelles obligations contre le blanchiment appliquez-vous aux clients et aux paiements, et qui en est responsable ?</td><td></td></tr>
+</tbody></table></div>
+<h2>4. Comptabilité et clôtures</h2>
+<div class="table-wrap"><table><thead><tr><th>N°</th><th>Question</th><th>Réponse</th></tr></thead><tbody>
+<tr><td>15 ★</td><td>Pouvez-vous fournir le plan comptable, la liste des journaux et les axes analytiques ?</td><td></td></tr>
+<tr><td>16</td><td>Quels centres de coûts ou de profit suivez-vous, et lesquels vous manquent ?</td><td></td></tr>
+<tr><td>17 ★</td><td>Comment se déroulent la clôture mensuelle et la clôture annuelle ? Combien de temps prennent-elles ?</td><td></td></tr>
+<tr><td>18</td><td>Comment corrigez-vous une écriture déjà validée ?</td><td></td></tr>
+<tr><td>19 ★</td><td>Depuis quel exercice faut-il reprendre les données, et que doit-on archiver ?</td><td></td></tr>
+</tbody></table></div>
+<h2>5. Clients, facturation et commissions</h2>
+<div class="table-wrap"><table><thead><tr><th>N°</th><th>Question</th><th>Réponse</th></tr></thead><tbody>
+<tr><td>20 ★</td><td>De la vente à l'encaissement : qui établit le devis et la facture, qui valide, sous quel numéro ?</td><td></td></tr>
+<tr><td>21</td><td>Quelles formes de facturation : forfait, acompte, échéancier, abonnement, honoraires de conseil, formation ?</td><td></td></tr>
+<tr><td>22 ★</td><td>La facturation électronique ou un dispositif homologué de l'administration vous est-il imposé ? Lequel ?</td><td></td></tr>
+<tr><td>23</td><td>Comment suivez-vous les impayés et les relances ? Quels délais moyens ?</td><td></td></tr>
+<tr><td>24</td><td>Commissions : comment sont-elles calculées, débloquées, payées et comptabilisées ? Le déblocage par une seule personne est-il acceptable ?</td><td></td></tr>
+</tbody></table></div>
+<h2>6. Achats, paiements et trésorerie</h2>
+<div class="table-wrap"><table><thead><tr><th>N°</th><th>Question</th><th>Réponse</th></tr></thead><tbody>
+<tr><td>25 ★</td><td>Qui demande, approuve, commande, réceptionne et paie ? Quels seuils d'approbation ?</td><td></td></tr>
+<tr><td>26 ★</td><td>Qui signe les paiements ? Combien de signatures, et à partir de quel montant ?</td><td></td></tr>
+<tr><td>27</td><td>Combien de banques et de caisses, en quelles devises ? Sous quel format recevez-vous les relevés ?</td><td></td></tr>
+<tr><td>28</td><td>Comment faites-vous les rapprochements et les prévisions de trésorerie ?</td><td></td></tr>
+<tr><td>29</td><td>Quelles opérations en devises, avec quels justificatifs au titre de la réglementation des changes ? Quel taux de change utilisez-vous ?</td><td></td></tr>
+</tbody></table></div>
+<h2>7. Fiscalité</h2>
+<div class="table-wrap"><table><thead><tr><th>N°</th><th>Question</th><th>Réponse</th></tr></thead><tbody>
+<tr><td>30 ★</td><td>Quelles déclarations et quels paiements, à quelles dates ? Qui les prépare et les dépose ?</td><td></td></tr>
+<tr><td>31</td><td>Pratiquez-vous ou subissez-vous des retenues à la source ? Comment suivez-vous les attestations ?</td><td></td></tr>
+<tr><td>32</td><td>Quelles difficultés fiscales reviennent (pénalités, redressements, pièces manquantes) ?</td><td></td></tr>
+</tbody></table></div>
+<h2>8. Immobilisations, budgets et pilotage</h2>
+<div class="table-wrap"><table><thead><tr><th>N°</th><th>Question</th><th>Réponse</th></tr></thead><tbody>
+<tr><td>33</td><td>Comment suivez-vous les immobilisations et les amortissements ? Qui sait où se trouve chaque bien ?</td><td></td></tr>
+<tr><td>34</td><td>Comment sont établis, approuvés et révisés les budgets ? Faut-il bloquer une dépense hors budget ?</td><td></td></tr>
+<tr><td>35 ★</td><td>Quels états et indicateurs remettez-vous à la direction, à quelle fréquence ?</td><td></td></tr>
+</tbody></table></div>
+<h2>9. Liens avec les autres services et sociétés</h2>
+<div class="table-wrap"><table><thead><tr><th>N°</th><th>Question</th><th>Réponse</th></tr></thead><tbody>
+<tr><td>36 ★</td><td>Paie : qui la calcule, avec quel outil ? Des écritures globales, sans salaire individuel, vous suffisent-elles ?</td><td></td></tr>
+<tr><td>37</td><td>Avances, notes de frais, indemnités : quel circuit aujourd'hui ?</td><td></td></tr>
+<tr><td>38</td><td>De quoi avez-vous besoin de la part du commercial et des ressources humaines ?</td><td></td></tr>
+<tr><td>39 ★</td><td>Investudy et les autres sociétés ont-elles des comptes séparés ? Quels flux entre elles ? Faut-il consolider ?</td><td></td></tr>
+</tbody></table></div>
+<h2>10. Contrôle, accès et validation</h2>
+<div class="table-wrap"><table><thead><tr><th>N°</th><th>Question</th><th>Réponse</th></tr></thead><tbody>
+<tr><td>40 ★</td><td>Qui peut saisir, valider, clôturer, payer et consulter ? Quelles actions ne doivent jamais revenir à la même personne ?</td><td></td></tr>
+<tr><td>41</td><td>Que doivent pouvoir voir le Directeur général, le Directeur général adjoint et un auditeur ?</td><td></td></tr>
+<tr><td>42 ★</td><td>Qui validera les règles comptables et fiscales de l'application, et testera les résultats ?</td><td></td></tr>
+</tbody></table></div>
+<h2>Documents à joindre, anonymisés</h2>
+<ul><li>[ ] Plan comptable, journaux et axes analytiques</li><li>[ ] Export d'écritures d'un mois, dans le format du logiciel</li><li>[ ] Balance et derniers états financiers (selon autorisation)</li><li>[ ] Modèles de devis, facture, avoir, bon de commande, ordre de paiement</li><li>[ ] Calendrier des clôtures, déclarations et rapports</li><li>[ ] Procédures écrites existantes et matrice des signatures</li></ul>
+<p><strong>Répondant :</strong> ______________________ <strong>Fonction :</strong> ______________________ <strong>Date :</strong> ______________</p></main></body></html>

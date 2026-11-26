@@ -41,8 +41,8 @@
 |---|---|---|
 | **Entrée** | Une adresse de connexion centrale, plus un lien propre par plateforme | Un seul identifiant ; on arrive directement dans sa plateforme ; aucune liste des plateformes avant la connexion |
 | **Accès** | Chaque compte n'ouvre que les plateformes autorisées | Un agent RH ne voit pas le CRM, et ignore ce que contient Finances |
-| **Isolation** | Une application par plateforme, chacune avec sa base ; Finances isolée en priorité | Un incident dans une plateforme n'atteint pas les autres |
-| **Administration** | Fonctions séparées : un administrateur des comptes, un superviseur en lecture seule, un administrateur par plateforme, un compte de secours | Personne ne détient toutes les clés |
+| **Isolation** | Une application par plateforme, chacune avec sa base ; Finances isolée en priorité | Un incident propre à une plateforme est mieux contenu ; une panne de la connexion commune ou d'un serveur partagé peut les toucher toutes |
+| **Administration** | Fonctions séparées : un administrateur des comptes, un superviseur en lecture seule, un administrateur par plateforme, un compte de secours | Aucun compte de l'application ne réunit tous les droits ; la personne qui administre le serveur et les bases garde un accès technique complet, à encadrer |
 | **Supervision** | Voir que tout fonctionne (connexions, erreurs, état), **sans lire le contenu des données** | La supervision technique est possible tout de suite ; voir l'activité des agents demande d'abord un avis juridique et RH |
 | **Échanges** | Un canal unique et contrôlé, une liste fermée d'informations autorisées | Un employé créé en RH est connu d'Assets ; les commissions du CRM arrivent en Finances ; rien d'autre ne circule |
 

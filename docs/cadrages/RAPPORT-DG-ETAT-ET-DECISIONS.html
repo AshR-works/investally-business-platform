@@ -20,7 +20,7 @@ th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertic
 th{background:var(--code)}
 hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
 nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
-@media print{main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+@media print{nav{display:none}main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
 </style></head><body><main><nav class="top">Investally Business Platform — cadrages · <a href="README.html">Index des cadrages</a> · <a href="../INDEX.html">Documentation</a> · <a href="../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../design/05-AIDE-A-LA-DECISION.html">Aide à la décision</a></nav><h1>Investally Business Platform — entretien avec la Direction générale : état, retours et décisions à prendre</h1>
 <p><em>Préparé le 2026-11-25 pour l'entretien avec la Direction générale. Document de travail : les propositions ci-dessous ne sont pas des décisions. Le détail technique de chaque point est dans les cinq arbitrages de <a href="README.html">l'index des cadrages</a>.</em></p>
 <h2>1. L'essentiel en une page</h2>
@@ -49,8 +49,8 @@ nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
 <div class="table-wrap"><table><thead><tr><th>Sujet</th><th>Proposition</th><th>Ce que cela change pour un utilisateur</th></tr></thead><tbody>
 <tr><td><strong>Entrée</strong></td><td>Une adresse de connexion centrale, plus un lien propre par plateforme</td><td>Un seul identifiant ; on arrive directement dans sa plateforme ; aucune liste des plateformes avant la connexion</td></tr>
 <tr><td><strong>Accès</strong></td><td>Chaque compte n'ouvre que les plateformes autorisées</td><td>Un agent RH ne voit pas le CRM, et ignore ce que contient Finances</td></tr>
-<tr><td><strong>Isolation</strong></td><td>Une application par plateforme, chacune avec sa base ; Finances isolée en priorité</td><td>Un incident dans une plateforme n'atteint pas les autres</td></tr>
-<tr><td><strong>Administration</strong></td><td>Fonctions séparées : un administrateur des comptes, un superviseur en lecture seule, un administrateur par plateforme, un compte de secours</td><td>Personne ne détient toutes les clés</td></tr>
+<tr><td><strong>Isolation</strong></td><td>Une application par plateforme, chacune avec sa base ; Finances isolée en priorité</td><td>Un incident propre à une plateforme est mieux contenu ; une panne de la connexion commune ou d'un serveur partagé peut les toucher toutes</td></tr>
+<tr><td><strong>Administration</strong></td><td>Fonctions séparées : un administrateur des comptes, un superviseur en lecture seule, un administrateur par plateforme, un compte de secours</td><td>Aucun compte de l'application ne réunit tous les droits ; la personne qui administre le serveur et les bases garde un accès technique complet, à encadrer</td></tr>
 <tr><td><strong>Supervision</strong></td><td>Voir que tout fonctionne (connexions, erreurs, état), <strong>sans lire le contenu des données</strong></td><td>La supervision technique est possible tout de suite ; voir l'activité des agents demande d'abord un avis juridique et RH</td></tr>
 <tr><td><strong>Échanges</strong></td><td>Un canal unique et contrôlé, une liste fermée d'informations autorisées</td><td>Un employé créé en RH est connu d'Assets ; les commissions du CRM arrivent en Finances ; rien d'autre ne circule</td></tr>
 </tbody></table></div>
