@@ -1,0 +1,123 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Finance : inventaire documentaire de la gestion comptable et fiscale</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{nav{display:none}main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — cadrages · <a href="README.html">Index des cadrages</a> · <a href="../INDEX.html">Documentation</a> · <a href="../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../design/05-AIDE-A-LA-DECISION.html">Aide à la décision</a></nav><h1>Finance : inventaire documentaire de la gestion comptable et fiscale</h1>
+<p><em>2026-11-26 · Propositions à corriger par le responsable des affaires financières. Établi à partir de connaissances métier <strong>non vérifiées sur les textes</strong>, sauf mention : non exhaustif, il ne certifie aucune conformité.</em></p>
+<p><strong>Mode :</strong> <strong>C</strong> créé dans l'application · <strong>R</strong> reçu puis archivé · <strong>Réf</strong> seulement référencé (géré ailleurs). <strong>Conservation :</strong> <strong>10</strong> = dix ans, pièce ou livre comptable (AUDCIF art. 24) · <strong>10 ?</strong> = dix ans proposés, à confirmer. <strong>Validation proposée :</strong> CPT comptable · RAF · DAF · DG · CONF responsable conformité · — aucune. <strong>Correction :</strong> à remplir (mode, valideur, écriture, durée, ou « sans objet »).</p>
+<p>Compléments : <a href="FINANCE-03-DOCUMENTS-A-VALIDER.html">documents à faire valider</a> (règles, livres, états et obligations) et <a href="FINANCE-02-ARCHITECTURE-CIBLE.html">architecture cible</a>.</p>
+<h2>1. Ventes</h2>
+<div class="table-wrap"><table><thead><tr><th>N°</th><th>Document</th><th>Mode</th><th>Validation</th><th>Écriture déclenchée</th><th>Conservation</th><th>Correction</th></tr></thead><tbody>
+<tr><td>V1</td><td>Devis</td><td>C</td><td>RAF au-delà d'un seuil</td><td>Aucune</td><td>10 ?</td><td></td></tr>
+<tr><td>V2</td><td>Bon de commande ou accord du client</td><td>R</td><td>CPT</td><td>Aucune</td><td>10 ?</td><td></td></tr>
+<tr><td>V3</td><td>Contrat client</td><td>R</td><td>DG</td><td>Aucune ; fixe l'échéancier</td><td>10 ?</td><td></td></tr>
+<tr><td>V4</td><td>Facture</td><td>C</td><td>RAF</td><td>Créance et produit, taxes</td><td>10</td><td></td></tr>
+<tr><td>V5</td><td>Facture d'acompte</td><td>C</td><td>RAF</td><td>Avance reçue, taxes selon la règle</td><td>10</td><td></td></tr>
+<tr><td>V6</td><td>Avoir</td><td>C</td><td>RAF</td><td>Annulation totale ou partielle</td><td>10</td><td></td></tr>
+<tr><td>V7</td><td>Reçu d'encaissement</td><td>C</td><td>CPT</td><td>Encaissement</td><td>10</td><td></td></tr>
+<tr><td>V8</td><td>Relance et mise en demeure</td><td>C</td><td>RAF</td><td>Aucune ; provision possible</td><td>10 ?</td><td></td></tr>
+</tbody></table></div>
+<h2>2. Achats</h2>
+<div class="table-wrap"><table><thead><tr><th>N°</th><th>Document</th><th>Mode</th><th>Validation</th><th>Écriture déclenchée</th><th>Conservation</th><th>Correction</th></tr></thead><tbody>
+<tr><td>A1</td><td>Demande d'achat</td><td>C</td><td>Responsable du service</td><td>Aucune ; engagement budgétaire</td><td>10 ?</td><td></td></tr>
+<tr><td>A2</td><td>Devis fournisseur</td><td>R</td><td>RAF</td><td>Aucune</td><td>10 ?</td><td></td></tr>
+<tr><td>A3</td><td>Bon de commande</td><td>C</td><td>RAF ou DAF selon le seuil</td><td>Aucune ; engagement</td><td>10 ?</td><td></td></tr>
+<tr><td>A4</td><td>Bon de réception ou attestation de service fait</td><td>C</td><td>Autre personne que l'acheteur</td><td>Charge à payer à la clôture</td><td>10</td><td></td></tr>
+<tr><td>A5</td><td>Facture et avoir fournisseur</td><td>R</td><td>RAF</td><td>Dette et charge, taxes</td><td>10</td><td></td></tr>
+<tr><td>A6</td><td>Contrat fournisseur, bail</td><td>R</td><td>DG</td><td>Charges selon l'échéancier</td><td>10 ?</td><td></td></tr>
+</tbody></table></div>
+<h2>3. Paiements et trésorerie</h2>
+<div class="table-wrap"><table><thead><tr><th>N°</th><th>Document</th><th>Mode</th><th>Validation</th><th>Écriture déclenchée</th><th>Conservation</th><th>Correction</th></tr></thead><tbody>
+<tr><td>T1</td><td>Ordre de paiement ou de virement</td><td>C</td><td>Deux signataires</td><td>Aucune avant exécution</td><td>10</td><td></td></tr>
+<tr><td>T2</td><td>Avis de débit et de crédit, preuve de paiement</td><td>R</td><td>CPT</td><td>Paiement ou encaissement</td><td>10</td><td></td></tr>
+<tr><td>T3</td><td>Chèques émis, reçus et bordereaux de remise</td><td>C ou R</td><td>RAF</td><td>Mouvement bancaire</td><td>10</td><td></td></tr>
+<tr><td>T4</td><td>Pièces et journal de caisse</td><td>C</td><td>RAF</td><td>Mouvement de caisse</td><td>10</td><td></td></tr>
+<tr><td>T5</td><td>Procès-verbal de contrôle de caisse</td><td>C</td><td>DAF</td><td>Écart constaté</td><td>10</td><td></td></tr>
+<tr><td>T6</td><td>Relevé bancaire</td><td>R</td><td>—</td><td>Aucune ; sert au rapprochement</td><td>10</td><td></td></tr>
+<tr><td>T7</td><td>État de rapprochement</td><td>C</td><td>RAF</td><td>Ajustements justifiés</td><td>10</td><td></td></tr>
+<tr><td>T8</td><td>Contrat d'emprunt ou de placement, échéancier</td><td>R</td><td>DG</td><td>Capital, intérêts, produits</td><td>10</td><td></td></tr>
+<tr><td>T9</td><td>Prévision de trésorerie</td><td>C</td><td>DAF</td><td>Aucune</td><td>10 ?</td><td></td></tr>
+</tbody></table></div>
+<h2>4. Personnel (montants agrégés ou nécessaires au paiement)</h2>
+<div class="table-wrap"><table><thead><tr><th>N°</th><th>Document</th><th>Mode</th><th>Validation</th><th>Écriture déclenchée</th><th>Conservation</th><th>Correction</th></tr></thead><tbody>
+<tr><td>P1</td><td>Journal de paie agrégé</td><td>R</td><td>DAF</td><td>Charges de personnel et dettes</td><td>10</td><td></td></tr>
+<tr><td>P2</td><td>Déclarations et paiements sociaux (CNPS)</td><td>R</td><td>DAF</td><td>Dette sociale et paiement</td><td>10</td><td></td></tr>
+<tr><td>P3</td><td>Ordre de mission</td><td>Réf</td><td>RH</td><td>Aucune</td><td>10 ?</td><td></td></tr>
+<tr><td>P4</td><td>Note de frais et justificatifs</td><td>C</td><td>Responsable puis RAF</td><td>Charge et dette envers l'employé</td><td>10</td><td></td></tr>
+<tr><td>P5</td><td>Demande et remboursement d'avance</td><td>C</td><td>DAF</td><td>Avance, puis récupération</td><td>10</td><td></td></tr>
+<tr><td>P6</td><td>Décompte d'indemnités</td><td>R</td><td>DAF</td><td>Charge et dette</td><td>10</td><td></td></tr>
+</tbody></table></div>
+<p>Ces lignes touchent des personnes : droits restreints et avis juridique. Les bulletins et salaires individuels restent hors application (D55 à D60) ; les lignes P4 à P6 nomment un bénéficiaire et demandent <strong>une décision explicite</strong>.</p>
+<h2>5. Fiscalité</h2>
+<div class="table-wrap"><table><thead><tr><th>N°</th><th>Document</th><th>Mode</th><th>Validation</th><th>Écriture déclenchée</th><th>Conservation</th><th>Correction</th></tr></thead><tbody>
+<tr><td>F1</td><td>Déclaration mensuelle de TVA et autres taxes</td><td>C</td><td>DAF</td><td>Taxe due ou crédit</td><td>10</td><td></td></tr>
+<tr><td>F2</td><td>État des retenues à la source opérées et subies</td><td>C</td><td>RAF</td><td>Retenues dues ou déductibles</td><td>10</td><td></td></tr>
+<tr><td>F3</td><td>Attestation de retenue</td><td>R</td><td>CPT</td><td>Justifie la déduction</td><td>10</td><td></td></tr>
+<tr><td>F4</td><td>Acomptes d'impôt sur les résultats</td><td>C</td><td>DAF</td><td>Acompte versé</td><td>10</td><td></td></tr>
+<tr><td>F5</td><td>Déclaration statistique et fiscale annuelle</td><td>C</td><td>DAF puis DG</td><td>Impôt de l'exercice</td><td>10</td><td></td></tr>
+<tr><td>F6</td><td>Patente et autres impôts locaux</td><td>R</td><td>DAF</td><td>Charge d'impôt</td><td>10</td><td></td></tr>
+<tr><td>F7</td><td>Quittances et reçus de paiement des impôts</td><td>R</td><td>CPT</td><td>Paiement</td><td>10</td><td></td></tr>
+<tr><td>F8</td><td>Attestation de conformité fiscale</td><td>R</td><td>RAF</td><td>Aucune ; échéance suivie</td><td>10 ?</td><td></td></tr>
+<tr><td>F9</td><td>Avis, notifications, redressements et réponses</td><td>R</td><td>DAF puis DG</td><td>Provision ou dette</td><td>10</td><td></td></tr>
+</tbody></table></div>
+<h2>6. Immobilisations et stocks</h2>
+<div class="table-wrap"><table><thead><tr><th>N°</th><th>Document</th><th>Mode</th><th>Validation</th><th>Écriture déclenchée</th><th>Conservation</th><th>Correction</th></tr></thead><tbody>
+<tr><td>I1</td><td>Facture d'acquisition (renvoi à A5)</td><td>Réf</td><td>RAF</td><td>Entrée à l'actif</td><td>10</td><td></td></tr>
+<tr><td>I2</td><td>Procès-verbal de mise en service</td><td>C</td><td>Responsable du bien</td><td>Début d'amortissement</td><td>10</td><td></td></tr>
+<tr><td>I3</td><td>Plan et tableau d'amortissement</td><td>C</td><td>DAF</td><td>Dotations</td><td>10</td><td></td></tr>
+<tr><td>I4</td><td>Transfert entre services ou sociétés</td><td>C</td><td>DAF</td><td>Reclassement ou cession interne</td><td>10</td><td></td></tr>
+<tr><td>I5</td><td>Cession ou mise au rebut</td><td>C</td><td>DG</td><td>Sortie de l'actif, résultat</td><td>10</td><td></td></tr>
+<tr><td>I6</td><td>Bons d'entrée et de sortie de stock, s'il y en a</td><td>C</td><td>Magasinier puis RAF</td><td>Variation de stock</td><td>10</td><td></td></tr>
+<tr><td>I7</td><td>Fiche physique de l'équipement (Assets)</td><td>Réf</td><td>—</td><td>Aucune</td><td>Selon Assets</td><td></td></tr>
+</tbody></table></div>
+<h2>7. Clôture et états</h2>
+<div class="table-wrap"><table><thead><tr><th>N°</th><th>Document</th><th>Mode</th><th>Validation</th><th>Écriture déclenchée</th><th>Conservation</th><th>Correction</th></tr></thead><tbody>
+<tr><td>C1</td><td>Pièce d'opérations diverses</td><td>C</td><td>RAF</td><td>Régularisation</td><td>10</td><td></td></tr>
+<tr><td>C2</td><td>Calcul des provisions et des charges à rattacher</td><td>C</td><td>DAF</td><td>Écritures d'inventaire</td><td>10</td><td></td></tr>
+<tr><td>C3</td><td>Livres, balances et états financiers (voir liste C)</td><td>C</td><td>DAF</td><td>Aucune ; figés à la clôture</td><td>10</td><td></td></tr>
+<tr><td>C4</td><td>Procès-verbal d'approbation des comptes et d'affectation du résultat</td><td>R</td><td>Organe compétent</td><td>Affectation du résultat</td><td>10 ?</td><td></td></tr>
+<tr><td>C5</td><td>Rapports du commissaire aux comptes et réponses</td><td>R</td><td>DG</td><td>Ajustements éventuels</td><td>10 ?</td><td></td></tr>
+</tbody></table></div>
+<h2>8. Société, devises, tiers et engagements</h2>
+<div class="table-wrap"><table><thead><tr><th>N°</th><th>Document</th><th>Mode</th><th>Validation</th><th>Écriture déclenchée</th><th>Conservation</th><th>Correction</th></tr></thead><tbody>
+<tr><td>S1</td><td>Statuts, immatriculation, identifiant fiscal</td><td>R</td><td>DG</td><td>Capital, selon l'acte</td><td>10 ?</td><td></td></tr>
+<tr><td>S2</td><td>Convention entre sociétés du groupe</td><td>R</td><td>DG</td><td>Flux intra-groupe</td><td>10 ?</td><td></td></tr>
+<tr><td>S3</td><td>Dossier d'une opération en devises (domiciliation, autorisation, justificatifs)</td><td>R</td><td>DAF et CONF</td><td>Opération et écart de change</td><td>10 ?</td><td></td></tr>
+<tr><td>S4</td><td>Dossier d'identification et de vigilance d'un tiers</td><td>C et R</td><td>CONF</td><td>Aucune ; peut bloquer un paiement</td><td>10 après la relation, selon le statut</td><td></td></tr>
+<tr><td>S5</td><td>Police d'assurance et sinistre</td><td>R</td><td>DAF</td><td>Prime, indemnité</td><td>10 ?</td><td></td></tr>
+<tr><td>S6</td><td>Caution et garantie</td><td>R</td><td>DG</td><td>Engagement à mentionner</td><td>10 ?</td><td></td></tr>
+</tbody></table></div>
+<h2>9. Pilotage et contrôle</h2>
+<div class="table-wrap"><table><thead><tr><th>N°</th><th>Document</th><th>Mode</th><th>Validation</th><th>Écriture déclenchée</th><th>Conservation</th><th>Correction</th></tr></thead><tbody>
+<tr><td>R1</td><td>Budget et révisions</td><td>C</td><td>DAF puis DG</td><td>Aucune</td><td>10 ?</td><td></td></tr>
+<tr><td>R2</td><td>Tableau de bord et analyse des écarts</td><td>C</td><td>DAF</td><td>Aucune</td><td>10 ?</td><td></td></tr>
+<tr><td>R3</td><td>Rapport de gestion</td><td>C</td><td>DG</td><td>Aucune</td><td>10 ?</td><td></td></tr>
+<tr><td>R4</td><td>Rapports d'audit interne et plans d'action</td><td>C et R</td><td>DG</td><td>Aucune</td><td>10 ?</td><td></td></tr>
+<tr><td>R5</td><td>Rapports et cartographie dus à la COSUMAF, selon le statut</td><td>C</td><td>CONF puis DG</td><td>Aucune</td><td>10 ?</td><td></td></tr>
+</tbody></table></div>
+<h2>Documents manquants à ajouter</h2>
+<div class="table-wrap"><table><thead><tr><th>Document</th><th>Mode</th><th>Validation</th><th>Écriture déclenchée</th><th>Conservation</th></tr></thead><tbody>
+<tr><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td></td><td></td><td></td><td></td><td></td></tr>
+</tbody></table></div>
+<p><strong>Relu par :</strong> ______________________ <strong>Fonction :</strong> ______________________ <strong>Date :</strong> ______________</p></main></body></html>
