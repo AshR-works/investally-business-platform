@@ -2,6 +2,8 @@
 
 *2026-11-26 · Méthode : [METHODE-D-ARBITRAGE](../METHODE-D-ARBITRAGE.md). **Décision laissée à la Direction produit.** Les notes sont des jugements de l'équipe technique, à contester. Prix et fonctions des logiciels du marché non vérifiés.*
 
+> **Décidé le 2026-11-26 (D80) : option C, solution propre**, par la Direction générale, contre la recommandation B de ce document. Motifs : modularité, personnalisation, payer moins, maîtriser les dépenses. Sage n'est pas utilisé aujourd'hui. La grille est conservée telle quelle : les risques qu'elle signale sur C (conformité, charge, délai) restent à traiter.
+
 ## 1. La question
 Qui tient les livres comptables de référence : une application développée en interne, ou un logiciel existant relié à Investally ?
 

@@ -1,0 +1,60 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Analyse — dépendances du module RH avant la séparation</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{nav{display:none}main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — cadrages · <a href="README.html">Index des cadrages</a> · <a href="../INDEX.html">Documentation</a> · <a href="../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../design/05-AIDE-A-LA-DECISION.html">Aide à la décision</a></nav><h1>Analyse — dépendances du module RH avant la séparation</h1>
+<p><em>2026-11-27 · Suite de D81 et de la dette D191. Lecture du code (imports, schéma, droits, interface, données de démonstration). <strong>Aucun fichier de code modifié</strong>, aucune suppression essayée : les conclusions restent à prouver par une compilation et les tests lors de l'exécution.</em></p>
+<h2>1. Question</h2>
+<p>Que casse-t-on si la plateforme RH ne reprend pas les <strong>contrats</strong>, les <strong>parcours</strong> d'intégration et de départ, et les <strong>présences</strong> ?</p>
+<h2>2. Conclusion</h2>
+<p><strong>Les écrans conservés (annuaire, organigramme, fiches, absences) ne dépendent pas des trois fonctions retirées</strong>, d'après les imports. La dépendance est à sens unique : ce qui est retiré s'appuie sur ce qui est gardé. Les points à traiter sont les raccords : déclaration du module, menu, droits, données de démonstration et tests.</p>
+<h2>3. Sens des dépendances</h2>
+<div class="table-wrap"><table><thead><tr><th>Élément</th><th>Constat</th></tr></thead><tbody>
+<tr><td>Fiches et absences (serveur)</td><td>Aucune référence aux contrats, parcours ou présences hors de <code>hr.module.ts</code></td></tr>
+<tr><td>Contrats, parcours, présences (serveur)</td><td>S'appuient sur les employés</td></tr>
+<tr><td>Présences</td><td>Lisent aussi les <strong>absences</strong> (calendrier et demandes)</td></tr>
+<tr><td>Interface conservée</td><td>Aucun import des écrans ou bibliothèques retirés (une mention en commentaire dans <code>page-tabs.tsx</code>)</td></tr>
+<tr><td>Interface retirée</td><td>Aucun import des bibliothèques <code>hr</code> et <code>leave</code> détecté par la recherche</td></tr>
+<tr><td>Autres modules</td><td>Hors du module RH, seuls <code>app.module.ts</code> et le chargement des données de démonstration l'importent</td></tr>
+<tr><td>RH vers les autres</td><td><strong><code>iam</code></strong> (comptes, droits) et <strong><code>audit</code></strong>, utilisés partout : à fournir par le socle commun</td></tr>
+</tbody></table></div>
+<h2>4. Base de données</h2>
+<p><code>Contract</code>, <code>Journey</code> et <code>PresenceDeclaration</code> référencent <code>Employee</code> ; l'inverse n'est pas requis. Les tables peuvent rester dans le schéma <code>hr</code>, vides, ou être créées plus tard. Retirer des modèles demanderait une migration : <strong>à éviter</strong> au premier temps.</p>
+<h2>5. Raccords à traiter</h2>
+<div class="table-wrap"><table><thead><tr><th>Fichier</th><th>À faire</th></tr></thead><tbody>
+<tr><td><code>api/src/modules/hr/hr.module.ts</code></td><td>Contrôleurs, cas d'usage et dépôts des trois fonctions</td></tr>
+<tr><td><code>web/lib/modules.ts</code></td><td>Cinq entrées : Présences, Contrats, Contrats à échéance, Parcours, Modèles de parcours</td></tr>
+<tr><td><code>web/lib/roles.ts</code>, <code>api/src/modules/iam/domain/roles.ts</code></td><td>Droits <code>hr.contract.<em></code>, <code>hr.journey.</em></code>, <code>hr.presence.*</code> attribués à de nombreux rôles</td></tr>
+<tr><td><code>api/src/cli/seed/run-seed.ts</code>, <code>seed-plan.ts</code></td><td>Le chargement de démonstration <strong>utilise</strong> les trois fonctions : il ne compilerait plus après leur retrait</td></tr>
+<tr><td><code>api/test/support/idor-registry.ts</code>, <code>idor-contract.integration.spec.ts</code></td><td>Routes et sondes des trois fonctions</td></tr>
+<tr><td>Tests <code>hr-contracts</code>, <code>hr-journeys</code>, <code>hr-presences</code>, doublures en mémoire</td><td>À retirer ou à conserver avec le code</td></tr>
+<tr><td>Collection Postman, documentation, fiches de test d'écran</td><td>À mettre à jour</td></tr>
+</tbody></table></div>
+<h2>6. Trois manières de « ne pas reprendre »</h2>
+<div class="table-wrap"><table><thead><tr><th>Manière</th><th>Effort</th><th>Reprise future</th></tr></thead><tbody>
+<tr><td><strong>1. Masquer</strong> : retirer du menu et des droits, garder le code</td><td>Faible</td><td>Immédiate</td></tr>
+<tr><td><strong>2. Désactiver</strong> : en plus, ne pas déclarer les contrôleurs</td><td>Moyen</td><td>Simple</td></tr>
+<tr><td><strong>3. Extraire</strong> : ne pas copier le code dans la nouvelle plateforme</td><td>Élevé</td><td>Coûteuse ; l'écart grandit avec le temps</td></tr>
+</tbody></table></div>
+<p><strong>Recommandation : commencer par 1 ou 2.</strong> Le besoin de la RH n'est pas confirmé (D191) ; extraire avant sa réponse serait difficile à défaire. Avec 1, les routes restent actives côté serveur : seuls les droits les protègent, d'où l'intérêt de 2 pour une mise en production. <strong>Décision à prendre</strong> après la réponse de la RH et du DG.</p>
+<h2>7. Limites</h2>
+<ul><li>Analyse par recherche de texte et d'imports ; les liens indirects (libellés, événements d'audit, exports) ne sont pas garantis.</li><li>Non examinés : les écritures croisées dans le journal d'audit, la collection Postman en détail, la documentation de conception.</li></ul></main></body></html>

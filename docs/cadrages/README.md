@@ -21,12 +21,15 @@ Chaque cadrage dit **ce que la session fait et ne fait pas**, **l'état de dépa
 | — | **Arbitrage** échanges et événements entre les plateformes (informations transversales, audit, indicateurs, notifications) | [ARBITRAGE-ECHANGES-ET-EVENEMENTS-ENTRE-PLATEFORMES.md](ARBITRAGE-ECHANGES-ET-EVENEMENTS-ENTRE-PLATEFORMES.md) | Options 0, A à D, 7 sous-décisions (**à trancher**, 2026-11-25) |
 | — | **Rapport** pour l'entretien avec la Direction générale : état, retours, propositions et huit décisions à prendre | [RAPPORT-DG-ETAT-ET-DECISIONS.md](RAPPORT-DG-ETAT-ET-DECISIONS.md) | Document de travail (2026-11-25) |
 | — | **Schéma annoté** de l'architecture : actuelle et cible proposée, avec ce qui change | [SCHEMA-ARCHITECTURE-RESTRUCTURATION.md](SCHEMA-ARCHITECTURE-RESTRUCTURATION.md) | Synthèse, rien de décidé (2026-11-25) |
-| — | **Arbitrage** Finance : construire ou acheter le cœur comptable | [ARBITRAGE-FINANCE-CONSTRUIRE-OU-ACHETER.md](ARBITRAGE-FINANCE-CONSTRUIRE-OU-ACHETER.md) | Options 0, A à C (**à trancher**, 2026-11-26) |
+| — | **Arbitrage** Finance : construire ou acheter le cœur comptable | [ARBITRAGE-FINANCE-CONSTRUIRE-OU-ACHETER.md](ARBITRAGE-FINANCE-CONSTRUIRE-OU-ACHETER.md) | **Décidé : C** (D80, 2026-11-26) |
 | — | **Finance** : référentiel réglementaire et architecture cible, version 0 | [Référentiel](FINANCE-01-REFERENTIEL-REGLEMENTAIRE.md) · [Architecture](FINANCE-02-ARCHITECTURE-CIBLE.md) | Proposition à valider (2026-11-26) |
 | — | **Questions** à la Direction générale sur l'application Finance (une page à remplir) | [QUESTIONS-DG-APPLICATION-FINANCE.md](QUESTIONS-DG-APPLICATION-FINANCE.md) | En attente de réponses (2026-11-26) |
 | — | **Questions** au responsable des affaires financières sur l'application Finance | [QUESTIONS-RESPONSABLE-FINANCIER-APPLICATION-FINANCE.md](QUESTIONS-RESPONSABLE-FINANCIER-APPLICATION-FINANCE.md) | En attente de réponses (2026-11-26) |
 | — | **Finance** : documents à faire valider par le responsable des affaires financières | [FINANCE-03-DOCUMENTS-A-VALIDER.md](FINANCE-03-DOCUMENTS-A-VALIDER.md) | Liste de travail à valider (2026-11-26) |
 | — | **Finance** : inventaire documentaire de la gestion comptable et fiscale | [FINANCE-04-INVENTAIRE-DOCUMENTAIRE.md](FINANCE-04-INVENTAIRE-DOCUMENTAIRE.md) | Propositions à corriger (2026-11-26) |
+| — | **Cadrage** Finance, première tranche : budgets et dépenses | [CADRAGE-FINANCE-BUDGETS-ET-DEPENSES.md](CADRAGE-FINANCE-BUDGETS-ET-DEPENSES.md) | Valeurs par défaut à confirmer (2026-11-26) |
+| — | **Arbitrage** emplacement et calendrier de la tranche budgets et dépenses | [ARBITRAGE-FINANCE-EMPLACEMENT-PREMIERE-TRANCHE.md](ARBITRAGE-FINANCE-EMPLACEMENT-PREMIERE-TRANCHE.md) | Options A à C (**à trancher**, 2026-11-26) |
+| — | **Analyse** des dépendances du module RH avant la séparation | [ANALYSE-DEPENDANCES-RH.md](ANALYSE-DEPENDANCES-RH.md) | Manière de ne pas reprendre à décider (2026-11-27) |
 | — | **Observations de recette** : téléphones, fenêtres qui débordent, cohérence visuelle, jeu de données de démonstration | [OBSERVATIONS-VALIDATION-UX-ET-DONNEES-DE-TEST.md](OBSERVATIONS-VALIDATION-UX-ET-DONNEES-DE-TEST.md) | Analyse et plan (2026-11-03) ; tâches T1 à T4, points Q1 à Q9 à confirmer |
 
 ## Recommandations en un coup d'œil
