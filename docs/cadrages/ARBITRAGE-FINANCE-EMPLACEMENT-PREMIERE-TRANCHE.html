@@ -1,0 +1,52 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Arbitrage — Finance : où et quand construire la tranche budgets et dépenses</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{nav{display:none}main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — cadrages · <a href="README.html">Index des cadrages</a> · <a href="../INDEX.html">Documentation</a> · <a href="../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../design/05-AIDE-A-LA-DECISION.html">Aide à la décision</a></nav><h1>Arbitrage — Finance : où et quand construire la tranche budgets et dépenses</h1>
+<p><em>2026-11-26 · Méthode : <a href="../METHODE-D-ARBITRAGE.html">METHODE-D-ARBITRAGE</a>. <strong>Décision laissée à la Direction produit.</strong> Les notes sont des jugements de l'équipe technique, à contester. Suite de D80.</em></p>
+<blockquote><p><strong>Précision du 2026-11-27 (D81) :</strong> la RH réorganisée sera mise en production avant Finance. Le choix de l'emplacement (A, B ou C) reste ouvert.</p></blockquote>
+<h2>1. La question</h2>
+<p>La restructuration en plateformes n'est pas décidée et le développeur est seul. Où vit la première tranche, et quand démarre-t-elle ?</p>
+<h2>2. Options</h2>
+<div class="table-wrap"><table><thead><tr><th></th><th>Principe</th><th>Réversibilité</th></tr></thead><tbody>
+<tr><td><strong>A. Module dans l'application actuelle</strong></td><td>Module <code>finance</code> isolé (schéma propre, interface publique, droits propres), extractible ensuite</td><td>Bonne</td></tr>
+<tr><td><strong>B. Application séparée dès maintenant</strong></td><td>Nouvelle application et nouvelle base ; identité commune à construire d'abord</td><td>Faible</td></tr>
+<tr><td><strong>C. Après la restructuration (statu quo)</strong></td><td>Rien avant les arbitrages de restructuration et l'identité commune</td><td>Totale</td></tr>
+</tbody></table></div>
+<h2>3. Grille (poids de 1 à 5, notes de 1 à 5, maximum 100)</h2>
+<div class="table-wrap"><table><thead><tr><th>Critère (poids)</th><th>A</th><th>B</th><th>C</th></tr></thead><tbody>
+<tr><td>Délai avant un résultat utile (5)</td><td>5</td><td>2</td><td>1</td></tr>
+<tr><td>Charge pour un développeur seul (5)</td><td>4</td><td>1</td><td>3</td></tr>
+<tr><td>Réemploi de l'existant (4)</td><td>5</td><td>2</td><td>4</td></tr>
+<tr><td>Respect de la séparation des applications (4)</td><td>2</td><td>5</td><td>4</td></tr>
+<tr><td>Absence de reprise ultérieure (2)</td><td>3</td><td>4</td><td>5</td></tr>
+<tr><td><strong>Total</strong></td><td><strong>79</strong></td><td><strong>51</strong></td><td><strong>62</strong></td></tr>
+</tbody></table></div>
+<p>Totaux recalculés : A = 25 + 20 + 20 + 8 + 6 ; B = 10 + 5 + 8 + 20 + 8 ; C = 5 + 15 + 16 + 16 + 10.</p>
+<h2>4. Risques de A</h2>
+<ul><li>Le DG veut des applications qui ne s'exposent pas les unes aux autres : un module partagé <strong>ne le garantit pas</strong>. À lui dire, avec une date de réexamen.</li><li>Dette d'extraction si la séparation est ensuite retenue.</li><li>L'application actuelle n'est pas en production : l'hébergement, les sauvegardes et la relève sont à régler avant de lui confier des dépenses réelles.</li><li>La réorganisation du CRM et de la RH prend du retard.</li></ul>
+<h2>5. Recommandation</h2>
+<p><strong>Option A</strong>, sous réserve que le DG accepte une séparation différée.</p>
+<h2>6. Décision attendue</h2>
+<p><strong>Réponse courte</strong> : « A », « B » ou « C ».</p>
+<p>Sous-décisions :</p>
+<ol><li>La tranche passe-t-elle <strong>avant</strong> la réorganisation du CRM et de la RH ?</li><li>Le DG accepte-t-il une séparation différée (option A) ?</li></ol></main></body></html>

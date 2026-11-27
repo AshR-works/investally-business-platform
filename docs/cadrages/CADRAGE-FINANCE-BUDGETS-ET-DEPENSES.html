@@ -1,0 +1,88 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Cadrage — Finance, première tranche : budgets et dépenses</title><style>
+:root{--bg:#fff;--text:#1b2430;--muted:#5b6675;--border:#d5dae1;--accent:#1f4fd8;--code:#f3f5f8;--quote:#eef3ff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--text:#e8ecf1;--muted:#9aa5b4;--border:#364050;--accent:#6d95ff;--code:#1b212a;--quote:#1b2536}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:1.9rem;margin:.2em 0 .6em;line-height:1.25}
+h2{font-size:1.4rem;margin:2.2em 0 .6em;padding-bottom:.25em;border-bottom:2px solid var(--border)}
+h3{font-size:1.1rem;margin:1.6em 0 .4em}
+a{color:var(--accent)}
+p,li{max-width:80ch}
+code{background:var(--code);padding:.1em .35em;border-radius:4px;font:.88em ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+pre{background:var(--code);padding:1rem;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0}
+blockquote{margin:1rem 0;padding:.6rem 1rem;background:var(--quote);border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.3em 0}
+.table-wrap{overflow-x:auto;margin:1rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:var(--code)}
+hr{border:0;border-top:1px solid var(--border);margin:2rem 0}
+nav.top{font-size:.9rem;color:var(--muted);margin-bottom:1rem}
+@media print{nav{display:none}main{max-width:none;padding:0}a{color:inherit}h2{break-after:avoid}table,pre{break-inside:avoid}}
+</style></head><body><main><nav class="top">Investally Business Platform — cadrages · <a href="README.html">Index des cadrages</a> · <a href="../INDEX.html">Documentation</a> · <a href="../METHODE-D-ARBITRAGE.html">Méthode d&#8217;arbitrage</a> · <a href="../design/05-AIDE-A-LA-DECISION.html">Aide à la décision</a></nav><h1>Cadrage — Finance, première tranche : budgets et dépenses</h1>
+<p><em>2026-11-26 · Suite de D80 et de l'<a href="../adr/0019-finance-solution-propre.html">ADR-0019</a>. <strong>Aucun code</strong> tant que l'<a href="ARBITRAGE-FINANCE-EMPLACEMENT-PREMIERE-TRANCHE.html">emplacement</a> n'est pas choisi. Les règles ci-dessous sont des <strong>valeurs par défaut proposées</strong>, validées ni par le responsable des affaires financières ni par le RCCI.</em></p>
+<h2>1. But et mesure du succès</h2>
+<p>Maîtriser les dépenses : savoir qui engage quoi, sur quel budget, avec quelle pièce.</p>
+<div class="table-wrap"><table><thead><tr><th>Indicateur proposé</th><th>Avant (à relever maintenant)</th><th>Cible à fixer</th></tr></thead><tbody>
+<tr><td>Part des dépenses approuvées avant l'achat</td><td></td><td></td></tr>
+<tr><td>Délai moyen entre la demande et la décision</td><td></td><td></td></tr>
+<tr><td>Factures retrouvées avec leur demande et leur réception</td><td></td><td></td></tr>
+<tr><td>Dépassements de budget détectés avant engagement</td><td></td><td></td></tr>
+</tbody></table></div>
+<p>Sans relevé « avant », aucun progrès ne pourra être montré.</p>
+<h2>2. Périmètre</h2>
+<div class="table-wrap"><table><thead><tr><th>Dans la tranche</th><th>Hors de la tranche</th></tr></thead><tbody>
+<tr><td>Budgets annuels, par service et par catégorie</td><td>Grand livre, journaux, états financiers</td></tr>
+<tr><td>Demande d'achat, approbation, bon de commande, réception</td><td>Calcul et déclaration des taxes</td></tr>
+<tr><td>Facture fournisseur rapprochée ; dépense engagée et réalisée</td><td>Paie, notes de frais et avances nominatives</td></tr>
+<tr><td>Constat du paiement avec justificatif</td><td>Exécution ou génération de virements</td></tr>
+<tr><td>Export pour la comptabilité</td><td>Immobilisations, devises multiples, consolidation</td></tr>
+</tbody></table></div>
+<h2>3. Circuit</h2>
+<pre><code>Demande (brouillon) -&gt; soumise -&gt; approuvée | refusée
+   -&gt; bon de commande -&gt; réception (totale ou partielle)
+   -&gt; facture rapprochée -&gt; bonne à payer -&gt; payée (justificatif)
+Annulation possible avant réception, avec motif.</code></pre>
+<div class="table-wrap"><table><thead><tr><th>Étape</th><th>Effet budgétaire</th></tr></thead><tbody>
+<tr><td>Demande soumise</td><td>Montant <strong>réservé</strong>, montré au valideur</td></tr>
+<tr><td>Bon de commande</td><td>Montant <strong>engagé</strong></td></tr>
+<tr><td>Facture rapprochée</td><td>Montant <strong>réalisé</strong>, l'engagement diminue d'autant</td></tr>
+<tr><td>Refus ou annulation</td><td>Réservation ou engagement libéré</td></tr>
+</tbody></table></div>
+<h2>4. Règles par défaut</h2>
+<div class="table-wrap"><table><thead><tr><th>N°</th><th>Règle proposée</th><th>À confirmer par</th></tr></thead><tbody>
+<tr><td>F-B1</td><td>Un budget par exercice (année civile), service et catégorie, en XAF</td><td>Responsable financier</td></tr>
+<tr><td>F-B2</td><td>Un budget publié ne se modifie pas : une <strong>révision</strong> datée et motivée s'ajoute</td><td>Responsable financier</td></tr>
+<tr><td>F-B3</td><td>Dépassement : alerte et approbation de niveau supérieur, sans blocage absolu</td><td>DG</td></tr>
+<tr><td>F-B4</td><td>Seuils d'approbation paramétrables ; <strong>aucune valeur proposée</strong></td><td>DG, responsable financier</td></tr>
+<tr><td>F-B5</td><td>Nul n'approuve sa propre demande</td><td>RCCI</td></tr>
+<tr><td>F-B6</td><td>La réception est faite par une autre personne que le valideur</td><td>RCCI</td></tr>
+<tr><td>F-B7</td><td>Écart entre facture et commande : bloquant au-delà d'une tolérance, nulle par défaut</td><td>Responsable financier</td></tr>
+<tr><td>F-B8</td><td>Un même couple fournisseur et numéro de facture ne peut être saisi deux fois</td><td>Responsable financier</td></tr>
+<tr><td>F-B9</td><td>Rien n'est supprimé : annulation motivée, journal d'audit</td><td>RCCI</td></tr>
+<tr><td>F-B10</td><td>Pièces conservées dix ans (AUDCIF art. 24 pour les pièces comptables)</td><td>Responsable financier</td></tr>
+<tr><td>F-B11</td><td>En cas d'absence d'un valideur : délégation datée</td><td>DG</td></tr>
+</tbody></table></div>
+<h2>5. Rôles</h2>
+<div class="table-wrap"><table><thead><tr><th>Action</th><th>Demandeur</th><th>Responsable de service</th><th>Responsable financier</th><th>DG</th><th>RCCI</th></tr></thead><tbody>
+<tr><td>Créer une demande</td><td>Oui</td><td>Oui</td><td>Oui</td><td>Oui</td><td>Non</td></tr>
+<tr><td>Approuver</td><td>Non</td><td>Sous le seuil</td><td>Sous le seuil</td><td>Au-delà</td><td>Non</td></tr>
+<tr><td>Préparer et publier un budget</td><td>Non</td><td>Propose</td><td>Prépare</td><td>Publie</td><td>Non</td></tr>
+<tr><td>Bon de commande, facture, constat du paiement</td><td>Non</td><td>Non</td><td>Oui</td><td>Non</td><td>Non</td></tr>
+<tr><td>Consulter</td><td>Ses demandes</td><td>Son service</td><td>Tout</td><td>Tout</td><td>Tout, sans écrire</td></tr>
+</tbody></table></div>
+<p><strong>Point de fragilité :</strong> une seule personne tient la finance. Commander, saisir la facture et constater le paiement lui reviennent. Contrôle compensatoire proposé : une revue mensuelle des paiements par le DG ou le RCCI.</p>
+<h2>6. Données (esquisse)</h2>
+<p><code>budget</code>, <code>budget_line</code>, <code>budget_revision</code>, <code>supplier</code>, <code>purchase_request</code>, <code>approval</code>, <code>purchase_order</code>, <code>receipt</code>, <code>supplier_invoice</code>, <code>payment_record</code>. Montants en décimaux exacts. Références vers les services et les personnes par identifiant, sans clé étrangère entre schémas (D161). Pièces dans le module documents ; actions dans le journal d'audit.</p>
+<h2>7. Lots</h2>
+<div class="table-wrap"><table><thead><tr><th>Lot</th><th>Contenu</th><th>Critère de fin</th></tr></thead><tbody>
+<tr><td>B1</td><td>Fournisseurs, catégories, budgets et révisions</td><td>Un budget publié puis révisé, sans écrasement</td></tr>
+<tr><td>B2</td><td>Demandes et approbations à seuils</td><td>Auto-approbation impossible, testée</td></tr>
+<tr><td>B3</td><td>Bons de commande et réceptions</td><td>Engagé exact après annulation et réception partielle</td></tr>
+<tr><td>B4</td><td>Factures, rapprochement, constat du paiement</td><td>Doublon refusé ; réalisé égal aux factures</td></tr>
+<tr><td>B5</td><td>Suivi budgétaire et export</td><td>Totaux concordants sur un mois réel</td></tr>
+</tbody></table></div>
+<h2>8. Questions au responsable financier et au RCCI</h2>
+<ol><li>Comment une dépense est-elle décidée et payée aujourd'hui, de bout en bout ?</li><li>Quels services et quelles catégories de budget utilisez-vous ?</li><li>Quels seuils, et qui approuve à chaque niveau ?</li><li>Quelles dépenses échappent au circuit (urgences, petite caisse, abonnements) ?</li><li>Que doit contenir l'export pour la comptabilité, et pour quel outil actuel ?</li><li>Qui contrôle ce qu'une même personne commande, enregistre et paie ?</li><li>Que faut-il reprendre de l'exercice en cours ?</li></ol></main></body></html>
